@@ -3,10 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.esupportail</groupId>
-	<artifactId>carte-culture</artifactId>
+	<artifactId>esup-signature</artifactId>
 	<packaging>war</packaging>
 	<version>0.1.0.BUILD-SNAPSHOT</version>
-	<name>carte-culture</name>
+	<name>esup-signature</name>
 	<properties>
 		<aspectj.version>1.8.1</aspectj.version>
 		<java.version>1.8</java.version>
@@ -523,8 +523,8 @@
                     <includes>
                         <include>src/main/java/**/*.java</include>
                         <include>src/main/webapp/WEB-INF</include>
-                        <include>src/main/webapp/css/carte-culture.css</include>
-                        <include>src/main/webapp/js/carte-culture.js</include>
+                        <include>src/main/webapp/css/esup-signature.css</include>
+                        <include>src/main/webapp/js/esup-signature.js</include>
                         <include>src/main/resources/**</include>
                     </includes>
                 </configuration>
@@ -553,7 +553,7 @@
 				</executions>
 				<configuration>
 					<executable>java</executable>
-					<mainClass>org.esupportail.esupnfccarteculture.batch.BatchMain</mainClass>
+					<mainClass>org.esupportail.esupsignature.batch.BatchMain</mainClass>
 					<classpathScope>compile</classpathScope>
 				</configuration>
 			</plugin>

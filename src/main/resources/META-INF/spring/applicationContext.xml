@@ -110,50 +110,12 @@
 		<constructor-arg ref="ldapContextSourceComue" />  
    	</bean>
 
-   	<bean id="personDaoUnivVille" class="org.esupportail.esupnfccarteculture.ldap.PersonLdapDao">
+   	<bean id="personDaoUnivVille" class="org.esupportail.esupsignature.ldap.PersonLdapDao">
         <property name="ldapTemplate" ref="ldapTemplateUnivVille" />
     </bean> 
 
-    <bean id="personDaoComue" class="org.esupportail.esupnfccarteculture.ldap.PersonLdapDao">
+    <bean id="personDaoComue" class="org.esupportail.esupsignature.ldap.PersonLdapDao">
         <property name="ldapTemplate" ref="ldapTemplateComue" />
     </bean> 
-
-    <bean id="tagService" class="org.esupportail.esupnfccarteculture.service.TagService">
-    	<property name="nbRechargeMax" value="3" />
-    	<property name="typeSalles">
-    		<list>
-    			<bean id="salleJoker" class="org.esupportail.esupnfccarteculture.domain.TypeSalleJoker">
-    				<property name="maxCoupon" value="1" />
-    				<property name="description" value="Coupon utilisable dans tous les types de salle" />
-    			</bean>
-				<bean id="salleCinema" class="org.esupportail.esupnfccarteculture.domain.TypeSalle">
-    				<property name="nom" value="cinema" />
-    				<property name="maxCoupon" value="1" />
-    				<property name="description" value="Coupon cinéma" />
-    			</bean>    			
-				<bean id="salleTheatre" class="org.esupportail.esupnfccarteculture.domain.TypeSalle">
-    				<property name="nom" value="theatre" />
-    				<property name="maxCoupon" value="2" />
-    				<property name="description" value="Coupon théatre" />
-    			</bean>
-				<bean id="salleAutre" class="org.esupportail.esupnfccarteculture.domain.TypeSalle">
-    				<property name="nom" value="autre" />
-    				<property name="maxCoupon" value="3" />
-    				<property name="description" value="Coupon autre" />
-    			</bean>
-    		</list>
-    	</property>    	
-    </bean>
-    
-    <bean id="etudiantService" class="org.esupportail.esupnfccarteculture.service.EtudiantService">
-    	<property name="affichageDetailCoupons" value="true" />
-    	<property name="preInscription" value="true" />
-    	<property name="preInscriptionNomSalle" value="Pré-inscription" />
-    	<property name="autorizedStudentLdapFilter" value="(|(eduPersonAffiliation=student)(eduPersonAffiliation=staff))" />
-	<property name="eppnFilterRegex" value=".*@univ-ville.fr|.*@univ-ville2.fr"/>
-    	<property name="ldapCsnSearchAttribut" value="supannRefId" />
-    	<property name="ldapCsnMultiValueTag" value="{ISO15693}" />
-    	<property name="ldapCsnMultiValueTagExtractRegex" value="^.*\{ISO15693\}([^;]*).*$" />
-    </bean>
 
 </beans>

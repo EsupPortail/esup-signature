@@ -95,12 +95,11 @@
     <beans:bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl" />
 
 	<beans:bean id="authUserDetailsService"
-		class="org.esupportail.esupnfccarteculture.security.ShibAuthenticatedUserDetailsService">
+		class="org.esupportail.esupsignature.security.ShibAuthenticatedUserDetailsService">
 		<beans:property name="mappingGroupesRoles">
 			<beans:map>
-				<beans:entry key="cn=for.carte-culture.admin,ou=groups,dc=univ-ville,dc=fr" value="ROLE_ADMIN" />
-				<beans:entry key="cn=for.carte-culture.manager,ou=groups,dc=univ-ville,dc=fr" value="ROLE_MANAGER" />
-				<beans:entry key="cn=for.carte-culture.partenaire,ou=groups,dc=univ-ville,dc=fr" value="ROLE_PARTENAIRE" />
+				<beans:entry key="cn=for.esup-signature.admin,ou=groups,dc=univ-ville,dc=fr" value="ROLE_ADMIN" />
+				<beans:entry key="cn=for.esup-signature.manager,ou=groups,dc=univ-ville,dc=fr" value="ROLE_MANAGER" />
 			</beans:map>
 		</beans:property>
 	</beans:bean>
