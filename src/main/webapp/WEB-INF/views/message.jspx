@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:spring="http://www.springframework.org/tags"
+	xmlns:util="urn:jsptagdir:/WEB-INF/tags/util">
+	<jsp:directive.page contentType="text/html;charset=UTF-8" />
+	<jsp:output omit-xml-declaration="yes" />
+
+	<div id="messageModal" class="modal fade" tabindex="-1"
+		role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+     			 <div class="modal-header">
+     			 <h3>Message</h3>
+     	 		</div>
+
+				<div class="modal-body">
+		
+					<!--  Messages issus des params de la requete HTTP (cas du Post - Redirect - Get) en param + Messages issus du Model ... -->
+					<c:if test="${empty messageAddon}">
+						<c:set var="messageAddon" value="${param.messageAddon}" />
+					</c:if>
+					
+					<c:if test="${empty messageSuccess}">
+						<c:set var="messageSuccess" value="${param.messageSuccess}" />
+					</c:if>
+		
+					<c:if test="${empty messageWarning}">
+						<c:set var="messageWarning" value="${param.messageWarning}" />
+					</c:if>
+		
+					<c:if test="${empty messageError}">
+						<c:set var="messageError" value="${param.messageError}" />
+					</c:if>
+					
+					<c:if test="${empty messageInfo}">
+						<c:set var="messageInfo" value="${param.messageInfo}" />
+					</c:if>
+		
+		
+					<c:if test="${not empty messageSuccess}">
+						<!-- div class="alert alert-success" data-dismiss="alert"-->
+						<div id="dialog" title="Information"  class="text-danger">
+							<div class="alert alert-success">
+								<spring:message code="${messageSuccess}" htmlEscape="false" /> ${messageAddon}
+							</div>
+						</div>
+					</c:if>
+		
+					<c:if test="${not empty messageWarning}">
+						<!-- div class="alert alert-warning" data-dismiss="alert"-->
+						<div id="dialog" title="Information"  class="text-danger">
+							<div class="alert alert-warning">
+								<spring:message code="${messageWarning}" htmlEscape="false" /> ${messageAddon}
+							</div>
+						</div>
+					</c:if>
+		
+					<c:if test="${not empty messageError}">
+					 	<!-- div class="alert alert-danger" data-dismiss="alert"-->
+						<div id="dialog" title="Information" class="text-danger">
+							<div class="alert alert-danger">
+								<spring:message code="${messageError}" htmlEscape="false" /> ${messageAddon}
+							</div>
+						</div>
+					</c:if>
+					
+					<c:if test="${not empty messageInfo}">
+					 	<!-- div class="alert alert-info" data-dismiss="alert"-->
+						<div id="dialog" title="Information" class="text-danger">
+							<div class="alert alert-info">
+								<spring:message code="${messageInfo}" htmlEscape="false" /> ${messageAddon}
+							</div>
+						</div>
+					</c:if>
+		
+				</div>
+				<div class="modal-footer">
+		        	<button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
+		         </div>
+			</div>
+		</div>
+	</div>
+</div>

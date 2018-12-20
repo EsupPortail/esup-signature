@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to ESUP-Portail under one or more contributor license
+    agreements. See the NOTICE file distributed with this work for
+    additional information regarding copyright ownership.
+
+    ESUP-Portail licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file except in
+    compliance with the License. You may obtain a copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<beans:beans xmlns="http://www.springframework.org/schema/security" 
+             xmlns:beans="http://www.springframework.org/schema/beans" 
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                                 http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+    
+    
+    <!-- HTTP security configurations -->
+    <http disable-url-rewriting="true" use-expressions="true" entry-point-ref="http403EntryPoint">
+		<logout logout-success-url="/" />
+		<intercept-url pattern="/j_spring_security_switch_user" access="hasRole('ROLE_ADMIN')"/>
+		<intercept-url pattern="/admin/" access="hasRole('ROLE_ADMIN')" />
+        <intercept-url pattern="/manager/" access="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')" />
+        <intercept-url pattern="/etudiant/**" access="isAuthenticated()" />
+        <intercept-url pattern="/partenaire/" access="hasRole('ROLE_PARTENAIRE') or hasRole('ROLE_ADMIN')" />
+	    <intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />
+        <intercept-url pattern="/manager/**" access="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')" />
+        <intercept-url pattern="/partenaire/**" access="hasRole('ROLE_PARTENAIRE') or hasRole('ROLE_ADMIN')" />
+        <intercept-url pattern="/login/**" access="isAuthenticated()" />
+        <intercept-url pattern="/nfc-ws/**" access="hasIpAddress('127.0.0.1') or hasIpAddress('Esup-NFC-Tag IP Address')" />
+        <intercept-url pattern="/**" access="permitAll" />
+		<access-denied-handler error-page="/denied" />
+		<session-management session-authentication-strategy-ref="sas" />
+		<custom-filter position="PRE_AUTH_FILTER" ref="shibFilter"/>
+		<custom-filter position="SWITCH_USER_FILTER" ref="switchUserProcessingFilter" />
+		<custom-filter ref="concurrencyFilter" position="CONCURRENT_SESSION_FILTER" />
+		<csrf disabled="true"/>
+    </http>
+
+    <beans:bean id="http403EntryPoint" class="org.springframework.security.web.authentication.Http403ForbiddenEntryPoint"/>
+    
+    <beans:bean id="authEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+	<beans:constructor-arg value="/"/>
+    </beans:bean>
+    
+    <beans:bean id="switchUserProcessingFilter"
+		class="org.springframework.security.web.authentication.switchuser.SwitchUserFilter">
+		<beans:property name="usernameParameter" value="j_username"/>
+		<beans:property name="userDetailsService" ref="databaseUserDetailsService" />
+		<beans:property name="switchUserUrl" value="/j_spring_security_switch_user" />
+		<beans:property name="exitUserUrl" value="/j_spring_security_logout" />
+		<beans:property name="targetUrl" value="/" />
+	</beans:bean>
+    
+    <beans:bean id="shibFilter" class="org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter">
+		<beans:property name="principalRequestHeader" value="REMOTE_USER"/>
+		<beans:property name="credentialsRequestHeader" value="MEMBER"/>
+		<beans:property name="exceptionIfHeaderMissing" value="false"/>
+		<beans:property name="authenticationManager" ref="authenticationManager" />
+    </beans:bean>
+
+    <authentication-manager alias="authenticationManager">
+	<authentication-provider ref="preauthAuthProvider" />	
+	<!--  <authentication-provider ref="casAuthenticationProvider" />-->
+    </authentication-manager>
+    
+    <beans:bean id="preauthAuthProvider" class="org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider">
+		<beans:property name="preAuthenticatedUserDetailsService" ref="authUserDetailsService"/>
+    </beans:bean>
+
+    <beans:bean id="concurrencyFilter"
+		class="org.springframework.security.web.session.ConcurrentSessionFilter">
+		<beans:constructor-arg ref="sessionRegistry"/>
+    </beans:bean>
+
+	<beans:bean class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+	    <beans:constructor-arg value="/login"/>
+	</beans:bean>
+
+    <beans:bean id="sas"
+		class="org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy">
+		<beans:constructor-arg name="sessionRegistry" ref="sessionRegistry" />
+    </beans:bean>
+
+    <beans:bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl" />
+
+	<beans:bean id="authUserDetailsService"
+		class="org.esupportail.esupnfccarteculture.security.ShibAuthenticatedUserDetailsService">
+		<beans:property name="mappingGroupesRoles">
+			<beans:map>
+				<beans:entry key="cn=for.carte-culture.admin,ou=groups,dc=univ-ville,dc=fr" value="ROLE_ADMIN" />
+				<beans:entry key="cn=for.carte-culture.manager,ou=groups,dc=univ-ville,dc=fr" value="ROLE_MANAGER" />
+				<beans:entry key="cn=for.carte-culture.partenaire,ou=groups,dc=univ-ville,dc=fr" value="ROLE_PARTENAIRE" />
+			</beans:map>
+		</beans:property>
+	</beans:bean>
+
+    <beans:bean id="ldapContextSourceUnivVille" class="org.springframework.ldap.core.support.LdapContextSource">
+		<beans:property name="url" value="ldap://ldap.univ-ville.fr" />
+		<beans:property name="base" value="dc=univ-ville,dc=fr" />
+		<beans:property name="userDn" value="cn=carteculture,dc=univ-ville,dc=fr" />
+		<beans:property name="password" value="XXXXXXXX" />
+	</beans:bean>   
+	
+	
+    <beans:bean id="ldapContextSourceComue" class="org.springframework.ldap.core.support.LdapContextSource">
+           <beans:property name="url" value="ldaps://ldap.comue.fr" />
+           <beans:property name="base" value="dc=comue,dc=fr" />
+           <beans:property name="userDn" value="cn=carteculture,ou=carteculture,dc=comue,dc=fr" />
+           <beans:property name="password" value="XXXXXXXX" />
+     </beans:bean>
+	
+</beans:beans>

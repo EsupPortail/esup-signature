@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to ESUP-Portail under one or more contributor license
+    agreements. See the NOTICE file distributed with this work for
+    additional information regarding copyright ownership.
+
+    ESUP-Portail licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file except in
+    compliance with the License. You may obtain a copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<configuration>
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder name="enc" class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+	        <layout class="org.esupportail.esupnfccarteculture.logs.PatternLayoutWithUserContext">
+	            <param name="Pattern" value="[%-5level] %date{dd/MM/yyyy HH:mm:ss} [%-20thread] [%user %remote %session] %logger{36} (%file:%line\) - %msg - %n" />
+    	    </layout>
+		</encoder>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>TRACE</level>
+		</filter>
+	</appender>
+	
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+       <file>/opt/tomcat-carte-culture/logs/carte-culture.log</file>
+		<encoder name="enc" class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+	        <layout class="org.esupportail.esupnfccarteculture.logs.PatternLayoutWithUserContext">
+   	            <param name="Pattern" value="[%-5level] %date{dd/MM/yyyy HH:mm:ss} [%-20thread] [%user %remote %session] %logger{36} (%file:%line\) - %msg - %n" />
+    	    </layout>
+		</encoder>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>TRACE</level>
+		</filter>
+    </appender>
+    
+    <appender name="EMAIL" class="ch.qos.logback.classic.net.SMTPAppender">
+        <smtpHost>smtp.univ-ville.fr</smtpHost>
+        <smtpPort>25</smtpPort>
+        <to>carte-culture@univ-ville.fr</to>
+        <from>carte-culture@univ-ville.fr</from>
+        <subject>%-5level - Leodrid %date{dd/MM/yyyy HH:mm:ss}</subject>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>[%-5level] %date{dd/MM/yyyy HH:mm:ss} [%-20thread] %logger{36} - %msg%n</pattern>
+        </layout>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>ERROR</level>
+		</filter>
+    </appender>
+
+	<root>
+		<level value="WARN" />
+		<appender-ref ref="STDOUT" />
+	</root>
+	    
+	<logger name="org.esupportail.esupnfccarteculture" additivity="false">
+	    <level value="DEBUG" />
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="FILE" />
+		<!-- 
+		<appender-ref ref="EMAIL" />
+		 -->
+	</logger>
+
+</configuration>

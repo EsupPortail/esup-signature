@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <page:show label=": ${salle.nom}" id="ps_org_esupportail_esupnfccarteculture_domain_Salle" object="${salle}" path="/manager/salles?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed" delete="true">
+        <field:display field="nom" id="s_org_esupportail_esupnfccarteculture_domain_Salle_nom" object="${salle}" z="user-managed"/>
+        <field:display field="lieu" id="s_org_esupportail_esupnfccarteculture_domain_Salle_lieu" object="${salle}" z="user-managed"/>
+        <field:display field="typeSalle" id="s_org_esupportail_esupnfccarteculture_domain_Salle_typeSalle" object="${salle}" z="user-managed"/>
+        <field:display field="tarif" id="s_org_esupportail_esupnfccarteculture_domain_Salle_tarif" object="${salle}" render="false" z="user-managed"/>
+        <field:display field="tarifString" id="s_org_esupportail_esupnfccarteculture_domain_Salle_tarifString" label="Tarif" object="${salle}" z="5v0vA85fcveO4NzYDK3Us0CPZpE="/>
+    </page:show>
+</div>

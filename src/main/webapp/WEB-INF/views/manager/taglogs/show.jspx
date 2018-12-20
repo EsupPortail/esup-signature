@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <page:show create="false" delete="false" id="ps_org_esupportail_esupnfccarteculture_domain_TagLog" object="${taglog}" path="/manager/taglogs" update="false" z="user-managed">
+	    <field:display field="etudiant" id="s_org_esupportail_esupnfccarteculture_domain_TagLog_etudiant" object="${taglog}" z="user-managed"/>
+	    <field:display field="salle" id="s_org_esupportail_esupnfccarteculture_domain_TagLog_salle" object="${taglog}" z="user-managed"/>
+	    <field:display date="true" dateTimePattern="${tagLog_date_date_format}" field="date" id="s_org_esupportail_esupnfccarteculture_domain_TagLog_date" object="${taglog}" z="user-managed"/>
+	    <field:display field="tarif" id="s_org_esupportail_esupnfccarteculture_domain_TagLog_tarif" object="${taglog}" z="user-managed"/>
+	    <field:display field="eppnInit" id="s_org_esupportail_esupnfccarteculture_domain_TagLog_eppnInit" object="${taglog}" z="user-managed"/>
+    </page:show>
+</div>

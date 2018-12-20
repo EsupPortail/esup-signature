@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:form="urn:jsptagdir:/WEB-INF/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <h1>Modification de : ${gestionnaire.prenom} ${gestionnaire.nom}</h1>
+    <div class="row">
+	    <div class="col-lg-12">
+		    <form:update cssClass="form-horizontal" id="fu_org_esupportail_esupnfccarteculture_domain_Gestionnaire" modelAttribute="gestionnaire" path="/manager/gestionnaires" versionField="Version" z="user-managed">
+		        <field:input required="true" cssClass="form-control" field="eppn" id="c_org_esupportail_esupnfccarteculture_domain_Gestionnaire_eppn" z="user-managed"/>
+		        <field:input required="true" cssClass="form-control" field="nom" id="c_org_esupportail_esupnfccarteculture_domain_Gestionnaire_nom" z="user-managed"/>
+		        <field:input required="true" cssClass="form-control" field="prenom" id="c_org_esupportail_esupnfccarteculture_domain_Gestionnaire_prenom" z="user-managed"/>
+		        <field:select required="true" cssClass="custom-checkbox" checkboxes="true" field="salles" id="c_org_esupportail_esupnfccarteculture_domain_Gestionnaire_salles" itemLabel="nom" itemValue="id" items="${salles}" multiple="true" path="/manager/salles" z="user-managed"/>
+		    </form:update>
+	    </div>
+    </div>
+</div>

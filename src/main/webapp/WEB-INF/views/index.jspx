@@ -1,0 +1,16 @@
+<div xmlns:page="urn:jsptagdir:/WEB-INF/tags/form"
+     xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" 
+     xmlns:spring="http://www.springframework.org/tags" xmlns:util="urn:jsptagdir:/WEB-INF/tags/util" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:sec="http://www.springframework.org/security/tags" xmlns:form="http://www.springframework.org/tags/form">
+	<jsp:directive.page contentType="text/html;charset=UTF-8" />
+	<jsp:output omit-xml-declaration="yes" />
+	<div id="col-lg-12">
+		<div id="lastleoauth"><!--  --></div>
+		<div id="debug"><!--  --></div>
+		<spring:url value="/login" var="loginUrl"></spring:url>
+		<H1>Bienvenue sur l'application Carte Culture, merci de vous authentifier</H1>
+		<button class="btn btn-primary btn-lg btn-block" onclick="window.location='${loginUrl}'">
+			<h3><span class="float-left">Se connecter</span><span class="fas fa-arrow-right float-right"><!--  --></span></h3>
+			
+		</button>
+	</div>
+</div>

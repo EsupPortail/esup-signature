@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:sec="http://www.springframework.org/security/tags" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <div class="row">
+        <div class="col-lg-6">
+            <page:show label=": ${etudiant.nom} ${etudiant.prenom}" create="false" id="ps_org_esupportail_esupnfccarteculture_domain_Etudiant" object="${etudiant}" path="/manager/etudiants" z="user-managed">
+                <field:display field="civilite" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_civilite" object="${etudiant}" z="user-managed"/>
+                <field:display field="nom" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_nom" object="${etudiant}" z="user-managed"/>
+                <field:display field="prenom" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_prenom" object="${etudiant}" z="user-managed"/>
+                <field:display date="true" dateTimePattern="dd/MM/yyyy" field="dateNaissance" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_dateNaissance" object="${etudiant}" z="user-managed"/>
+                <field:display field="eppn" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_eppn" object="${etudiant}" z="user-managed"/>
+                <field:display field="csn" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_csn" object="${etudiant}" z="user-managed"/>
+                <field:display field="email" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_email" object="${etudiant}" z="user-managed"/>
+                <field:display field="filiere" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_filiere" object="${etudiant}" z="user-managed"/>
+                <field:display field="niveauEtudes" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_niveauEtudes" object="${etudiant}" z="user-managed"/>
+                <field:display field="affiliation" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_affiliation" object="${etudiant}" z="user-managed"/>
+                <field:display field="etablissement" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_etablissement" object="${etudiant}" z="user-managed"/>
+                <field:display field="member" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_member" object="${etudiant}" render="false" z="user-managed"/>
+                <field:display field="couponsLibelleLn" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_coupons" object="${etudiant}" pre="true" z="user-managed"/>
+                <field:display field="nbRecharge" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_nbRecharge" object="${etudiant}" z="user-managed"/>
+                <field:display date="true" dateTimePattern="${etudiant_daterecharge_date_format}" field="dateRecharge" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_dateRecharge" object="${etudiant}" z="user-managed"/>
+                <field:display date="true" dateTimePattern="${etudiant_dateinscription_date_format}" field="dateInscription" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_dateInscription" object="${etudiant}" z="user-managed"/>
+                <field:display render="false" field="nbCoupon" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_nbCoupon" object="${etudiant}" z="user-managed"/>
+                <field:display render="false" field="couponCinema" id="s_org_esupportail_esupnfccarteculture_domain_Etudiant_couponCinema" object="${etudiant}" z="user-managed"/>
+            </page:show>
+        </div>
+        <div class="col-lg-6">
+        	<div class="card">
+        		<div class="card-header"><h5>Badgeages :</h5></div>
+        		<div class="card-body">
+	        	<table:table create="false" cssClass="table table-striped table-sm" data="${taglogs}" delete="false" id="l_org_esupportail_esupnfccarteculture_domain_TagLog" path="/manager/taglogs" update="false" view="false" z="user-managed">
+	            	<table:column date="true" dateTimePattern="${tagLog_date_date_format}" id="c_org_esupportail_esupnfccarteculture_domain_TagLog_date" property="date" sort="true" z="user-managed"/>
+	            	<table:column id="c_org_esupportail_esupnfccarteculture_domain_TagLog_salle" property="salleNom" z="user-managed"/>
+	           	</table:table>
+	           	</div>
+            </div>
+        </div>
+    </div>
+</div>

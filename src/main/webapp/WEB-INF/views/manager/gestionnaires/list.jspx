@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:spring="http://www.springframework.org/tags" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields"
+	version="2.0">
+	<jsp:directive.page contentType="text/html;charset=UTF-8" />
+	<jsp:output omit-xml-declaration="yes" />
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="card">
+				<div class="card-header">
+					<h5>
+						<spring:message code="menu_item_gestionnaire_list_label" var="title" htmlEscape="true" />
+						${title}
+						<button class="btn btn-primary float-right" type="button" data-toggle="collapse" data-target="#collapseHelp" aria-expanded="false" aria-controls="collapseHelp">
+							<span class="fas fa-info-circle">
+								<!--  -->
+							</span>
+						</button>
+					</h5>
+					<div class="collapse" id="collapseHelp">
+						<div class="card card-body bg-primary text-white">
+							Un gestionnaire peut être affecté à une ou plusieurs salles. L'eppn renseigné doit correspondre au compte qui sera utilisé pour se connecter à l'application de badgeade. L'eppn permettra
+							d'identifier qui est le gestionnaire en train de badger une carte et donc de savoir sur quelle salle a eu lieu le débit.<br /> Si un gestionnaire possède plusieurs salles, il devra choisir
+							une salle lors de la connexion sur l'application de badgeage.
+						</div>
+						<br/>
+					</div>
+					<div class="btn-group">
+						<a alt="Ajouter une salle" class="btn btn-info pull-left" href="/manager/gestionnaires?form" title="Ajouter un gestionnaire"> <span class="fas fa-plus">
+								<!--  -->
+							</span> Ajouter un gestionnaire
+						</a>
+					</div>
+				</div>
+				<div class="card-body">
+					<page:list id="pl_org_esupportail_esupnfccarteculture_domain_Gestionnaire" items="${gestionnaires}" z="user-managed" />
+					<table:table data="${gestionnaires}" id="l_org_esupportail_esupnfccarteculture_domain_Gestionnaire" path="/manager/gestionnaires" delete="true" view="false" z="user-managed">
+						<table:column sort="true" id="c_org_esupportail_esupnfccarteculture_domain_Gestionnaire_nom" property="nom" z="user-managed" />
+						<table:column id="c_org_esupportail_esupnfccarteculture_domain_Gestionnaire_prenom" property="prenom" z="user-managed" />
+						<table:column cssClass="d-none d-md-table-cell" id="c_org_esupportail_esupnfccarteculture_domain_Gestionnaire_eppn" property="eppn" z="user-managed" />
+						<table:column cssClass="d-none d-sm-table-cell" id="c_org_esupportail_esupnfccarteculture_domain_Gestionnaire_salles" property="sallesNoms" z="user-managed" />
+					</table:table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<license-lookup xmlns="https://source.jasig.org/schemas/maven-notice-plugin/license-lookup" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://source.jasig.org/schemas/maven-notice-plugin/license-lookup https://source.jasig.org/schemas/maven-notice-plugin/license-lookup/license-lookup-v1.0.xsd">
+    <artifact>
+        <groupId>esup</groupId>
+        <artifactId>esup-uportal-ws-client</artifactId>
+        <version>20100915</version>
+	<license>GNU General Public License</license>
+    </artifact>
+    <artifact>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>1.2.9</version>
+	<license>Apache License, Version 2.0</license>
+    </artifact>
+    <artifact>
+        <groupId>org.esupportail</groupId>
+        <artifactId>EsupTwitter</artifactId>
+        <version>0.6</version>
+	<license>Apache License, Version 2.0</license>
+    </artifact>
+    <artifact>
+        <groupId>org.esupportail</groupId>
+        <artifactId>esup-commons2-core</artifactId>
+        <version>0.2.8</version>
+	<license>GNU General Public License</license>
+    </artifact>
+    <artifact>
+        <groupId>org.esupportail</groupId>
+        <artifactId>esup-commons2-springmvc-portlet</artifactId>
+        <version>0.2.8</version>
+	<license>GNU General Public License</license>
+    </artifact>
+    <artifact>
+        <groupId>org.esupportail</groupId>
+        <artifactId>esup-commons2-web</artifactId>
+        <version>0.2.8</version>
+	<license>GNU General Public License</license>
+    </artifact>
+    <artifact>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>1.5.8</version>
+	<license>MIT License</license>
+    </artifact>
+    <artifact>
+        <groupId>org.springframework</groupId>
+        <artifactId>jsr168forwardport.org.springframework.web.portlet</artifactId>
+        <version>2.5.6.SEC01</version>
+	<license>Apache License, Version 2.0</license>
+    </artifact>
+    <artifact>
+        <groupId>taglibs</groupId>
+        <artifactId>regexp</artifactId>
+        <version>1.0.1</version>
+	<license>Apache License, Version 2.0</license>
+    </artifact>
+    <artifact>
+        <groupId>joda-time</groupId>
+        <artifactId>joda-time</artifactId>
+        <version>1.6</version>
+        <license>Apache License, Version 2.0</license>
+    </artifact>
+    <artifact>
+        <groupId>org.springframework.roo</groupId>
+        <artifactId>org.springframework.roo.annotations</artifactId>
+        <version>1.2.0.RELEASE</version>
+        <license>Apache License, Version 2.0</license>
+    </artifact>
+    <artifact>
+        <groupId>dom4j</groupId>
+        <artifactId>dom4j</artifactId>
+        <version>1.6.1</version>
+        <license>Copyright 2001-2016 (C) MetaStuff, Ltd. and DOM4J contributors. All Rights Reserved.</license>
+    </artifact>
+    <artifact>
+        <groupId>javax.el</groupId>
+        <artifactId>el-api</artifactId>
+        <version>2.2</version>
+        <license>COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.1</license>
+    </artifact>
+    <artifact>
+        <groupId>javax.servlet</groupId>
+        <artifactId>servlet-api</artifactId>
+        <version>2.5</version>
+        <license>CDDL GPL 2.0</license>
+    </artifact>
+    <artifact>
+        <groupId>javax.servlet.jsp</groupId>
+        <artifactId>jsp-api</artifactId>
+        <version>2.1</version>
+        <license>CDDL GPL GPL 2.0</license>
+    </artifact>
+    <artifact>
+        <groupId>javax.transaction</groupId>
+        <artifactId>jta</artifactId>
+        <version>1.1</version>
+        <license>COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.1</license>
+    </artifact>
+    <artifact>
+        <groupId>org.esupportail</groupId>
+        <artifactId>carte-culture</artifactId>
+        <version>0.1.0.BUILD-SNAPSHOT</version>
+        <license>Apache License, Version 2.0</license>
+    </artifact>
+</license-lookup>

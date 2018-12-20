@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC
+	"-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN"
+	"http://tiles.apache.org/dtds/tiles-config_2_1.dtd">
+<tiles-definitions>
+  <definition extends="user" name="manager/index">
+    <put-attribute name="body" value="/WEB-INF/views/manager/index.jspx" />
+  </definition>
+  <definition extends="user" name="manager/stats">
+      <put-attribute name="body" value="/WEB-INF/views/manager/stats.jspx"/>
+  </definition>
+  <definition extends="user" name="manager/exports">
+      <put-attribute name="body" value="/WEB-INF/views/manager/exports.jspx"/>
+  </definition>  
+</tiles-definitions>

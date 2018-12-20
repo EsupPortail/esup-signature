@@ -1,0 +1,30 @@
+<div xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:spring="http://www.springframework.org/tags"
+	xmlns:util="urn:jsptagdir:/WEB-INF/tags/util" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:sec="http://www.springframework.org/security/tags"
+	xmlns:form="http://www.springframework.org/tags/form">
+	<jsp:directive.page contentType="text/html;charset=UTF-8" />
+	<jsp:output omit-xml-declaration="yes" />
+
+	<div id="col-lg-12">
+		<c:choose>
+			<c:when test="${not empty salles}">
+				<div class="card">
+					<div class="card-header">
+						<h5>Choisir la salle :</h5>
+					</div>
+					<ul class="list-group list-group-flush">
+						<c:forEach items="${salles}" var="salle">
+							<li class="list-group-item">
+								<spring:url value="/partenaire/salle/${salle.id}/" var="register_url" htmlEscape="false" />
+								<a href="${register_url}" class="btn btn-lg btn-success">${salle.nom}</a>
+							</li>
+						</c:forEach>
+					</ul>
+				</div>
+			</c:when>
+			<c:otherwise>
+				<h1>Accès refusé</h1>
+			</c:otherwise>
+		</c:choose>
+		<!--  -->
+	</div>
+</div>

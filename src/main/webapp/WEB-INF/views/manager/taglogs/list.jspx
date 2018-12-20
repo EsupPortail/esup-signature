@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:spring="http://www.springframework.org/tags" xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
+	<jsp:directive.page contentType="text/html;charset=UTF-8" />
+	<jsp:output omit-xml-declaration="yes" />
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="card">
+				<div class="card-header">
+					<h5>
+						<spring:message code="menu_item_taglog_list_label" var="title" htmlEscape="true" />
+						${title}
+						<button class="btn btn-primary float-right" type="button" data-toggle="collapse" data-target="#collapseHelp" aria-expanded="false" aria-controls="collapseHelp">
+							<span class="fas fa-info-circle"> <!--  --></span>
+						</button>
+					</h5>
+					<div class="collapse" id="collapseHelp">
+						<div class="card card-body bg-primary text-white">Liste des bagdgeades</div>
+						<br/>
+					</div>
+					<form action="taglogs" class="form-inline">
+						<input type="hidden" name="page" value="${page}" /> <input type="hidden" name="size" value="${size}" />
+						<div class="input-group">
+							<div class="input-group-prepend">
+								<div class="input-group-text">Année universitaire</div>
+							</div>
+							<select class="form-control" id="searchAttribut" name="annee" onchange="submit();">
+								<option value="">-- Année universitaire --</option>
+								<c:forEach items="${annees}" var="anneeTest">
+									<c:choose>
+										<c:when test="${annee eq anneeTest}">
+											<option selected="selected" value="${anneeTest}">${anneeTest}- ${anneeTest + 1}</option>
+										</c:when>
+										<c:otherwise>
+											<option value="${anneeTest}">${anneeTest}- ${anneeTest + 1}</option>
+										</c:otherwise>
+									</c:choose>
+								</c:forEach>
+							</select>
+						</div>
+						<div class="input-group">
+							<div class="input-group-prepend">
+								<div class="input-group-text">Filtrer par salle</div>
+							</div>
+							<select class="form-control" id="searchAttribut" name="salleFilter" onchange="submit();">
+								<option value="">-- Salle --</option>
+								<c:forEach items="${salles}" var="salle">
+									<c:choose>
+										<c:when test="${salleFilter eq salle.nom}">
+											<option value="${salle.nom}" selected="selected">${salle.nom}</option>
+										</c:when>
+										<c:otherwise>
+											<option value="${salle.nom}">${salle.nom}</option>
+										</c:otherwise>
+									</c:choose>
+								</c:forEach>
+							</select>
+						</div>
+						<div class="input-group">
+							<div class="input-group-prepend">
+								<div class="input-group-text">Filter par date</div>
+							</div>
+							<input class="form-control" placeholder="jj/mm/aaaa" data-provide="typeahead" id="dateFilter" name="dateFilter" type="date" value="${dateFilter}" />
+						</div>
+						<div class="input-group">
+							<div class="input-group-prepend">
+								<div class="input-group-text">Recherche</div>
+							</div>
+							<input class="form-control" placeholder="salle, csn, eppn, ..." data-provide="typeahead" id="multiSearch" name="searchString" type="text" value="${searchString}" />
+							<div class="input-group-append">
+								<input class="btn btn-success" id="proceed" title="Search" type="submit" value="Rechercher" />
+							</div>
+							<div class="input-group-append">
+								<input class="btn btn-danger" onclick="window.location.href='taglogs';" id="deviceCancelFilters" title="Cancel filters" type="button" value="Annuler" />
+							</div>
+						</div>
+					</form>
+				</div>
+				<div class="card-body">
+					<page:list create="false" id="pl_org_esupportail_esupnfccarteculture_domain_TagLog" items="${taglogs}" z="user-managed" />
+					<table:table create="false" data="${taglogs}" delete="false" id="l_org_esupportail_esupnfccarteculture_domain_TagLog" path="/manager/taglogs" update="false" view="false" z="user-managed">
+						<table:column id="c_org_esupportail_esupnfccarteculture_domain_TagLog_etudiant" property="etudiantNomPrenom" z="user-managed" />
+						<table:column id="c_org_esupportail_esupnfccarteculture_domain_TagLog_salle" property="salleNom" z="user-managed" />
+						<table:column sort="true" date="true" dateTimePattern="${tagLog_date_date_format}" id="c_org_esupportail_esupnfccarteculture_domain_TagLog_date" property="date" z="user-managed" />
+						<table:column id="c_org_esupportail_esupnfccarteculture_domain_TagLog_tarif" property="tarif" render="false" z="user-managed" />
+						<table:column cssClass="d-none d-sm-table-cell" id="c_org_esupportail_esupnfccarteculture_domain_TagLog_eppnInit" property="eppnInit" z="user-managed" />
+						<table:column cssClass="viewEtudiant" link="true" linkPrefix="/manager/etudiants/" id="c_org_esupportail_esupnfccarteculture_domain_TagLog_etudiant" property="etudiantId" label="Voir la fiche étudiant" z="user-managed" />
+					</table:table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

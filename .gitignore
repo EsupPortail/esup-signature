@@ -1,0 +1,17 @@
+log.roo
+target
+.hg
+.hgignore
+/bin
+Servers
+log.roo
+.settings/com.springsource.sts.config.flow.prefs
+hs_err_*
+/target
+/.metadata/
+/.settings/
+/.classpath
+/.project
+/.springBeans
+cas.log
+perfStats.log

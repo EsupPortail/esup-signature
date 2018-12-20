@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:spring="http://www.springframework.org/tags" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields"
+	version="2.0">
+	<jsp:directive.page contentType="text/html;charset=UTF-8" />
+	<jsp:output omit-xml-declaration="yes" />
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="card">
+				<div class="card-header">
+					<h5>
+						<spring:message code="menu_item_salle_list_label" var="title" htmlEscape="true" />
+						${title}
+						<button class="btn btn-primary float-right" type="button" data-toggle="collapse" data-target="#collapseHelp" aria-expanded="false" aria-controls="collapseHelp">
+							<span class="fas fa-info-circle">
+								<!--  -->
+							</span>
+						</button>
+					</h5>
+					<div class="collapse" id="collapseHelp">
+						<div class="card card-body bg-primary text-white">Des salles peuvent être ajoutées ici. Les différents types de salles sont ceux définis dans la configuration de l'application. Les salles
+							de type "inscription" permettent de recharger la carte culture.</div>
+						<br/>
+					</div>
+					<div class="btn-group">
+						<a alt="Ajouter une salle" class="btn btn-info pull-left" href="/manager/salles?form" title="Ajouter une salle"> <span class="fas fa-plus">
+								<!--  -->
+						</span> Ajouter une salle
+						</a>
+					</div>
+				</div>
+				<div class="card-body">
+					<page:list id="pl_org_esupportail_esupnfccarteculture_domain_Salle" items="${salles}" z="user-managed" />
+					<table:table data="${salles}" id="l_org_esupportail_esupnfccarteculture_domain_Salle" path="/manager/salles" view="false" delete="true" z="user-managed">
+						<table:column id="c_org_esupportail_esupnfccarteculture_domain_Salle_nom" property="nom" sort="true" z="user-managed" />
+						<table:column cssClass="d-none d-md-table-cell" id="c_org_esupportail_esupnfccarteculture_domain_Salle_lieu" property="lieu" sort="true" z="user-managed" />
+						<table:column cssClass="d-none d-sm-table-cell" id="c_org_esupportail_esupnfccarteculture_domain_Salle_typeSalle" property="typeSalle" sort="true" z="user-managed" />
+						<table:column id="c_org_esupportail_esupnfccarteculture_domain_Salle_tarif" property="tarif" render="false" sort="true" z="user-managed" />
+						<table:column cssClass="d-none d-sm-table-cell" id="c_org_esupportail_esupnfccarteculture_domain_Salle_tarifString" label="Tarif" property="tarifString" sort="true" z="user-managed" />
+					</table:table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

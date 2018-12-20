@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:menu="urn:jsptagdir:/WEB-INF/tags/menu" xmlns:sec="http://www.springframework.org/security/tags" id="menu" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <c:if test="${empty param.numeroId and empty numeroId}">
+	<nav class="nav nav-tabs navbar-expand-sm navbar-light bg-light">
+        <menu:menu id="_menu" z="user-managed">
+            <menu:item menuClass="nav-link" id="c_accueil" label="Accueil" render="false" url="/" z="user-managed"/>
+            <sec:authorize access="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')">
+				<c:if test="${role=='manager'}">
+                    <menu:item activeMenu="${active=='etudiants'}" menuClass="nav-link" id="i_etudiant_list" url="/manager/etudiants" z="user-managed"/>
+                    <menu:item activeMenu="${active=='salles'}" menuClass="nav-link" id="i_salle_list" url="/manager/salles?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+                    <menu:item activeMenu="${active=='gestionnaires'}" menuClass="nav-link" id="i_gestionnaire_list" url="/manager/gestionnaires?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+                    <menu:item activeMenu="${active=='taglogs'}" menuClass="nav-link" id="i_taglog_list" url="/manager/taglogs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+					<menu:item activeMenu="${active=='stats'}" menuClass="nav-link" id="stats" label="Stats" url="/manager/stats"/>
+					<menu:item activeMenu="${active=='exports'}" menuClass="nav-link" id="exports" label="Exports" url="/manager/exports"/>
+				</c:if>
+            </sec:authorize>
+            <sec:authorize access="hasRole('ROLE_PARTENAIRE') or hasRole('ROLE_ADMIN')">
+            	<c:if test="${active=='partenaire'}">
+                	<menu:item menuClass="nav-link" activeMenu="${active=='partenaire'}" id="c_partenaire" label="Espace partenaires" url="/partenaire/" z="user-managed"/>
+                </c:if>
+            </sec:authorize>
+			<sec:authorize access="hasRole('ROLE_ADMIN')">            
+                <c:if test="${role=='admin'}">
+	  				<menu:item activeMenu="${active=='sessions'}" menuClass="nav-link" id="adminview" label="Sessions" url="/admin/currentsessions"/>
+					<menu:item activeMenu="${active=='su'}" menuClass="nav-link" id="su" label="SU" url="/admin/su" />
+					<menu:item activeMenu="${active=='tagloggest'}" menuClass="nav-link" id="i_tagloggest_list" url="/admin/tagloggests?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+                </c:if>
+            </sec:authorize>
+            <menu:item id="c_etudiant" label="Espace etudiant" render="false" url="/etudiant/" z="user-managed"/>
+            <menu:category id="c_salle" render="false" z="user-managed">
+                <menu:item id="i_salle_new" messageCode="global_menu_new" url="/manager/salles?form" z="user-managed"/>
+            </menu:category>
+            <menu:category id="c_etudiant" render="false" z="user-managed"/>
+            <menu:category id="c_taglog" render="false" z="user-managed">
+                <menu:item id="i_taglog_list" messageCode="global_menu_list" url="/manager/taglogs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+            </menu:category>
+            <menu:category id="c_gestionnaire" render="false" z="user-managed">
+                <menu:item id="i_gestionnaire_new" messageCode="global_menu_new" url="/manager/gestionnaires?form" z="user-managed"/>
+                <menu:item id="i_gestionnaire_list" messageCode="global_menu_list" url="/manager/gestionnaires?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+            </menu:category>
+            <menu:category id="c_tagloggest" render="false" z="user-managed">
+                <menu:item id="i_tagloggest_new" messageCode="global_menu_new" url="/admin/tagloggests?form" z="user-managed"/>
+                <menu:item id="i_tagloggest_list" messageCode="global_menu_list" url="/admin/tagloggests?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+            </menu:category>
+        </menu:menu>
+	</nav> 
+ 
+    </c:if>
+</div>

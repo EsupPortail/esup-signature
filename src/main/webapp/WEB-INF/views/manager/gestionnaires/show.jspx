@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <page:show label=": ${gestionnaire.prenom} ${gestionnaire.nom}" id="ps_org_esupportail_esupnfccarteculture_domain_Gestionnaire" object="${gestionnaire}" path="/manager/gestionnaires?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed">
+       <field:display field="eppn" id="s_org_esupportail_esupnfccarteculture_domain_Gestionnaire_eppn" object="${gestionnaire}" z="user-managed"/>
+       <field:display field="nom" id="s_org_esupportail_esupnfccarteculture_domain_Gestionnaire_nom" object="${gestionnaire}" z="user-managed"/>
+       <field:display field="prenom" id="s_org_esupportail_esupnfccarteculture_domain_Gestionnaire_prenom" object="${gestionnaire}" z="user-managed"/>
+       <field:display field="salles" id="s_org_esupportail_esupnfccarteculture_domain_Gestionnaire_salles" object="${gestionnaire}" z="user-managed"/>
+    </page:show>
+</div>

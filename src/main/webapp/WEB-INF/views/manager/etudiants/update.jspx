@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:form="urn:jsptagdir:/WEB-INF/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:sec="http://www.springframework.org/security/tags" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <sec:authentication property="principal.username" var="eppnInit"/>
+    <div class="row">
+        <div class="col-lg-4">
+            <h1>${etudiant.prenom} ${etudiant.nom} <button aria-controls="collapseHelp" aria-expanded="false" class="btn btn-primary" data-target="#collapseHelp" data-toggle="collapse" type="button">
+                    <span class="fas fa-info-circle"><!--  --></span>
+                </button>
+            </h1>
+        </div>
+        <div class="col-lg-8">
+            <div class="collapse" id="collapseHelp">
+                <div class="card card-body bg-info">
+			  	Cette page permet de debiter ou crediter manuellement une carte.<br/>
+			  	Les informations présentes dans cette fiche ne devraient pas être modifiées manuellement car elles ont été recupérées automatiquement lors de la connexion de l'etudiant.
+			  	
+			  </div>
+            </div>
+        </div>
+        <br/>
+        <div class="col-lg-12">
+            <c:choose>
+                <c:when test="${recharge}">
+                    <a alt="Ajouter un gestionnaire" class="btn btn-info pull-left" href="/manager/etudiants/${id}/recharge" title="Recharger la carte">
+                        <span class="fas fa-plus">
+                            <!--  -->
+                        </span>
+	                        &amp;nbsp;Recharger la carte
+	                    </a>
+                </c:when>
+                <c:otherwise>
+                    <div class="btn btn-info pull-left btn-group btn-danger">
+                        <span class="fas fa-plus">
+                            <!--  -->
+                        </span>
+	                    &amp;nbsp;Rechargement indisponible
+	                </div>
+                </c:otherwise>
+            </c:choose>
+            <br/>
+            <br/>
+            <button class="btn btn-info pull-left" data-target="#debitCoupon" data-toggle="modal">
+                <span class="fas fa-credit-card">
+                    <!--  -->
+                </span> 
+	                &amp;nbsp;Débiter un coupon
+	            </button>
+            <form:update cssClass="form-horizontal" id="fu_org_esupportail_esupnfccarteculture_domain_Etudiant" modelAttribute="etudiant" path="/manager/etudiants" versionField="Version" z="user-managed">
+                <field:input cssClass="form-control" field="nom" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_nom" z="user-managed"/>
+                <field:input cssClass="form-control" field="prenom" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_prenom" z="user-managed"/>
+                <field:input cssClass="form-control" field="csn" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_csn" z="user-managed"/>
+                <field:input cssClass="form-control" field="member" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_member" render="false" z="user-managed"/>
+                <field:input cssClass="form-control" field="affiliation" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_affiliation" z="user-managed"/>
+                <field:input cssClass="form-control" field="email" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_email" validationMessageCode="field_invalid_email" z="user-managed"/>
+                <field:input cssClass="form-control" field="eppn" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_eppn" z="user-managed"/>
+                <field:input cssClass="form-control" field="filiere" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_filiere" z="user-managed"/>
+                <field:input cssClass="form-control" field="etablissement" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_etablissement" z="user-managed"/>
+                <field:textarea cssClass="form-control" field="couponsLibelleLn" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_coupons" readonly="true" z="user-managed"/>
+                <field:input cssClass="form-control" field="nbRecharge" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_nbRecharge" readonly="true" z="user-managed"/>
+                <field:datetime dateTimePattern="${etudiant_daterecharge_date_format}" field="dateRecharge" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_dateRecharge" readonly="true" z="user-managed"/>
+                <field:input field="civilite" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_civilite" render="false" z="user-managed"/>
+                <field:datetime dateTimePattern="${etudiant_datenaissance_date_format}" field="dateNaissance" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_dateNaissance" render="false" z="user-managed"/>
+                <field:input field="niveauEtudes" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_niveauEtudes" render="false" z="user-managed"/>
+                <field:datetime dateTimePattern="${etudiant_dateinscription_date_format}" field="dateInscription" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_dateInscription" readonly="true" z="user-managed"/>
+                <field:input render="false" field="nbCoupon" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_nbCoupon" z="user-managed"/>
+                <field:checkbox render="false" field="couponCinema" id="c_org_esupportail_esupnfccarteculture_domain_Etudiant_couponCinema" z="user-managed"/>
+            </form:update>
+        </div>
+    </div>
+    <div aria-hidden="true" aria-labelledby="debitModal" class="modal fade" id="debitCoupon" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="/manager/etudiants/${id}/debitCoupon" id="appointment">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Débiter un coupon</h4>
+                        <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                            <span aria-hidden="true">&amp;times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <select class="form-control" name="location">
+                            <c:forEach items="${salles}" var="salle">
+                                <option value="${salle.nom}">${salle.nom}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-danger" data-dismiss="modal" type="button">Annuler</button>
+                        <input class="btn btn-success" id="proceed" type="submit" value="Valider"/>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
