@@ -4,9 +4,9 @@
 package org.esupportail.esupsignature.domain;
 
 import java.util.Date;
-
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import org.esupportail.esupsignature.domain.TagLog;
 
 privileged aspect TagLog_Roo_Finder {
     

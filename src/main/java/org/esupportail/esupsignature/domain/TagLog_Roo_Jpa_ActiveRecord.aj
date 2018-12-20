@@ -6,7 +6,6 @@ package org.esupportail.esupsignature.domain;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
 import org.esupportail.esupsignature.domain.TagLog;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +14,7 @@ privileged aspect TagLog_Roo_Jpa_ActiveRecord {
     @PersistenceContext
     transient EntityManager TagLog.entityManager;
     
-    public static final List<String> TagLog.fieldNames4OrderClauseFilter = java.util.Arrays.asList("log", "etudiant", "salle", "date", "tarif", "eppnInit");
+    public static final List<String> TagLog.fieldNames4OrderClauseFilter = java.util.Arrays.asList("log", "date", "tarif", "eppnInit");
     
     public static final EntityManager TagLog.entityManager() {
         EntityManager em = new TagLog().entityManager;

@@ -5,7 +5,6 @@ package org.esupportail.esupsignature.domain;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-
 import org.esupportail.esupsignature.domain.Role;
 
 privileged aspect Role_Roo_Finder {

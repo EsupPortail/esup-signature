@@ -9,7 +9,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Version;
-
 import org.esupportail.esupsignature.domain.Role;
 
 privileged aspect Role_Roo_Jpa_Entity {

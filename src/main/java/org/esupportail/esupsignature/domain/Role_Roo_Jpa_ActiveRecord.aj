@@ -6,7 +6,6 @@ package org.esupportail.esupsignature.domain;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
 import org.esupportail.esupsignature.domain.Role;
 import org.springframework.transaction.annotation.Transactional;
 

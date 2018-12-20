@@ -4,7 +4,6 @@
 package org.esupportail.esupsignature.ldap;
 
 import java.util.List;
-
 import org.esupportail.esupsignature.ldap.PersonLdap;
 
 privileged aspect PersonLdap_Roo_JavaBean {

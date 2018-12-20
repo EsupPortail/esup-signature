@@ -4,6 +4,7 @@
 package org.esupportail.esupsignature.web;
 
 import org.esupportail.esupsignature.domain.TagLog;
+import org.esupportail.esupsignature.web.ApplicationConversionServiceFactoryBean;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.format.FormatterRegistry;
@@ -36,5 +37,15 @@ privileged aspect ApplicationConversionServiceFactoryBean_Roo_ConversionService 
         };
     }
     
+    public void ApplicationConversionServiceFactoryBean.installLabelConverters(FormatterRegistry registry) {
+        registry.addConverter(getTagLogToStringConverter());
+        registry.addConverter(getIdToTagLogConverter());
+        registry.addConverter(getStringToTagLogConverter());
+    }
+    
+    public void ApplicationConversionServiceFactoryBean.afterPropertiesSet() {
+        super.afterPropertiesSet();
+        installLabelConverters(getObject());
+    }
     
 }
