@@ -31,6 +31,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import eu.europa.esig.dss.web.model.DataToSignParams;
+import eu.europa.esig.dss.web.model.GetDataToSignResponse;
+import eu.europa.esig.dss.web.model.SignatureDocumentForm;
+
 @RequestMapping("/service/rest/signature/one-document")
 @Controller
 public class SignatureMultiDocWsController {
@@ -41,7 +45,7 @@ public class SignatureMultiDocWsController {
 	@ResponseBody
 	public GetDataToSignResponse getDataToSign(Model model, @RequestBody @Valid DataToSignParams params,
 			@ModelAttribute("signatureDocumentForm") @Valid SignatureDocumentForm signatureDocumentForm, BindingResult result) {
-		
+		return null;
 	}
 
 }

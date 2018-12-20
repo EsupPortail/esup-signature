@@ -15,6 +15,10 @@
 		<slf4j.version>1.7.5</slf4j.version>
 		<spring.version>4.3.20.RELEASE</spring.version>
 		<spring-security.version>4.1.5.RELEASE</spring-security.version>
+		<dss.framework.version>5.4.RC1</dss.framework.version>
+		<dss.framework.root.directory>${project.parent.basedir}/../dss</dss.framework.root.directory>
+		<cxf.version>3.2.7</cxf.version>
+		<jackson-jaxrs-json-provider.version>2.9.7</jackson-jaxrs-json-provider.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -27,7 +31,22 @@
 			<name>Spring Roo Repository</name>
 			<url>http://spring-roo-repository.springsource.org/release</url>
 		</repository>
+		<repository>
+		  <id>cefdigital</id>
+		  <name>CEF Digital</name>
+		  <url>https://ec.europa.eu/cefdigital/artifact/content/repositories/esignaturedss/</url>
+		</repository>	
 	</repositories>
+	<distributionManagement>
+		<repository>
+			<id>cefdigital-nexus</id>
+			<url>https://ec.europa.eu/cefdigital/artifact/content/repositories/esignaturedss</url>
+		</repository>
+		<snapshotRepository>
+			<id>cefdigital-nexus</id>
+			<url>https://ec.europa.eu/cefdigital/artifact/content/repositories/esignaturedss-snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 	<pluginRepositories>
 		<pluginRepository>
 			<id>spring-maven-release</id>
@@ -40,6 +59,12 @@
 			<url>http://spring-roo-repository.springsource.org/release</url>
 		</pluginRepository>
 	</pluginRepositories>
+	<scm>
+		<url>https://ec.europa.eu/cefdigital/code/scm/esig/dss-demos.git</url>
+		<connection>scm:git:https://ec.europa.eu/cefdigital/code/scm/esig/dss-demos.git</connection>
+		<developerConnection>scm:git:https://ec.europa.eu/cefdigital/code/scm/esig/dss-demos.git</developerConnection>
+		<tag>5.1.RC1</tag>
+	</scm>
 	<dependencies>
 		<dependency>
 	      <groupId>javax.servlet</groupId>
@@ -369,6 +394,166 @@
 		    <artifactId>cache-api</artifactId>
 		    <version>1.1.0</version>
 		</dependency>
+
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-model</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-spi</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-token</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-reports</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-service</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-remote-services</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-rest</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-soap</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-validation-rest</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-validation-soap</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-server-signing-soap</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-server-signing-rest</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-tsl-validation</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+<!-- 			<dependency> -->
+<!-- 				<groupId>eu.europa.ec.joinup.sd-dss</groupId> -->
+<!-- 				<artifactId>dss-utils-apache-commons</artifactId> -->
+<!-- 				<version>${dss.framework.version}</version> -->
+<!-- 			</dependency> -->
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-utils-google-guava</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			
+<!-- 			<dependency> -->
+<!-- 				<groupId>eu.europa.ec.joinup.sd-dss</groupId> -->
+<!-- 				<artifactId>dss-crl-parser-x509crl</artifactId> -->
+<!-- 				<version>${dss.framework.version}</version> -->
+<!-- 			</dependency> -->
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-crl-parser-stream</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-pades-pdfbox</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-pades-openpdf</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-cookbook</artifactId>
+				<version>${dss.framework.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-rt-frontend-jaxws</artifactId>
+				<version>${cxf.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-rt-transports-http</artifactId>
+				<version>${cxf.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-rt-features-logging</artifactId>
+				<version>${cxf.version}</version>
+			</dependency>
+			<dependency>
+			  <groupId>org.apache.cxf</groupId>
+			  <artifactId>cxf-rt-rs-service-description</artifactId> <!--  to access to wadl -->
+			  <version>${cxf.version}</version>
+			</dependency>
+			<dependency>
+			    <groupId>org.apache.cxf</groupId>
+			    <artifactId>cxf-rt-rs-client</artifactId>
+			    <version>${cxf.version}</version> 
+			    <scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>com.fasterxml.jackson.jaxrs</groupId>
+				<artifactId>jackson-jaxrs-json-provider</artifactId>
+				<version>${jackson-jaxrs-json-provider.version}</version>
+			</dependency>	
+
+		<dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP</artifactId>
+			<version>3.1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>fop</artifactId>
+			<version>2.3</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+				<exclusion>
+					<groupId>xalan</groupId>
+					<artifactId>xalan</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
 	</dependencies>
 	<build>
 		<plugins>
