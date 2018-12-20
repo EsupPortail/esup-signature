@@ -7,7 +7,7 @@
 		<div id="lastleoauth"><!--  --></div>
 		<div id="debug"><!--  --></div>
 		<spring:url value="/login" var="loginUrl"></spring:url>
-		<H1>Bienvenue sur l'application Carte Culture, merci de vous authentifier</H1>
+		<H1>Bienvenue sur Esup Signature</H1>
 		<button class="btn btn-primary btn-lg btn-block" onclick="window.location='${loginUrl}'">
 			<h3><span class="float-left">Se connecter</span><span class="fas fa-arrow-right float-right"><!--  --></span></h3>
 			

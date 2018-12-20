@@ -42,7 +42,7 @@
 		<access-denied-handler error-page="/denied" />
 		<session-management session-authentication-strategy-ref="sas" />
 		<custom-filter position="PRE_AUTH_FILTER" ref="shibFilter"/>
-		<custom-filter position="SWITCH_USER_FILTER" ref="switchUserProcessingFilter" />
+		<!-- <custom-filter position="SWITCH_USER_FILTER" ref="switchUserProcessingFilter" /> -->
 		<custom-filter ref="concurrencyFilter" position="CONCURRENT_SESSION_FILTER" />
 		<csrf disabled="true"/>
     </http>
@@ -52,7 +52,7 @@
     <beans:bean id="authEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
 	<beans:constructor-arg value="/"/>
     </beans:bean>
-    
+    <!-- 
     <beans:bean id="switchUserProcessingFilter"
 		class="org.springframework.security.web.authentication.switchuser.SwitchUserFilter">
 		<beans:property name="usernameParameter" value="j_username"/>
@@ -61,7 +61,7 @@
 		<beans:property name="exitUserUrl" value="/j_spring_security_logout" />
 		<beans:property name="targetUrl" value="/" />
 	</beans:bean>
-    
+     -->
     <beans:bean id="shibFilter" class="org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter">
 		<beans:property name="principalRequestHeader" value="REMOTE_USER"/>
 		<beans:property name="credentialsRequestHeader" value="MEMBER"/>

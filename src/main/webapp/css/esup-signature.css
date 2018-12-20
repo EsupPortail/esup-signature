@@ -50,7 +50,7 @@ main {
 header.page-header {
 	margin-top: 56px;
     background: no-repeat center url(/images/bandeau-carteculture.jpg);
-    height: 120px;
+    height: 10px;
     min-width: 120px;
 }
 

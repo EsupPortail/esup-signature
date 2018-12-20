@@ -17,35 +17,35 @@
  */
 package org.esupportail.esupsignature.web.ws;
 
-import javax.validation.Valid;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import eu.europa.esig.dss.web.model.DataToSignParams;
-import eu.europa.esig.dss.web.model.GetDataToSignResponse;
-import eu.europa.esig.dss.web.model.SignatureDocumentForm;
+import eu.europa.esig.dss.RemoteDocument;
+import eu.europa.esig.dss.RemoteSignatureParameters;
+import eu.europa.esig.dss.ToBeSigned;
+import eu.europa.esig.dss.signature.RemoteMultipleDocumentsSignatureServiceImpl;
 
-@RequestMapping("/service/rest/signature/one-document")
+@RequestMapping("/service/rest/signature/multi-documents2")
 @Controller
 public class SignatureMultiDocWsController {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
-	@RequestMapping(value = "/get-data-to-sign", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	RemoteMultipleDocumentsSignatureServiceImpl remoteMultipleDocumentsSignatureService = new RemoteMultipleDocumentsSignatureServiceImpl();
+	
+	@RequestMapping(value = "/getDataToSign", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public GetDataToSignResponse getDataToSign(Model model, @RequestBody @Valid DataToSignParams params,
-			@ModelAttribute("signatureDocumentForm") @Valid SignatureDocumentForm signatureDocumentForm, BindingResult result) {
-		return null;
+	public ToBeSigned getDataToSign(List<RemoteDocument> toSignDocuments, RemoteSignatureParameters remoteParameters) {
+		return remoteMultipleDocumentsSignatureService.getDataToSign(toSignDocuments, remoteParameters);
 	}
 
+	
+	
 }

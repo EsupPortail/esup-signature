@@ -31,16 +31,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import eu.europa.esig.dss.validation.RemoteDocumentValidationService;
 import eu.europa.esig.dss.web.model.DataToSignParams;
 import eu.europa.esig.dss.web.model.GetDataToSignResponse;
 import eu.europa.esig.dss.web.model.SignatureDocumentForm;
 
-@RequestMapping("/service/rest/signature/one-document")
+@RequestMapping("/service/rest/signature/one-document2")
 @Controller
 public class SignatureOneDocWsController {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
+	RemoteDocumentValidationService service = new RemoteDocumentValidationService();
+	
 	@RequestMapping(value = "/get-data-to-sign", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public GetDataToSignResponse getDataToSign(Model model, @RequestBody @Valid DataToSignParams params,

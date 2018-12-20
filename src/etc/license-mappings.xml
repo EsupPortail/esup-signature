@@ -98,7 +98,7 @@
     </artifact>
     <artifact>
         <groupId>org.esupportail</groupId>
-        <artifactId>carte-culture</artifactId>
+        <artifactId>esup-signature</artifactId>
         <version>0.1.0.BUILD-SNAPSHOT</version>
         <license>Apache License, Version 2.0</license>
     </artifact>

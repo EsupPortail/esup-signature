@@ -33,20 +33,7 @@ public class IndexController {
 	public String index(HttpServletRequest request, Model uiModel) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String eppn = auth.getName();
-		if(!eppn.equals("anonymousUser")) {
-			if(request.isUserInRole("ROLE_ADMIN")) {
-				return "redirect:/manager/taglogs?page=1&amp;size=10";
-			} else if(request.isUserInRole("ROLE_MANAGER")) {
-				return "redirect:/manager/etudiants?page=1&amp;size=10";
-			} else if(request.isUserInRole("ROLE_PARTENAIRE")) {
-				return "redirect:/partenaire";
-			} else {
-				return "redirect:/etudiant";
-			}
-		} else {
-			return "index";
-		}
-
+		return "index";
 	}
 	
 	@RequestMapping("/login")

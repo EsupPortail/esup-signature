@@ -43,8 +43,7 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 
 @Configuration
 @ComponentScan(basePackages = { "eu.europa.esig.dss.web.job", "eu.europa.esig.dss.web.service" })
-@Import({ PropertiesConfig.class, CXFConfig.class, PersistenceConfig.class, ProxyConfiguration.class, WebSecurityConfig.class,
-		SchedulingConfig.class })
+@Import({ PropertiesConfig.class, CXFConfig.class })
 @ImportResource({ "${tsp-source}" })
 public class DSSBeanConfig {
 

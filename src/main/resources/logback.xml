@@ -21,7 +21,7 @@
 <configuration>
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder name="enc" class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-	        <layout class="org.esupportail.esupnfccarteculture.logs.PatternLayoutWithUserContext">
+	        <layout class="org.esupportail.esupsignature.logs.PatternLayoutWithUserContext">
 	            <param name="Pattern" value="[%-5level] %date{dd/MM/yyyy HH:mm:ss} [%-20thread] [%user %remote %session] %logger{36} (%file:%line\) - %msg - %n" />
     	    </layout>
 		</encoder>
@@ -31,9 +31,9 @@
 	</appender>
 	
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-       <file>/opt/tomcat-carte-culture/logs/carte-culture.log</file>
+       <file>esup-signature.log</file>
 		<encoder name="enc" class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-	        <layout class="org.esupportail.esupnfccarteculture.logs.PatternLayoutWithUserContext">
+	        <layout class="org.esupportail.esupsignature.logs.PatternLayoutWithUserContext">
    	            <param name="Pattern" value="[%-5level] %date{dd/MM/yyyy HH:mm:ss} [%-20thread] [%user %remote %session] %logger{36} (%file:%line\) - %msg - %n" />
     	    </layout>
 		</encoder>
