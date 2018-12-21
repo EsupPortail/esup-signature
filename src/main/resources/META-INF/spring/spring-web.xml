@@ -11,11 +11,6 @@
 	http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
 	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
 	http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
-                
-    <!-- The controllers are autodetected POJOs labeled with the @Controller annotation. -->
-    <context:component-scan base-package="org.esupportail.esupnfccarteculture" use-default-filters="false">
-        <context:include-filter expression="org.springframework.stereotype.Controller" type="annotation"/>
-    </context:component-scan>
     
     <!-- Turns on support for mapping requests to Spring MVC @Controller methods
          Also registers default Formatters and Validators for use across all @Controllers -->
@@ -70,9 +65,9 @@
     <!-- Enable this for integration of file upload functionality -->
     <bean class="org.springframework.web.multipart.commons.CommonsMultipartResolver" id="multipartResolver"/>
 <bean class="org.springframework.web.servlet.view.UrlBasedViewResolver" id="tilesViewResolver">
-    <property name="viewClass" value="org.springframework.web.servlet.view.tiles2.TilesView"/>
+    <property name="viewClass" value="org.springframework.web.servlet.view.tiles3.TilesView"/>
   </bean>
-    <bean class="org.springframework.web.servlet.view.tiles2.TilesConfigurer" id="tilesConfigurer">
+    <bean class="org.springframework.web.servlet.view.tiles3.TilesConfigurer" id="tilesConfigurer">
     <property name="definitions">
       <list>
         <value>/WEB-INF/layouts/layouts.xml</value>
