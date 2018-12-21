@@ -3,9 +3,9 @@
 		version="3.0" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
     
-    <display-name>esup-signature</display-name>
+    <display-name>carte-culture</display-name>
     
-    <description>Roo generated esup-signature application</description>
+    <description>Roo generated carte-culture application</description>
 
     
     <!-- Enable escaping of form submission contents -->
@@ -68,7 +68,18 @@
         <url-pattern>/ws/*</url-pattern>
     </filter-mapping>
     
-	<!-- Creates the Spring Container shared by all Servlets and Filters -->
+    <filter-mapping>
+        <filter-name>Spring OpenEntityManagerInViewFilter</filter-name>
+        <url-pattern>/admin/*</url-pattern>
+    </filter-mapping>
+        
+    <filter-mapping>
+        <filter-name>Spring OpenEntityManagerInViewFilter</filter-name>
+        <url-pattern>/manager/*</url-pattern>
+    </filter-mapping>
+
+
+    <!-- Creates the Spring Container shared by all Servlets and Filters -->
     
     <listener>
 		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
@@ -78,16 +89,10 @@
         <filter-name>springSecurityFilterChain</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-
-    <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-    </listener>
-    
-
 		
     <!-- Handles Spring requests -->
     <servlet>
-        <servlet-name>esup-signature</servlet-name>
+        <servlet-name>carte-culture</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
         <init-param>
             <param-name>contextConfigLocation</param-name>
@@ -98,7 +103,7 @@
     </servlet>
     
     <servlet-mapping>
-        <servlet-name>esup-signature</servlet-name>
+        <servlet-name>carte-culture</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
     
@@ -121,14 +126,5 @@
 	    org.springframework.security.web.session.HttpSessionEventPublisher
 	  </listener-class>
 	</listener> 
-
-
-    <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-    </listener>
-    
-	<listener>
-	    <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
-	</listener>
 
 </web-app>

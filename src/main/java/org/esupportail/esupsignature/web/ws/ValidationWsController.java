@@ -31,7 +31,7 @@ import eu.europa.esig.dss.RemoteDocument;
 import eu.europa.esig.dss.validation.RemoteDocumentValidationService;
 import eu.europa.esig.dss.validation.reports.dto.ReportsDTO;
 
-@RequestMapping("/service/rest/validation")
+@RequestMapping("/service/rest/validation2")
 @Controller
 public class ValidationWsController {
 
