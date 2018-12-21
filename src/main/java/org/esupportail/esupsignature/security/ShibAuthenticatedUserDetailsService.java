@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.esupportail.esupsignature.domain.Role;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -46,15 +45,10 @@ implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken>
 	public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
 		List<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>();
 		String credentials = (String)token.getCredentials();
-		String principal = StringUtils.split(token.getPrincipal().toString(), ";")[0];
 		for(String credential : StringUtils.split(credentials, ";")) {
 			if(mappingGroupesRoles != null && mappingGroupesRoles.containsKey(credential)){ 
 				authorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(credential)));
 			}
-		}
-		
-		if(Role.countFindRolesByEppnEquals(principal)>0){
-			authorities.add(new SimpleGrantedAuthority(Role.findRolesByEppnEquals(principal).getSingleResult().getRole()));
 		}
 		
 		return createUserDetails(token, authorities);
