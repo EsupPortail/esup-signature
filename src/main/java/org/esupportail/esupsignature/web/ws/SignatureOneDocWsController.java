@@ -19,6 +19,9 @@ package org.esupportail.esupsignature.web.ws;
 
 import javax.validation.Valid;
 
+import org.esupportail.esupsignature.dss.web.model.DataToSignParams;
+import org.esupportail.esupsignature.dss.web.model.GetDataToSignResponse;
+import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -32,9 +35,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import eu.europa.esig.dss.validation.RemoteDocumentValidationService;
-import eu.europa.esig.dss.web.model.DataToSignParams;
-import eu.europa.esig.dss.web.model.GetDataToSignResponse;
-import eu.europa.esig.dss.web.model.SignatureDocumentForm;
 
 @RequestMapping("/service/rest/signature/one-document2")
 @Controller

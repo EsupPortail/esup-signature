@@ -15,7 +15,7 @@
 		<constructor-arg name="ksPassword" ref="passwordProtection" />
 	</bean>
 
-	<bean id="tspSource" class="eu.europa.esig.dss.x509.tsp.MockTSPSource">
+	<bean id="tspSource" class="org.esupportail.esupsignature.dss.x509.tsp.MockTSPSource">
 		<property name="token" ref="tsa-token" />
 		<property name="alias" value="self-signed-tsa" />
 	</bean>
