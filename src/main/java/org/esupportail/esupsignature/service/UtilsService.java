@@ -18,11 +18,24 @@
 package org.esupportail.esupsignature.service;
 
 import java.util.Calendar;
+import java.util.List;
 
+import org.esupportail.esupsignature.ldap.PersonLdap;
+import org.esupportail.esupsignature.ldap.PersonLdapDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UtilsService {
+
+	private final Logger log = LoggerFactory.getLogger(getClass());
+	
+	@Autowired
+	List<PersonLdapDao> personDaos;
+
 	
 	public int getAnnee(){
 		int annee = Calendar.getInstance().get(Calendar.YEAR);
@@ -32,4 +45,18 @@ public class UtilsService {
 		return annee;
 	}
 
+	public PersonLdap getPersonFromCsn(String csn) {
+		for (PersonLdapDao personLdapDao : personDaos) {
+			LdapContextSource contextSource = (LdapContextSource) personLdapDao.getLdapTemplate().getContextSource();
+			List<PersonLdap> persons = personLdapDao.getPersonLdaps("csn", csn.toUpperCase());
+			if (persons.size() > 0 && persons.get(0) != null && persons.get(0).getEduPersonPrincipalName().matches("")) {
+				log.info(csn + " trouvé dans ldap" + contextSource.getUrls()[0]);
+				return  persons.get(0);
+			} else {
+				log.warn(csn + " non trouvé dans ldap" + contextSource.getUrls()[0]);
+			}
+			
+		}
+		return null;
+	}
 }

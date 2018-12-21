@@ -46,29 +46,27 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class NfcWsController {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
-
+	
 	@Resource
 	TagService tagService;
-	
-	@Resource(name="personDaoComue")
-	PersonLdapDao personLdapDao;
 	
 	@RequestMapping(value = "/tagIdCheck", method = RequestMethod.GET)
 	@ResponseBody
 	public EsupNfcTagLog tagIdCheck(@RequestParam(required = false) String desfireId,
 			@RequestParam(required = false) String csn) {
 		EsupNfcTagLog esupNfcTagLog = null;
-		PersonLdap person = personLdapDao.getPersonLdaps("csn", csn).get(0);
-		if(person != null) {
-			esupNfcTagLog = new EsupNfcTagLog();
-			esupNfcTagLog.setCsn(csn.toUpperCase());
-			esupNfcTagLog.setEppn(person.getEduPersonPrincipalName());
-			esupNfcTagLog.setFirstname(person.getGivenName());
-			esupNfcTagLog.setLastname(person.getSn());
+			log.warn("Etudiant non trouvé dans la base Carte Culture. CSN : "+ csn);
+			PersonLdap person = new PersonLdap();
+			if(person != null) {
+				esupNfcTagLog = new EsupNfcTagLog();
+				esupNfcTagLog.setCsn(csn.toUpperCase());
+				esupNfcTagLog.setEppn(person.getEduPersonPrincipalName());
+				esupNfcTagLog.setFirstname(person.getGivenName());
+				esupNfcTagLog.setLastname(person.getSn());
 		}
 		return esupNfcTagLog;
 	}
-	
+
 	@RequestMapping(value = "/getLocations", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
 	@ResponseBody
 	public List<String> getLocations(@RequestParam String eppn) {
@@ -82,12 +80,8 @@ public class NfcWsController {
 	@ResponseBody
 	public ResponseEntity<String> isTagable(@RequestBody EsupNfcTagLog esupNfcTagLog) {
 		HttpHeaders responseHeaders = new HttpHeaders();
-		PersonLdap person = new PersonLdap();
-		if(person.getSambaPrimaryGroupSID() != null) {
-			return new ResponseEntity<String>("OK", responseHeaders, HttpStatus.OK);
-		} else {
-			return new ResponseEntity<String>("Non autorisé", responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+//		return new ResponseEntity<String>(result, responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<String>("OK", responseHeaders, HttpStatus.OK);
 	}
 	
 	/* curl -H "Content-Type: application/json" -X POST -d '{"eppn": "test@univ-ville.fr", "location": "Olympia", "eppnInit": "gest@univ-ville.fr"}' http://carte-culture.univ-ville.fr/nfc-ws/validateTag */
@@ -96,6 +90,7 @@ public class NfcWsController {
 	@ResponseBody
 	public ResponseEntity<String> validateTag(@RequestBody EsupNfcTagLog esupNfcTagLog, HttpServletRequest httpServletRequest) {
 		HttpHeaders responseHeaders = new HttpHeaders();
+		tagService.createNewTagLog(esupNfcTagLog.getEppnInit());
 		return new ResponseEntity<String>("OK", responseHeaders, HttpStatus.OK);
 		//return new ResponseEntity<String>("KO", responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
