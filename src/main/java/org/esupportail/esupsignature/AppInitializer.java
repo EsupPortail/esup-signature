@@ -11,9 +11,9 @@ import org.apache.cxf.BusFactory;
 import org.apache.cxf.transport.servlet.CXFServlet;
 import org.esupportail.esupsignature.dss.web.config.DSSBeanConfig;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
+import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
@@ -29,23 +29,30 @@ public class AppInitializer implements WebApplicationInitializer {
 
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
-        
+
+		servletContext.setInitParameter("defaultHtmlEscape", "true");
+		
+		RequestContextListener requestContextListener = new RequestContextListener();
+		servletContext.addListener(requestContextListener);
+				
+		XmlWebApplicationContext appContext = new XmlWebApplicationContext();
+		appContext.setConfigLocation("WEB-INF/spring/webmvc-config.xml");
+		ServletRegistration.Dynamic dispatcher = servletContext.addServlet("esup-signature", new DispatcherServlet(appContext));
+		dispatcher.setLoadOnStartup(1);
+		dispatcher.setAsyncSupported(true);
+		dispatcher.addMapping("/");
+
+		servletContext.addFilter("CharacterEncodingFilter", new CharacterEncodingFilter("UTF-8", true)).addMappingForUrlPatterns(null, false, "/*");
+		servletContext.addFilter("HttpMethodFilter", new HiddenHttpMethodFilter());
+		//servletContext.addFilter("Spring OpenEntityManagerInViewFilter1", new OpenEntityManagerInViewFilter()).addMappingForUrlPatterns(null, false, "/*");
+		//servletContext.addFilter("Spring OpenEntityManagerInViewFilter2", new OpenEntityManagerInViewFilter()).addMappingForUrlPatterns(null, false, "/manager/*");
+		servletContext.addFilter("springSecurityFilterChain", new DelegatingFilterProxy()).addMappingForUrlPatterns(null, false, "/*");
+
 		AnnotationConfigWebApplicationContext rootAppContext = new AnnotationConfigWebApplicationContext();
 		rootAppContext.register(DSSBeanConfig.class);
 		ContextLoaderListener listener = new ContextLoaderListener(rootAppContext);
 		servletContext.addListener(listener);
 		
-		servletContext.addFilter("CharacterEncodingFilter", new CharacterEncodingFilter("UTF-8", true)).addMappingForUrlPatterns(null, false, "/*");
-		servletContext.addFilter("HttpMethodFilter", new HiddenHttpMethodFilter());
-		servletContext.addFilter("Spring OpenEntityManagerInViewFilter", new OpenEntityManagerInViewFilter()).addMappingForUrlPatterns(null, false, "/*");
-		servletContext.addFilter("springSecurityFilterChain", new DelegatingFilterProxy()).addMappingForUrlPatterns(null, false, "/*");
-		
-		XmlWebApplicationContext appContext = new XmlWebApplicationContext();
-		appContext.setConfigLocation("WEB-INF/spring/webmvc-config.xml");
-		ServletRegistration.Dynamic dispatcher = servletContext.addServlet("esup-signature", new DispatcherServlet(appContext));
-		dispatcher.setLoadOnStartup(1);
-		dispatcher.addMapping("/");
-
 		CXFServlet cxf = new CXFServlet();
 		BusFactory.setDefaultBus(cxf.getBus());
 		ServletRegistration.Dynamic cxfServlet = servletContext.addServlet("CXFServlet", cxf);

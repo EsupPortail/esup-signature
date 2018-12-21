@@ -43,7 +43,7 @@ import eu.europa.esig.dss.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
 @Configuration
-@ComponentScan(basePackages = { "eu.europa.esig.dss.web.job", "eu.europa.esig.dss.web.service", "org.esupportail"})
+@ComponentScan(basePackages = {"org.esupportail.esupsignature"})
 @Import({ PropertiesConfig.class, CXFConfig.class})
 @ImportResource({ "${tsp-source}" , "classpath:META-INF/spring/applicationContext*.xml"})
 public class DSSBeanConfig {

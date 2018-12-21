@@ -38,14 +38,6 @@ public class IndexController {
 	
 	@RequestMapping("/login")
 	public String login(HttpServletRequest request, Model uiModel) {
-		if(request.isUserInRole("ROLE_ADMIN")) {
-			return "redirect:/manager/taglogs?page=1&amp;size=10";
-		} else if(request.isUserInRole("ROLE_MANAGER")) {
-			return "redirect:/manager/etudiants?page=1&amp;size=10";
-		} else if(request.isUserInRole("ROLE_PARTENAIRE")) {
-			return "redirect:/partenaire";
-		} else {
-			return "redirect:/etudiant";
-		}
+		return "redirect:/";
 	}
 }

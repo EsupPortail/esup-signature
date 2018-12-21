@@ -31,11 +31,8 @@
 		<intercept-url pattern="/j_spring_security_switch_user" access="hasRole('ROLE_ADMIN')"/>
 		<intercept-url pattern="/admin/" access="hasRole('ROLE_ADMIN')" />
         <intercept-url pattern="/manager/" access="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')" />
-        <intercept-url pattern="/etudiant/**" access="isAuthenticated()" />
-        <intercept-url pattern="/partenaire/" access="hasRole('ROLE_PARTENAIRE') or hasRole('ROLE_ADMIN')" />
 	    <intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />
         <intercept-url pattern="/manager/**" access="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')" />
-        <intercept-url pattern="/partenaire/**" access="hasRole('ROLE_PARTENAIRE') or hasRole('ROLE_ADMIN')" />
         <intercept-url pattern="/login/**" access="isAuthenticated()" />
         <intercept-url pattern="/nfc-ws/**" access="hasIpAddress('127.0.0.1') or hasIpAddress('Esup-NFC-Tag IP Address')" />
         <intercept-url pattern="/**" access="permitAll" />
@@ -98,8 +95,8 @@
 		class="org.esupportail.esupsignature.security.ShibAuthenticatedUserDetailsService">
 		<beans:property name="mappingGroupesRoles">
 			<beans:map>
-				<beans:entry key="cn=for.esup-signature.admin,ou=groups,dc=univ-ville,dc=fr" value="ROLE_ADMIN" />
-				<beans:entry key="cn=for.esup-signature.manager,ou=groups,dc=univ-ville,dc=fr" value="ROLE_MANAGER" />
+				<beans:entry key="cn=for.esup-signature.admin,ou=groups,dc=univ-rouen,dc=fr" value="ROLE_ADMIN" />
+				<beans:entry key="cn=for.esup-signature.manager,ou=groups,dc=univ-rouen,dc=fr" value="ROLE_MANAGER" />
 			</beans:map>
 		</beans:property>
 	</beans:bean>
