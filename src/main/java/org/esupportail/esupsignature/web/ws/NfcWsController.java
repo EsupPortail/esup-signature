@@ -50,7 +50,7 @@ public class NfcWsController {
 	@Resource
 	TagService tagService;
 	
-	@Autowired
+	@Resource(name="personDaoComue")
 	PersonLdapDao personLdapDao;
 	
 	@RequestMapping(value = "/tagIdCheck", method = RequestMethod.GET)

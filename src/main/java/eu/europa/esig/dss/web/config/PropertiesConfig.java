@@ -7,7 +7,7 @@ import org.springframework.context.annotation.PropertySources;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 @Configuration
-@PropertySources({ @PropertySource("classpath:dss.properties"), @PropertySource(value = "classpath:dss-custom.properties", ignoreResourceNotFound = true) })
+@PropertySources({@PropertySource("classpath:META-INF/spring/database.properties"), @PropertySource("classpath:dss.properties"), @PropertySource(value = "classpath:dss-custom.properties", ignoreResourceNotFound = true) })
 public class PropertiesConfig {
 
 	public PropertiesConfig() {

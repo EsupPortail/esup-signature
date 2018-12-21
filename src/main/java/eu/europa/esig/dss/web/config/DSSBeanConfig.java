@@ -3,6 +3,7 @@ package eu.europa.esig.dss.web.config;
 import java.io.IOException;
 import java.security.KeyStore.PasswordProtection;
 
+import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,6 @@ import org.springframework.core.io.ClassPathResource;
 import eu.europa.esig.dss.asic.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.client.crl.JdbcCacheCRLSource;
 import eu.europa.esig.dss.client.crl.OnlineCRLSource;
 import eu.europa.esig.dss.client.http.DataLoader;
 import eu.europa.esig.dss.client.http.commons.CommonsDataLoader;
@@ -38,13 +38,14 @@ import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.RemoteDocumentValidationService;
 import eu.europa.esig.dss.x509.KeyStoreCertificateSource;
+import eu.europa.esig.dss.x509.crl.CRLSource;
 import eu.europa.esig.dss.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
 @Configuration
-@ComponentScan(basePackages = { "eu.europa.esig.dss.web.job", "eu.europa.esig.dss.web.service" })
-@Import({ PropertiesConfig.class, CXFConfig.class, PersistenceConfig.class})
-@ImportResource({ "${tsp-source}" })
+@ComponentScan(basePackages = { "eu.europa.esig.dss.web.job", "eu.europa.esig.dss.web.service", "org.esupportail"})
+@Import({ PropertiesConfig.class, CXFConfig.class})
+@ImportResource({ "${tsp-source}" , "classpath:META-INF/spring/applicationContext*.xml"})
 public class DSSBeanConfig {
 
 	@Value("${default.validation.policy}")
@@ -83,7 +84,7 @@ public class DSSBeanConfig {
 	@Autowired
 	private TSPSource tspSource;
 
-	@Autowired
+	@Resource
 	private DataSource dataSource;
 
 	// can be null
@@ -121,8 +122,8 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public JdbcCacheCRLSource cachedCRLSource() throws Exception {
-		JdbcCacheCRLSource jdbcCacheCRLSource = new JdbcCacheCRLSource();
+	public CRLSource cachedCRLSource() throws Exception {
+		PgJdbcCacheCRLSource jdbcCacheCRLSource = new PgJdbcCacheCRLSource();
 		jdbcCacheCRLSource.setDataSource(dataSource);
 		jdbcCacheCRLSource.setCachedSource(onlineCRLSource());
 		return jdbcCacheCRLSource;
