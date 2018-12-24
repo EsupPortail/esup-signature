@@ -44,7 +44,7 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 
 @Configuration
 @ComponentScan(basePackages = {"org.esupportail.esupsignature"})
-@Import({ PropertiesConfig.class, CXFConfig.class, ProxyConfiguration.class, WebSecurityConfig.class})
+@Import({ PropertiesConfig.class, CXFConfig.class})
 @ImportResource({ "${tsp-source}" , "classpath:META-INF/spring/applicationContext*.xml"})
 public class DSSBeanConfig {
 

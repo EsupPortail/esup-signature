@@ -26,8 +26,8 @@
 					NexU ready. Please plug card reader, insert ID card and click on button below.
 				</div>
 			</div>
-			<button type="submit" class="btn btn-primary" id="submit-button">Sign</button>
-			<button type="submit" class="btn btn-primary" id="submit-button" disabled="disabled">Install NexU</button>
+			<button type="submit" class="btn btn-primary">Sign</button>
+			<button type="button" class="btn btn-primary" id="submit-button" disabled="disabled">Install NexU</button>
 		</form:form>
 		<script type="text/javascript">
     	  $('form input').change(function () {
