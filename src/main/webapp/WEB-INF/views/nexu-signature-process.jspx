@@ -3,34 +3,24 @@
      xmlns:spring="http://www.springframework.org/tags" xmlns:util="urn:jsptagdir:/WEB-INF/tags/util" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:sec="http://www.springframework.org/security/tags" xmlns:form="http://www.springframework.org/tags/form">
 	<jsp:directive.page contentType="text/html;charset=UTF-8" />
 	<jsp:output omit-xml-declaration="yes" />
-    <div class="container-fluid">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="container">
-                    <div class="row">
-                        <!-- CONTENT -->
-                        <div class="row">
-                            <div class="col-md-9">
-                                <h2>NexU signature process</h2>
+	<link href="/css/jquery-ui.css" rel="stylesheet" />
+	<script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-1.11.1.min.js"><!-- --></script>
+	<script type="text/javascript" src="/js/jquery-ui.js"><!-- --></script>
+   <div class="col-md-9">
+   <h2>NexU signature process ${rootUrl}</h2>
 
-                                <div class="progress">
-                                    <div class="progress-bar progress-bar-striped active" style="width: 0%" id="bar">
-                                        <span id="bar-text"><!--  --></span>
-                                    </div>
-                                </div>
-                                <div id="error" style="display: none" class="alert alert-danger" role="danger">
-                                    <strong id="errorText">Oops... an error occurred </strong><span id="errorcontent"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+   <div class="progress">
+       <div class="progress-bar progress-bar-striped active" style="width: 10%;" id="bar">
+           <span id="bar-text">Loading certificates...</span>
+       </div>
+   </div>
+   <div id="error" style="display: none" class="alert alert-danger" role="danger">
+        <strong id="errorText">Oops... an error occurred </strong><span id="errorcontent"></span>
     </div>
-    <script type="text/javascript" src="${nexuUrl}+'/nexu.js'}"><!-- --></script>
-    <script type="text/javascript" th:inline="javascript">
+	</div>
+    <script type="text/javascript" src="http://localhost:9795/nexu.js"><!-- --></script>
+
+<script type="text/javascript">
     /*<![CDATA[*/
         
             var tokenId;
@@ -59,7 +49,8 @@
                     tokenId = certificateData.response.tokenId.id;
                     keyId = certificateData.response.keyId;
                     var toSend = { signingCertificate: signingCertificate, certificateChain: certificateChain, encryptionAlgorithm: encryptionAlgorithm };
-                    callUrl(/*[[${rootUrl+'/get-data-to-sign'}]]*/, "POST",  JSON.stringify(toSend), sign, error);
+                    
+                    callUrl("http://dsi-7.univ-rouen.fr/sign-a-pdf/get-data-to-sign", "POST",  JSON.stringify(toSend), sign, error);
                 }
             }
             
@@ -71,7 +62,7 @@
                     $("#error").show();
                 } else {
                     updateProgressBar("Signing the digest...", "50%");
-                    var digestAlgo = /*[[${digestAlgorithm.name}]]*/;
+                    var digestAlgo = "SHA256";
                     nexu_sign_with_token_infos(tokenId, keyId, dataToSignResponse.dataToSign, digestAlgo, signDocument, error);
                 }
             }
@@ -80,12 +71,12 @@
                 updateProgressBar("Signing the document...", "75%");
                 var signatureValue = signatureData.response.signatureValue;
                 var toSend = {signatureValue:signatureValue};
-                callUrl(/*[[${rootUrl}+'/sign-document']]*/, "POST", JSON.stringify(toSend), downloadSignedDocument, error);
+                callUrl("http://dsi-7.univ-rouen.fr/sign-a-pdf/sign-document", "POST", JSON.stringify(toSend), downloadSignedDocument, error);
             }
             
             function downloadSignedDocument(signDocumentResponse) {
                 var url = signDocumentResponse.urlToDownload;
-                url = /*[[${rootUrl+'/download'}]]*/;
+                url = "http://dsi-7.univ-rouen.fr/sign-a-pdf/download";
                 window.open(url, "_self");
                 updateProgressBar("Done !", "100%");
                 $('#bar').removeClass('progress-bar-striped active');
@@ -93,6 +84,7 @@
             }
             
             function error(error) {
+            	console.log(error);
                 $('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
                 if (error!= null && error.responseJSON !=null) {
                     var jsonResp = error.responseJSON;
@@ -114,4 +106,5 @@
 
             /*]]>*/
         </script>
+            
 </div>

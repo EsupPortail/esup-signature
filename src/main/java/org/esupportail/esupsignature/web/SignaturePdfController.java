@@ -84,7 +84,7 @@ public class SignaturePdfController {
 			}
 			return SIGNATURE_PDF_PARAMETERS;
 		}
-
+System.err.println(signaturePdfForm);
 		model.addAttribute("signaturePdfForm", signaturePdfForm);
 		model.addAttribute("digestAlgorithm", signaturePdfForm.getDigestAlgorithm());
 		model.addAttribute("rootUrl", "sign-a-pdf");
@@ -96,6 +96,8 @@ public class SignaturePdfController {
 	@ResponseBody
 	public GetDataToSignResponse getDataToSign(Model model, @RequestBody @Valid DataToSignParams params,
 			@ModelAttribute("signaturePdfForm") @Valid SignatureDocumentForm signaturePdfForm, BindingResult result) {
+		
+		System.err.println(signaturePdfForm);
 
 		signaturePdfForm.setBase64Certificate(params.getSigningCertificate());
 		signaturePdfForm.setBase64CertificateChain(params.getCertificateChain());
