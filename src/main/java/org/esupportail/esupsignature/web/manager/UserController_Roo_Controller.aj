@@ -24,24 +24,24 @@ privileged aspect UserController_Roo_Controller {
     public String UserController.create(@Valid User user, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
         if (bindingResult.hasErrors()) {
             populateEditForm(uiModel, user);
-            return "users/create";
+            return "manager/users/create";
         }
         uiModel.asMap().clear();
         user.persist();
-        return "redirect:/users/" + encodeUrlPathSegment(user.getId().toString(), httpServletRequest);
+        return "redirect:/manager/users/" + encodeUrlPathSegment(user.getId().toString(), httpServletRequest);
     }
     
     @RequestMapping(params = "form", produces = "text/html")
     public String UserController.createForm(Model uiModel) {
         populateEditForm(uiModel, new User());
-        return "users/create";
+        return "manager/users/create";
     }
     
     @RequestMapping(value = "/{id}", produces = "text/html")
     public String UserController.show(@PathVariable("id") Long id, Model uiModel) {
         uiModel.addAttribute("user", User.findUser(id));
         uiModel.addAttribute("itemId", id);
-        return "users/show";
+        return "manager/users/show";
     }
     
     @RequestMapping(produces = "text/html")
@@ -55,24 +55,24 @@ privileged aspect UserController_Roo_Controller {
         } else {
             uiModel.addAttribute("users", User.findAllUsers(sortFieldName, sortOrder));
         }
-        return "users/list";
+        return "manager/users/list";
     }
     
     @RequestMapping(method = RequestMethod.PUT, produces = "text/html")
     public String UserController.update(@Valid User user, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
         if (bindingResult.hasErrors()) {
             populateEditForm(uiModel, user);
-            return "users/update";
+            return "manager/users/update";
         }
         uiModel.asMap().clear();
         user.merge();
-        return "redirect:/users/" + encodeUrlPathSegment(user.getId().toString(), httpServletRequest);
+        return "redirect:/manager/users/" + encodeUrlPathSegment(user.getId().toString(), httpServletRequest);
     }
     
     @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
     public String UserController.updateForm(@PathVariable("id") Long id, Model uiModel) {
         populateEditForm(uiModel, User.findUser(id));
-        return "users/update";
+        return "manager/users/update";
     }
     
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
@@ -82,7 +82,7 @@ privileged aspect UserController_Roo_Controller {
         uiModel.asMap().clear();
         uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
         uiModel.addAttribute("size", (size == null) ? "10" : size.toString());
-        return "redirect:/users";
+        return "redirect:/manager/users";
     }
     
     void UserController.populateEditForm(Model uiModel, User user) {

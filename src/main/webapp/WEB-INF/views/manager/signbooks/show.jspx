@@ -2,7 +2,7 @@
 <div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" version="2.0">
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
-    <page:show id="ps_org_esupportail_esupsignature_domain_SignBook" object="${signbook}" path="/signbooks" z="QC23FkFqNgH+MAPh+myFKoNF1FA=">
+    <page:show id="ps_org_esupportail_esupsignature_domain_SignBook" object="${signbook}" path="/manager/signbooks" z="Nx45rfqtxGH3TA3OtafOb+lqGPs=">
         <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignBook_name" object="${signbook}" z="ttzXcneuN4WeTIjYYirpZwkIPD4="/>
         <field:display date="true" dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignBook_createDate" object="${signbook}" z="SQLXkuftxGKxwkzLxZCZkPU60Ak="/>
         <field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignBook_createBy" object="${signbook}" z="6NTnvdRABuUNqu3nPWQ7EVuBHSI="/>

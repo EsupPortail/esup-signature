@@ -25,17 +25,17 @@ privileged aspect SignBookController_Roo_Controller {
     public String SignBookController.create(@Valid SignBook signBook, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
         if (bindingResult.hasErrors()) {
             populateEditForm(uiModel, signBook);
-            return "signbooks/create";
+            return "manager/signbooks/create";
         }
         uiModel.asMap().clear();
         signBook.persist();
-        return "redirect:/signbooks/" + encodeUrlPathSegment(signBook.getId().toString(), httpServletRequest);
+        return "redirect:/manager/signbooks/" + encodeUrlPathSegment(signBook.getId().toString(), httpServletRequest);
     }
     
     @RequestMapping(params = "form", produces = "text/html")
     public String SignBookController.createForm(Model uiModel) {
         populateEditForm(uiModel, new SignBook());
-        return "signbooks/create";
+        return "manager/signbooks/create";
     }
     
     @RequestMapping(value = "/{id}", produces = "text/html")
@@ -43,7 +43,7 @@ privileged aspect SignBookController_Roo_Controller {
         addDateTimeFormatPatterns(uiModel);
         uiModel.addAttribute("signbook", SignBook.findSignBook(id));
         uiModel.addAttribute("itemId", id);
-        return "signbooks/show";
+        return "manager/signbooks/show";
     }
     
     @RequestMapping(produces = "text/html")
@@ -58,24 +58,24 @@ privileged aspect SignBookController_Roo_Controller {
             uiModel.addAttribute("signbooks", SignBook.findAllSignBooks(sortFieldName, sortOrder));
         }
         addDateTimeFormatPatterns(uiModel);
-        return "signbooks/list";
+        return "manager/signbooks/list";
     }
     
     @RequestMapping(method = RequestMethod.PUT, produces = "text/html")
     public String SignBookController.update(@Valid SignBook signBook, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
         if (bindingResult.hasErrors()) {
             populateEditForm(uiModel, signBook);
-            return "signbooks/update";
+            return "manager/signbooks/update";
         }
         uiModel.asMap().clear();
         signBook.merge();
-        return "redirect:/signbooks/" + encodeUrlPathSegment(signBook.getId().toString(), httpServletRequest);
+        return "redirect:/manager/signbooks/" + encodeUrlPathSegment(signBook.getId().toString(), httpServletRequest);
     }
     
     @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
     public String SignBookController.updateForm(@PathVariable("id") Long id, Model uiModel) {
         populateEditForm(uiModel, SignBook.findSignBook(id));
-        return "signbooks/update";
+        return "manager/signbooks/update";
     }
     
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
@@ -85,7 +85,7 @@ privileged aspect SignBookController_Roo_Controller {
         uiModel.asMap().clear();
         uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
         uiModel.addAttribute("size", (size == null) ? "10" : size.toString());
-        return "redirect:/signbooks";
+        return "redirect:/manager/signbooks";
     }
     
     void SignBookController.addDateTimeFormatPatterns(Model uiModel) {

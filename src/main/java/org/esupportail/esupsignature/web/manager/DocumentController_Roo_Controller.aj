@@ -24,17 +24,17 @@ privileged aspect DocumentController_Roo_Controller {
     public String DocumentController.create(@Valid Document document, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
         if (bindingResult.hasErrors()) {
             populateEditForm(uiModel, document);
-            return "documents/create";
+            return "manager/documents/create";
         }
         uiModel.asMap().clear();
         document.persist();
-        return "redirect:/documents/" + encodeUrlPathSegment(document.getId().toString(), httpServletRequest);
+        return "redirect:/manager/documents/" + encodeUrlPathSegment(document.getId().toString(), httpServletRequest);
     }
     
     @RequestMapping(params = "form", produces = "text/html")
     public String DocumentController.createForm(Model uiModel) {
         populateEditForm(uiModel, new Document());
-        return "documents/create";
+        return "manager/documents/create";
     }
     
     @RequestMapping(value = "/{id}", produces = "text/html")
@@ -42,7 +42,7 @@ privileged aspect DocumentController_Roo_Controller {
         addDateTimeFormatPatterns(uiModel);
         uiModel.addAttribute("document", Document.findDocument(id));
         uiModel.addAttribute("itemId", id);
-        return "documents/show";
+        return "manager/documents/show";
     }
     
     @RequestMapping(produces = "text/html")
@@ -57,24 +57,24 @@ privileged aspect DocumentController_Roo_Controller {
             uiModel.addAttribute("documents", Document.findAllDocuments(sortFieldName, sortOrder));
         }
         addDateTimeFormatPatterns(uiModel);
-        return "documents/list";
+        return "manager/documents/list";
     }
     
     @RequestMapping(method = RequestMethod.PUT, produces = "text/html")
     public String DocumentController.update(@Valid Document document, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
         if (bindingResult.hasErrors()) {
             populateEditForm(uiModel, document);
-            return "documents/update";
+            return "manager/documents/update";
         }
         uiModel.asMap().clear();
         document.merge();
-        return "redirect:/documents/" + encodeUrlPathSegment(document.getId().toString(), httpServletRequest);
+        return "redirect:/manager/documents/" + encodeUrlPathSegment(document.getId().toString(), httpServletRequest);
     }
     
     @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
     public String DocumentController.updateForm(@PathVariable("id") Long id, Model uiModel) {
         populateEditForm(uiModel, Document.findDocument(id));
-        return "documents/update";
+        return "manager/documents/update";
     }
     
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
@@ -84,7 +84,7 @@ privileged aspect DocumentController_Roo_Controller {
         uiModel.asMap().clear();
         uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
         uiModel.addAttribute("size", (size == null) ? "10" : size.toString());
-        return "redirect:/documents";
+        return "redirect:/manager/documents";
     }
     
     void DocumentController.addDateTimeFormatPatterns(Model uiModel) {

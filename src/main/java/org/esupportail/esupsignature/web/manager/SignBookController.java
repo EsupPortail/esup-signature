@@ -6,6 +6,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @RequestMapping("/manager/signbooks")
 @Controller
-@RooWebScaffold(path = "signbooks", formBackingObject = SignBook.class)
+@RooWebScaffold(path = "manager/signbooks", formBackingObject = SignBook.class)
 public class SignBookController {
 }

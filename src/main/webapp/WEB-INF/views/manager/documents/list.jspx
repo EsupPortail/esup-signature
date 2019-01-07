@@ -3,7 +3,7 @@
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
     <page:list id="pl_org_esupportail_esupsignature_domain_Document" items="${documents}" z="uo+SmVPNNYJ5RSxya4Ml0skkb9c=">
-        <table:table data="${documents}" id="l_org_esupportail_esupsignature_domain_Document" path="/documents" z="+SJXO+im7uc6nixjpiZz0B4/Kmw=">
+        <table:table data="${documents}" id="l_org_esupportail_esupsignature_domain_Document" path="/manager/documents" z="GPI05mxWrUah1SKCcC89e9UcjPk=">
             <table:column id="c_org_esupportail_esupsignature_domain_Document_name" property="name" z="61QqRI2s0Gcfp+ocCqepD32yc8c="/>
             <table:column date="true" dateTimePattern="${document_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_Document_createDate" property="createDate" z="j59k34hemtKcSKVTK7L2Rvizlto="/>
             <table:column id="c_org_esupportail_esupsignature_domain_Document_createBy" property="createBy" z="Sjv4l3f0UBYtRjqUaJnDO5cUqUI="/>

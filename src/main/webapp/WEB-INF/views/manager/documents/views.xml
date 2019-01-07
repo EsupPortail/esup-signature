@@ -13,4 +13,13 @@
 <definition extends="default" name="documents/update">
         <put-attribute name="body" value="/WEB-INF/views/manager/documents/update.jspx"/>
     </definition>
+<definition extends="default" name="manager/documents/show">
+        <put-attribute name="body" value="/WEB-INF/views/manager/documents/show.jspx"/>
+    </definition>
+<definition extends="default" name="manager/documents/create">
+        <put-attribute name="body" value="/WEB-INF/views/manager/documents/create.jspx"/>
+    </definition>
+<definition extends="default" name="manager/documents/update">
+        <put-attribute name="body" value="/WEB-INF/views/manager/documents/update.jspx"/>
+    </definition>
 </tiles-definitions>
