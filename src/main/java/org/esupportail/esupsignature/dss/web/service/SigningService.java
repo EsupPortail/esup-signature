@@ -193,7 +193,7 @@ public class SigningService {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DSSDocument visibleSignDocument(SignatureDocumentForm form) {
+	public DSSDocument visibleSignDocument(SignatureDocumentForm form, int x, int y) {
 		logger.info("Start signDocument with one document");
 		DSSDocument signedDocument = null;
 		try {
@@ -217,8 +217,8 @@ public class SigningService {
 			// Initialize visual signature
 			SignatureImageParameters imageParameters = new SignatureImageParameters();
 			// the origin is the left and top corner of the page
-			imageParameters.setxAxis(200);
-			imageParameters.setyAxis(600);
+			imageParameters.setxAxis(x);
+			imageParameters.setyAxis(y);
 
 			// Initialize text to generate for visual signature
 			SignatureImageTextParameters textParameters = new SignatureImageTextParameters();

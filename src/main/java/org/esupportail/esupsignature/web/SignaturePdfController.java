@@ -84,7 +84,6 @@ public class SignaturePdfController {
 			}
 			return SIGNATURE_PDF_PARAMETERS;
 		}
-System.err.println(signaturePdfForm);
 		model.addAttribute("signaturePdfForm", signaturePdfForm);
 		model.addAttribute("digestAlgorithm", signaturePdfForm.getDigestAlgorithm());
 		model.addAttribute("rootUrl", "sign-a-pdf");
@@ -96,8 +95,6 @@ System.err.println(signaturePdfForm);
 	@ResponseBody
 	public GetDataToSignResponse getDataToSign(Model model, @RequestBody @Valid DataToSignParams params,
 			@ModelAttribute("signaturePdfForm") @Valid SignatureDocumentForm signaturePdfForm, BindingResult result) {
-		
-		System.err.println(signaturePdfForm);
 
 		signaturePdfForm.setBase64Certificate(params.getSigningCertificate());
 		signaturePdfForm.setBase64CertificateChain(params.getCertificateChain());
@@ -123,7 +120,7 @@ System.err.println(signaturePdfForm);
 
 		signaturePdfForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 
-		DSSDocument document = signingService.visibleSignDocument(signaturePdfForm);
+		DSSDocument document = signingService.visibleSignDocument(signaturePdfForm, 200, 600);
 		InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(document), document.getName(), document.getMimeType());
 		model.addAttribute("signedPdfDocument", signedPdfDocument);
 

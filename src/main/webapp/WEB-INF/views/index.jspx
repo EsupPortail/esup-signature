@@ -15,7 +15,7 @@
 			</button>
 		</sec:authorize>
 		<sec:authorize access="isAuthenticated()">
-			<a href="https://dsi-7.univ-rouen.fr/sign-a-pdf/">sign-a-pdf</a>
+			<a href="http://dsi-7.univ-rouen.fr/sign-a-pdf/">sign-a-pdf</a>
 		</sec:authorize>
 	</div>
 </div>

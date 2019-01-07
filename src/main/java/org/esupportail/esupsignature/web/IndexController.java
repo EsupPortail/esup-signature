@@ -32,7 +32,7 @@ public class IndexController {
 	@RequestMapping
 	public String index(HttpServletRequest request, Model uiModel) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String eppn = auth.getName();
+		//String eppn = auth.getName();
 		return "index";
 	}
 	
