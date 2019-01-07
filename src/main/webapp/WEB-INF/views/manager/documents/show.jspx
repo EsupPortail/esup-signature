@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <page:show id="ps_org_esupportail_esupsignature_domain_Document" object="${document}" path="/documents" z="RIwYu2xaNma5hD8XJFzvkOXVxqE=">
+        <field:display field="name" id="s_org_esupportail_esupsignature_domain_Document_name" object="${document}" z="gfMko9MxrIvz+0C2DDRWlNGg0wc="/>
+        <field:display date="true" dateTimePattern="${document_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_Document_createDate" object="${document}" z="uVF4L9+lRA0RY5KXzV1bv5qx7mQ="/>
+        <field:display field="createBy" id="s_org_esupportail_esupsignature_domain_Document_createBy" object="${document}" z="KtK/0mYOQk3dJiam9+2kocZCR18="/>
+        <field:display date="true" dateTimePattern="${document_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_Document_updateDate" object="${document}" z="FfTXe49BJ0Gu0eR/FO0WRr487X0="/>
+        <field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_Document_updateBy" object="${document}" z="miGz+omddng8PedwvtqQlMH8ouY="/>
+        <field:display field="description" id="s_org_esupportail_esupsignature_domain_Document_description" object="${document}" z="YQnZ+mw1kQiGxnb9siHc/mJvltQ="/>
+        <field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_Document_originalFile" object="${document}" z="p5e00o+PwAXcZ34CEhMzofbO2qg="/>
+        <field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_Document_signedFile" object="${document}" z="ZmmbvFRXbHeyIr0bO16hrbrjHOc="/>
+        <field:display field="status" id="s_org_esupportail_esupsignature_domain_Document_status" object="${document}" z="uF0GA8AgPLsooW2c5RfsPMFnKXU="/>
+    </page:show>
+</div>

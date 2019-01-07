@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:form="urn:jsptagdir:/WEB-INF/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <form:update id="fu_org_esupportail_esupsignature_domain_SignBook" modelAttribute="signBook" path="/signbooks" versionField="Version" z="tv7KGXy3KtmOwl7mX7P+iOxoaSo=">
+        <field:input field="name" id="c_org_esupportail_esupsignature_domain_SignBook_name" z="eRhwlBAEdHwoGm5SvvTI71nqoYs="/>
+        <field:datetime dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="c_org_esupportail_esupsignature_domain_SignBook_createDate" z="G67h/29FrafWuDYtzg/sH3jCEuo="/>
+        <field:input field="createBy" id="c_org_esupportail_esupsignature_domain_SignBook_createBy" z="emJ2Emu+otj9inRWpilc4w2lKRA="/>
+        <field:datetime dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_SignBook_updateDate" z="RgQe1YmEHxMm1YUJLBxSR6ed9GE="/>
+        <field:input field="updateBy" id="c_org_esupportail_esupsignature_domain_SignBook_updateBy" z="0n5sow3qUOLRkZ2zaT2MZLDIwcg="/>
+        <field:textarea field="description" id="c_org_esupportail_esupsignature_domain_SignBook_description" z="CdRMWvt2UQYUskHLNd8ll/r37XU="/>
+        <field:select field="userSource" id="c_org_esupportail_esupsignature_domain_SignBook_userSource" itemValue="id" items="${users}" path="/users" z="1D2YV/lF1Ecq/aluMmnGnq84C5A="/>
+        <field:select field="userSourceSecretary" id="c_org_esupportail_esupsignature_domain_SignBook_userSourceSecretary" itemValue="id" items="${users}" path="/users" z="56wPX/MeJ2kBkLmrJn7f3AEWEJQ="/>
+        <field:select field="userDestination" id="c_org_esupportail_esupsignature_domain_SignBook_userDestination" itemValue="id" items="${users}" path="/users" z="rakW1+hVwwI2yAoBu3cMzvuvg1o="/>
+        <field:select field="userDestinationSecretary" id="c_org_esupportail_esupsignature_domain_SignBook_userDestinationSecretary" itemValue="id" items="${users}" path="/users" z="xrkUu9YBmlNDc7WEqojwPgkozWc="/>
+        <field:select field="documents" id="c_org_esupportail_esupsignature_domain_SignBook_documents" itemValue="id" items="${documents}" multiple="true" path="/documents" z="lKIGBtRj5MTiAx+iVQ+MliZ4XkI="/>
+        <field:input field="signType" id="c_org_esupportail_esupsignature_domain_SignBook_signType" z="KFXeOW9vgBODDOsZlLBhmARauKU="/>
+        <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignBook_status" z="LpnODZDB3VETTuY0v7uf46RiBdY="/>
+    </form:update>
+</div>

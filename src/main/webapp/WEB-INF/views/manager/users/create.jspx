@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:form="urn:jsptagdir:/WEB-INF/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:spring="http://www.springframework.org/tags" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <form:create id="fc_org_esupportail_esupsignature_domain_User" modelAttribute="user" path="/users" render="${empty dependencies}" z="ZC6rrqx5/XONSZY1BaAo+Z/Zni0=">
+        <field:input field="name" id="c_org_esupportail_esupsignature_domain_User_name" z="+QxQMaHf8HyAcRmBAIFMpm3pW+s="/>
+        <field:input field="firstname" id="c_org_esupportail_esupsignature_domain_User_firstname" z="f0qbryjrPgzcelXZxme93hMTz+g="/>
+        <field:input field="eppn" id="c_org_esupportail_esupsignature_domain_User_eppn" z="4mwdcGsbxKmqvhAT4mcOqVAro+w="/>
+        <field:input field="file" id="c_org_esupportail_esupsignature_domain_User_file" z="wjrQSy0TAOviH0tjTe9LB58py+Y="/>
+        <field:input field="fileTitle" id="c_org_esupportail_esupsignature_domain_User_fileTitle" z="6nKLDxt1cxm6pSBNrx0jIcwoveE="/>
+        <field:select field="signImage" id="c_org_esupportail_esupsignature_domain_User_signImage" itemValue="id" items="${files}" path="/files" z="nY+K+gq1L6GmGr7BSsDDsZc3jnQ="/>
+        <field:input field="publicKey" id="c_org_esupportail_esupsignature_domain_User_publicKey" z="R/iR6u4XFCUBy7dlkI3aqXarVK0="/>
+    </form:create>
+    <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_User" render="${not empty dependencies}" z="D9OqX1+gkeGt9ABunD8E/8TyTaI="/>
+</div>

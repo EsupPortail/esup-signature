@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <page:list id="pl_org_esupportail_esupsignature_domain_SignBook" items="${signbooks}" z="WcAAbaxz4YzRkW7MLEvAc4DcmMQ=">
+        <table:table data="${signbooks}" id="l_org_esupportail_esupsignature_domain_SignBook" path="/signbooks" z="yqTotXa/slAJiWyK427n7fkp5UI=">
+            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_name" property="name" z="x+Qr/EqIz7a4AS2fudUAVoT1j/8="/>
+            <table:column date="true" dateTimePattern="${signBook_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_SignBook_createDate" property="createDate" z="sKA7jlgTdH+nEBl8eO8VAGjIrjw="/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_createBy" property="createBy" z="tOVw+XIeC1FkJgUX2fS5FGjeqHQ="/>
+            <table:column date="true" dateTimePattern="${signBook_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignBook_updateDate" property="updateDate" z="/Jhzb2C/mUdJvjDjXhrquWfX9Q4="/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_updateBy" property="updateBy" z="/0g3IUndYHvtuIVDsbe3gKgL8ww="/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_description" property="description" z="hiIhebu2xLDdhnImSRz8r90W0ms="/>
+        </table:table>
+    </page:list>
+</div>

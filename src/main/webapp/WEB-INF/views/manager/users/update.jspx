@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:form="urn:jsptagdir:/WEB-INF/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <form:update id="fu_org_esupportail_esupsignature_domain_User" modelAttribute="user" path="/users" versionField="Version" z="CiByQj409/R+9omqaTKnZLIrYyw=">
+        <field:input field="name" id="c_org_esupportail_esupsignature_domain_User_name" z="+QxQMaHf8HyAcRmBAIFMpm3pW+s="/>
+        <field:input field="firstname" id="c_org_esupportail_esupsignature_domain_User_firstname" z="f0qbryjrPgzcelXZxme93hMTz+g="/>
+        <field:input field="eppn" id="c_org_esupportail_esupsignature_domain_User_eppn" z="4mwdcGsbxKmqvhAT4mcOqVAro+w="/>
+        <field:input field="file" id="c_org_esupportail_esupsignature_domain_User_file" z="wjrQSy0TAOviH0tjTe9LB58py+Y="/>
+        <field:input field="fileTitle" id="c_org_esupportail_esupsignature_domain_User_fileTitle" z="6nKLDxt1cxm6pSBNrx0jIcwoveE="/>
+        <field:select field="signImage" id="c_org_esupportail_esupsignature_domain_User_signImage" itemValue="id" items="${files}" path="/files" z="nY+K+gq1L6GmGr7BSsDDsZc3jnQ="/>
+        <field:input field="publicKey" id="c_org_esupportail_esupsignature_domain_User_publicKey" z="R/iR6u4XFCUBy7dlkI3aqXarVK0="/>
+    </form:update>
+</div>

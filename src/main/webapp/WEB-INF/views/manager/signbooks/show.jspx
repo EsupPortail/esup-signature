@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <page:show id="ps_org_esupportail_esupsignature_domain_SignBook" object="${signbook}" path="/signbooks" z="QC23FkFqNgH+MAPh+myFKoNF1FA=">
+        <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignBook_name" object="${signbook}" z="ttzXcneuN4WeTIjYYirpZwkIPD4="/>
+        <field:display date="true" dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignBook_createDate" object="${signbook}" z="SQLXkuftxGKxwkzLxZCZkPU60Ak="/>
+        <field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignBook_createBy" object="${signbook}" z="6NTnvdRABuUNqu3nPWQ7EVuBHSI="/>
+        <field:display date="true" dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_SignBook_updateDate" object="${signbook}" z="0cZIEtn8bGB94nTvzldGRstgFDw="/>
+        <field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_SignBook_updateBy" object="${signbook}" z="7ishcP5Ko5d6N01vSPN8i/HtTy8="/>
+        <field:display field="description" id="s_org_esupportail_esupsignature_domain_SignBook_description" object="${signbook}" z="RX6QowkmjzzwfpzRnaSxUv3q0xc="/>
+        <field:display field="userSource" id="s_org_esupportail_esupsignature_domain_SignBook_userSource" object="${signbook}" z="62ZIGVWRNal82QN7glmuvA3cmhM="/>
+        <field:display field="userSourceSecretary" id="s_org_esupportail_esupsignature_domain_SignBook_userSourceSecretary" object="${signbook}" z="mO7GGwd0fgTBcs93THpnkDmg4F4="/>
+        <field:display field="userDestination" id="s_org_esupportail_esupsignature_domain_SignBook_userDestination" object="${signbook}" z="JBIzodq6GcM36WvWEVCKSdP7RoI="/>
+        <field:display field="userDestinationSecretary" id="s_org_esupportail_esupsignature_domain_SignBook_userDestinationSecretary" object="${signbook}" z="lL4b+v/vsc8954fUGiU+xJje50w="/>
+        <field:display field="documents" id="s_org_esupportail_esupsignature_domain_SignBook_documents" object="${signbook}" z="IMDVXoECkTk6DyK8gigPSFB+Ygk="/>
+        <field:display field="signType" id="s_org_esupportail_esupsignature_domain_SignBook_signType" object="${signbook}" z="nXg+Q7/i5foMQawua4uAanTKFno="/>
+        <field:display field="status" id="s_org_esupportail_esupsignature_domain_SignBook_status" object="${signbook}" z="SdcqBg1dwmdbjCD0O/kUxknb5b8="/>
+    </page:show>
+</div>
