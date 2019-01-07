@@ -8,9 +8,14 @@
 		<div id="debug"><!--  --></div>
 		<spring:url value="/login" var="loginUrl"></spring:url>
 		<H1>Bienvenue sur Esup Signature</H1>
-		<button class="btn btn-primary btn-lg btn-block" onclick="window.location='${loginUrl}'">
-			<h3><span class="float-left">Se connecter</span><span class="fas fa-arrow-right float-right"><!--  --></span></h3>
+		<sec:authorize access="not isAuthenticated()">
+			<button class="btn btn-primary btn-lg btn-block" onclick="window.location='${loginUrl}'">
 			
-		</button>
+				<h3><span class="float-left">Se connecter</span><span class="fas fa-arrow-right float-right"><!--  --></span></h3>
+			</button>
+		</sec:authorize>
+		<sec:authorize access="isAuthenticated()">
+			<a href="https://dsi-7.univ-rouen.fr/sign-a-pdf/">sign-a-pdf</a>
+		</sec:authorize>
 	</div>
 </div>

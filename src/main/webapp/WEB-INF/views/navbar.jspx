@@ -24,22 +24,6 @@
     	<a class="navbar-brand" href="${rootUrl}">${app_name}</a>
 		<menu:menu id="_navbar" z="user-managed">
            <menu:item menuClass="nav-link" id="c_accueil" label="Accueil" render="false" url="/" z="user-managed"/>
-           <sec:authorize access="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')">
-               <menu:item menuClass="nav-link" activeMenu="${role=='manager'}" id="c_partenaire" label="Espace financeur" url="/manager/" z="user-managed"/>
-			   <!-- 
-               <menu:category activeMenu="${role=='manager'}" id="c_salle" label="Espace financeur" z="user-managed">
-                   <menu:item menuClass="dropdown-item" id="i_etudiant_list" url="/manager/etudiants" z="user-managed"/>
-                   <menu:item menuClass="dropdown-item" id="i_salle_list" url="/manager/salles?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
-                   <menu:item menuClass="dropdown-item" id="i_gestionnaire_list" url="/manager/gestionnaires" z="user-managed"/>
-                   <menu:item menuClass="dropdown-item" id="i_taglog_list" url="/manager/taglogs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
-				   <menu:item menuClass="dropdown-item" id="stats" label="Stats" url="/manager/stats" activeMenu="${active=='stats'}"/>
-				   <menu:item menuClass="dropdown-item" id="export" label="Exports" url="/manager/exports" activeMenu="${active=='exports'}"/>
-               </menu:category>
-               -->
-           </sec:authorize>
-           <sec:authorize access="hasRole('ROLE_PARTENAIRE') or hasRole('ROLE_ADMIN')">
-               <menu:item menuClass="nav-link" activeMenu="${active=='partenaire'}" id="c_partenaire" label="Espace partenaires" url="/partenaire/" z="user-managed"/>
-           </sec:authorize>
            <sec:authorize access="hasRole('ROLE_ADMIN')">            
                <!-- <menu:item menuClass="nav-link" activeMenu="${role=='admin'}" id="c_partenaire" label="Espace admin" url="/admin/" z="user-managed"/>-->
                <menu:category activeMenu="${role=='admin'}" id="c_admin" label="Espace admin" z="user-managed">
