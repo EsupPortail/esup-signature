@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RooJavaBean
 @RooToString
-@RooJpaActiveRecord
+@RooJpaActiveRecord(versionField = "", table = "UserAccount", finders={"findUsersByEppnEquals" })
 public class User {
 	
 	private String name;

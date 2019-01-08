@@ -19,13 +19,13 @@
 
 --><!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN" "http://tiles.apache.org/dtds/tiles-config_2_1.dtd">
 <tiles-definitions>
-    <definition extends="user" name="admin">
+    <definition extends="default" name="admin">
         <put-attribute name="body" value="/WEB-INF/views/admin/index.jspx"/>
     </definition>
-    <definition extends="admin" name="admin/currentsessions">
+    <definition extends="default" name="admin/currentsessions">
         <put-attribute name="body" value="/WEB-INF/views/admin/currentsessions.jspx"/>
     </definition>
-    <definition extends="user" name="admin/su">
+    <definition extends="default" name="admin/su">
         <put-attribute name="body" value="/WEB-INF/views/admin/su.jspx"/>
     </definition>
 </tiles-definitions>
