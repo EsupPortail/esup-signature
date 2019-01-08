@@ -8,7 +8,7 @@
 	<version>0.1.0.BUILD-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
-		<aspectj.version>1.9.2</aspectj.version>
+		<aspectj.version>1.8.13</aspectj.version>
 		<java.version>1.8</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<roo.version>1.3.2.RELEASE</roo.version>
@@ -74,13 +74,6 @@
 	      <version>3.0.1</version>
 	      <scope>provided</scope>
 	    </dependency>
-
-		<!-- General dependencies for standard applications -->
-		<dependency>
-			<groupId>aspectj</groupId>
-			<artifactId>aspectjrt</artifactId>
-			<version>1.5.4</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -186,7 +179,7 @@
 		<dependency>
 			<groupId>org.hibernate.javax.persistence</groupId>
 			<artifactId>hibernate-jpa-2.1-api</artifactId>
-			<version>1.0.0.Final</version>
+			<version>1.0.2.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-collections</groupId>
@@ -196,12 +189,7 @@
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
-			<version>4.3.2.Final</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.validation</groupId>
-			<artifactId>validation-api</artifactId>
-			<version>1.0.0.GA</version>
+			<version>5.4.2.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.transaction</groupId>

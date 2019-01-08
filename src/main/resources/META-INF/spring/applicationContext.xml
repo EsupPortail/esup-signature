@@ -41,32 +41,8 @@
         method). Roo applications use this useful feature in a number of
         areas, such as @PersistenceContext injection into entities.
     -->
-    <context:spring-configured/>
-    <!--
-        This declaration will cause Spring to locate every @Component,
-        @Repository and @Service in your application. In practical terms this
-        allows you to write a POJO and then simply annotate the new POJO as an
-        @Service and Spring will automatically detect, instantiate and
-        dependency inject your service at startup time. Importantly, you can
-        then also have your new service injected into any other class that
-        requires it simply by declaring a field for your service inside the
-        relying class and Spring will inject it. Note that two exclude filters
-        are declared. The first ensures that Spring doesn't spend time
-        introspecting Roo-specific ITD aspects. The second ensures Roo doesn't
-        instantiate your @Controller classes, as these should be instantiated
-        by a web tier application context. Refer to web.xml for more details
-        about the web tier application context setup services.
-        
-        Furthermore, this turns on @Autowired, @PostConstruct etc support. These 
-        annotations allow you to use common Spring and Java Enterprise Edition 
-        annotations in your classes without needing to do any special configuration. 
-        The most commonly used annotation is @Autowired, which instructs Spring to
-        dependency inject an object into your class.
-    -->
-    <context:component-scan base-package="org.esupportail.esupnfccarteculture">
-        <context:exclude-filter expression=".*_Roo_.*" type="regex"/>
-        <context:exclude-filter expression="org.springframework.stereotype.Controller" type="annotation"/>
-    </context:component-scan>
+    <context:spring-configured /> 
+
     <bean class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" id="dataSource">
         <property name="driverClassName" value="${database.driverClassName}"/>
         <property name="url" value="${database.url}"/>
@@ -84,18 +60,6 @@
 	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.FixedLocaleResolver">
 		<property name="defaultLocale" value="fr" />
 	</bean>
-	
-    <bean class="org.springframework.orm.jpa.JpaTransactionManager" id="transactionManager">
-        <property name="entityManagerFactory" ref="entityManagerFactory"/>
-    </bean>
-
-    <tx:annotation-driven mode="aspectj" transaction-manager="transactionManager"/>
-
-    <bean class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" id="entityManagerFactory">
-        <property name="persistenceUnitName" value="persistenceUnit"/>
-        <property name="dataSource" ref="dataSource"/>
-    </bean>
-
 
 	<bean id="pdfViewResolver" class="org.springframework.web.servlet.view.ResourceBundleViewResolver">
         <property name="order" value="1"/>

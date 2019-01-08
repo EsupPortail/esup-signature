@@ -11,6 +11,7 @@ import org.apache.cxf.BusFactory;
 import org.apache.cxf.transport.servlet.CXFServlet;
 import org.esupportail.esupsignature.dss.web.config.DSSBeanConfig;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.request.RequestContextListener;
@@ -44,7 +45,7 @@ public class AppInitializer implements WebApplicationInitializer {
 
 		servletContext.addFilter("CharacterEncodingFilter", new CharacterEncodingFilter("UTF-8", true)).addMappingForUrlPatterns(null, false, "/*");
 		servletContext.addFilter("HttpMethodFilter", new HiddenHttpMethodFilter());
-		//servletContext.addFilter("Spring OpenEntityManagerInViewFilter1", new OpenEntityManagerInViewFilter()).addMappingForUrlPatterns(null, false, "/*");
+		servletContext.addFilter("Spring OpenEntityManagerInViewFilter1", new OpenEntityManagerInViewFilter()).addMappingForUrlPatterns(null, false, "/*");
 		//servletContext.addFilter("Spring OpenEntityManagerInViewFilter2", new OpenEntityManagerInViewFilter()).addMappingForUrlPatterns(null, false, "/manager/*");
 		servletContext.addFilter("springSecurityFilterChain", new DelegatingFilterProxy()).addMappingForUrlPatterns(null, false, "/*");
 
