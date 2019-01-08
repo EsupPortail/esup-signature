@@ -13,7 +13,7 @@
 	http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
     
     <!-- The controllers are autodetected POJOs labeled with the @Controller annotation. -->
-    <context:component-scan base-package="org.esupportail.esupsignature" use-default-filters="false">
+    <context:component-scan base-package="org.esupportail.esupsignature.web" use-default-filters="false">
         <context:include-filter expression="org.springframework.stereotype.Controller" type="annotation"/>
     </context:component-scan>
 

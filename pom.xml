@@ -8,7 +8,7 @@
 	<version>0.1.0.BUILD-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
-		<aspectj.version>1.8.1</aspectj.version>
+		<aspectj.version>1.9.2</aspectj.version>
 		<java.version>1.8</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<roo.version>1.3.2.RELEASE</roo.version>

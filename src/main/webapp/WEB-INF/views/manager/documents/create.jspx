@@ -9,9 +9,9 @@
         <field:datetime dateTimePattern="${document_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_Document_updateDate" z="qfvkQGAkNzbV37cKMMtFcQdzT3c="/>
         <field:input field="updateBy" id="c_org_esupportail_esupsignature_domain_Document_updateBy" z="+GB05muRBJHIRSKV62CnqZI/fWU="/>
         <field:textarea field="description" id="c_org_esupportail_esupsignature_domain_Document_description" z="I/kX/+8i5S140D6Dv6xXbuElitQ="/>
+        <field:input field="status" id="c_org_esupportail_esupsignature_domain_Document_status" z="F371H+DxhFCKlx4ZZK5iTtSaC1U="/>
         <field:select field="originalFile" id="c_org_esupportail_esupsignature_domain_Document_originalFile" itemValue="id" items="${files}" path="/files" z="LZTd+IKnMr6Kjz74lIEbmvXuxaA="/>
         <field:select field="signedFile" id="c_org_esupportail_esupsignature_domain_Document_signedFile" itemValue="id" items="${files}" path="/files" z="76za0cmqSqYoZ6KgeMzi/F0vbUA="/>
-        <field:input field="status" id="c_org_esupportail_esupsignature_domain_Document_status" z="F371H+DxhFCKlx4ZZK5iTtSaC1U="/>
     </form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_Document" render="${not empty dependencies}" z="GiTbM34NMDcUe6m5TIU+guhtobo="/>
 </div>

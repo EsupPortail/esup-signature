@@ -8,21 +8,19 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Version;
+import javax.persistence.Table;
 import org.esupportail.esupsignature.domain.User;
 
 privileged aspect User_Roo_Jpa_Entity {
     
     declare @type: User: @Entity;
     
+    declare @type: User: @Table(name = "UserAccount");
+    
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long User.id;
-    
-    @Version
-    @Column(name = "version")
-    private Integer User.version;
     
     public Long User.getId() {
         return this.id;
@@ -30,14 +28,6 @@ privileged aspect User_Roo_Jpa_Entity {
     
     public void User.setId(Long id) {
         this.id = id;
-    }
-    
-    public Integer User.getVersion() {
-        return this.version;
-    }
-    
-    public void User.setVersion(Integer version) {
-        this.version = version;
     }
     
 }

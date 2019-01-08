@@ -45,12 +45,12 @@ privileged aspect File_Roo_JavaBean {
         this.contentType = contentType;
     }
     
-    public BigFile File.getFichier() {
-        return this.fichier;
+    public BigFile File.getBigFile() {
+        return this.bigFile;
     }
     
-    public void File.setFichier(BigFile fichier) {
-        this.fichier = fichier;
+    public void File.setBigFile(BigFile bigFile) {
+        this.bigFile = bigFile;
     }
     
 }

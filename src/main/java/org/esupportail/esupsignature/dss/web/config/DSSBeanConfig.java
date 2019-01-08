@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.io.ClassPathResource;
@@ -43,8 +44,9 @@ import eu.europa.esig.dss.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
 @Configuration
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 @ComponentScan(basePackages = {"org.esupportail.esupsignature"})
-@Import({ PropertiesConfig.class, CXFConfig.class})
+@Import({PropertiesConfig.class, CXFConfig.class})
 @ImportResource({ "${tsp-source}" , "classpath:META-INF/spring/applicationContext*.xml"})
 public class DSSBeanConfig {
 

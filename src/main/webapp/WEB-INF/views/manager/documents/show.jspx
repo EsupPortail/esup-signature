@@ -9,8 +9,8 @@
         <field:display date="true" dateTimePattern="${document_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_Document_updateDate" object="${document}" z="FfTXe49BJ0Gu0eR/FO0WRr487X0="/>
         <field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_Document_updateBy" object="${document}" z="miGz+omddng8PedwvtqQlMH8ouY="/>
         <field:display field="description" id="s_org_esupportail_esupsignature_domain_Document_description" object="${document}" z="YQnZ+mw1kQiGxnb9siHc/mJvltQ="/>
+        <field:display field="status" id="s_org_esupportail_esupsignature_domain_Document_status" object="${document}" z="uF0GA8AgPLsooW2c5RfsPMFnKXU="/>
         <field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_Document_originalFile" object="${document}" z="p5e00o+PwAXcZ34CEhMzofbO2qg="/>
         <field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_Document_signedFile" object="${document}" z="ZmmbvFRXbHeyIr0bO16hrbrjHOc="/>
-        <field:display field="status" id="s_org_esupportail_esupsignature_domain_Document_status" object="${document}" z="uF0GA8AgPLsooW2c5RfsPMFnKXU="/>
     </page:show>
 </div>

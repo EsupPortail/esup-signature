@@ -14,7 +14,7 @@ privileged aspect File_Roo_Jpa_ActiveRecord {
     @PersistenceContext
     transient EntityManager File.entityManager;
     
-    public static final List<String> File.fieldNames4OrderClauseFilter = java.util.Arrays.asList("fileName", "url", "file", "size", "contentType", "fichier");
+    public static final List<String> File.fieldNames4OrderClauseFilter = java.util.Arrays.asList("fileName", "url", "file", "size", "contentType", "bigFile");
     
     public static final EntityManager File.entityManager() {
         EntityManager em = new File().entityManager;

@@ -10,7 +10,7 @@ import org.esupportail.esupsignature.domain.File;
 privileged aspect File_Roo_ToString {
     
     public String File.toString() {
-        return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+        return new ReflectionToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).setExcludeFieldNames("bigFile", "file").toString();
     }
     
 }

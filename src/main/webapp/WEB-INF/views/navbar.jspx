@@ -7,10 +7,10 @@
 	<jsp:output omit-xml-declaration="yes" />
 	<spring:message code="application_name" htmlEscape="false" var="app_name" />
 	<c:choose>
-		<c:when	test="${active == 'etudiants' || active =='salles' || active =='gestionnaires' || active =='taglogs' || active =='stats' || active =='exports'}">
+		<c:when	test="${active == 'index'|| active =='stats' || active =='exports'}">
 			<c:set scope="session" var="role" value="manager" />
 		</c:when>
-		<c:when	test="${active == 'sessions' || active =='su' || active =='tagloggest'}">
+		<c:when	test="${active == 'sessions' || active =='su'}">
 			<c:set scope="session" var="role" value="admin" />
 		</c:when>
 		<c:otherwise>

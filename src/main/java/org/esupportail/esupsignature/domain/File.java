@@ -11,7 +11,7 @@ import org.springframework.roo.addon.tostring.RooToString;
 import org.springframework.web.multipart.MultipartFile;
 
 @RooJavaBean
-@RooToString
+@RooToString(excludeFields = { "bigFile", "file" })
 @RooJpaActiveRecord
 public class File {
 
@@ -33,6 +33,6 @@ public class File {
     }
 
     @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
-    private BigFile fichier = new BigFile();
+    private BigFile bigFile	 = new BigFile();
     
 }
