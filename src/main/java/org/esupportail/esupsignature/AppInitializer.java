@@ -49,7 +49,7 @@ public class AppInitializer implements WebApplicationInitializer {
 		servletContext.addFilter("springSecurityFilterChain", new DelegatingFilterProxy()).addMappingForUrlPatterns(null, false, "/*");
 
 		AnnotationConfigWebApplicationContext rootAppContext = new AnnotationConfigWebApplicationContext();
-		rootAppContext.register(DSSBeanConfig.class);
+		rootAppContext.register(ComponantScan.class);
 		ContextLoaderListener listener = new ContextLoaderListener(rootAppContext);
 		servletContext.addListener(listener);
 		

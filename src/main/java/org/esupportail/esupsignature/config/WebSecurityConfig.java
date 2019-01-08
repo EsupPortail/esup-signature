@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.dss.web.config;
+package org.esupportail.esupsignature.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
