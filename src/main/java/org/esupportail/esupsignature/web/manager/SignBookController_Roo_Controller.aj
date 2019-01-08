@@ -21,7 +21,16 @@ import org.springframework.web.util.WebUtils;
 
 privileged aspect SignBookController_Roo_Controller {
     
-
+    @RequestMapping(method = RequestMethod.POST, produces = "text/html")
+    public String SignBookController.create(@Valid SignBook signBook, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
+        if (bindingResult.hasErrors()) {
+            populateEditForm(uiModel, signBook);
+            return "manager/signbooks/create";
+        }
+        uiModel.asMap().clear();
+        signBook.persist();
+        return "redirect:/manager/signbooks/" + encodeUrlPathSegment(signBook.getId().toString(), httpServletRequest);
+    }
     
     @RequestMapping(params = "form", produces = "text/html")
     public String SignBookController.createForm(Model uiModel) {

@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -56,6 +57,7 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 @Import({PropertiesConfig.class, CXFConfig.class})
 @ImportResource({ "${tsp-source}" , "classpath:META-INF/spring/applicationContext*.xml"})
 @EnableSpringConfigured
+@EnableTransactionManagement(mode=AdviceMode.ASPECTJ)
 public class DSSBeanConfig {
 
 	@Value("${default.validation.policy}")
