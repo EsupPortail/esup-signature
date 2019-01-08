@@ -482,12 +482,6 @@
 				<artifactId>dss-pades-openpdf</artifactId>
 				<version>${dss.framework.version}</version>
 			</dependency>
-			
-			<dependency>
-				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
-				<artifactId>dss-cookbook</artifactId>
-				<version>${dss.framework.version}</version>
-			</dependency>
 
 			<dependency>
 				<groupId>org.apache.cxf</groupId>

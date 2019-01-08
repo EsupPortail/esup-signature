@@ -61,13 +61,13 @@ privileged aspect SignBook_Roo_Jpa_ActiveRecord {
         return entityManager().createQuery(jpaQuery, SignBook.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
     }
     
-    @Transactional
+    //@Transactional
     public void SignBook.persist() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.persist(this);
     }
     
-    @Transactional
+    //@Transactional
     public void SignBook.remove() {
         if (this.entityManager == null) this.entityManager = entityManager();
         if (this.entityManager.contains(this)) {
@@ -78,19 +78,19 @@ privileged aspect SignBook_Roo_Jpa_ActiveRecord {
         }
     }
     
-    @Transactional
+    //@Transactional
     public void SignBook.flush() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.flush();
     }
     
-    @Transactional
+    //@Transactional
     public void SignBook.clear() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.clear();
     }
     
-    @Transactional
+    //@Transactional
     public SignBook SignBook.merge() {
         if (this.entityManager == null) this.entityManager = entityManager();
         SignBook merged = this.entityManager.merge(this);
