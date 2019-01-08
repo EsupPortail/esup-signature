@@ -16,6 +16,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -58,6 +59,7 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 @Import({PropertiesConfig.class, CXFConfig.class})
 @ImportResource({ "${tsp-source}" , "classpath:META-INF/spring/applicationContext*.xml"})
 @EnableTransactionManagement(mode=AdviceMode.ASPECTJ)
+@EnableSpringConfigured
 public class DSSBeanConfig {
 
 	@Value("${default.validation.policy}")
