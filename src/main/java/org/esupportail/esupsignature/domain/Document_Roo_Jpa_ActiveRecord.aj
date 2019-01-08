@@ -61,13 +61,13 @@ privileged aspect Document_Roo_Jpa_ActiveRecord {
         return entityManager().createQuery(jpaQuery, Document.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
     }
     
-    //@Transactional
+    @Transactional
     public void Document.persist() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.persist(this);
     }
     
-    //@Transactional
+    @Transactional
     public void Document.remove() {
         if (this.entityManager == null) this.entityManager = entityManager();
         if (this.entityManager.contains(this)) {
@@ -78,19 +78,19 @@ privileged aspect Document_Roo_Jpa_ActiveRecord {
         }
     }
     
-    //@Transactional
+    @Transactional
     public void Document.flush() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.flush();
     }
     
-    //@Transactional
+    @Transactional
     public void Document.clear() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.clear();
     }
     
-    //@Transactional
+    @Transactional
     public Document Document.merge() {
         if (this.entityManager == null) this.entityManager = entityManager();
         Document merged = this.entityManager.merge(this);

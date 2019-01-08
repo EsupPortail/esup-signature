@@ -61,13 +61,13 @@ privileged aspect BigFile_Roo_Jpa_ActiveRecord {
         return entityManager().createQuery(jpaQuery, BigFile.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
     }
     
-    //@Transactional
+    @Transactional
     public void BigFile.persist() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.persist(this);
     }
     
-    //@Transactional
+    @Transactional
     public void BigFile.remove() {
         if (this.entityManager == null) this.entityManager = entityManager();
         if (this.entityManager.contains(this)) {
@@ -78,19 +78,19 @@ privileged aspect BigFile_Roo_Jpa_ActiveRecord {
         }
     }
     
-    //@Transactional
+    @Transactional
     public void BigFile.flush() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.flush();
     }
     
-    //@Transactional
+    @Transactional
     public void BigFile.clear() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.clear();
     }
     
-    //@Transactional
+    @Transactional
     public BigFile BigFile.merge() {
         if (this.entityManager == null) this.entityManager = entityManager();
         BigFile merged = this.entityManager.merge(this);

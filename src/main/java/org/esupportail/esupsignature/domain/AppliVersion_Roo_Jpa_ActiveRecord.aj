@@ -61,13 +61,13 @@ privileged aspect AppliVersion_Roo_Jpa_ActiveRecord {
         return entityManager().createQuery(jpaQuery, AppliVersion.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
     }
     
-    //@Transactional
+    @Transactional
     public void AppliVersion.persist() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.persist(this);
     }
     
-    //@Transactional
+    @Transactional
     public void AppliVersion.remove() {
         if (this.entityManager == null) this.entityManager = entityManager();
         if (this.entityManager.contains(this)) {
@@ -78,19 +78,19 @@ privileged aspect AppliVersion_Roo_Jpa_ActiveRecord {
         }
     }
     
-    //@Transactional
+    @Transactional
     public void AppliVersion.flush() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.flush();
     }
     
-    //@Transactional
+    @Transactional
     public void AppliVersion.clear() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.clear();
     }
     
-    //@Transactional
+    @Transactional
     public AppliVersion AppliVersion.merge() {
         if (this.entityManager == null) this.entityManager = entityManager();
         AppliVersion merged = this.entityManager.merge(this);

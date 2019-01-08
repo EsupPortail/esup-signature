@@ -61,13 +61,13 @@ privileged aspect TagLog_Roo_Jpa_ActiveRecord {
         return entityManager().createQuery(jpaQuery, TagLog.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
     }
     
-    //@Transactional
+    @Transactional
     public void TagLog.persist() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.persist(this);
     }
     
-    //@Transactional
+    @Transactional
     public void TagLog.remove() {
         if (this.entityManager == null) this.entityManager = entityManager();
         if (this.entityManager.contains(this)) {
@@ -78,19 +78,19 @@ privileged aspect TagLog_Roo_Jpa_ActiveRecord {
         }
     }
     
-    //@Transactional
+    @Transactional
     public void TagLog.flush() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.flush();
     }
     
-    //@Transactional
+    @Transactional
     public void TagLog.clear() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.clear();
     }
     
-    //@Transactional
+    @Transactional
     public TagLog TagLog.merge() {
         if (this.entityManager == null) this.entityManager = entityManager();
         TagLog merged = this.entityManager.merge(this);

@@ -8,19 +8,22 @@
                 <menu:item id="c_accueil" label="Accueil" menuClass="nav-link" render="false" url="/" z="user-managed"/>
                 <sec:authorize access="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')">
                     <c:if test="${role=='manager'}">
-	                <menu:category id="c_signbook" z="rc896O2+rrdTfpPpYyKrG6a+9YM=">
-	                    <menu:item id="i_signbook_new" messageCode="global_menu_new" url="/manager/signbooks?form" z="OaXZWUbNwxC4csjZxgPps1OOfUg="/>
-	                    <menu:item id="i_signbook_list" messageCode="global_menu_list" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="ZOyCRWMa3HTxgCJWgoFFw3uaMlk="/>
-	                </menu:category>
-	                <menu:category id="c_taglog" z="R+H+KgOYwOB/P5OM/NGg1yFIVoo="/>
-	                <menu:category id="c_user" z="uoTSf/uIZ821ZppidzS9aO776yk=">
-	                    <menu:item id="i_user_new" messageCode="global_menu_new" url="/manager/users?form" z="jkDBXnc8hIGjRyQdTATgBO0NP7I="/>
-	                    <menu:item id="i_user_list" messageCode="global_menu_list" url="/manager/users?page=1&amp;size=${empty param.size ? 10 : param.size}" z="A2DDv0j6g1uiD1OBs/wLCd4YffE="/>
-	                </menu:category>
-	                <menu:category id="c_document" z="IwaW5r7KHuYYhv8LICTHRKgUWao=">
-	                    <menu:item id="i_document_new" messageCode="global_menu_new" url="/manager/documents?form" z="JVOP71DRiG4Ghua+OPgCe15ETR4="/>
-	                    <menu:item id="i_document_list" messageCode="global_menu_list" url="/manager/documents?page=1&amp;size=${empty param.size ? 10 : param.size}" z="sTJu94PjNwqpsO+43hqzrcj6ij4="/>
-	                </menu:category>                    </c:if>
+                        <menu:category id="c_signbook" z="rc896O2+rrdTfpPpYyKrG6a+9YM=">
+                            <menu:item id="i_signbook_new" messageCode="global_menu_new" url="/manager/signbooks?form" z="OaXZWUbNwxC4csjZxgPps1OOfUg="/>
+                            <menu:item id="i_signbook_list" messageCode="global_menu_list" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="ZOyCRWMa3HTxgCJWgoFFw3uaMlk="/>
+                        </menu:category>
+                        <menu:category id="c_taglog" z="R+H+KgOYwOB/P5OM/NGg1yFIVoo=">
+                            <menu:item id="i_taglog_list" messageCode="global_menu_list" url="/manager/taglogs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="9rQJtuL+R07erra4N0Ra931B+lA="/>
+                        </menu:category>
+                        <menu:category id="c_user" z="uoTSf/uIZ821ZppidzS9aO776yk=">
+                            <menu:item id="i_user_new" messageCode="global_menu_new" url="/manager/users?form" z="jkDBXnc8hIGjRyQdTATgBO0NP7I="/>
+                            <menu:item id="i_user_list" messageCode="global_menu_list" url="/manager/users?page=1&amp;size=${empty param.size ? 10 : param.size}" z="A2DDv0j6g1uiD1OBs/wLCd4YffE="/>
+                        </menu:category>
+                        <menu:category id="c_document" z="IwaW5r7KHuYYhv8LICTHRKgUWao=">
+                            <menu:item id="i_document_new" messageCode="global_menu_new" url="/manager/documents?form" z="JVOP71DRiG4Ghua+OPgCe15ETR4="/>
+                            <menu:item id="i_document_list" messageCode="global_menu_list" url="/manager/documents?page=1&amp;size=${empty param.size ? 10 : param.size}" z="sTJu94PjNwqpsO+43hqzrcj6ij4="/>
+                        </menu:category>
+                    </c:if>
                 </sec:authorize>
                 <sec:authorize access="hasRole('ROLE_ADMIN')">
                     <c:if test="${role=='admin'}">
