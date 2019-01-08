@@ -46,7 +46,6 @@ public class AppInitializer implements WebApplicationInitializer {
 		servletContext.addFilter("CharacterEncodingFilter", new CharacterEncodingFilter("UTF-8", true)).addMappingForUrlPatterns(null, false, "/*");
 		servletContext.addFilter("HttpMethodFilter", new HiddenHttpMethodFilter());
 		servletContext.addFilter("Spring OpenEntityManagerInViewFilter1", new OpenEntityManagerInViewFilter()).addMappingForUrlPatterns(null, false, "/*");
-		//servletContext.addFilter("Spring OpenEntityManagerInViewFilter2", new OpenEntityManagerInViewFilter()).addMappingForUrlPatterns(null, false, "/manager/*");
 		servletContext.addFilter("springSecurityFilterChain", new DelegatingFilterProxy()).addMappingForUrlPatterns(null, false, "/*");
 
 		AnnotationConfigWebApplicationContext rootAppContext = new AnnotationConfigWebApplicationContext();
