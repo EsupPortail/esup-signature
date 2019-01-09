@@ -9,14 +9,13 @@ import javax.servlet.SessionTrackingMode;
 
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.transport.servlet.CXFServlet;
-import org.esupportail.esupsignature.dss.web.config.DSSBeanConfig;
+import org.esupportail.esupsignature.config.WebMvcConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
-import org.springframework.web.context.support.XmlWebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.filter.DelegatingFilterProxy;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
@@ -35,21 +34,23 @@ public class AppInitializer implements WebApplicationInitializer {
 		
 		RequestContextListener requestContextListener = new RequestContextListener();
 		servletContext.addListener(requestContextListener);
-				
-		XmlWebApplicationContext appContext = new XmlWebApplicationContext();
-		appContext.setConfigLocation("WEB-INF/spring/webmvc-config.xml");
-		ServletRegistration.Dynamic dispatcher = servletContext.addServlet("esup-signature", new DispatcherServlet(appContext));
-		dispatcher.setLoadOnStartup(1);
-		dispatcher.setAsyncSupported(true);
-		dispatcher.addMapping("/");
-
 		servletContext.addFilter("CharacterEncodingFilter", new CharacterEncodingFilter("UTF-8", true)).addMappingForUrlPatterns(null, false, "/*");
 		servletContext.addFilter("HttpMethodFilter", new HiddenHttpMethodFilter());
 		servletContext.addFilter("Spring OpenEntityManagerInViewFilter1", new OpenEntityManagerInViewFilter()).addMappingForUrlPatterns(null, false, "/*");
 		servletContext.addFilter("springSecurityFilterChain", new DelegatingFilterProxy()).addMappingForUrlPatterns(null, false, "/*");
 
+		
 		AnnotationConfigWebApplicationContext rootAppContext = new AnnotationConfigWebApplicationContext();
 		rootAppContext.register(ComponantScan.class);
+		
+		rootAppContext.register(WebMvcConfig.class);
+		rootAppContext.setServletContext(servletContext);
+		
+		ServletRegistration.Dynamic dispatcher = servletContext.addServlet("esup-signature", new DispatcherServlet(rootAppContext));
+		dispatcher.setLoadOnStartup(1);
+		dispatcher.setAsyncSupported(true);
+		dispatcher.addMapping("/");
+		
 		ContextLoaderListener listener = new ContextLoaderListener(rootAppContext);
 		servletContext.addListener(listener);
 		
@@ -60,7 +61,6 @@ public class AppInitializer implements WebApplicationInitializer {
 		cxfServlet.addMapping("/services/*");
 		
 		servletContext.getSessionCookieConfig().setSecure(cookieSecure);
-		// avoid urls with jsessionid param
 		servletContext.setSessionTrackingModes(Collections.singleton(SessionTrackingMode.COOKIE));
 	}
 

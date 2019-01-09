@@ -20,17 +20,6 @@ import org.springframework.web.util.WebUtils;
 
 privileged aspect DocumentController_Roo_Controller {
     
-    @RequestMapping(method = RequestMethod.POST, produces = "text/html")
-    public String DocumentController.create(@Valid Document document, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
-        if (bindingResult.hasErrors()) {
-            populateEditForm(uiModel, document);
-            return "manager/documents/create";
-        }
-        uiModel.asMap().clear();
-        document.persist();
-        return "redirect:/manager/documents/" + encodeUrlPathSegment(document.getId().toString(), httpServletRequest);
-    }
-    
     @RequestMapping(params = "form", produces = "text/html")
     public String DocumentController.createForm(Model uiModel) {
         populateEditForm(uiModel, new Document());
