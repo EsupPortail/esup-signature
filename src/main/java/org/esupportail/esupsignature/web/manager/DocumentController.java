@@ -38,6 +38,7 @@ public class DocumentController {
         uiModel.asMap().clear();
         try {
 			document.setOriginalFile(fileService.addFile(multipartFile));
+			document.setSignedFile(null);
 	        document.persist();
         } catch (IOException | SQLException e) {
         	log.error("Create file error", e);

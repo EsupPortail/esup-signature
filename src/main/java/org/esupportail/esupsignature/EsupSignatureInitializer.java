@@ -22,7 +22,7 @@ import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.servlet.DispatcherServlet;
 
 
-public class AppInitializer implements WebApplicationInitializer {
+public class EsupSignatureInitializer implements WebApplicationInitializer {
 
 	@Value("${cookie.secure}")
 	private boolean cookieSecure;
@@ -41,9 +41,7 @@ public class AppInitializer implements WebApplicationInitializer {
 
 		
 		AnnotationConfigWebApplicationContext rootAppContext = new AnnotationConfigWebApplicationContext();
-		rootAppContext.register(ComponantScan.class);
-		
-		rootAppContext.register(WebMvcConfig.class);
+		rootAppContext.register(EsupSignatureComponentScan.class);
 		rootAppContext.setServletContext(servletContext);
 		
 		ServletRegistration.Dynamic dispatcher = servletContext.addServlet("esup-signature", new DispatcherServlet(rootAppContext));

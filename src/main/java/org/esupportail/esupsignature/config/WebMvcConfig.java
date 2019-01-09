@@ -51,7 +51,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
 	
 	@Override
 	public void addResourceHandlers(final ResourceHandlerRegistry registry) {
-	    registry.addResourceHandler("/resources/**").addResourceLocations(new String[] {"/", "classpath:/META-INF/web-resources/"}).setCacheControl(CacheControl.maxAge(3600, TimeUnit.SECONDS));
+	    registry.addResourceHandler("/resources/**").addResourceLocations("/", "classpath:/META-INF/web-resources/").setCacheControl(CacheControl.maxAge(3600, TimeUnit.SECONDS));
 	    
 	}
 	
@@ -63,7 +63,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
 	@Bean
 	public TilesConfigurer tilesConfigurer(){
 		TilesConfigurer tilesConfigurer = new TilesConfigurer();
-		tilesConfigurer.setDefinitions(new String[] {"/WEB-INF/layouts/layouts.xml", "/WEB-INF/views/**/views.xml"});
+		tilesConfigurer.setDefinitions("/WEB-INF/layouts/layouts.xml", "/WEB-INF/views/**/views.xml");
 		return tilesConfigurer;
 	}
 
@@ -110,7 +110,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
 	@Bean
 	public ReloadableResourceBundleMessageSource messageSource() {
 		ReloadableResourceBundleMessageSource bundleMessageSource = new ReloadableResourceBundleMessageSource();
-		bundleMessageSource.setBasenames(new String[] {"WEB-INF/i18n/messages", "WEB-INF/i18n/application"});
+		bundleMessageSource.setBasenames("WEB-INF/i18n/messages", "WEB-INF/i18n/application");
 		bundleMessageSource.setFallbackToSystemLocale(false);
 		return bundleMessageSource;
 	}

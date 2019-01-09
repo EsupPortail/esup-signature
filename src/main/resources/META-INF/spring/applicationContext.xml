@@ -45,4 +45,20 @@
         <property name="ldapTemplate" ref="ldapTemplateComue" />
     </bean> 
 
+
+    <bean id="ldapContextSourceUnivVille" class="org.springframework.ldap.core.support.LdapContextSource">
+		<property name="url" value="ldap://ldap.univ-ville.fr" />
+		<property name="base" value="dc=univ-ville,dc=fr" />
+		<property name="userDn" value="cn=carteculture,dc=univ-ville,dc=fr" />
+		<property name="password" value="XXXXXXXX" />
+	</bean>   
+	
+	
+    <bean id="ldapContextSourceComue" class="org.springframework.ldap.core.support.LdapContextSource">
+           <property name="url" value="ldaps://ldap.comue.fr" />
+           <property name="base" value="dc=comue,dc=fr" />
+           <property name="userDn" value="cn=carteculture,ou=carteculture,dc=comue,dc=fr" />
+           <property name="password" value="XXXXXXXX" />
+     </bean>
+     
 </beans>

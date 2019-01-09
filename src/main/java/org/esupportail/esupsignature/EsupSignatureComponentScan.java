@@ -9,6 +9,6 @@ import org.springframework.context.annotation.ImportResource;
 		@ComponentScan.Filter(type=FilterType.REGEX, pattern=".*_Roo_.*"), 
 		@ComponentScan.Filter(type=FilterType.ANNOTATION, classes={org.springframework.stereotype.Controller.class})
 		})
-public class ComponantScan {
+public class EsupSignatureComponentScan {
 
 }
