@@ -38,14 +38,15 @@ public class ShibWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapt
 	private ShibAuthenticatedUserDetailsService shibAuthUserDetailsService;
 	
 	@Autowired
-	ConcurrentSessionFilter concurrencyFilter;
+	private ConcurrentSessionFilter concurrencyFilter;
 	
 	@Autowired
-	RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
+	private RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
 	
 	@Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(shibPreauthAuthProvider());
+        auth.userDetailsService(databaseUserDetailsService);
     }
 	
 	@Override
@@ -86,12 +87,13 @@ public class ShibWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapt
 		return new LoginUrlAuthenticationEntryPoint("/");
 	}
 
+	@Bean
 	public SwitchUserFilter switchUserFilter() {
 		SwitchUserFilter switchUserFilter = new SwitchUserFilter();
 		switchUserFilter.setUsernameParameter("username");
 		switchUserFilter.setUserDetailsService(databaseUserDetailsService);
 		switchUserFilter.setSwitchUserUrl("/login/impersonate");
-		switchUserFilter.setExitUserUrl("/logout");
+		switchUserFilter.setExitUserUrl("/logout/impersonate");
 		switchUserFilter.setTargetUrl("/");
 		return switchUserFilter;
 	}

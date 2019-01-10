@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -39,7 +40,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 			
 		List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
 
-		return new org.springframework.security.core.userdetails.User(eppn, "dummy", 
+		return new User(eppn, "dummy", 
 				true, // enabled
 				true, // account not expired
 				true, // credentials not expired

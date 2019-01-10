@@ -41,14 +41,15 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 	private LdapUserDetailsService ldapUserDetailsService;
 	
 	@Autowired
-	ConcurrentSessionFilter concurrencyFilter;
+	private ConcurrentSessionFilter concurrencyFilter;
 	
 	@Autowired
-	RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
+	private RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
 
 	@Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(casAuthenticationProvider());
+        auth.userDetailsService(ldapUserDetailsService);
     }
 	
 	@Override
@@ -78,7 +79,6 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 		return authenticationManager;
 	}
 
-	@Bean
 	public CasAuthenticationProvider casAuthenticationProvider() {
 		CasAuthenticationProvider authenticationProvider = new CasAuthenticationProvider();
 		authenticationProvider.setAuthenticationUserDetailsService(casAuthUserDetailsService());
@@ -88,12 +88,10 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 		return authenticationProvider;
 	}
 	
-	@Bean
     public Cas20ServiceTicketValidator cas20ServiceTicketValidator() {
         return new Cas20ServiceTicketValidator(casUrl);
     }
 	
-	@Bean
 	public CasAuthenticationEntryPoint getEntryPoint() {
 		CasAuthenticationEntryPoint authenticationEntryPoint = new CasAuthenticationEntryPoint();
 		authenticationEntryPoint.setLoginUrl(casUrl + "/login");
@@ -101,7 +99,6 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 		return authenticationEntryPoint;
 	}
 	
-	@Bean
 	public ServiceProperties serviceProperties(){
 		ServiceProperties serviceProperties = new ServiceProperties();
 		serviceProperties.setService(casService);
@@ -134,7 +131,7 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 		switchUserFilter.setUsernameParameter("username");
 		switchUserFilter.setUserDetailsService(ldapUserDetailsService);
 		switchUserFilter.setSwitchUserUrl("/login/impersonate");
-		switchUserFilter.setExitUserUrl("/logout");
+		switchUserFilter.setExitUserUrl("/logout/impersonate");
 		switchUserFilter.setTargetUrl("/");
 		return switchUserFilter;
 	}

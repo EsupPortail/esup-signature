@@ -40,12 +40,20 @@
 	    </div>
     </div>
     </div>
+
     <div class="card-body">
      <spring:url value="/login/impersonate" var="su_url"/>
 	 <form class="form-horizontal" action="${su_url}" method="GET" id="searchEppnForm">
      	<div class="input-group">
 	     	<div class="input-group-prepend">
-				<div class="input-group-text">Entrez l'EPPN de l'utilisateur cible</div>
+	     	    <c:choose>
+    				<c:when test="${filter eq 'CAS'}">
+						<div class="input-group-text">Entrez le login de l'utilisateur cible</div>
+			    	</c:when>
+    				<c:when test="${filter eq 'SHIB'}">
+						<div class="input-group-text">Entrez l'EPPN de l'utilisateur cible</div>
+					</c:when>
+				</c:choose>
 			</div>
 			<input type="text" class="form-control" id="username"  name="username"/>
 			<div class="input-group-append">
@@ -55,5 +63,4 @@
     </form>
     </div>
   </div>
-
 </div>

@@ -9,7 +9,6 @@ import javax.servlet.SessionTrackingMode;
 
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.transport.servlet.CXFServlet;
-import org.esupportail.esupsignature.config.WebMvcConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.web.WebApplicationInitializer;

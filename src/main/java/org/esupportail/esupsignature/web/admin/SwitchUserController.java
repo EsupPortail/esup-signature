@@ -17,6 +17,7 @@
  */
 package org.esupportail.esupsignature.web.admin;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -26,13 +27,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class SwitchUserController {
 	
+	@Value("${security.filter}")
+	private String filter;
+	
 	@ModelAttribute("active")
 	public String getActiveMenu() {
 		return "su";
 	}
 	
 	@RequestMapping
-	public String index(Model uiModel) {		
+	public String index(Model uiModel) {
+		uiModel.addAttribute("filter", filter);
 		return "admin/su";
 	}
 

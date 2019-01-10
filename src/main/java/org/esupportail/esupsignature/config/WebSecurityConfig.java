@@ -2,16 +2,13 @@ package org.esupportail.esupsignature.config;
 
 import org.esupportail.esupsignature.security.cas.CasWebSecurityConfigurerAdapter;
 import org.esupportail.esupsignature.security.shib.ShibWebSecurityConfigurerAdapter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
-import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 import org.springframework.security.web.session.ConcurrentSessionFilter;
 
 @Configuration
@@ -20,9 +17,6 @@ public class WebSecurityConfig {
 	
 	@Value("${security.filter}")
 	private String filter;
-
-	@Autowired
-	private LdapUserDetailsService ldapUserDetailsService;
 	
 	@Bean
 	public WebSecurityConfigurerAdapter webSecurityConfigurerAdapter() {
