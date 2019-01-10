@@ -41,13 +41,13 @@
     </div>
     </div>
     <div class="card-body">
-     <spring:url value="/j_spring_security_switch_user" var="su_url"/>
+     <spring:url value="/login/impersonate" var="su_url"/>
 	 <form class="form-horizontal" action="${su_url}" method="GET" id="searchEppnForm">
      	<div class="input-group">
 	     	<div class="input-group-prepend">
 				<div class="input-group-text">Entrez l'EPPN de l'utilisateur cible</div>
 			</div>
-			<input type="text" class="form-control" id="j_username"  name="j_username"/>
+			<input type="text" class="form-control" id="username"  name="username"/>
 			<div class="input-group-append">
 				<button type="submit" class="btn btn-success">SU</button>
 			</div>

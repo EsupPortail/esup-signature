@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.security;
+package org.esupportail.esupsignature.security.cas;
 
 import java.util.HashSet;
 import java.util.Map;

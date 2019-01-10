@@ -29,7 +29,6 @@
                     <c:if test="${role=='admin'}">
                         <menu:item activeMenu="${active=='sessions'}" id="adminview" label="Sessions" menuClass="nav-link" url="/admin/currentsessions"/>
                         <menu:item activeMenu="${active=='su'}" id="su" label="SU" menuClass="nav-link" url="/admin/su"/>
-                        <menu:item activeMenu="${active=='tagloggest'}" id="i_tagloggest_list" menuClass="nav-link" url="/admin/tagloggests?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
                     </c:if>
                 </sec:authorize>
             </menu:menu>

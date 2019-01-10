@@ -19,15 +19,6 @@
 
 -->
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context" xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd         http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
-
-	<bean id="authUserDetailsService" class="org.esupportail.esupsignature.security.ShibAuthenticatedUserDetailsService">
-		<property name="mappingGroupesRoles">
-			<map>
-				<entry key="cn=for.esup-signature.admin,ou=groups,dc=univ-rouen,dc=fr" value="ROLE_ADMIN" />
-				<entry key="cn=for.esup-signature.manager,ou=groups,dc=univ-rouen,dc=fr" value="ROLE_MANAGER" />
-			</map>
-		</property>
-	</bean>
 	
 	<bean id="ldapUserDetailsService"
 		class="org.springframework.security.ldap.userdetails.LdapUserDetailsService">
@@ -47,16 +38,25 @@
 	</bean>
 
 	<bean id="casLdapAuthoritiesPopulator"
-		class="org.esupportail.esupsignature.security.CasLdapAuthoritiesPopulator">
+		class="org.esupportail.esupsignature.security.cas.CasLdapAuthoritiesPopulator">
 		<constructor-arg ref="ldapContextSource" />
 		<constructor-arg value="ou=groups" />
 		<property name="mappingGroupesRoles">
 			<map>
-				<entry key="ROLE_FOR.ESUPSIGNATURE.MANAGER" value="ROLE_MANAGER" />
-				<entry key="ROLE_FOR.ESUPSIGNATURE.ADMIN" value="ROLE_ADMIN" />
+				<entry key="ROLE_FOR.ESUP-SIGNATURE.ADMIN" value="ROLE_ADMIN" />
+				<entry key="ROLE_FOR.ESUP-SIGNATURE.MANAGER" value="ROLE_MANAGER" />
 			</map>
 		</property>
 	</bean>
 	
+	<bean id="shibAuthUserDetailsService"
+		class="org.esupportail.esupsignature.security.shib.ShibAuthenticatedUserDetailsService">
+		<property name="mappingGroupesRoles">
+			<map>
+				<entry key="cn=for.esup-signature.admin,ou=groups,dc=univ-rouen,dc=fr" value="ROLE_ADMIN" />
+				<entry key="cn=for.esup-signature.manager,ou=groups,dc=univ-ville,dc=fr" value="ROLE_MANAGER" />
+			</map>
+		</property>
+	</bean>
 	
 </beans>

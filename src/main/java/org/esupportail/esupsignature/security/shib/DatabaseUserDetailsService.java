@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.esupportail.esupsignature.security;
+package org.esupportail.esupsignature.security.shib;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DatabaseUserDetailsService implements UserDetailsService {
 
 	@Override
-	public UserDetails loadUserByUsername(String eppn)
-			throws UsernameNotFoundException {
+	public UserDetails loadUserByUsername(String eppn) throws UsernameNotFoundException {
 
 		eppn = eppn.trim().toLowerCase();
 			

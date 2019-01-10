@@ -18,7 +18,7 @@
 		</c:otherwise>
 	</c:choose>
 	
-	<spring:url value="/j_spring_security_logout" var="logout_url" />
+	<spring:url value="/logout" var="logout_url" />
 	<nav id="navbar" class="nav nav-pills navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
 		<spring:url value="/" var="rootUrl" />	
     	<a class="navbar-brand" href="${rootUrl}">${app_name}</a>
@@ -54,7 +54,7 @@
 				<h5 style="color:white; float: right;"><sec:authentication property="principal.username" /></h5>
 		    </sec:authorize>
 			<sec:authorize access="hasRole('ROLE_PREVIOUS_ADMINISTRATOR')">
-				<spring:url value="/j_spring_security_logout" var="su_exit_url" />
+				<spring:url value="/logout" var="su_exit_url" />
 					<a menuClass="nav-link" href="${su_exit_url}" class="btn btn-warning">SORTIR DU SU !</a>
 			</sec:authorize>
 		</div>
