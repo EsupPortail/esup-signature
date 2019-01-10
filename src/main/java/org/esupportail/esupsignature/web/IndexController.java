@@ -19,6 +19,7 @@ package org.esupportail.esupsignature.web;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -29,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/")
 @Controller
 public class IndexController {
-
+	
 	@ModelAttribute("active")
 	public String getActiveMenu() {
 		return "index";
@@ -44,6 +45,6 @@ public class IndexController {
 	
 	@RequestMapping("/login")
 	public String login(HttpServletRequest request, Model uiModel) {
-		return "redirect:/";
+		return "redirect:/";			
 	}
 }

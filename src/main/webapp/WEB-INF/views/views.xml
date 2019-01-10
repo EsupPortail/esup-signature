@@ -6,6 +6,9 @@
   <definition extends="default" name="index">
     <put-attribute name="body" value="/WEB-INF/views/index.jspx" />
   </definition>
+  <definition extends="default" name="login">
+    <put-attribute name="body" value="/WEB-INF/views/login.jspx" />
+  </definition>
   <definition extends="default" name="dataAccessFailure">
     <put-attribute name="body" value="/WEB-INF/views/dataAccessFailure.jspx" />
   </definition>

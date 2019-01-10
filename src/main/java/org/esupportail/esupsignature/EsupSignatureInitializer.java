@@ -38,7 +38,6 @@ public class EsupSignatureInitializer implements WebApplicationInitializer {
 		servletContext.addFilter("HttpMethodFilter", new HiddenHttpMethodFilter());
 		servletContext.addFilter("Spring OpenEntityManagerInViewFilter1", new OpenEntityManagerInViewFilter()).addMappingForUrlPatterns(null, false, "/*");
 		servletContext.addFilter("springSecurityFilterChain", new DelegatingFilterProxy()).addMappingForUrlPatterns(null, false, "/*");
-
 		
 		AnnotationConfigWebApplicationContext rootAppContext = new AnnotationConfigWebApplicationContext();
 		rootAppContext.register(EsupSignatureComponentScan.class);

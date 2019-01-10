@@ -29,36 +29,20 @@
         <property name="basename" value="views"/>
     </bean>
 
-	<bean id="ldapTemplateUnivVille" class="org.springframework.ldap.core.LdapTemplate">  
-		<constructor-arg ref="ldapContextSourceUnivVille" />  
+	<bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">  
+		<constructor-arg ref="ldapContextSource" />  
    	</bean>
 
-	<bean id="ldapTemplateComue" class="org.springframework.ldap.core.LdapTemplate">  
-		<constructor-arg ref="ldapContextSourceComue" />  
-   	</bean>
-
-   	<bean id="personDaoUnivVille" class="org.esupportail.esupsignature.ldap.PersonLdapDao">
-        <property name="ldapTemplate" ref="ldapTemplateUnivVille" />
+   	<bean id="personDao" class="org.esupportail.esupsignature.ldap.PersonLdapDao">
+        <property name="ldapTemplate" ref="ldapTemplate" />
     </bean> 
 
-    <bean id="personDaoComue" class="org.esupportail.esupsignature.ldap.PersonLdapDao">
-        <property name="ldapTemplate" ref="ldapTemplateComue" />
-    </bean> 
-
-
-    <bean id="ldapContextSourceUnivVille" class="org.springframework.ldap.core.support.LdapContextSource">
-		<property name="url" value="ldap://ldap.univ-ville.fr" />
-		<property name="base" value="dc=univ-ville,dc=fr" />
-		<property name="userDn" value="cn=carteculture,dc=univ-ville,dc=fr" />
-		<property name="password" value="XXXXXXXX" />
-	</bean>   
+    <bean id="ldapContextSource"
+          class="org.springframework.ldap.core.support.LdapContextSource">
+		<property name="url" value="ldap://ldap.univ-rouen.fr" />
+		<property name="base" value="dc=univ-rouen,dc=fr" />
+		<property name="userDn" value="cn=consult,dc=univ-rouen,dc=fr" />
+		<property name="password" value="iletoqp" />
+    </bean>
 	
-	
-    <bean id="ldapContextSourceComue" class="org.springframework.ldap.core.support.LdapContextSource">
-           <property name="url" value="ldaps://ldap.comue.fr" />
-           <property name="base" value="dc=comue,dc=fr" />
-           <property name="userDn" value="cn=carteculture,ou=carteculture,dc=comue,dc=fr" />
-           <property name="password" value="XXXXXXXX" />
-     </bean>
-     
 </beans>
