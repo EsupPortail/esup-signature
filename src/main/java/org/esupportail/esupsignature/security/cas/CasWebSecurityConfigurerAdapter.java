@@ -35,7 +35,9 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 	private String casUrl;
 	@Value("${security.cas.service}")
 	private String casService;
-
+	@Value("${security.nfcWsAccessAuthorizeIps}")
+	private String[] nfcWsAccessAuthorizeIps;
+	
 	@Autowired
 	SwitchUserFilter switchUserFilter;
 	
@@ -56,7 +58,7 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		AuthorizeRequestsHelper.setAuthorizeRequests(http);
+		AuthorizeRequestsHelper.setAuthorizeRequests(http, nfcWsAccessAuthorizeIps);
 		http.exceptionHandling().authenticationEntryPoint(getEntryPoint());
 		http.addFilterBefore(authenticationFilter(), CasAuthenticationFilter.class);
 		http.addFilterBefore(singleLogoutFilter(), CasAuthenticationFilter.class);

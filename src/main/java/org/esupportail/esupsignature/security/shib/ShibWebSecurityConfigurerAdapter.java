@@ -27,7 +27,9 @@ public class ShibWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapt
 	private String principalRequestHeader;	
 	@Value("${security.shib.credentialsRequestHeader}")
 	private String credentialsRequestHeader;	
-
+	@Value("${security.nfcWsAccessAuthorizeIps}")
+	private String[] nfcWsAccessAuthorizeIps;	
+	
 	@Autowired
 	private ShibAuthenticatedUserDetailsService shibAuthUserDetailsService;
 	
@@ -47,7 +49,7 @@ public class ShibWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapt
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		AuthorizeRequestsHelper.setAuthorizeRequests(http);
+		AuthorizeRequestsHelper.setAuthorizeRequests(http, nfcWsAccessAuthorizeIps);
 		http.exceptionHandling().authenticationEntryPoint(getEntryPoint());
 		http.addFilterBefore(authenticationFilter(), AbstractPreAuthenticatedProcessingFilter.class);
 		http.addFilterBefore(switchUserFilter, SwitchUserFilter.class);
