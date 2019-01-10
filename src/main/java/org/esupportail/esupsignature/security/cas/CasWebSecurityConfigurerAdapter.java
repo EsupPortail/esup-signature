@@ -8,7 +8,6 @@ import org.jasig.cas.client.session.SingleSignOutFilter;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -38,6 +37,9 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 	private String casService;
 
 	@Autowired
+	SwitchUserFilter switchUserFilter;
+	
+	@Autowired
 	private LdapUserDetailsService ldapUserDetailsService;
 	
 	@Autowired
@@ -59,7 +61,7 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 		http.addFilterBefore(authenticationFilter(), CasAuthenticationFilter.class);
 		http.addFilterBefore(singleLogoutFilter(), CasAuthenticationFilter.class);
 		http.addFilterBefore(requestSingleLogoutFilter(), LogoutFilter.class);
-		http.addFilterBefore(switchUserFilter(), SwitchUserFilter.class);
+		http.addFilterBefore(switchUserFilter, SwitchUserFilter.class);
 		http.addFilterBefore(concurrencyFilter, ConcurrentSessionFilter.class);
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy);
 		http.csrf().disable();		
@@ -124,16 +126,6 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 		LogoutFilter logoutFilter = new LogoutFilter(casUrl + "/logout", securityContextLogoutHandler);
 		logoutFilter.setFilterProcessesUrl("/logout");
 		return logoutFilter;
-	}
-	
-	public SwitchUserFilter switchUserFilter() {
-		SwitchUserFilter switchUserFilter = new SwitchUserFilter();
-		switchUserFilter.setUsernameParameter("username");
-		switchUserFilter.setUserDetailsService(ldapUserDetailsService);
-		switchUserFilter.setSwitchUserUrl("/login/impersonate");
-		switchUserFilter.setExitUserUrl("/logout/impersonate");
-		switchUserFilter.setTargetUrl("/");
-		return switchUserFilter;
 	}
 	
 }

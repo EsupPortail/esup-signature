@@ -3,12 +3,9 @@ package org.esupportail.esupsignature.security.shib;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
-
 import org.esupportail.esupsignature.security.AuthorizeRequestsHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -30,12 +27,12 @@ public class ShibWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapt
 	private String principalRequestHeader;	
 	@Value("${security.shib.credentialsRequestHeader}")
 	private String credentialsRequestHeader;	
-	
-	@Resource
-	private DatabaseUserDetailsService databaseUserDetailsService;
 
 	@Autowired
 	private ShibAuthenticatedUserDetailsService shibAuthUserDetailsService;
+	
+	@Autowired
+	SwitchUserFilter switchUserFilter;
 	
 	@Autowired
 	private ConcurrentSessionFilter concurrencyFilter;
@@ -46,7 +43,6 @@ public class ShibWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapt
 	@Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(shibPreauthAuthProvider());
-        auth.userDetailsService(databaseUserDetailsService);
     }
 	
 	@Override
@@ -54,7 +50,7 @@ public class ShibWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapt
 		AuthorizeRequestsHelper.setAuthorizeRequests(http);
 		http.exceptionHandling().authenticationEntryPoint(getEntryPoint());
 		http.addFilterBefore(authenticationFilter(), AbstractPreAuthenticatedProcessingFilter.class);
-		http.addFilterBefore(switchUserFilter(), SwitchUserFilter.class);
+		http.addFilterBefore(switchUserFilter, SwitchUserFilter.class);
 		http.addFilterBefore(concurrencyFilter, ConcurrentSessionFilter.class);
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy);
 		http.csrf().disable();		
@@ -85,17 +81,6 @@ public class ShibWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapt
 	
 	public LoginUrlAuthenticationEntryPoint getEntryPoint() {
 		return new LoginUrlAuthenticationEntryPoint("/");
-	}
-
-	@Bean
-	public SwitchUserFilter switchUserFilter() {
-		SwitchUserFilter switchUserFilter = new SwitchUserFilter();
-		switchUserFilter.setUsernameParameter("username");
-		switchUserFilter.setUserDetailsService(databaseUserDetailsService);
-		switchUserFilter.setSwitchUserUrl("/login/impersonate");
-		switchUserFilter.setExitUserUrl("/logout/impersonate");
-		switchUserFilter.setTargetUrl("/");
-		return switchUserFilter;
 	}
 	
 }
