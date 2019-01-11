@@ -31,7 +31,7 @@
 <util:load-scripts />
 
 <spring:message code="application_name" var="app_name" htmlEscape="false" />
-<title>Carte Culture WebServeur - ${active}</title>
+<title>Esup Signature - ${active}</title>
 </head>
 
 <body cz-shortcut-listen="true">

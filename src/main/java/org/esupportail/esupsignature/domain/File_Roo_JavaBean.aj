@@ -3,7 +3,7 @@
 
 package org.esupportail.esupsignature.domain;
 
-import java.sql.Blob;
+import org.esupportail.esupsignature.domain.BigFile;
 import org.esupportail.esupsignature.domain.File;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,12 +45,12 @@ privileged aspect File_Roo_JavaBean {
         this.contentType = contentType;
     }
     
-    public Blob File.getBinaryFile() {
-        return this.binaryFile;
+    public BigFile File.getBigFile() {
+        return this.bigFile;
     }
     
-    public void File.setBinaryFile(Blob binaryFile) {
-        this.binaryFile = binaryFile;
+    public void File.setBigFile(BigFile bigFile) {
+        this.bigFile = bigFile;
     }
     
 }

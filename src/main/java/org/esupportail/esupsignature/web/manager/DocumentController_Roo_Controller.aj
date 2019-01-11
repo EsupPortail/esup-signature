@@ -26,14 +26,6 @@ privileged aspect DocumentController_Roo_Controller {
         return "manager/documents/create";
     }
     
-    @RequestMapping(value = "/{id}", produces = "text/html")
-    public String DocumentController.show(@PathVariable("id") Long id, Model uiModel) {
-        addDateTimeFormatPatterns(uiModel);
-        uiModel.addAttribute("document", Document.findDocument(id));
-        uiModel.addAttribute("itemId", id);
-        return "manager/documents/show";
-    }
-    
     @RequestMapping(produces = "text/html")
     public String DocumentController.list(@RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, @RequestParam(value = "sortFieldName", required = false) String sortFieldName, @RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
         if (page != null || size != null) {
