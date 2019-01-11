@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.domain;
 import javax.persistence.Column;
 import javax.persistence.FetchType;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 
 import org.springframework.roo.addon.javabean.RooJavaBean;
 import org.springframework.roo.addon.jpa.activerecord.RooJpaActiveRecord;
@@ -23,6 +24,10 @@ public class User {
     @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
     private File signImage = new File();
     
+    @Transient
     private String publicKey;
+    
+    @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
+    private File keystore = new File();
 	
 }

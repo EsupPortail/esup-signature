@@ -2,13 +2,14 @@
 <div xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
-    <page:list id="pl_org_esupportail_esupsignature_domain_User" items="${users}" z="NxKCGFBIL8SEb0qxk2G5gZfphB8=">
-        <table:table data="${users}" id="l_org_esupportail_esupsignature_domain_User" path="/manager/users" z="os1LLAZ4BOohgEAkw1WmSM+JYiM=">
-            <table:column id="c_org_esupportail_esupsignature_domain_User_name" property="name" z="DdCNoQHOqzDp6uwDDua6iL+QEj0="/>
-            <table:column id="c_org_esupportail_esupsignature_domain_User_firstname" property="firstname" z="F0hAIlpnSeCFMrzIbRKyihF2n+U="/>
-            <table:column id="c_org_esupportail_esupsignature_domain_User_eppn" property="eppn" z="oqYo2U3A0hs6WmhzKdGt0gtz/x4="/>
-            <table:column id="c_org_esupportail_esupsignature_domain_User_signImage" property="signImage" z="K/1GSQwgM62bwnisKR22Oi8CoCI="/>
-            <table:column id="c_org_esupportail_esupsignature_domain_User_publicKey" property="publicKey" z="UWVkjIm3atPRu2xjtR5Mwfr5ouY="/>
+    <page:list id="pl_org_esupportail_esupsignature_domain_User" items="${users}" z="user-managed">
+        <table:table data="${users}" id="l_org_esupportail_esupsignature_domain_User" path="/manager/users" z="user-managed">
+            <table:column id="c_org_esupportail_esupsignature_domain_User_name" property="name" z="user-managed"/>
+            <table:column id="c_org_esupportail_esupsignature_domain_User_firstname" property="firstname" z="user-managed"/>
+            <table:column id="c_org_esupportail_esupsignature_domain_User_eppn" property="eppn" z="user-managed"/>
+            <table:column id="c_org_esupportail_esupsignature_domain_User_signImage" property="signImage" render="false" z="user-managed"/>
+            <table:column id="c_org_esupportail_esupsignature_domain_User_publicKey" property="publicKey" z="user-managed"/>
+            <table:column id="c_org_esupportail_esupsignature_domain_User_keystore" property="keystore" render="false" z="user-managed"/>
         </table:table>
     </page:list>
 </div>

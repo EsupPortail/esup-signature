@@ -6,8 +6,9 @@
         <field:display field="name" id="s_org_esupportail_esupsignature_domain_User_name" object="${user}" z="user-managed"/>
         <field:display field="firstname" id="s_org_esupportail_esupsignature_domain_User_firstname" object="${user}" z="user-managed"/>
         <field:display field="eppn" id="s_org_esupportail_esupsignature_domain_User_eppn" object="${user}" z="user-managed"/>
-        <field:display render="false" field="signImage" id="s_org_esupportail_esupsignature_domain_User_signImage" object="${user}" z="user-managed"/>
+        <field:display field="signImage" id="s_org_esupportail_esupsignature_domain_User_signImage" object="${user}" render="false" z="user-managed"/>
         <field:display field="publicKey" id="s_org_esupportail_esupsignature_domain_User_publicKey" object="${user}" z="user-managed"/>
-        <img src="data:image/jpg;base64, ${signFile}" alt="signature" />
+        <img alt="signature" src="data:image/jpg;base64, ${signFile}"/>
+        <field:display field="keystore" id="s_org_esupportail_esupsignature_domain_User_keystore" object="${user}" z="rSFRSfhBiz1wg9mrZisDrh3SEec="/>
     </page:show>
 </div>

@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.web.manager;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 
 import javax.annotation.Resource;
@@ -9,6 +11,7 @@ import javax.validation.Valid;
 import org.esupportail.esupsignature.domain.File;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.roo.addon.web.mvc.controller.scaffold.RooWebScaffold;
@@ -29,9 +32,12 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 	
 	private static final Logger log = LoggerFactory.getLogger(UserController.class);
-
+	
 	@Resource
 	FileService fileService;
+
+	@Resource
+	UserKeystoreService userKeystoreService;
 	
     @RequestMapping(method = RequestMethod.POST, produces = "text/html")
     public String create(@Valid User user, @RequestParam("multipartFile") MultipartFile multipartFile, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
@@ -42,9 +48,12 @@ public class UserController {
         uiModel.asMap().clear();
         try {
 			user.setSignImage(fileService.addFile(multipartFile));
+	        java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getPublicKey(), "password");
+	        InputStream inputStream = new FileInputStream(file);
+	        user.setKeystore(fileService.addFile(inputStream, file.getName(), file.length(), "application/jks"));
 	        user.persist();
-        } catch (IOException | SQLException e) {
-        	log.error("Create file error", e);
+        } catch (Exception e) {
+        	log.error("Create user error", e);
 		}
         return "redirect:/manager/users/" + encodeUrlPathSegment(user.getId().toString(), httpServletRequest);
     }
@@ -57,6 +66,21 @@ public class UserController {
         uiModel.addAttribute("signFile", fileService.getBase64Image(signFile));
         uiModel.addAttribute("itemId", id);
         return "manager/users/show";
+    }
+    
+    @RequestMapping(method = RequestMethod.PUT, produces = "text/html")
+    public String update(@Valid User user, BindingResult bindingResult, @RequestParam("multipartFile") MultipartFile multipartFile, Model uiModel, HttpServletRequest httpServletRequest) throws Exception {
+        if (bindingResult.hasErrors()) {
+            populateEditForm(uiModel, user);
+            return "manager/users/update";
+        }
+        uiModel.asMap().clear();
+        User userToUdate = User.findUser(user.getId());
+        java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getPublicKey(), "password");
+        InputStream inputStream = new FileInputStream(file);
+        userToUdate.setKeystore(fileService.addFile(inputStream, file.getName(), file.length(), "application/jks"));
+        userToUdate.merge();
+        return "redirect:/manager/users/" + encodeUrlPathSegment(user.getId().toString(), httpServletRequest);
     }
     
 }

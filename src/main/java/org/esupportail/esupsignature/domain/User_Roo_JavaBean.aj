@@ -48,4 +48,12 @@ privileged aspect User_Roo_JavaBean {
         this.publicKey = publicKey;
     }
     
+    public File User.getKeystore() {
+        return this.keystore;
+    }
+    
+    public void User.setKeystore(File keystore) {
+        this.keystore = keystore;
+    }
+    
 }

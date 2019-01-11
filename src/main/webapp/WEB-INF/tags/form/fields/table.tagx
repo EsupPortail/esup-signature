@@ -191,7 +191,7 @@
                 </spring:url>
                 <spring:url value="/resources/images/update.png" var="update_image_url" />
                 <spring:message arguments="${typeName}" code="entity_update" var="update_label" htmlEscape="false" />
-                <button onclick="location.href='${update_form_url}';" alt="${fn:escapeXml(update_label)}" title="${fn:escapeXml(update_label)}" class="btn btn-warning fas fa-pencil-alt"><!--  --></button>
+                <button type="button" onclick="location.href='${update_form_url}';" alt="${fn:escapeXml(update_label)}" title="${fn:escapeXml(update_label)}" class="btn btn-warning fas fa-pencil-alt"><!--  --></button>
                 </td>
             </c:if>
             <c:if test="${delete}">
