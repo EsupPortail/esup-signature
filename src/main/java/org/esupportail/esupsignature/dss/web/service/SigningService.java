@@ -33,6 +33,7 @@ import eu.europa.esig.dss.asic.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.cades.signature.CAdESService;
+import eu.europa.esig.dss.client.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
@@ -193,7 +194,7 @@ public class SigningService {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DSSDocument visibleSignDocument(SignatureDocumentForm form, int x, int y, File imageFile) {
+	public DSSDocument visibleSignDocument(SignatureDocumentForm form, int page, int x, int y, File imageFile) {
 		logger.info("Start signDocument with one document");
 		DSSDocument signedDocument = null;
 		try {
@@ -216,10 +217,10 @@ public class SigningService {
 
 			// Initialize visual signature
 			SignatureImageParameters imageParameters = new SignatureImageParameters();
+			imageParameters.setPage(page);
 			// the origin is the left and top corner of the page
 			imageParameters.setxAxis(x);
 			imageParameters.setyAxis(y);
-
 			// Initialize text to generate for visual signature
 			FileDocument fileDocumentImage = new FileDocument(imageFile);
 			fileDocumentImage.setMimeType(MimeType.PNG);
@@ -233,6 +234,13 @@ public class SigningService {
 			// Create PAdESService for signature
 			PAdESService service = new PAdESService(commonCertificateVerifier);
 
+			String tspServer = "http://zeitstempel.dfn.de/";
+			OnlineTSPSource onlineTSPSource = new OnlineTSPSource(tspServer);
+			service.setTspSource(onlineTSPSource);
+			
+			TimestampToken contentTimestamp = service.getContentTimestamp(toSignDocument, parameters);
+			parameters.setContentTimestamps(Arrays.asList(contentTimestamp));
+			
 			// Get the SignedInfo segment that need to be signed.
 			ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
 

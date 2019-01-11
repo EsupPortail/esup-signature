@@ -28,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.itextpdf.text.DocumentException;
+
 @RequestMapping("/manager/documents")
 @Controller
 @RooWebScaffold(path = "manager/documents", formBackingObject = Document.class)
@@ -99,7 +101,7 @@ public class DocumentController {
     }    
     
     @RequestMapping(value = "/signdoc/{id}", method = RequestMethod.GET)
-    public String signdoc(@PathVariable("id") Long id, HttpServletResponse response, Model model) throws IOException, SQLException {
+    public String signdoc(@PathVariable("id") Long id, HttpServletResponse response, Model model) throws IOException, SQLException, DocumentException {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String eppn = auth.getName();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();

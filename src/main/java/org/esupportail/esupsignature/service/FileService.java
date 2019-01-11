@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -24,6 +23,8 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.itextpdf.text.DocumentException;
+
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.DigestAlgorithm;
@@ -38,6 +39,9 @@ public class FileService {
 
 	@Autowired
 	private SigningService signingService;
+	
+	@Autowired
+	private PdfService pdfService;
 	
 	public File addFile(MultipartFile multipartFile) throws IOException, SQLException {
 		return addFile(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getSize(), multipartFile.getContentType());
@@ -55,9 +59,9 @@ public class FileService {
         return file;
     }
 	
-	public File signPdf(File file, String certif, List<String> certifChain, File imageFile) throws IOException, SQLException {
+	public File signPdf(File file, String certif, List<String> certifChain, File imageFile) throws IOException, SQLException, DocumentException {
 		
-        DataToSignParams params = new DataToSignParams();
+		DataToSignParams params = new DataToSignParams();
         List<String> certificateChain = new ArrayList<String>();
         certificateChain.add(certif);
         if(certifChain != null && certifChain.size() > 0){
@@ -78,12 +82,13 @@ public class FileService {
 		signaturePdfForm.setBase64CertificateChain(params.getCertificateChain());
 		signaturePdfForm.setBase64SignatureValue("TEST DSI");
 		signaturePdfForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
-		signaturePdfForm.setSigningDate(new Date());
+		//signaturePdfForm.setSigningDate(new Date());
 		
-	    MultipartFile multipartFile = new MockMultipartFile(file.getFileName(), file.getFileName(), file.getContentType(), file.getBigFile().getBinaryFile().getBinaryStream());
+//	    MultipartFile multipartFile = new MockMultipartFile(file.getFileName(), file.getFileName(), file.getContentType(), file.getBigFile().getBinaryFile().getBinaryStream());
+	    MultipartFile multipartFile = new MockMultipartFile(file.getFileName(), file.getFileName(), file.getContentType(), pdfService.addWhitePageOnTop(file.getBigFile().getBinaryFile().getBinaryStream()));
 		signaturePdfForm.setDocumentToSign(multipartFile);		
         
-		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, 200, 600, toJavaIoFile(imageFile));
+		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, 1, 200, 200, toJavaIoFile(imageFile));
 
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
@@ -104,10 +109,11 @@ public class FileService {
 	
 	public java.io.File toJavaIoFile(File file) throws SQLException, IOException {
 		InputStream inputStream = file.getBigFile().getBinaryFile().getBinaryStream();
-	    java.io.File targetFile = new java.io.File("file");
+	    java.io.File targetFile = java.io.File.createTempFile("outFile", ".tmp");
 	    OutputStream outputStream = new FileOutputStream(targetFile);
 	    IOUtils.copy(inputStream, outputStream);
 	    outputStream.close();
 		return targetFile;
 	}
+	
 }
