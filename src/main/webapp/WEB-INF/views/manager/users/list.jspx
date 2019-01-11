@@ -7,9 +7,8 @@
             <table:column id="c_org_esupportail_esupsignature_domain_User_name" property="name" z="DdCNoQHOqzDp6uwDDua6iL+QEj0="/>
             <table:column id="c_org_esupportail_esupsignature_domain_User_firstname" property="firstname" z="F0hAIlpnSeCFMrzIbRKyihF2n+U="/>
             <table:column id="c_org_esupportail_esupsignature_domain_User_eppn" property="eppn" z="oqYo2U3A0hs6WmhzKdGt0gtz/x4="/>
-            <table:column id="c_org_esupportail_esupsignature_domain_User_file" property="file" z="OHTT7fBf2nkq/MWnrO87aecogjk="/>
-            <table:column id="c_org_esupportail_esupsignature_domain_User_fileTitle" property="fileTitle" z="YT3tjOvq30DOj9w7U3GgVWcgK8w="/>
             <table:column id="c_org_esupportail_esupsignature_domain_User_signImage" property="signImage" z="K/1GSQwgM62bwnisKR22Oi8CoCI="/>
+            <table:column id="c_org_esupportail_esupsignature_domain_User_publicKey" property="publicKey" z="UWVkjIm3atPRu2xjtR5Mwfr5ouY="/>
         </table:table>
     </page:list>
 </div>

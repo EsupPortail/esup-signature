@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.dss.web.service;
 
-import java.awt.Color;
-import java.awt.Font;
+import java.io.File;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,6 +20,8 @@ import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.DigestAlgorithm;
+import eu.europa.esig.dss.FileDocument;
+import eu.europa.esig.dss.MimeType;
 import eu.europa.esig.dss.SignatureAlgorithm;
 import eu.europa.esig.dss.SignatureForm;
 import eu.europa.esig.dss.SignatureLevel;
@@ -34,7 +35,6 @@ import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters;
-import eu.europa.esig.dss.pades.SignatureImageTextParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
@@ -193,7 +193,7 @@ public class SigningService {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DSSDocument visibleSignDocument(SignatureDocumentForm form, int x, int y) {
+	public DSSDocument visibleSignDocument(SignatureDocumentForm form, int x, int y, File imageFile) {
 		logger.info("Start signDocument with one document");
 		DSSDocument signedDocument = null;
 		try {
@@ -221,11 +221,10 @@ public class SigningService {
 			imageParameters.setyAxis(y);
 
 			// Initialize text to generate for visual signature
-			SignatureImageTextParameters textParameters = new SignatureImageTextParameters();
-			textParameters.setFont(new Font("serif", Font.PLAIN, 14));
-			textParameters.setTextColor(Color.BLUE);
-			textParameters.setText("David Lemaignent");
-			imageParameters.setTextParameters(textParameters);
+			FileDocument fileDocumentImage = new FileDocument(imageFile);
+			fileDocumentImage.setMimeType(MimeType.PNG);
+			
+			imageParameters.setImage(fileDocumentImage);
 
 			parameters.setSignatureImageParameters(imageParameters);
 

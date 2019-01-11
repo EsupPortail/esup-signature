@@ -91,7 +91,7 @@ privileged aspect ApplicationConversionServiceFactoryBean_Roo_ConversionService 
     public Converter<User, String> ApplicationConversionServiceFactoryBean.getUserToStringConverter() {
         return new org.springframework.core.convert.converter.Converter<org.esupportail.esupsignature.domain.User, java.lang.String>() {
             public String convert(User user) {
-                return new StringBuilder().append(user.getName()).append(' ').append(user.getFirstname()).append(' ').append(user.getEppn()).append(' ').append(user.getFile()).toString();
+                return new StringBuilder().append(user.getName()).append(' ').append(user.getFirstname()).append(' ').append(user.getEppn()).append(' ').append(user.getPublicKey()).toString();
             }
         };
     }

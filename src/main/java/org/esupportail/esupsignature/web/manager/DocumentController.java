@@ -10,10 +10,13 @@ import javax.validation.Valid;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.File;
+import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.roo.addon.web.mvc.controller.scaffold.RooWebScaffold;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -97,6 +100,10 @@ public class DocumentController {
     
     @RequestMapping(value = "/signdoc/{id}", method = RequestMethod.GET)
     public String signdoc(@PathVariable("id") Long id, HttpServletResponse response, Model model) throws IOException, SQLException {
+    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String eppn = auth.getName();
+		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		
     	Document document = Document.findDocument(id);
         File file = document.getOriginalFile();
         String dummyCertif = "MIIFNTCCBB2gAwIBAgIQBqzQs3sFF+zIvlGgIT4ejzANBgkqhkiG9w0BAQsFADBp"
@@ -130,7 +137,7 @@ public class DocumentController {
         
         
         document.setSignedFile(
-        		fileService.signPdf(file, dummyCertif, null)
+        		fileService.signPdf(file, dummyCertif, null, user.getSignImage())
         		);
         
         

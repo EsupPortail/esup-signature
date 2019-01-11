@@ -5,7 +5,6 @@ package org.esupportail.esupsignature.domain;
 
 import org.esupportail.esupsignature.domain.BigFile;
 import org.esupportail.esupsignature.domain.File;
-import org.springframework.web.multipart.MultipartFile;
 
 privileged aspect File_Roo_JavaBean {
     
@@ -15,18 +14,6 @@ privileged aspect File_Roo_JavaBean {
     
     public void File.setFileName(String fileName) {
         this.fileName = fileName;
-    }
-    
-    public void File.setUrl(String url) {
-        this.url = url;
-    }
-    
-    public MultipartFile File.getMultipartFile() {
-        return this.multipartFile;
-    }
-    
-    public void File.setMultipartFile(MultipartFile multipartFile) {
-        this.multipartFile = multipartFile;
     }
     
     public Long File.getSize() {

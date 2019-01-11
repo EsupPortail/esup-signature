@@ -2,13 +2,12 @@
 <div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" version="2.0">
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
-    <page:show id="ps_org_esupportail_esupsignature_domain_User" object="${user}" path="/manager/users" z="/KCRYBQy7ADseaMbZRiNjVeeVBI=">
-        <field:display field="name" id="s_org_esupportail_esupsignature_domain_User_name" object="${user}" z="wlIj9PX+yHQWTxVLwKdVRrkMvYo="/>
-        <field:display field="firstname" id="s_org_esupportail_esupsignature_domain_User_firstname" object="${user}" z="UCvl/uzkUFkH3QcfN7Fg7SyEpL4="/>
-        <field:display field="eppn" id="s_org_esupportail_esupsignature_domain_User_eppn" object="${user}" z="D1rUD5WfomsHVlQ6U5P//+9m+XM="/>
-        <field:display field="file" id="s_org_esupportail_esupsignature_domain_User_file" object="${user}" z="RnrZJcNcymkzPiSrJUkePc8qM0g="/>
-        <field:display field="fileTitle" id="s_org_esupportail_esupsignature_domain_User_fileTitle" object="${user}" z="C7AkCc35OgBjwHhFLl9jjtNaflw="/>
-        <field:display field="signImage" id="s_org_esupportail_esupsignature_domain_User_signImage" object="${user}" z="qYiEP6mso/kX+bZhEhuzhtPQjxk="/>
-        <field:display field="publicKey" id="s_org_esupportail_esupsignature_domain_User_publicKey" object="${user}" z="0Xyshb325BWRYBZ0Jn5/gd6tfvc="/>
+    <page:show id="ps_org_esupportail_esupsignature_domain_User" object="${user}" path="/manager/users" z="user-managed">
+        <field:display field="name" id="s_org_esupportail_esupsignature_domain_User_name" object="${user}" z="user-managed"/>
+        <field:display field="firstname" id="s_org_esupportail_esupsignature_domain_User_firstname" object="${user}" z="user-managed"/>
+        <field:display field="eppn" id="s_org_esupportail_esupsignature_domain_User_eppn" object="${user}" z="user-managed"/>
+        <field:display render="false" field="signImage" id="s_org_esupportail_esupsignature_domain_User_signImage" object="${user}" z="user-managed"/>
+        <field:display field="publicKey" id="s_org_esupportail_esupsignature_domain_User_publicKey" object="${user}" z="user-managed"/>
+        <img src="data:image/jpg;base64, ${signFile}" alt="signature" />
     </page:show>
 </div>

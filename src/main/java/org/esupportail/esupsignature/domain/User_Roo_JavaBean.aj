@@ -5,7 +5,6 @@ package org.esupportail.esupsignature.domain;
 
 import org.esupportail.esupsignature.domain.File;
 import org.esupportail.esupsignature.domain.User;
-import org.springframework.web.multipart.MultipartFile;
 
 privileged aspect User_Roo_JavaBean {
     
@@ -31,22 +30,6 @@ privileged aspect User_Roo_JavaBean {
     
     public void User.setEppn(String eppn) {
         this.eppn = eppn;
-    }
-    
-    public MultipartFile User.getFile() {
-        return this.file;
-    }
-    
-    public void User.setFile(MultipartFile file) {
-        this.file = file;
-    }
-    
-    public String User.getFileTitle() {
-        return this.fileTitle;
-    }
-    
-    public void User.setFileTitle(String fileTitle) {
-        this.fileTitle = fileTitle;
     }
     
     public File User.getSignImage() {

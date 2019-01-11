@@ -1,12 +1,20 @@
 package org.esupportail.esupsignature.service;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+import javax.xml.bind.DatatypeConverter;
+
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.File;
 import org.esupportail.esupsignature.dss.web.model.DataToSignParams;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
@@ -36,6 +44,7 @@ public class FileService {
     }
 
 	public File addFile(InputStream inputStream, String name, long size, String contentType) throws IOException, SQLException {
+		//TODO : à tester sans persist
         File file = new File();
         file.setFileName(name);
         file.getBigFile().setBinaryFileStream(inputStream, size);
@@ -46,7 +55,7 @@ public class FileService {
         return file;
     }
 	
-	public File signPdf(File file, String certif, List<String> certifChain) throws IOException, SQLException {
+	public File signPdf(File file, String certif, List<String> certifChain, File imageFile) throws IOException, SQLException {
 		
         DataToSignParams params = new DataToSignParams();
         List<String> certificateChain = new ArrayList<String>();
@@ -74,10 +83,31 @@ public class FileService {
 	    MultipartFile multipartFile = new MockMultipartFile(file.getFileName(), file.getFileName(), file.getContentType(), file.getBigFile().getBinaryFile().getBinaryStream());
 		signaturePdfForm.setDocumentToSign(multipartFile);		
         
-		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, 200, 600);
+		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, 200, 600, toJavaIoFile(imageFile));
 
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
         return addFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), signedPdfDocument.getBytes().length, signedPdfDocument.getMimeType().getMimeTypeString());
+	}
+	
+	public String getBase64Image(File file) throws IOException, SQLException {
+		String out = "";
+		BufferedImage imBuff = ImageIO.read(file.getBigFile().getBinaryFile().getBinaryStream());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(imBuff, file.getFileName().replaceAll(".*\\.", ""), baos);
+        baos.flush();
+        out = DatatypeConverter.printBase64Binary(baos.toByteArray());
+        baos.close();
+        return out;
+        
+	}
+	
+	public java.io.File toJavaIoFile(File file) throws SQLException, IOException {
+		InputStream inputStream = file.getBigFile().getBinaryFile().getBinaryStream();
+	    java.io.File targetFile = new java.io.File("file");
+	    OutputStream outputStream = new FileOutputStream(targetFile);
+	    IOUtils.copy(inputStream, outputStream);
+	    outputStream.close();
+		return targetFile;
 	}
 }

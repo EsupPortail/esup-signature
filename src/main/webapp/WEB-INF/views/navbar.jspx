@@ -7,7 +7,7 @@
 	<jsp:output omit-xml-declaration="yes" />
 	<spring:message code="application_name" htmlEscape="false" var="app_name" />
 	<c:choose>
-		<c:when	test="${active == 'index'|| active =='stats' || active =='exports'}">
+		<c:when	test="${active == 'index' || active == 'documents' || active =='stats' || active =='exports'}">
 			<c:set scope="session" var="role" value="manager" />
 		</c:when>
 		<c:when	test="${active == 'sessions' || active =='su'}">
