@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.manager;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 import javax.annotation.Resource;
@@ -13,6 +12,7 @@ import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.roo.addon.web.mvc.controller.scaffold.RooWebScaffold;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +30,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RooWebScaffold(path = "manager/users", formBackingObject = User.class)
 @Transactional
+@Scope(value="session")
 public class UserController {
 	
 	private static final Logger log = LoggerFactory.getLogger(UserController.class);
@@ -38,6 +39,7 @@ public class UserController {
 	public String getActiveMenu() {
 		return "users";
 	}
+	
 	@Resource
 	FileService fileService;
 
@@ -92,9 +94,12 @@ public class UserController {
     @RequestMapping(value = "/viewCert", method = RequestMethod.POST, produces = "text/html")
     public String viewCert(@RequestParam("id") long id, @RequestParam("password") String password, RedirectAttributes redirectAttrs) throws Exception {
         User user = User.findUser(id);
+        if(password != null && !password.isEmpty()) {
+        	userKeystoreService.setPassword(password);
+        }
         try {
-        	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.pemToBase64String(userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), password)));
-        } catch (IOException e) {
+        	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn()));
+        } catch (Exception e) {
         	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
 		}
         return "redirect:/manager/users/" + id;

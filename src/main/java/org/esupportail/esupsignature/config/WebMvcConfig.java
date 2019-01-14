@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.http.CacheControl;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.ui.context.support.ResourceBundleThemeSource;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -27,6 +28,7 @@ import org.springframework.web.servlet.view.tiles3.TilesView;
 
 @Configuration
 @EnableWebMvc
+@EnableScheduling
 @ComponentScan(basePackages = {"org.esupportail.esupsignature"}, includeFilters= {
 		@ComponentScan.Filter(type=FilterType.ANNOTATION, classes={org.springframework.stereotype.Controller.class})
 		})

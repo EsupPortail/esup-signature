@@ -3,10 +3,8 @@ package org.esupportail.esupsignature.service;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +12,6 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.xml.bind.DatatypeConverter;
 
-import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.File;
 import org.esupportail.esupsignature.dss.web.model.DataToSignParams;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
@@ -60,7 +57,7 @@ public class FileService {
         return file;
     }
 	
-	public File signPdf(File file, String certif, List<String> certifChain, File imageFile, int x, int y, boolean onNewPage, int positionOfNewPage) throws IOException, SQLException, DocumentException {
+	public File certSignPdf(File file, String certif, List<String> certifChain, File imageFile, int x, int y, boolean onNewPage, int positionOfNewPage) throws IOException, SQLException, DocumentException {
 		
 		DataToSignParams params = new DataToSignParams();
         List<String> certificateChain = new ArrayList<String>();
@@ -85,19 +82,28 @@ public class FileService {
 		signaturePdfForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
 		MultipartFile multipartFile;
 		if(onNewPage) {
-			multipartFile = new MockMultipartFile(file.getFileName(), file.getFileName(), file.getContentType(), new FileInputStream(pdfService.addWhitePageOnTop(file.getBigFile().getBinaryFile().getBinaryStream(), positionOfNewPage)));
+			multipartFile = new MockMultipartFile(file.getFileName(), file.getFileName(), file.getContentType(), new FileInputStream(pdfService.addWhitePageOnTop(file.getBigFile().toJavaIoFile(), positionOfNewPage)));
 		} else {
 			multipartFile = new MockMultipartFile(file.getFileName(), file.getFileName(), file.getContentType(), file.getBigFile().getBinaryFile().getBinaryStream());
 		}
 		signaturePdfForm.setDocumentToSign(multipartFile);		
         
-		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, 1, x, y, toJavaIoFile(imageFile));
+		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, 1, x, y, imageFile.getBigFile().toJavaIoFile());
 
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
         return addFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), signedPdfDocument.getBytes().length, signedPdfDocument.getMimeType().getMimeTypeString());
 	}
-	
+
+	public File simpleSignPdf(File file, File imageFile, int x, int y, boolean onNewPage, int positionOfNewPage) throws IOException, SQLException, DocumentException {
+		java.io.File signedFile;
+		if(onNewPage) {
+			signedFile = pdfService.addImage(pdfService.addWhitePageOnTop(file.getBigFile().toJavaIoFile(), positionOfNewPage), imageFile.getBigFile().toJavaIoFile(), 0, 200, 200);
+		} else {
+			signedFile = pdfService.addImage(file.getBigFile().toJavaIoFile(), imageFile.getBigFile().toJavaIoFile(), 0, 200, 200);			
+		}
+		return addFile(new FileInputStream(signedFile), "signed_" + file.getFileName(), signedFile.length(), file.getContentType());
+	}	
 	public String getBase64Image(File file) throws IOException, SQLException {
 		String out = "";
 		BufferedImage imBuff = ImageIO.read(file.getBigFile().getBinaryFile().getBinaryStream());
@@ -110,13 +116,6 @@ public class FileService {
         
 	}
 	
-	public java.io.File toJavaIoFile(File file) throws SQLException, IOException {
-		InputStream inputStream = file.getBigFile().getBinaryFile().getBinaryStream();
-	    java.io.File targetFile = java.io.File.createTempFile("outFile", ".tmp");
-	    OutputStream outputStream = new FileOutputStream(targetFile);
-	    IOUtils.copy(inputStream, outputStream);
-	    outputStream.close();
-		return targetFile;
-	}
+	
 	
 }

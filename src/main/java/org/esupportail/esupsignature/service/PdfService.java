@@ -1,9 +1,9 @@
 package org.esupportail.esupsignature.service;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.annotation.Resource;
 
@@ -20,10 +20,10 @@ public class PdfService {
 	@Resource
 	FileService fileService;
 	
-	public File addWhitePageOnTop(InputStream inputStreamPdf, int position) throws DocumentException, IOException {
+	public File addWhitePageOnTop(File pdfFile, int position) throws DocumentException, IOException {
 
 	    File targetFile =  File.createTempFile("outFile", ".tmp");
-	    PdfReader reader = new PdfReader(inputStreamPdf);
+	    PdfReader reader = new PdfReader(new FileInputStream(pdfFile));
 	    PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(targetFile));
 	    if(position < 0) {
 	    	stamper.insertPage(reader.getNumberOfPages() + 1, reader.getPageSizeWithRotation(1));
@@ -37,12 +37,12 @@ public class PdfService {
 
 	}
 
-	public File addImage(InputStream inputStreamPdf, InputStream intputStreamPdfImage, int page, int x, int y) throws DocumentException, IOException {
+	public File addImage(File pdfFile, File signImage, int page, int x, int y) throws DocumentException, IOException {
 		
 		File targetFile =  File.createTempFile("outFile", ".tmp");
-	    PdfReader reader = new PdfReader(inputStreamPdf);
+	    PdfReader reader = new PdfReader(new FileInputStream(pdfFile));
 	    PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(targetFile));
-        Image image = Image.getInstance(IOUtils.toByteArray(intputStreamPdfImage));
+        Image image = Image.getInstance(IOUtils.toByteArray(new FileInputStream(signImage)));
         image.setAbsolutePosition(x, y);
         stamper.getOverContent(page).addImage(image);
 	    stamper.close();

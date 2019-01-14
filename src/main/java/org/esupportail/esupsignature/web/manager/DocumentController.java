@@ -17,6 +17,7 @@ import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.roo.addon.web.mvc.controller.scaffold.RooWebScaffold;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,6 +37,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RooWebScaffold(path = "manager/documents", formBackingObject = Document.class)
 @Transactional
+@Scope(value="session")
 public class DocumentController {
 	
 	private static final Logger log = LoggerFactory.getLogger(DocumentController.class);
@@ -120,7 +122,7 @@ public class DocumentController {
         try {
             //String pemCert = userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), password);
         	//document.setSignedFile(fileService.signPdf(file, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), 200, 200, true, -1));
-            signedFile = pdfService.addImage(file.getBigFile().getBinaryFile().getBinaryStream(), user.getSignImage().getBigFile().getBinaryFile().getBinaryStream(), 0, 200, 200);
+            signedFile = pdfService.addImage(file.getBigFile().toJavaIoFile(), user.getSignImage().getBigFile().toJavaIoFile(), 0, 200, 200);
             document.setSignedFile(fileService.addFile(new FileInputStream(signedFile), "signed_" + file.getFileName(), signedFile.length(), file.getContentType()));
         } catch (IOException e) {
         	redirectAttrs.addFlashAttribute("messageCustom", "bad password");

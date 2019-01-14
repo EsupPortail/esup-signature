@@ -18,13 +18,18 @@
 
 package org.esupportail.esupsignature.domain;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Blob;
+import java.sql.SQLException;
 
 import javax.persistence.Basic;
 import javax.persistence.FetchType;
 import javax.persistence.Lob;
 
+import org.apache.commons.io.IOUtils;
 import org.hibernate.LobHelper;
 import org.hibernate.Session;
 import org.springframework.roo.addon.javabean.RooJavaBean;
@@ -49,5 +54,14 @@ public class BigFile {
         LobHelper helper = session.getLobHelper(); 
         this.binaryFile = helper.createBlob(inputStream, length); 
     }
+    
+    public java.io.File toJavaIoFile() throws SQLException, IOException {
+		InputStream inputStream = getBinaryFile().getBinaryStream();
+	    java.io.File targetFile = java.io.File.createTempFile("outFile", ".tmp");
+	    OutputStream outputStream = new FileOutputStream(targetFile);
+	    IOUtils.copy(inputStream, outputStream);
+	    outputStream.close();
+		return targetFile;
+	}
     
 }
