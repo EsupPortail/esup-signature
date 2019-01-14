@@ -11,6 +11,7 @@ import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
+import org.esupportail.esupsignature.domain.Document.DocStatus;
 import org.esupportail.esupsignature.domain.File;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.FileService;
@@ -71,7 +72,7 @@ public class DocumentController {
         	document.setCreateDate(new Date());
 			document.setOriginalFile(fileService.addFile(multipartFile));
 			document.setSignedFile(null);
-			document.setStatus();
+			document.setStatus(DocStatus.pending);
 	        document.persist();
         } catch (IOException | SQLException e) {
         	log.error("Create file error", e);
@@ -121,15 +122,19 @@ public class DocumentController {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String eppn = auth.getName();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
-		
     	Document document = Document.findDocument(id);
         File file = document.getOriginalFile();
-        java.io.File signedFile;
+        File signedFile;
+        if(password != null && !password.isEmpty()) {
+        	userKeystoreService.setPassword(password);
+        }
         try {
-            //String pemCert = userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), password);
-        	//document.setSignedFile(fileService.signPdf(file, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), 200, 200, true, -1));
-            signedFile = pdfService.addImage(file.getBigFile().toJavaIoFile(), user.getSignImage().getBigFile().toJavaIoFile(), 0, 200, 200);
-            document.setSignedFile(fileService.addFile(new FileInputStream(signedFile), "signed_" + file.getFileName(), signedFile.length(), file.getContentType()));
+            String pemCert = userKeystoreService.getPemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
+        	signedFile = fileService.certSignPdf(file, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), 200, 200, true, -1);
+            //signedFile = pdfService.addImage(file.getBigFile().toJavaIoFile(), user.getSignImage().getBigFile().toJavaIoFile(), 0, 200, 200);
+            //document.setSignedFile(fileService.addFile(new FileInputStream(signedFile), "signed_" + file.getFileName(), signedFile.length(), file.getContentType()));
+        	document.setSignedFile(signedFile);
+        	document.setStatus(DocStatus.signed);
         } catch (IOException e) {
         	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
 		}

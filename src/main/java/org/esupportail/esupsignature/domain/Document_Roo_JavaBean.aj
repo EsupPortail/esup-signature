@@ -77,8 +77,4 @@ privileged aspect Document_Roo_JavaBean {
         return this.status;
     }
     
-    public void Document.setStatus(DocStatus status) {
-        this.status = status;
-    }
-    
 }

@@ -13,22 +13,33 @@
         <field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_Document_originalFile" object="${document}" render="false" z="user-managed"/>
         <field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_Document_signedFile" object="${document}" render="false" z="user-managed"/>
         <spring:url value="/manager/documents/get-original-file/${id}" var="originalFileUrl" />
-		<a href="${originalFileUrl}">get Original File</a>
-		<br/>
+        <br/>
+			<div class="form-group">
+				<label class="col-lg-3 col-form-label" for="password"><strong>Get original file</strong></label>
+				<div class="col-lg-4">
+					<button class="btn btn-primary" onclick="location.href='${originalFileUrl}'">Download</button>				
+				</div>
+			</div>		
+
+		<br/><br/>
 		<c:choose>
         <c:when test="${not empty document.signedFile}">
         <spring:url value="/manager/documents/get-signed-file/${id}" var="originalFileUrl" />
 		<a href="${originalFileUrl}">get Signed File</a>
 		</c:when>
 		<c:otherwise>
-		<div role="group" class="btn-group mr-2">
-			<form id="command" action="/manager/documents/signdoc/${id}" method="post">
-				<input type="password" name="password" />
-				<span class="visible-lg-block visible-md-block visible-sm-block">
-					<button class="btn btn-warning" title="Signer" alt="Signer" type="submit">Signer</button>
-				</span>
-			</form>
-		</div>
+		<form id="command" action="/manager/documents/signdoc/${id}" method="post">
+			<div class="form-group">
+				<label class="col-lg-3 col-form-label" for="password"><strong>Keystore password</strong></label>
+				<div class="col-lg-4">
+					<input class="form-control" type="password" name="password" />
+					<span class="visible-lg-block visible-md-block visible-sm-block">
+						<button class="btn btn-warning" title="Signer" alt="Signer" type="submit">Signer</button>
+					</span>
+				</div>
+			</div>		
+		</form>
+		
 		</c:otherwise>
 		</c:choose>
     </page:show>

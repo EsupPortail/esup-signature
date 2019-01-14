@@ -3,17 +3,20 @@
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
     <form:create id="fc_org_esupportail_esupsignature_domain_Document" multipart="true" modelAttribute="document" path="/manager/documents" render="${empty dependencies}" z="user-managed">
-        <field:input field="name" id="c_org_esupportail_esupsignature_domain_Document_name" z="user-managed"/>
-        <field:datetime dateTimePattern="${document_createdate_date_format}" field="createDate" id="c_org_esupportail_esupsignature_domain_Document_createDate" z="user-managed"/>
-        <field:input field="createBy" id="c_org_esupportail_esupsignature_domain_Document_createBy" z="user-managed"/>
-        <field:datetime dateTimePattern="${document_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_Document_updateDate" z="user-managed"/>
-        <field:input field="updateBy" id="c_org_esupportail_esupsignature_domain_Document_updateBy" z="user-managed"/>
-        <field:textarea field="description" id="c_org_esupportail_esupsignature_domain_Document_description" z="user-managed"/>
-        <field:input field="status" id="c_org_esupportail_esupsignature_domain_Document_status" z="user-managed"/>
+        <field:input cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_Document_name" z="user-managed"/>
+        <field:datetime render="false" dateTimePattern="${document_createdate_date_format}" field="createDate" id="c_org_esupportail_esupsignature_domain_Document_createDate" z="user-managed"/>
+        <field:input render="false" field="createBy" id="c_org_esupportail_esupsignature_domain_Document_createBy" z="user-managed"/>
+        <field:datetime render="false" dateTimePattern="${document_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_Document_updateDate" z="user-managed"/>
+        <field:input render="false" field="updateBy" id="c_org_esupportail_esupsignature_domain_Document_updateBy" z="user-managed"/>
+        <field:textarea cssClass="form-control" field="description" id="c_org_esupportail_esupsignature_domain_Document_description" z="user-managed"/>
+        <field:input render="false" field="status" id="c_org_esupportail_esupsignature_domain_Document_status" z="user-managed"/>
         <field:select render="false" field="originalFile" id="c_org_esupportail_esupsignature_domain_Document_originalFile" itemValue="id" items="${files}" path="/files" z="user-managed"/>
         <field:select render="false" field="signedFile" id="c_org_esupportail_esupsignature_domain_Document_signedFile" itemValue="id" items="${files}" path="/files" z="user-managed"/>
         <div class="form-group">
-            <input class="form-control-file" data-buttonText="Choisir fichier" id="multipartFile" name="multipartFile" type="file"/>
+			<label class="col-lg-3 col-form-label" for="name"><strong>File</strong></label>
+			<div class="col-lg-9">
+	            <input class="form-control-file" data-buttonText="Choisir fichier" id="multipartFile" name="multipartFile" type="file"/>
+            </div>
         </div>
     </form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_Document" render="${not empty dependencies}" z="user-managed"/>
