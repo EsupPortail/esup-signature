@@ -8,11 +8,15 @@
         <field:display field="eppn" id="s_org_esupportail_esupsignature_domain_User_eppn" object="${user}" z="user-managed"/>
         <field:display field="signImage" id="s_org_esupportail_esupsignature_domain_User_signImage" object="${user}" render="false" z="user-managed"/>
         <field:display field="publicKey" id="s_org_esupportail_esupsignature_domain_User_publicKey" object="${user}" z="user-managed"/>
-        <field:display render="false" field="keystore" id="s_org_esupportail_esupsignature_domain_User_keystore" object="${user}" z="user-managed"/>
-        
+        <field:display field="keystore" id="s_org_esupportail_esupsignature_domain_User_keystore" object="${user}" render="false" z="user-managed"/>
         <img alt="signature" src="data:image/jpg;base64, ${signFile}" width="200"/>
         <br/>
         ${keystore}
-        
+	    <field:display render="false" field="password" id="s_org_esupportail_esupsignature_domain_User_password" object="${user}" z="user-managed"/>
+	    <form action="viewCert" method="post">
+        	<input type="hidden" name="id" value="${user.id}" />
+        	<input type="password" name="password" />
+        	<input type="submit" value="Voir certificat" />
+        </form>
     </page:show>
 </div>

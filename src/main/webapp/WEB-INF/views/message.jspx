@@ -37,7 +37,10 @@
 					<c:if test="${empty messageInfo}">
 						<c:set var="messageInfo" value="${param.messageInfo}" />
 					</c:if>
-		
+
+					<c:if test="${empty messageCustom}">
+						<c:set var="messageCustom" value="${param.messageCustom}" />
+					</c:if>		
 		
 					<c:if test="${not empty messageSuccess}">
 						<!-- div class="alert alert-success" data-dismiss="alert"-->
@@ -75,6 +78,15 @@
 						</div>
 					</c:if>
 		
+					<c:if test="${not empty messageCustom}">
+					 	<!-- div class="alert alert-info" data-dismiss="alert"-->
+						<div id="dialog" title="Information" class="text-danger">
+							<div class="alert alert-info">
+								<pre>${messageCustom}</pre>
+							</div>
+						</div>
+					</c:if>
+					
 				</div>
 				<div class="modal-footer">
 		        	<button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>

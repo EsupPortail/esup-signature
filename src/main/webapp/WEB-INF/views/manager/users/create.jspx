@@ -10,6 +10,9 @@
         <div class="form-group">
             <input class="form-control-file" data-buttonText="Choisir fichier" id="multipartFile" name="multipartFile" type="file"/>
         </div>
+        <field:select render="false" field="signImage" id="c_org_esupportail_esupsignature_domain_User_signImage" itemValue="id" items="${files}" path="/files" z="user-managed"/>
+        <field:input type="password" field="password" id="c_org_esupportail_esupsignature_domain_User_password" z="user-managed"/>
+        <field:select render="false" field="keystore" id="c_org_esupportail_esupsignature_domain_User_keystore" itemValue="id" items="${files}" path="/files" z="user-managed"/>
     </form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_User" render="${not empty dependencies}" z="user-managed"/>
 </div>

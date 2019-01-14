@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.manager;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import javax.annotation.Resource;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @RequestMapping("/manager/users")
 @Controller
@@ -51,7 +53,7 @@ public class UserController {
         uiModel.asMap().clear();
         try {
 			user.setSignImage(fileService.addFile(multipartFile));
-	        java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), "password");
+	        java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
 	        user.setKeystore(fileService.addFile(new FileInputStream(file), file.getName(), file.length(), "application/jks"));
 	        user.persist();
         } catch (Exception e) {
@@ -66,9 +68,8 @@ public class UserController {
         uiModel.addAttribute("user", user);
         File signFile = user.getSignImage();
         uiModel.addAttribute("signFile", fileService.getBase64Image(signFile));
-        String pemCert = userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), "password");
-
-        uiModel.addAttribute("keystore", userKeystoreService.pemToBase64String(pemCert));
+    	//uiModel.addAttribute("keystore", userKeystoreService.pemToBase64String(userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), "password")));
+        uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         uiModel.addAttribute("itemId", id);
         return "manager/users/show";
     }
@@ -81,11 +82,22 @@ public class UserController {
         }
         uiModel.asMap().clear();
         User userToUdate = User.findUser(user.getId());
-        java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), "password");
+        java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
         InputStream inputStream = new FileInputStream(file);
         userToUdate.setKeystore(fileService.addFile(inputStream, file.getName(), file.length(), "application/jks"));
         userToUdate.merge();
         return "redirect:/manager/users/" + encodeUrlPathSegment(user.getId().toString(), httpServletRequest);
+    }
+    
+    @RequestMapping(value = "/viewCert", method = RequestMethod.POST, produces = "text/html")
+    public String viewCert(@RequestParam("id") long id, @RequestParam("password") String password, RedirectAttributes redirectAttrs) throws Exception {
+        User user = User.findUser(id);
+        try {
+        	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.pemToBase64String(userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), password)));
+        } catch (IOException e) {
+        	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
+		}
+        return "redirect:/manager/users/" + id;
     }
     
 }
