@@ -60,14 +60,14 @@ public class SignBook {
 	private SignType signType;
     
     public enum SignType {
-		check, XAdES, CAdES, PAdES, PKCS7
+		validation, simpleSign, certSign, nexuSign
 	}
     
     @Enumerated(EnumType.STRING)
 	private BookStatus status;	
 	
 	public enum BookStatus {
-		start, pending, canceled, completed, deleted;
+		started, pending, canceled, completed, deleted;
 	}
 	
 }

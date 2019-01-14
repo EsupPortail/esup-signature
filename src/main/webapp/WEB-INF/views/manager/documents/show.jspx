@@ -22,7 +22,8 @@
 		</c:when>
 		<c:otherwise>
 		<div role="group" class="btn-group mr-2">
-			<form id="command" action="/manager/documents/signdoc/${id}" method="GET">
+			<form id="command" action="/manager/documents/signdoc/${id}" method="post">
+				<input type="password" name="password" />
 				<span class="visible-lg-block visible-md-block visible-sm-block">
 					<button class="btn btn-warning" title="Signer" alt="Signer" type="submit">Signer</button>
 				</span>

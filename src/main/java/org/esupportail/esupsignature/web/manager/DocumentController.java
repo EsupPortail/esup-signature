@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @RequestMapping("/manager/documents")
 @Controller
@@ -102,20 +103,20 @@ public class DocumentController {
         }
     }    
     
-    @RequestMapping(value = "/signdoc/{id}", method = RequestMethod.GET)
-    public String signdoc(@PathVariable("id") Long id, HttpServletResponse response, Model model) throws Exception {
+    @RequestMapping(value = "/signdoc/{id}", method = RequestMethod.POST)
+    public String signdoc(@PathVariable("id") Long id, @RequestParam("password") String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) throws Exception {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String eppn = auth.getName();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		
     	Document document = Document.findDocument(id);
         File file = document.getOriginalFile();
-        String pemCert = userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), "password");
-        
-        
-        document.setSignedFile(fileService.signPdf(file, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage()));
-        
-        
+        try {
+            String pemCert = userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), password);
+        	document.setSignedFile(fileService.signPdf(file, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage()));
+        } catch (IOException e) {
+        	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
+		}
         return "redirect:/manager/documents/" + id;
     }
 }
