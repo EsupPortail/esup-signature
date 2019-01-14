@@ -1,4 +1,5 @@
 package org.esupportail.esupsignature.web.manager;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -12,6 +13,7 @@ import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.File;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +43,9 @@ public class DocumentController {
 	@Resource
 	FileService fileService;
 
+	@Resource
+	PdfService pdfService;
+	
 	@Resource
 	UserKeystoreService userKeystoreService;
 	
@@ -111,9 +116,12 @@ public class DocumentController {
 		
     	Document document = Document.findDocument(id);
         File file = document.getOriginalFile();
+        java.io.File signedFile;
         try {
-            String pemCert = userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), password);
-        	document.setSignedFile(fileService.signPdf(file, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage()));
+            //String pemCert = userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), password);
+        	//document.setSignedFile(fileService.signPdf(file, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), 200, 200, true, -1));
+            signedFile = pdfService.addImage(file.getBigFile().getBinaryFile().getBinaryStream(), user.getSignImage().getBigFile().getBinaryFile().getBinaryStream(), 0, 200, 200);
+            document.setSignedFile(fileService.addFile(new FileInputStream(signedFile), "signed_" + file.getFileName(), signedFile.length(), file.getContentType()));
         } catch (IOException e) {
         	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
 		}

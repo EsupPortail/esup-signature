@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +60,7 @@ public class FileService {
         return file;
     }
 	
-	public File signPdf(File file, String certif, List<String> certifChain, File imageFile) throws IOException, SQLException, DocumentException {
+	public File signPdf(File file, String certif, List<String> certifChain, File imageFile, int x, int y, boolean onNewPage, int positionOfNewPage) throws IOException, SQLException, DocumentException {
 		
 		DataToSignParams params = new DataToSignParams();
         List<String> certificateChain = new ArrayList<String>();
@@ -80,13 +81,17 @@ public class FileService {
 		signaturePdfForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
 		signaturePdfForm.setBase64Certificate(params.getSigningCertificate());
 		signaturePdfForm.setBase64CertificateChain(params.getCertificateChain());
-		signaturePdfForm.setBase64SignatureValue("TEST DSI");
+		signaturePdfForm.setBase64SignatureValue("");
 		signaturePdfForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
-
-	    MultipartFile multipartFile = new MockMultipartFile(file.getFileName(), file.getFileName(), file.getContentType(), pdfService.addWhitePageOnTop(file.getBigFile().getBinaryFile().getBinaryStream()));
+		MultipartFile multipartFile;
+		if(onNewPage) {
+			multipartFile = new MockMultipartFile(file.getFileName(), file.getFileName(), file.getContentType(), new FileInputStream(pdfService.addWhitePageOnTop(file.getBigFile().getBinaryFile().getBinaryStream(), positionOfNewPage)));
+		} else {
+			multipartFile = new MockMultipartFile(file.getFileName(), file.getFileName(), file.getContentType(), file.getBigFile().getBinaryFile().getBinaryStream());
+		}
 		signaturePdfForm.setDocumentToSign(multipartFile);		
         
-		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, 1, 200, 200, toJavaIoFile(imageFile));
+		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, 1, x, y, toJavaIoFile(imageFile));
 
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
