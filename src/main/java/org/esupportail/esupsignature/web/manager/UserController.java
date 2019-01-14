@@ -51,7 +51,7 @@ public class UserController {
         uiModel.asMap().clear();
         try {
 			user.setSignImage(fileService.addFile(multipartFile));
-	        java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getPublicKey(), "password");
+	        java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), "password");
 	        user.setKeystore(fileService.addFile(new FileInputStream(file), file.getName(), file.length(), "application/jks"));
 	        user.persist();
         } catch (Exception e) {
@@ -66,7 +66,9 @@ public class UserController {
         uiModel.addAttribute("user", user);
         File signFile = user.getSignImage();
         uiModel.addAttribute("signFile", fileService.getBase64Image(signFile));
-        uiModel.addAttribute("keystore", user.getKeystore().getFileName());
+        String pemCert = userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), "password");
+
+        uiModel.addAttribute("keystore", userKeystoreService.pemToBase64String(pemCert));
         uiModel.addAttribute("itemId", id);
         return "manager/users/show";
     }
@@ -79,7 +81,7 @@ public class UserController {
         }
         uiModel.asMap().clear();
         User userToUdate = User.findUser(user.getId());
-        java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getPublicKey(), "password");
+        java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), "password");
         InputStream inputStream = new FileInputStream(file);
         userToUdate.setKeystore(fileService.addFile(inputStream, file.getName(), file.length(), "application/jks"));
         userToUdate.merge();

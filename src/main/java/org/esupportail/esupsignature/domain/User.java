@@ -26,6 +26,9 @@ public class User {
     
     @Transient
     private String publicKey;
+
+    @Transient
+    private String password;
     
     @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
     private File keystore = new File();

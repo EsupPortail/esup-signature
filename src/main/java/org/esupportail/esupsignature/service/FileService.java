@@ -82,9 +82,7 @@ public class FileService {
 		signaturePdfForm.setBase64CertificateChain(params.getCertificateChain());
 		signaturePdfForm.setBase64SignatureValue("TEST DSI");
 		signaturePdfForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
-		//signaturePdfForm.setSigningDate(new Date());
-		
-//	    MultipartFile multipartFile = new MockMultipartFile(file.getFileName(), file.getFileName(), file.getContentType(), file.getBigFile().getBinaryFile().getBinaryStream());
+
 	    MultipartFile multipartFile = new MockMultipartFile(file.getFileName(), file.getFileName(), file.getContentType(), pdfService.addWhitePageOnTop(file.getBigFile().getBinaryFile().getBinaryStream()));
 		signaturePdfForm.setDocumentToSign(multipartFile);		
         

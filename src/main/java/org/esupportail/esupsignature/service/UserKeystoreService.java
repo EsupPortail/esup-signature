@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.security.KeyStore;
 import java.security.cert.CertificateFactory;
@@ -13,20 +14,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserKeystoreService {
 
-	public File createKeystore(String keyStoreName, String privateKey, String password) throws Exception {
+	public File createKeystore(String keyStoreName, String alias, String pemCert, String password) throws Exception {
 		
 		KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-
-	
 		char[] passwordChars = password.toCharArray();
-
-		System.err.println("password : " + passwordChars[0]);
-		
-		//TODO : privkey to x.509
-		
+	
 		CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-		String certB64 = privateKey.replaceAll("-----(BEGIN|END) CERTIFICATE-----", "").replaceAll("\n", "").replaceAll(" ", "").trim();
-		System.err.println(certB64);
+		String certB64 = pemToBase64String(pemCert);
 		byte encodedCert[] = Base64.getDecoder().decode(certB64);
 		ByteArrayInputStream inputStream  =  new ByteArrayInputStream(encodedCert);
 
@@ -35,10 +29,27 @@ public class UserKeystoreService {
 		File keystoreFile = File.createTempFile(keyStoreName, ".keystore");
 		FileOutputStream out = new FileOutputStream(keystoreFile);
 		keystore.load(null, passwordChars);
-		keystore.setCertificateEntry(keyStoreName, cert);
+		keystore.setCertificateEntry(alias, cert);
 		keystore.store(out, passwordChars);
 		out.close();
 		return keystoreFile;
+	}
+	
+	public String getPemCertificat(File keyStoreFile, String keyStoreName, String alias, String password) throws Exception {
+		
+		KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+		char[] passwordChars = password.toCharArray();
+            
+		keystore.load(new FileInputStream(keyStoreFile), passwordChars);
+		
+		X509Certificate cert = (X509Certificate) keystore.getCertificate(alias);;
+		byte[] prvkey = cert.getEncoded();
+		String encoded = Base64.getEncoder().encodeToString(prvkey);
+		return "-----BEGIN PRIVATE KEY-----" + encoded + "-----END PRIVATE KEY-----";
+	}
+	
+	public String pemToBase64String(String pemCert) {
+		return pemCert.replaceAll("-----(BEGIN|END) CERTIFICATE-----", "").replaceAll("-----(BEGIN|END) PRIVATE KEY-----", "").replaceAll("\n", "").replaceAll(" ", "").trim();
 	}
 	
 }
