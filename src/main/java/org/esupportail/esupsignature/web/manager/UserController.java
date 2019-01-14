@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.roo.addon.web.mvc.controller.scaffold.RooWebScaffold;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -73,6 +75,19 @@ public class UserController {
     	//uiModel.addAttribute("keystore", userKeystoreService.pemToBase64String(userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), "password")));
         uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         uiModel.addAttribute("itemId", id);
+        return "manager/users/show";
+    }
+    
+    @RequestMapping(value = "/settings", produces = "text/html")
+    public String settings(Model uiModel) throws Exception {
+    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String eppn = auth.getName();
+    	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+        uiModel.addAttribute("user", user);
+        File signFile = user.getSignImage();
+        uiModel.addAttribute("signFile", fileService.getBase64Image(signFile));
+    	//uiModel.addAttribute("keystore", userKeystoreService.pemToBase64String(userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), "password")));
+        uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         return "manager/users/show";
     }
     

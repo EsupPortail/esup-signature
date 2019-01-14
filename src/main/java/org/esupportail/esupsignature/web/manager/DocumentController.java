@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.manager;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Date;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -64,8 +65,13 @@ public class DocumentController {
         }
         uiModel.asMap().clear();
         try {
+        	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    		String eppn = auth.getName();
+        	document.setCreateBy(eppn);
+        	document.setCreateDate(new Date());
 			document.setOriginalFile(fileService.addFile(multipartFile));
 			document.setSignedFile(null);
+			document.setStatus();
 	        document.persist();
         } catch (IOException | SQLException e) {
         	log.error("Create file error", e);

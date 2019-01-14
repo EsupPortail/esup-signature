@@ -50,4 +50,7 @@ public class Document {
 		start, pending, canceled, checked, signed, deleted;
 	}
     
+    public void setStatus(DocStatus status) {
+        this.status = status;
+    }
 }
