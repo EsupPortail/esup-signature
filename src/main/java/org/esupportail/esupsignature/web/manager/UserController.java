@@ -1,8 +1,6 @@
 package org.esupportail.esupsignature.web.manager;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.sql.SQLException;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,6 +32,10 @@ public class UserController {
 	
 	private static final Logger log = LoggerFactory.getLogger(UserController.class);
 	
+	@ModelAttribute("active")
+	public String getActiveMenu() {
+		return "users";
+	}
 	@Resource
 	FileService fileService;
 
@@ -49,8 +52,7 @@ public class UserController {
         try {
 			user.setSignImage(fileService.addFile(multipartFile));
 	        java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getPublicKey(), "password");
-	        InputStream inputStream = new FileInputStream(file);
-	        user.setKeystore(fileService.addFile(inputStream, file.getName(), file.length(), "application/jks"));
+	        user.setKeystore(fileService.addFile(new FileInputStream(file), file.getName(), file.length(), "application/jks"));
 	        user.persist();
         } catch (Exception e) {
         	log.error("Create user error", e);
@@ -64,6 +66,7 @@ public class UserController {
         uiModel.addAttribute("user", user);
         File signFile = user.getSignImage();
         uiModel.addAttribute("signFile", fileService.getBase64Image(signFile));
+        uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         uiModel.addAttribute("itemId", id);
         return "manager/users/show";
     }
