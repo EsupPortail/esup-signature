@@ -19,7 +19,6 @@ package org.esupportail.esupsignature.web;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -38,9 +37,21 @@ public class IndexController {
 	
 	@RequestMapping
 	public String index(HttpServletRequest request, Model uiModel) {
+		/*
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		//String eppn = auth.getName();
-		return "index";
+		String eppn = auth.getName();
+		if(!eppn.equals("anonymousUser")) {
+			if(request.isUserInRole("ROLE_ADMIN")) {
+				return "redirect:/admin/";
+			} else if(request.isUserInRole("ROLE_MANAGER")) {
+				return "redirect:/manager/";
+			} else {
+				return "redirect:/user";
+			}
+		} else {
+			return "index";
+		}*/
+		return "redirect:/user/";
 	}
 	
 	@RequestMapping("/login")

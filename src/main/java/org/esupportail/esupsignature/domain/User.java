@@ -21,6 +21,8 @@ public class User {
     @Column(unique=true)
     private String eppn;
     
+    private String email;
+    
     @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
     private File signImage = new File();
     

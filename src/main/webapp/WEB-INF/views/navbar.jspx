@@ -27,7 +27,7 @@
            <sec:authorize access="isAuthenticated()">            
                <!-- <menu:item menuClass="nav-link" activeMenu="${role=='admin'}" id="c_partenaire" label="Espace admin" url="/admin/" z="user-managed"/>-->
                <menu:category activeMenu="${role=='user'}" id="c_user" label="User" z="user-managed">
-	  			<menu:item menuClass="dropdown-item" id="viewsettings" label="Settings" url="/user/viewsettings" activeMenu="${active=='viewsettings'}"/>
+	  			<menu:item menuClass="dropdown-item" id="viewsettings" label="Settings" url="/user/" activeMenu="${active=='viewsettings'}"/>
                </menu:category>
            </sec:authorize>
            <sec:authorize access="hasRole('ROLE_ADMIN')">            

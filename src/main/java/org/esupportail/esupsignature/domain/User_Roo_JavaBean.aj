@@ -32,6 +32,14 @@ privileged aspect User_Roo_JavaBean {
         this.eppn = eppn;
     }
     
+    public String User.getEmail() {
+        return this.email;
+    }
+    
+    public void User.setEmail(String email) {
+        this.email = email;
+    }
+    
     public File User.getSignImage() {
         return this.signImage;
     }

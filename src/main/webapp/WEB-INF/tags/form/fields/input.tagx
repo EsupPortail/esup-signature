@@ -94,7 +94,7 @@
 					<c:otherwise>
 						<c:choose>
 							<c:when test="${type eq 'password'}">
-								<form:password id="${sec_field}" path="${sec_field}" disabled="${disabled}" />
+								<form:password class="${cssClass}" id="${sec_field}" path="${sec_field}" disabled="${disabled}" />
 							</c:when>
 							<c:otherwise>
 								<c:choose>
