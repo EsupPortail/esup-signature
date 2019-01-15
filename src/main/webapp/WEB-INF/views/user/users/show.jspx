@@ -2,7 +2,7 @@
 <div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" version="2.0">
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
-    <page:show create="false" delete="false" update="true" list="false" id="ps_org_esupportail_esupsignature_domain_User" object="${user}" path="/user" z="user-managed">
+    <page:show create="false" delete="false" update="true" list="false" id="ps_org_esupportail_esupsignature_domain_User" object="${user}" path="/user/users" z="user-managed">
         <field:display field="name" id="s_org_esupportail_esupsignature_domain_User_name" object="${user}" z="user-managed"/>
         <field:display field="firstname" id="s_org_esupportail_esupsignature_domain_User_firstname" object="${user}" z="user-managed"/>
         <field:display field="eppn" id="s_org_esupportail_esupsignature_domain_User_eppn" object="${user}" z="user-managed"/>

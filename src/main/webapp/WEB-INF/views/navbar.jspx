@@ -27,7 +27,8 @@
            <sec:authorize access="isAuthenticated()">            
                <!-- <menu:item menuClass="nav-link" activeMenu="${role=='admin'}" id="c_partenaire" label="Espace admin" url="/admin/" z="user-managed"/>-->
                <menu:category activeMenu="${role=='user'}" id="c_user" label="User" z="user-managed">
-	  			<menu:item menuClass="dropdown-item" id="viewsettings" label="Settings" url="/user/" activeMenu="${active=='viewsettings'}"/>
+	  			<menu:item menuClass="dropdown-item" id="settings" label="Settings" url="/user/users/" activeMenu="${active=='user'}"/>
+	  			<menu:item menuClass="dropdown-item" id="documents" label="My documents" url="/user/documents/" activeMenu="${active=='user'}"/>
                </menu:category>
            </sec:authorize>
            <sec:authorize access="hasRole('ROLE_ADMIN')">            
@@ -39,10 +40,10 @@
            </sec:authorize>
            <sec:authorize access="hasRole('ROLE_MANAGER')">
            		<menu:category activeMenu="${role=='manager'}" id="c_manager" label="Manager" z="user-managed">
-	               <menu:item id="i_signbook_list" messageCode="global_menu_list" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
-	               <menu:item id="i_taglog_list" messageCode="global_menu_list" url="/manager/taglogs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
-	         	   <menu:item id="i_user_list" messageCode="global_menu_list" url="/manager/users?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
-	               <menu:item id="i_document_list" messageCode="global_menu_list" url="/manager/documents?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+	               <menu:item menuClass="dropdown-item" id="i_signbook_list" messageCode="global_menu_list" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+	               <menu:item menuClass="dropdown-item" id="i_taglog_list" messageCode="global_menu_list" url="/manager/taglogs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+	         	   <menu:item menuClass="dropdown-item" id="i_user_list" messageCode="global_menu_list" url="/manager/users?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+	               <menu:item menuClass="dropdown-item" id="i_document_list" messageCode="global_menu_list" url="/manager/documents?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
 	           </menu:category>
            </sec:authorize>
        	</menu:menu>

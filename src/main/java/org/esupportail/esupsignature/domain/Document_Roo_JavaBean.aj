@@ -77,4 +77,8 @@ privileged aspect Document_Roo_JavaBean {
         return this.status;
     }
     
+    public SignType Document.getSignType() {
+        return this.signType;
+    }
+    
 }

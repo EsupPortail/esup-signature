@@ -37,10 +37,11 @@ public class IndexController {
 	
 	@RequestMapping
 	public String index(HttpServletRequest request, Model uiModel) {
-		/*
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String eppn = auth.getName();
 		if(!eppn.equals("anonymousUser")) {
+			return "redirect:/user/documents";
+			/*
 			if(request.isUserInRole("ROLE_ADMIN")) {
 				return "redirect:/admin/";
 			} else if(request.isUserInRole("ROLE_MANAGER")) {
@@ -48,10 +49,10 @@ public class IndexController {
 			} else {
 				return "redirect:/user";
 			}
+			*/
 		} else {
 			return "index";
-		}*/
-		return "index";
+		}
 	}
 	
 	@RequestMapping("/login")

@@ -1,14 +1,10 @@
 package org.esupportail.esupsignature.web.user;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.Base64;
 import java.util.List;
 
 import javax.annotation.Resource;
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
@@ -34,17 +30,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-@RequestMapping("/user/")
+@RequestMapping("/user/users")
 @Controller
 @Transactional
 @Scope(value="session")
-public class UserUIControler {
+public class UserControler {
 
-	private static final Logger log = LoggerFactory.getLogger(UserUIControler.class);
+	private static final Logger log = LoggerFactory.getLogger(UserControler.class);
 	
 	@ModelAttribute("active")
 	public String getActiveMenu() {
-		return "user";
+		return "user/users";
 	}
 	
 	@Autowired
@@ -56,7 +52,7 @@ public class UserUIControler {
 	@Resource
 	UserKeystoreService userKeystoreService;
 	
-    @RequestMapping(value = "/", produces = "text/html")
+    @RequestMapping(produces = "text/html")
     public String settings(Model uiModel) throws Exception {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String eppn = auth.getName();
@@ -64,12 +60,12 @@ public class UserUIControler {
 			return "redirect:/user/?form";
 		}
     	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
-        uiModel.addAttribute("user", user);
+    	
+    	populateEditForm(uiModel, user);
         File signFile = user.getSignImage();
         uiModel.addAttribute("signFile", fileService.getBase64Image(signFile));
-    	//uiModel.addAttribute("keystore", userKeystoreService.pemToBase64String(userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), "password")));
         uiModel.addAttribute("keystore", user.getKeystore().getFileName());
-        return "user/show";
+        return "user/users/show";
     }
     
     @RequestMapping(params = "form", produces = "text/html")
@@ -80,18 +76,19 @@ public class UserUIControler {
 			List<PersonLdap> persons =  personDao.getPersonNamesByEppn(eppn);
 			User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 			user.setEmail(persons.get(0).getMail());
-			populateEditForm(uiModel, user);
+	        uiModel.addAttribute("user", user);
 		} else {
-			populateEditForm(uiModel, new User());
+	        uiModel.addAttribute("user", new User());
+
 		}
-        return "user/update";
+        return "user/users/update";
     }
     
     @RequestMapping(method = RequestMethod.POST, produces = "text/html")
     public String create(@Valid User user, @RequestParam("signImageBase64") String signImageBase64, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) throws Exception {
         if (bindingResult.hasErrors()) {
-            populateEditForm(uiModel, user);
-            return "user/update";
+        	populateEditForm(uiModel, user);
+            return "user/users/update";
         }
         uiModel.asMap().clear();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -126,7 +123,7 @@ public class UserUIControler {
 	        	log.error("Create user error", e);
 			}
         }
-        return "redirect:/user/";
+        return "redirect:/user/users/";
     }
     
     @RequestMapping(value = "/viewCert", method = RequestMethod.POST, produces = "text/html")
@@ -140,11 +137,12 @@ public class UserUIControler {
         } catch (Exception e) {
         	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
 		}
-        return "redirect:/user/";
+        return "redirect:/user/users/";
     }
     
     void populateEditForm(Model uiModel, User user) {
         uiModel.addAttribute("user", user);
         uiModel.addAttribute("files", File.findAllFiles());
     }
+
 }

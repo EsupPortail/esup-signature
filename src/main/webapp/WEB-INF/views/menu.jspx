@@ -7,7 +7,8 @@
             <menu:menu id="_menu" z="user-managed">
                 <menu:item id="c_accueil" label="Accueil" menuClass="nav-link" render="false" url="/" z="user-managed"/>
                 <c:if test="${role=='user'}">
-                	<menu:item activeMenu="${active=='user'}" id="viewsettings" label="Settings" menuClass="nav-link" url="/user/"/>
+                	<menu:item activeMenu="${active=='user/users'}" id="viewsettings" label="Settings" menuClass="nav-link" url="/user/users/"/>
+                	<menu:item activeMenu="${active=='user/documents'}" id="viewsettings" label="Documents" menuClass="nav-link" url="/user/documents/"/>
                 </c:if>
                 <sec:authorize access="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')">
                     <c:if test="${role=='manager'}">
@@ -23,8 +24,7 @@
 		                    <menu:item render="" id="i_user_list" messageCode="global_menu_list" url="/manager/users?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
                         </menu:category>
                         <menu:category id="c_document" z="user-managed">
-                            <menu:item render="false" id="i_document_new" messageCode="global_menu_new" url="/manager/documents?form" z="user-managed"/>
-                            <menu:item id="i_document_new" label="Signer un document" url="/manager/documents?form" z="user-managed"/>
+                            <menu:item id="i_document_new" messageCode="global_menu_new" url="/manager/documents?form" z="user-managed"/>
                             <menu:item render="false" id="i_document_list" messageCode="global_menu_list" url="/manager/documents?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
                         </menu:category>
                     </c:if>

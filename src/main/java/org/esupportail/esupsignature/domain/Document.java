@@ -17,7 +17,7 @@ import org.springframework.roo.addon.tostring.RooToString;
 
 @RooJavaBean
 @RooToString
-@RooJpaActiveRecord
+@RooJpaActiveRecord(finders={"findDocumentsByCreateByEquals"})
 public class Document {
 
 	String name;
@@ -44,13 +44,25 @@ public class Document {
     private File signedFile = new File();
     
     @Enumerated(EnumType.STRING)
-	private DocStatus status;	
-	
+    private DocStatus status;	
+    
 	public enum DocStatus {
 		start, pending, canceled, checked, signed, deleted;
 	}
+
+    @Enumerated(EnumType.STRING)
+	private SignType signType;
     
+	public enum SignType {
+		imageStamp, certPAdES, certXAdES, nexuPAdES, nexuXAdES;
+
+	}
+	
     public void setStatus(DocStatus status) {
         this.status = status;
+    }
+    
+    public void setSignType(SignType signType) {
+        this.signType = signType;
     }
 }
