@@ -78,19 +78,6 @@ public class UserController {
         return "manager/users/show";
     }
     
-    @RequestMapping(value = "/settings", produces = "text/html")
-    public String settings(Model uiModel) throws Exception {
-    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String eppn = auth.getName();
-    	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
-        uiModel.addAttribute("user", user);
-        File signFile = user.getSignImage();
-        uiModel.addAttribute("signFile", fileService.getBase64Image(signFile));
-    	//uiModel.addAttribute("keystore", userKeystoreService.pemToBase64String(userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), "password")));
-        uiModel.addAttribute("keystore", user.getKeystore().getFileName());
-        return "manager/users/show";
-    }
-    
     @RequestMapping(method = RequestMethod.PUT, produces = "text/html")
     public String update(@Valid User user, BindingResult bindingResult, @RequestParam("multipartFile") MultipartFile multipartFile, Model uiModel, HttpServletRequest httpServletRequest) throws Exception {
         if (bindingResult.hasErrors()) {
@@ -104,20 +91,6 @@ public class UserController {
         userToUdate.setKeystore(fileService.addFile(inputStream, file.getName(), file.length(), "application/jks"));
         userToUdate.merge();
         return "redirect:/manager/users/" + encodeUrlPathSegment(user.getId().toString(), httpServletRequest);
-    }
-    
-    @RequestMapping(value = "/viewCert", method = RequestMethod.POST, produces = "text/html")
-    public String viewCert(@RequestParam("id") long id, @RequestParam("password") String password, RedirectAttributes redirectAttrs) throws Exception {
-        User user = User.findUser(id);
-        if(password != null && !password.isEmpty()) {
-        	userKeystoreService.setPassword(password);
-        }
-        try {
-        	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn()));
-        } catch (Exception e) {
-        	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
-		}
-        return "redirect:/manager/users/" + id;
     }
     
 }

@@ -54,7 +54,7 @@
 		<property name="mappingGroupesRoles">
 			<map>
 				<entry key="cn=for.esup-signature.admin,ou=groups,dc=univ-rouen,dc=fr" value="ROLE_ADMIN" />
-				<entry key="cn=for.esup-signature.manager,ou=groups,dc=univ-ville,dc=fr" value="ROLE_MANAGER" />
+				<entry key="cn=for.esup-signature.manager,ou=groups,dc=univ-rouen,dc=fr" value="ROLE_MANAGER" />
 			</map>
 		</property>
 	</bean>

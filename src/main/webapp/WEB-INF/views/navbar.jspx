@@ -7,7 +7,7 @@
 	<jsp:output omit-xml-declaration="yes" />
 	<spring:message code="application_name" htmlEscape="false" var="app_name" />
 	<c:choose>
-		<c:when	test="${active == 'index' || active == 'documents' || active == 'users' || active =='stats' || active =='exports'}">
+		<c:when	test="${active == 'documents' || active == 'users' || active =='stats' || active =='exports'}">
 			<c:set scope="session" var="role" value="manager" />
 		</c:when>
 		<c:when	test="${active == 'sessions' || active =='su'}">
@@ -24,30 +24,27 @@
     	<a class="navbar-brand" href="${rootUrl}">${app_name}</a>
 		<menu:menu id="_navbar" z="user-managed">
            <menu:item menuClass="nav-link" id="c_accueil" label="Accueil" render="false" url="/" z="user-managed"/>
-           <sec:authorize access="hasRole('ROLE_ADMIN')">            
+           <sec:authorize access="isAuthenticated()">            
                <!-- <menu:item menuClass="nav-link" activeMenu="${role=='admin'}" id="c_partenaire" label="Espace admin" url="/admin/" z="user-managed"/>-->
-               <menu:category activeMenu="${role=='admin'}" id="c_admin" label="Espace admin" z="user-managed">
-  				<menu:item menuClass="dropdown-item" id="adminview" label="Sessions" url="/admin/currentsessions" activeMenu="${active=='sessions'}"/>
-				<menu:item menuClass="dropdown-item" id="su" label="SU" url="/admin/su" activeMenu="${active=='su'}"/>
-				<menu:item menuClass="dropdown-item" id="i_tagloggest_list" label="TagLogGest" url="/admin/tagloggests?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+               <menu:category activeMenu="${role=='user'}" id="c_user" label="User" z="user-managed">
+	  			<menu:item menuClass="dropdown-item" id="viewsettings" label="Settings" url="/user/viewsettings" activeMenu="${active=='viewsettings'}"/>
                </menu:category>
            </sec:authorize>
-           <menu:item id="c_etudiant" label="Espace etudiant" render="false" url="/etudiant/" z="user-managed"/>
-           <menu:category id="c_salle" render="false" z="user-managed">
-               <menu:item id="i_salle_new" messageCode="global_menu_new" url="/manager/salles?form" z="user-managed"/>
-           </menu:category>
-           <menu:category id="c_etudiant" render="false" z="user-managed"/>
-           <menu:category id="c_taglog" render="false" z="user-managed">
-               <menu:item id="i_taglog_list" messageCode="global_menu_list" url="/manager/taglogs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
-           </menu:category>
-           <menu:category id="c_gestionnaire" render="false" z="user-managed">
-               <menu:item id="i_gestionnaire_new" messageCode="global_menu_new" url="/manager/gestionnaires?form" z="user-managed"/>
-               <menu:item id="i_gestionnaire_list" messageCode="global_menu_list" url="/manager/gestionnaires?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
-           </menu:category>
-           <menu:category id="c_tagloggest" render="false" z="user-managed">
-               <menu:item id="i_tagloggest_new" messageCode="global_menu_new" url="/admin/tagloggests?form" z="user-managed"/>
-               <menu:item id="i_tagloggest_list" messageCode="global_menu_list" url="/admin/tagloggests?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
-           </menu:category>
+           <sec:authorize access="hasRole('ROLE_ADMIN')">            
+               <menu:category activeMenu="${role=='admin'}" id="c_admin" label="Admin" z="user-managed">
+  				<menu:item menuClass="dropdown-item" id="adminview" label="Sessions" url="/admin/currentsessions" activeMenu="${active=='sessions'}"/>
+				<menu:item menuClass="dropdown-item" id="su" label="SU" url="/admin/su" activeMenu="${active=='su'}"/>
+				<menu:item render="false" menuClass="dropdown-item" id="i_tagloggest_list" label="TagLogGest" url="/admin/tagloggests?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+               </menu:category>
+           </sec:authorize>
+           <sec:authorize access="hasRole('ROLE_MANAGER')">
+           		<menu:category activeMenu="${role=='manager'}" id="c_manager" label="Manager" z="user-managed">
+	               <menu:item id="i_signbook_list" messageCode="global_menu_list" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+	               <menu:item id="i_taglog_list" messageCode="global_menu_list" url="/manager/taglogs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+	         	   <menu:item id="i_user_list" messageCode="global_menu_list" url="/manager/users?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+	               <menu:item id="i_document_list" messageCode="global_menu_list" url="/manager/documents?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+	           </menu:category>
+           </sec:authorize>
        	</menu:menu>
 		<div class="float-right">
 			<sec:authorize access="isAuthenticated()">
