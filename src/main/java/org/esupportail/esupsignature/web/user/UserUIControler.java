@@ -1,14 +1,17 @@
 package org.esupportail.esupsignature.web.user;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Base64;
 import java.util.List;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import org.esupportail.esupsignature.domain.BigFile;
 import org.esupportail.esupsignature.domain.File;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.ldap.PersonLdap;
@@ -29,7 +32,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @RequestMapping("/user/")
@@ -86,7 +88,7 @@ public class UserUIControler {
     }
     
     @RequestMapping(method = RequestMethod.POST, produces = "text/html")
-    public String create(@Valid User user, @RequestParam("multipartFile") MultipartFile multipartFile, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) throws Exception {
+    public String create(@Valid User user, @RequestParam("signImageBase64") String signImageBase64, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) throws Exception {
         if (bindingResult.hasErrors()) {
             populateEditForm(uiModel, user);
             return "user/update";
@@ -106,9 +108,9 @@ public class UserUIControler {
             	userToUdate.getKeystore().remove();
 	            userToUdate.setKeystore(fileService.addFile(inputStream, file.getName(), file.length(), "application/jks"));
             }
-            if(!multipartFile.isEmpty()) {
+            if(!signImageBase64.isEmpty()) {
             	userToUdate.getSignImage().remove();
-            	userToUdate.setSignImage(fileService.addFile(multipartFile));
+            	userToUdate.setSignImage(fileService.addFile(signImageBase64, eppn + "_sign.png", "application/png"));
             }
             userToUdate.merge();
         } else {
@@ -116,9 +118,9 @@ public class UserUIControler {
             	user.setEmail(person.getMail());
             	user.setName(person.getSn());
             	user.setFirstname(person.getGivenName());
-				user.setSignImage(fileService.addFile(multipartFile));
+            	user.setSignImage(fileService.addFile(signImageBase64, eppn + "_sign.png", "application/png"));
 		        java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
-		        user.setKeystore(fileService.addFile(new FileInputStream(file), file.getName(), file.length(), "application/jks"));
+		        user.setKeystore(fileService.addFile(file, "application/jks"));
 		        user.persist();
 	        } catch (Exception e) {
 	        	log.error("Create user error", e);

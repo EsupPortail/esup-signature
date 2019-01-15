@@ -8,15 +8,22 @@
         <field:input readonly="true" cssClass="form-control" field="eppn" id="c_org_esupportail_esupsignature_domain_User_eppn" z="user-managed"/>
         <field:input readonly="true" cssClass="form-control" field="email" id="c_org_esupportail_esupsignature_domain_User_email" z="user-managed"/>
         <field:textarea cssClass="form-control" field="publicKey" id="c_org_esupportail_esupsignature_domain_User_publicKey" z="user-managed"/>
+        <field:input cssClass="form-control" type="password" field="password" id="c_org_esupportail_esupsignature_domain_User_password" z="user-managed"/>
         <div class="form-group">
 			<label class="col-lg-3 col-form-label" for="name"><strong>Sign image</strong></label>
 			<div class="col-lg-9">
-            	<input class="form-control-file" data-buttonText="Choisir fichier" id="multipartFile" name="multipartFile" type="file"/>
+			  <div class="actions">
+			    <a class="btn file-btn">
+			      <input type="file" class="vanilla-upload" value="Choose a file" accept="image/*" />
+			     </a>
+			  </div>
+			  <div id="vanilla-demo"><!--  --></div>
             </div>
-        </div>
-        <field:select render="false" field="signImage" id="c_org_esupportail_esupsignature_domain_User_signImage" itemValue="id" items="${files}" path="/files" z="user-managed"/>
-        <field:input cssClass="form-control" type="password" field="password" id="c_org_esupportail_esupsignature_domain_User_password" z="user-managed"/>
-        <field:select render="false" field="keystore" id="c_org_esupportail_esupsignature_domain_User_keystore" itemValue="id" items="${files}" path="/files" z="user-managed"/>
+       </div>
+       <input type="hidden" name="signImageBase64" id="signImageBase64" />
+       <field:select render="false" field="signImage" id="c_org_esupportail_esupsignature_domain_User_signImage" itemValue="id" items="${files}" path="/files" z="user-managed"/>
+       <field:select render="false" field="keystore" id="c_org_esupportail_esupsignature_domain_User_keystore" itemValue="id" items="${files}" path="/files" z="user-managed"/>
     </form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_User" render="${not empty dependencies}" z="user-managed"/>
+	  
 </div>

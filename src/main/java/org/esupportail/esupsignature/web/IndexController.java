@@ -51,7 +51,7 @@ public class IndexController {
 		} else {
 			return "index";
 		}*/
-		return "redirect:/user/";
+		return "index";
 	}
 	
 	@RequestMapping("/login")

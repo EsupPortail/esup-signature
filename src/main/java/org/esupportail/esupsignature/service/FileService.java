@@ -1,12 +1,16 @@
 package org.esupportail.esupsignature.service;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -40,6 +44,20 @@ public class FileService {
 	
 	@Autowired
 	private PdfService pdfService;
+
+	public File addFile(File file) {
+		file.persist();
+		return file;
+    }
+	
+	public File addFile(String base64File, String name, String type) throws FileNotFoundException, IOException, SQLException {
+		return addFile(fromBase64Image(base64File, name), type);
+    }
+
+	
+	public File addFile(java.io.File file, String type) throws FileNotFoundException, IOException, SQLException {
+		return addFile(new FileInputStream(file), file.getName(), file.length(), type);
+    }
 	
 	public File addFile(MultipartFile multipartFile) throws IOException, SQLException {
 		return addFile(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getSize(), multipartFile.getContentType());
@@ -103,7 +121,8 @@ public class FileService {
 			signedFile = pdfService.addImage(file.getBigFile().toJavaIoFile(), imageFile.getBigFile().toJavaIoFile(), 0, 200, 200);			
 		}
 		return addFile(new FileInputStream(signedFile), "signed_" + file.getFileName(), signedFile.length(), file.getContentType());
-	}	
+	}
+	
 	public String getBase64Image(File file) throws IOException, SQLException {
 		String out = "";
 		BufferedImage imBuff = ImageIO.read(file.getBigFile().getBinaryFile().getBinaryStream());
@@ -114,6 +133,14 @@ public class FileService {
         baos.close();
         return out;
         
+	}
+	
+	public java.io.File fromBase64Image(String base64Image, String name) throws IOException, SQLException {
+		java.io.File fileImage = new java.io.File(name);
+		ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(base64Image.substring(base64Image.lastIndexOf(',') + 1).trim()));
+        BufferedImage image = ImageIO.read(bis);
+        ImageIO.write(image, "png", fileImage);
+        return fileImage;
 	}
 	
 	

@@ -8,16 +8,18 @@
         <field:display field="eppn" id="s_org_esupportail_esupsignature_domain_User_eppn" object="${user}" z="user-managed"/>
         <field:display field="email" id="s_org_esupportail_esupsignature_domain_User_email" object="${user}" z="user-managed"/>
         <field:display field="signImage" id="s_org_esupportail_esupsignature_domain_User_signImage" object="${user}" render="false" z="user-managed"/>
-        <field:display field="publicKey" id="s_org_esupportail_esupsignature_domain_User_publicKey" object="${user}" z="user-managed"/>
+        <field:display field="publicKey" id="s_org_esupportail_esupsignature_domain_User_publicKey" object="${user}" render="false" z="user-managed"/>
         <field:display field="keystore" id="s_org_esupportail_esupsignature_domain_User_keystore" object="${user}" render="false" z="user-managed"/>
-        <img alt="signature" src="data:image/jpg;base64, ${signFile}" width="200"/>
-        <br/>
-        ${keystore}
 	    <field:display render="false" field="password" id="s_org_esupportail_esupsignature_domain_User_password" object="${user}" z="user-managed"/>
+        <dl class="display-group border-bottom m-0"><dt class="col-lg-4">Sign image</dt><dd><img alt="signature" src="data:image/jpg;base64, ${signFile}"/></dd></dl>
+   		<dl class="display-group border-bottom m-0"><dt class="col-lg-4">Keystore</dt><dd>
+    	${keystore}
 	    <form action="viewCert" method="post">
         	<input type="hidden" name="id" value="${user.id}" />
-        	<input type="password" name="password" />
-        	<input type="submit" value="Voir certificat" />
+        	<input class="form-control" type="password" name="password" />
+        	<input class="btn btn-primary" type="submit" value="Voir certificat" />
         </form>
+    
+		</dd></dl>        
     </page:show>
 </div>
