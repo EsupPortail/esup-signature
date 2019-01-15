@@ -38,14 +38,14 @@ public class PdfService {
 	}
 
 	public File addImage(File pdfFile, File signImage, int page, int x, int y) throws DocumentException, IOException {
-		
+
 		File targetFile =  File.createTempFile("outFile", ".tmp");
 	    PdfReader reader = new PdfReader(new FileInputStream(pdfFile));
 	    PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(targetFile));
         Image image = Image.getInstance(IOUtils.toByteArray(new FileInputStream(signImage)));
         image.setAbsolutePosition(x, y);
         stamper.getOverContent(page).addImage(image);
-	    stamper.close();
+        stamper.close();
 	    reader.close();
 	    return targetFile;
 	}

@@ -138,7 +138,8 @@ public class DocumentControler {
         File file = document.getOriginalFile();
 
         if(document.getSignType().equals(SignType.imageStamp)) {
-        	java.io.File signedFile = pdfService.addImage(file.getBigFile().toJavaIoFile(), user.getSignImage().getBigFile().toJavaIoFile(), 0, 200, 200);
+        	//pdfService.addWhitePageOnTop(file.getBigFile().toJavaIoFile(), 0)
+        	java.io.File signedFile = pdfService.addImage(file.getBigFile().toJavaIoFile(), user.getSignImage().getBigFile().toJavaIoFile(), 1, 200, 200);
             document.setSignedFile(fileService.addFile(new FileInputStream(signedFile), "signed_" + file.getFileName(), signedFile.length(), file.getContentType()));
 
         } else 
@@ -156,7 +157,7 @@ public class DocumentControler {
     		}
         	document.setStatus(DocStatus.signed);
         }
-        return "redirect:/manager/documents/" + id;
+        return "redirect:/user/documents/" + id;
     }
 	
     void populateEditForm(Model uiModel, Document document) {
