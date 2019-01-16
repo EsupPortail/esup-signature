@@ -24,6 +24,7 @@ import org.esupportail.esupsignature.ldap.PersonLdapDao;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
+import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,15 +59,14 @@ public class SignRequestControler {
 	@Resource
 	PdfService pdfService;
 	
-	@Autowired
-	PersonLdapDao personDao;
-	
 	@Resource
 	FileService fileService;
 
 	@Resource
 	UserKeystoreService userKeystoreService;
 
+	@Resource
+	UserService userService;
 	
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(Model uiModel) {
@@ -77,21 +77,21 @@ public class SignRequestControler {
     @RequestMapping(produces = "text/html")
     public String list(@RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, @RequestParam(value = "sortFieldName", required = false) String sortFieldName, @RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String eppn = auth.getName();
-		if(User.countFindUsersByEppnEquals(eppn) == 0) {
+		User authUser = userService.getUserFromContext(auth.getName());
+		if(User.countFindUsersByEppnEquals(authUser.getEppn()) == 0) {
 			return "redirect:/user/users";
 		}
-    	if(SignRequest.countFindSignRequestsByCreateByEquals(eppn) == 0) {
+    	if(SignRequest.countFindSignRequestsByCreateByEquals(authUser.getEppn()) == 0) {
     		return "redirect:/user/signrequests/?form"; 
     	}
         if (page != null || size != null) {
             int sizeNo = size == null ? 10 : size.intValue();
             //final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
-            uiModel.addAttribute("signRequests", SignRequest.findSignRequestsByCreateByEquals(eppn, sortFieldName, sortOrder).getResultList());
+            uiModel.addAttribute("signRequests", SignRequest.findSignRequestsByCreateByEquals(authUser.getEppn(), sortFieldName, sortOrder).getResultList());
             float nrOfPages = (float) SignRequest.countSignRequests() / sizeNo;
             uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
         } else {
-            uiModel.addAttribute("signRequests", SignRequest.findSignRequestsByCreateByEquals(eppn, sortFieldName, sortOrder).getResultList());
+            uiModel.addAttribute("signRequests", SignRequest.findSignRequestsByCreateByEquals(authUser.getEppn(), sortFieldName, sortOrder).getResultList());
         }
         return "user/signrequests/list";
     }
@@ -99,11 +99,11 @@ public class SignRequestControler {
     @RequestMapping(value = "/{id}", produces = "text/html")
     public String show(@PathVariable("id") Long id, Model uiModel) {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String eppn = auth.getName();
+		User authUser = userService.getUserFromContext(auth.getName());
         addDateTimeFormatPatterns(uiModel);
         SignRequest signRequest = SignRequest.findSignRequest(id);
-        if(signRequest.getCreateBy().equals(eppn)) {
-        	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+        if(signRequest.getCreateBy().equals(authUser.getEppn())) {
+        	User user = User.findUsersByEppnEquals(authUser.getEppn()).getSingleResult();
         	uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 	        uiModel.addAttribute("signRequest", signRequest);
 	        uiModel.addAttribute("itemId", id);
@@ -119,11 +119,11 @@ public class SignRequestControler {
             uiModel.addAttribute("signRequest", signRequest);
             return "user/signrequests/create";
         }
+    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		User authUser = userService.getUserFromContext(auth.getName());
         uiModel.asMap().clear();
         try {
-        	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    		String eppn = auth.getName();
-        	signRequest.setCreateBy(eppn);
+        	signRequest.setCreateBy(authUser.getEppn());
         	signRequest.setCreateDate(new Date());
 			signRequest.setOriginalFile(fileService.addFile(multipartFile));
 			signRequest.setSignedFile(null);
@@ -146,8 +146,8 @@ public class SignRequestControler {
     public String signdoc(@PathVariable("id") Long id, @RequestParam(value = "password", required=false) String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) throws Exception {
     	log.info("begin sign");
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String eppn = auth.getName();
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User authUser = userService.getUserFromContext(auth.getName());
+		User user = User.findUsersByEppnEquals(authUser.getEppn()).getSingleResult();
     	SignRequest signRequest = SignRequest.findSignRequest(id);
         Document toSignContent = signRequest.getOriginalFile();
         File toSignFile = toSignContent.getBigFile().toJavaIoFile();

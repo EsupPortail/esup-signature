@@ -65,6 +65,14 @@ public class PersonLdapDao {
 		return dn;
 	}
 	
+	public List<PersonLdap> getPersonNamesByUid(String uid) {
+		AndFilter filter = new AndFilter();
+		filter.and(new EqualsFilter("objectclass", "person"));
+		filter.and(new LikeFilter("uid", uid));
+		return ldapTemplate.search("", filter.encode(),
+				new PersonAttributMapper());
+	}
+	
 	public List<PersonLdap> getPersonNamesByEppn(String eppn) {
 		AndFilter filter = new AndFilter();
 		filter.and(new EqualsFilter("objectclass", "person"));

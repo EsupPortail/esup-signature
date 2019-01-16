@@ -59,7 +59,7 @@ public class ShibWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapt
 	}
 	
 	public RequestHeaderAuthenticationFilter authenticationFilter() throws Exception {
-		RequestHeaderAuthenticationFilter authenticationFilter = new RequestHeaderAuthenticationFilter();
+		ShibRequestHeaderAuthenticationFilter authenticationFilter = new ShibRequestHeaderAuthenticationFilter();
 		authenticationFilter.setPrincipalRequestHeader(principalRequestHeader);
 		authenticationFilter.setCredentialsRequestHeader(credentialsRequestHeader);
 		authenticationFilter.setAuthenticationManager(shibAuthenticationManager());

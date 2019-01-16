@@ -1,22 +1,17 @@
 package org.esupportail.esupsignature.web.user;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Enumeration;
-import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.User;
-import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
+import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +26,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @RequestMapping("/user/users")
@@ -57,21 +50,22 @@ public class UserControler {
 	@Resource
 	UserKeystoreService userKeystoreService;
 	
-    @Autowired
-    private HttpServletRequest request;
+	@Resource
+	UserService userService;
     
     @RequestMapping(produces = "text/html")
     public String settings(Model uiModel) throws Exception {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String eppn = auth.getName();
-		if(User.countFindUsersByEppnEquals(eppn) == 0) {
+		User authUser = userService.getUserFromContext(auth.getName());
+		if(User.countFindUsersByEppnEquals(authUser.getEppn()) == 0) {
 			return "redirect:/user/users/?form";
 		}
-    	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+    	User user = User.findUsersByEppnEquals(authUser.getEppn()).getSingleResult();
     	
     	populateEditForm(uiModel, user);
-        Document signFile = user.getSignImage();
-        uiModel.addAttribute("signFile", fileService.getBase64Image(signFile));
+        if(user.getSignImage().getBigFile().getBinaryFile() != null) {
+        	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+        }
         uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         return "user/users/show";
     }
@@ -79,28 +73,14 @@ public class UserControler {
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(Model uiModel) {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String eppn = auth.getName();
-		String mail = request.getHeader("mail");
-		String name = request.getHeader("sn");
-		String firstName = request.getHeader("givenName");
-		if(personDao != null) {
-			List<PersonLdap> persons =  personDao.getPersonNamesByEppn(eppn);
-			mail = persons.get(0).getMail();
-			name = persons.get(0).getSn();
-			firstName = persons.get(0).getGivenName(); 
-		}
-		
+		User authUser = userService.getUserFromContext(auth.getName());
 		User user;
-		if(User.countFindUsersByEppnEquals(eppn) > 0) {
-			user = User.findUsersByEppnEquals(eppn).getSingleResult();
-			user.setEmail(mail);
+		if(User.countFindUsersByEppnEquals(authUser.getEppn()) > 0) {
+			user = User.findUsersByEppnEquals(authUser.getEppn()).getSingleResult();
+			user.setEmail(authUser.getEmail());
 	        uiModel.addAttribute("user", user);
 		} else {
-			user = new User();
-			user.setName(name);
-			user.setFirstname(firstName);
-			user.setEppn(eppn);
-			user.setEmail(mail);
+			user = authUser;
 		}
         uiModel.addAttribute("user", user);
 		return "user/users/update";
@@ -108,55 +88,30 @@ public class UserControler {
     
     @RequestMapping(method = RequestMethod.POST, produces = "text/html")
     public String create(@Valid User user, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttrs) throws Exception {
-        if (bindingResult.hasErrors()) {
+    	if (bindingResult.hasErrors()) {
         	populateEditForm(uiModel, user);
             return "user/users/update";
         }
         uiModel.asMap().clear();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String eppn = auth.getName();
-		String mail = request.getHeader("mail");
-		String name = request.getHeader("sn");
-		String firstName = request.getHeader("givenName");
-		if(personDao != null) {
-			List<PersonLdap> persons =  personDao.getPersonNamesByEppn(eppn);
-			mail = persons.get(0).getMail();
-			name = persons.get(0).getSn();
-			firstName = persons.get(0).getGivenName(); 
-		}
-        if(User.countFindUsersByEppnEquals(eppn) > 0) {
-            User userToUdate = User.findUsersByEppnEquals(eppn).getSingleResult();
-            if(!user.getPublicKey().isEmpty()) {
-            	userToUdate.setEmail(mail);
-            	userToUdate.setName(name);
-            	userToUdate.setFirstname(firstName);
-	            File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
-	            InputStream inputStream = new FileInputStream(file);
-            	userToUdate.getKeystore().remove();
-	            userToUdate.setKeystore(fileService.addFile(inputStream, file.getName(), file.length(), "application/jks"));
+		User authUser = userService.getUserFromContext(auth.getName());
+        if(!user.getPublicKey().isEmpty()) {
+            File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
+            if(authUser.getKeystore().getBigFile().getBinaryFile() != null) {
+            	authUser.getKeystore().remove();
             }
-            if(!user.getSignImageBase64().isEmpty()) {
-            	userToUdate.getSignImage().remove();
-            	userToUdate.setSignImage(fileService.addFile(user.getSignImageBase64(), eppn + "_sign", "application/png"));
-            }
-            userToUdate.merge();
+            authUser.setKeystore(fileService.addFile(file, "application/jks"));
+        }
+        if(!user.getSignImageBase64().isEmpty()) {
+        	if(authUser.getSignImage().getBigFile().getBinaryFile() != null) {
+        		authUser.getSignImage().remove();
+        	}
+        	authUser.setSignImage(fileService.addFile(user.getSignImageBase64(), authUser.getEppn() + "_sign", "application/png"));
+        }
+        if(authUser.getId() == null && !user.getSignImageBase64().isEmpty()) {
+        	authUser.persist();
         } else {
-            if(user.getSignImageBase64().isEmpty()) {
-            	redirectAttrs.addFlashAttribute("messageCustom", "image is required");
-            }
-        	try {
-            	user.setEmail(mail);
-            	user.setName(name);
-            	user.setFirstname(firstName);
-            	user.setSignImage(fileService.addFile(user.getSignImageBase64(), eppn + "_sign.png", "application/png"));
-            	if(!user.getPublicKey().isEmpty()) {
-            		File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
-            		user.setKeystore(fileService.addFile(file, "application/jks"));
-            	}
-		        user.persist();
-	        } catch (Exception e) {
-	        	log.error("Create user error", e);
-			}
+        	redirectAttrs.addFlashAttribute("messageCustom", "image is required");
         }
         return "redirect:/user/users/";
     }
