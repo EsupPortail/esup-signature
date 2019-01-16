@@ -10,8 +10,8 @@
         <field:input field="updateBy" id="c_org_esupportail_esupsignature_domain_Document_updateBy" z="+GB05muRBJHIRSKV62CnqZI/fWU="/>
         <field:textarea field="description" id="c_org_esupportail_esupsignature_domain_Document_description" z="I/kX/+8i5S140D6Dv6xXbuElitQ="/>
         <field:input field="status" id="c_org_esupportail_esupsignature_domain_Document_status" z="F371H+DxhFCKlx4ZZK5iTtSaC1U="/>
-        <field:select field="originalFile" id="c_org_esupportail_esupsignature_domain_Document_originalFile" itemValue="id" items="${files}" path="/files" z="LZTd+IKnMr6Kjz74lIEbmvXuxaA="/>
-        <field:select field="signedFile" id="c_org_esupportail_esupsignature_domain_Document_signedFile" itemValue="id" items="${files}" path="/files" z="76za0cmqSqYoZ6KgeMzi/F0vbUA="/>
+        <field:select field="originalFile" id="c_org_esupportail_esupsignature_domain_Document_originalFile" itemValue="id" items="${contents}" path="/contents" z="nY6UBK33HP7leVFqQJA+1V6M79g="/>
+        <field:select field="signedFile" id="c_org_esupportail_esupsignature_domain_Document_signedFile" itemValue="id" items="${contents}" path="/contents" z="O+Autx4Cs1Qdx8+XrYvUC9ioMuI="/>
         <field:input field="signType" id="c_org_esupportail_esupsignature_domain_Document_signType" z="/fsWfRcji5Mdc942t2kYMu07Q0I="/>
     </form:update>
 </div>

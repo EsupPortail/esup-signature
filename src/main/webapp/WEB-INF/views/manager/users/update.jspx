@@ -10,5 +10,7 @@
         <field:input field="publicKey" id="c_org_esupportail_esupsignature_domain_User_publicKey" z="user-managed"/>
         <field:select field="keystore" id="c_org_esupportail_esupsignature_domain_User_keystore" itemValue="id" items="${files}" path="/files" render="false" z="user-managed"/>
         <field:input field="password" id="c_org_esupportail_esupsignature_domain_User_password" z="nLD5+LjeiEJjy3uS/2PdpCXkWmI="/>
+        <field:input field="email" id="c_org_esupportail_esupsignature_domain_User_email" validationMessageCode="field_invalid_email" z="JPIwxaV5INkEhKiTmwJpWhFmSj4="/>
+        <field:input field="signImageBase64" id="c_org_esupportail_esupsignature_domain_User_signImageBase64" z="Jt9gXxF+v7tDe8TG2Ashauk8CVk="/>
     </form:update>
 </div>

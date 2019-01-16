@@ -12,11 +12,13 @@
         <img alt="signature" src="data:image/jpg;base64, ${signFile}" width="200"/>
         <br/>
         ${keystore}
-	    <field:display render="false" field="password" id="s_org_esupportail_esupsignature_domain_User_password" object="${user}" z="user-managed"/>
-	    <form action="viewCert" method="post">
-        	<input type="hidden" name="id" value="${user.id}" />
-        	<input type="password" name="password" />
-        	<input type="submit" value="Voir certificat" />
+	    <field:display field="password" id="s_org_esupportail_esupsignature_domain_User_password" object="${user}" render="false" z="user-managed"/>
+        <form action="viewCert" method="post">
+            <input name="id" type="hidden" value="${user.id}"/>
+            <input name="password" type="password"/>
+            <input type="submit" value="Voir certificat"/>
         </form>
+        <field:display field="email" id="s_org_esupportail_esupsignature_domain_User_email" object="${user}" z="v3hHkXNdH+hCNkwo9d3GvL4mbQo="/>
+        <field:display field="signImageBase64" id="s_org_esupportail_esupsignature_domain_User_signImageBase64" object="${user}" z="Gtey3cuhP91YKUD9yQxNUx9Fb10="/>
     </page:show>
 </div>

@@ -18,6 +18,7 @@
 
 package org.esupportail.esupsignature.domain;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,9 +56,9 @@ public class BigFile {
         this.binaryFile = helper.createBlob(inputStream, length); 
     }
     
-    public java.io.File toJavaIoFile() throws SQLException, IOException {
+    public File toJavaIoFile() throws SQLException, IOException {
 		InputStream inputStream = getBinaryFile().getBinaryStream();
-	    java.io.File targetFile = java.io.File.createTempFile("outFile", ".tmp");
+	    File targetFile = File.createTempFile("outFile", ".tmp");
 	    OutputStream outputStream = new FileOutputStream(targetFile);
 	    IOUtils.copy(inputStream, outputStream);
 	    outputStream.close();

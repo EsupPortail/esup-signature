@@ -38,7 +38,7 @@ public class PersistenceConfig {
 	private Map<String, ?> hibernateJpaProperties() {
 	    HashMap<String, String> properties = new HashMap<>();
 	    properties.put("hibernate.dialect", "org.esupportail.esupsignature.postgres.PgFullTextDialect");
-	    properties.put("hibernate.hbm2ddl.auto", "update");
+	    properties.put("hibernate.hbm2ddl.auto", "create");
 	    properties.put("hibernate.hbm2ddl.import_files", "import.sql");
 	    properties.put("hibernate.ejb.naming_strategy", "org.hibernate.cfg.ImprovedNamingStrategy");
 	    properties.put("hibernate.connection.charSet", "UTF-8");

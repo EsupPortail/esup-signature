@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.user;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -11,10 +12,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import org.esupportail.esupsignature.domain.Content;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Document.DocStatus;
 import org.esupportail.esupsignature.domain.Document.SignType;
-import org.esupportail.esupsignature.domain.File;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
 import org.esupportail.esupsignature.service.FileService;
@@ -74,6 +75,9 @@ public class DocumentControler {
     public String list(@RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, @RequestParam(value = "sortFieldName", required = false) String sortFieldName, @RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String eppn = auth.getName();
+		if(User.countFindUsersByEppnEquals(eppn) == 0) {
+			return "redirect:/user/users";
+		}
     	if(Document.countFindDocumentsByCreateByEquals(eppn) == 0) {
     		return "redirect:/user/documents/?form"; 
     	}
@@ -96,8 +100,10 @@ public class DocumentControler {
         addDateTimeFormatPatterns(uiModel);
         Document document = Document.findDocument(id);
         if(document.getCreateBy().equals(eppn)) {
+        	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+        	uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 	        uiModel.addAttribute("document", document);
-	        File originalFile = document.getOriginalFile();
+	        Content originalFile = document.getOriginalFile();
 	        uiModel.addAttribute("originalFilePath", originalFile.getUrl());
 	        uiModel.addAttribute("itemId", id);
 	        return "user/documents/show";
@@ -135,11 +141,11 @@ public class DocumentControler {
 		String eppn = auth.getName();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	Document document = Document.findDocument(id);
-        File file = document.getOriginalFile();
+        Content file = document.getOriginalFile();
 //TODO : if ajout de page
         if(document.getSignType().equals(SignType.imageStamp)) {
         	//pdfService.addWhitePageOnTop(file.getBigFile().toJavaIoFile(), 0)
-        	java.io.File signedFile = pdfService.addImage(file.getBigFile().toJavaIoFile(), user.getSignImage().getBigFile().toJavaIoFile(), 1, 200, 200);
+        	File signedFile = pdfService.addImage(file.getBigFile().toJavaIoFile(), user.getSignImage().getBigFile().toJavaIoFile(), 1, 200, 200);
             document.setSignedFile(fileService.addFile(new FileInputStream(signedFile), "signed_" + file.getFileName(), signedFile.length(), file.getContentType()));
 
         } else 
@@ -150,11 +156,11 @@ public class DocumentControler {
             	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
             }
             try {
-                String pemCert = userKeystoreService.getPemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
-            	File signedFile = fileService.certSignPdf(file, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), 200, 200, true, -1);
+        		String pemCert = userKeystoreService.getPemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
+            	Content signedFile = fileService.certSignPdf(file, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), 200, 200, true, -1);
             	document.setSignedFile(signedFile);
-            } catch (IOException e) {
-            	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
+            } catch (Exception e) {
+            	redirectAttrs.addFlashAttribute("messageCustom", "keystore issue");
     		}
         	document.setStatus(DocStatus.signed);
         }
@@ -174,7 +180,7 @@ public class DocumentControler {
     void populateEditForm(Model uiModel, Document document) {
         uiModel.addAttribute("document", document);
         addDateTimeFormatPatterns(uiModel);
-        uiModel.addAttribute("files", File.findAllFiles());
+        uiModel.addAttribute("files", Content.findAllContents());
         uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
     }
     

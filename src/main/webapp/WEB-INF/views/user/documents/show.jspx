@@ -37,12 +37,21 @@
 		                <form action="/user/documents/signdoc/${id}" id="command" method="post">
 		                    <div class="form-group">
 		                    <c:if test="${document.signType eq 'certPAdES' or document.signType eq 'certXAdES'}">
-		                        <label class="col-lg-6 col-form-label" for="password">
-		                            <strong>Keystore password</strong>
-		                        </label>
-		                        <div class="col-lg-6">
-		                            <input class="form-control" name="password" type="password"/>
-		                        </div>
+			                    <c:choose>
+			                    	<c:when test="${not empty keystore}">
+				                        <label class="col-lg-6 col-form-label" for="password">
+				                            <strong>Keystore password</strong>
+				                        </label>
+				                        <div class="col-lg-6">
+				                            <input class="form-control" name="password" type="password"/>
+				                        </div>
+			                        </c:when>
+			                        <c:otherwise>
+			                        		<div class="card card-body bg-info">
+												Merci de saisir une clé privée pour signer en PAdES
+											</div>
+			                        </c:otherwise>
+		                        </c:choose>
 	                        </c:if>
 		                    </div>
 		                  	<button alt="Signer" class="btn btn-primary" title="Signe" type="submit">Signe</button>

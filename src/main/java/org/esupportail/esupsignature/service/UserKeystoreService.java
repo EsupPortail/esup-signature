@@ -74,7 +74,7 @@ public class UserKeystoreService {
 	}
 	
 	public String pemToBase64String(String pemCert) {
-		return pemCert.replaceAll("-----(BEGIN|END) CERTIFICATE-----", "").replaceAll("-----(BEGIN|END) PRIVATE KEY-----", "").replaceAll("\n", "").replaceAll(" ", "").trim();
+		 return pemCert.replaceAll("-----(BEGIN|END) CERTIFICATE-----", "").replaceAll("-----(BEGIN|END) PRIVATE KEY-----", "").replaceAll("\r\n", "").replaceAll(" ", "").trim();
 	}
 	
 	@Scheduled(fixedDelay = 5000)

@@ -10,7 +10,7 @@
             <table:column id="c_org_esupportail_esupsignature_domain_User_signImage" property="signImage" render="false" z="user-managed"/>
             <table:column id="c_org_esupportail_esupsignature_domain_User_publicKey" property="publicKey" z="user-managed"/>
             <table:column id="c_org_esupportail_esupsignature_domain_User_keystore" property="keystore" render="false" z="user-managed"/>
-            <table:column id="c_org_esupportail_esupsignature_domain_User_password" property="password" z="bCsXfSqhoQE9zEKo4AJk+BM1MKQ="/>
+            <table:column id="c_org_esupportail_esupsignature_domain_User_email" property="email" z="uWSFpzmIp+ZGAsF4fyX2FY0hMDo="/>
         </table:table>
     </page:list>
 </div>

@@ -6,94 +6,94 @@ package org.esupportail.esupsignature.domain;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import org.esupportail.esupsignature.domain.File;
+import org.esupportail.esupsignature.domain.Content;
 import org.springframework.transaction.annotation.Transactional;
 
-privileged aspect File_Roo_Jpa_ActiveRecord {
+privileged aspect Content_Roo_Jpa_ActiveRecord {
     
     @PersistenceContext
-    transient EntityManager File.entityManager;
+    transient EntityManager Content.entityManager;
     
-    public static final List<String> File.fieldNames4OrderClauseFilter = java.util.Arrays.asList("fileName", "size", "contentType", "bigFile");
+    public static final List<String> Content.fieldNames4OrderClauseFilter = java.util.Arrays.asList("fileName", "size", "contentType", "bigFile");
     
-    public static final EntityManager File.entityManager() {
-        EntityManager em = new File().entityManager;
+    public static final EntityManager Content.entityManager() {
+        EntityManager em = new Content().entityManager;
         if (em == null) throw new IllegalStateException("Entity manager has not been injected (is the Spring Aspects JAR configured as an AJC/AJDT aspects library?)");
         return em;
     }
     
-    public static long File.countFiles() {
-        return entityManager().createQuery("SELECT COUNT(o) FROM File o", Long.class).getSingleResult();
+    public static long Content.countContents() {
+        return entityManager().createQuery("SELECT COUNT(o) FROM Content o", Long.class).getSingleResult();
     }
     
-    public static List<File> File.findAllFiles() {
-        return entityManager().createQuery("SELECT o FROM File o", File.class).getResultList();
+    public static List<Content> Content.findAllContents() {
+        return entityManager().createQuery("SELECT o FROM Content o", Content.class).getResultList();
     }
     
-    public static List<File> File.findAllFiles(String sortFieldName, String sortOrder) {
-        String jpaQuery = "SELECT o FROM File o";
+    public static List<Content> Content.findAllContents(String sortFieldName, String sortOrder) {
+        String jpaQuery = "SELECT o FROM Content o";
         if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
             jpaQuery = jpaQuery + " ORDER BY " + sortFieldName;
             if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
                 jpaQuery = jpaQuery + " " + sortOrder;
             }
         }
-        return entityManager().createQuery(jpaQuery, File.class).getResultList();
+        return entityManager().createQuery(jpaQuery, Content.class).getResultList();
     }
     
-    public static File File.findFile(Long id) {
+    public static Content Content.findContent(Long id) {
         if (id == null) return null;
-        return entityManager().find(File.class, id);
+        return entityManager().find(Content.class, id);
     }
     
-    public static List<File> File.findFileEntries(int firstResult, int maxResults) {
-        return entityManager().createQuery("SELECT o FROM File o", File.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
+    public static List<Content> Content.findContentEntries(int firstResult, int maxResults) {
+        return entityManager().createQuery("SELECT o FROM Content o", Content.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
     }
     
-    public static List<File> File.findFileEntries(int firstResult, int maxResults, String sortFieldName, String sortOrder) {
-        String jpaQuery = "SELECT o FROM File o";
+    public static List<Content> Content.findContentEntries(int firstResult, int maxResults, String sortFieldName, String sortOrder) {
+        String jpaQuery = "SELECT o FROM Content o";
         if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
             jpaQuery = jpaQuery + " ORDER BY " + sortFieldName;
             if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
                 jpaQuery = jpaQuery + " " + sortOrder;
             }
         }
-        return entityManager().createQuery(jpaQuery, File.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
+        return entityManager().createQuery(jpaQuery, Content.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
     }
     
     @Transactional
-    public void File.persist() {
+    public void Content.persist() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.persist(this);
     }
     
     @Transactional
-    public void File.remove() {
+    public void Content.remove() {
         if (this.entityManager == null) this.entityManager = entityManager();
         if (this.entityManager.contains(this)) {
             this.entityManager.remove(this);
         } else {
-            File attached = File.findFile(this.id);
+            Content attached = Content.findContent(this.id);
             this.entityManager.remove(attached);
         }
     }
     
     @Transactional
-    public void File.flush() {
+    public void Content.flush() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.flush();
     }
     
     @Transactional
-    public void File.clear() {
+    public void Content.clear() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.clear();
     }
     
     @Transactional
-    public File File.merge() {
+    public Content Content.merge() {
         if (this.entityManager == null) this.entityManager = entityManager();
-        File merged = this.entityManager.merge(this);
+        Content merged = this.entityManager.merge(this);
         this.entityManager.flush();
         return merged;
     }

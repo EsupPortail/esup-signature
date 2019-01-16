@@ -38,10 +38,10 @@ public class Document {
     private String description;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
-    private File originalFile = new File();
+    private Content originalFile = new Content();
     
     @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
-    private File signedFile = new File();
+    private Content signedFile = new Content();
     
     @Enumerated(EnumType.STRING)
     private DocStatus status;	

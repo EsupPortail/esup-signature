@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -15,7 +16,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.xml.bind.DatatypeConverter;
 
-import org.esupportail.esupsignature.domain.File;
+import org.esupportail.esupsignature.domain.Content;
 import org.esupportail.esupsignature.dss.web.model.DataToSignParams;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.service.SigningService;
@@ -44,27 +45,27 @@ public class FileService {
 	@Autowired
 	private PdfService pdfService;
 
-	public File addFile(File file) {
+	public Content addFile(Content file) {
 		file.persist();
 		return file;
     }
 	
-	public File addFile(String base64File, String name, String type) throws FileNotFoundException, IOException, SQLException {
+	public Content addFile(String base64File, String name, String type) throws FileNotFoundException, IOException, SQLException {
 		return addFile(fromBase64Image(base64File, name), type);
     }
 
 	
-	public File addFile(java.io.File file, String type) throws FileNotFoundException, IOException, SQLException {
+	public Content addFile(File file, String type) throws FileNotFoundException, IOException, SQLException {
 		return addFile(new FileInputStream(file), file.getName(), file.length(), type);
     }
 	
-	public File addFile(MultipartFile multipartFile) throws IOException, SQLException {
+	public Content addFile(MultipartFile multipartFile) throws IOException, SQLException {
 		return addFile(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getSize(), multipartFile.getContentType());
     }
 
-	public File addFile(InputStream inputStream, String name, long size, String contentType) throws IOException, SQLException {
+	public Content addFile(InputStream inputStream, String name, long size, String contentType) throws IOException, SQLException {
 		//TODO : à tester sans persist
-        File file = new File();
+        Content file = new Content();
         file.setFileName(name);
         file.getBigFile().setBinaryFileStream(inputStream, size);
         file.getBigFile().persist();
@@ -74,7 +75,7 @@ public class FileService {
         return file;
     }
 	
-	public File certSignPdf(File file, String certif, List<String> certifChain, File imageFile, int x, int y, boolean onNewPage, int positionOfNewPage) throws IOException, SQLException, DocumentException {
+	public Content certSignPdf(Content file, String certif, List<String> certifChain, Content imageFile, int x, int y, boolean onNewPage, int positionOfNewPage) throws IOException, SQLException, DocumentException {
 		
 		DataToSignParams params = new DataToSignParams();
         List<String> certificateChain = new ArrayList<String>();
@@ -112,8 +113,8 @@ public class FileService {
         return addFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), signedPdfDocument.getBytes().length, signedPdfDocument.getMimeType().getMimeTypeString());
 	}
 
-	public File simpleSignPdf(File file, File imageFile, int x, int y, boolean onNewPage, int positionOfNewPage) throws IOException, SQLException, DocumentException {
-		java.io.File signedFile;
+	public Content simpleSignPdf(Content file, Content imageFile, int x, int y, boolean onNewPage, int positionOfNewPage) throws IOException, SQLException, DocumentException {
+		File signedFile;
 		if(onNewPage) {
 			signedFile = pdfService.addImage(pdfService.addWhitePageOnTop(file.getBigFile().toJavaIoFile(), positionOfNewPage), imageFile.getBigFile().toJavaIoFile(), 0, 200, 200);
 		} else {
@@ -122,7 +123,7 @@ public class FileService {
 		return addFile(new FileInputStream(signedFile), "signed_" + file.getFileName(), signedFile.length(), file.getContentType());
 	}
 	
-	public String getBase64Image(File file) throws IOException, SQLException {
+	public String getBase64Image(Content file) throws IOException, SQLException {
 		String out = "";
 		BufferedImage imBuff = ImageIO.read(file.getBigFile().getBinaryFile().getBinaryStream());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -134,8 +135,8 @@ public class FileService {
         
 	}
 	
-	public java.io.File fromBase64Image(String base64Image, String name) throws IOException, SQLException {
-		java.io.File fileImage = java.io.File.createTempFile(name, ".png");
+	public File fromBase64Image(String base64Image, String name) throws IOException, SQLException {
+		File fileImage = File.createTempFile(name, ".png");
 		ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(base64Image.substring(base64Image.lastIndexOf(',') + 1).trim()));
         BufferedImage image = ImageIO.read(bis);
         ImageIO.write(image, "png", fileImage);

@@ -4,39 +4,39 @@
 package org.esupportail.esupsignature.domain;
 
 import org.esupportail.esupsignature.domain.BigFile;
-import org.esupportail.esupsignature.domain.File;
+import org.esupportail.esupsignature.domain.Content;
 
-privileged aspect File_Roo_JavaBean {
+privileged aspect Content_Roo_JavaBean {
     
-    public String File.getFileName() {
+    public String Content.getFileName() {
         return this.fileName;
     }
     
-    public void File.setFileName(String fileName) {
+    public void Content.setFileName(String fileName) {
         this.fileName = fileName;
     }
     
-    public Long File.getSize() {
+    public Long Content.getSize() {
         return this.size;
     }
     
-    public void File.setSize(Long size) {
+    public void Content.setSize(Long size) {
         this.size = size;
     }
     
-    public String File.getContentType() {
+    public String Content.getContentType() {
         return this.contentType;
     }
     
-    public void File.setContentType(String contentType) {
+    public void Content.setContentType(String contentType) {
         this.contentType = contentType;
     }
     
-    public BigFile File.getBigFile() {
+    public BigFile Content.getBigFile() {
         return this.bigFile;
     }
     
-    public void File.setBigFile(BigFile bigFile) {
+    public void Content.setBigFile(BigFile bigFile) {
         this.bigFile = bigFile;
     }
     

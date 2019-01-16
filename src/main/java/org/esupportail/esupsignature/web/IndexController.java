@@ -19,6 +19,7 @@ package org.esupportail.esupsignature.web;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.esupportail.esupsignature.domain.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -40,7 +41,12 @@ public class IndexController {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String eppn = auth.getName();
 		if(!eppn.equals("anonymousUser")) {
-			return "redirect:/user/documents";
+			if(User.countFindUsersByEppnEquals(eppn) > 0) {
+				return "redirect:/user/documents";
+			} else {
+				return "redirect:/user/users";
+			}
+			
 			/*
 			if(request.isUserInRole("ROLE_ADMIN")) {
 				return "redirect:/admin/";

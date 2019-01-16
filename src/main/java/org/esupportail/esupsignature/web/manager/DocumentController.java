@@ -11,7 +11,7 @@ import javax.validation.Valid;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Document.DocStatus;
-import org.esupportail.esupsignature.domain.File;
+import org.esupportail.esupsignature.domain.Content;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.PdfService;
@@ -84,7 +84,7 @@ public class DocumentController {
         addDateTimeFormatPatterns(uiModel);
         Document document = Document.findDocument(id);
         uiModel.addAttribute("document", document);
-        File originalFile = document.getOriginalFile();
+        Content originalFile = document.getOriginalFile();
         uiModel.addAttribute("originalFilePath", originalFile.getUrl());
         uiModel.addAttribute("itemId", id);
         return "manager/documents/show";
@@ -93,7 +93,7 @@ public class DocumentController {
     @RequestMapping(value = "/get-original-file/{id}", method = RequestMethod.GET)
     public void getOriginalFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
     	Document document = Document.findDocument(id);
-        File file = document.getOriginalFile();
+        Content file = document.getOriginalFile();
         try {
             response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
             response.setContentType(file.getContentType());
@@ -106,7 +106,7 @@ public class DocumentController {
     @RequestMapping(value = "/get-signed-file/{id}", method = RequestMethod.GET)
     public void getSignedFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
     	Document document = Document.findDocument(id);
-        File file = document.getSignedFile();
+        Content file = document.getSignedFile();
         try {
             response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
             response.setContentType(file.getContentType());
@@ -122,8 +122,8 @@ public class DocumentController {
 		String eppn = auth.getName();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	Document document = Document.findDocument(id);
-        File file = document.getOriginalFile();
-        File signedFile;
+        Content file = document.getOriginalFile();
+        Content signedFile;
         if(password != null && !password.isEmpty()) {
         	userKeystoreService.setPassword(password);
         }

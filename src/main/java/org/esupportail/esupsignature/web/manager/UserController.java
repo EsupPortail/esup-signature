@@ -1,4 +1,5 @@
 package org.esupportail.esupsignature.web.manager;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
@@ -6,7 +7,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import org.esupportail.esupsignature.domain.File;
+import org.esupportail.esupsignature.domain.Content;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
@@ -54,7 +55,7 @@ public class UserController {
         uiModel.asMap().clear();
         try {
 			user.setSignImage(fileService.addFile(multipartFile));
-	        java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
+	        File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
 	        user.setKeystore(fileService.addFile(new FileInputStream(file), file.getName(), file.length(), "application/jks"));
 	        user.persist();
         } catch (Exception e) {
@@ -67,7 +68,7 @@ public class UserController {
     public String show(@PathVariable("id") Long id, Model uiModel) throws Exception {
     	User user = User.findUser(id);
         uiModel.addAttribute("user", user);
-        File signFile = user.getSignImage();
+        Content signFile = user.getSignImage();
         uiModel.addAttribute("signFile", fileService.getBase64Image(signFile));
     	//uiModel.addAttribute("keystore", userKeystoreService.pemToBase64String(userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), "password")));
         uiModel.addAttribute("keystore", user.getKeystore().getFileName());
@@ -83,7 +84,7 @@ public class UserController {
         }
         uiModel.asMap().clear();
         User userToUdate = User.findUser(user.getId());
-        java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
+        File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
         InputStream inputStream = new FileInputStream(file);
         userToUdate.setKeystore(fileService.addFile(inputStream, file.getName(), file.length(), "application/jks"));
         userToUdate.merge();

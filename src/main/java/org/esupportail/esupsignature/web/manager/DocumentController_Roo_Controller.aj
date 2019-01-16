@@ -6,8 +6,8 @@ package org.esupportail.esupsignature.web.manager;
 import java.io.UnsupportedEncodingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import org.esupportail.esupsignature.domain.Content;
 import org.esupportail.esupsignature.domain.Document;
-import org.esupportail.esupsignature.domain.File;
 import org.esupportail.esupsignature.web.manager.DocumentController;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -76,7 +76,7 @@ privileged aspect DocumentController_Roo_Controller {
     void DocumentController.populateEditForm(Model uiModel, Document document) {
         uiModel.addAttribute("document", document);
         addDateTimeFormatPatterns(uiModel);
-        uiModel.addAttribute("files", File.findAllFiles());
+        uiModel.addAttribute("contents", Content.findAllContents());
     }
     
     String DocumentController.encodeUrlPathSegment(String pathSegment, HttpServletRequest httpServletRequest) {

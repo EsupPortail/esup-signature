@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.user;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.List;
@@ -8,7 +9,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import org.esupportail.esupsignature.domain.File;
+import org.esupportail.esupsignature.domain.Content;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
@@ -57,12 +58,12 @@ public class UserControler {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String eppn = auth.getName();
 		if(User.countFindUsersByEppnEquals(eppn) == 0) {
-			return "redirect:/user/?form";
+			return "redirect:/user/users/?form";
 		}
     	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	
     	populateEditForm(uiModel, user);
-        File signFile = user.getSignImage();
+        Content signFile = user.getSignImage();
         uiModel.addAttribute("signFile", fileService.getBase64Image(signFile));
         uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         return "user/users/show";
@@ -72,20 +73,25 @@ public class UserControler {
     public String createForm(Model uiModel) {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String eppn = auth.getName();
+		List<PersonLdap> persons =  personDao.getPersonNamesByEppn(eppn);
+		User user;
 		if(User.countFindUsersByEppnEquals(eppn) > 0) {
-			List<PersonLdap> persons =  personDao.getPersonNamesByEppn(eppn);
-			User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+			user = User.findUsersByEppnEquals(eppn).getSingleResult();
 			user.setEmail(persons.get(0).getMail());
 	        uiModel.addAttribute("user", user);
 		} else {
-	        uiModel.addAttribute("user", new User());
-
+			user = new User();
+			user.setName(persons.get(0).getSn());
+			user.setFirstname(persons.get(0).getGivenName());
+			user.setEppn(eppn);
+			user.setEmail(persons.get(0).getMail());
 		}
-        return "user/users/update";
+        uiModel.addAttribute("user", user);
+		return "user/users/update";
     }
     
     @RequestMapping(method = RequestMethod.POST, produces = "text/html")
-    public String create(@Valid User user, @RequestParam("signImageBase64") String signImageBase64, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) throws Exception {
+    public String create(@Valid User user, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttrs) throws Exception {
         if (bindingResult.hasErrors()) {
         	populateEditForm(uiModel, user);
             return "user/users/update";
@@ -100,24 +106,29 @@ public class UserControler {
             	userToUdate.setEmail(person.getMail());
             	userToUdate.setName(person.getSn());
             	userToUdate.setFirstname(person.getGivenName());
-	            java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
+	            File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
 	            InputStream inputStream = new FileInputStream(file);
             	userToUdate.getKeystore().remove();
 	            userToUdate.setKeystore(fileService.addFile(inputStream, file.getName(), file.length(), "application/jks"));
             }
-            if(!signImageBase64.isEmpty()) {
+            if(!user.getSignImageBase64().isEmpty()) {
             	userToUdate.getSignImage().remove();
-            	userToUdate.setSignImage(fileService.addFile(signImageBase64, eppn + "_sign", "application/png"));
+            	userToUdate.setSignImage(fileService.addFile(user.getSignImageBase64(), eppn + "_sign", "application/png"));
             }
             userToUdate.merge();
         } else {
-	        try {
+            if(user.getSignImageBase64().isEmpty()) {
+            	redirectAttrs.addFlashAttribute("messageCustom", "image is required");
+            }
+        	try {
             	user.setEmail(person.getMail());
             	user.setName(person.getSn());
             	user.setFirstname(person.getGivenName());
-            	user.setSignImage(fileService.addFile(signImageBase64, eppn + "_sign.png", "application/png"));
-		        java.io.File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
-		        user.setKeystore(fileService.addFile(file, "application/jks"));
+            	user.setSignImage(fileService.addFile(user.getSignImageBase64(), eppn + "_sign.png", "application/png"));
+            	if(!user.getPublicKey().isEmpty()) {
+            		File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
+            		user.setKeystore(fileService.addFile(file, "application/jks"));
+            	}
 		        user.persist();
 	        } catch (Exception e) {
 	        	log.error("Create user error", e);
@@ -142,7 +153,7 @@ public class UserControler {
     
     void populateEditForm(Model uiModel, User user) {
         uiModel.addAttribute("user", user);
-        uiModel.addAttribute("files", File.findAllFiles());
+        uiModel.addAttribute("files", Content.findAllContents());
     }
 
 }

@@ -24,7 +24,7 @@ public class User {
     private String email;
     
     @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
-    private File signImage = new File();
+    private Content signImage = new Content();
     
     @Transient
     private String publicKey;
@@ -32,7 +32,10 @@ public class User {
     @Transient
     private String password;
     
+    @Transient
+    private String signImageBase64;
+    
     @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
-    private File keystore = new File();
+    private Content keystore = new Content();
 	
 }
