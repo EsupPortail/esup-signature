@@ -135,7 +135,7 @@ public class FileService {
 	}
 	
 	public java.io.File fromBase64Image(String base64Image, String name) throws IOException, SQLException {
-		java.io.File fileImage = new java.io.File(name);
+		java.io.File fileImage = java.io.File.createTempFile(name, ".png");
 		ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(base64Image.substring(base64Image.lastIndexOf(',') + 1).trim()));
         BufferedImage image = ImageIO.read(bis);
         ImageIO.write(image, "png", fileImage);

@@ -107,7 +107,7 @@ public class UserControler {
             }
             if(!signImageBase64.isEmpty()) {
             	userToUdate.getSignImage().remove();
-            	userToUdate.setSignImage(fileService.addFile(signImageBase64, eppn + "_sign.png", "application/png"));
+            	userToUdate.setSignImage(fileService.addFile(signImageBase64, eppn + "_sign", "application/png"));
             }
             userToUdate.merge();
         } else {
