@@ -28,5 +28,21 @@
         <property name="order" value="1"/>
         <property name="basename" value="views"/>
     </bean>
+
+	<bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">  
+		<constructor-arg ref="ldapContextSource" />  
+   	</bean>
+
+   	<bean id="personDao" class="org.esupportail.esupsignature.ldap.PersonLdapDao">
+        <property name="ldapTemplate" ref="ldapTemplate" />
+    </bean> 
+
+    <bean id="ldapContextSource"
+          class="org.springframework.ldap.core.support.LdapContextSource">
+		<property name="url" value="ldap://ldap.univ-rouen.fr" />
+		<property name="base" value="dc=univ-rouen,dc=fr" />
+		<property name="userDn" value="cn=consult,dc=univ-rouen,dc=fr" />
+		<property name="password" value="iletoqp" />
+    </bean>
 	
 </beans>
