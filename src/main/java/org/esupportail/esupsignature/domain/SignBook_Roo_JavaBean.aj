@@ -5,8 +5,8 @@ package org.esupportail.esupsignature.domain;
 
 import java.util.Date;
 import java.util.List;
-import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
+import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.User;
 
 privileged aspect SignBook_Roo_JavaBean {
@@ -91,11 +91,11 @@ privileged aspect SignBook_Roo_JavaBean {
         this.userDestinationSecretary = userDestinationSecretary;
     }
     
-    public List<Document> SignBook.getDocuments() {
+    public List<SignRequest> SignBook.getDocuments() {
         return this.documents;
     }
     
-    public void SignBook.setDocuments(List<Document> documents) {
+    public void SignBook.setDocuments(List<SignRequest> documents) {
         this.documents = documents;
     }
     

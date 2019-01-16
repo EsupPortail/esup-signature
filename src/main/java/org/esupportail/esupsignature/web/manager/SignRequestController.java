@@ -9,8 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.domain.Document;
-import org.esupportail.esupsignature.domain.Document.DocStatus;
+import org.esupportail.esupsignature.domain.SignRequest;
+import org.esupportail.esupsignature.domain.SignRequest.DocStatus;
 import org.esupportail.esupsignature.domain.Content;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.FileService;
@@ -34,14 +34,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-@RequestMapping("/manager/documents")
+@RequestMapping("/manager/signrequests")
 @Controller
-@RooWebScaffold(path = "manager/documents", formBackingObject = Document.class)
+@RooWebScaffold(path = "manager/signrequests", formBackingObject = SignRequest.class)
 @Transactional
 @Scope(value="session")
-public class DocumentController {
+public class SignRequestController {
 	
-	private static final Logger log = LoggerFactory.getLogger(DocumentController.class);
+	private static final Logger log = LoggerFactory.getLogger(SignRequestController.class);
 	
 	@Resource
 	FileService fileService;
@@ -54,14 +54,14 @@ public class DocumentController {
 	
 	@ModelAttribute("active")
 	public String getActiveMenu() {
-		return "documents";
+		return "signrequests";
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
-    public String create(@Valid Document document, @RequestParam("multipartFile") MultipartFile multipartFile, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
+    public String create(@Valid SignRequest document, @RequestParam("multipartFile") MultipartFile multipartFile, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
         if (bindingResult.hasErrors()) {
             populateEditForm(uiModel, document);
-            return "manager/documents/create";
+            return "manager/signrequests/create";
         }
         uiModel.asMap().clear();
         try {
@@ -76,23 +76,23 @@ public class DocumentController {
         } catch (IOException | SQLException e) {
         	log.error("Create file error", e);
 		}
-        return "redirect:/manager/documents/" + encodeUrlPathSegment(document.getId().toString(), httpServletRequest);
+        return "redirect:/manager/signrequests/" + encodeUrlPathSegment(document.getId().toString(), httpServletRequest);
     }
 	
     @RequestMapping(value = "/{id}", produces = "text/html")
     public String show(@PathVariable("id") Long id, Model uiModel) {
         addDateTimeFormatPatterns(uiModel);
-        Document document = Document.findDocument(id);
+        SignRequest document = SignRequest.findSignRequest(id);
         uiModel.addAttribute("document", document);
         Content originalFile = document.getOriginalFile();
         uiModel.addAttribute("originalFilePath", originalFile.getUrl());
         uiModel.addAttribute("itemId", id);
-        return "manager/documents/show";
+        return "manager/signrequests/show";
     }
     
     @RequestMapping(value = "/get-original-file/{id}", method = RequestMethod.GET)
     public void getOriginalFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
-    	Document document = Document.findDocument(id);
+    	SignRequest document = SignRequest.findSignRequest(id);
         Content file = document.getOriginalFile();
         try {
             response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
@@ -105,7 +105,7 @@ public class DocumentController {
     
     @RequestMapping(value = "/get-signed-file/{id}", method = RequestMethod.GET)
     public void getSignedFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
-    	Document document = Document.findDocument(id);
+    	SignRequest document = SignRequest.findSignRequest(id);
         Content file = document.getSignedFile();
         try {
             response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
@@ -121,7 +121,7 @@ public class DocumentController {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String eppn = auth.getName();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
-    	Document document = Document.findDocument(id);
+    	SignRequest document = SignRequest.findSignRequest(id);
         Content file = document.getOriginalFile();
         Content signedFile;
         if(password != null && !password.isEmpty()) {
@@ -137,6 +137,6 @@ public class DocumentController {
         } catch (IOException e) {
         	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
 		}
-        return "redirect:/manager/documents/" + id;
+        return "redirect:/manager/signrequests/" + id;
     }
 }

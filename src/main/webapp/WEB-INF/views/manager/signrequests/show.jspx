@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <page:show id="ps_org_esupportail_esupsignature_domain_SignRequest" object="${signrequest}" path="/manager/signrequests" z="p9+hDU6aAePIZTXY+7cY9fkbRSY=">
+        <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignRequest_name" object="${signrequest}" z="C79hPjddr/V/MutFipk9+m/Ugq4="/>
+        <field:display date="true" dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignRequest_createDate" object="${signrequest}" z="6lxVz3CbXu7qoNgKfLFFpVlZZKU="/>
+        <field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignRequest_createBy" object="${signrequest}" z="josuEeE5wB9hqpHuyObYyxGEoMw="/>
+        <field:display date="true" dateTimePattern="${signRequest_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_SignRequest_updateDate" object="${signrequest}" z="wIgDRuekYpsIu6d9lXr4/Cue+Go="/>
+        <field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_SignRequest_updateBy" object="${signrequest}" z="zTdi2i8aU3zJOs2W92lBNVY6oUE="/>
+        <field:display field="description" id="s_org_esupportail_esupsignature_domain_SignRequest_description" object="${signrequest}" z="wysrMsJcMCs/WbVzYRtjPu5Wdw8="/>
+        <field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_SignRequest_originalFile" object="${signrequest}" z="AqbkPrawHePypOyanGvYbQEj5J0="/>
+        <field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_SignRequest_signedFile" object="${signrequest}" z="1cJy771EMV8tCFZnbSFYdyE1JBU="/>
+        <field:display field="status" id="s_org_esupportail_esupsignature_domain_SignRequest_status" object="${signrequest}" z="mWM0etQKGYbqNJluUOkUuxyzrGQ="/>
+        <field:display field="params" id="s_org_esupportail_esupsignature_domain_SignRequest_params" object="${signrequest}" z="lNj5GnhF8rTmcMol8fKk41inuQ4="/>
+        <field:display field="signType" id="s_org_esupportail_esupsignature_domain_SignRequest_signType" object="${signrequest}" z="AcQLNjOAEICWy+ffyGhp4FzxmWE="/>
+        <field:display field="newPageType" id="s_org_esupportail_esupsignature_domain_SignRequest_newPageType" object="${signrequest}" z="XzeaQnsZLUYqIPJr9wUrZTqXmes="/>
+        <field:display field="signPageNumber" id="s_org_esupportail_esupsignature_domain_SignRequest_signPageNumber" object="${signrequest}" z="0DC45EQfaPqB9jQNbzSOoWnudR8="/>
+        <field:display field="XPos" id="s_org_esupportail_esupsignature_domain_SignRequest_xPos" object="${signrequest}" z="4BUoBW0sUk3qqxaTE/HWCF8AYdA="/>
+        <field:display field="YPos" id="s_org_esupportail_esupsignature_domain_SignRequest_yPos" object="${signrequest}" z="vE6Zgu/5Z2CjEC491a2Ie72grvk="/>
+    </page:show>
+</div>

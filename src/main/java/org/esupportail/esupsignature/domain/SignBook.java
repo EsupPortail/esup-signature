@@ -54,7 +54,7 @@ public class SignBook {
     private User userDestinationSecretary;
     
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private List<Document> documents = new ArrayList<Document>();
+    private List<SignRequest> documents = new ArrayList<SignRequest>();
     
     @Enumerated(EnumType.STRING)
 	private SignType signType;

@@ -9,34 +9,34 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Version;
-import org.esupportail.esupsignature.domain.Document;
+import org.esupportail.esupsignature.domain.SignRequest;
 
-privileged aspect Document_Roo_Jpa_Entity {
+privileged aspect SignRequest_Roo_Jpa_Entity {
     
-    declare @type: Document: @Entity;
+    declare @type: SignRequest: @Entity;
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
-    private Long Document.id;
+    private Long SignRequest.id;
     
     @Version
     @Column(name = "version")
-    private Integer Document.version;
+    private Integer SignRequest.version;
     
-    public Long Document.getId() {
+    public Long SignRequest.getId() {
         return this.id;
     }
     
-    public void Document.setId(Long id) {
+    public void SignRequest.setId(Long id) {
         this.id = id;
     }
     
-    public Integer Document.getVersion() {
+    public Integer SignRequest.getVersion() {
         return this.version;
     }
     
-    public void Document.setVersion(Integer version) {
+    public void SignRequest.setVersion(Integer version) {
         this.version = version;
     }
     

@@ -13,8 +13,8 @@
         <field:display field="userSourceSecretary" id="s_org_esupportail_esupsignature_domain_SignBook_userSourceSecretary" object="${signbook}" z="mO7GGwd0fgTBcs93THpnkDmg4F4="/>
         <field:display field="userDestination" id="s_org_esupportail_esupsignature_domain_SignBook_userDestination" object="${signbook}" z="JBIzodq6GcM36WvWEVCKSdP7RoI="/>
         <field:display field="userDestinationSecretary" id="s_org_esupportail_esupsignature_domain_SignBook_userDestinationSecretary" object="${signbook}" z="lL4b+v/vsc8954fUGiU+xJje50w="/>
-        <field:display field="documents" id="s_org_esupportail_esupsignature_domain_SignBook_documents" object="${signbook}" z="IMDVXoECkTk6DyK8gigPSFB+Ygk="/>
         <field:display field="signType" id="s_org_esupportail_esupsignature_domain_SignBook_signType" object="${signbook}" z="nXg+Q7/i5foMQawua4uAanTKFno="/>
         <field:display field="status" id="s_org_esupportail_esupsignature_domain_SignBook_status" object="${signbook}" z="SdcqBg1dwmdbjCD0O/kUxknb5b8="/>
+        <field:display field="documents" id="s_org_esupportail_esupsignature_domain_SignBook_documents" object="${signbook}" z="IMDVXoECkTk6DyK8gigPSFB+Ygk="/>
     </page:show>
 </div>

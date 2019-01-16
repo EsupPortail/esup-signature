@@ -13,8 +13,8 @@
         <field:select field="userSourceSecretary" id="c_org_esupportail_esupsignature_domain_SignBook_userSourceSecretary" itemValue="id" items="${users}" path="/manager/users" z="JgRu921oUzdCfa99D3J0apWbS4o="/>
         <field:select field="userDestination" id="c_org_esupportail_esupsignature_domain_SignBook_userDestination" itemValue="id" items="${users}" path="/manager/users" z="cmP5f1fEqyKfNOw+0WJ+xhEhIDg="/>
         <field:select field="userDestinationSecretary" id="c_org_esupportail_esupsignature_domain_SignBook_userDestinationSecretary" itemValue="id" items="${users}" path="/manager/users" z="2MtHNkRipja0KJMD1SXSqeJSc/I="/>
-        <field:select field="documents" id="c_org_esupportail_esupsignature_domain_SignBook_documents" itemValue="id" items="${documents}" multiple="true" path="/manager/documents" z="wOM3MS3Xp4IeCkMd205IN6gzf1M="/>
         <field:input field="signType" id="c_org_esupportail_esupsignature_domain_SignBook_signType" z="KFXeOW9vgBODDOsZlLBhmARauKU="/>
         <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignBook_status" z="LpnODZDB3VETTuY0v7uf46RiBdY="/>
+        <field:select field="documents" id="c_org_esupportail_esupsignature_domain_SignBook_documents" itemValue="id" items="${signrequests}" multiple="true" path="/signrequests" z="B6EUNolXnIcrkm02xSkojy1yF8M="/>
     </form:update>
 </div>

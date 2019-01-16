@@ -5,37 +5,37 @@ package org.esupportail.esupsignature.domain;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-import org.esupportail.esupsignature.domain.Document;
+import org.esupportail.esupsignature.domain.SignRequest;
 
-privileged aspect Document_Roo_Finder {
+privileged aspect SignRequest_Roo_Finder {
     
-    public static Long Document.countFindDocumentsByCreateByEquals(String createBy) {
+    public static Long SignRequest.countFindSignRequestsByCreateByEquals(String createBy) {
         if (createBy == null || createBy.length() == 0) throw new IllegalArgumentException("The createBy argument is required");
-        EntityManager em = Document.entityManager();
-        TypedQuery q = em.createQuery("SELECT COUNT(o) FROM Document AS o WHERE o.createBy = :createBy", Long.class);
+        EntityManager em = SignRequest.entityManager();
+        TypedQuery q = em.createQuery("SELECT COUNT(o) FROM SignRequest AS o WHERE o.createBy = :createBy", Long.class);
         q.setParameter("createBy", createBy);
         return ((Long) q.getSingleResult());
     }
     
-    public static TypedQuery<Document> Document.findDocumentsByCreateByEquals(String createBy) {
+    public static TypedQuery<SignRequest> SignRequest.findSignRequestsByCreateByEquals(String createBy) {
         if (createBy == null || createBy.length() == 0) throw new IllegalArgumentException("The createBy argument is required");
-        EntityManager em = Document.entityManager();
-        TypedQuery<Document> q = em.createQuery("SELECT o FROM Document AS o WHERE o.createBy = :createBy", Document.class);
+        EntityManager em = SignRequest.entityManager();
+        TypedQuery<SignRequest> q = em.createQuery("SELECT o FROM SignRequest AS o WHERE o.createBy = :createBy", SignRequest.class);
         q.setParameter("createBy", createBy);
         return q;
     }
     
-    public static TypedQuery<Document> Document.findDocumentsByCreateByEquals(String createBy, String sortFieldName, String sortOrder) {
+    public static TypedQuery<SignRequest> SignRequest.findSignRequestsByCreateByEquals(String createBy, String sortFieldName, String sortOrder) {
         if (createBy == null || createBy.length() == 0) throw new IllegalArgumentException("The createBy argument is required");
-        EntityManager em = Document.entityManager();
-        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM Document AS o WHERE o.createBy = :createBy");
+        EntityManager em = SignRequest.entityManager();
+        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM SignRequest AS o WHERE o.createBy = :createBy");
         if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
             queryBuilder.append(" ORDER BY ").append(sortFieldName);
             if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
                 queryBuilder.append(" ").append(sortOrder);
             }
         }
-        TypedQuery<Document> q = em.createQuery(queryBuilder.toString(), Document.class);
+        TypedQuery<SignRequest> q = em.createQuery(queryBuilder.toString(), SignRequest.class);
         q.setParameter("createBy", createBy);
         return q;
     }

@@ -3,8 +3,8 @@
 
 package org.esupportail.esupsignature.web;
 
-import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
+import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.TagLog;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.web.ApplicationConversionServiceFactoryBean;
@@ -15,30 +15,6 @@ import org.springframework.format.FormatterRegistry;
 privileged aspect ApplicationConversionServiceFactoryBean_Roo_ConversionService {
     
     declare @type: ApplicationConversionServiceFactoryBean: @Configurable;
-    
-    public Converter<Document, String> ApplicationConversionServiceFactoryBean.getDocumentToStringConverter() {
-        return new org.springframework.core.convert.converter.Converter<org.esupportail.esupsignature.domain.Document, java.lang.String>() {
-            public String convert(Document document) {
-                return new StringBuilder().append(document.getName()).append(' ').append(document.getCreateDate()).append(' ').append(document.getCreateBy()).append(' ').append(document.getUpdateDate()).toString();
-            }
-        };
-    }
-    
-    public Converter<Long, Document> ApplicationConversionServiceFactoryBean.getIdToDocumentConverter() {
-        return new org.springframework.core.convert.converter.Converter<java.lang.Long, org.esupportail.esupsignature.domain.Document>() {
-            public org.esupportail.esupsignature.domain.Document convert(java.lang.Long id) {
-                return Document.findDocument(id);
-            }
-        };
-    }
-    
-    public Converter<String, Document> ApplicationConversionServiceFactoryBean.getStringToDocumentConverter() {
-        return new org.springframework.core.convert.converter.Converter<java.lang.String, org.esupportail.esupsignature.domain.Document>() {
-            public org.esupportail.esupsignature.domain.Document convert(String id) {
-                return getObject().convert(getObject().convert(id, Long.class), Document.class);
-            }
-        };
-    }
     
     public Converter<SignBook, String> ApplicationConversionServiceFactoryBean.getSignBookToStringConverter() {
         return new org.springframework.core.convert.converter.Converter<org.esupportail.esupsignature.domain.SignBook, java.lang.String>() {
@@ -60,6 +36,30 @@ privileged aspect ApplicationConversionServiceFactoryBean_Roo_ConversionService 
         return new org.springframework.core.convert.converter.Converter<java.lang.String, org.esupportail.esupsignature.domain.SignBook>() {
             public org.esupportail.esupsignature.domain.SignBook convert(String id) {
                 return getObject().convert(getObject().convert(id, Long.class), SignBook.class);
+            }
+        };
+    }
+    
+    public Converter<SignRequest, String> ApplicationConversionServiceFactoryBean.getSignRequestToStringConverter() {
+        return new org.springframework.core.convert.converter.Converter<org.esupportail.esupsignature.domain.SignRequest, java.lang.String>() {
+            public String convert(SignRequest signRequest) {
+                return new StringBuilder().append(signRequest.getName()).append(' ').append(signRequest.getCreateDate()).append(' ').append(signRequest.getCreateBy()).append(' ').append(signRequest.getUpdateDate()).toString();
+            }
+        };
+    }
+    
+    public Converter<Long, SignRequest> ApplicationConversionServiceFactoryBean.getIdToSignRequestConverter() {
+        return new org.springframework.core.convert.converter.Converter<java.lang.Long, org.esupportail.esupsignature.domain.SignRequest>() {
+            public org.esupportail.esupsignature.domain.SignRequest convert(java.lang.Long id) {
+                return SignRequest.findSignRequest(id);
+            }
+        };
+    }
+    
+    public Converter<String, SignRequest> ApplicationConversionServiceFactoryBean.getStringToSignRequestConverter() {
+        return new org.springframework.core.convert.converter.Converter<java.lang.String, org.esupportail.esupsignature.domain.SignRequest>() {
+            public org.esupportail.esupsignature.domain.SignRequest convert(String id) {
+                return getObject().convert(getObject().convert(id, Long.class), SignRequest.class);
             }
         };
     }
@@ -113,12 +113,12 @@ privileged aspect ApplicationConversionServiceFactoryBean_Roo_ConversionService 
     }
     
     public void ApplicationConversionServiceFactoryBean.installLabelConverters(FormatterRegistry registry) {
-        registry.addConverter(getDocumentToStringConverter());
-        registry.addConverter(getIdToDocumentConverter());
-        registry.addConverter(getStringToDocumentConverter());
         registry.addConverter(getSignBookToStringConverter());
         registry.addConverter(getIdToSignBookConverter());
         registry.addConverter(getStringToSignBookConverter());
+        registry.addConverter(getSignRequestToStringConverter());
+        registry.addConverter(getIdToSignRequestConverter());
+        registry.addConverter(getStringToSignRequestConverter());
         registry.addConverter(getTagLogToStringConverter());
         registry.addConverter(getIdToTagLogConverter());
         registry.addConverter(getStringToTagLogConverter());

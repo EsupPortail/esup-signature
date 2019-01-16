@@ -5,11 +5,11 @@ package org.esupportail.esupsignature.domain;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.esupportail.esupsignature.domain.Document;
+import org.esupportail.esupsignature.domain.SignRequest;
 
-privileged aspect Document_Roo_ToString {
+privileged aspect SignRequest_Roo_ToString {
     
-    public String Document.toString() {
+    public String SignRequest.toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
     

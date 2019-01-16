@@ -21,8 +21,8 @@ import org.springframework.roo.addon.tostring.RooToString;
 
 @RooJavaBean
 @RooToString
-@RooJpaActiveRecord(finders={"findDocumentsByCreateByEquals"})
-public class Document {
+@RooJpaActiveRecord(finders={"findSignRequestsByCreateByEquals"})
+public class SignRequest {
 
 	String name;
 	

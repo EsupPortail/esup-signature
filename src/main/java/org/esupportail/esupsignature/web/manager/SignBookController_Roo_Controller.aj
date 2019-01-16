@@ -6,8 +6,8 @@ package org.esupportail.esupsignature.web.manager;
 import java.io.UnsupportedEncodingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
+import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.web.manager.SignBookController;
 import org.springframework.ui.Model;
@@ -96,7 +96,7 @@ privileged aspect SignBookController_Roo_Controller {
     void SignBookController.populateEditForm(Model uiModel, SignBook signBook) {
         uiModel.addAttribute("signBook", signBook);
         addDateTimeFormatPatterns(uiModel);
-        uiModel.addAttribute("documents", Document.findAllDocuments());
+        uiModel.addAttribute("signrequests", SignRequest.findAllSignRequests());
         uiModel.addAttribute("users", User.findAllUsers());
     }
     

@@ -42,7 +42,7 @@ public class IndexController {
 		String eppn = auth.getName();
 		if(!eppn.equals("anonymousUser")) {
 			if(User.countFindUsersByEppnEquals(eppn) > 0) {
-				return "redirect:/user/documents";
+				return "redirect:/user/signrequests";
 			} else {
 				return "redirect:/user/users";
 			}

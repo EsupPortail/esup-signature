@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:form="urn:jsptagdir:/WEB-INF/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <form:update id="fu_org_esupportail_esupsignature_domain_SignRequest" modelAttribute="signRequest" path="/manager/signrequests" versionField="Version" z="Eq0+yGipU1tlfmp/tcrNdbay1uA=">
+        <field:input field="name" id="c_org_esupportail_esupsignature_domain_SignRequest_name" z="C7sNncAEODf6l67R1FE4Y/kVl6M="/>
+        <field:datetime dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" z="jSR0YRgHCtq1iZEWEOGzcE/Puqc="/>
+        <field:input field="createBy" id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" z="0e4AjonMFdJKkmIiAL8i2hukGTI="/>
+        <field:datetime dateTimePattern="${signRequest_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" z="HMSum9G3hvXllPLifyAUqYpW0yo="/>
+        <field:input field="updateBy" id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" z="dBuNBuCoviHrcfn6wl8T5RUxMuw="/>
+        <field:textarea field="description" id="c_org_esupportail_esupsignature_domain_SignRequest_description" z="sXEfcm8EKp4Kww8UDbWRmGJ05MQ="/>
+        <field:select field="originalFile" id="c_org_esupportail_esupsignature_domain_SignRequest_originalFile" itemValue="id" items="${contents}" path="/contents" z="mNzKY6psOl0vRhsDz2KQK6RDH/A="/>
+        <field:select field="signedFile" id="c_org_esupportail_esupsignature_domain_SignRequest_signedFile" itemValue="id" items="${contents}" path="/contents" z="AmHEWTpRBupu9GJFDICYEQkZ0Lc="/>
+        <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignRequest_status" z="qlVuJoiXpy81E365J/FqMKdaUCA="/>
+        <field:input field="params" id="c_org_esupportail_esupsignature_domain_SignRequest_params" z="96EtSebpgFZkFfoj4+5AC+leZR8="/>
+        <field:input field="signType" id="c_org_esupportail_esupsignature_domain_SignRequest_signType" z="CZofziMwaRoPxLfGsyEG/OAdNB0="/>
+        <field:input field="newPageType" id="c_org_esupportail_esupsignature_domain_SignRequest_newPageType" z="mf7GUMor+sarrGrzM0ZDbgztvuc="/>
+        <field:input field="signPageNumber" id="c_org_esupportail_esupsignature_domain_SignRequest_signPageNumber" z="aSlz0e9aI+nLz9h4ZVn04WgsWj0="/>
+        <field:input field="xPos" id="c_org_esupportail_esupsignature_domain_SignRequest_xPos" z="94mWUt3nRT942BHE2TrMJnSZJj4="/>
+        <field:input field="yPos" id="c_org_esupportail_esupsignature_domain_SignRequest_yPos" z="jSVrWAxxHs4YshiwxPdg13inZQ4="/>
+    </form:update>
+</div>

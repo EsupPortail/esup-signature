@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+	<div class="btn-group">
+		<a alt="Ajouter une salle" class="btn btn-info pull-left" href="/user/signrequests?form" title="Signer un nouveau signRequest">
+			<span class="fas fa-pencil-alt"><!--  --></span> Signer un nouveau signRequest
+		</a>
+	</div>
+    <page:list id="pl_org_esupportail_esupsignature_domain_SignRequest" items="${signRequests}" z="user-managed">
+        <table:table data="${signRequests}" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">
+            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_name" property="name" z="user-managed"/>
+            <table:column date="true" dateTimePattern="${signRequest_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" property="createDate" z="user-managed"/>
+            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" property="createBy" z="user-managed"/>
+            <table:column render="false" date="true" dateTimePattern="${signRequest_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" property="updateDate" z="user-managed"/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" property="updateBy" z="user-managed"/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" z="user-managed"/>
+        </table:table>
+    </page:list>
+</div>
