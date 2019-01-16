@@ -34,15 +34,18 @@ public class PersistenceConfig {
 	private String username;
 	@Value("${database.password}")
 	private String password;
-	@Value("${database.hibernateHbm2ddlAuto}")
+	@Value("${database.hibernate.dialect}")
+	private String hibernateDialect;
+	@Value("${database.hibernate.hbm2ddl.auto}")
 	private String hibernateHbm2ddlAuto;
-	
+	@Value("${database.hibernate.hbm2ddl.import_files}")
+	private String hibernateHbm2ddlImportFiles;
 	
 	private Map<String, ?> hibernateJpaProperties() {
 	    HashMap<String, String> properties = new HashMap<>();
-	    properties.put("hibernate.dialect", "org.esupportail.esupsignature.postgres.PgFullTextDialect");
+	    properties.put("hibernate.dialect", hibernateDialect);
 	    properties.put("hibernate.hbm2ddl.auto", hibernateHbm2ddlAuto);
-	    properties.put("hibernate.hbm2ddl.import_files", "import.sql");
+	    properties.put("hibernate.hbm2ddl.import_files", hibernateHbm2ddlImportFiles);
 	    properties.put("hibernate.ejb.naming_strategy", "org.hibernate.cfg.ImprovedNamingStrategy");
 	    properties.put("hibernate.connection.charSet", "UTF-8");
 	    return properties;
