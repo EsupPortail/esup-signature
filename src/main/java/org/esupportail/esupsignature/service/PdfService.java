@@ -19,8 +19,10 @@ public class PdfService {
 
 	@Resource
 	FileService fileService;
+
+	public int signPageNumber = 0;
 	
-	public File addWhitePage(File pdfFile, int position, int signPageNumber) throws DocumentException, IOException {
+	public File addWhitePage(File pdfFile, int position) throws DocumentException, IOException {
 
 	    File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
 	    PdfReader reader = new PdfReader(new FileInputStream(pdfFile));
@@ -34,7 +36,6 @@ public class PdfService {
 	    }
 	    stamper.close();
 	    reader.close();
-	    
 	    return targetFile;
 
 	}

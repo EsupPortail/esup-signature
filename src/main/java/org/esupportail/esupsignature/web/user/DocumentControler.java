@@ -153,17 +153,17 @@ public class DocumentControler {
     	Document document = Document.findDocument(id);
         Content toSignContent = document.getOriginalFile();
         File toSignFile = toSignContent.getBigFile().toJavaIoFile();
-        int signPageNumber = 1;
+        pdfService.signPageNumber = 1;
         if(document.getParams().get("newPageType").equals(NewPageType.onBegin.toString())) {
         	log.info("add page on begin");
-        	toSignFile = pdfService.addWhitePage(toSignContent.getBigFile().toJavaIoFile(), 0, signPageNumber);
+        	toSignFile = pdfService.addWhitePage(toSignContent.getBigFile().toJavaIoFile(), 0);
         } else 
         if(document.getParams().get("newPageType").equals(NewPageType.onEnd.toString())) {
-        	signPageNumber = -1;
-        	toSignFile = pdfService.addWhitePage(toSignContent.getBigFile().toJavaIoFile(), -1, signPageNumber);
+        	log.info("add page on end");
+        	toSignFile = pdfService.addWhitePage(toSignContent.getBigFile().toJavaIoFile(), -1);
         } else
     	if(!document.getParams().get("signPageNumber").isEmpty()) {
-        	signPageNumber = Integer.valueOf(document.getParams().get("signPageNumber"));
+    		pdfService.signPageNumber = Integer.valueOf(document.getParams().get("signPageNumber"));
         }
         int xPos = 0;
         int yPos = 0;
@@ -173,7 +173,7 @@ public class DocumentControler {
         }
         if(document.getParams().get("signType").equals(SignType.imageStamp.toString())) {
         	log.info("imageStamp signature");
-        	File signedFile = pdfService.addImage(toSignFile, user.getSignImage().getBigFile().toJavaIoFile(), signPageNumber, xPos, yPos);
+        	File signedFile = pdfService.addImage(toSignFile, user.getSignImage().getBigFile().toJavaIoFile(), pdfService.signPageNumber, xPos, yPos);
             document.setSignedFile(fileService.addFile(new FileInputStream(signedFile), "signed_" + toSignContent.getFileName(), signedFile.length(), toSignContent.getContentType()));
 
         } else 
@@ -185,8 +185,8 @@ public class DocumentControler {
             	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
             }
             try {
-        		String pemCert = userKeystoreService.getPemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
-            	Content signedFile = fileService.certSignPdf(toSignFile, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), signPageNumber, xPos, yPos);
+            	String pemCert = userKeystoreService.getPemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
+            	Content signedFile = fileService.certSignPdf(toSignFile, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), pdfService.signPageNumber, xPos, yPos);
             	document.setSignedFile(signedFile);
             } catch (Exception e) {
             	redirectAttrs.addFlashAttribute("messageCustom", "keystore issue");
