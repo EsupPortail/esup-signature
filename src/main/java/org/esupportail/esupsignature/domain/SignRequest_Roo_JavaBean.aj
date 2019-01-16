@@ -5,7 +5,7 @@ package org.esupportail.esupsignature.domain;
 
 import java.util.Date;
 import java.util.Map;
-import org.esupportail.esupsignature.domain.Content;
+import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignRequest;
 
 privileged aspect SignRequest_Roo_JavaBean {
@@ -58,19 +58,19 @@ privileged aspect SignRequest_Roo_JavaBean {
         this.description = description;
     }
     
-    public Content SignRequest.getOriginalFile() {
+    public Document SignRequest.getOriginalFile() {
         return this.originalFile;
     }
     
-    public void SignRequest.setOriginalFile(Content originalFile) {
+    public void SignRequest.setOriginalFile(Document originalFile) {
         this.originalFile = originalFile;
     }
     
-    public Content SignRequest.getSignedFile() {
+    public Document SignRequest.getSignedFile() {
         return this.signedFile;
     }
     
-    public void SignRequest.setSignedFile(Content signedFile) {
+    public void SignRequest.setSignedFile(Document signedFile) {
         this.signedFile = signedFile;
     }
     

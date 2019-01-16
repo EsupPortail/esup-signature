@@ -10,7 +10,7 @@ import org.springframework.roo.addon.tostring.RooToString;
 @RooJavaBean
 @RooToString(excludeFields = { "bigFile", "file" })
 @RooJpaActiveRecord
-public class Content {
+public class Document {
 
 	private String fileName;
 

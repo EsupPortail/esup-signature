@@ -6,94 +6,94 @@ package org.esupportail.esupsignature.domain;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import org.esupportail.esupsignature.domain.Content;
+import org.esupportail.esupsignature.domain.Document;
 import org.springframework.transaction.annotation.Transactional;
 
-privileged aspect Content_Roo_Jpa_ActiveRecord {
+privileged aspect Document_Roo_Jpa_ActiveRecord {
     
     @PersistenceContext
-    transient EntityManager Content.entityManager;
+    transient EntityManager Document.entityManager;
     
-    public static final List<String> Content.fieldNames4OrderClauseFilter = java.util.Arrays.asList("fileName", "size", "contentType", "bigFile");
+    public static final List<String> Document.fieldNames4OrderClauseFilter = java.util.Arrays.asList("fileName", "size", "contentType", "bigFile");
     
-    public static final EntityManager Content.entityManager() {
-        EntityManager em = new Content().entityManager;
+    public static final EntityManager Document.entityManager() {
+        EntityManager em = new Document().entityManager;
         if (em == null) throw new IllegalStateException("Entity manager has not been injected (is the Spring Aspects JAR configured as an AJC/AJDT aspects library?)");
         return em;
     }
     
-    public static long Content.countContents() {
-        return entityManager().createQuery("SELECT COUNT(o) FROM Content o", Long.class).getSingleResult();
+    public static long Document.countDocuments() {
+        return entityManager().createQuery("SELECT COUNT(o) FROM Document o", Long.class).getSingleResult();
     }
     
-    public static List<Content> Content.findAllContents() {
-        return entityManager().createQuery("SELECT o FROM Content o", Content.class).getResultList();
+    public static List<Document> Document.findAllDocuments() {
+        return entityManager().createQuery("SELECT o FROM Document o", Document.class).getResultList();
     }
     
-    public static List<Content> Content.findAllContents(String sortFieldName, String sortOrder) {
-        String jpaQuery = "SELECT o FROM Content o";
+    public static List<Document> Document.findAllDocuments(String sortFieldName, String sortOrder) {
+        String jpaQuery = "SELECT o FROM Document o";
         if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
             jpaQuery = jpaQuery + " ORDER BY " + sortFieldName;
             if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
                 jpaQuery = jpaQuery + " " + sortOrder;
             }
         }
-        return entityManager().createQuery(jpaQuery, Content.class).getResultList();
+        return entityManager().createQuery(jpaQuery, Document.class).getResultList();
     }
     
-    public static Content Content.findContent(Long id) {
+    public static Document Document.findDocument(Long id) {
         if (id == null) return null;
-        return entityManager().find(Content.class, id);
+        return entityManager().find(Document.class, id);
     }
     
-    public static List<Content> Content.findContentEntries(int firstResult, int maxResults) {
-        return entityManager().createQuery("SELECT o FROM Content o", Content.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
+    public static List<Document> Document.findDocumentEntries(int firstResult, int maxResults) {
+        return entityManager().createQuery("SELECT o FROM Document o", Document.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
     }
     
-    public static List<Content> Content.findContentEntries(int firstResult, int maxResults, String sortFieldName, String sortOrder) {
-        String jpaQuery = "SELECT o FROM Content o";
+    public static List<Document> Document.findDocumentEntries(int firstResult, int maxResults, String sortFieldName, String sortOrder) {
+        String jpaQuery = "SELECT o FROM Document o";
         if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
             jpaQuery = jpaQuery + " ORDER BY " + sortFieldName;
             if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
                 jpaQuery = jpaQuery + " " + sortOrder;
             }
         }
-        return entityManager().createQuery(jpaQuery, Content.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
+        return entityManager().createQuery(jpaQuery, Document.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
     }
     
     @Transactional
-    public void Content.persist() {
+    public void Document.persist() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.persist(this);
     }
     
     @Transactional
-    public void Content.remove() {
+    public void Document.remove() {
         if (this.entityManager == null) this.entityManager = entityManager();
         if (this.entityManager.contains(this)) {
             this.entityManager.remove(this);
         } else {
-            Content attached = Content.findContent(this.id);
+            Document attached = Document.findDocument(this.id);
             this.entityManager.remove(attached);
         }
     }
     
     @Transactional
-    public void Content.flush() {
+    public void Document.flush() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.flush();
     }
     
     @Transactional
-    public void Content.clear() {
+    public void Document.clear() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.clear();
     }
     
     @Transactional
-    public Content Content.merge() {
+    public Document Document.merge() {
         if (this.entityManager == null) this.entityManager = entityManager();
-        Content merged = this.entityManager.merge(this);
+        Document merged = this.entityManager.merge(this);
         this.entityManager.flush();
         return merged;
     }

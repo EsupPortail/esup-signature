@@ -3,7 +3,7 @@
 
 package org.esupportail.esupsignature.domain;
 
-import org.esupportail.esupsignature.domain.Content;
+import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.User;
 
 privileged aspect User_Roo_JavaBean {
@@ -40,11 +40,11 @@ privileged aspect User_Roo_JavaBean {
         this.email = email;
     }
     
-    public Content User.getSignImage() {
+    public Document User.getSignImage() {
         return this.signImage;
     }
     
-    public void User.setSignImage(Content signImage) {
+    public void User.setSignImage(Document signImage) {
         this.signImage = signImage;
     }
     
@@ -72,11 +72,11 @@ privileged aspect User_Roo_JavaBean {
         this.signImageBase64 = signImageBase64;
     }
     
-    public Content User.getKeystore() {
+    public Document User.getKeystore() {
         return this.keystore;
     }
     
-    public void User.setKeystore(Content keystore) {
+    public void User.setKeystore(Document keystore) {
         this.keystore = keystore;
     }
     

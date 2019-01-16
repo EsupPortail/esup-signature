@@ -9,9 +9,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.DocStatus;
-import org.esupportail.esupsignature.domain.Content;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.PdfService;
@@ -84,8 +84,6 @@ public class SignRequestController {
         addDateTimeFormatPatterns(uiModel);
         SignRequest document = SignRequest.findSignRequest(id);
         uiModel.addAttribute("document", document);
-        Content originalFile = document.getOriginalFile();
-        uiModel.addAttribute("originalFilePath", originalFile.getUrl());
         uiModel.addAttribute("itemId", id);
         return "manager/signrequests/show";
     }
@@ -93,7 +91,7 @@ public class SignRequestController {
     @RequestMapping(value = "/get-original-file/{id}", method = RequestMethod.GET)
     public void getOriginalFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
     	SignRequest document = SignRequest.findSignRequest(id);
-        Content file = document.getOriginalFile();
+        Document file = document.getOriginalFile();
         try {
             response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
             response.setContentType(file.getContentType());
@@ -106,7 +104,7 @@ public class SignRequestController {
     @RequestMapping(value = "/get-signed-file/{id}", method = RequestMethod.GET)
     public void getSignedFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
     	SignRequest document = SignRequest.findSignRequest(id);
-        Content file = document.getSignedFile();
+        Document file = document.getSignedFile();
         try {
             response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
             response.setContentType(file.getContentType());
@@ -122,8 +120,8 @@ public class SignRequestController {
 		String eppn = auth.getName();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	SignRequest document = SignRequest.findSignRequest(id);
-        Content file = document.getOriginalFile();
-        Content signedFile;
+        Document file = document.getOriginalFile();
+        Document signedFile;
         if(password != null && !password.isEmpty()) {
         	userKeystoreService.setPassword(password);
         }

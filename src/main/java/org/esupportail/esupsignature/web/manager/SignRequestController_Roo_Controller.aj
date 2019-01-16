@@ -6,7 +6,7 @@ package org.esupportail.esupsignature.web.manager;
 import java.io.UnsupportedEncodingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import org.esupportail.esupsignature.domain.Content;
+import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.web.manager.SignRequestController;
 import org.springframework.ui.Model;
@@ -76,7 +76,7 @@ privileged aspect SignRequestController_Roo_Controller {
     void SignRequestController.populateEditForm(Model uiModel, SignRequest signRequest) {
         uiModel.addAttribute("signRequest", signRequest);
         addDateTimeFormatPatterns(uiModel);
-        uiModel.addAttribute("contents", Content.findAllContents());
+        uiModel.addAttribute("documents", Document.findAllDocuments());
     }
     
     String SignRequestController.encodeUrlPathSegment(String pathSegment, HttpServletRequest httpServletRequest) {

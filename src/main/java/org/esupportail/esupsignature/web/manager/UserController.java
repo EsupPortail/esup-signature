@@ -7,7 +7,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import org.esupportail.esupsignature.domain.Content;
+import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
@@ -68,7 +68,7 @@ public class UserController {
     public String show(@PathVariable("id") Long id, Model uiModel) throws Exception {
     	User user = User.findUser(id);
         uiModel.addAttribute("user", user);
-        Content signFile = user.getSignImage();
+        Document signFile = user.getSignImage();
         uiModel.addAttribute("signFile", fileService.getBase64Image(signFile));
     	//uiModel.addAttribute("keystore", userKeystoreService.pemToBase64String(userKeystoreService.getPemCertificat(fileService.toJavaIoFile(user.getKeystore()), user.getEppn(), user.getEppn(), "password")));
         uiModel.addAttribute("keystore", user.getKeystore().getFileName());

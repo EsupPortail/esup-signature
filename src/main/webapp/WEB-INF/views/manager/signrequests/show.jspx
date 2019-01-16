@@ -9,8 +9,6 @@
         <field:display date="true" dateTimePattern="${signRequest_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_SignRequest_updateDate" object="${signrequest}" z="wIgDRuekYpsIu6d9lXr4/Cue+Go="/>
         <field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_SignRequest_updateBy" object="${signrequest}" z="zTdi2i8aU3zJOs2W92lBNVY6oUE="/>
         <field:display field="description" id="s_org_esupportail_esupsignature_domain_SignRequest_description" object="${signrequest}" z="wysrMsJcMCs/WbVzYRtjPu5Wdw8="/>
-        <field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_SignRequest_originalFile" object="${signrequest}" z="AqbkPrawHePypOyanGvYbQEj5J0="/>
-        <field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_SignRequest_signedFile" object="${signrequest}" z="1cJy771EMV8tCFZnbSFYdyE1JBU="/>
         <field:display field="status" id="s_org_esupportail_esupsignature_domain_SignRequest_status" object="${signrequest}" z="mWM0etQKGYbqNJluUOkUuxyzrGQ="/>
         <field:display field="params" id="s_org_esupportail_esupsignature_domain_SignRequest_params" object="${signrequest}" z="lNj5GnhF8rTmcMol8fKk41inuQ4="/>
         <field:display field="signType" id="s_org_esupportail_esupsignature_domain_SignRequest_signType" object="${signrequest}" z="AcQLNjOAEICWy+ffyGhp4FzxmWE="/>
@@ -18,5 +16,7 @@
         <field:display field="signPageNumber" id="s_org_esupportail_esupsignature_domain_SignRequest_signPageNumber" object="${signrequest}" z="0DC45EQfaPqB9jQNbzSOoWnudR8="/>
         <field:display field="XPos" id="s_org_esupportail_esupsignature_domain_SignRequest_xPos" object="${signrequest}" z="4BUoBW0sUk3qqxaTE/HWCF8AYdA="/>
         <field:display field="YPos" id="s_org_esupportail_esupsignature_domain_SignRequest_yPos" object="${signrequest}" z="vE6Zgu/5Z2CjEC491a2Ie72grvk="/>
+        <field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_SignRequest_originalFile" object="${signrequest}" z="AqbkPrawHePypOyanGvYbQEj5J0="/>
+        <field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_SignRequest_signedFile" object="${signrequest}" z="1cJy771EMV8tCFZnbSFYdyE1JBU="/>
     </page:show>
 </div>

@@ -42,10 +42,10 @@ public class SignRequest {
     private String description;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
-    private Content originalFile = new Content();
+    private Document originalFile = new Document();
     
     @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
-    private Content signedFile = new Content();
+    private Document signedFile = new Document();
     
     @Enumerated(EnumType.STRING)
     private DocStatus status;	

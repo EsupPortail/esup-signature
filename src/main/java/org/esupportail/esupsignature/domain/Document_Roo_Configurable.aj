@@ -3,11 +3,11 @@
 
 package org.esupportail.esupsignature.domain;
 
-import org.esupportail.esupsignature.domain.Content;
+import org.esupportail.esupsignature.domain.Document;
 import org.springframework.beans.factory.annotation.Configurable;
 
-privileged aspect Content_Roo_Configurable {
+privileged aspect Document_Roo_Configurable {
     
-    declare @type: Content: @Configurable;
+    declare @type: Document: @Configurable;
     
 }

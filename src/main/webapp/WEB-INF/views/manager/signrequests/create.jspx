@@ -9,8 +9,6 @@
         <field:datetime dateTimePattern="${signRequest_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" z="HMSum9G3hvXllPLifyAUqYpW0yo="/>
         <field:input field="updateBy" id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" z="dBuNBuCoviHrcfn6wl8T5RUxMuw="/>
         <field:textarea field="description" id="c_org_esupportail_esupsignature_domain_SignRequest_description" z="sXEfcm8EKp4Kww8UDbWRmGJ05MQ="/>
-        <field:select field="originalFile" id="c_org_esupportail_esupsignature_domain_SignRequest_originalFile" itemValue="id" items="${contents}" path="/contents" z="mNzKY6psOl0vRhsDz2KQK6RDH/A="/>
-        <field:select field="signedFile" id="c_org_esupportail_esupsignature_domain_SignRequest_signedFile" itemValue="id" items="${contents}" path="/contents" z="AmHEWTpRBupu9GJFDICYEQkZ0Lc="/>
         <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignRequest_status" z="qlVuJoiXpy81E365J/FqMKdaUCA="/>
         <field:input field="params" id="c_org_esupportail_esupsignature_domain_SignRequest_params" z="96EtSebpgFZkFfoj4+5AC+leZR8="/>
         <field:input field="signType" id="c_org_esupportail_esupsignature_domain_SignRequest_signType" z="CZofziMwaRoPxLfGsyEG/OAdNB0="/>
@@ -18,6 +16,8 @@
         <field:input field="signPageNumber" id="c_org_esupportail_esupsignature_domain_SignRequest_signPageNumber" z="aSlz0e9aI+nLz9h4ZVn04WgsWj0="/>
         <field:input field="xPos" id="c_org_esupportail_esupsignature_domain_SignRequest_xPos" z="94mWUt3nRT942BHE2TrMJnSZJj4="/>
         <field:input field="yPos" id="c_org_esupportail_esupsignature_domain_SignRequest_yPos" z="jSVrWAxxHs4YshiwxPdg13inZQ4="/>
+        <field:select field="originalFile" id="c_org_esupportail_esupsignature_domain_SignRequest_originalFile" itemValue="id" items="${documents}" path="/documents" z="UUYh2GPOts1CX9tM+6bnE/LXev0="/>
+        <field:select field="signedFile" id="c_org_esupportail_esupsignature_domain_SignRequest_signedFile" itemValue="id" items="${documents}" path="/documents" z="2qfEChzz9A/KMRlRM5DkJm0ZL7o="/>
     </form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_SignRequest" render="${not empty dependencies}" z="51SqevJnwskDzYV9CwvkH2zj7t0="/>
 </div>

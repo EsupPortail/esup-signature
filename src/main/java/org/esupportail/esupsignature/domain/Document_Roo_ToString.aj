@@ -5,11 +5,11 @@ package org.esupportail.esupsignature.domain;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.esupportail.esupsignature.domain.Content;
+import org.esupportail.esupsignature.domain.Document;
 
-privileged aspect Content_Roo_ToString {
+privileged aspect Document_Roo_ToString {
     
-    public String Content.toString() {
+    public String Document.toString() {
         return new ReflectionToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).setExcludeFieldNames("bigFile", "file").toString();
     }
     

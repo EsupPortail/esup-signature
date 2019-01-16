@@ -5,7 +5,7 @@ package org.esupportail.esupsignature.web.manager;
 
 import java.io.UnsupportedEncodingException;
 import javax.servlet.http.HttpServletRequest;
-import org.esupportail.esupsignature.domain.Content;
+import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.web.manager.UserController;
 import org.springframework.ui.Model;
@@ -56,7 +56,7 @@ privileged aspect UserController_Roo_Controller {
     
     void UserController.populateEditForm(Model uiModel, User user) {
         uiModel.addAttribute("user", user);
-        uiModel.addAttribute("contents", Content.findAllContents());
+        uiModel.addAttribute("documents", Document.findAllDocuments());
     }
     
     String UserController.encodeUrlPathSegment(String pathSegment, HttpServletRequest httpServletRequest) {

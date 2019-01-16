@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
-import org.esupportail.esupsignature.domain.Content;
+import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.DocStatus;
 import org.esupportail.esupsignature.domain.SignRequest.NewPageType;
@@ -106,8 +106,6 @@ public class SignRequestControler {
         	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
         	uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 	        uiModel.addAttribute("signRequest", signRequest);
-	        Content originalFile = signRequest.getOriginalFile();
-	        uiModel.addAttribute("originalFilePath", originalFile.getUrl());
 	        uiModel.addAttribute("itemId", id);
 	        return "user/signrequests/show";
         } else {
@@ -151,7 +149,7 @@ public class SignRequestControler {
 		String eppn = auth.getName();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	SignRequest signRequest = SignRequest.findSignRequest(id);
-        Content toSignContent = signRequest.getOriginalFile();
+        Document toSignContent = signRequest.getOriginalFile();
         File toSignFile = toSignContent.getBigFile().toJavaIoFile();
         pdfService.signPageNumber = 1;
         if(signRequest.getParams().get("newPageType").equals(NewPageType.onBegin.toString())) {
@@ -186,7 +184,7 @@ public class SignRequestControler {
             }
             try {
             	String pemCert = userKeystoreService.getPemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
-            	Content signedFile = fileService.certSignPdf(toSignFile, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), pdfService.signPageNumber, xPos, yPos);
+            	Document signedFile = fileService.certSignPdf(toSignFile, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), pdfService.signPageNumber, xPos, yPos);
             	signRequest.setSignedFile(signedFile);
             } catch (Exception e) {
             	redirectAttrs.addFlashAttribute("messageCustom", "keystore issue");
@@ -209,7 +207,7 @@ public class SignRequestControler {
     void populateEditForm(Model uiModel, SignRequest signRequest) {
         uiModel.addAttribute("signRequest", signRequest);
         addDateTimeFormatPatterns(uiModel);
-        uiModel.addAttribute("files", Content.findAllContents());
+        uiModel.addAttribute("files", Document.findAllDocuments());
         uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
         uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
     }

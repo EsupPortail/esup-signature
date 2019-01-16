@@ -9,7 +9,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import org.esupportail.esupsignature.domain.Content;
+import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
@@ -63,7 +63,7 @@ public class UserControler {
     	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	
     	populateEditForm(uiModel, user);
-        Content signFile = user.getSignImage();
+        Document signFile = user.getSignImage();
         uiModel.addAttribute("signFile", fileService.getBase64Image(signFile));
         uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         return "user/users/show";
@@ -142,10 +142,13 @@ public class UserControler {
         User user = User.findUser(id);
         if(password != null && !password.isEmpty()) {
         	userKeystoreService.setPassword(password);
+        } else {
+        	userKeystoreService.setPassword("");
         }
         try {
         	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn()));
         } catch (Exception e) {
+        	log.error("open keystore fail", e);
         	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
 		}
         return "redirect:/user/users/";
@@ -153,7 +156,7 @@ public class UserControler {
     
     void populateEditForm(Model uiModel, User user) {
         uiModel.addAttribute("user", user);
-        uiModel.addAttribute("files", Content.findAllContents());
+        uiModel.addAttribute("files", Document.findAllDocuments());
     }
 
 }
