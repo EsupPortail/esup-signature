@@ -3,10 +3,12 @@ package org.esupportail.esupsignature.web.user;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.esupportail.esupsignature.domain.Document;
@@ -29,6 +31,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @RequestMapping("/user/users")
@@ -44,7 +48,7 @@ public class UserControler {
 		return "user/users";
 	}
 	
-	@Autowired
+	@Autowired(required = false)
 	PersonLdapDao personDao;
 	
 	@Resource
@@ -53,6 +57,9 @@ public class UserControler {
 	@Resource
 	UserKeystoreService userKeystoreService;
 	
+    @Autowired
+    private HttpServletRequest request;
+    
     @RequestMapping(produces = "text/html")
     public String settings(Model uiModel) throws Exception {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -73,18 +80,27 @@ public class UserControler {
     public String createForm(Model uiModel) {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String eppn = auth.getName();
-		List<PersonLdap> persons =  personDao.getPersonNamesByEppn(eppn);
+		String mail = request.getHeader("mail");
+		String name = request.getHeader("sn");
+		String firstName = request.getHeader("givenName");
+		if(personDao != null) {
+			List<PersonLdap> persons =  personDao.getPersonNamesByEppn(eppn);
+			mail = persons.get(0).getMail();
+			name = persons.get(0).getSn();
+			firstName = persons.get(0).getGivenName(); 
+		}
+		
 		User user;
 		if(User.countFindUsersByEppnEquals(eppn) > 0) {
 			user = User.findUsersByEppnEquals(eppn).getSingleResult();
-			user.setEmail(persons.get(0).getMail());
+			user.setEmail(mail);
 	        uiModel.addAttribute("user", user);
 		} else {
 			user = new User();
-			user.setName(persons.get(0).getSn());
-			user.setFirstname(persons.get(0).getGivenName());
+			user.setName(name);
+			user.setFirstname(firstName);
 			user.setEppn(eppn);
-			user.setEmail(persons.get(0).getMail());
+			user.setEmail(mail);
 		}
         uiModel.addAttribute("user", user);
 		return "user/users/update";
@@ -99,13 +115,21 @@ public class UserControler {
         uiModel.asMap().clear();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String eppn = auth.getName();
-		PersonLdap person =  personDao.getPersonNamesByEppn(eppn).get(0);
+		String mail = request.getHeader("mail");
+		String name = request.getHeader("sn");
+		String firstName = request.getHeader("givenName");
+		if(personDao != null) {
+			List<PersonLdap> persons =  personDao.getPersonNamesByEppn(eppn);
+			mail = persons.get(0).getMail();
+			name = persons.get(0).getSn();
+			firstName = persons.get(0).getGivenName(); 
+		}
         if(User.countFindUsersByEppnEquals(eppn) > 0) {
             User userToUdate = User.findUsersByEppnEquals(eppn).getSingleResult();
             if(!user.getPublicKey().isEmpty()) {
-            	userToUdate.setEmail(person.getMail());
-            	userToUdate.setName(person.getSn());
-            	userToUdate.setFirstname(person.getGivenName());
+            	userToUdate.setEmail(mail);
+            	userToUdate.setName(name);
+            	userToUdate.setFirstname(firstName);
 	            File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
 	            InputStream inputStream = new FileInputStream(file);
             	userToUdate.getKeystore().remove();
@@ -121,9 +145,9 @@ public class UserControler {
             	redirectAttrs.addFlashAttribute("messageCustom", "image is required");
             }
         	try {
-            	user.setEmail(person.getMail());
-            	user.setName(person.getSn());
-            	user.setFirstname(person.getGivenName());
+            	user.setEmail(mail);
+            	user.setName(name);
+            	user.setFirstname(firstName);
             	user.setSignImage(fileService.addFile(user.getSignImageBase64(), eppn + "_sign.png", "application/png"));
             	if(!user.getPublicKey().isEmpty()) {
             		File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());

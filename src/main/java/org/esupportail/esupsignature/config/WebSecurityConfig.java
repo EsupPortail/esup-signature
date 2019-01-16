@@ -27,7 +27,7 @@ public class WebSecurityConfig {
 	@Resource
 	private DatabaseUserDetailsService databaseUserDetailsService;
 	
-	@Autowired
+	@Autowired(required = false)
 	private LdapUserDetailsService ldapUserDetailsService;
 	
 	@Bean

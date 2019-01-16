@@ -33,7 +33,7 @@ public class UtilsService {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	
-	@Autowired
+	@Autowired(required = false)
 	List<PersonLdapDao> personDaos;
 
 	
