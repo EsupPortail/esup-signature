@@ -136,7 +136,7 @@ public class DocumentControler {
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	Document document = Document.findDocument(id);
         File file = document.getOriginalFile();
-
+//TODO : if ajout de page
         if(document.getSignType().equals(SignType.imageStamp)) {
         	//pdfService.addWhitePageOnTop(file.getBigFile().toJavaIoFile(), 0)
         	java.io.File signedFile = pdfService.addImage(file.getBigFile().toJavaIoFile(), user.getSignImage().getBigFile().toJavaIoFile(), 1, 200, 200);
@@ -144,9 +144,10 @@ public class DocumentControler {
 
         } else 
         if(document.getSignType().equals(SignType.certPAdES)) {
-            if(password != null && !password.isEmpty()) {
+            if(password != null) {
             	userKeystoreService.setPassword(password);
-            	throw new Exception("aa");
+            } else {
+            	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
             }
             try {
                 String pemCert = userKeystoreService.getPemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
@@ -160,6 +161,16 @@ public class DocumentControler {
         return "redirect:/user/documents/" + id;
     }
 	
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
+    public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, Model uiModel) {
+    	Document document = Document.findDocument(id);
+        document.remove();
+        uiModel.asMap().clear();
+        uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
+        uiModel.addAttribute("size", (size == null) ? "10" : size.toString());
+        return "redirect:/user/documents/";
+    }
+    
     void populateEditForm(Model uiModel, Document document) {
         uiModel.addAttribute("document", document);
         addDateTimeFormatPatterns(uiModel);

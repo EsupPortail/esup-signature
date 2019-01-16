@@ -34,7 +34,7 @@ public class EsupSignatureInitializer implements WebApplicationInitializer {
 		RequestContextListener requestContextListener = new RequestContextListener();
 		servletContext.addListener(requestContextListener);
 		servletContext.addFilter("CharacterEncodingFilter", new CharacterEncodingFilter("UTF-8", true)).addMappingForUrlPatterns(null, false, "/*");
-		servletContext.addFilter("HttpMethodFilter", new HiddenHttpMethodFilter());
+		servletContext.addFilter("HttpMethodFilter", new HiddenHttpMethodFilter()).addMappingForUrlPatterns(null, false, "/*");
 		servletContext.addFilter("Spring OpenEntityManagerInViewFilter1", new OpenEntityManagerInViewFilter()).addMappingForUrlPatterns(null, false, "/*");
 		servletContext.addFilter("springSecurityFilterChain", new DelegatingFilterProxy()).addMappingForUrlPatterns(null, false, "/*");
 		
