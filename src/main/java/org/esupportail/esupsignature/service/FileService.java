@@ -75,7 +75,7 @@ public class FileService {
         return file;
     }
 	
-	public Content certSignPdf(Content file, String certif, List<String> certifChain, Content imageFile, int x, int y, boolean onNewPage, int positionOfNewPage) throws IOException, SQLException, DocumentException {
+	public Content certSignPdf(File file, String certif, List<String> certifChain, Content imageFile, int page, int x, int y) throws IOException, SQLException, DocumentException {
 		
 		DataToSignParams params = new DataToSignParams();
         List<String> certificateChain = new ArrayList<String>();
@@ -98,31 +98,28 @@ public class FileService {
 		signaturePdfForm.setBase64CertificateChain(params.getCertificateChain());
 		signaturePdfForm.setBase64SignatureValue("");
 		signaturePdfForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
-		MultipartFile multipartFile;
-		if(onNewPage) {
-			multipartFile = new MockMultipartFile(file.getFileName(), file.getFileName(), file.getContentType(), new FileInputStream(pdfService.addWhitePageOnTop(file.getBigFile().toJavaIoFile(), positionOfNewPage)));
-		} else {
-			multipartFile = new MockMultipartFile(file.getFileName(), file.getFileName(), file.getContentType(), file.getBigFile().getBinaryFile().getBinaryStream());
-		}
+
+		MultipartFile multipartFile = new MockMultipartFile(file.getName(), file.getName(), "application/pdf", new FileInputStream(file));
+
 		signaturePdfForm.setDocumentToSign(multipartFile);		
         
-		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, 1, x, y, imageFile.getBigFile().toJavaIoFile());
+		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, page, x, y, imageFile.getBigFile().toJavaIoFile());
 
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
         return addFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), signedPdfDocument.getBytes().length, signedPdfDocument.getMimeType().getMimeTypeString());
 	}
-
+/*
 	public Content simpleSignPdf(Content file, Content imageFile, int x, int y, boolean onNewPage, int positionOfNewPage) throws IOException, SQLException, DocumentException {
 		File signedFile;
 		if(onNewPage) {
-			signedFile = pdfService.addImage(pdfService.addWhitePageOnTop(file.getBigFile().toJavaIoFile(), positionOfNewPage), imageFile.getBigFile().toJavaIoFile(), 0, 200, 200);
+			signedFile = pdfService.addImage(pdfService.addWhitePage(file.getBigFile().toJavaIoFile(), positionOfNewPage), imageFile.getBigFile().toJavaIoFile(), 0, 200, 200);
 		} else {
 			signedFile = pdfService.addImage(file.getBigFile().toJavaIoFile(), imageFile.getBigFile().toJavaIoFile(), 0, 200, 200);			
 		}
 		return addFile(new FileInputStream(signedFile), "signed_" + file.getFileName(), signedFile.length(), file.getContentType());
 	}
-	
+*/	
 	public String getBase64Image(Content file) throws IOException, SQLException {
 		String out = "";
 		BufferedImage imBuff = ImageIO.read(file.getBigFile().getBinaryFile().getBinaryStream());

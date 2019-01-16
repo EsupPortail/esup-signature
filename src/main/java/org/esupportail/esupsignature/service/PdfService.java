@@ -20,14 +20,16 @@ public class PdfService {
 	@Resource
 	FileService fileService;
 	
-	public File addWhitePageOnTop(File pdfFile, int position) throws DocumentException, IOException {
+	public File addWhitePage(File pdfFile, int position, int signPageNumber) throws DocumentException, IOException {
 
-	    File targetFile =  File.createTempFile("outFile", ".tmp");
+	    File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
 	    PdfReader reader = new PdfReader(new FileInputStream(pdfFile));
 	    PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(targetFile));
 	    if(position < 0) {
+	    	signPageNumber = reader.getNumberOfPages() + 1;
 	    	stamper.insertPage(reader.getNumberOfPages() + 1, reader.getPageSizeWithRotation(1));
 	    } else {
+	    	signPageNumber = position;
 	    	stamper.insertPage(position, reader.getPageSizeWithRotation(1));
 	    }
 	    stamper.close();
@@ -38,15 +40,16 @@ public class PdfService {
 	}
 
 	public File addImage(File pdfFile, File signImage, int page, int x, int y) throws DocumentException, IOException {
-
-		File targetFile =  File.createTempFile("outFile", ".tmp");
+		
+		File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
 	    PdfReader reader = new PdfReader(new FileInputStream(pdfFile));
-	    PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(targetFile));
-        Image image = Image.getInstance(IOUtils.toByteArray(new FileInputStream(signImage)));
+	    Image image = Image.getInstance(IOUtils.toByteArray(new FileInputStream(signImage)));
         image.setAbsolutePosition(x, y);
+	    PdfStamper stamper = new PdfStamper(reader, new FileOutputStream(targetFile));
         stamper.getOverContent(page).addImage(image);
         stamper.close();
 	    reader.close();
+	    
 	    return targetFile;
 	}
 	

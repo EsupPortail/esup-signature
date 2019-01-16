@@ -13,6 +13,7 @@
         <field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_Document_originalFile" object="${document}" render="false" z="user-managed"/>
         <field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_Document_signedFile" object="${document}" render="false" z="user-managed"/>
         <field:display field="signType" id="s_org_esupportail_esupsignature_domain_Document_signType" object="${document}" z="user-managed"/>
+        ${document.params}
         <dl class="display-group border-bottom m-0">
         	<dt class="col-lg-4">Get original document</dt>
 	        <dd>
@@ -36,7 +37,7 @@
 			        <dd>
 		                <form action="/user/documents/signdoc/${id}" id="command" method="post">
 		                    <div class="form-group">
-		                    <c:if test="${document.signType eq 'certPAdES' or document.signType eq 'certXAdES'}">
+		                    <c:if test="${document.params.signType eq 'certPAdES' or document.params.signType eq 'certXAdES'}">
 			                    <c:choose>
 			                    	<c:when test="${not empty keystore}">
 				                        <label class="col-lg-6 col-form-label" for="password">

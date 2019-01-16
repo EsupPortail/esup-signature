@@ -12,6 +12,11 @@
         <field:input field="status" id="c_org_esupportail_esupsignature_domain_Document_status" z="F371H+DxhFCKlx4ZZK5iTtSaC1U="/>
         <field:select field="originalFile" id="c_org_esupportail_esupsignature_domain_Document_originalFile" itemValue="id" items="${contents}" path="/contents" z="nY6UBK33HP7leVFqQJA+1V6M79g="/>
         <field:select field="signedFile" id="c_org_esupportail_esupsignature_domain_Document_signedFile" itemValue="id" items="${contents}" path="/contents" z="O+Autx4Cs1Qdx8+XrYvUC9ioMuI="/>
+        <field:input field="params" id="c_org_esupportail_esupsignature_domain_Document_params" z="ojmjoGFZRRwFx+L3phTSjVt6IEE="/>
         <field:input field="signType" id="c_org_esupportail_esupsignature_domain_Document_signType" z="/fsWfRcji5Mdc942t2kYMu07Q0I="/>
+        <field:input field="xPos" id="c_org_esupportail_esupsignature_domain_Document_xPos" z="SiH+3KnAMmT4Ek5kC9/L6+YfypI="/>
+        <field:input field="yPos" id="c_org_esupportail_esupsignature_domain_Document_yPos" z="5q79Ajn1Y81g4I2t76+OR4vEEns="/>
+        <field:input field="newPageType" id="c_org_esupportail_esupsignature_domain_Document_newPageType" z="T8F7+wlg8zTBwHchxdF/ngFPdi8="/>
+        <field:input field="signPageNumber" id="c_org_esupportail_esupsignature_domain_Document_signPageNumber" z="8leLJnWWeGo4hORooNxzsxiKWFs="/>
     </form:update>
 </div>

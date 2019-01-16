@@ -45,6 +45,11 @@
                 </form>
             </c:otherwise>
         </c:choose>
+        <field:display field="params" id="s_org_esupportail_esupsignature_domain_Document_params" object="${document}" z="B4pO+0GGZC65gO4iq+vMDLTFR8o="/>
         <field:display field="signType" id="s_org_esupportail_esupsignature_domain_Document_signType" object="${document}" z="TweDoTCJPuJxvFjyilkhk30F0rA="/>
+        <field:display field="XPos" id="s_org_esupportail_esupsignature_domain_Document_xPos" object="${document}" z="GBY3IvKmWMDzMaiVbO3aQhyL3Vc="/>
+        <field:display field="YPos" id="s_org_esupportail_esupsignature_domain_Document_yPos" object="${document}" z="OODZW1tMun2vOGpWo5iTi/ai6Lo="/>
+        <field:display field="newPageType" id="s_org_esupportail_esupsignature_domain_Document_newPageType" object="${document}" z="/bcQ5QWYlVLZJ7E3gk8qu902DUs="/>
+        <field:display field="signPageNumber" id="s_org_esupportail_esupsignature_domain_Document_signPageNumber" object="${document}" z="GhKk7ixA4QjaEeP1uvNRt5hK190="/>
     </page:show>
 </div>

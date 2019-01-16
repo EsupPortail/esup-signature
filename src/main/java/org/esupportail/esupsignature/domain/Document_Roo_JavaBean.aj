@@ -4,6 +4,7 @@
 package org.esupportail.esupsignature.domain;
 
 import java.util.Date;
+import java.util.Map;
 import org.esupportail.esupsignature.domain.Content;
 import org.esupportail.esupsignature.domain.Document;
 
@@ -77,8 +78,52 @@ privileged aspect Document_Roo_JavaBean {
         return this.status;
     }
     
-    public SignType Document.getSignType() {
+    public Map<String, String> Document.getParams() {
+        return this.params;
+    }
+    
+    public void Document.setParams(Map<String, String> params) {
+        this.params = params;
+    }
+    
+    public String Document.getSignType() {
         return this.signType;
+    }
+    
+    public void Document.setSignType(String signType) {
+        this.signType = signType;
+    }
+    
+    public String Document.getNewPageType() {
+        return this.newPageType;
+    }
+    
+    public void Document.setNewPageType(String newPageType) {
+        this.newPageType = newPageType;
+    }
+    
+    public String Document.getSignPageNumber() {
+        return this.signPageNumber;
+    }
+    
+    public void Document.setSignPageNumber(String signPageNumber) {
+        this.signPageNumber = signPageNumber;
+    }
+    
+    public String Document.getXPos() {
+        return this.xPos;
+    }
+    
+    public void Document.setXPos(String xPos) {
+        this.xPos = xPos;
+    }
+    
+    public String Document.getYPos() {
+        return this.yPos;
+    }
+    
+    public void Document.setYPos(String yPos) {
+        this.yPos = yPos;
     }
     
 }

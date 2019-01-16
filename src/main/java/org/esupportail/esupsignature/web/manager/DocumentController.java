@@ -129,10 +129,10 @@ public class DocumentController {
         }
         try {
             String pemCert = userKeystoreService.getPemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
-        	signedFile = fileService.certSignPdf(file, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), 200, 200, true, -1);
+        	//signedFile = fileService.certSignPdf(file, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), 200, 200, true, -1);
             //signedFile = pdfService.addImage(file.getBigFile().toJavaIoFile(), user.getSignImage().getBigFile().toJavaIoFile(), 0, 200, 200);
             //document.setSignedFile(fileService.addFile(new FileInputStream(signedFile), "signed_" + file.getFileName(), signedFile.length(), file.getContentType()));
-        	document.setSignedFile(signedFile);
+        	//document.setSignedFile(signedFile);
         	document.setStatus(DocStatus.signed);
         } catch (IOException e) {
         	redirectAttrs.addFlashAttribute("messageCustom", "bad password");

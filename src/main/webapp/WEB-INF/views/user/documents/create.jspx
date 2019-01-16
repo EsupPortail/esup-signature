@@ -12,7 +12,11 @@
         <field:input field="status" id="c_org_esupportail_esupsignature_domain_Document_status" render="false" z="user-managed"/>
         <field:select field="originalFile" id="c_org_esupportail_esupsignature_domain_Document_originalFile" itemValue="id" items="${files}" path="/files" render="false" z="user-managed"/>
         <field:select field="signedFile" id="c_org_esupportail_esupsignature_domain_Document_signedFile" itemValue="id" items="${files}" path="/files" render="false" z="user-managed"/>
-        <field:select field="signType" id="c_org_esupportail_esupsignature_domain_Document_signType" cssClass="custom-checkbox" path="/" multiple="false" checkboxes="true" items="${signTypes}" z="user-managed"/>
+        <field:select field="signType" id="c_org_esupportail_esupsignature_domain_Document_signType" cssClass="form-control" path="/" multiple="false" size="1" checkboxes="false" items="${signTypes}" z="user-managed"/>
+		<field:select field="newPageType" id="c_org_esupportail_esupsignature_domain_Document_newPageType" cssClass="form-control" path="/" multiple="false" size="1" checkboxes="false" items="${newPageTypes}" z="user-managed"/>        
+		<field:input cssClass="form-control" field="signPageNumber" id="c_org_esupportail_esupsignature_domain_Document_signPageNumber" z="user-managed"/>
+		<field:input cssClass="form-control" field="xPos" id="c_org_esupportail_esupsignature_domain_Document_xPos" z="user-managed"/>
+		<field:input cssClass="form-control" field="yPos" id="c_org_esupportail_esupsignature_domain_Document_yPos" z="user-managed"/>
         <div class="form-group">
             <label class="col-lg-3 col-form-label" for="name">
                 <strong>File</strong>

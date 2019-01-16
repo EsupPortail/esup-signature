@@ -1,13 +1,17 @@
 package org.esupportail.esupsignature.domain;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+import javax.persistence.ElementCollection;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -46,23 +50,38 @@ public class Document {
     @Enumerated(EnumType.STRING)
     private DocStatus status;	
     
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Map<String, String> params = new HashMap<String, String>();
+    
 	public enum DocStatus {
 		start, pending, canceled, checked, signed, deleted;
 	}
 
-    @Enumerated(EnumType.STRING)
-	private SignType signType;
+	@Transient
+	private String signType;
     
+	@Transient
+	private String newPageType;
+
+	@Transient
+	private String signPageNumber;
+	
+	@Transient
+	private String xPos;
+
+	@Transient
+	private String yPos;
+	
 	public enum SignType {
 		imageStamp, certPAdES, certXAdES, nexuPAdES, nexuXAdES;
-
 	}
+
+	public enum NewPageType {
+		none, onBegin, onEnd;
+	}
+
 	
     public void setStatus(DocStatus status) {
         this.status = status;
-    }
-    
-    public void setSignType(SignType signType) {
-        this.signType = signType;
     }
 }

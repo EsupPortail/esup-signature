@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +17,7 @@ import javax.validation.Valid;
 import org.esupportail.esupsignature.domain.Content;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Document.DocStatus;
+import org.esupportail.esupsignature.domain.Document.NewPageType;
 import org.esupportail.esupsignature.domain.Document.SignType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
@@ -116,7 +119,6 @@ public class DocumentControler {
     public String create(@Valid Document document, @RequestParam("multipartFile") MultipartFile multipartFile, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
         if (bindingResult.hasErrors()) {
             uiModel.addAttribute("document", document);
-
             return "user/documents/create";
         }
         uiModel.asMap().clear();
@@ -128,6 +130,13 @@ public class DocumentControler {
 			document.setOriginalFile(fileService.addFile(multipartFile));
 			document.setSignedFile(null);
 			document.setStatus(DocStatus.pending);
+			Map<String, String> params = new HashMap<>();
+			params.put("signType", document.getSignType());
+			params.put("newPageType", document.getNewPageType());
+			params.put("signPageNumber", document.getSignPageNumber());
+			params.put("xPos", document.getXPos());
+			params.put("yPos", document.getYPos());
+			document.setParams(params);
 	        document.persist();
         } catch (IOException | SQLException e) {
         	log.error("Create file error", e);
@@ -137,27 +146,47 @@ public class DocumentControler {
 
     @RequestMapping(value = "/signdoc/{id}", method = RequestMethod.POST)
     public String signdoc(@PathVariable("id") Long id, @RequestParam(value = "password", required=false) String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) throws Exception {
+    	log.info("begin sign");
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String eppn = auth.getName();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	Document document = Document.findDocument(id);
-        Content file = document.getOriginalFile();
-//TODO : if ajout de page
-        if(document.getSignType().equals(SignType.imageStamp)) {
-        	//pdfService.addWhitePageOnTop(file.getBigFile().toJavaIoFile(), 0)
-        	File signedFile = pdfService.addImage(file.getBigFile().toJavaIoFile(), user.getSignImage().getBigFile().toJavaIoFile(), 1, 200, 200);
-            document.setSignedFile(fileService.addFile(new FileInputStream(signedFile), "signed_" + file.getFileName(), signedFile.length(), file.getContentType()));
+        Content toSignContent = document.getOriginalFile();
+        File toSignFile = toSignContent.getBigFile().toJavaIoFile();
+        int signPageNumber = 1;
+        if(document.getParams().get("newPageType").equals(NewPageType.onBegin.toString())) {
+        	log.info("add page on begin");
+        	toSignFile = pdfService.addWhitePage(toSignContent.getBigFile().toJavaIoFile(), 0, signPageNumber);
+        } else 
+        if(document.getParams().get("newPageType").equals(NewPageType.onEnd.toString())) {
+        	signPageNumber = -1;
+        	toSignFile = pdfService.addWhitePage(toSignContent.getBigFile().toJavaIoFile(), -1, signPageNumber);
+        } else
+    	if(!document.getParams().get("signPageNumber").isEmpty()) {
+        	signPageNumber = Integer.valueOf(document.getParams().get("signPageNumber"));
+        }
+        int xPos = 0;
+        int yPos = 0;
+        if(!document.getParams().get("xPos").isEmpty() && !document.getParams().get("yPos").isEmpty()) {
+        	xPos = Integer.valueOf(document.getParams().get("xPos"));
+        	yPos = Integer.valueOf(document.getParams().get("yPos"));
+        }
+        if(document.getParams().get("signType").equals(SignType.imageStamp.toString())) {
+        	log.info("imageStamp signature");
+        	File signedFile = pdfService.addImage(toSignFile, user.getSignImage().getBigFile().toJavaIoFile(), signPageNumber, xPos, yPos);
+            document.setSignedFile(fileService.addFile(new FileInputStream(signedFile), "signed_" + toSignContent.getFileName(), signedFile.length(), toSignContent.getContentType()));
 
         } else 
-        if(document.getSignType().equals(SignType.certPAdES)) {
-            if(password != null) {
+        if(document.getParams().get("signType").equals(SignType.certPAdES.toString())) {
+        	log.info("cades signature");
+        	if(password != null) {
             	userKeystoreService.setPassword(password);
             } else {
             	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
             }
             try {
         		String pemCert = userKeystoreService.getPemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
-            	Content signedFile = fileService.certSignPdf(file, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), 200, 200, true, -1);
+            	Content signedFile = fileService.certSignPdf(toSignFile, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), signPageNumber, xPos, yPos);
             	document.setSignedFile(signedFile);
             } catch (Exception e) {
             	redirectAttrs.addFlashAttribute("messageCustom", "keystore issue");
@@ -182,6 +211,7 @@ public class DocumentControler {
         addDateTimeFormatPatterns(uiModel);
         uiModel.addAttribute("files", Content.findAllContents());
         uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
+        uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
     }
     
     void addDateTimeFormatPatterns(Model uiModel) {
