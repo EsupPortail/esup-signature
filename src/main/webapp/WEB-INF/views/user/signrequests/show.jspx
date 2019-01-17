@@ -22,7 +22,7 @@
 	        <dd>
 	        Sign type : ${signRequest.params.signType}
 	        <br/>
-	        on page : <input autocomplete="off" value="0" class="form-control" type="text" name="signPageNumber" size="4" />
+	        on page : <input autocomplete="off" value="1" class="form-control" type="text" name="signPageNumber" size="4" />
 	        <br/>
 	    	X position : <input autocomplete="off" value="0" class="form-control" type="text" name="xPos" size="4" />
 	    	<br/>
@@ -113,11 +113,11 @@
 			function point_it(event){
 				pos_x = event.offsetX?(event.offsetX):event.pageX-document.getElementById("pointer_div").offsetLeft;
 				pos_y = event.offsetY?(event.offsetY):event.pageY-document.getElementById("pointer_div").offsetTop;
-				document.getElementById("cross").style.left = (pos_x-1) ;
-				document.getElementById("cross").style.top = (pos_y-15) ;
+				document.getElementById("cross").style.left = (pos_x-10) ;
+				document.getElementById("cross").style.top = (pos_y-10) ;
 				document.getElementById("cross").style.visibility = "visible" ;
 				document.command.xPos.value = pos_x;
-				document.command.yPos.value = pos_y;
+				document.command.yPos.value = pos_y - 5;
 			}
 			
 			function nextImage() {

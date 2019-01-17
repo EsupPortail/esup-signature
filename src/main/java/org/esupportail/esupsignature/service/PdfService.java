@@ -11,10 +11,14 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 
+import org.apache.jempbox.xmp.XMPMetadata;
+import org.apache.jempbox.xmp.pdfa.XMPSchemaPDFAId;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
+import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.rendering.ImageType;
@@ -53,9 +57,9 @@ public class PdfService {
 
 	}
 
-	public File addImage(File pdfFile, File signImage, int page, int x, int y) throws IOException {
-		
-	    BufferedImage bufferedImage = ImageIO.read(signImage);
+	public File addImage(File pdfFile, File signImage, int page, int x, int y) throws Exception {
+	
+		BufferedImage bufferedImage = ImageIO.read(signImage);
 
         AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
         tx.translate(0, -bufferedImage.getHeight(null));
@@ -68,7 +72,18 @@ public class PdfService {
 		File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
 
 		PDDocument pdDocument = PDDocument.load(pdfFile);
-		PDPage pdPage = pdDocument.getPage(page - 1);
+		PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
+        PDMetadata metadata = new PDMetadata(pdDocument);
+        cat.setMetadata(metadata);
+        XMPMetadata xmp = new XMPMetadata();
+        XMPSchemaPDFAId pdfaid = new XMPSchemaPDFAId(xmp);
+        xmp.addSchema(pdfaid);
+        pdfaid.setConformance("B");
+        pdfaid.setPart(1);
+        pdfaid.setAbout("");
+        metadata.importXMPMetadata(xmp.asByteArray());
+        
+        PDPage pdPage = pdDocument.getPage(page - 1);
 
 		PDImageXObject pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
 		
