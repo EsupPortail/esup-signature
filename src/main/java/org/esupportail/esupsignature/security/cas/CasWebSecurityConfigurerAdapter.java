@@ -39,7 +39,10 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 	private String[] nfcWsAccessAuthorizeIps;
 	
 	@Autowired
-	SwitchUserFilter switchUserFilter;
+	private SwitchUserFilter switchUserFilter;
+	
+	@Autowired
+	private CasAuthenticationSuccessHandler casAuthenticationSuccessHandler;
 	
 	@Autowired
 	private LdapUserDetailsService ldapUserDetailsService;
@@ -73,6 +76,7 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 		CasAuthenticationFilter authenticationFilter = new CasAuthenticationFilter();
 		authenticationFilter.setAuthenticationManager(casAuthenticationManager());
 		authenticationFilter.setSessionAuthenticationStrategy(sessionAuthenticationStrategy);
+		authenticationFilter.setAuthenticationSuccessHandler(casAuthenticationSuccessHandler);
 		return authenticationFilter;
 	}
 	

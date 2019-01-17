@@ -73,7 +73,8 @@ public class SignRequest {
 	private String yPos;
 	
 	public enum SignType {
-		imageStamp, certPAdES, certXAdES, nexuPAdES, nexuXAdES;
+		imageStamp, certPAdES;
+		//certXAdES, nexuPAdES, nexuXAdES;
 	}
 
 	public enum NewPageType {

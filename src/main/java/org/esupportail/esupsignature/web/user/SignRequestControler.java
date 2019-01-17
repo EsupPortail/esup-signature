@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -20,17 +21,13 @@ import org.esupportail.esupsignature.domain.SignRequest.DocStatus;
 import org.esupportail.esupsignature.domain.SignRequest.NewPageType;
 import org.esupportail.esupsignature.domain.SignRequest.SignType;
 import org.esupportail.esupsignature.domain.User;
-import org.esupportail.esupsignature.ldap.PersonLdapDao;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -76,37 +73,44 @@ public class SignRequestControler {
     
     @RequestMapping(produces = "text/html")
     public String list(@RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, @RequestParam(value = "sortFieldName", required = false) String sortFieldName, @RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
-    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User authUser = userService.getUserFromContext(auth.getName());
-		if(User.countFindUsersByEppnEquals(authUser.getEppn()) == 0) {
+		String eppn = userService.getEppnFromAuthentication();
+		if(User.countFindUsersByEppnEquals(eppn) == 0) {
 			return "redirect:/user/users";
 		}
-    	if(SignRequest.countFindSignRequestsByCreateByEquals(authUser.getEppn()) == 0) {
+    	if(SignRequest.countFindSignRequestsByCreateByEquals(eppn) == 0) {
     		return "redirect:/user/signrequests/?form"; 
     	}
         if (page != null || size != null) {
             int sizeNo = size == null ? 10 : size.intValue();
             //final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
-            uiModel.addAttribute("signRequests", SignRequest.findSignRequestsByCreateByEquals(authUser.getEppn(), sortFieldName, sortOrder).getResultList());
+            uiModel.addAttribute("signRequests", SignRequest.findSignRequestsByCreateByEquals(eppn, sortFieldName, sortOrder).getResultList());
             float nrOfPages = (float) SignRequest.countSignRequests() / sizeNo;
             uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
         } else {
-            uiModel.addAttribute("signRequests", SignRequest.findSignRequestsByCreateByEquals(authUser.getEppn(), sortFieldName, sortOrder).getResultList());
+            uiModel.addAttribute("signRequests", SignRequest.findSignRequestsByCreateByEquals(eppn, sortFieldName, sortOrder).getResultList());
         }
         return "user/signrequests/list";
     }
 	
     @RequestMapping(value = "/{id}", produces = "text/html")
-    public String show(@PathVariable("id") Long id, Model uiModel) {
-    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User authUser = userService.getUserFromContext(auth.getName());
+    public String show(@PathVariable("id") Long id, Model uiModel) throws SQLException, IOException, Exception {
+		String eppn = userService.getEppnFromAuthentication();
         addDateTimeFormatPatterns(uiModel);
         SignRequest signRequest = SignRequest.findSignRequest(id);
-        if(signRequest.getCreateBy().equals(authUser.getEppn())) {
-        	User user = User.findUsersByEppnEquals(authUser.getEppn()).getSingleResult();
+        if(signRequest.getCreateBy().equals(eppn)) {
+        	File toConvertFile;
+        	if(signRequest.getStatus().equals(DocStatus.signed)) {
+        		toConvertFile = signRequest.getSignedFile().getBigFile().toJavaIoFile();
+        	} else {
+        		toConvertFile = signRequest.getOriginalFile().getBigFile().toJavaIoFile();
+        	}
+        	List<String> imagePages = pdfService.pageAsImage(toConvertFile);
+        	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
         	uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 	        uiModel.addAttribute("signRequest", signRequest);
 	        uiModel.addAttribute("itemId", id);
+	        uiModel.addAttribute("imagePagesSize", imagePages.size());
+	        uiModel.addAttribute("imagePages", imagePages);
 	        return "user/signrequests/show";
         } else {
         	return "redirect:/user/signrequests/";
@@ -119,11 +123,10 @@ public class SignRequestControler {
             uiModel.addAttribute("signRequest", signRequest);
             return "user/signrequests/create";
         }
-    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User authUser = userService.getUserFromContext(auth.getName());
+		String eppn = userService.getEppnFromAuthentication();
         uiModel.asMap().clear();
         try {
-        	signRequest.setCreateBy(authUser.getEppn());
+        	signRequest.setCreateBy(eppn);
         	signRequest.setCreateDate(new Date());
 			signRequest.setOriginalFile(fileService.addFile(multipartFile));
 			signRequest.setSignedFile(null);
@@ -139,33 +142,32 @@ public class SignRequestControler {
         } catch (IOException | SQLException e) {
         	log.error("Create file error", e);
 		}
-        return "redirect:/user/signrequests/";
+        return "redirect:/user/signrequests/" + signRequest.getId();
     }
 
     @RequestMapping(value = "/signdoc/{id}", method = RequestMethod.POST)
     public String signdoc(@PathVariable("id") Long id, @RequestParam(value = "password", required=false) String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) throws Exception {
     	log.info("begin sign");
-    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User authUser = userService.getUserFromContext(auth.getName());
-		User user = User.findUsersByEppnEquals(authUser.getEppn()).getSingleResult();
+		String eppn = userService.getEppnFromAuthentication();
+		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	SignRequest signRequest = SignRequest.findSignRequest(id);
         Document toSignContent = signRequest.getOriginalFile();
         File toSignFile = toSignContent.getBigFile().toJavaIoFile();
         pdfService.signPageNumber = 1;
         if(signRequest.getParams().get("newPageType").equals(NewPageType.onBegin.toString())) {
         	log.info("add page on begin");
-        	toSignFile = pdfService.addWhitePage(toSignContent.getBigFile().toJavaIoFile(), 0);
+        	toSignFile = pdfService.addBlankPage(toSignContent.getBigFile().toJavaIoFile(), 0);
         } else 
         if(signRequest.getParams().get("newPageType").equals(NewPageType.onEnd.toString())) {
         	log.info("add page on end");
-        	toSignFile = pdfService.addWhitePage(toSignContent.getBigFile().toJavaIoFile(), -1);
+        	toSignFile = pdfService.addBlankPage(toSignContent.getBigFile().toJavaIoFile(), -1);
         } else
-    	if(!signRequest.getParams().get("signPageNumber").isEmpty()) {
+    	if(signRequest.getParams().containsKey("signPageNumber")) {
     		pdfService.signPageNumber = Integer.valueOf(signRequest.getParams().get("signPageNumber"));
         }
         int xPos = 0;
         int yPos = 0;
-        if(!signRequest.getParams().get("xPos").isEmpty() && !signRequest.getParams().get("yPos").isEmpty()) {
+        if(signRequest.getParams().containsKey("xPos") && signRequest.getParams().containsKey("yPos")) {
         	xPos = Integer.valueOf(signRequest.getParams().get("xPos"));
         	yPos = Integer.valueOf(signRequest.getParams().get("yPos"));
         }
@@ -184,13 +186,13 @@ public class SignRequestControler {
             }
             try {
             	String pemCert = userKeystoreService.getPemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
-            	Document signedFile = fileService.certSignPdf(toSignFile, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), pdfService.signPageNumber, xPos, yPos);
+            	Document signedFile = fileService.certSignPdf(toSignFile, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage().getBigFile().toJavaIoFile(), pdfService.signPageNumber, xPos, yPos);
             	signRequest.setSignedFile(signedFile);
             } catch (Exception e) {
             	redirectAttrs.addFlashAttribute("messageCustom", "keystore issue");
     		}
-        	signRequest.setStatus(DocStatus.signed);
         }
+    	signRequest.setStatus(DocStatus.signed);
         return "redirect:/user/signrequests/" + id;
     }
 	

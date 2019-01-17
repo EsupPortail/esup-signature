@@ -3,6 +3,9 @@
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
     <page:show id="ps_org_esupportail_esupsignature_domain_SignRequest" object="${signRequest}" path="/user/signrequests" z="user-managed">
+        <form autocomplete="off" action="/user/signrequests/signdoc/${id}" name="command" id="command" method="post">
+		<div class="row">
+    	<div class="col-lg-6">
         <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignRequest_name" object="${signRequest}" z="user-managed"/>
         <field:display date="true" dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignRequest_createDate" object="${signRequest}" z="user-managed"/>
         <field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignRequest_createBy" object="${signRequest}" z="user-managed"/>
@@ -12,13 +15,30 @@
         <field:display field="status" id="s_org_esupportail_esupsignature_domain_SignRequest_status" object="${signRequest}" z="user-managed"/>
         <field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_SignRequest_originalFile" object="${signRequest}" render="false" z="user-managed"/>
         <field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_SignRequest_signedFile" object="${signRequest}" render="false" z="user-managed"/>
-        <field:display field="signType" id="s_org_esupportail_esupsignature_domain_SignRequest_signType" object="${signRequest}" z="user-managed"/>
-        ${signRequest.params}
+        <field:display render="false" field="signType" id="s_org_esupportail_esupsignature_domain_SignRequest_signType" object="${signRequest}" z="user-managed"/>
+		${signRequest.params}
+		<dl class="display-group border-bottom m-0">
+        	<dt class="col-lg-4">Sign params</dt>
+	        <dd>
+	        Sign type : ${signRequest.params.signType}
+	        <br/>
+	        on page : <input autocomplete="off" value="0" class="form-control" type="text" name="signPageNumber" size="4" />
+	        <br/>
+	    	X position : <input autocomplete="off" value="0" class="form-control" type="text" name="xPos" size="4" />
+	    	<br/>
+	    	Y position : <input autocomplete="off" value="0" class="form-control" type="text" name="yPos" size="4" />    
+	        </dd>
+        </dl>
+        
+        
+        
+        
+        
         <dl class="display-group border-bottom m-0">
         	<dt class="col-lg-4">Get original signRequest</dt>
 	        <dd>
 	       		<spring:url value="/manager/signrequests/get-original-file/${id}" var="originalFileUrl"/>
-	            <button class="btn btn-warning" onclick="location.href='${originalFileUrl}'">Download</button>
+	            <button type="button" class="btn btn-warning" onclick="location.href='${originalFileUrl}'">Download</button>
 	        </dd>
         </dl>
         <c:choose>
@@ -27,56 +47,101 @@
 		        	<dt class="col-lg-4">Get signed signRequest</dt>
 			        <dd>
 	                	<spring:url value="/manager/signrequests/get-signed-file/${id}" var="signedFileUrl"/>
-	             		<button class="btn btn-success" onclick="location.href='${signedFileUrl}'">Download</button>
+	             		<button type="button" class="btn btn-success" onclick="location.href='${signedFileUrl}'">Download</button>
 			        </dd>
 		        </dl>
             </c:when>
             <c:otherwise>
             <dl class="display-group border-bottom m-0">
 	        	<dt class="col-lg-4">Signe signRequest</dt>
-			        <dd>
-		                <form action="/user/signrequests/signdoc/${id}" id="command" method="post">
-		                    <div class="form-group">
-		                    <c:if test="${signRequest.params.signType eq 'certPAdES' or signRequest.params.signType eq 'certXAdES'}">
-			                    <c:choose>
-			                    	<c:when test="${not empty keystore}">
-				                        <label class="col-lg-6 col-form-label" for="password">
-				                            <strong>Keystore password</strong>
-				                        </label>
-				                        <div class="col-lg-6">
-				                            <input class="form-control" name="password" type="password"/>
-				                        </div>
-			                        </c:when>
-			                        <c:otherwise>
-			                        		<div class="card card-body bg-info">
-												Merci de saisir une clé privée pour signer en PAdES
-											</div>
-			                        </c:otherwise>
-		                        </c:choose>
-	                        </c:if>
-		                    </div>
-		                  	<button alt="Signer" class="btn btn-primary" title="Signe" type="submit">Signe</button>
-		                </form>
-	                </dd>
-                </dl>
+		        <dd>
+
+	                    <div class="form-group">
+	                    <c:if test="${signRequest.params.signType eq 'certPAdES' or signRequest.params.signType eq 'certXAdES'}">
+		                    <c:choose>
+		                    	<c:when test="${not empty keystore}">
+			                        <label class="col-lg-6 col-form-label" for="password">
+			                            <strong>Keystore password</strong>
+			                        </label>
+			                        <div class="col-lg-6">
+			                            <input class="form-control" name="password" type="password"/>
+			                        </div>
+		                        </c:when>
+		                        <c:otherwise>
+		                        		<div class="card card-body bg-info">
+											Merci de saisir une clé privée pour signer en PAdES
+										</div>
+		                        </c:otherwise>
+	                        </c:choose>
+                        </c:if>
+	                    </div>
+	                  	<input alt="Signer" class="btn btn-primary" id="signe" title="Signe" type="submit" value="Signe" />
+
+                </dd>
+               </dl>
             </c:otherwise>
         </c:choose>
-        
-		<script language="JavaScript">
+     	</div>        
+	<div class="col-lg-6">
+	<input type="button" id="previous" onclick="previousImage()" value="previous" />
+	<input type="button" id="next" onclick="nextImage()" value="next" />
+		<div id="pointer_div" onclick="point_it(event)" style="background-size: 500px;background-image:url('data:image/jpg;base64,${imagePages[0]}');width:500px;height:707px;border:1px solid #CCC;">
+			<i class="fas fa-plus" id="cross" style="position:relative;visibility:hidden;z-index:2;"><!--  --></i>
+		</div>
+
+	</div>	
+	</div>
+    </form>
+    </page:show>
+    
+    <script language="JavaScript">
+			var nbImagePage = ${imagePagesSize};
+			var currentImagePage = 0;
+			var imagePages = [];
+	</script>
+    <c:forEach items="${imagePages}" var="imagePage">
+    	<script language="JavaScript">
+		imagePages.push("${imagePage}");
+		</script>
+	</c:forEach>
+    
+	<script language="JavaScript">
+
+			document.getElementById("previous").disabled = true;
+			document.command.signPageNumber.value = currentImagePage;
+	
 			function point_it(event){
 				pos_x = event.offsetX?(event.offsetX):event.pageX-document.getElementById("pointer_div").offsetLeft;
 				pos_y = event.offsetY?(event.offsetY):event.pageY-document.getElementById("pointer_div").offsetTop;
 				document.getElementById("cross").style.left = (pos_x-1) ;
 				document.getElementById("cross").style.top = (pos_y-15) ;
 				document.getElementById("cross").style.visibility = "visible" ;
-				document.pointform.form_x.value = pos_x;
-				document.pointform.form_y.value = pos_y;
+				document.command.xPos.value = pos_x;
+				document.command.yPos.value = pos_y;
+			}
+			
+			function nextImage() {
+				currentImagePage++;
+				document.command.signPageNumber.value = currentImagePage;
+				document.getElementById("pointer_div").style.backgroundImage = "url('data:image/jpg;base64,"+ imagePages[currentImagePage] +"')";
+				if(currentImagePage == nbImagePage - 1) {
+					document.getElementById("next").disabled = true;
+				}
+				if(currentImagePage > 0) {
+					document.getElementById("previous").disabled = false;
+				}
+			}
+
+			function previousImage() {
+				currentImagePage--;
+				document.command.signPageNumber.value = currentImagePage;
+				document.getElementById("pointer_div").style.backgroundImage = "url('data:image/jpg;base64,"+ imagePages[currentImagePage] +"')";
+				if(currentImagePage == 0) {
+					document.getElementById("previous").disabled = true;
+				}
+				if(nbImagePage - 1 > currentImagePage) {
+					document.getElementById("next").disabled = false;
+				}
 			}
 		</script>
-		<form name="pointform" method="post">
-			<div id="pointer_div" onclick="point_it(event)" style = "background-image:url('sun.jpg');width:500px;height:333px;">
-			<img src="point.gif" id="cross" style="position:relative;visibility:hidden;z-index:2;" /></div>
-			You pointed on x = <input type="text" name="form_x" size="4" /> - y = <input type="text" name="form_y" size="4" />
-		</form> 
-    </page:show>
 </div>

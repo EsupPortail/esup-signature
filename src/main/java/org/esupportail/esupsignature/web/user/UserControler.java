@@ -16,8 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -55,13 +53,14 @@ public class UserControler {
     
     @RequestMapping(produces = "text/html")
     public String settings(Model uiModel) throws Exception {
-    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User authUser = userService.getUserFromContext(auth.getName());
-		if(User.countFindUsersByEppnEquals(authUser.getEppn()) == 0) {
+		String eppn = userService.getEppnFromAuthentication();
+		if(User.countFindUsersByEppnEquals(eppn) == 0) {
 			return "redirect:/user/users/?form";
 		}
-    	User user = User.findUsersByEppnEquals(authUser.getEppn()).getSingleResult();
-    	
+    	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+    	if(user.getSignImage().getBigFile().getBinaryFile() == null) {
+			return "redirect:/user/users/?form";
+		}    	
     	populateEditForm(uiModel, user);
         if(user.getSignImage().getBigFile().getBinaryFile() != null) {
         	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
@@ -72,15 +71,13 @@ public class UserControler {
     
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(Model uiModel) {
-    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User authUser = userService.getUserFromContext(auth.getName());
+		String eppn = userService.getEppnFromAuthentication();
 		User user;
-		if(User.countFindUsersByEppnEquals(authUser.getEppn()) > 0) {
-			user = User.findUsersByEppnEquals(authUser.getEppn()).getSingleResult();
-			user.setEmail(authUser.getEmail());
+		if(User.countFindUsersByEppnEquals(eppn) > 0) {
+			user = User.findUsersByEppnEquals(eppn).getSingleResult();
 	        uiModel.addAttribute("user", user);
 		} else {
-			user = authUser;
+			user = new User();
 		}
         uiModel.addAttribute("user", user);
 		return "user/users/update";
@@ -93,25 +90,26 @@ public class UserControler {
             return "user/users/update";
         }
         uiModel.asMap().clear();
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		User authUser = userService.getUserFromContext(auth.getName());
+		String eppn = userService.getEppnFromAuthentication();
+		User userToUpdate = User.findUsersByEppnEquals(eppn).getSingleResult();
         if(!user.getPublicKey().isEmpty()) {
             File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
-            if(authUser.getKeystore().getBigFile().getBinaryFile() != null) {
-            	authUser.getKeystore().remove();
+            if(userToUpdate.getKeystore().getBigFile().getBinaryFile() != null) {
+            	userToUpdate.getKeystore().remove();
             }
-            authUser.setKeystore(fileService.addFile(file, "application/jks"));
+            userToUpdate.setKeystore(fileService.addFile(file, "application/jks"));
         }
         if(!user.getSignImageBase64().isEmpty()) {
-        	if(authUser.getSignImage().getBigFile().getBinaryFile() != null) {
-        		authUser.getSignImage().remove();
+        	if(userToUpdate.getSignImage().getBigFile().getBinaryFile() != null) {
+        		userToUpdate.getSignImage().remove();
         	}
-        	authUser.setSignImage(fileService.addFile(user.getSignImageBase64(), authUser.getEppn() + "_sign", "application/png"));
+        	userToUpdate.setSignImage(fileService.addFile(user.getSignImageBase64(), userToUpdate.getEppn() + "_sign", "application/png"));
+        } else
+        	if(userToUpdate.getId() == null) {
+            	redirectAttrs.addFlashAttribute("messageCustom", "image is required");
         }
-        if(authUser.getId() == null && !user.getSignImageBase64().isEmpty()) {
-        	authUser.persist();
-        } else {
-        	redirectAttrs.addFlashAttribute("messageCustom", "image is required");
+        if(userToUpdate.getId() == null) {
+        	userToUpdate.persist();
         }
         return "redirect:/user/users/";
     }

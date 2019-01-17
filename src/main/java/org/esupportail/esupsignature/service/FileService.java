@@ -25,8 +25,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.itextpdf.text.DocumentException;
-
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.DigestAlgorithm;
@@ -41,9 +39,6 @@ public class FileService {
 
 	@Autowired
 	private SigningService signingService;
-	
-	@Autowired
-	private PdfService pdfService;
 
 	public Document addFile(Document file) {
 		file.persist();
@@ -75,7 +70,7 @@ public class FileService {
         return file;
     }
 	
-	public Document certSignPdf(File file, String certif, List<String> certifChain, Document imageFile, int page, int x, int y) throws IOException, SQLException, DocumentException {
+	public Document certSignPdf(File file, String certif, List<String> certifChain, File imageFile, int page, int x, int y) throws IOException, SQLException {
 		
 		DataToSignParams params = new DataToSignParams();
         List<String> certificateChain = new ArrayList<String>();
@@ -103,7 +98,7 @@ public class FileService {
 
 		signaturePdfForm.setDocumentToSign(multipartFile);		
         
-		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, page, x, y, imageFile.getBigFile().toJavaIoFile());
+		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, page, x, y, imageFile);
 
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
@@ -121,12 +116,15 @@ public class FileService {
 	}
 */	
 	public String getBase64Image(Document file) throws IOException, SQLException {
-		String out = "";
 		BufferedImage imBuff = ImageIO.read(file.getBigFile().getBinaryFile().getBinaryStream());
+		return getBase64Image(imBuff, file.getFileName());
+	}
+	
+	public String getBase64Image(BufferedImage imBuff, String name) throws IOException, SQLException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(imBuff, file.getFileName().replaceAll(".*\\.", ""), baos);
+        ImageIO.write(imBuff, "png", baos);
         baos.flush();
-        out = DatatypeConverter.printBase64Binary(baos.toByteArray());
+        String out = DatatypeConverter.printBase64Binary(baos.toByteArray());
         baos.close();
         return out;
         
