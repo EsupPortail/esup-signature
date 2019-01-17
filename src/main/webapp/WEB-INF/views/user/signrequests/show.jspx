@@ -108,7 +108,7 @@
 	<script language="JavaScript">
 
 			document.getElementById("previous").disabled = true;
-			document.command.signPageNumber.value = currentImagePage;
+			document.command.signPageNumber.value = currentImagePage + 1;
 	
 			function point_it(event){
 				pos_x = event.offsetX?(event.offsetX):event.pageX-document.getElementById("pointer_div").offsetLeft;
@@ -116,13 +116,13 @@
 				document.getElementById("cross").style.left = (pos_x-1) ;
 				document.getElementById("cross").style.top = (pos_y-15) ;
 				document.getElementById("cross").style.visibility = "visible" ;
-				document.command.xPos.value = pos_x;
-				document.command.yPos.value = pos_y;
+				document.command.xPos.value = pos_x + 20;
+				document.command.yPos.value = pos_y + 40;
 			}
 			
 			function nextImage() {
 				currentImagePage++;
-				document.command.signPageNumber.value = currentImagePage;
+				document.command.signPageNumber.value = currentImagePage + 1;
 				document.getElementById("pointer_div").style.backgroundImage = "url('data:image/jpg;base64,"+ imagePages[currentImagePage] +"')";
 				if(currentImagePage == nbImagePage - 1) {
 					document.getElementById("next").disabled = true;
@@ -134,7 +134,7 @@
 
 			function previousImage() {
 				currentImagePage--;
-				document.command.signPageNumber.value = currentImagePage;
+				document.command.signPageNumber.value = currentImagePage + 1;
 				document.getElementById("pointer_div").style.backgroundImage = "url('data:image/jpg;base64,"+ imagePages[currentImagePage] +"')";
 				if(currentImagePage == 0) {
 					document.getElementById("previous").disabled = true;

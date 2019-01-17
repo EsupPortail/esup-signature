@@ -146,14 +146,17 @@ public class SignRequestControler {
     }
 
     @RequestMapping(value = "/signdoc/{id}", method = RequestMethod.POST)
-    public String signdoc(@PathVariable("id") Long id, @RequestParam(value = "password", required=false) String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) throws Exception {
+    public String signdoc(@PathVariable("id") Long id, 
+    		@RequestParam(value = "xPos", required=true) int xPos,
+    		@RequestParam(value = "yPos", required=true) int yPos,
+    		@RequestParam(value = "signPageNumber", required=true) int signPageNumber,
+    		@RequestParam(value = "password", required=false) String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) throws Exception {
     	log.info("begin sign");
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	SignRequest signRequest = SignRequest.findSignRequest(id);
         Document toSignContent = signRequest.getOriginalFile();
         File toSignFile = toSignContent.getBigFile().toJavaIoFile();
-        pdfService.signPageNumber = 1;
         if(signRequest.getParams().get("newPageType").equals(NewPageType.onBegin.toString())) {
         	log.info("add page on begin");
         	toSignFile = pdfService.addBlankPage(toSignContent.getBigFile().toJavaIoFile(), 0);
@@ -163,17 +166,18 @@ public class SignRequestControler {
         	toSignFile = pdfService.addBlankPage(toSignContent.getBigFile().toJavaIoFile(), -1);
         } else
     	if(signRequest.getParams().containsKey("signPageNumber")) {
-    		pdfService.signPageNumber = Integer.valueOf(signRequest.getParams().get("signPageNumber"));
+    		signPageNumber = Integer.valueOf(signRequest.getParams().get("signPageNumber"));
         }
-        int xPos = 0;
-        int yPos = 0;
         if(signRequest.getParams().containsKey("xPos") && signRequest.getParams().containsKey("yPos")) {
         	xPos = Integer.valueOf(signRequest.getParams().get("xPos"));
         	yPos = Integer.valueOf(signRequest.getParams().get("yPos"));
+        } else {
+        	signRequest.getParams().put("xPos", String.valueOf(xPos));
+        	signRequest.getParams().put("yPos", String.valueOf(yPos));
         }
         if(signRequest.getParams().get("signType").equals(SignType.imageStamp.toString())) {
-        	log.info("imageStamp signature");
-        	File signedFile = pdfService.addImage(toSignFile, user.getSignImage().getBigFile().toJavaIoFile(), pdfService.signPageNumber, xPos, yPos);
+        	log.info("imageStamp signature " + xPos + " : " + yPos);
+        	File signedFile = pdfService.addImage(toSignFile, user.getSignImage().getBigFile().toJavaIoFile(), signPageNumber, xPos, yPos);
             signRequest.setSignedFile(fileService.addFile(new FileInputStream(signedFile), "signed_" + toSignContent.getFileName(), signedFile.length(), toSignContent.getContentType()));
 
         } else 
@@ -186,7 +190,7 @@ public class SignRequestControler {
             }
             try {
             	String pemCert = userKeystoreService.getPemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
-            	Document signedFile = fileService.certSignPdf(toSignFile, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage().getBigFile().toJavaIoFile(), pdfService.signPageNumber, xPos, yPos);
+            	Document signedFile = fileService.certSignPdf(toSignFile, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage().getBigFile().toJavaIoFile(), signPageNumber, xPos, yPos);
             	signRequest.setSignedFile(signedFile);
             } catch (Exception e) {
             	redirectAttrs.addFlashAttribute("messageCustom", "keystore issue");

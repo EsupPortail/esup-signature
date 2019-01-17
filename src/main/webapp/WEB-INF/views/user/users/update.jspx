@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	vanillaUpload = document.querySelector('.vanilla-upload');
 	  var vanilla = new Croppie(document.getElementById('vanilla-demo'), {
 	    viewport: {
-	      width: 200,
-	      height: 150
+	      width: 150,
+	      height: 100
 	    },
 	    boundary: {
 	      width: 400,

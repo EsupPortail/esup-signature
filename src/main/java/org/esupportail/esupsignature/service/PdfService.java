@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.service;
 
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -18,14 +20,13 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.tools.imageio.ImageIOUtil;
+import org.apache.pdfbox.util.Matrix;
 import org.springframework.stereotype.Service;
 @Service
 public class PdfService {
 
 	@Resource
 	FileService fileService;
-
-	public int signPageNumber = 0;
 
 	private int pdfToImageDpi = 72;
 	
@@ -54,15 +55,31 @@ public class PdfService {
 
 	public File addImage(File pdfFile, File signImage, int page, int x, int y) throws IOException {
 		
+	    BufferedImage bufferedImage = ImageIO.read(signImage);
+
+        AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+        tx.translate(0, -bufferedImage.getHeight(null));
+        AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        bufferedImage = op.filter(bufferedImage, null);
+		
+		File outputfile = File.createTempFile("preview", ".png");
+		ImageIO.write(bufferedImage, "png", outputfile);
+		
 		File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
 
 		PDDocument pdDocument = PDDocument.load(pdfFile);
 		PDPage pdPage = pdDocument.getPage(page - 1);
 
-		PDImageXObject pdImage = PDImageXObject.createFromFileByContent(signImage, pdDocument);
+		PDImageXObject pdImage = PDImageXObject.createFromFileByContent(outputfile, pdDocument);
+		
+		PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, false);
+		float height=pdPage.getMediaBox().getHeight();
+        contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0,height)));
 
-		PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true);
-
+		Matrix matrix = pdPage.getMatrix();
+		matrix.rotate(180);
+		matrix.translate(x, y);
+        
 		contentStream.drawImage(pdImage, x, y);
 		contentStream.close();
 		
