@@ -157,6 +157,7 @@ public class SignRequestControler {
     	SignRequest signRequest = SignRequest.findSignRequest(id);
         Document toSignContent = signRequest.getOriginalFile();
         File toSignFile = toSignContent.getBigFile().toJavaIoFile();
+        File signImage = fileService.resize(user.getSignImage().getBigFile().toJavaIoFile(), 100, 75);
         if(signRequest.getParams().get("newPageType").equals(NewPageType.onBegin.toString())) {
         	log.info("add page on begin");
         	toSignFile = pdfService.addBlankPage(toSignContent.getBigFile().toJavaIoFile(), 0);
@@ -177,7 +178,7 @@ public class SignRequestControler {
         }
         if(signRequest.getParams().get("signType").equals(SignType.imageStamp.toString())) {
         	log.info("imageStamp signature " + xPos + " : " + yPos);
-        	File signedFile = pdfService.addImage(toSignFile, user.getSignImage().getBigFile().toJavaIoFile(), signPageNumber, xPos, yPos);
+        	File signedFile = pdfService.addImage(toSignFile, signImage, signPageNumber, xPos, yPos);
             signRequest.setSignedFile(fileService.addFile(new FileInputStream(signedFile), "signed_" + toSignContent.getFileName(), signedFile.length(), toSignContent.getContentType()));
 
         } else 
@@ -190,7 +191,7 @@ public class SignRequestControler {
             }
             try {
             	String pemCert = userKeystoreService.getPemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
-            	Document signedFile = fileService.certSignPdf(toSignFile, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage().getBigFile().toJavaIoFile(), signPageNumber, xPos, yPos);
+            	Document signedFile = fileService.certSignPdf(toSignFile, userKeystoreService.pemToBase64String(pemCert), null, signImage, signPageNumber, xPos, yPos);
             	signRequest.setSignedFile(signedFile);
             } catch (Exception e) {
             	redirectAttrs.addFlashAttribute("messageCustom", "keystore issue");

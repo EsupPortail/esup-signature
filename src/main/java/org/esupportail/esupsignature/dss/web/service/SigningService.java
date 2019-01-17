@@ -226,6 +226,8 @@ public class SigningService {
 			fileDocumentImage.setMimeType(MimeType.PNG);
 			
 			imageParameters.setImage(fileDocumentImage);
+			imageParameters.setWidth(100);
+			imageParameters.setHeight(75);
 
 			parameters.setSignatureImageParameters(imageParameters);
 

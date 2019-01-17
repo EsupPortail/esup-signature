@@ -62,20 +62,20 @@ public class PdfService {
         AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
         bufferedImage = op.filter(bufferedImage, null);
 		
-		File outputfile = File.createTempFile("preview", ".png");
-		ImageIO.write(bufferedImage, "png", outputfile);
+		File flipedSignImage = File.createTempFile("preview", ".png");
+		ImageIO.write(bufferedImage, "png", flipedSignImage);
 		
 		File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
 
 		PDDocument pdDocument = PDDocument.load(pdfFile);
 		PDPage pdPage = pdDocument.getPage(page - 1);
 
-		PDImageXObject pdImage = PDImageXObject.createFromFileByContent(outputfile, pdDocument);
+		PDImageXObject pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
 		
 		PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, false);
 		float height=pdPage.getMediaBox().getHeight();
         contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0,height)));
-
+        
 		Matrix matrix = pdPage.getMatrix();
 		matrix.rotate(180);
 		matrix.translate(x, y);
