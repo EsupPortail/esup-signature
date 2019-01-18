@@ -33,6 +33,7 @@ public class PdfService {
 	FileService fileService;
 
 	private int pdfToImageDpi = 72;
+
 	
 	public File addBlankPage(File pdfFile, int position) throws IOException {
 
@@ -57,6 +58,27 @@ public class PdfService {
 
 	}
 
+	public File toPdfA(File pdfFile) throws Exception {
+
+		File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
+
+		PDDocument pdDocument = PDDocument.load(pdfFile);
+		PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
+        PDMetadata metadata = new PDMetadata(pdDocument);
+        cat.setMetadata(metadata);
+        XMPMetadata xmp = new XMPMetadata();
+        XMPSchemaPDFAId pdfaid = new XMPSchemaPDFAId(xmp);
+        xmp.addSchema(pdfaid);
+        pdfaid.setConformance("B");
+        pdfaid.setPart(1);
+        pdfaid.setAbout("");
+        metadata.importXMPMetadata(xmp.asByteArray());
+		pdDocument.save(targetFile);
+		pdDocument.close();
+        return targetFile;
+
+	}	
+	
 	public File addImage(File pdfFile, File signImage, int page, int x, int y) throws Exception {
 	
 		BufferedImage bufferedImage = ImageIO.read(signImage);
@@ -72,17 +94,7 @@ public class PdfService {
 		File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
 
 		PDDocument pdDocument = PDDocument.load(pdfFile);
-		PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
-        PDMetadata metadata = new PDMetadata(pdDocument);
-        cat.setMetadata(metadata);
-        XMPMetadata xmp = new XMPMetadata();
-        XMPSchemaPDFAId pdfaid = new XMPSchemaPDFAId(xmp);
-        xmp.addSchema(pdfaid);
-        pdfaid.setConformance("B");
-        pdfaid.setPart(1);
-        pdfaid.setAbout("");
-        metadata.importXMPMetadata(xmp.asByteArray());
-        
+       
         PDPage pdPage = pdDocument.getPage(page - 1);
 
 		PDImageXObject pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);

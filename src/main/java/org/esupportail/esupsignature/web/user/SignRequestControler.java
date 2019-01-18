@@ -156,15 +156,15 @@ public class SignRequestControler {
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	SignRequest signRequest = SignRequest.findSignRequest(id);
         Document toSignContent = signRequest.getOriginalFile();
-        File toSignFile = toSignContent.getBigFile().toJavaIoFile();
+        File toSignFile = pdfService.toPdfA(toSignContent.getBigFile().toJavaIoFile());
         File signImage = fileService.resize(user.getSignImage().getBigFile().toJavaIoFile(), 100, 75);
         if(signRequest.getParams().get("newPageType").equals(NewPageType.onBegin.toString())) {
         	log.info("add page on begin");
-        	toSignFile = pdfService.addBlankPage(toSignContent.getBigFile().toJavaIoFile(), 0);
+        	toSignFile = pdfService.addBlankPage(toSignFile, 0);
         } else 
         if(signRequest.getParams().get("newPageType").equals(NewPageType.onEnd.toString())) {
         	log.info("add page on end");
-        	toSignFile = pdfService.addBlankPage(toSignContent.getBigFile().toJavaIoFile(), -1);
+        	toSignFile = pdfService.addBlankPage(toSignFile, -1);
         } else
     	if(signRequest.getParams().containsKey("signPageNumber")) {
     		signPageNumber = Integer.valueOf(signRequest.getParams().get("signPageNumber"));
