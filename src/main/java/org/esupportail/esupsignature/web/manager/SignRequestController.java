@@ -13,7 +13,7 @@ import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.DocStatus;
 import org.esupportail.esupsignature.domain.User;
-import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ public class SignRequestController {
 	private static final Logger log = LoggerFactory.getLogger(SignRequestController.class);
 	
 	@Resource
-	FileService fileService;
+	DocumentService fileService;
 
 	@Resource
 	PdfService pdfService;

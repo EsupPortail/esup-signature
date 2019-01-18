@@ -9,6 +9,7 @@ import javax.validation.Valid;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
+import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
@@ -41,15 +42,18 @@ public class UserControler {
 	
 	@Autowired(required = false)
 	PersonLdapDao personDao;
-	
-	@Resource
-	FileService fileService;
 
 	@Resource
-	UserKeystoreService userKeystoreService;
+	private DocumentService documentService;
 	
 	@Resource
-	UserService userService;
+	private FileService fileService;
+
+	@Resource
+	private UserKeystoreService userKeystoreService;
+	
+	@Resource
+	private UserService userService;
     
     @RequestMapping(produces = "text/html")
     public String settings(Model uiModel) throws Exception {
@@ -97,13 +101,13 @@ public class UserControler {
             if(userToUpdate.getKeystore().getBigFile().getBinaryFile() != null) {
             	userToUpdate.getKeystore().remove();
             }
-            userToUpdate.setKeystore(fileService.addFile(file, "application/jks"));
+            userToUpdate.setKeystore(documentService.addFile(file, "application/jks"));
         }
         if(!user.getSignImageBase64().isEmpty()) {
         	if(userToUpdate.getSignImage().getBigFile().getBinaryFile() != null) {
         		userToUpdate.getSignImage().remove();
         	}
-        	userToUpdate.setSignImage(fileService.addFile(user.getSignImageBase64(), userToUpdate.getEppn() + "_sign", "application/png"));
+        	userToUpdate.setSignImage(documentService.addFile(user.getSignImageBase64(), userToUpdate.getEppn() + "_sign", "application/png"));
         } else
         	if(userToUpdate.getId() == null) {
             	redirectAttrs.addFlashAttribute("messageCustom", "image is required");

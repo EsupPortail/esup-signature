@@ -9,6 +9,7 @@ import javax.validation.Valid;
 
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.slf4j.Logger;
@@ -41,8 +42,11 @@ public class UserController {
 	}
 	
 	@Resource
+	DocumentService documentService;
+	
+	@Resource
 	FileService fileService;
-
+	
 	@Resource
 	UserKeystoreService userKeystoreService;
 	
@@ -54,9 +58,9 @@ public class UserController {
         }
         uiModel.asMap().clear();
         try {
-			user.setSignImage(fileService.addFile(multipartFile));
+			user.setSignImage(documentService.addFile(multipartFile));
 	        File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
-	        user.setKeystore(fileService.addFile(new FileInputStream(file), file.getName(), file.length(), "application/jks"));
+	        user.setKeystore(documentService.addFile(new FileInputStream(file), file.getName(), file.length(), "application/jks"));
 	        user.persist();
         } catch (Exception e) {
         	log.error("Create user error", e);
@@ -86,7 +90,7 @@ public class UserController {
         User userToUdate = User.findUser(user.getId());
         File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
         InputStream inputStream = new FileInputStream(file);
-        userToUdate.setKeystore(fileService.addFile(inputStream, file.getName(), file.length(), "application/jks"));
+        userToUdate.setKeystore(documentService.addFile(inputStream, file.getName(), file.length(), "application/jks"));
         userToUdate.merge();
         return "redirect:/manager/users/" + encodeUrlPathSegment(user.getId().toString(), httpServletRequest);
     }
