@@ -32,7 +32,7 @@
         <dl class="display-group border-bottom m-0">
         	<dt class="col-lg-4">Get original signRequest</dt>
 	        <dd>
-	       		<spring:url value="/manager/signrequests/get-original-file/${id}" var="originalFileUrl"/>
+	       		<spring:url value="/user/signrequests/get-original-file/${id}" var="originalFileUrl"/>
 	            <button type="button" class="btn btn-warning" onclick="location.href='${originalFileUrl}'">Download</button>
 	        </dd>
         </dl>
@@ -41,7 +41,7 @@
 		        <dl class="display-group border-bottom m-0">
 		        	<dt class="col-lg-4">Get signed signRequest</dt>
 			        <dd>
-	                	<spring:url value="/manager/signrequests/get-signed-file/${id}" var="signedFileUrl"/>
+	                	<spring:url value="/user/signrequests/get-signed-file/${id}" var="signedFileUrl"/>
 	             		<button type="button" class="btn btn-success" onclick="location.href='${signedFileUrl}'">Download</button>
 			        </dd>
 		        </dl>
@@ -79,9 +79,12 @@
      	</div>        
 	<div class="col-lg-6">
 	<input type="button" id="previous" onclick="previousImage()" value="previous" />
+	<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl"/>
 	<input type="button" id="next" onclick="nextImage()" value="next" />
-		<div id="pointer_div" onclick="point_it(event)" style="background-size: 595px;background-image:url('data:image/jpg;base64,${imagePages[0]}');width:595px;height:842px;border:1px solid #CCC;">
-			<i class="fas fa-plus" id="cross" style="position:relative;visibility:hidden;z-index:2;"><!--  --></i>
+		<div id="pointer_div" onclick="point_it(event)" style="background-size: 595px;background-image:url('${documentUrl}/0');width:595px;height:842px;border:1px solid #CCC;">
+			<i id="cross" style="position:relative;visibility:hidden;z-index:2;">
+				<img alt="signature" src="data:image/jpg;base64, ${signFile}" id="cross" width="100"/>
+			</i>
 		</div>
 
 	</div>	
@@ -92,13 +95,7 @@
     <script language="JavaScript">
 			var nbImagePage = ${imagePagesSize};
 			var currentImagePage = 0;
-			var imagePages = [];
 	</script>
-    <c:forEach items="${imagePages}" var="imagePage">
-    	<script language="JavaScript">
-		imagePages.push("${imagePage}");
-		</script>
-	</c:forEach>
     
 	<script language="JavaScript">
 
@@ -118,7 +115,7 @@
 			function nextImage() {
 				currentImagePage++;
 				document.command.signPageNumber.value = currentImagePage + 1;
-				document.getElementById("pointer_div").style.backgroundImage = "url('data:image/png;base64,"+ imagePages[currentImagePage] +"')";
+				document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/" + currentImagePage +"')";
 				if(currentImagePage == nbImagePage - 1) {
 					document.getElementById("next").disabled = true;
 				}
@@ -130,7 +127,7 @@
 			function previousImage() {
 				currentImagePage--;
 				document.command.signPageNumber.value = currentImagePage + 1;
-				document.getElementById("pointer_div").style.backgroundImage = "url('data:image/png;base64,"+ imagePages[currentImagePage] +"')";
+				document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/" + currentImagePage +"')";
 				if(currentImagePage == 0) {
 					document.getElementById("previous").disabled = true;
 				}

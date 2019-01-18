@@ -31,9 +31,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @Transactional
 @Scope(value="session")
-public class UserControler {
+public class UserController {
 
-	private static final Logger log = LoggerFactory.getLogger(UserControler.class);
+	private static final Logger log = LoggerFactory.getLogger(UserController.class);
 	
 	@ModelAttribute("active")
 	public String getActiveMenu() {
@@ -56,7 +56,7 @@ public class UserControler {
 	private UserService userService;
     
     @RequestMapping(produces = "text/html")
-    public String settings(Model uiModel) throws Exception {
+    public String show(Model uiModel) throws Exception {
 		String eppn = userService.getEppnFromAuthentication();
 		if(User.countFindUsersByEppnEquals(eppn) == 0) {
 			return "redirect:/user/users/?form";

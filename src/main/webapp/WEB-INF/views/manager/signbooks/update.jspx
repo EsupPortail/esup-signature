@@ -9,12 +9,12 @@
         <field:datetime dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_SignBook_updateDate" z="RgQe1YmEHxMm1YUJLBxSR6ed9GE="/>
         <field:input field="updateBy" id="c_org_esupportail_esupsignature_domain_SignBook_updateBy" z="0n5sow3qUOLRkZ2zaT2MZLDIwcg="/>
         <field:textarea field="description" id="c_org_esupportail_esupsignature_domain_SignBook_description" z="CdRMWvt2UQYUskHLNd8ll/r37XU="/>
-        <field:select field="userSource" id="c_org_esupportail_esupsignature_domain_SignBook_userSource" itemValue="id" items="${users}" path="/manager/users" z="5Hvocmxs/pZ29y2fgfeRfJR01Sk="/>
-        <field:select field="userSourceSecretary" id="c_org_esupportail_esupsignature_domain_SignBook_userSourceSecretary" itemValue="id" items="${users}" path="/manager/users" z="JgRu921oUzdCfa99D3J0apWbS4o="/>
-        <field:select field="userDestination" id="c_org_esupportail_esupsignature_domain_SignBook_userDestination" itemValue="id" items="${users}" path="/manager/users" z="cmP5f1fEqyKfNOw+0WJ+xhEhIDg="/>
-        <field:select field="userDestinationSecretary" id="c_org_esupportail_esupsignature_domain_SignBook_userDestinationSecretary" itemValue="id" items="${users}" path="/manager/users" z="2MtHNkRipja0KJMD1SXSqeJSc/I="/>
+        <field:select field="userSource" id="c_org_esupportail_esupsignature_domain_SignBook_userSource" itemValue="id" items="${users}" path="/users" z="1D2YV/lF1Ecq/aluMmnGnq84C5A="/>
+        <field:select field="userSourceSecretary" id="c_org_esupportail_esupsignature_domain_SignBook_userSourceSecretary" itemValue="id" items="${users}" path="/users" z="56wPX/MeJ2kBkLmrJn7f3AEWEJQ="/>
+        <field:select field="userDestination" id="c_org_esupportail_esupsignature_domain_SignBook_userDestination" itemValue="id" items="${users}" path="/users" z="rakW1+hVwwI2yAoBu3cMzvuvg1o="/>
+        <field:select field="userDestinationSecretary" id="c_org_esupportail_esupsignature_domain_SignBook_userDestinationSecretary" itemValue="id" items="${users}" path="/users" z="xrkUu9YBmlNDc7WEqojwPgkozWc="/>
         <field:input field="signType" id="c_org_esupportail_esupsignature_domain_SignBook_signType" z="KFXeOW9vgBODDOsZlLBhmARauKU="/>
         <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignBook_status" z="LpnODZDB3VETTuY0v7uf46RiBdY="/>
-        <field:select field="documents" id="c_org_esupportail_esupsignature_domain_SignBook_documents" itemValue="id" items="${signrequests}" multiple="true" path="/manager/signrequests" z="xUGnGsTUeiKoDcX6RjLODfyi1oY="/>
+        <field:select field="documents" id="c_org_esupportail_esupsignature_domain_SignBook_documents" itemValue="id" items="${signrequests}" multiple="true" path="/signrequests" z="B6EUNolXnIcrkm02xSkojy1yF8M="/>
     </form:update>
 </div>

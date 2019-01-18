@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -14,10 +13,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignRequest;
-import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.SignRequest.NewPageType;
+import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.SignRequest.SignType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.DocumentService;
@@ -44,9 +44,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @Transactional
 @Scope(value="session")
-public class SignRequestControler {
+public class SignRequestController {
 
-	private static final Logger log = LoggerFactory.getLogger(SignRequestControler.class);
+	private static final Logger log = LoggerFactory.getLogger(SignRequestController.class);
 	
 	@ModelAttribute("active")
 	public String getActiveMenu() {
@@ -120,19 +120,19 @@ public class SignRequestControler {
         addDateTimeFormatPatterns(uiModel);
         SignRequest signRequest = SignRequest.findSignRequest(id);
         if(signRequest.getCreateBy().equals(eppn)) {
-        	File toConvertFile;
+        	Document toConvertFile;
         	if(signRequest.getStatus().equals(SignRequestStatus.signed)) {
-        		toConvertFile = signRequest.getSignedFile().getBigFile().toJavaIoFile();
+        		toConvertFile = signRequest.getSignedFile();
         	} else {
-        		toConvertFile = signRequest.getOriginalFile().getBigFile().toJavaIoFile();
+        		toConvertFile = signRequest.getOriginalFile();
         	}
-        	List<String> imagePages = pdfService.pageAsImage(toConvertFile);
         	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+        	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
         	uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 	        uiModel.addAttribute("signRequest", signRequest);
 	        uiModel.addAttribute("itemId", id);
-	        uiModel.addAttribute("imagePagesSize", imagePages.size());
-	        uiModel.addAttribute("imagePages", imagePages);
+	        uiModel.addAttribute("imagePagesSize", pdfService.getTotalNumberOfPages(toConvertFile.getBigFile().toJavaIoFile()));
+	        uiModel.addAttribute("documentId", toConvertFile.getId());
 	        return "user/signrequests/show";
         } else {
         	return "redirect:/user/signrequests/";
@@ -213,6 +213,32 @@ public class SignRequestControler {
         uiModel.addAttribute("size", (size == null) ? "10" : size.toString());
         return "redirect:/user/signrequests/";
     }
+
+    @RequestMapping(value = "/get-original-file/{id}", method = RequestMethod.GET)
+    public void getOriginalFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
+    	SignRequest document = SignRequest.findSignRequest(id);
+        Document file = document.getOriginalFile();
+        try {
+            response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
+            response.setContentType(file.getContentType());
+            IOUtils.copy(file.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+        } catch (Exception e) {
+            log.error("get file error", e);
+        }
+    }
+    
+    @RequestMapping(value = "/get-signed-file/{id}", method = RequestMethod.GET)
+    public void getSignedFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
+    	SignRequest document = SignRequest.findSignRequest(id);
+        Document file = document.getSignedFile();
+        try {
+            response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
+            response.setContentType(file.getContentType());
+            IOUtils.copy(file.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+        } catch (Exception e) {
+            log.error("get file error", e);
+        }
+    }    
     
     void populateEditForm(Model uiModel, SignRequest signRequest) {
         uiModel.addAttribute("signRequest", signRequest);

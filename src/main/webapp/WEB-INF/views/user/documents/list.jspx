@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <page:list id="pl_org_esupportail_esupsignature_domain_Document" items="${documents}" z="uo+SmVPNNYJ5RSxya4Ml0skkb9c=">
+        <table:table data="${documents}" id="l_org_esupportail_esupsignature_domain_Document" path="/user/documents" z="BUSkfk1Blpjltq+ueVU8e/ZLk/A=">
+            <table:column id="c_org_esupportail_esupsignature_domain_Document_fileName" property="fileName" z="DYB1XTxDa+Ow4yQTwP9FGLP/mNU="/>
+            <table:column id="c_org_esupportail_esupsignature_domain_Document_size" property="size" z="8Qxdyk2zvZP119tZ+4HvWKM4gUY="/>
+            <table:column id="c_org_esupportail_esupsignature_domain_Document_contentType" property="contentType" z="xhNc0VV30YkosB+XmBNNiBBGZYM="/>
+            <table:column id="c_org_esupportail_esupsignature_domain_Document_bigFile" property="bigFile" render="false" z="user-managed"/>
+        </table:table>
+    </page:list>
+</div>

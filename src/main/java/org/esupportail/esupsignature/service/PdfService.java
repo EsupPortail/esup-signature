@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -212,7 +213,7 @@ public class PdfService {
 	    return targetFile;
 	}
 	
-	public List<String> pageAsImage(File pdfFile) throws Exception {
+	public List<String> pagesAsBase64Images(File pdfFile) throws IOException   {
 		List<String> imagePages = new ArrayList<String>();
 		PDDocument pdDocument = PDDocument.load(pdfFile);
         PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
@@ -222,6 +223,33 @@ public class PdfService {
         }
         pdDocument.close();
         return imagePages;
-
 	}
+	
+	public int getTotalNumberOfPages(File pdfFile) throws IOException {
+		PDDocument pdDocument = PDDocument.load(pdfFile);
+		return pdDocument.getNumberOfPages();
+	}
+	
+	public String pageAsBase64Image(File pdfFile, int page) throws Exception {
+		PDDocument pdDocument = PDDocument.load(pdfFile);
+        PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
+        BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfToImageDpi, ImageType.RGB);
+        String imagePage = fileService.getBase64Image(bufferedImage, pdfFile.getName());
+        pdDocument.close();
+        return imagePage;
+	}
+	
+	public BufferedImage pageAsBufferedImage(File pdfFile, int page) throws Exception {
+		PDDocument pdDocument = PDDocument.load(pdfFile);
+        PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
+        BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfToImageDpi, ImageType.RGB);
+        pdDocument.close();
+        return bufferedImage;
+	}
+
+	public InputStream pageAsInputStream(File pdfFile, int page) throws Exception {
+		return fileService.bufferedImageToInputStream(pageAsBufferedImage(pdfFile, page), "png");
+        
+	}
+	
 }

@@ -45,14 +45,8 @@ public class FileService {
 	
 	public File resize(BufferedImage img, int newW, int newH) throws IOException {
 		File fileImage = File.createTempFile("img", ".png");
-    
-	    BufferedImage thumbnail = 
-	    	    Thumbnails.of(img)
-	    	        .height(newH)
-	    	        .asBufferedImage();
-
-	    	ImageIO.write(thumbnail, "png", fileImage);	
-	    
+	    BufferedImage thumbnail = Thumbnails.of(img).height(newH).asBufferedImage();
+	    ImageIO.write(thumbnail, "png", fileImage);	
 	    return fileImage;
 	}  
 	
@@ -61,13 +55,19 @@ public class FileService {
 		return getBase64Image(imBuff, file.getFileName());
 	}
 	
-	public String getBase64Image(BufferedImage imBuff, String name) throws IOException, SQLException {
+	public String getBase64Image(BufferedImage imBuff, String name) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(imBuff, "png", baos);
         baos.flush();
         String out = DatatypeConverter.printBase64Binary(baos.toByteArray());
         baos.close();
         return out;
-        
 	}
+	
+	public InputStream bufferedImageToInputStream(BufferedImage image, String type) throws IOException {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		ImageIO.write(image, type, os);
+		return new ByteArrayInputStream(os.toByteArray());
+	}
+	
 }
