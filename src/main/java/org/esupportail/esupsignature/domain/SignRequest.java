@@ -21,7 +21,7 @@ import org.springframework.roo.addon.tostring.RooToString;
 
 @RooJavaBean
 @RooToString
-@RooJpaActiveRecord(finders={"findSignRequestsByCreateByEquals"})
+@RooJpaActiveRecord(finders={"findSignRequestsByCreateByEquals", "findSignRequestsByRecipientEmailEquals"})
 public class SignRequest {
 
 	String name;
@@ -37,10 +37,12 @@ public class SignRequest {
     private Date updateDate;
 
     private String updateBy;
+
+    private String recipientEmail;
     
     @Size(max = 500)
     private String description;
-
+    
     @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
     private Document originalFile = new Document();
     
@@ -48,12 +50,12 @@ public class SignRequest {
     private Document signedFile = new Document();
     
     @Enumerated(EnumType.STRING)
-    private DocStatus status;	
+    private SignRequestStatus status;	
     
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<String, String> params = new HashMap<String, String>();
     
-	public enum DocStatus {
+	public enum SignRequestStatus {
 		start, pending, canceled, checked, signed, deleted;
 	}
 
@@ -80,9 +82,8 @@ public class SignRequest {
 	public enum NewPageType {
 		none, onBegin, onEnd;
 	}
-
 	
-    public void setStatus(DocStatus status) {
+    public void setStatus(SignRequestStatus status) {
         this.status = status;
     }
 }

@@ -18,5 +18,6 @@
         <field:display field="YPos" id="s_org_esupportail_esupsignature_domain_SignRequest_yPos" object="${signrequest}" z="vE6Zgu/5Z2CjEC491a2Ie72grvk="/>
         <field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_SignRequest_originalFile" object="${signrequest}" z="AqbkPrawHePypOyanGvYbQEj5J0="/>
         <field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_SignRequest_signedFile" object="${signrequest}" z="1cJy771EMV8tCFZnbSFYdyE1JBU="/>
+        <field:display field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" object="${signrequest}" z="LOzFtZYVUNHjo4ZsOuGa/JPabfY="/>
     </page:show>
 </div>

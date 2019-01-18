@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.web.user;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -17,7 +16,7 @@ import javax.validation.Valid;
 
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignRequest;
-import org.esupportail.esupsignature.domain.SignRequest.DocStatus;
+import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.SignRequest.NewPageType;
 import org.esupportail.esupsignature.domain.SignRequest.SignType;
 import org.esupportail.esupsignature.domain.User;
@@ -75,8 +74,27 @@ public class SignRequestControler {
         return "user/signrequests/create";
     }
     
+    @RequestMapping(value="/tosign", produces = "text/html")
+    public String listToSign(@RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, @RequestParam(value = "sortFieldName", required = false) String sortFieldName, @RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
+		String eppn = userService.getEppnFromAuthentication();
+		if(User.countFindUsersByEppnEquals(eppn) == 0) {
+			return "redirect:/user/users";
+		}
+		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+        if (page != null || size != null) {
+            int sizeNo = size == null ? 10 : size.intValue();
+            //final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
+            uiModel.addAttribute("signRequests", SignRequest.findSignRequestsByRecipientEmailEquals(user.getEmail(), sortFieldName, sortOrder).getResultList());
+            float nrOfPages = (float) SignRequest.countSignRequests() / sizeNo;
+            uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
+        } else {
+            uiModel.addAttribute("signRequests", SignRequest.findSignRequestsByRecipientEmailEquals(user.getEmail(), sortFieldName, sortOrder).getResultList());
+        }
+        return "user/signrequests/list";
+    }
+
     @RequestMapping(produces = "text/html")
-    public String list(@RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, @RequestParam(value = "sortFieldName", required = false) String sortFieldName, @RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
+    public String listMyDocs(@RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, @RequestParam(value = "sortFieldName", required = false) String sortFieldName, @RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
 		String eppn = userService.getEppnFromAuthentication();
 		if(User.countFindUsersByEppnEquals(eppn) == 0) {
 			return "redirect:/user/users";
@@ -95,7 +113,7 @@ public class SignRequestControler {
         }
         return "user/signrequests/list";
     }
-	
+    
     @RequestMapping(value = "/{id}", produces = "text/html")
     public String show(@PathVariable("id") Long id, Model uiModel) throws SQLException, IOException, Exception {
 		String eppn = userService.getEppnFromAuthentication();
@@ -103,7 +121,7 @@ public class SignRequestControler {
         SignRequest signRequest = SignRequest.findSignRequest(id);
         if(signRequest.getCreateBy().equals(eppn)) {
         	File toConvertFile;
-        	if(signRequest.getStatus().equals(DocStatus.signed)) {
+        	if(signRequest.getStatus().equals(SignRequestStatus.signed)) {
         		toConvertFile = signRequest.getSignedFile().getBigFile().toJavaIoFile();
         	} else {
         		toConvertFile = signRequest.getOriginalFile().getBigFile().toJavaIoFile();
@@ -134,7 +152,7 @@ public class SignRequestControler {
         	signRequest.setCreateDate(new Date());
 			signRequest.setOriginalFile(documentService.addFile(multipartFile));
 			signRequest.setSignedFile(null);
-			signRequest.setStatus(DocStatus.pending);
+			signRequest.setStatus(SignRequestStatus.pending);
 			Map<String, String> params = new HashMap<>();
 			params.put("signType", signRequest.getSignType());
 			params.put("newPageType", signRequest.getNewPageType());
@@ -143,7 +161,7 @@ public class SignRequestControler {
 			params.put("yPos", signRequest.getYPos());
 			signRequest.setParams(params);
 	        signRequest.persist();
-        } catch (IOException | SQLException e) {
+        } catch (IOException e) {
         	log.error("Create file error", e);
 		}
         return "redirect:/user/signrequests/" + signRequest.getId();
@@ -154,54 +172,35 @@ public class SignRequestControler {
     		@RequestParam(value = "xPos", required=true) int xPos,
     		@RequestParam(value = "yPos", required=true) int yPos,
     		@RequestParam(value = "signPageNumber", required=true) int signPageNumber,
-    		@RequestParam(value = "password", required=false) String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) throws Exception {
-    	log.info("begin sign");
+    		@RequestParam(value = "password", required=false) String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	SignRequest signRequest = SignRequest.findSignRequest(id);
-        Document toSignContent = signRequest.getOriginalFile();
-        File toSignFile = pdfService.toPdfA(toSignContent.getBigFile().toJavaIoFile());
-        File signImage = fileService.resize(user.getSignImage().getBigFile().toJavaIoFile(), 100, 75);
-        if(signRequest.getParams().get("newPageType").equals(NewPageType.onBegin.toString())) {
-        	log.info("add page on begin");
-        	toSignFile = pdfService.addBlankPage(toSignFile, 0);
-        } else 
-        if(signRequest.getParams().get("newPageType").equals(NewPageType.onEnd.toString())) {
-        	log.info("add page on end");
-        	toSignFile = pdfService.addBlankPage(toSignFile, -1);
-        } else
+        
+    	File signImage = user.getSignImage().getBigFile().toJavaIoFile();
+        File toSignFile = signRequest.getOriginalFile().getBigFile().toJavaIoFile();
+
     	if(signRequest.getParams().containsKey("signPageNumber")) {
     		signPageNumber = Integer.valueOf(signRequest.getParams().get("signPageNumber"));
         }
-        if(signRequest.getParams().containsKey("xPos") && signRequest.getParams().containsKey("yPos")) {
-        	xPos = Integer.valueOf(signRequest.getParams().get("xPos"));
-        	yPos = Integer.valueOf(signRequest.getParams().get("yPos"));
-        } else {
-        	signRequest.getParams().put("xPos", String.valueOf(xPos));
-        	signRequest.getParams().put("yPos", String.valueOf(yPos));
-        }
-        if(signRequest.getParams().get("signType").equals(SignType.imageStamp.toString())) {
-        	log.info("imageStamp signature " + xPos + " : " + yPos);
-        	File signedFile = pdfService.addImage(toSignFile, signImage, signPageNumber, xPos, yPos);
-            signRequest.setSignedFile(documentService.addFile(new FileInputStream(signedFile), "signed_" + toSignContent.getFileName(), signedFile.length(), toSignContent.getContentType()));
-
-        } else 
-        if(signRequest.getParams().get("signType").equals(SignType.certPAdES.toString())) {
-        	log.info("cades signature");
-        	if(password != null) {
-            	userKeystoreService.setPassword(password);
-            } else {
-            	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
-            }
-            try {
-            	String pemCert = userKeystoreService.getPemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
-            	File signedFile = pdfService.certSignPdf(toSignFile, userKeystoreService.pemToBase64String(pemCert), null, signImage, signPageNumber, xPos, yPos);
-            	signRequest.setSignedFile(documentService.addFile(signedFile, "pdf"));
-            } catch (Exception e) {
-            	redirectAttrs.addFlashAttribute("messageCustom", "keystore issue");
-    		}
-        }
-    	signRequest.setStatus(DocStatus.signed);
+    	NewPageType newPageType = NewPageType.valueOf(signRequest.getParams().get("newPageType"));
+    	SignType signType = SignType.valueOf(signRequest.getParams().get("signType"));
+    	String base64PemCert = null;
+    	if(signType.equals(SignType.certPAdES)) {
+    	if(password == null) password = "";
+        	userKeystoreService.setPassword(password);
+        	base64PemCert = userKeystoreService.getBase64PemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
+    	}
+        try {
+	        File signedFile = pdfService.signPdf(toSignFile, signImage, signType, base64PemCert, signPageNumber, xPos, yPos, newPageType);
+	  	
+	        if(signedFile != null) {
+				signRequest.setSignedFile(documentService.addFile(signedFile, "application/pdf"));
+			    signRequest.setStatus(SignRequestStatus.signed);
+	        }
+        } catch (IOException e) {
+        	log.error("file to sign or sign image opening error", e);
+		}
         return "redirect:/user/signrequests/" + id;
     }
 	

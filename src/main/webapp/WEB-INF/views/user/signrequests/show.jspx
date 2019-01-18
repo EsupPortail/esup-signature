@@ -29,11 +29,6 @@
 	    	Y position : <input autocomplete="off" value="0" class="form-control" type="text" name="yPos" size="4" />    
 	        </dd>
         </dl>
-        
-        
-        
-        
-        
         <dl class="display-group border-bottom m-0">
         	<dt class="col-lg-4">Get original signRequest</dt>
 	        <dd>
@@ -75,7 +70,7 @@
 	                        </c:choose>
                         </c:if>
 	                    </div>
-	                  	<input alt="Signer" class="btn btn-primary" id="signe" title="Signe" type="submit" value="Signe" />
+	                  	<input alt="Signer" class="btn btn-primary" id="signe" title="Signe" type="submit" value="Sign" />
 
                 </dd>
                </dl>

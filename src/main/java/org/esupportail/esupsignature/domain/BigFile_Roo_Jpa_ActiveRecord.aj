@@ -14,8 +14,6 @@ privileged aspect BigFile_Roo_Jpa_ActiveRecord {
     @PersistenceContext
     transient EntityManager BigFile.entityManager;
     
-    public static final List<String> BigFile.fieldNames4OrderClauseFilter = java.util.Arrays.asList("binaryFile");
-    
     public static final EntityManager BigFile.entityManager() {
         EntityManager em = new BigFile().entityManager;
         if (em == null) throw new IllegalStateException("Entity manager has not been injected (is the Spring Aspects JAR configured as an AJC/AJDT aspects library?)");

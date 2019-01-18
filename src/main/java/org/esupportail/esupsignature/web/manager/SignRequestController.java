@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.manager;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Date;
 
 import javax.annotation.Resource;
@@ -11,8 +10,7 @@ import javax.validation.Valid;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignRequest;
-import org.esupportail.esupsignature.domain.SignRequest.DocStatus;
-import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
@@ -32,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @RequestMapping("/manager/signrequests")
 @Controller
@@ -44,7 +41,7 @@ public class SignRequestController {
 	private static final Logger log = LoggerFactory.getLogger(SignRequestController.class);
 	
 	@Resource
-	DocumentService fileService;
+	DocumentService documentService;
 
 	@Resource
 	PdfService pdfService;
@@ -69,11 +66,11 @@ public class SignRequestController {
     		String eppn = auth.getName();
         	document.setCreateBy(eppn);
         	document.setCreateDate(new Date());
-			document.setOriginalFile(fileService.addFile(multipartFile));
+			document.setOriginalFile(documentService.addFile(multipartFile));
 			document.setSignedFile(null);
-			document.setStatus(DocStatus.pending);
+			document.setStatus(SignRequestStatus.pending);
 	        document.persist();
-        } catch (IOException | SQLException e) {
+        } catch (IOException e) {
         	log.error("Create file error", e);
 		}
         return "redirect:/manager/signrequests/" + encodeUrlPathSegment(document.getId().toString(), httpServletRequest);
@@ -113,28 +110,5 @@ public class SignRequestController {
             log.error("get file error", e);
         }
     }    
-    
-    @RequestMapping(value = "/signdoc/{id}", method = RequestMethod.POST)
-    public String signdoc(@PathVariable("id") Long id, @RequestParam("password") String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) throws Exception {
-    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String eppn = auth.getName();
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
-    	SignRequest document = SignRequest.findSignRequest(id);
-        Document file = document.getOriginalFile();
-        Document signedFile;
-        if(password != null && !password.isEmpty()) {
-        	userKeystoreService.setPassword(password);
-        }
-        try {
-            String pemCert = userKeystoreService.getPemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
-        	//signedFile = fileService.certSignPdf(file, userKeystoreService.pemToBase64String(pemCert), null, user.getSignImage(), 200, 200, true, -1);
-            //signedFile = pdfService.addImage(file.getBigFile().toJavaIoFile(), user.getSignImage().getBigFile().toJavaIoFile(), 0, 200, 200);
-            //document.setSignedFile(fileService.addFile(new FileInputStream(signedFile), "signed_" + file.getFileName(), signedFile.length(), file.getContentType()));
-        	//document.setSignedFile(signedFile);
-        	document.setStatus(DocStatus.signed);
-        } catch (IOException e) {
-        	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
-		}
-        return "redirect:/manager/signrequests/" + id;
-    }
+
 }

@@ -194,7 +194,7 @@ public class SigningService {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DSSDocument visibleSignDocument(SignatureDocumentForm form, int page, int x, int y, File imageFile) {
+	public DSSDocument visibleSignDocument(SignatureDocumentForm form, int page, int x, int y, File imageFile, int width, int height) {
 		logger.info("Start signDocument with one document");
 		DSSDocument signedDocument = null;
 		try {
@@ -226,8 +226,8 @@ public class SigningService {
 			fileDocumentImage.setMimeType(MimeType.PNG);
 			
 			imageParameters.setImage(fileDocumentImage);
-			imageParameters.setWidth(100);
-			imageParameters.setHeight(75);
+			imageParameters.setWidth(width);
+			imageParameters.setHeight(height);
 
 			parameters.setSignatureImageParameters(imageParameters);
 

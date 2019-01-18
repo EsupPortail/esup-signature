@@ -18,5 +18,6 @@
         <field:input field="yPos" id="c_org_esupportail_esupsignature_domain_SignRequest_yPos" z="jSVrWAxxHs4YshiwxPdg13inZQ4="/>
         <field:select field="originalFile" id="c_org_esupportail_esupsignature_domain_SignRequest_originalFile" itemValue="id" items="${documents}" path="/documents" z="UUYh2GPOts1CX9tM+6bnE/LXev0="/>
         <field:select field="signedFile" id="c_org_esupportail_esupsignature_domain_SignRequest_signedFile" itemValue="id" items="${documents}" path="/documents" z="2qfEChzz9A/KMRlRM5DkJm0ZL7o="/>
+        <field:input field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" z="IwTesK1t1f7rbNybMvsX5P/Lcjs="/>
     </form:update>
 </div>

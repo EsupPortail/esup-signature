@@ -8,7 +8,7 @@
                 <menu:item id="c_accueil" label="Accueil" menuClass="nav-link" render="false" url="/" z="user-managed"/>
                 <c:if test="${role=='user'}">
                     <menu:item activeMenu="${active=='user/users'}" id="viewsettings" label="Settings" menuClass="nav-link" url="/user/users/"/>
-                    <menu:item activeMenu="${active=='user/signrequests'}" id="viewsettings" label="Documents" menuClass="nav-link" url="/user/signrequests/"/>
+                    <menu:item activeMenu="${active=='user/signrequests'}" id="viewsettings" label="My documents" menuClass="nav-link" url="/user/signrequests/"/>
                 </c:if>
                 <sec:authorize access="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')">
                     <c:if test="${role=='manager'}">

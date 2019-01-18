@@ -1,7 +1,5 @@
 package org.esupportail.esupsignature.service;
 
-import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,6 +18,8 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.springframework.stereotype.Service;
 
+import net.coobird.thumbnailator.Thumbnails;
+
 @Service
 public class FileService {
 	
@@ -31,7 +31,7 @@ public class FileService {
 		return file;
 	}
 
-	public File fromBase64Image(String base64Image, String name) throws IOException, SQLException {
+	public File fromBase64Image(String base64Image, String name) throws IOException {
 		File fileImage = File.createTempFile(name, ".png");
 		ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(base64Image.substring(base64Image.lastIndexOf(',') + 1).trim()));
         BufferedImage image = ImageIO.read(bis);
@@ -45,12 +45,14 @@ public class FileService {
 	
 	public File resize(BufferedImage img, int newW, int newH) throws IOException {
 		File fileImage = File.createTempFile("img", ".png");
-	    Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
-	    BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
-	    Graphics2D g2d = dimg.createGraphics();
-	    g2d.drawImage(tmp, 0, 0, null);
-	    g2d.dispose();
-	    ImageIO.write(dimg, "png", fileImage);
+    
+	    BufferedImage thumbnail = 
+	    	    Thumbnails.of(img)
+	    	        .height(newH)
+	    	        .asBufferedImage();
+
+	    	ImageIO.write(thumbnail, "png", fileImage);	
+	    
 	    return fileImage;
 	}  
 	

@@ -394,6 +394,11 @@
 			<version>1.5.4</version>
 		</dependency>
 		<dependency>
+		    <groupId>net.coobird</groupId>
+		    <artifactId>thumbnailator</artifactId>
+		    <version>0.4.8</version>
+		</dependency>
+		<dependency>
 		    <groupId>org.apache.pdfbox</groupId>
 		    <artifactId>pdfbox</artifactId>
 		    <version>${pdfbox.version}</version>
@@ -408,12 +413,6 @@
 		    <artifactId>jempbox</artifactId>
 		    <version>1.8.16</version>
 		</dependency>
-		
-		<dependency>
-		    <groupId>com.github.jai-imageio</groupId>
-		    <artifactId>jai-imageio-core</artifactId>
-		    <version>1.3.1</version>
-		</dependency>				
         <dependency>
 		    <groupId>net.sf.supercsv</groupId>
 		    <artifactId>super-csv</artifactId>
