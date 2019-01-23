@@ -14,7 +14,7 @@ privileged aspect SignRequest_Roo_Jpa_ActiveRecord {
     @PersistenceContext
     transient EntityManager SignRequest.entityManager;
     
-    public static final List<String> SignRequest.fieldNames4OrderClauseFilter = java.util.Arrays.asList("name", "createDate", "createBy", "updateDate", "updateBy", "recipientEmail", "description", "originalFile", "signedFile", "status", "params", "signType", "newPageType", "signPageNumber", "xPos", "yPos");
+    public static final List<String> SignRequest.fieldNames4OrderClauseFilter = java.util.Arrays.asList("log", "name", "createDate", "createBy", "updateDate", "updateBy", "recipientEmail", "description", "originalFile", "signedFile", "status", "params", "signType", "newPageType", "signPageNumber", "xPos", "yPos");
     
     public static final EntityManager SignRequest.entityManager() {
         EntityManager em = new SignRequest().entityManager;

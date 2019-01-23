@@ -62,21 +62,27 @@ public class PdfService {
 	private SigningService signingService;
 	
 	private int pdfToImageDpi = 72;
-	
 	private int signWidth = 100;
-	
 	private int signHeight = 75;
-
+	private int xCenter = 297;
+	private int yCenter = 421;
+	
 	public File signPdf(File toSignFile, File signImage, SignType signType, String base64PemCert, int pageNumber, int xPos, int yPos, NewPageType newPageType ) throws IOException {
 		toSignFile = toPdfA(toSignFile);
     	File signedFile = null;
     	if(newPageType.equals(NewPageType.onBegin)) {
         	log.info("add page on begin");
         	toSignFile = addBlankPage(toSignFile, 0);
+        	pageNumber = 1;
+        	xPos = xCenter;
+        	yPos = yCenter;
         } else 
         if(newPageType.equals(NewPageType.onEnd)) {
         	log.info("add page on end");
         	toSignFile = addBlankPage(toSignFile, -1);
+        	pageNumber = getTotalNumberOfPages(toSignFile) + 1;
+        	xPos = xCenter;
+        	yPos = yCenter;
         }
     	
         if(signType.equals(SignType.imageStamp)) {

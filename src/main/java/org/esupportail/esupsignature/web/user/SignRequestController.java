@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -69,70 +70,66 @@ public class SignRequestController {
 	UserService userService;
 	
     @RequestMapping(params = "form", produces = "text/html")
-    public String createForm(Model uiModel) {
+    public String createForm(Model uiModel, @RequestParam(value = "recipientEmail", required = false) boolean recipientEmail) {
         populateEditForm(uiModel, new SignRequest());
+        uiModel.addAttribute("recipientEmail", recipientEmail);
         return "user/signrequests/create";
-    }
-    
-    @RequestMapping(value="/tosign", produces = "text/html")
-    public String listToSign(@RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, @RequestParam(value = "sortFieldName", required = false) String sortFieldName, @RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
-		String eppn = userService.getEppnFromAuthentication();
-		if(User.countFindUsersByEppnEquals(eppn) == 0) {
-			return "redirect:/user/users";
-		}
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
-        if (page != null || size != null) {
-            int sizeNo = size == null ? 10 : size.intValue();
-            //final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
-            uiModel.addAttribute("signRequests", SignRequest.findSignRequestsByRecipientEmailEquals(user.getEmail(), sortFieldName, sortOrder).getResultList());
-            float nrOfPages = (float) SignRequest.countSignRequests() / sizeNo;
-            uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
-        } else {
-            uiModel.addAttribute("signRequests", SignRequest.findSignRequestsByRecipientEmailEquals(user.getEmail(), sortFieldName, sortOrder).getResultList());
-        }
-        return "user/signrequests/list";
     }
 
     @RequestMapping(produces = "text/html")
-    public String listMyDocs(@RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, @RequestParam(value = "sortFieldName", required = false) String sortFieldName, @RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
+    public String list(@RequestParam(value = "page", required = false) Integer page, 
+    		@RequestParam(value = "findBy", required = false) String findBy, 
+    		@RequestParam(value = "size", required = false) Integer size, 
+    		@RequestParam(value = "sortFieldName", required = false) String sortFieldName, 
+    		@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
 		String eppn = userService.getEppnFromAuthentication();
+		populateEditForm(uiModel, new SignRequest());
 		if(User.countFindUsersByEppnEquals(eppn) == 0) {
 			return "redirect:/user/users";
 		}
-    	if(SignRequest.countFindSignRequestsByCreateByEquals(eppn) == 0) {
-    		return "redirect:/user/signrequests/?form"; 
-    	}
-        if (page != null || size != null) {
-            int sizeNo = size == null ? 10 : size.intValue();
-            //final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
-            uiModel.addAttribute("signRequests", SignRequest.findSignRequestsByCreateByEquals(eppn, sortFieldName, sortOrder).getResultList());
-            float nrOfPages = (float) SignRequest.countSignRequests() / sizeNo;
-            uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
-        } else {
-            uiModel.addAttribute("signRequests", SignRequest.findSignRequestsByCreateByEquals(eppn, sortFieldName, sortOrder).getResultList());
-        }
+		if(sortOrder == null) {
+			sortOrder = "asc";
+			sortFieldName = "createDate";
+		}
+		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		List<SignRequest> signRequests = null;
+		if(findBy != null && findBy.equals("recipientEmail")) {
+			signRequests = SignRequest.findSignRequests("", user.getEmail(), "", page, size, sortFieldName, sortOrder).getResultList();
+			uiModel.addAttribute("tosigndocs", "active");	
+		} else {
+			signRequests = SignRequest.findSignRequests(eppn, "", "", page, size, sortFieldName, sortOrder).getResultList();
+			uiModel.addAttribute("mydocs", "active");
+		}
+		uiModel.addAttribute("signRequests", signRequests);
+        uiModel.addAttribute("maxPages", (int) 1);
+
         return "user/signrequests/list";
     }
     
     @RequestMapping(value = "/{id}", produces = "text/html")
     public String show(@PathVariable("id") Long id, Model uiModel) throws SQLException, IOException, Exception {
 		String eppn = userService.getEppnFromAuthentication();
-        addDateTimeFormatPatterns(uiModel);
+    	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		addDateTimeFormatPatterns(uiModel);
         SignRequest signRequest = SignRequest.findSignRequest(id);
-        if(signRequest.getCreateBy().equals(eppn)) {
+        if(signRequest.getCreateBy().equals(eppn) || signRequest.getRecipientEmail().equals(user.getEmail())) {
         	Document toConvertFile;
         	if(signRequest.getStatus().equals(SignRequestStatus.signed)) {
         		toConvertFile = signRequest.getSignedFile();
         	} else {
         		toConvertFile = signRequest.getOriginalFile();
         	}
-        	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
         	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
         	uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 	        uiModel.addAttribute("signRequest", signRequest);
 	        uiModel.addAttribute("itemId", id);
 	        uiModel.addAttribute("imagePagesSize", pdfService.getTotalNumberOfPages(toConvertFile.getBigFile().toJavaIoFile()));
 	        uiModel.addAttribute("documentId", toConvertFile.getId());
+	    	if(signRequest.getCreateBy().equals(user.getEppn()) && signRequest.getRecipientEmail() != null) {
+	    		uiModel.addAttribute("signable", "ko");
+	    	} else {
+	    		uiModel.addAttribute("signable", "ok");
+	    	}
 	        return "user/signrequests/show";
         } else {
         	return "redirect:/user/signrequests/";
@@ -143,6 +140,7 @@ public class SignRequestController {
     public String create(@Valid SignRequest signRequest, @RequestParam("multipartFile") MultipartFile multipartFile, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
         if (bindingResult.hasErrors()) {
             uiModel.addAttribute("signRequest", signRequest);
+            uiModel.addAttribute("recipientEmail", false);
             return "user/signrequests/create";
         }
 		String eppn = userService.getEppnFromAuthentication();
@@ -156,9 +154,9 @@ public class SignRequestController {
 			Map<String, String> params = new HashMap<>();
 			params.put("signType", signRequest.getSignType());
 			params.put("newPageType", signRequest.getNewPageType());
-			params.put("signPageNumber", signRequest.getSignPageNumber());
-			params.put("xPos", signRequest.getXPos());
-			params.put("yPos", signRequest.getYPos());
+			params.put("signPageNumber", "1");
+			params.put("xPos", "0");
+			params.put("yPos", "0");
 			signRequest.setParams(params);
 	        signRequest.persist();
         } catch (IOException e) {
@@ -176,15 +174,17 @@ public class SignRequestController {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	SignRequest signRequest = SignRequest.findSignRequest(id);
-        
+    	Map<String, String> params = signRequest.getParams();
+    	if(signRequest.getCreateBy().equals(user.getEppn()) && signRequest.getRecipientEmail() != null) {
+        	redirectAttrs.addFlashAttribute("messageCustom", "error");
+    		return "redirect:/user/signrequests/" + id;
+    	}
+    	
     	File signImage = user.getSignImage().getBigFile().toJavaIoFile();
         File toSignFile = signRequest.getOriginalFile().getBigFile().toJavaIoFile();
 
-    	if(signRequest.getParams().containsKey("signPageNumber")) {
-    		signPageNumber = Integer.valueOf(signRequest.getParams().get("signPageNumber"));
-        }
-    	NewPageType newPageType = NewPageType.valueOf(signRequest.getParams().get("newPageType"));
-    	SignType signType = SignType.valueOf(signRequest.getParams().get("signType"));
+    	NewPageType newPageType = NewPageType.valueOf(params.get("newPageType"));
+    	SignType signType = SignType.valueOf(params.get("signType"));
     	String base64PemCert = null;
     	if(signType.equals(SignType.certPAdES)) {
     	if(password == null) password = "";
@@ -195,12 +195,19 @@ public class SignRequestController {
 	        File signedFile = pdfService.signPdf(toSignFile, signImage, signType, base64PemCert, signPageNumber, xPos, yPos, newPageType);
 	  	
 	        if(signedFile != null) {
+	        	params.put("signPageNumber", String.valueOf(signPageNumber));
+				params.put("xPos", String.valueOf(xPos));
+				params.put("yPos", String.valueOf(yPos));
+				signRequest.setParams(params);
 				signRequest.setSignedFile(documentService.addFile(signedFile, "application/pdf"));
 			    signRequest.setStatus(SignRequestStatus.signed);
+			    signRequest.setUpdateBy(eppn);
+			    signRequest.setUpdateDate(new Date());
 	        }
         } catch (IOException e) {
         	log.error("file to sign or sign image opening error", e);
 		}
+        
         return "redirect:/user/signrequests/" + id;
     }
 	
@@ -249,7 +256,7 @@ public class SignRequestController {
     }
     
     void addDateTimeFormatPatterns(Model uiModel) {
-        uiModel.addAttribute("signRequest_createdate_date_format", "dd/MM/yyyy HH:mm");
-        uiModel.addAttribute("signRequest_updatedate_date_format", "dd/MM/yyyy HH:mm");
+        uiModel.addAttribute("signRequest_createdate_date_format", "dd/MM/yyyy");
+        uiModel.addAttribute("signRequest_updatedate_date_format", "dd/MM/yyyy");
     }
 }

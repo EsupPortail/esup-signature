@@ -12,22 +12,28 @@
         <field:display date="true" dateTimePattern="${signRequest_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_SignRequest_updateDate" object="${signRequest}" z="user-managed"/>
         <field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_SignRequest_updateBy" object="${signRequest}" z="user-managed"/>
         <field:display field="description" id="s_org_esupportail_esupsignature_domain_SignRequest_description" object="${signRequest}" z="user-managed"/>
+        <field:display field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" object="${signRequest}" z="user-managed"/>
         <field:display field="status" id="s_org_esupportail_esupsignature_domain_SignRequest_status" object="${signRequest}" z="user-managed"/>
         <field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_SignRequest_originalFile" object="${signRequest}" render="false" z="user-managed"/>
         <field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_SignRequest_signedFile" object="${signRequest}" render="false" z="user-managed"/>
         <field:display render="false" field="signType" id="s_org_esupportail_esupsignature_domain_SignRequest_signType" object="${signRequest}" z="user-managed"/>
-		${signRequest.params}
 		<dl class="display-group border-bottom m-0">
         	<dt class="col-lg-4">Sign params</dt>
-	        <dd>
-	        Sign type : ${signRequest.params.signType}
-	        <br/>
-	        on page : <input autocomplete="off" value="1" class="form-control" type="text" name="signPageNumber" size="4" />
-	        <br/>
-	    	X position : <input autocomplete="off" value="0" class="form-control" type="text" name="xPos" size="4" />
-	    	<br/>
-	    	Y position : <input autocomplete="off" value="0" class="form-control" type="text" name="yPos" size="4" />    
-	        </dd>
+			<small>
+		        <dd>
+		        Sign type : ${signRequest.params.signType}
+		        <br/>
+	  	        Add page : ${signRequest.params.newPageType}
+	            <c:if test="${signable eq 'ok'}">
+			        <br/>
+			        on page : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.signPageNumber}" type="text" name="signPageNumber" />
+			        <br/>
+			    	X position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.xPos}" type="text" name="xPos" />
+			    	<br/>
+			    	Y position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.yPos}" type="text" name="yPos" />
+		    	</c:if>    
+		        </dd>
+	        </small>
         </dl>
         <dl class="display-group border-bottom m-0">
         	<dt class="col-lg-4">Get original signRequest</dt>
@@ -47,33 +53,35 @@
 		        </dl>
             </c:when>
             <c:otherwise>
-            <dl class="display-group border-bottom m-0">
-	        	<dt class="col-lg-4">Signe signRequest</dt>
-		        <dd>
-
-	                    <div class="form-group">
-	                    <c:if test="${signRequest.params.signType eq 'certPAdES' or signRequest.params.signType eq 'certXAdES'}">
-		                    <c:choose>
-		                    	<c:when test="${not empty keystore}">
-			                        <label class="col-lg-6 col-form-label" for="password">
-			                            <strong>Keystore password</strong>
-			                        </label>
-			                        <div class="col-lg-6">
-			                            <input class="form-control" name="password" type="password"/>
-			                        </div>
-		                        </c:when>
-		                        <c:otherwise>
-		                        		<div class="card card-body bg-info">
-											Merci de saisir une clé privée pour signer en PAdES
-										</div>
-		                        </c:otherwise>
-	                        </c:choose>
-                        </c:if>
-	                    </div>
-	                  	<input alt="Signer" class="btn btn-primary" id="signe" title="Signe" type="submit" value="Sign" />
-
-                </dd>
-               </dl>
+            <c:if test="${signable eq 'ok'}">
+	            <dl class="display-group border-bottom m-0">
+		        	<dt class="col-lg-4">Signe signRequest</dt>
+			        <dd>
+	
+		                    <div class="form-group">
+		                    <c:if test="${signRequest.params.signType eq 'certPAdES' or signRequest.params.signType eq 'certXAdES'}">
+			                    <c:choose>
+			                    	<c:when test="${not empty keystore}">
+				                        <label class="col-lg-6 col-form-label" for="password">
+				                            <strong>Keystore password</strong>
+				                        </label>
+				                        <div class="col-lg-6">
+				                            <input class="form-control" name="password" type="password"/>
+				                        </div>
+			                        </c:when>
+			                        <c:otherwise>
+			                        		<div class="card card-body bg-info">
+												Merci de saisir une clé privée pour signer en PAdES
+											</div>
+			                        </c:otherwise>
+		                        </c:choose>
+	                        </c:if>
+		                    </div>
+		                  	<input alt="Signer" class="btn btn-primary" id="signe" title="Signe" type="submit" value="Sign" />
+	
+	                </dd>
+	               </dl>
+               </c:if>
             </c:otherwise>
         </c:choose>
      	</div>        
@@ -91,16 +99,40 @@
 	</div>
     </form>
     </page:show>
-    
-    <script language="JavaScript">
-			var nbImagePage = ${imagePagesSize};
-			var currentImagePage = 0;
-	</script>
-    
-	<script language="JavaScript">
-
-			document.getElementById("previous").disabled = true;
+	<script language="JavaScript">			
+		var nbImagePage = ${imagePagesSize};
+		var currentImagePage = 0;
+	
+		document.getElementById("previous").disabled = true;
+		document.command.signPageNumber.value = currentImagePage + 1;
+		
+		function nextImage() {
+			currentImagePage++;
+			document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/" + currentImagePage +"')";
+			if(currentImagePage == nbImagePage - 1) {
+				document.getElementById("next").disabled = true;
+			}
+			if(currentImagePage > 0) {
+				document.getElementById("previous").disabled = false;
+			}
 			document.command.signPageNumber.value = currentImagePage + 1;
+		}
+
+		function previousImage() {
+			currentImagePage--;
+			document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/" + currentImagePage +"')";
+			if(currentImagePage == 0) {
+				document.getElementById("previous").disabled = true;
+			}
+			if(nbImagePage - 1 > currentImagePage) {
+				document.getElementById("next").disabled = false;
+			}
+			document.command.signPageNumber.value = currentImagePage + 1;
+		}
+	</script>
+	
+    <c:if test="${signable eq 'ok'}">
+		<script language="JavaScript">
 	
 			function point_it(event){
 				pos_x = event.offsetX?(event.offsetX):event.pageX-document.getElementById("pointer_div").offsetLeft;
@@ -112,28 +144,7 @@
 				document.command.yPos.value = pos_y - 5;
 			}
 			
-			function nextImage() {
-				currentImagePage++;
-				document.command.signPageNumber.value = currentImagePage + 1;
-				document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/" + currentImagePage +"')";
-				if(currentImagePage == nbImagePage - 1) {
-					document.getElementById("next").disabled = true;
-				}
-				if(currentImagePage > 0) {
-					document.getElementById("previous").disabled = false;
-				}
-			}
-
-			function previousImage() {
-				currentImagePage--;
-				document.command.signPageNumber.value = currentImagePage + 1;
-				document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/" + currentImagePage +"')";
-				if(currentImagePage == 0) {
-					document.getElementById("previous").disabled = true;
-				}
-				if(nbImagePage - 1 > currentImagePage) {
-					document.getElementById("next").disabled = false;
-				}
-			}
 		</script>
+	</c:if>
+
 </div>

@@ -17,6 +17,7 @@
 		<field:input render="false" cssClass="form-control" field="signPageNumber" id="c_org_esupportail_esupsignature_domain_SignRequest_signPageNumber" z="user-managed"/>
 		<field:input render="false" cssClass="form-control" field="xPos" id="c_org_esupportail_esupsignature_domain_SignRequest_xPos" z="user-managed"/>
 		<field:input render="false" cssClass="form-control" field="yPos" id="c_org_esupportail_esupsignature_domain_SignRequest_yPos" z="user-managed"/>
+		<field:input render="${recipientEmail}" cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" z="user-managed"/>
         <div class="form-group">
             <label class="col-lg-3 col-form-label" for="name">
                 <strong>File</strong>
