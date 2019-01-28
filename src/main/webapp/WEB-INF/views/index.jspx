@@ -14,8 +14,5 @@
 				<h3><span class="float-left">Se connecter</span><span class="fas fa-arrow-right float-right"><!--  --></span></h3>
 			</button>
 		</sec:authorize>
-		<sec:authorize access="isAuthenticated()">
-			<a href="http://dsi-7.univ-rouen.fr/sign-a-pdf/">sign-a-pdf</a>
-		</sec:authorize>
 	</div>
 </div>

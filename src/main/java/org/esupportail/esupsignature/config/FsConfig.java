@@ -3,17 +3,21 @@ package org.esupportail.esupsignature.config;
 import java.util.Properties;
 
 import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class FsConfig {
 
+	@Value("${fs.cifs.uri}")
+	private String uri;
+
 	@Bean
 	public CifsAccessImpl cifsAccessImpl(){
 		CifsAccessImpl cifsAccessImpl = new CifsAccessImpl();
 		cifsAccessImpl.setDriveName("CIFS");
-		cifsAccessImpl.setUri("smb://sambin.ur/dgs/dsi/");
+		cifsAccessImpl.setUri(uri);
 		cifsAccessImpl.setJcifsConfigProperties(cifsProperties());
 		return cifsAccessImpl;
 	}
