@@ -24,16 +24,16 @@ public class DocumentService {
     }
 	
 	public Document addFile(String base64File, String name, String type) throws IOException {
-		return addFile(fileService.fromBase64Image(base64File, name), type);
+		return addFile(fileService.fromBase64Image(base64File, name), name, type);
     }
 
 	
-	public Document addFile(File file, String type) throws FileNotFoundException, IOException {
-		return addFile(new FileInputStream(file), file.getName(), file.length(), type);
+	public Document addFile(File file, String name, String type) throws FileNotFoundException, IOException {
+		return addFile(new FileInputStream(file), name, file.length(), type);
     }
 	
-	public Document addFile(MultipartFile multipartFile) throws IOException {
-		return addFile(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getSize(), multipartFile.getContentType());
+	public Document addFile(MultipartFile multipartFile, String name) throws IOException {
+		return addFile(multipartFile.getInputStream(), name, multipartFile.getSize(), multipartFile.getContentType());
     }
 
 	public Document addFile(InputStream inputStream, String name, long size, String contentType) throws IOException {

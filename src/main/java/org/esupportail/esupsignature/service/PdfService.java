@@ -91,7 +91,7 @@ public class PdfService {
         } else 
         if(signType.equals(SignType.certPAdES)) {
         	log.info("cades signature");
-          	signedFile = certSignPdf(toSignFile, base64PemCert, null, signImage, pageNumber, xPos, yPos);
+          	signedFile = certSignPdf(toSignFile, base64PemCert, null, signImage, pageNumber -1, xPos, yPos);
         }
         return signedFile;
 
@@ -195,7 +195,7 @@ public class PdfService {
 		File flipedSignImage = File.createTempFile("preview", ".png");
 		ImageIO.write(bufferedImage, "png", flipedSignImage);
 		
-		File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
+		File targetFile =  File.createTempFile("output", ".pdf");
 
 		PDDocument pdDocument = PDDocument.load(pdfFile);
        

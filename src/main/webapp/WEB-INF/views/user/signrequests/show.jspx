@@ -24,14 +24,32 @@
 		        Sign type : ${signRequest.params.signType}
 		        <br/>
 	  	        Add page : ${signRequest.params.newPageType}
-	            <c:if test="${signable eq 'ok'}">
+	  	        <c:choose>
+	            <c:when test="${signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' }">
 			        <br/>
 			        on page : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.signPageNumber}" type="text" name="signPageNumber" />
 			        <br/>
 			    	X position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.xPos}" type="text" name="xPos" />
 			    	<br/>
 			    	Y position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.yPos}" type="text" name="yPos" />
-		    	</c:if>    
+		        		<script language="JavaScript">
+							function point_it(event){
+								pos_x = event.offsetX?(event.offsetX):event.pageX-document.getElementById("pointer_div").offsetLeft;
+								pos_y = event.offsetY?(event.offsetY):event.pageY-document.getElementById("pointer_div").offsetTop;
+								document.getElementById("cross").style.left = (pos_x-10) ;
+								document.getElementById("cross").style.top = (pos_y-10) ;
+								document.getElementById("cross").style.visibility = "visible" ;
+								document.command.xPos.value = pos_x;
+								document.command.yPos.value = pos_y - 5;
+							}
+						</script>
+		    	</c:when>
+		    	<c:otherwise>
+					<input value="${signRequest.params.signPageNumber}" type="hidden" name="signPageNumber" />
+					<input value="${signRequest.params.xPos}" type="hidden" name="xPos" />
+					<input value="${signRequest.params.yPos}" type="hidden" name="yPos" />
+		    	</c:otherwise>
+		    	</c:choose>    
 		        </dd>
 	        </small>
         </dl>
@@ -130,21 +148,5 @@
 			document.command.signPageNumber.value = currentImagePage + 1;
 		}
 	</script>
-	
-    <c:if test="${signable eq 'ok'}">
-		<script language="JavaScript">
-	
-			function point_it(event){
-				pos_x = event.offsetX?(event.offsetX):event.pageX-document.getElementById("pointer_div").offsetLeft;
-				pos_y = event.offsetY?(event.offsetY):event.pageY-document.getElementById("pointer_div").offsetTop;
-				document.getElementById("cross").style.left = (pos_x-10) ;
-				document.getElementById("cross").style.top = (pos_y-10) ;
-				document.getElementById("cross").style.visibility = "visible" ;
-				document.command.xPos.value = pos_x;
-				document.command.yPos.value = pos_y - 5;
-			}
-			
-		</script>
-	</c:if>
 
 </div>

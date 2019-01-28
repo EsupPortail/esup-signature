@@ -101,7 +101,7 @@ public class UserController {
             if(userToUpdate.getKeystore().getBigFile().getBinaryFile() != null) {
             	userToUpdate.getKeystore().remove();
             }
-            userToUpdate.setKeystore(documentService.addFile(file, "application/jks"));
+            userToUpdate.setKeystore(documentService.addFile(file, file.getName(), "application/jks"));
         }
         if(!user.getSignImageBase64().isEmpty()) {
         	if(userToUpdate.getSignImage().getBigFile().getBinaryFile() != null) {

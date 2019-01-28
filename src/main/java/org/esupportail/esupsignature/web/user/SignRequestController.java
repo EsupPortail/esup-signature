@@ -148,7 +148,7 @@ public class SignRequestController {
         try {
         	signRequest.setCreateBy(eppn);
         	signRequest.setCreateDate(new Date());
-			signRequest.setOriginalFile(documentService.addFile(multipartFile));
+			signRequest.setOriginalFile(documentService.addFile(multipartFile, multipartFile.getOriginalFilename()));
 			signRequest.setSignedFile(null);
 			signRequest.setStatus(SignRequestStatus.pending);
 			Map<String, String> params = new HashMap<>();
@@ -182,24 +182,24 @@ public class SignRequestController {
     	
     	File signImage = user.getSignImage().getBigFile().toJavaIoFile();
         File toSignFile = signRequest.getOriginalFile().getBigFile().toJavaIoFile();
-
     	NewPageType newPageType = NewPageType.valueOf(params.get("newPageType"));
     	SignType signType = SignType.valueOf(params.get("signType"));
     	String base64PemCert = null;
     	if(signType.equals(SignType.certPAdES)) {
-    	if(password == null) password = "";
+    		if(password == null) password = "";
         	userKeystoreService.setPassword(password);
         	base64PemCert = userKeystoreService.getBase64PemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
     	}
+    	
         try {
 	        File signedFile = pdfService.signPdf(toSignFile, signImage, signType, base64PemCert, signPageNumber, xPos, yPos, newPageType);
-	  	
+	        
 	        if(signedFile != null) {
 	        	params.put("signPageNumber", String.valueOf(signPageNumber));
 				params.put("xPos", String.valueOf(xPos));
 				params.put("yPos", String.valueOf(yPos));
 				signRequest.setParams(params);
-				signRequest.setSignedFile(documentService.addFile(signedFile, "application/pdf"));
+				signRequest.setSignedFile(documentService.addFile(signedFile, signType + "-signed-" + signRequest.getOriginalFile().getFileName(), "application/pdf"));
 			    signRequest.setStatus(SignRequestStatus.signed);
 			    signRequest.setUpdateBy(eppn);
 			    signRequest.setUpdateDate(new Date());
