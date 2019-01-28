@@ -7,12 +7,12 @@ import org.esupportail.esupsignature.domain.AppliVersion;
 
 privileged aspect AppliVersion_Roo_JavaBean {
     
-    public String AppliVersion.getCarteCultureVersion() {
-        return this.carteCultureVersion;
+    public String AppliVersion.getEsupSignatureVersion() {
+        return this.esupSignatureVersion;
     }
     
-    public void AppliVersion.setCarteCultureVersion(String carteCultureVersion) {
-        this.carteCultureVersion = carteCultureVersion;
+    public void AppliVersion.setEsupSignatureVersion(String esupSignatureVersion) {
+        this.esupSignatureVersion = esupSignatureVersion;
     }
     
 }

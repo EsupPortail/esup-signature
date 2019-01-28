@@ -42,7 +42,7 @@ public class DbToolService {
 		List<AppliVersion> appliVersions = AppliVersion.findAllAppliVersions();
 		if(appliVersions.isEmpty()) {
 			appliVersion = new AppliVersion();
-			appliVersion.setCarteCultureVersion("0.0.x");
+			appliVersion.setEsupSignatureVersion("0.0.x");
 			appliVersion.persist();
 		} else {
 			appliVersion = appliVersions.get(0);
@@ -51,7 +51,7 @@ public class DbToolService {
 	}
 
 	private void upgradeIfNeeded(AppliVersion appliVersion) {
-		String esupSgcVersion = appliVersion.getCarteCultureVersion();
+		String esupSgcVersion = appliVersion.getEsupSignatureVersion();
 		try{
 			if("0.0.x".equals(esupSgcVersion)) {
 				System.out.println("update to 0.1.x");
@@ -61,7 +61,7 @@ public class DbToolService {
 	    				"Base de données à jour 0.1.x" +
 	    				"\n#####\n");
 			}
-			appliVersion.setCarteCultureVersion(currentCarteCultureVersion);
+			appliVersion.setEsupSignatureVersion(currentCarteCultureVersion);
 			appliVersion.merge();
 		} catch(Exception e) {
 			throw new RuntimeException("Erreur durant le mise à jour de la base de données", e);

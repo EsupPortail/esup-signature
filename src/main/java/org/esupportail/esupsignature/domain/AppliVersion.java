@@ -26,6 +26,6 @@ import org.springframework.roo.addon.tostring.RooToString;
 @RooJpaActiveRecord
 public class AppliVersion {
 	
-	String carteCultureVersion;
+	String esupSignatureVersion;
 
 }

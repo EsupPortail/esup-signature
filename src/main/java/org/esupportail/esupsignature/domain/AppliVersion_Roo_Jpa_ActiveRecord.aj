@@ -14,7 +14,7 @@ privileged aspect AppliVersion_Roo_Jpa_ActiveRecord {
     @PersistenceContext
     transient EntityManager AppliVersion.entityManager;
     
-    public static final List<String> AppliVersion.fieldNames4OrderClauseFilter = java.util.Arrays.asList("carteCultureVersion");
+    public static final List<String> AppliVersion.fieldNames4OrderClauseFilter = java.util.Arrays.asList("esupSignatureVersion");
     
     public static final EntityManager AppliVersion.entityManager() {
         EntityManager em = new AppliVersion().entityManager;
