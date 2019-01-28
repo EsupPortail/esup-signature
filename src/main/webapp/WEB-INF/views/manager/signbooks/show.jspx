@@ -1,29 +1,113 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" version="2.0">
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:spring="http://www.springframework.org/tags" version="2.0">
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
-    <page:show id="ps_org_esupportail_esupsignature_domain_SignBook" object="${signbook}" path="/manager/signbooks" z="Nx45rfqtxGH3TA3OtafOb+lqGPs=">
-        <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignBook_name" object="${signbook}" z="ttzXcneuN4WeTIjYYirpZwkIPD4="/>
-        <field:display date="true" dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignBook_createDate" object="${signbook}" z="SQLXkuftxGKxwkzLxZCZkPU60Ak="/>
-        <field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignBook_createBy" object="${signbook}" z="6NTnvdRABuUNqu3nPWQ7EVuBHSI="/>
-        <field:display date="true" dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_SignBook_updateDate" object="${signbook}" z="0cZIEtn8bGB94nTvzldGRstgFDw="/>
-        <field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_SignBook_updateBy" object="${signbook}" z="7ishcP5Ko5d6N01vSPN8i/HtTy8="/>
-        <field:display field="description" id="s_org_esupportail_esupsignature_domain_SignBook_description" object="${signbook}" z="RX6QowkmjzzwfpzRnaSxUv3q0xc="/>
-        <field:display field="sourceUserEmail" id="s_org_esupportail_esupsignature_domain_SignBook_sourceUserEmail" object="${signbook}" z="Mfo7StJaeluPDpq72lMQSsH3IIA="/>
-        <field:display field="sourceType" id="s_org_esupportail_esupsignature_domain_SignBook_sourceType" object="${signbook}" z="gdzSnVihkoweJBoPiiuivgoW8eo="/>
-        <field:display field="documentsSourceUri" id="s_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri" object="${signbook}" z="epV6ZOxe/N2Ol/zD1OAbpIQBTyo="/>
-        <field:display field="targetType" id="s_org_esupportail_esupsignature_domain_SignBook_targetType" object="${signbook}" z="/Pc2M7SDP1S5pTFjFQyk8VfrXwY="/>
-        <field:display field="documentsTargetUri" id="s_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" object="${signbook}" z="6R4SZUvQ7pKf4NQGeDmIM1S/8y0="/>
-        <field:display field="signRequests" id="s_org_esupportail_esupsignature_domain_SignBook_signRequests" object="${signbook}" render="false" z="user-managed"/>
-        <field:display field="params" id="s_org_esupportail_esupsignature_domain_SignBook_params" object="${signbook}" render="false" z="user-managed"/>
-        <field:display field="status" id="s_org_esupportail_esupsignature_domain_SignBook_status" object="${signbook}" z="SdcqBg1dwmdbjCD0O/kUxknb5b8="/>
-        <field:display field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignBook_recipientEmail" object="${signbook}" z="biuCVTTQ2mhsqRzHAjWD155y+PA="/>
-        <field:display field="signBookType" id="s_org_esupportail_esupsignature_domain_SignBook_signBookType" object="${signbook}" z="D+rCqskR6jbY7H/o4aXQg6BiWBk="/>
-        <field:display field="signType" id="s_org_esupportail_esupsignature_domain_SignBook_signType" object="${signbook}" z="nXg+Q7/i5foMQawua4uAanTKFno="/>
-        <field:display field="newPageType" id="s_org_esupportail_esupsignature_domain_SignBook_newPageType" object="${signbook}" z="VhR0DwSvG9iig2NDipnM9vw/pyo="/>
-        <field:display field="signPageNumber" id="s_org_esupportail_esupsignature_domain_SignBook_signPageNumber" object="${signbook}" z="AJXcVYih5kEYUR1fdWMkdG9xVTk="/>
-        <field:display field="XPos" id="s_org_esupportail_esupsignature_domain_SignBook_xPos" object="${signbook}" z="yeDNUv/0oT/k67J6QL5jZR1pRnc="/>
-        <field:display field="YPos" id="s_org_esupportail_esupsignature_domain_SignBook_yPos" object="${signbook}" z="kvNfXkC0TswSC0r2f2ldsUOPDds="/>
-        <field:display render="false" field="modelFile" id="s_org_esupportail_esupsignature_domain_SignBook_modelFile" object="${signbook}" z="NP1sf3QEdoBGuHidfaiqezaRyQE="/>
+    <page:show id="ps_org_esupportail_esupsignature_domain_SignBook" object="${signbook}" path="/manager/signbooks" z="user-managed">
+        <form autocomplete="off" action="/user/signrequests/updateParams/${id}" name="command" id="command" method="post">
+        <div class="row">
+	        <div class="col-lg-6">
+		        <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignBook_name" object="${signbook}" z="user-managed"/>
+		        <field:display date="true" dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignBook_createDate" object="${signbook}" z="user-managed"/>
+		        <field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignBook_createBy" object="${signbook}" z="user-managed"/>
+		        <field:display date="true" dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_SignBook_updateDate" object="${signbook}" z="user-managed"/>
+		        <field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_SignBook_updateBy" object="${signbook}" z="user-managed"/>
+		        <field:display field="description" id="s_org_esupportail_esupsignature_domain_SignBook_description" object="${signbook}" z="user-managed"/>
+		        <field:display field="sourceUserEmail" id="s_org_esupportail_esupsignature_domain_SignBook_sourceUserEmail" object="${signbook}" z="user-managed"/>
+		        <field:display field="sourceType" id="s_org_esupportail_esupsignature_domain_SignBook_sourceType" object="${signbook}" z="user-managed"/>
+		        <field:display field="documentsSourceUri" id="s_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri" object="${signbook}" z="user-managed"/>
+		        <field:display field="targetType" id="s_org_esupportail_esupsignature_domain_SignBook_targetType" object="${signbook}" z="user-managed"/>
+		        <field:display field="documentsTargetUri" id="s_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" object="${signbook}" z="user-managed"/>
+		        <field:display field="signRequests" id="s_org_esupportail_esupsignature_domain_SignBook_signRequests" object="${signbook}" render="false" z="user-managed"/>
+		        <field:display field="params" id="s_org_esupportail_esupsignature_domain_SignBook_params" object="${signbook}" render="false" z="user-managed"/>
+		        <field:display field="status" id="s_org_esupportail_esupsignature_domain_SignBook_status" object="${signbook}" z="user-managed"/>
+		        <field:display field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignBook_recipientEmail" object="${signbook}" z="user-managed"/>
+		        <field:display field="signBookType" id="s_org_esupportail_esupsignature_domain_SignBook_signBookType" object="${signbook}" z="user-managed"/>
+		        <field:display field="signType" id="s_org_esupportail_esupsignature_domain_SignBook_signType" object="${signbook}" z="user-managed"/>
+		        <field:display field="newPageType" id="s_org_esupportail_esupsignature_domain_SignBook_newPageType" object="${signbook}" z="user-managed"/>
+		        <field:display field="signPageNumber" id="s_org_esupportail_esupsignature_domain_SignBook_signPageNumber" object="${signbook}" z="user-managed"/>
+		        <field:display field="XPos" id="s_org_esupportail_esupsignature_domain_SignBook_xPos" object="${signbook}" z="user-managed"/>
+		        <field:display field="YPos" id="s_org_esupportail_esupsignature_domain_SignBook_yPos" object="${signbook}" z="user-managed"/>
+		        <field:display field="modelFile" id="s_org_esupportail_esupsignature_domain_SignBook_modelFile" object="${signbook}" render="false" z="user-managed"/>
+	        </div>
+	        <div class="col-lg-6">
+   		   		<script language="JavaScript">
+					function point_it(event){
+						pos_x = event.offsetX?(event.offsetX):event.pageX-document.getElementById("pointer_div").offsetLeft;
+						pos_y = event.offsetY?(event.offsetY):event.pageY-document.getElementById("pointer_div").offsetTop;
+						document.getElementById("cross").style.left = (pos_x-10) ;
+						document.getElementById("cross").style.top = (pos_y-10) ;
+						document.getElementById("cross").style.visibility = "visible" ;
+						document.command.xPos.value = pos_x;
+						document.command.yPos.value = pos_y - 5;
+					}
+				</script>
+				<div class="row">
+				<div class="col-lg-9">
+					<input type="button" id="previous" onclick="previousImage()" value="previous" />
+					<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl"/>
+					<input type="button" id="next" onclick="nextImage()" value="next" />
+					<div id="pointer_div" onclick="point_it(event)" style="background-size: 595px;background-image:url('${documentUrl}/0');width:595px;height:842px;border:1px solid #CCC;">
+						<i id="cross" style="left:${signbook.params.xPos};top:${signbook.params.yPos};position:relative;z-index:2;">
+							<div alt="signature" style="width:100px;height:75px;border:1px solid #000;">
+							<!--  -->
+							</div>
+						</i>
+					</div>
+				</div>
+				<div class="col-lg-3	">
+		        <dl class="display-group border-bottom m-0">
+		        	Sign params
+					<small>
+				        <dd>
+				        Sign type : ${signbook.params.signType}
+				        <br/>
+			  	        Add page : ${signbook.params.newPageType}
+		
+				        <br/>
+				        on page : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signbook.params.signPageNumber}" type="text" name="signPageNumber" />
+				        <br/>
+				    	X position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signbook.params.xPos}" type="text" name="xPos" />
+				    	<br/>
+				    	Y position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signbook.params.yPos}" type="text" name="yPos" />
+				    	</dd>
+				    </small>
+				</dl>
+				<input alt="Update params" class="btn btn-success" id="Update params" title="Update params" type="submit" value="Update params" />
+				</div>
+				</div>
+	        </div>
+        </div>
+        </form>
     </page:show>
+    <script language="JavaScript">			
+		var nbImagePage = ${imagePagesSize};
+		var currentImagePage = 0;
+	
+		document.getElementById("previous").disabled = true;
+		document.command.signPageNumber.value = currentImagePage + 1;
+		
+		function nextImage() {
+			currentImagePage++;
+			document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/" + currentImagePage +"')";
+			if(currentImagePage == nbImagePage - 1) {
+				document.getElementById("next").disabled = true;
+			}
+			if(currentImagePage > 0) {
+				document.getElementById("previous").disabled = false;
+			}
+			document.command.signPageNumber.value = currentImagePage + 1;
+		}
+
+		function previousImage() {
+			currentImagePage--;
+			document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/" + currentImagePage +"')";
+			if(currentImagePage == 0) {
+				document.getElementById("previous").disabled = true;
+			}
+			if(nbImagePage - 1 > currentImagePage) {
+				document.getElementById("next").disabled = false;
+			}
+			document.command.signPageNumber.value = currentImagePage + 1;
+		}
+	</script>
 </div>
