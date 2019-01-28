@@ -5,9 +5,10 @@ package org.esupportail.esupsignature.domain;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignRequest;
-import org.esupportail.esupsignature.domain.User;
 
 privileged aspect SignBook_Roo_JavaBean {
     
@@ -17,6 +18,14 @@ privileged aspect SignBook_Roo_JavaBean {
     
     public void SignBook.setName(String name) {
         this.name = name;
+    }
+    
+    public SignBookType SignBook.getSignBookType() {
+        return this.signBookType;
+    }
+    
+    public void SignBook.setSignBookType(SignBookType signBookType) {
+        this.signBookType = signBookType;
     }
     
     public Date SignBook.getCreateDate() {
@@ -59,60 +68,124 @@ privileged aspect SignBook_Roo_JavaBean {
         this.description = description;
     }
     
-    public User SignBook.getUserSource() {
-        return this.userSource;
+    public String SignBook.getSourceUserEmail() {
+        return this.sourceUserEmail;
     }
     
-    public void SignBook.setUserSource(User userSource) {
-        this.userSource = userSource;
+    public void SignBook.setSourceUserEmail(String sourceUserEmail) {
+        this.sourceUserEmail = sourceUserEmail;
     }
     
-    public User SignBook.getUserSourceSecretary() {
-        return this.userSourceSecretary;
+    public DocumentIOType SignBook.getSourceType() {
+        return this.sourceType;
     }
     
-    public void SignBook.setUserSourceSecretary(User userSourceSecretary) {
-        this.userSourceSecretary = userSourceSecretary;
+    public void SignBook.setSourceType(DocumentIOType sourceType) {
+        this.sourceType = sourceType;
     }
     
-    public User SignBook.getUserDestination() {
-        return this.userDestination;
+    public String SignBook.getDocumentsSourceUri() {
+        return this.documentsSourceUri;
     }
     
-    public void SignBook.setUserDestination(User userDestination) {
-        this.userDestination = userDestination;
+    public void SignBook.setDocumentsSourceUri(String documentsSourceUri) {
+        this.documentsSourceUri = documentsSourceUri;
     }
     
-    public User SignBook.getUserDestinationSecretary() {
-        return this.userDestinationSecretary;
+    public String SignBook.getRecipientEmail() {
+        return this.recipientEmail;
     }
     
-    public void SignBook.setUserDestinationSecretary(User userDestinationSecretary) {
-        this.userDestinationSecretary = userDestinationSecretary;
+    public void SignBook.setRecipientEmail(String recipientEmail) {
+        this.recipientEmail = recipientEmail;
     }
     
-    public List<SignRequest> SignBook.getDocuments() {
-        return this.documents;
+    public DocumentIOType SignBook.getTargetType() {
+        return this.targetType;
     }
     
-    public void SignBook.setDocuments(List<SignRequest> documents) {
-        this.documents = documents;
+    public void SignBook.setTargetType(DocumentIOType targetType) {
+        this.targetType = targetType;
     }
     
-    public SignType SignBook.getSignType() {
-        return this.signType;
+    public String SignBook.getDocumentsTargetUri() {
+        return this.documentsTargetUri;
     }
     
-    public void SignBook.setSignType(SignType signType) {
-        this.signType = signType;
+    public void SignBook.setDocumentsTargetUri(String documentsTargetUri) {
+        this.documentsTargetUri = documentsTargetUri;
     }
     
-    public BookStatus SignBook.getStatus() {
+    public Document SignBook.getModelFile() {
+        return this.modelFile;
+    }
+    
+    public void SignBook.setModelFile(Document modelFile) {
+        this.modelFile = modelFile;
+    }
+    
+    public List<SignRequest> SignBook.getSignRequests() {
+        return this.signRequests;
+    }
+    
+    public void SignBook.setSignRequests(List<SignRequest> signRequests) {
+        this.signRequests = signRequests;
+    }
+    
+    public Map<String, String> SignBook.getParams() {
+        return this.params;
+    }
+    
+    public void SignBook.setParams(Map<String, String> params) {
+        this.params = params;
+    }
+    
+    public SignStatus SignBook.getStatus() {
         return this.status;
     }
     
-    public void SignBook.setStatus(BookStatus status) {
+    public void SignBook.setStatus(SignStatus status) {
         this.status = status;
+    }
+    
+    public String SignBook.getSignType() {
+        return this.signType;
+    }
+    
+    public void SignBook.setSignType(String signType) {
+        this.signType = signType;
+    }
+    
+    public String SignBook.getNewPageType() {
+        return this.newPageType;
+    }
+    
+    public void SignBook.setNewPageType(String newPageType) {
+        this.newPageType = newPageType;
+    }
+    
+    public String SignBook.getSignPageNumber() {
+        return this.signPageNumber;
+    }
+    
+    public void SignBook.setSignPageNumber(String signPageNumber) {
+        this.signPageNumber = signPageNumber;
+    }
+    
+    public String SignBook.getXPos() {
+        return this.xPos;
+    }
+    
+    public void SignBook.setXPos(String xPos) {
+        this.xPos = xPos;
+    }
+    
+    public String SignBook.getYPos() {
+        return this.yPos;
+    }
+    
+    public void SignBook.setYPos(String yPos) {
+        this.yPos = yPos;
     }
     
 }

@@ -89,15 +89,6 @@ public class SignRequest {
 	@Transient
 	private String yPos;
 	
-	public enum SignType {
-		imageStamp, certPAdES;
-		//certXAdES, nexuPAdES, nexuXAdES;
-	}
-
-	public enum NewPageType {
-		none, onBegin, onEnd;
-	}
-	
     public void setStatus(SignRequestStatus status) {
         this.status = status;
     }

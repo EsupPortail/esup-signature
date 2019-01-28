@@ -42,7 +42,7 @@ privileged aspect ApplicationConversionServiceFactoryBean_Roo_ConversionService 
     public Converter<SignBook, String> ApplicationConversionServiceFactoryBean.getSignBookToStringConverter() {
         return new org.springframework.core.convert.converter.Converter<org.esupportail.esupsignature.domain.SignBook, java.lang.String>() {
             public String convert(SignBook signBook) {
-                return new StringBuilder().append(signBook.getName()).append(' ').append(signBook.getCreateDate()).append(' ').append(signBook.getCreateBy()).append(' ').append(signBook.getUpdateDate()).toString();
+                return new StringBuilder().append(signBook.getName()).append(' ').append(signBook.getSignBookType()).append(' ').append(signBook.getCreateDate()).append(' ').append(signBook.getCreateBy()).toString();
             }
         };
     }

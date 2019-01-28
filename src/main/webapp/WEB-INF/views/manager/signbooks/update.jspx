@@ -9,12 +9,21 @@
         <field:datetime dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_SignBook_updateDate" z="RgQe1YmEHxMm1YUJLBxSR6ed9GE="/>
         <field:input field="updateBy" id="c_org_esupportail_esupsignature_domain_SignBook_updateBy" z="0n5sow3qUOLRkZ2zaT2MZLDIwcg="/>
         <field:textarea field="description" id="c_org_esupportail_esupsignature_domain_SignBook_description" z="CdRMWvt2UQYUskHLNd8ll/r37XU="/>
-        <field:select field="userSource" id="c_org_esupportail_esupsignature_domain_SignBook_userSource" itemValue="id" items="${users}" path="/users" z="1D2YV/lF1Ecq/aluMmnGnq84C5A="/>
-        <field:select field="userSourceSecretary" id="c_org_esupportail_esupsignature_domain_SignBook_userSourceSecretary" itemValue="id" items="${users}" path="/users" z="56wPX/MeJ2kBkLmrJn7f3AEWEJQ="/>
-        <field:select field="userDestination" id="c_org_esupportail_esupsignature_domain_SignBook_userDestination" itemValue="id" items="${users}" path="/users" z="rakW1+hVwwI2yAoBu3cMzvuvg1o="/>
-        <field:select field="userDestinationSecretary" id="c_org_esupportail_esupsignature_domain_SignBook_userDestinationSecretary" itemValue="id" items="${users}" path="/users" z="xrkUu9YBmlNDc7WEqojwPgkozWc="/>
-        <field:input field="signType" id="c_org_esupportail_esupsignature_domain_SignBook_signType" z="KFXeOW9vgBODDOsZlLBhmARauKU="/>
+        <field:input field="sourceUserEmail" id="c_org_esupportail_esupsignature_domain_SignBook_sourceUserEmail" z="F8xEJ7BGMSAesMidYAe0Cq7ldmc="/>
+        <field:input field="sourceType" id="c_org_esupportail_esupsignature_domain_SignBook_sourceType" z="Clg+fKjjL9VsRQsx+OGnSb/UJi8="/>
+        <field:input field="documentsSourceUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri" z="n6q1jDxO7ZtK6aWswpXX5Q/JTtM="/>
+        <field:input field="targetType" id="c_org_esupportail_esupsignature_domain_SignBook_targetType" z="BN/Df3qfdCIZ+H3njnn/KaurXJk="/>
+        <field:input field="documentsTargetUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" z="+aH48HMjvqLm0h8EYzaTGO4EJRA="/>
+        <field:select field="signRequests" id="c_org_esupportail_esupsignature_domain_SignBook_signRequests" itemValue="id" items="${signrequests}" multiple="true" path="/signrequests" z="4hgGFnbI24zcaV+G2hZsqBsoGQY="/>
+        <field:input field="params" id="c_org_esupportail_esupsignature_domain_SignBook_params" z="bB650W7gr2pZqHqjtUPvLctXb7w="/>
         <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignBook_status" z="LpnODZDB3VETTuY0v7uf46RiBdY="/>
-        <field:select field="documents" id="c_org_esupportail_esupsignature_domain_SignBook_documents" itemValue="id" items="${signrequests}" multiple="true" path="/signrequests" z="B6EUNolXnIcrkm02xSkojy1yF8M="/>
+        <field:input field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" z="XpHeaFuz0xqtQU+/mAMKtngLCjw="/>
+        <field:input field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" z="f+6cYDSUdD1L18T2XB9zprJD7d8="/>
+        <field:input field="signType" id="c_org_esupportail_esupsignature_domain_SignBook_signType" z="KFXeOW9vgBODDOsZlLBhmARauKU="/>
+        <field:input field="newPageType" id="c_org_esupportail_esupsignature_domain_SignBook_newPageType" z="0RCzvFLYjpB/pioaDCsq0+ELnKE="/>
+        <field:input field="signPageNumber" id="c_org_esupportail_esupsignature_domain_SignBook_signPageNumber" z="Wh0ciLJQv6104Hvhuzhqw8nGSRc="/>
+        <field:input field="xPos" id="c_org_esupportail_esupsignature_domain_SignBook_xPos" z="zggg6JWr3y8lzfTH+PVJcCCEyLA="/>
+        <field:input field="yPos" id="c_org_esupportail_esupsignature_domain_SignBook_yPos" z="yJnRJtvAnyprWFOfBQAWtNCmb/A="/>
+        <field:select field="modelFile" id="c_org_esupportail_esupsignature_domain_SignBook_modelFile" itemValue="id" items="${documents}" path="/user/documents" z="PFBXlCsqKcL1WBsnsRAfV/9fypI="/>
     </form:update>
 </div>

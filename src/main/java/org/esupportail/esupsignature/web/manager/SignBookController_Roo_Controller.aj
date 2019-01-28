@@ -7,8 +7,6 @@ import java.io.UnsupportedEncodingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.esupportail.esupsignature.domain.SignBook;
-import org.esupportail.esupsignature.domain.SignRequest;
-import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.web.manager.SignBookController;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -91,13 +89,6 @@ privileged aspect SignBookController_Roo_Controller {
     void SignBookController.addDateTimeFormatPatterns(Model uiModel) {
         uiModel.addAttribute("signBook_createdate_date_format", "dd/MM/yyyy HH:mm");
         uiModel.addAttribute("signBook_updatedate_date_format", "dd/MM/yyyy HH:mm");
-    }
-    
-    void SignBookController.populateEditForm(Model uiModel, SignBook signBook) {
-        uiModel.addAttribute("signBook", signBook);
-        addDateTimeFormatPatterns(uiModel);
-        uiModel.addAttribute("signrequests", SignRequest.findAllSignRequests());
-        uiModel.addAttribute("users", User.findAllUsers());
     }
     
     String SignBookController.encodeUrlPathSegment(String pathSegment, HttpServletRequest httpServletRequest) {

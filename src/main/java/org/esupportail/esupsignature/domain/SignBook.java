@@ -2,9 +2,12 @@ package org.esupportail.esupsignature.domain;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.CascadeType;
+import javax.persistence.ElementCollection;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -12,6 +15,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -25,6 +29,9 @@ import org.springframework.roo.addon.tostring.RooToString;
 public class SignBook {
 
 	String name;
+	
+	@Enumerated(EnumType.STRING)
+	private SignBookType signBookType;
 	
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
@@ -41,33 +48,65 @@ public class SignBook {
     @Size(max = 500)
     private String description;
     
-    @OneToOne
-    private User userSource;
+    private String sourceUserEmail;
     
-    @OneToOne
-    private User userSourceSecretary;
+    @Enumerated(EnumType.STRING)
+    private DocumentIOType sourceType;
     
-    @OneToOne
-    private User userDestination;
+    private String documentsSourceUri;
+    
+    private String recipientEmail;
 
-    @OneToOne
-    private User userDestinationSecretary;
+    @Enumerated(EnumType.STRING)
+    private DocumentIOType targetType;
+    
+    private String documentsTargetUri;    
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
+    private Document modelFile = new Document();
     
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private List<SignRequest> documents = new ArrayList<SignRequest>();
+    private List<SignRequest> signRequests = new ArrayList<SignRequest>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Map<String, String> params = new HashMap<String, String>();
     
     @Enumerated(EnumType.STRING)
-	private SignType signType;
+	private SignStatus status;	
+
+	@Transient
+	private String signType;
     
-    public enum SignType {
-		validation, simpleSign, certSign, nexuSign
-	}
+	@Transient
+	private String newPageType;
+
+	@Transient
+	private String signPageNumber;
+	
+	@Transient
+	private String xPos;
+
+	@Transient
+	private String yPos;
     
-    @Enumerated(EnumType.STRING)
-	private BookStatus status;	
-	
-	public enum BookStatus {
-		started, pending, canceled, completed, deleted;
+	public enum SignType {
+		validation, imageStamp, certPAdES;
+		//certXAdES, nexuPAdES, nexuXAdES;
 	}
 	
+	public enum NewPageType {
+		none, onBegin, onEnd;
+	}
+
+	public enum SignBookType {
+		oneShot, fixedParams, fixedIO, fixedParamsAndIO, custom;
+	}
+	
+	public enum SignStatus {
+		start, pending, canceled, checked, signed, deleted;
+	}
+	
+    public enum DocumentIOType {
+		webform, cifs, vfs, opencmis, mail;
+	}
 }

@@ -9,12 +9,21 @@
         <field:display date="true" dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_SignBook_updateDate" object="${signbook}" z="0cZIEtn8bGB94nTvzldGRstgFDw="/>
         <field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_SignBook_updateBy" object="${signbook}" z="7ishcP5Ko5d6N01vSPN8i/HtTy8="/>
         <field:display field="description" id="s_org_esupportail_esupsignature_domain_SignBook_description" object="${signbook}" z="RX6QowkmjzzwfpzRnaSxUv3q0xc="/>
-        <field:display field="userSource" id="s_org_esupportail_esupsignature_domain_SignBook_userSource" object="${signbook}" z="62ZIGVWRNal82QN7glmuvA3cmhM="/>
-        <field:display field="userSourceSecretary" id="s_org_esupportail_esupsignature_domain_SignBook_userSourceSecretary" object="${signbook}" z="mO7GGwd0fgTBcs93THpnkDmg4F4="/>
-        <field:display field="userDestination" id="s_org_esupportail_esupsignature_domain_SignBook_userDestination" object="${signbook}" z="JBIzodq6GcM36WvWEVCKSdP7RoI="/>
-        <field:display field="userDestinationSecretary" id="s_org_esupportail_esupsignature_domain_SignBook_userDestinationSecretary" object="${signbook}" z="lL4b+v/vsc8954fUGiU+xJje50w="/>
-        <field:display field="signType" id="s_org_esupportail_esupsignature_domain_SignBook_signType" object="${signbook}" z="nXg+Q7/i5foMQawua4uAanTKFno="/>
+        <field:display field="sourceUserEmail" id="s_org_esupportail_esupsignature_domain_SignBook_sourceUserEmail" object="${signbook}" z="Mfo7StJaeluPDpq72lMQSsH3IIA="/>
+        <field:display field="sourceType" id="s_org_esupportail_esupsignature_domain_SignBook_sourceType" object="${signbook}" z="gdzSnVihkoweJBoPiiuivgoW8eo="/>
+        <field:display field="documentsSourceUri" id="s_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri" object="${signbook}" z="epV6ZOxe/N2Ol/zD1OAbpIQBTyo="/>
+        <field:display field="targetType" id="s_org_esupportail_esupsignature_domain_SignBook_targetType" object="${signbook}" z="/Pc2M7SDP1S5pTFjFQyk8VfrXwY="/>
+        <field:display field="documentsTargetUri" id="s_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" object="${signbook}" z="6R4SZUvQ7pKf4NQGeDmIM1S/8y0="/>
+        <field:display field="signRequests" id="s_org_esupportail_esupsignature_domain_SignBook_signRequests" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="params" id="s_org_esupportail_esupsignature_domain_SignBook_params" object="${signbook}" render="false" z="user-managed"/>
         <field:display field="status" id="s_org_esupportail_esupsignature_domain_SignBook_status" object="${signbook}" z="SdcqBg1dwmdbjCD0O/kUxknb5b8="/>
-        <field:display field="documents" id="s_org_esupportail_esupsignature_domain_SignBook_documents" object="${signbook}" z="IMDVXoECkTk6DyK8gigPSFB+Ygk="/>
+        <field:display field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignBook_recipientEmail" object="${signbook}" z="biuCVTTQ2mhsqRzHAjWD155y+PA="/>
+        <field:display field="signBookType" id="s_org_esupportail_esupsignature_domain_SignBook_signBookType" object="${signbook}" z="D+rCqskR6jbY7H/o4aXQg6BiWBk="/>
+        <field:display field="signType" id="s_org_esupportail_esupsignature_domain_SignBook_signType" object="${signbook}" z="nXg+Q7/i5foMQawua4uAanTKFno="/>
+        <field:display field="newPageType" id="s_org_esupportail_esupsignature_domain_SignBook_newPageType" object="${signbook}" z="VhR0DwSvG9iig2NDipnM9vw/pyo="/>
+        <field:display field="signPageNumber" id="s_org_esupportail_esupsignature_domain_SignBook_signPageNumber" object="${signbook}" z="AJXcVYih5kEYUR1fdWMkdG9xVTk="/>
+        <field:display field="XPos" id="s_org_esupportail_esupsignature_domain_SignBook_xPos" object="${signbook}" z="yeDNUv/0oT/k67J6QL5jZR1pRnc="/>
+        <field:display field="YPos" id="s_org_esupportail_esupsignature_domain_SignBook_yPos" object="${signbook}" z="kvNfXkC0TswSC0r2f2ldsUOPDds="/>
+        <field:display render="false" field="modelFile" id="s_org_esupportail_esupsignature_domain_SignBook_modelFile" object="${signbook}" z="NP1sf3QEdoBGuHidfaiqezaRyQE="/>
     </page:show>
 </div>
