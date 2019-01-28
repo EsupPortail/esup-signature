@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <page:list id="pl_org_esupportail_esupsignature_domain_TagLog" items="${taglogs}" z="M6FlvDB5sRmRvE2ZOQ31/BajrNs=">
+        <table:table data="${taglogs}" delete="false" id="l_org_esupportail_esupsignature_domain_TagLog" path="/manager/taglogs" update="false" z="0tmpGVnCK+Dj+L95lXavkdRrgrs=">
+            <table:column date="true" dateTimePattern="${tagLog_date_date_format}" id="c_org_esupportail_esupsignature_domain_TagLog_date" property="date" z="PqJud6fZUU1L/3RkPOPP3exFppA="/>
+            <table:column id="c_org_esupportail_esupsignature_domain_TagLog_tarif" property="tarif" z="5cnh5fUk+xdamn1rkugYyo0efmg="/>
+            <table:column id="c_org_esupportail_esupsignature_domain_TagLog_eppnInit" property="eppnInit" z="thdNhOPDM8hKkWPC2JyjSLxCurk="/>
+        </table:table>
+    </page:list>
+</div>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <page:show create="false" delete="false" update="true" list="false" id="ps_org_esupportail_esupsignature_domain_User" object="${user}" path="/user/users" z="user-managed">
+        <field:display field="name" id="s_org_esupportail_esupsignature_domain_User_name" object="${user}" z="user-managed"/>
+        <field:display field="firstname" id="s_org_esupportail_esupsignature_domain_User_firstname" object="${user}" z="user-managed"/>
+        <field:display field="eppn" id="s_org_esupportail_esupsignature_domain_User_eppn" object="${user}" z="user-managed"/>
+        <field:display field="email" id="s_org_esupportail_esupsignature_domain_User_email" object="${user}" z="user-managed"/>
+        <field:display field="signImage" id="s_org_esupportail_esupsignature_domain_User_signImage" object="${user}" render="false" z="user-managed"/>
+        <field:display field="publicKey" id="s_org_esupportail_esupsignature_domain_User_publicKey" object="${user}" render="false" z="user-managed"/>
+        <field:display field="keystore" id="s_org_esupportail_esupsignature_domain_User_keystore" object="${user}" render="false" z="user-managed"/>
+	    <field:display render="false" field="password" id="s_org_esupportail_esupsignature_domain_User_password" object="${user}" z="user-managed"/>
+        <dl class="display-group border-bottom m-0"><dt class="col-lg-4">Sign image</dt><dd><img alt="signature" src="data:image/jpg;base64, ${signFile}"/></dd></dl>
+   		<dl class="display-group border-bottom m-0">
+	   		<dt class="col-lg-4">Keystore</dt>
+	   		<dd>
+				<c:if test="${not empty keystore}">
+			    	${keystore}
+			    	<!-- TODO disable if password in session -->
+				    <form action="viewCert" method="post">
+			        	<input type="hidden" name="id" value="${user.id}" />
+			        	
+			        	<input class="form-control" type="password" name="password" />
+			        	<input class="btn btn-primary" type="submit" value="Voir certificat" />
+			        </form>
+				</c:if>
+			</dd>
+		</dl>        
+    </page:show>
+</div>

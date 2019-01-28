@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:form="urn:jsptagdir:/WEB-INF/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <form:update id="fu_org_esupportail_esupsignature_domain_Document" modelAttribute="document" path="/user/documents" versionField="Version" z="fX9EsvmocRBDXy3hztJX9lgRVgM=">
+        <field:input field="fileName" id="c_org_esupportail_esupsignature_domain_Document_fileName" z="eiksrCaAUa0Xo3N1O9Z9xMVbzPU="/>
+        <field:input field="size" id="c_org_esupportail_esupsignature_domain_Document_size" validationMessageCode="field_invalid_integer" z="xAYjwMP7XsGLgSRg9jhVVaVc5PE="/>
+        <field:input field="contentType" id="c_org_esupportail_esupsignature_domain_Document_contentType" z="BL1RlWyepVn6Q84Qx18U2Fsv3v8="/>
+        <field:select field="bigFile" id="c_org_esupportail_esupsignature_domain_Document_bigFile" itemValue="id" items="${bigfiles}" path="/bigfiles" z="dHEknevySJIqaIGyTue3aB+Fk1g="/>
+    </form:update>
+</div>

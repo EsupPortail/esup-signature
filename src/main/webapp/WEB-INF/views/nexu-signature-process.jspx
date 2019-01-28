@@ -1,0 +1,22 @@
+<div xmlns:page="urn:jsptagdir:/WEB-INF/tags/form"
+     xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" 
+     xmlns:spring="http://www.springframework.org/tags" xmlns:util="urn:jsptagdir:/WEB-INF/tags/util" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:sec="http://www.springframework.org/security/tags" xmlns:form="http://www.springframework.org/tags/form">
+	<jsp:directive.page contentType="text/html;charset=UTF-8" />
+	<jsp:output omit-xml-declaration="yes" />
+	<script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-1.11.1.min.js"><!-- --></script>
+   <div class="col-md-9">
+   <h2>NexU signature process ${rootUrl}</h2>
+
+   <div class="progress">
+       <div class="progress-bar progress-bar-striped active" style="width: 10%;" id="bar">
+           <span id="bar-text">Loading certificates...</span>
+       </div>
+   </div>
+   <div id="error" style="display: none" class="alert alert-danger" role="danger">
+        <strong id="errorText">Oops... an error occurred </strong><span id="errorcontent"></span>
+    </div>
+	</div>
+    <script type="text/javascript" src="http://localhost:9795/nexu.js"><!-- --></script>
+    <spring:url value="/resources/js/nexuSignature.js" var="nexuSignature_js_url" />
+	<script type="text/javascript" src="${nexuSignature_js_url}"><!-- --></script>
+</div>
