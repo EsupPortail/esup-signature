@@ -54,7 +54,7 @@
 	        </small>
         </dl>
         <dl class="display-group border-bottom m-0">
-        	<dt class="col-lg-4">Get original signRequest</dt>
+        	<dt class="col-lg-4">Get original document</dt>
 	        <dd>
 	       		<spring:url value="/user/signrequests/get-original-file/${id}" var="originalFileUrl"/>
 	            <button type="button" class="btn btn-warning" onclick="location.href='${originalFileUrl}'">Download</button>
@@ -63,7 +63,7 @@
         <c:choose>
             <c:when test="${not empty signRequest.signedFile}">
 		        <dl class="display-group border-bottom m-0">
-		        	<dt class="col-lg-4">Get signed signRequest</dt>
+		        	<dt class="col-lg-4">Get signed document</dt>
 			        <dd>
 	                	<spring:url value="/user/signrequests/get-signed-file/${id}" var="signedFileUrl"/>
 	             		<button type="button" class="btn btn-success" onclick="location.href='${signedFileUrl}'">Download</button>
@@ -108,11 +108,12 @@
 	<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl"/>
 	<input type="button" id="next" onclick="nextImage()" value="next" />
 		<div id="pointer_div" onclick="point_it(event)" style="background-size: 595px;background-image:url('${documentUrl}/${signRequest.params.signPageNumber -1}');width:595px;height:842px;border:1px solid #CCC;">
-			<i id="cross" style="left:${signRequest.params.xPos};top:${signRequest.params.yPos};position:relative;z-index:2;">
-				<img alt="signature" src="data:image/jpg;base64, ${signFile}" width="100" height="75"/>
-			</i>
+			<c:if test="${empty signRequest.signedFile}">
+				<i id="cross" style="left:${signRequest.params.xPos};top:${signRequest.params.yPos};position:relative;z-index:2;">
+					<img alt="signature" src="data:image/jpg;base64, ${signFile}" width="100" height="75"/>
+				</i>
+			</c:if>
 		</div>
-
 	</div>	
 	</div>
     </form>

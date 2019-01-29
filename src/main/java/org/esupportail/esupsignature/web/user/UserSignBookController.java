@@ -72,6 +72,7 @@ public class UserSignBookController {
         
         uiModel.addAttribute("signbook", signBook);
         uiModel.addAttribute("itemId", id);
+        uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());
         return "user/signbooks/show";
     }
 
@@ -80,8 +81,6 @@ public class UserSignBookController {
     		@RequestParam("multipartFile") MultipartFile multipartFile, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) throws IOException {
 		String eppn = userService.getEppnFromAuthentication();
 		SignBook signBook = SignBook.findSignBook(id);
-		System.err.println(signBook.getParams());
-		
 		SignRequest signRequest = new SignRequest();
 		signRequest.setName(eppn + "-" + multipartFile.getOriginalFilename());
     	signRequest.setCreateBy(eppn);
@@ -92,6 +91,8 @@ public class UserSignBookController {
 		signRequest.setParams(new HashMap<String, String>(signBook.getParams()));
 		signRequest.setRecipientEmail(signBook.getRecipientEmail());
         signRequest.persist();
+        signBook.getSignRequests().add(signRequest);
+        signBook.persist();
 	    return "redirect:/user/signbooks/" + id;
     }
     
