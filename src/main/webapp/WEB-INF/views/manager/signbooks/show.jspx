@@ -3,7 +3,7 @@
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
     <page:show id="ps_org_esupportail_esupsignature_domain_SignBook" object="${signbook}" path="/manager/signbooks" z="user-managed">
-        <form autocomplete="off" action="/user/signrequests/updateParams/${id}" name="command" id="command" method="post">
+        <form autocomplete="off" action="/manager/signbooks/updateParams/${id}" name="command" id="command" method="post">
         <div class="row">
 	        <div class="col-lg-6">
 		        <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignBook_name" object="${signbook}" z="user-managed"/>
@@ -30,15 +30,16 @@
 		        <field:display field="modelFile" id="s_org_esupportail_esupsignature_domain_SignBook_modelFile" object="${signbook}" render="false" z="user-managed"/>
 	        </div>
 	        <div class="col-lg-6">
+				<dt class="col-lg-4">Model</dt>
    		   		<script language="JavaScript">
 					function point_it(event){
 						pos_x = event.offsetX?(event.offsetX):event.pageX-document.getElementById("pointer_div").offsetLeft;
 						pos_y = event.offsetY?(event.offsetY):event.pageY-document.getElementById("pointer_div").offsetTop;
-						document.getElementById("cross").style.left = (pos_x-10) ;
-						document.getElementById("cross").style.top = (pos_y-10) ;
+						document.getElementById("cross").style.left = (pos_x) ;
+						document.getElementById("cross").style.top = (pos_y) ;
 						document.getElementById("cross").style.visibility = "visible" ;
 						document.command.xPos.value = pos_x;
-						document.command.yPos.value = pos_y - 5;
+						document.command.yPos.value = pos_y;
 					}
 				</script>
 				<div class="row">
@@ -46,17 +47,17 @@
 					<input type="button" id="previous" onclick="previousImage()" value="previous" />
 					<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl"/>
 					<input type="button" id="next" onclick="nextImage()" value="next" />
-					<div id="pointer_div" onclick="point_it(event)" style="background-size: 595px;background-image:url('${documentUrl}/0');width:595px;height:842px;border:1px solid #CCC;">
+					<div id="pointer_div" onclick="point_it(event)" style="background-size: 595px;background-image:url('${documentUrl}/${signbook.params.signPageNumber -1}');width:595px;height:842px;border:1px solid #CCC;">
 						<i id="cross" style="left:${signbook.params.xPos};top:${signbook.params.yPos};position:relative;z-index:2;">
-							<div alt="signature" style="width:100px;height:75px;border:1px solid #000;">
-							<!--  -->
+							<div alt="signature" style="width:100px;height:75px;border:1px solid #000;background-color: gray;text-align: center;opacity: 0.7;">	
+							<i class="fas fa-signature fa-3x"><!--  --></i>
 							</div>
 						</i>
 					</div>
 				</div>
 				<div class="col-lg-3	">
 		        <dl class="display-group border-bottom m-0">
-		        	Sign params
+		        	<b>Sign params</b>
 					<small>
 				        <dd>
 				        Sign type : ${signbook.params.signType}
@@ -81,9 +82,13 @@
     </page:show>
     <script language="JavaScript">			
 		var nbImagePage = ${imagePagesSize};
-		var currentImagePage = 0;
-	
-		document.getElementById("previous").disabled = true;
+		var currentImagePage = ${signbook.params.signPageNumber} - 1;
+		if(currentImagePage == 0) {
+			document.getElementById("previous").disabled = true;
+		}
+		if(currentImagePage == nbImagePage - 1) {
+			document.getElementById("next").disabled = true;
+		}
 		document.command.signPageNumber.value = currentImagePage + 1;
 		
 		function nextImage() {

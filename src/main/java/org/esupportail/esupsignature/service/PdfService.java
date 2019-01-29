@@ -233,7 +233,9 @@ public class PdfService {
 	
 	public int getTotalNumberOfPages(File pdfFile) throws IOException {
 		PDDocument pdDocument = PDDocument.load(pdfFile);
-		return pdDocument.getNumberOfPages();
+		int numberOfPages =pdDocument.getNumberOfPages();
+		pdDocument.close();
+		return numberOfPages;
 	}
 	
 	public String pageAsBase64Image(File pdfFile, int page) throws Exception {

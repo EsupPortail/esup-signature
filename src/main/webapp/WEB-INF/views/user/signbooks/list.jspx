@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <page:list id="pl_org_esupportail_esupsignature_domain_SignBook" items="${signbooks}" z="user-managed">
+        <table:table update="false" delete="false" data="${signbooks}" id="l_org_esupportail_esupsignature_domain_SignBook" path="/user/signbooks" z="user-managed">
+            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_name" property="name" z="user-managed"/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" property="recipientEmail" z="user-managed"/>
+            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" property="signBookType" z="user-managed"/>
+            <table:column render="false" date="true" dateTimePattern="${signBook_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_SignBook_createDate" property="createDate" z="user-managed"/>
+            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignBook_createBy" property="createBy" z="user-managed"/>
+            <table:column render="false" date="true" dateTimePattern="${signBook_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignBook_updateDate" property="updateDate" z="user-managed"/>
+            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignBook_updateBy" property="updateBy" z="user-managed"/>
+        </table:table>
+    </page:list>
+</div>
