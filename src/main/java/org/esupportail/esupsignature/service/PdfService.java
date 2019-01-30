@@ -182,7 +182,6 @@ public class PdfService {
         return pdfFile;
 	}	
 	
-	@SuppressWarnings("deprecation")
 	public File addImage(File pdfFile, File signImage, int page, int x, int y) throws IOException {
 	
 		BufferedImage bufferedImage = ImageIO.read(signImage);
@@ -203,15 +202,16 @@ public class PdfService {
 
 		PDImageXObject pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
 				
-		PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, false);
+		PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, false, true);
 		float height=pdPage.getMediaBox().getHeight();
-        contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
+		contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
         
 		Matrix matrix = pdPage.getMatrix();
 		matrix.rotate(180);
 		matrix.translate(x, y);
-        
-		contentStream.drawXObject(pdImage, x, y, signWidth, signHeight);
+
+		//contentStream.drawXObject(pdImage, x, y, signWidth, signHeight);
+		contentStream.drawImage(pdImage, x, y, signWidth, signHeight);
 		contentStream.close();
 		
 		pdDocument.save(targetFile);

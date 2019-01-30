@@ -82,6 +82,9 @@ public class SignRequestController {
     		@RequestParam(value = "size", required = false) Integer size, 
     		@RequestParam(value = "sortFieldName", required = false) String sortFieldName, 
     		@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
+    	
+    	//TODO : envoi dans un signbook
+    	
 		String eppn = userService.getEppnFromAuthentication();
 		populateEditForm(uiModel, new SignRequest());
 		if(User.countFindUsersByEppnEquals(eppn) == 0) {
