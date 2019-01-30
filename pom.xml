@@ -8,6 +8,7 @@
 	<version>0.1.0.BUILD-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
+		<bouncycastle.version>1.60</bouncycastle.version>
 		<aspectj.version>1.8.13</aspectj.version>
 		<java.version>1.8</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -70,6 +71,17 @@
 		<tag>5.1.RC1</tag>
 	</scm>
 	<dependencies>
+				<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcprov-jdk15on</artifactId>
+				<version>${bouncycastle.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcpkix-jdk15on</artifactId>
+				<version>${bouncycastle.version}</version>
+			</dependency>
+	
 		<dependency>
 	      <groupId>javax.servlet</groupId>
 	      <artifactId>javax.servlet-api</artifactId>
