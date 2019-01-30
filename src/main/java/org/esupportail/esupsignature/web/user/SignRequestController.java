@@ -16,6 +16,7 @@ import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
+import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.NewPageType;
 import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
@@ -122,6 +123,7 @@ public class SignRequestController {
         	} else {
         		toConvertFile = signRequest.getOriginalFile();
         	}
+        	uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
         	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
         	uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 	        uiModel.addAttribute("signRequest", signRequest);
@@ -226,8 +228,8 @@ public class SignRequestController {
 
     @RequestMapping(value = "/get-original-file/{id}", method = RequestMethod.GET)
     public void getOriginalFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
-    	SignRequest document = SignRequest.findSignRequest(id);
-        Document file = document.getOriginalFile();
+    	SignRequest signRequest = SignRequest.findSignRequest(id);
+        Document file = signRequest.getOriginalFile();
         try {
             response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
             response.setContentType(file.getContentType());
@@ -239,8 +241,8 @@ public class SignRequestController {
     
     @RequestMapping(value = "/get-signed-file/{id}", method = RequestMethod.GET)
     public void getSignedFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
-    	SignRequest document = SignRequest.findSignRequest(id);
-        Document file = document.getSignedFile();
+    	SignRequest signRequest = SignRequest.findSignRequest(id);
+        Document file = signRequest.getSignedFile();
         try {
             response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
             response.setContentType(file.getContentType());
@@ -249,6 +251,26 @@ public class SignRequestController {
             log.error("get file error", e);
         }
     }    
+    
+    @RequestMapping(value = "/send-to-signbook/{id}", method = RequestMethod.GET)
+    public String sendToSignBook(@PathVariable("id") Long id, @RequestParam(value = "signBookId", required = false) long signBookId, HttpServletResponse response, Model model) {
+    	SignRequest signRequest = SignRequest.findSignRequest(id);
+    	if(signRequest.getSignedFile() != null) {
+	    	SignBook signBook = SignBook.findSignBook(signBookId);
+	    	signRequest.getOriginalFile().remove();
+	    	signRequest.setOriginalFile(signRequest.getSignedFile());
+	    	signRequest.setSignedFile(null);
+	    	signRequest.setStatus(SignRequestStatus.pending);
+	    	signRequest.setRecipientEmail(signBook.getRecipientEmail());
+	    	signRequest.setParams(signBook.getParams());
+	    	signRequest.merge();
+	    	signBook.getSignRequests().add(signRequest);
+	    	signBook.merge();
+    	} else {
+    		log.warn("no signed file found");
+    	}
+    	return "redirect:/user/signrequests/" + id;
+    } 
     
     void populateEditForm(Model uiModel, SignRequest signRequest) {
         uiModel.addAttribute("signRequest", signRequest);

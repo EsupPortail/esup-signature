@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -10,7 +12,6 @@ import javax.annotation.Resource;
 
 import org.esupportail.esupsignature.domain.Document;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -18,7 +19,7 @@ public class DocumentService {
 	
 	@Resource
 	private FileService fileService;
-
+	
 	public Document addFile(Document file) {
 		file.persist();
 		return file;
@@ -37,9 +38,14 @@ public class DocumentService {
 		return addFile(multipartFile.getInputStream(), name, multipartFile.getSize(), multipartFile.getContentType());
     }
 	
-	@Transactional
 	public Document addFile(InputStream inputStream, String name, long size, String contentType) throws IOException {
-        Document document = new Document();
+        Document document = persistDocument(inputStream, name, size, contentType);
+        return document;
+    }
+
+	
+	public Document persistDocument(InputStream inputStream, String name, long size, String contentType) throws IOException {
+		Document document = new Document();
         document.setFileName(name);
         document.getBigFile().setBinaryFileStream(inputStream, size);
         document.getBigFile().persist();
@@ -47,6 +53,26 @@ public class DocumentService {
         document.setContentType(contentType);
         document.persist();
         return document;
+	}
+	
+	/* copy and close inputstream */  
+	public static InputStream clone(final InputStream inputStream) {
+        try {
+            inputStream.mark(0);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int readLength = 0;
+            while ((readLength = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, readLength);
+            }
+            outputStream.flush();
+            inputStream.close();
+            return new ByteArrayInputStream(outputStream.toByteArray());
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
     }
 	
 }

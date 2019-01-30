@@ -3,7 +3,6 @@
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
     <page:show id="ps_org_esupportail_esupsignature_domain_SignRequest" object="${signRequest}" path="/user/signrequests" z="user-managed">
-        <form autocomplete="off" action="/user/signrequests/signdoc/${id}" name="command" id="command" method="post">
 		<div class="row">
     	<div class="col-lg-6">
         <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignRequest_name" object="${signRequest}" z="user-managed"/>
@@ -17,6 +16,7 @@
         <field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_SignRequest_originalFile" object="${signRequest}" render="false" z="user-managed"/>
         <field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_SignRequest_signedFile" object="${signRequest}" render="false" z="user-managed"/>
         <field:display render="false" field="signType" id="s_org_esupportail_esupsignature_domain_SignRequest_signType" object="${signRequest}" z="user-managed"/>
+        <form autocomplete="off" action="/user/signrequests/signdoc/${id}" method="post">
 		<dl class="display-group border-bottom m-0">
         	<dt class="col-lg-4">Sign params</dt>
 			<small>
@@ -27,11 +27,11 @@
 	  	        <c:choose>
 	            <c:when test="${signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' }">
 			        <br/>
-			        on page : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.signPageNumber}" type="text" name="signPageNumber" />
+			        on page : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.signPageNumber}" id="signPageNumber" type="text" name="signPageNumber" />
 			        <br/>
-			    	X position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.xPos}" type="text" name="xPos" />
+			    	X position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.xPos}" id="xPos" type="text" name="xPos" />
 			    	<br/>
-			    	Y position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.yPos}" type="text" name="yPos" />
+			    	Y position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.yPos}" id="yPos" type="text" name="yPos" />
 		        		<script language="JavaScript">
 							function point_it(event){
 								pos_x = event.offsetX?(event.offsetX):event.pageX-document.getElementById("pointer_div").offsetLeft;
@@ -39,15 +39,15 @@
 								document.getElementById("cross").style.left = (pos_x-10) ;
 								document.getElementById("cross").style.top = (pos_y-10) ;
 								document.getElementById("cross").style.visibility = "visible" ;
-								document.command.xPos.value = pos_x;
-								document.command.yPos.value = pos_y - 5;
+								document.getElementById("xPos").value = pos_x;
+								document.getElementById("yPos").value = pos_y - 5;
 							}
 						</script>
 		    	</c:when>
 		    	<c:otherwise>
-					<input value="${signRequest.params.signPageNumber}" type="hidden" name="signPageNumber" />
-					<input value="${signRequest.params.xPos}" type="hidden" name="xPos" />
-					<input value="${signRequest.params.yPos}" type="hidden" name="yPos" />
+					<input value="${signRequest.params.signPageNumber}" type="hidden" id="signPageNumber" name="signPageNumber" />
+					<input value="${signRequest.params.xPos}" type="hidden" id="xPos" name="xPos" />
+					<input value="${signRequest.params.yPos}" type="hidden" id="yPos" name="yPos" />
 		    	</c:otherwise>
 		    	</c:choose>    
 		        </dd>
@@ -57,7 +57,9 @@
         	<dt class="col-lg-4">Get original document</dt>
 	        <dd>
 	       		<spring:url value="/user/signrequests/get-original-file/${id}" var="originalFileUrl"/>
-	            <button type="button" class="btn btn-warning" onclick="location.href='${originalFileUrl}'">Download</button>
+	            <button type="button" class="btn btn-warning" onclick="location.href='${originalFileUrl}'">
+	            	<i class="fas fa-download"><!--  --></i> Download
+	            </button>
 	        </dd>
         </dl>
         <c:choose>
@@ -66,7 +68,9 @@
 		        	<dt class="col-lg-4">Get signed document</dt>
 			        <dd>
 	                	<spring:url value="/user/signrequests/get-signed-file/${id}" var="signedFileUrl"/>
-	             		<button type="button" class="btn btn-success" onclick="location.href='${signedFileUrl}'">Download</button>
+	             		<button type="button" class="btn btn-success" onclick="location.href='${signedFileUrl}'">
+	             		<i class="fas fa-download"><!--  --></i> Download
+	             		</button>
 			        </dd>
 		        </dl>
             </c:when>
@@ -102,7 +106,26 @@
                </c:if>
             </c:otherwise>
         </c:choose>
-     	</div>        
+        </form>
+        <c:if test="${signRequest.status eq 'signed'}">
+	        <dl class="display-group border-bottom m-0">
+	        	<dt class="col-lg-4">Send to SignBook</dt>
+		        <dd>
+		       		<spring:url value="/user/signrequests/send-to-signbook/${id}" var="sendToSignBookUrl"/>
+		       		<form action="${sendToSignBookUrl}" method="get">
+		       			<select class="form-control" name="signBookId">
+			       			<c:forEach items="${signBooks}" var="signBook">
+			       				<option value="${signBook.id}">${signBook.name}</option>
+			       			</c:forEach>
+		       			</select>
+		            	<button type="submit" class="btn btn-primary">
+		            		<i class="fas fa-share-square"><!--  --></i> Send
+		            	</button>
+		            </form>
+		        </dd>
+	        </dl>
+        </c:if>
+   	</div>        
 	<div class="col-lg-6">
 	<input type="button" id="previous" onclick="previousImage()" value="previous" />
 	<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl"/>
@@ -116,7 +139,6 @@
 		</div>
 	</div>	
 	</div>
-    </form>
     </page:show>
     <script language="JavaScript">			
 		var nbImagePage = ${imagePagesSize};
@@ -127,7 +149,7 @@
 		if(currentImagePage == nbImagePage - 1) {
 			document.getElementById("next").disabled = true;
 		}
-		document.command.signPageNumber.value = currentImagePage + 1;
+		document.getElementById("signPageNumber").value = currentImagePage + 1;
 		
 		function nextImage() {
 			currentImagePage++;
@@ -138,7 +160,7 @@
 			if(currentImagePage > 0) {
 				document.getElementById("previous").disabled = false;
 			}
-			document.command.signPageNumber.value = currentImagePage + 1;
+			document.getElementById("signPageNumber").value = currentImagePage + 1;
 		}
 
 		function previousImage() {
@@ -150,7 +172,7 @@
 			if(nbImagePage - 1 > currentImagePage) {
 				document.getElementById("next").disabled = false;
 			}
-			document.command.signPageNumber.value = currentImagePage + 1;
+			document.getElementById("signPageNumber").value = currentImagePage + 1;
 		}
 	</script>
 

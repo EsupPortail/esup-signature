@@ -29,8 +29,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @RequestMapping("/user/users")
 @Controller
-@Transactional
 @Scope(value="session")
+@Transactional
 public class UserController {
 
 	private static final Logger log = LoggerFactory.getLogger(UserController.class);
@@ -95,7 +95,8 @@ public class UserController {
         }
         uiModel.asMap().clear();
 		String eppn = userService.getEppnFromAuthentication();
-		User userToUpdate = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User userToUpdate = null;
+		userToUpdate = User.findUsersByEppnEquals(eppn).getSingleResult();
         if(!user.getPublicKey().isEmpty()) {
             File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
             if(userToUpdate.getKeystore().getBigFile().getBinaryFile() != null) {
@@ -103,18 +104,18 @@ public class UserController {
             }
             userToUpdate.setKeystore(documentService.addFile(file, file.getName(), "application/jks"));
         }
+        Document oldSignImage = userToUpdate.getSignImage();
         if(!user.getSignImageBase64().isEmpty()) {
-        	if(userToUpdate.getSignImage().getBigFile().getBinaryFile() != null) {
-        		userToUpdate.getSignImage().remove();
-        	}
         	userToUpdate.setSignImage(documentService.addFile(user.getSignImageBase64(), userToUpdate.getEppn() + "_sign", "application/png"));
         } else
-        	if(userToUpdate.getId() == null) {
+        	if(userToUpdate.getSignImageBase64() == null) {
             	redirectAttrs.addFlashAttribute("messageCustom", "image is required");
         }
-        if(userToUpdate.getId() == null) {
-        	userToUpdate.persist();
-        }
+        if(oldSignImage.getBigFile().getBinaryFile() != null) {
+        	oldSignImage.getBigFile().getBinaryFile().free();
+    		oldSignImage.getBigFile().remove();
+    		oldSignImage.remove();
+    	}
         return "redirect:/user/users/";
     }
     

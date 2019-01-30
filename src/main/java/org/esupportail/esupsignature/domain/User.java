@@ -23,7 +23,7 @@ public class User {
     
     private String email;
     
-    @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     private Document signImage = new Document();
     
     @Transient
@@ -35,7 +35,7 @@ public class User {
     @Transient
     private String signImageBase64;
     
-    @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     private Document keystore = new Document();
 	
 }

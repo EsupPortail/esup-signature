@@ -1,7 +1,11 @@
 package org.esupportail.esupsignature.service;
 
+import java.io.IOException;
 import java.util.List;
 
+import javax.annotation.Resource;
+
+import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +19,9 @@ public class UserService {
 	@Autowired(required = false)
 	PersonLdapDao personDao;
     
+	@Resource
+	private DocumentService documentService;
+	
     public String getEppnFromAuthentication() {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -26,4 +33,16 @@ public class UserService {
     	return eppn;
     }
 	
+    public User addSignImage(User user, String signImageBase64) throws IOException {
+    	user.setSignImage(documentService.addFile(user.getSignImageBase64(), user.getEppn() + "_sign", "application/png"));
+    	user.merge();
+    	return user;
+    	
+    }
+    
+    public User addKeystore(User user) {
+    	
+    	return user;
+    	
+    }
 }

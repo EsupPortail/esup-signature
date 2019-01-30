@@ -34,6 +34,7 @@ import javax.persistence.Lob;
 import org.apache.commons.io.IOUtils;
 import org.hibernate.LobHelper;
 import org.hibernate.Session;
+import org.hibernate.annotations.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.roo.addon.javabean.RooJavaBean;
@@ -50,7 +51,7 @@ public class BigFile {
 	private static final Logger log = LoggerFactory.getLogger(BigFile.class);
 	
 	@Lob
-	//@Type(type="org.hibernate.type.PrimitiveByteArrayBlobType")
+	@Type(type="org.hibernate.type.BlobType")
 	@Basic(fetch = FetchType.LAZY)
 	private Blob binaryFile;
 	

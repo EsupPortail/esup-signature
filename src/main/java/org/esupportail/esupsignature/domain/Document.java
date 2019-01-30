@@ -22,7 +22,7 @@ public class Document {
         return "/manager/documents/getfile/" + getId();
     }
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.ALL}, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     private BigFile bigFile = new BigFile();
     
 }
