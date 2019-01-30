@@ -262,7 +262,7 @@ public class SignRequestController {
 	    	signRequest.setSignedFile(null);
 	    	signRequest.setStatus(SignRequestStatus.pending);
 	    	signRequest.setRecipientEmail(signBook.getRecipientEmail());
-	    	signRequest.setParams(signBook.getParams());
+	    	signRequest.setParams(new HashMap<String, String>(signBook.getParams()));
 	    	signRequest.merge();
 	    	signBook.getSignRequests().add(signRequest);
 	    	signBook.merge();

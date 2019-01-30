@@ -17,7 +17,7 @@
         <field:input field="targetType" id="c_org_esupportail_esupsignature_domain_SignBook_targetType" z="BN/Df3qfdCIZ+H3njnn/KaurXJk="/>
         <field:input field="documentsTargetUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" z="+aH48HMjvqLm0h8EYzaTGO4EJRA="/>
         <field:select field="modelFile" id="c_org_esupportail_esupsignature_domain_SignBook_modelFile" itemValue="id" items="${documents}" path="/user/documents" z="PFBXlCsqKcL1WBsnsRAfV/9fypI="/>
-        <field:select field="signRequests" id="c_org_esupportail_esupsignature_domain_SignBook_signRequests" itemValue="id" items="${signrequests}" multiple="true" path="/signrequests" z="4hgGFnbI24zcaV+G2hZsqBsoGQY="/>
+        <field:simple field="signRequests" id="c_org_esupportail_esupsignature_domain_SignBook_signRequests" messageCode="entity_reference_not_managed" messageCodeAttribute="Sign Request" z="5ryvLIk2xRhUW1nR+da5iMqlvYo="/>
         <field:input field="params" id="c_org_esupportail_esupsignature_domain_SignBook_params" z="bB650W7gr2pZqHqjtUPvLctXb7w="/>
         <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignBook_status" z="LpnODZDB3VETTuY0v7uf46RiBdY="/>
         <field:input field="signType" id="c_org_esupportail_esupsignature_domain_SignBook_signType" z="KFXeOW9vgBODDOsZlLBhmARauKU="/>

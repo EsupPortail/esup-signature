@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -51,9 +52,6 @@ import eu.europa.esig.dss.SignaturePackaging;
 public class PdfService {
 
 	private static final Logger log = LoggerFactory.getLogger(PdfService.class);
-	
-	@Resource
-	private DocumentService documentService;
 
 	@Resource
 	private FileService fileService;
@@ -91,7 +89,7 @@ public class PdfService {
         } else 
         if(signType.equals(SignType.certPAdES)) {
         	log.info("cades signature");
-          	signedFile = certSignPdf(toSignFile, base64PemCert, null, signImage, pageNumber -1, xPos, yPos);
+          	signedFile = certSignPdf(toSignFile, base64PemCert, null, signImage, pageNumber, xPos, yPos);
         }
         return signedFile;
 
@@ -120,6 +118,7 @@ public class PdfService {
 		signaturePdfForm.setBase64CertificateChain(params.getCertificateChain());
 		signaturePdfForm.setBase64SignatureValue("");
 		signaturePdfForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
+		signaturePdfForm.setSigningDate(new Date());
 
 		MultipartFile multipartFile = new MockMultipartFile(file.getName(), file.getName(), "application/pdf", new FileInputStream(file));
 

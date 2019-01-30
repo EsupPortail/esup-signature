@@ -131,7 +131,7 @@
 	<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl"/>
 	<input type="button" id="next" onclick="nextImage()" value="next" />
 		<div id="pointer_div" onclick="point_it(event)" style="background-size: 595px;background-image:url('${documentUrl}/${signRequest.params.signPageNumber -1}');width:595px;height:842px;border:1px solid #CCC;">
-			<c:if test="${empty signRequest.signedFile}">
+			<c:if test="${signable eq 'ok' and empty signRequest.signedFile}">
 				<i id="cross" style="left:${signRequest.params.xPos};top:${signRequest.params.yPos};position:relative;z-index:2;">
 					<img alt="signature" src="data:image/jpg;base64, ${signFile}" width="100" height="75"/>
 				</i>
