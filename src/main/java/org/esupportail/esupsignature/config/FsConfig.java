@@ -12,13 +12,19 @@ public class FsConfig {
 
 	@Value("${fs.cifs.uri}")
 	private String uri;
-
+	@Value("${fs.cifs.login}")
+	private String login;
+	@Value("${fs.cifs.password}")
+	private String password;
+	
 	@Bean
 	public CifsAccessImpl cifsAccessImpl(){
 		CifsAccessImpl cifsAccessImpl = new CifsAccessImpl();
 		cifsAccessImpl.setDriveName("CIFS");
 		cifsAccessImpl.setUri(uri);
 		cifsAccessImpl.setJcifsConfigProperties(cifsProperties());
+		cifsAccessImpl.setLogin(login);
+		cifsAccessImpl.setPassword(password);
 		return cifsAccessImpl;
 	}
 

@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 
 import org.esupportail.esupsignature.domain.Document;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -35,17 +36,17 @@ public class DocumentService {
 	public Document addFile(MultipartFile multipartFile, String name) throws IOException {
 		return addFile(multipartFile.getInputStream(), name, multipartFile.getSize(), multipartFile.getContentType());
     }
-
+	
+	@Transactional
 	public Document addFile(InputStream inputStream, String name, long size, String contentType) throws IOException {
-		//TODO : à tester sans persist
-        Document file = new Document();
-        file.setFileName(name);
-        file.getBigFile().setBinaryFileStream(inputStream, size);
-        file.getBigFile().persist();
-        file.setSize(size);
-        file.setContentType(contentType);
-        file.persist();
-        return file;
+        Document document = new Document();
+        document.setFileName(name);
+        document.getBigFile().setBinaryFileStream(inputStream, size);
+        document.getBigFile().persist();
+        document.setSize(size);
+        document.setContentType(contentType);
+        document.persist();
+        return document;
     }
 	
 }

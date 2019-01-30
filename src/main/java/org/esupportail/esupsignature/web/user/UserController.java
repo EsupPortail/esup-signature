@@ -6,7 +6,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import org.apache.commons.io.FileUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
@@ -14,8 +13,6 @@ import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.fs.EsupStockException;
-import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,9 +42,6 @@ public class UserController {
 	
 	@Autowired(required = false)
 	PersonLdapDao personDao;
-
-	@Resource
-	private CifsAccessImpl cifsAccessImpl;
 	
 	@Resource
 	private DocumentService documentService;
@@ -74,14 +68,6 @@ public class UserController {
     	populateEditForm(uiModel, user);
         if(user.getSignImage().getBigFile().getBinaryFile() != null) {
         	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-        }
-
-        try {
-        	File file = cifsAccessImpl.getFile("diag.txt", user);
-        	String contents = FileUtils.readFileToString(file);
-        	System.err.println(contents);
-        } catch (EsupStockException e) {
-        	log.error("read cifs file error : " + e);
         }
         uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         return "user/users/show";

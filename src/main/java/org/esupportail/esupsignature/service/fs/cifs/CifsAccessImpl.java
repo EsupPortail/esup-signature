@@ -65,6 +65,11 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 	private NtlmPasswordAuthentication userAuthenticator;
 
 	protected SmbFile root;
+
+	private String login;
+	
+	private String password;
+	
 	
 	protected boolean jcifsSynchronizeRootListing = false;
 
@@ -93,7 +98,7 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 			}
 
 			try {
-				userAuthenticator = new NtlmPasswordAuthentication(cifsContext, "UR", user.getEppn().split("@")[0], user.getPassword());
+				userAuthenticator = new NtlmPasswordAuthentication(cifsContext, "UR", login, password);
 				cifsContext = cifsContext.withCredentials(userAuthenticator);
 				SmbFile smbFile = new SmbFile(this.getUri(), cifsContext);
 				if (smbFile.exists()) {
@@ -311,7 +316,8 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 
-	private SmbFile[] listFiles(SmbFile resource) throws SmbException {
+	public SmbFile[] listFiles(String url, User user) throws Exception {
+		SmbFile resource = cd(url, user);		
 		if(jcifsSynchronizeRootListing && this.root.equals(resource)) {
 			synchronized (this.root.getCanonicalPath()) {
 				return resource.listFiles();
@@ -343,6 +349,14 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 
 	public void setJcifsSynchronizeRootListing(boolean jcifsSynchronizeRootListing) {
 		this.jcifsSynchronizeRootListing = jcifsSynchronizeRootListing;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 	
 }
