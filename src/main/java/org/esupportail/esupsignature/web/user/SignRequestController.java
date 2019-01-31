@@ -22,9 +22,11 @@ import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.PdfService;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
@@ -57,6 +59,9 @@ public class SignRequestController {
 	
 	@Resource
 	PdfService pdfService;
+
+	@Resource
+	SignBookService signBookService;
 	
 	@Resource
 	DocumentService documentService;
@@ -83,30 +88,33 @@ public class SignRequestController {
     		@RequestParam(value = "size", required = false) Integer size, 
     		@RequestParam(value = "sortFieldName", required = false) String sortFieldName, 
     		@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
-    	
-    	//TODO : envoi dans un signbook
-    	
 		String eppn = userService.getEppnFromAuthentication();
+		if(User.countFindUsersByEppnEquals(eppn) == 0) {
+			return "redirect:/user/users/?form";
+		}
+    	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+    	if(user.getSignImage().getBigFile().getBinaryFile() == null) {
+			return "redirect:/user/users/?form";
+		}  
 		populateEditForm(uiModel, new SignRequest());
 		if(User.countFindUsersByEppnEquals(eppn) == 0) {
 			return "redirect:/user/users";
 		}
 		if(sortOrder == null) {
-			sortOrder = "asc";
+			sortOrder = "desc";
 			sortFieldName = "createDate";
 		}
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		List<SignRequest> signRequests = null;
 		if(findBy != null && findBy.equals("recipientEmail")) {
-			signRequests = SignRequest.findSignRequests("", user.getEmail(), "", page, size, sortFieldName, sortOrder).getResultList();
+			signRequests = SignRequest.findSignRequests("", user.getEmail(), null, "", page, size, sortFieldName, sortOrder).getResultList();
 			uiModel.addAttribute("tosigndocs", "active");	
 		} else {
-			signRequests = SignRequest.findSignRequests(eppn, "", "", page, size, sortFieldName, sortOrder).getResultList();
+			signRequests = SignRequest.findSignRequests(eppn, "", null, "", page, size, sortFieldName, sortOrder).getResultList();
 			uiModel.addAttribute("mydocs", "active");
 		}
+		uiModel.addAttribute("nbToSignRequests", SignRequest.countFindSignRequests("", user.getEmail(), SignRequestStatus.pending, ""));
 		uiModel.addAttribute("signRequests", signRequests);
         uiModel.addAttribute("maxPages", (int) 1);
-
         return "user/signrequests/list";
     }
     
@@ -253,22 +261,16 @@ public class SignRequestController {
     }    
     
     @RequestMapping(value = "/send-to-signbook/{id}", method = RequestMethod.GET)
-    public String sendToSignBook(@PathVariable("id") Long id, @RequestParam(value = "signBookId", required = false) long signBookId, HttpServletResponse response, Model model) {
+    public String sendToSignBook(@PathVariable("id") Long id, @RequestParam(value = "signBookId", required = false) long signBookId, HttpServletResponse response, RedirectAttributes redirectAttrs, Model model) {
     	SignRequest signRequest = SignRequest.findSignRequest(id);
-    	if(signRequest.getSignedFile() != null) {
-	    	SignBook signBook = SignBook.findSignBook(signBookId);
-	    	signRequest.getOriginalFile().remove();
-	    	signRequest.setOriginalFile(signRequest.getSignedFile());
-	    	signRequest.setSignedFile(null);
-	    	signRequest.setStatus(SignRequestStatus.pending);
-	    	signRequest.setRecipientEmail(signBook.getRecipientEmail());
-	    	signRequest.setParams(new HashMap<String, String>(signBook.getParams()));
-	    	signRequest.merge();
-	    	signBook.getSignRequests().add(signRequest);
-	    	signBook.merge();
-    	} else {
-    		log.warn("no signed file found");
-    	}
+    	SignBook signBook = SignBook.findSignBook(signBookId);
+    	try {
+			signBookService.importSignRequest(signRequest, signBook);
+		} catch (EsupSignatureException e) {
+			log.warn(e.getMessage());
+			redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
+
+		}
     	return "redirect:/user/signrequests/" + id;
     } 
     

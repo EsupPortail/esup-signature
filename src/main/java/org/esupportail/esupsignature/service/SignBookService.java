@@ -7,7 +7,9 @@ import javax.annotation.Resource;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignRequest;
+import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,5 +47,24 @@ public class SignBookService {
         	log.error("read cifs file error : ", e);
         }
 	}
-
+	
+	public void importSignRequest(SignRequest signRequest, SignBook signBook) throws EsupSignatureException {
+    	if(signRequest.getSignedFile() != null) {
+    		if(!signBook.getSignRequests().contains(signRequest)) {
+		    	signRequest.getOriginalFile().remove();
+		    	signRequest.setOriginalFile(signRequest.getSignedFile());
+		    	signRequest.setSignedFile(null);
+		    	signRequest.setStatus(SignRequestStatus.pending);
+		    	signRequest.setRecipientEmail(signBook.getRecipientEmail());
+		    	signRequest.setParams(new HashMap<String, String>(signBook.getParams()));
+		    	signRequest.merge();
+		    	signBook.getSignRequests().add(signRequest);
+		    	signBook.merge();
+    		} else {
+    			throw new EsupSignatureException("allready in this signbook");
+    		}
+    	} else {
+    		throw new EsupSignatureException("no signed file found");
+    	}
+	}
 }

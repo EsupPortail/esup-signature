@@ -44,7 +44,7 @@ public class IndexController {
 			if(User.countFindUsersByEppnEquals(eppn) > 0) {
 				return "redirect:/user/signrequests";
 			} else {
-				return "redirect:/user/users";
+				return "redirect:/user/signrequests/";
 			}
 			
 			/*

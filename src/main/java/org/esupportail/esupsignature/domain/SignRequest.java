@@ -93,7 +93,7 @@ public class SignRequest {
         this.status = status;
     }
     
-    public static TypedQuery<SignRequest> findSignRequests(String createBy, String recipientEmail, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
+    public static TypedQuery<SignRequest> findSignRequests(String createBy, String recipientEmail, SignRequestStatus status, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
     	EntityManager em = SignRequest.entityManager();
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<SignRequest> query = criteriaBuilder.createQuery(SignRequest.class);
@@ -108,7 +108,11 @@ public class SignRequest {
         if(!recipientEmail.isEmpty()) {
         	predicates.add(criteriaBuilder.equal(signRequestRoot.get("recipientEmail"), recipientEmail));
         }
-    	
+        
+        if(status != null) {
+        	predicates.add(criteriaBuilder.equal(signRequestRoot.get("status"), status));
+        }
+        
         if(searchString != null && searchString != ""){
 	        Expression<Boolean> fullTestSearchExpression = criteriaBuilder.function("fts", Boolean.class, criteriaBuilder.literal(searchString));
 	        predicates.add(criteriaBuilder.isTrue(fullTestSearchExpression));
@@ -132,7 +136,7 @@ public class SignRequest {
         return em.createQuery(query).setFirstResult(firstResult).setMaxResults(sizeNo);
     }
 
-    public static long countFindTagLogs(String recipientEmail, String searchString) {
+    public static long countFindSignRequests(String createBy, String recipientEmail, SignRequestStatus status, String searchString) {
     	EntityManager em = SignRequest.entityManager();
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
@@ -149,6 +153,10 @@ public class SignRequest {
 	        predicates.add(criteriaBuilder.isTrue(fullTestSearchExpression));
         }else{
         	searchString = "";
+        }
+        
+        if(status != null) {
+        	predicates.add(criteriaBuilder.equal(signRequestRoot.get("status"), status));
         }
         
         query.where(criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()])));
