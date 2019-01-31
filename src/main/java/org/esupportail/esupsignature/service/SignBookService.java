@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 
 import javax.annotation.Resource;
@@ -21,7 +22,6 @@ import jcifs.smb.SmbFile;
 public class SignBookService {
 	
 	private static final Logger log = LoggerFactory.getLogger(SignBookService.class);
-
 	
 	@Resource
 	private CifsAccessImpl cifsAccessImpl;
@@ -48,23 +48,32 @@ public class SignBookService {
         }
 	}
 	
-	public void importSignRequest(SignRequest signRequest, SignBook signBook) throws EsupSignatureException {
-    	if(signRequest.getSignedFile() != null) {
-    		if(!signBook.getSignRequests().contains(signRequest)) {
-		    	signRequest.getOriginalFile().remove();
-		    	signRequest.setOriginalFile(signRequest.getSignedFile());
-		    	signRequest.setSignedFile(null);
-		    	signRequest.setStatus(SignRequestStatus.pending);
-		    	signRequest.setRecipientEmail(signBook.getRecipientEmail());
-		    	signRequest.setParams(new HashMap<String, String>(signBook.getParams()));
-		    	signRequest.merge();
-		    	signBook.getSignRequests().add(signRequest);
-		    	signBook.merge();
-    		} else {
-    			throw new EsupSignatureException("allready in this signbook");
-    		}
-    	} else {
-    		throw new EsupSignatureException("no signed file found");
-    	}
+	public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
+		if(!signBook.getSignRequests().contains(signRequest)) {
+	    	signRequest.getOriginalFile().remove();
+	    	signRequest.setOriginalFile(signRequest.getSignedFile());
+	    	signRequest.setSignedFile(null);
+	    	signRequest.setRecipientEmail(signBook.getRecipientEmail());
+	    	signRequest.setParams(new HashMap<String, String>(signBook.getParams()));
+	    	signRequest.setSignBookId(signBook.getId());
+	    	signRequest.merge();
+	    	signBook.getSignRequests().add(signRequest);
+	    	signRequestService.updateInfo(signRequest, SignRequestStatus.pending, user);
+	    	signBook.merge();
+		} else {
+			throw new EsupSignatureException("allready in this signbook");
+		}
+	}
+	
+	public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException, SQLException {
+		if(signBook.getSignRequests().contains(signRequest)) {
+			signRequestService.updateInfo(signRequest, SignRequestStatus.signed, user);
+			signRequest.setSignBookId(0);
+	    	signRequest.merge();
+	    	signBook.getSignRequests().remove(signRequest);
+	    	signBook.merge();
+		} else {
+			throw new EsupSignatureException("not in this signbook");
+		}
 	}
 }

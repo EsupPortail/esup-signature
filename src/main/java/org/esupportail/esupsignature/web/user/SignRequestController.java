@@ -1,10 +1,10 @@
 package org.esupportail.esupsignature.web.user;
 
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +17,7 @@ import javax.validation.Valid;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
+import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.domain.SignBook.NewPageType;
 import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
@@ -27,8 +28,10 @@ import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -58,22 +61,28 @@ public class SignRequestController {
 	}
 	
 	@Resource
-	PdfService pdfService;
-
-	@Resource
-	SignBookService signBookService;
+	private CifsAccessImpl cifsAccessImpl;
 	
 	@Resource
-	DocumentService documentService;
-
-	@Resource
-	FileService fileService;
+	private UserKeystoreService userKeystoreService;
 	
 	@Resource
-	UserKeystoreService userKeystoreService;
+	private SignRequestService signRequestService;
+	
+	@Resource
+	private PdfService pdfService;
 
 	@Resource
-	UserService userService;
+	private SignBookService signBookService;
+	
+	@Resource
+	private DocumentService documentService;
+
+	@Resource
+	private FileService fileService;
+
+	@Resource
+	private UserService userService;
 	
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(Model uiModel, @RequestParam(value = "recipientEmail", required = false) boolean recipientEmail) {
@@ -106,13 +115,14 @@ public class SignRequestController {
 		}
 		List<SignRequest> signRequests = null;
 		if(findBy != null && findBy.equals("recipientEmail")) {
-			signRequests = SignRequest.findSignRequests("", user.getEmail(), null, "", page, size, sortFieldName, sortOrder).getResultList();
+			signRequests = SignRequest.findSignRequests("", user.getEmail(), SignRequestStatus.pending, "", page, size, sortFieldName, sortOrder).getResultList();
 			uiModel.addAttribute("tosigndocs", "active");	
 		} else {
 			signRequests = SignRequest.findSignRequests(eppn, "", null, "", page, size, sortFieldName, sortOrder).getResultList();
 			uiModel.addAttribute("mydocs", "active");
 		}
 		uiModel.addAttribute("nbToSignRequests", SignRequest.countFindSignRequests("", user.getEmail(), SignRequestStatus.pending, ""));
+		uiModel.addAttribute("nbPedingSignRequests", SignRequest.countFindSignRequests(user.getEppn(), "", SignRequestStatus.pending, ""));
 		uiModel.addAttribute("signRequests", signRequests);
         uiModel.addAttribute("maxPages", (int) 1);
         return "user/signrequests/list";
@@ -132,6 +142,9 @@ public class SignRequestController {
         		toConvertFile = signRequest.getOriginalFile();
         	}
         	uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
+        	if(SignBook.findSignBook(signRequest.getSignBookId()) != null ) {
+        		uiModel.addAttribute("inSignBookName", SignBook.findSignBook(signRequest.getSignBookId()).getName());
+        	}
         	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
         	uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 	        uiModel.addAttribute("signRequest", signRequest);
@@ -156,74 +169,93 @@ public class SignRequestController {
             uiModel.addAttribute("recipientEmail", false);
             return "user/signrequests/create";
         }
-		String eppn = userService.getEppnFromAuthentication();
         uiModel.asMap().clear();
-        try {
-        	signRequest.setCreateBy(eppn);
-        	signRequest.setCreateDate(new Date());
-			signRequest.setOriginalFile(documentService.addFile(multipartFile, multipartFile.getOriginalFilename()));
-			signRequest.setSignedFile(null);
-			signRequest.setStatus(SignRequestStatus.pending);
-			Map<String, String> params = new HashMap<>();
-			params.put("signType", signRequest.getSignType());
-			params.put("newPageType", signRequest.getNewPageType());
-			params.put("signPageNumber", "1");
-			params.put("xPos", "0");
-			params.put("yPos", "0");
-			signRequest.setParams(params);
-	        signRequest.persist();
-        } catch (IOException e) {
-        	log.error("Create file error", e);
+        String eppn = userService.getEppnFromAuthentication();
+		
+        Map<String, String> params = new HashMap<>();
+		params.put("signType", signRequest.getSignType());
+		params.put("newPageType", signRequest.getNewPageType());
+		params.put("signPageNumber", "1");
+		params.put("xPos", "0");
+		params.put("yPos", "0");
+
+		try {
+			Document document = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
+			signRequest = signRequestService.createSignRequest(eppn, document, params, signRequest.getRecipientEmail());
+
+		} catch (IOException e) {
+			log.error("error to add file : " + multipartFile.getOriginalFilename(), e);
 		}
+		
         return "redirect:/user/signrequests/" + signRequest.getId();
     }
 
-    @RequestMapping(value = "/signdoc/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "/sign-doc/{id}", method = RequestMethod.POST)
     public String signdoc(@PathVariable("id") Long id, 
     		@RequestParam(value = "xPos", required=true) int xPos,
     		@RequestParam(value = "yPos", required=true) int yPos,
     		@RequestParam(value = "signPageNumber", required=true) int signPageNumber,
-    		@RequestParam(value = "password", required=false) String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
+    		@RequestParam(value = "password", required=false) String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) throws SQLException, EsupSignatureException, FileNotFoundException {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	SignRequest signRequest = SignRequest.findSignRequest(id);
-    	Map<String, String> params = signRequest.getParams();
-    	if(signRequest.getCreateBy().equals(user.getEppn()) && signRequest.getRecipientEmail() != null) {
-        	redirectAttrs.addFlashAttribute("messageCustom", "error");
+
+    	if((signRequest.getCreateBy().equals(user.getEppn()) && signRequest.getRecipientEmail() != null) 
+    			||
+    	   (signRequest.getRecipientEmail() != null && !signRequest.getRecipientEmail().equals(user.getEmail()))) {
+        	redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
     		return "redirect:/user/signrequests/" + id;
     	}
-    	
-    	File signImage = user.getSignImage().getBigFile().toJavaIoFile();
-        File toSignFile = signRequest.getOriginalFile().getBigFile().toJavaIoFile();
-    	NewPageType newPageType = NewPageType.valueOf(params.get("newPageType"));
-    	SignType signType = SignType.valueOf(params.get("signType"));
-    	String base64PemCert = null;
+    	SignType signType = SignType.valueOf(signRequest.getParams().get("signType"));
+    	String base64PemCert = "";
     	if(signType.equals(SignType.certPAdES)) {
     		if(password == null) password = "";
         	userKeystoreService.setPassword(password);
-        	base64PemCert = userKeystoreService.getBase64PemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
+    		base64PemCert = userKeystoreService.getBase64PemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
     	}
-    	
-        try {
-	        File signedFile = pdfService.signPdf(toSignFile, signImage, signType, base64PemCert, signPageNumber, xPos, yPos, newPageType);
-	        
-	        if(signedFile != null) {
-	        	params.put("signPageNumber", String.valueOf(signPageNumber));
-				params.put("xPos", String.valueOf(xPos));
-				params.put("yPos", String.valueOf(yPos));
-				signRequest.setParams(params);
-				signRequest.setSignedFile(documentService.addFile(signedFile, signType + "-signed-" + signRequest.getOriginalFile().getFileName(), "application/pdf"));
-			    signRequest.setStatus(SignRequestStatus.signed);
-			    signRequest.setUpdateBy(eppn);
-			    signRequest.setUpdateDate(new Date());
-	        }
-        } catch (IOException e) {
-        	log.error("file to sign or sign image opening error", e);
-		}
-        
+    	InputStream in = signRequestService.sign(signRequest, user, base64PemCert, signPageNumber, xPos, yPos);
+		
+    	if(signRequest.getSignBookId() != 0) {
+    		SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
+   			signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
+   	    	if(signBook.getTargetType().equals(DocumentIOType.cifs)) {
+   	    		try {
+   					cifsAccessImpl.putFile(signBook.getDocumentsTargetUri(), signRequest.getSignedFile().getFileName(), in, user, null);
+   				} catch (Exception e) {
+   					log.error("cifs copy file error", e);
+   					throw new EsupSignatureException("cifs copy file error", e);
+   				}
+   	    	}
+
+    	}
+
         return "redirect:/user/signrequests/" + id;
     }
 	
+    @RequestMapping(value = "/refuse/{id}")
+    public String signdoc(@PathVariable("id") Long id, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) throws SQLException {
+		String eppn = userService.getEppnFromAuthentication();
+		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+    	SignRequest signRequest = SignRequest.findSignRequest(id);
+
+    	if((signRequest.getCreateBy().equals(user.getEppn()) && signRequest.getRecipientEmail() != null) 
+    			||
+    	   (signRequest.getRecipientEmail() != null && !signRequest.getRecipientEmail().equals(user.getEmail()))) {
+        	redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
+    		return "redirect:/user/signrequests/" + id;
+    	}
+    	if(signRequest.getSignBookId() != 0) {
+    		SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
+    		try {
+    			signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
+    		} catch (EsupSignatureException e) {
+				log.warn(e.getMessage(), e);
+			}
+    	}
+    	signRequestService.updateInfo(signRequest, SignRequestStatus.refused, user);
+        return "redirect:/user/signrequests/";
+    }
+    
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
     public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, Model uiModel) {
     	SignRequest signRequest = SignRequest.findSignRequest(id);
@@ -262,10 +294,12 @@ public class SignRequestController {
     
     @RequestMapping(value = "/send-to-signbook/{id}", method = RequestMethod.GET)
     public String sendToSignBook(@PathVariable("id") Long id, @RequestParam(value = "signBookId", required = false) long signBookId, HttpServletResponse response, RedirectAttributes redirectAttrs, Model model) {
+		String eppn = userService.getEppnFromAuthentication();
+		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	SignRequest signRequest = SignRequest.findSignRequest(id);
     	SignBook signBook = SignBook.findSignBook(signBookId);
     	try {
-			signBookService.importSignRequest(signRequest, signBook);
+			signBookService.importSignRequestInSignBook(signRequest, signBook, user);
 		} catch (EsupSignatureException e) {
 			log.warn(e.getMessage());
 			redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());

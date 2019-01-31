@@ -10,28 +10,34 @@
 			<span class="fa fa-paper-plane"><!--  --></span> Envoyer pour signature
 		</a>
 	</div>
-	<ul role="tablist" id="myTab" class="nav nav-pills navbar-light bg-light">
+	<ul role="tablist" id="myTab" class="nav nav-tabs navbar-light bg-light">
 		<li class="nav-item">
-			<a class="nav-link ${mydocs}" role="tab" aria-controls="mydocs" href="/user/signrequests/">My documents</a>
+			<a class="nav-link ${mydocs}" role="tab" aria-controls="mydocs" href="/user/signrequests/">My documents
+				<c:if test="${nbPedingSignRequests > 0}">
+					<i class="fas fa-exclamation-circle text-primary"><!--  --></i>
+				</c:if>		
+			</a>
 		</li>
 		<li class="nav-item">
 			<a class="nav-link ${tosigndocs}" role="tab" aria-controls="tosigndocs" href="/user/signrequests/?findBy=recipientEmail">
 				To sign documents
 				<c:if test="${nbToSignRequests > 0}">
-					<i class="fas fa-exclamation-circle" style="color:red;"><!--  --></i>
-				</c:if>			</a>
+					<i class="fas fa-exclamation-circle text-danger"><!--  --></i>
+				</c:if>			
+			</a>
 		</li>
 	</ul>
-    <page:list id="pl_org_esupportail_esupsignature_domain_SignRequest" items="${signRequests}" z="user-managed">
+	<br/>
         <table:table data="${signRequests}" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">
             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_name" property="name" z="user-managed"/>
             <table:column date="true" dateTimePattern="${signRequest_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" property="createDate" z="user-managed"/>
             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" property="createBy" z="user-managed"/>
             <table:column render="false" date="true" dateTimePattern="${signRequest_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" property="updateDate" z="user-managed"/>
             <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" property="updateBy" z="user-managed"/>
-            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" z="user-managed"/>
+            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" z="user-managed"/>
+			<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_signBookName" property="signBookName" z="user-managed"/>
             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" property="recipientEmail" z="user-managed"/>
             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed"/>
         </table:table>
-    </page:list>
+    <page:list id="pl_org_esupportail_esupsignature_domain_SignRequest" items="${signRequests}" z="user-managed" />
 </div>

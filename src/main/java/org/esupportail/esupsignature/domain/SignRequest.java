@@ -70,8 +70,13 @@ public class SignRequest {
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<String, String> params = new HashMap<String, String>();
     
+    private long signBookId;
+    
+    @Transient
+    private String signBookName;
+    
 	public enum SignRequestStatus {
-		start, pending, canceled, checked, signed, deleted;
+		start, pending, canceled, checked, signed, refused, deleted;
 	}
 
 	@Transient
@@ -144,6 +149,10 @@ public class SignRequest {
 
     	List<Predicate> predicates = new ArrayList<Predicate>();
 
+        if(!createBy.isEmpty()) {
+        	predicates.add(criteriaBuilder.equal(signRequestRoot.get("createBy"), createBy));
+        }
+    	
         if(!recipientEmail.isEmpty()) {
         	predicates.add(criteriaBuilder.equal(signRequestRoot.get("recipientEmail"), recipientEmail));
         }

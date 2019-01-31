@@ -94,6 +94,22 @@ privileged aspect SignRequest_Roo_JavaBean {
         this.params = params;
     }
     
+    public long SignRequest.getSignBookId() {
+        return this.signBookId;
+    }
+    
+    public void SignRequest.setSignBookId(long signBookId) {
+        this.signBookId = signBookId;
+    }
+    
+    public String SignRequest.getSignBookName() {
+        return this.signBookName;
+    }
+    
+    public void SignRequest.setSignBookName(String signBookName) {
+        this.signBookName = signBookName;
+    }
+    
     public String SignRequest.getSignType() {
         return this.signType;
     }

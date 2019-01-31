@@ -7,10 +7,6 @@
         <div class="row">
 	        <div class="col-lg-6">
 		        <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignBook_name" object="${signbook}" z="user-managed"/>
-		        <field:display date="true" dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignBook_createDate" object="${signbook}" z="user-managed"/>
-		        <field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignBook_createBy" object="${signbook}" z="user-managed"/>
-		        <field:display date="true" dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_SignBook_updateDate" object="${signbook}" z="user-managed"/>
-		        <field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_SignBook_updateBy" object="${signbook}" z="user-managed"/>
 		        <field:display field="description" id="s_org_esupportail_esupsignature_domain_SignBook_description" object="${signbook}" z="user-managed"/>
 		        <field:display field="sourceUserEmail" id="s_org_esupportail_esupsignature_domain_SignBook_sourceUserEmail" object="${signbook}" z="user-managed"/>
 		        <field:display field="sourceType" id="s_org_esupportail_esupsignature_domain_SignBook_sourceType" object="${signbook}" z="user-managed"/>
@@ -80,6 +76,13 @@
 	        </div>
         </div>
         </form>
+        <b>Infos</b>
+        <small>
+			<field:display date="true" dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignBook_createDate" object="${signbook}" z="user-managed"/>
+			<field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignBook_createBy" object="${signbook}" z="user-managed"/>
+			<field:display date="true" dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_SignBook_updateDate" object="${signbook}" z="user-managed"/>
+			<field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_SignBook_updateBy" object="${signbook}" z="user-managed"/>
+		</small>
     </page:show>
     <script language="JavaScript">			
 		var nbImagePage = ${imagePagesSize};

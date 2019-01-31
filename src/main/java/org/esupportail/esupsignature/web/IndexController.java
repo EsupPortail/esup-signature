@@ -46,16 +46,6 @@ public class IndexController {
 			} else {
 				return "redirect:/user/signrequests/";
 			}
-			
-			/*
-			if(request.isUserInRole("ROLE_ADMIN")) {
-				return "redirect:/admin/";
-			} else if(request.isUserInRole("ROLE_MANAGER")) {
-				return "redirect:/manager/";
-			} else {
-				return "redirect:/user";
-			}
-			*/
 		} else {
 			return "index";
 		}

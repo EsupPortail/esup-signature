@@ -127,7 +127,6 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
 		log.debug("Close : Nothing to do with jcifs!");
 		this.root = null;
 	}

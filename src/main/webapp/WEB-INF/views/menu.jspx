@@ -3,7 +3,7 @@
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
     <c:if test="${empty param.numeroId and empty numeroId}">
-        <nav class="nav nav-tabs navbar-expand-sm navbar-light bg-light">
+        <nav class="nav nav-pills navbar-expand-sm navbar-light bg-light">
             <menu:menu id="_menu" z="user-managed">
                 <menu:item id="c_accueil" label="Accueil" menuClass="nav-link" render="false" url="/" z="user-managed"/>
                 <c:if test="${role=='user'}">

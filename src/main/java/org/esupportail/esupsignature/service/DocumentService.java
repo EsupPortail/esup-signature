@@ -19,12 +19,7 @@ public class DocumentService {
 	
 	@Resource
 	private FileService fileService;
-	
-	public Document addFile(Document file) {
-		file.persist();
-		return file;
-    }
-	
+
 	public Document addFile(String base64File, String name, String type) throws IOException {
 		return addFile(fileService.fromBase64Image(base64File, name), name, type);
     }

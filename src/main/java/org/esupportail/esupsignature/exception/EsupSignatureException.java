@@ -11,4 +11,8 @@ public class EsupSignatureException extends Exception {
 		this.message = message;
 	}
 	
+	public EsupSignatureException(String message, Throwable e) {
+		super(message, e);
+		this.message = message;
+	}
 }
