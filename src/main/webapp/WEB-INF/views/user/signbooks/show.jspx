@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:spring="http://www.springframework.org/tags" version="2.0">
+<div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:spring="http://www.springframework.org/tags" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields"  version="2.0">
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
     <page:show delete="false" id="ps_org_esupportail_esupsignature_domain_SignBook" object="${signbook}" path="/user/signbooks" update="false" z="user-managed">
@@ -25,20 +25,45 @@
         <field:display field="signPageNumber" id="s_org_esupportail_esupsignature_domain_SignBook_signPageNumber" object="${signbook}" render="false" z="user-managed"/>
         <field:display field="XPos" id="s_org_esupportail_esupsignature_domain_SignBook_xPos" object="${signbook}" render="false" z="user-managed"/>
         <field:display field="YPos" id="s_org_esupportail_esupsignature_domain_SignBook_yPos" object="${signbook}" render="false" z="user-managed"/>
-        <c:choose>
-            <c:when test="${signbook.sourceType eq 'webform'}">
-                <form action="/user/signbooks/addDoc/${id}" enctype="multipart/form-data" method="post">
-                    <div class="form-group">
-                        <label class="col-lg-3 col-form-label" for="multipartFile">
-                            <strong>Add file</strong>
-                        </label>
-                        <div class="col-lg-9">
-                            <input class="form-control-file" data-buttonText="Choisir fichier" id="multipartFile" name="multipartFile" type="file"/>
-                        </div>
-                        <input alt="Upload" class="btn btn-success" id="Upload" title="Upload" type="submit" value="Upload"/>
-                    </div>
-                </form>
-            </c:when>
-        </c:choose>
+        <br/>
+        <dl class="display-group border-bottom m-0">
+        	<dt class="col-lg-4">New signRequest</dt>
+        	<dd class="col-lg-8">
+		        <form action="/user/signbooks/addDoc/${id}" enctype="multipart/form-data" method="post">
+		            <div class="form-group">
+				        <div class="input-group">
+						  <div class="input-group-prepend">
+						    <span class="input-group-text" id="inputGroupFileAddon01">Add file</span>
+						  </div>
+						  <div class="custom-file">
+				            <input class="custom-file-input" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01"/>
+						    <label class="custom-file-label" id="inputGroupLabel01" for="upload">Choose file</label>
+						  </div>
+							<div class="input-group-append">
+								<input alt="Upload" class="btn btn-success" id="Upload" title="Upload" type="submit" value="Upload"/>
+							</div>
+						</div>
+		            </div>
+		        </form>
+		        <script type="text/javascript">
+		        	document.getElementById("inputGroupFile01").onchange = 
+			        		function(){
+			                var fileName = this.files[0].name;
+			                document.getElementById("inputGroupLabel01").innerHTML = fileName;
+		            	};
+        		</script>
+	        </dd>
+       	</dl>
+     	<table:table data="${signRequests}" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">
+        <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_name" property="name" z="user-managed"/>
+        <table:column date="true" dateTimePattern="${signRequest_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" property="createDate" z="user-managed"/>
+        <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" property="createBy" z="user-managed"/>
+        <table:column render="false" date="true" dateTimePattern="${signRequest_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" property="updateDate" z="user-managed"/>
+        <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" property="updateBy" z="user-managed"/>
+        <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" z="user-managed"/>
+		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_signBookName" property="signBookName" z="user-managed"/>
+        <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" property="recipientEmail" z="user-managed"/>
+        <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed"/>
+     </table:table>
     </page:show>
 </div>

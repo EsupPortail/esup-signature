@@ -20,14 +20,6 @@ privileged aspect SignBook_Roo_JavaBean {
         this.name = name;
     }
     
-    public SignBookType SignBook.getSignBookType() {
-        return this.signBookType;
-    }
-    
-    public void SignBook.setSignBookType(SignBookType signBookType) {
-        this.signBookType = signBookType;
-    }
-    
     public Date SignBook.getCreateDate() {
         return this.createDate;
     }
@@ -68,20 +60,8 @@ privileged aspect SignBook_Roo_JavaBean {
         this.description = description;
     }
     
-    public String SignBook.getSourceUserEmail() {
-        return this.sourceUserEmail;
-    }
-    
-    public void SignBook.setSourceUserEmail(String sourceUserEmail) {
-        this.sourceUserEmail = sourceUserEmail;
-    }
-    
     public DocumentIOType SignBook.getSourceType() {
         return this.sourceType;
-    }
-    
-    public void SignBook.setSourceType(DocumentIOType sourceType) {
-        this.sourceType = sourceType;
     }
     
     public String SignBook.getDocumentsSourceUri() {
@@ -102,10 +82,6 @@ privileged aspect SignBook_Roo_JavaBean {
     
     public DocumentIOType SignBook.getTargetType() {
         return this.targetType;
-    }
-    
-    public void SignBook.setTargetType(DocumentIOType targetType) {
-        this.targetType = targetType;
     }
     
     public String SignBook.getDocumentsTargetUri() {
@@ -138,14 +114,6 @@ privileged aspect SignBook_Roo_JavaBean {
     
     public void SignBook.setParams(Map<String, String> params) {
         this.params = params;
-    }
-    
-    public SignStatus SignBook.getStatus() {
-        return this.status;
-    }
-    
-    public void SignBook.setStatus(SignStatus status) {
-        this.status = status;
     }
     
     public String SignBook.getSignType() {

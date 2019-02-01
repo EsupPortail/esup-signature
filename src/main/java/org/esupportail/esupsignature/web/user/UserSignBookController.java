@@ -2,6 +2,8 @@ package org.esupportail.esupsignature.web.user;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -10,7 +12,6 @@ import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.domain.SignBook.NewPageType;
-import org.esupportail.esupsignature.domain.SignBook.SignBookType;
 import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.service.DocumentService;
@@ -57,7 +58,7 @@ public class UserSignBookController {
     void populateEditForm(Model uiModel, SignBook signBook) {
         uiModel.addAttribute("signBook", signBook);
         uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
-        uiModel.addAttribute("signBookTypes", Arrays.asList(SignBookType.values()));
+        //uiModel.addAttribute("signBookTypes", Arrays.asList(SignBookType.values()));
         uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
         uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));        
         addDateTimeFormatPatterns(uiModel);
@@ -66,9 +67,12 @@ public class UserSignBookController {
     
     @RequestMapping(value = "/{id}", produces = "text/html")
     public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
+		String eppn = userService.getEppnFromAuthentication();
     	addDateTimeFormatPatterns(uiModel);
         SignBook signBook = SignBook.findSignBook(id);
         uiModel.addAttribute("signbook", signBook);
+        List<SignRequest> signRequests = signBook.getSignRequests().stream().filter(signRequest -> eppn.equals(signRequest.getCreateBy())).collect(Collectors.toList());
+        uiModel.addAttribute("signRequests", signRequests);
         uiModel.addAttribute("itemId", id);
         uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());
         return "user/signbooks/show";
@@ -77,12 +81,18 @@ public class UserSignBookController {
     @RequestMapping(value = "/addDoc/{id}", method = RequestMethod.POST)
     public String addDoc(@PathVariable("id") Long id,
     		@RequestParam("multipartFile") MultipartFile multipartFile, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) throws IOException {
-		String eppn = userService.getEppnFromAuthentication();
-		SignBook signBook = SignBook.findSignBook(id);
 		Document documentToAdd = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
-		SignRequest signRequest = signRequestService.createSignRequest(eppn, documentToAdd, new HashMap<String, String>(signBook.getParams()), signBook.getRecipientEmail());
-        signBook.getSignRequests().add(signRequest);
-        signBook.persist();
+    	if(documentToAdd != null) {
+	    	String eppn = userService.getEppnFromAuthentication();
+			SignBook signBook = SignBook.findSignBook(id);
+
+			SignRequest signRequest = signRequestService.createSignRequest(eppn, documentToAdd, new HashMap<String, String>(signBook.getParams()), signBook.getRecipientEmail());
+	        signBook.getSignRequests().add(signRequest);
+	        signBook.persist();
+		} else {
+			redirectAttrs.addFlashAttribute("messageCustom", "file is required");
+		}
+		
 	    return "redirect:/user/signbooks/" + id;
     }
     

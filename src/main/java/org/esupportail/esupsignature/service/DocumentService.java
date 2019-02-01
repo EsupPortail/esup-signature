@@ -30,7 +30,10 @@ public class DocumentService {
     }
 	
 	public Document addFile(MultipartFile multipartFile, String name) throws IOException {
-		return addFile(multipartFile.getInputStream(), name, multipartFile.getSize(), multipartFile.getContentType());
+		if ((multipartFile != null) && !multipartFile.isEmpty()) {
+			return addFile(multipartFile.getInputStream(), name, multipartFile.getSize(), multipartFile.getContentType());
+		}
+		return null;
     }
 	
 	public Document addFile(InputStream inputStream, String name, long size, String contentType) throws IOException {

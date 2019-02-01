@@ -5,9 +5,9 @@
     <form:create multipart="true" id="fc_org_esupportail_esupsignature_domain_SignBook" modelAttribute="signBook" path="/manager/signbooks" render="${empty dependencies}" z="user-managed">
         <div class="row">
             <div class="col-lg-6">
-                <field:input cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignBook_name" z="user-managed"/>
-                <field:select checkboxes="false" cssClass="form-control" field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" items="${signBookTypes}" multiple="false" path="/signrequests" size="1" z="user-managed"/>
-                <field:input field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" render="false" z="user-mamaged"/>
+                <field:input autocomplete="false" required="true" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignBook_name" z="user-managed"/>
+                <field:input required="true" cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" z="user-managed"/>
+                <field:select render="false" checkboxes="false" cssClass="form-control" field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" items="${signBookTypes}" multiple="false" path="/signrequests" size="1" z="user-managed"/>
                 <field:datetime dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="c_org_esupportail_esupsignature_domain_SignBook_createDate" render="false" z="user-managed"/>
                 <field:input field="createBy" id="c_org_esupportail_esupsignature_domain_SignBook_createBy" render="false" z="user-managed"/>
                 <field:datetime dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_SignBook_updateDate" render="false" z="user-managed"/>
@@ -19,7 +19,6 @@
                 <field:select checkboxes="false" cssClass="form-control" field="targetType" id="c_org_esupportail_esupsignature_domain_SignBook_targetType" items="${sourceTypes}" multiple="false" path="/signrequests" size="1" z="user-managed"/>
                 <field:input field="targetType" id="c_org_esupportail_esupsignature_domain_SignBook_targetType" render="false" z="user-managed"/>
                 <field:input cssClass="form-control" field="documentsTargetUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" z="user-managed"/>
-                <field:input cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" z="user-managed"/>
                 <field:select field="signRequests" id="c_org_esupportail_esupsignature_domain_SignBook_signRequests" itemValue="id" items="${signrequests}" multiple="true" path="/signrequests" render="false" z="user-managed"/>
                 <field:input field="params" id="c_org_esupportail_esupsignature_domain_SignBook_params" render="false" z="user-managed"/>
                 <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignBook_status" render="false" z="user-managed"/>
@@ -33,7 +32,7 @@
 			           <strong>Model file</strong>
 			       </label>
 			       <div class="col-lg-9">
-			           <input class="form-control-file" data-buttonText="Choisir fichier" id="multipartFile" name="multipartFile" type="file"/>
+			           <input required="required" class="form-control-file" data-buttonText="Choisir fichier" id="multipartFile" name="multipartFile" type="file"/>
 			       </div>
 			   </div>
             </div>

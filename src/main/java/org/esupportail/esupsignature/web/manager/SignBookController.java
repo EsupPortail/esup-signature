@@ -1,4 +1,5 @@
 package org.esupportail.esupsignature.web.manager;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
@@ -14,7 +15,6 @@ import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.domain.SignBook.NewPageType;
-import org.esupportail.esupsignature.domain.SignBook.SignBookType;
 import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.User;
@@ -48,40 +48,59 @@ public class SignBookController {
 	public String getActiveMenu() {
 		return "manager/signbooks";
 	}
-	
+
 	@Resource
 	UserService userService;
-	
+
 	@Resource
 	DocumentService documentService;
-	
+
 	@Resource
 	PdfService pdfService;
+
+	void populateEditForm(Model uiModel, SignBook signBook) {
+		signBook.setSignType(signBook.getParams().get("signType"));
+		signBook.setNewPageType(signBook.getParams().get("newPageType"));
+		uiModel.addAttribute("signBook", signBook);
+		uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
+		// uiModel.addAttribute("signBookTypes",
+		// Arrays.asList(SignBookType.values()));
+		uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
+		uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
+		addDateTimeFormatPatterns(uiModel);
+		uiModel.addAttribute("signrequests", SignRequest.findAllSignRequests());
+	}
 	
-    void populateEditForm(Model uiModel, SignBook signBook) {
-        uiModel.addAttribute("signBook", signBook);
-        uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
-        uiModel.addAttribute("signBookTypes", Arrays.asList(SignBookType.values()));
-        uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
-        uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));        
-        addDateTimeFormatPatterns(uiModel);
-        uiModel.addAttribute("signrequests", SignRequest.findAllSignRequests());
-    }
-    
-    @RequestMapping(method = RequestMethod.POST, produces = "text/html")
-    public String create(@Valid SignBook signBook, @RequestParam("multipartFile") MultipartFile multipartFile, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
-        if (bindingResult.hasErrors()) {
-            populateEditForm(uiModel, signBook);
-            return "manager/signbooks/create";
-        }
-    
-        String eppn = userService.getEppnFromAuthentication();
-        try {
-        	signBook.setCreateBy(eppn);
-        	signBook.setCreateDate(new Date());
-        	if(multipartFile != null) {
-        		signBook.setModelFile(documentService.addFile(multipartFile, multipartFile.getOriginalFilename()));
-        	}
+	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
+	public String create(@Valid SignBook signBook, @RequestParam("multipartFile") MultipartFile multipartFile,
+			BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) throws IOException {
+		if (bindingResult.hasErrors()) {
+			populateEditForm(uiModel, signBook);
+			return "manager/signbooks/create";
+		}
+		String eppn = userService.getEppnFromAuthentication();
+		SignBook signBookToUpdate = null;
+		signBookToUpdate = SignBook.findSignBook(signBook.getId());
+		if (signBookToUpdate != null) {
+			signBookToUpdate.setName(signBook.getName());
+			signBookToUpdate.setRecipientEmail(signBook.getRecipientEmail());
+			signBookToUpdate.setDocumentsSourceUri(signBook.getDocumentsSourceUri());
+			signBookToUpdate.setSourceType(signBook.getSourceType());
+			signBookToUpdate.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
+			signBookToUpdate.setTargetType(signBook.getTargetType());
+			signBookToUpdate.getParams().put("signType", signBook.getSignType());
+			signBookToUpdate.getParams().put("newPageType", signBook.getNewPageType());
+			Document newModel = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
+			if(newModel != null) {
+				Document oldModel = signBookToUpdate.getModelFile();
+				signBookToUpdate.setModelFile(newModel);
+				oldModel.remove();
+			}
+			signBookToUpdate.merge();
+		} else {
+			signBook.setCreateBy(eppn);
+			signBook.setCreateDate(new Date());
+			signBook.setModelFile(documentService.addFile(multipartFile, multipartFile.getOriginalFilename()));
 			Map<String, String> params = new HashMap<>();
 			params.put("signType", signBook.getSignType());
 			params.put("newPageType", signBook.getNewPageType());
@@ -90,70 +109,74 @@ public class SignBookController {
 			params.put("yPos", "0");
 			signBook.setParams(params);
 			signBook.persist();
-        } catch (IOException e) {
-        	log.error("Create file error", e);
 		}
-        uiModel.asMap().clear();
-        signBook.persist();
-        return "redirect:/manager/signbooks/" + encodeUrlPathSegment(signBook.getId().toString(), httpServletRequest);
-    }
-    
-    @RequestMapping(value = "/{id}", produces = "text/html")
-    public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
-        addDateTimeFormatPatterns(uiModel);
-        SignBook signBook = SignBook.findSignBook(id);
-        Document modelFile = signBook.getModelFile();
-        if(modelFile.getSize() > 0) {
-        	uiModel.addAttribute("imagePagesSize", pdfService.getTotalNumberOfPages(modelFile.getBigFile().toJavaIoFile()));
-            uiModel.addAttribute("documentId", modelFile.getId());
-        }
-        
-        uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());
-        uiModel.addAttribute("signbook", signBook);
-        uiModel.addAttribute("itemId", id);
-        return "manager/signbooks/show";
-    }
-    
-    @RequestMapping(value = "/updateParams/{id}", method = RequestMethod.POST)
-    public String updateParams(@PathVariable("id") Long id, 
-    		@RequestParam(value = "xPos", required=true) int xPos,
-    		@RequestParam(value = "yPos", required=true) int yPos,
-    		@RequestParam(value = "signPageNumber", required=true) int signPageNumber, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
+		uiModel.asMap().clear();
+		return "redirect:/manager/signbooks/" + encodeUrlPathSegment(signBook.getId().toString(), httpServletRequest);
+	}
+
+	@RequestMapping(value = "/{id}", produces = "text/html")
+	public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
+		addDateTimeFormatPatterns(uiModel);
+		SignBook signBook = SignBook.findSignBook(id);
+		Document modelFile = signBook.getModelFile();
+		if (modelFile.getSize() > 0) {
+			uiModel.addAttribute("imagePagesSize",
+					pdfService.getTotalNumberOfPages(modelFile.getBigFile().toJavaIoFile()));
+			uiModel.addAttribute("documentId", modelFile.getId());
+		}
+
+		uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());
+		uiModel.addAttribute("signbook", signBook);
+		uiModel.addAttribute("itemId", id);
+		return "manager/signbooks/show";
+	}
+
+	@RequestMapping(value = "/updateParams/{id}", method = RequestMethod.POST)
+	public String updateParams(@PathVariable("id") Long id, @RequestParam(value = "xPos", required = true) int xPos,
+			@RequestParam(value = "yPos", required = true) int yPos,
+			@RequestParam(value = "signPageNumber", required = true) int signPageNumber,
+			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		SignBook signBook = SignBook.findSignBook(id);
 
-		if(!signBook.getCreateBy().equals(user.getEppn())) {
-        	redirectAttrs.addFlashAttribute("messageCustom", "access error");
-    		return "redirect:/manager/signbooks/" + id;
-    	}
+		if (!signBook.getCreateBy().equals(user.getEppn())) {
+			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+			return "redirect:/manager/signbooks/" + id;
+		}
 
 		Map<String, String> params = signBook.getParams();
-    	params.put("signPageNumber", String.valueOf(signPageNumber));
+		params.put("signPageNumber", String.valueOf(signPageNumber));
 		params.put("xPos", String.valueOf(xPos));
 		params.put("yPos", String.valueOf(yPos));
 		signBook.setParams(params);
-	    signBook.setUpdateBy(eppn);
-	    signBook.setUpdateDate(new Date());
+		signBook.setUpdateBy(eppn);
+		signBook.setUpdateDate(new Date());
 
-	    return "redirect:/manager/signbooks/" + id;
-    }
-    
-    @RequestMapping(produces = "text/html")
-    public String list(@RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, @RequestParam(value = "sortFieldName", required = false) String sortFieldName, @RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
-    	String eppn = userService.getEppnFromAuthentication();
-        if (page != null || size != null) {
-            int sizeNo = size == null ? 10 : size.intValue();
-            final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
-            uiModel.addAttribute("signbooks", SignBook.findSignBooksByCreateByEquals(eppn, sortFieldName, sortOrder).getResultList());
-            float nrOfPages = (float) SignBook.countSignBooks() / sizeNo;
-            uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
-        } else {
-            uiModel.addAttribute("signbooks", SignBook.findSignBooksByCreateByEquals(eppn, sortFieldName, sortOrder).getResultList());
-        }
-        addDateTimeFormatPatterns(uiModel);
-        return "manager/signbooks/list";
-    }
-    
-    //TODO : Update
+		return "redirect:/manager/signbooks/" + id;
+	}
+
+	@RequestMapping(produces = "text/html")
+	public String list(@RequestParam(value = "page", required = false) Integer page,
+			@RequestParam(value = "size", required = false) Integer size,
+			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
+			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
+		String eppn = userService.getEppnFromAuthentication();
+		if (page != null || size != null) {
+			int sizeNo = size == null ? 10 : size.intValue();
+			final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
+			uiModel.addAttribute("signbooks",
+					SignBook.findSignBooksByCreateByEquals(eppn, sortFieldName, sortOrder).getResultList());
+			float nrOfPages = (float) SignBook.countSignBooks() / sizeNo;
+			uiModel.addAttribute("maxPages",
+					(int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
+		} else {
+			uiModel.addAttribute("signbooks",
+					SignBook.findSignBooksByCreateByEquals(eppn, sortFieldName, sortOrder).getResultList());
+		}
+		addDateTimeFormatPatterns(uiModel);
+		return "manager/signbooks/list";
+	}
+
+	// TODO : Update
 }

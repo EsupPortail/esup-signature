@@ -29,10 +29,10 @@ import org.springframework.roo.addon.tostring.RooToString;
 public class SignBook {
 
 	String name;
-	
+	/*
 	@Enumerated(EnumType.STRING)
 	private SignBookType signBookType;
-	
+	*/
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
@@ -47,8 +47,6 @@ public class SignBook {
     
     @Size(max = 500)
     private String description;
-    
-    private String sourceUserEmail;
     
     @Enumerated(EnumType.STRING)
     private DocumentIOType sourceType;
@@ -70,11 +68,8 @@ public class SignBook {
 
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<String, String> params = new HashMap<String, String>();
-    
-    @Enumerated(EnumType.STRING)
-	private SignStatus status;	
-
-	@Transient
+	
+    @Transient
 	private String signType;
     
 	@Transient
@@ -97,16 +92,20 @@ public class SignBook {
 	public enum NewPageType {
 		none, onBegin, onEnd;
 	}
-
+/*
 	public enum SignBookType {
 		oneShot, fixedParams, fixedIO, fixedParamsAndIO, custom;
 	}
-	
-	public enum SignStatus {
-		start, pending, canceled, checked, signed, deleted;
-	}
-	
+	*/
     public enum DocumentIOType {
 		webform, cifs, vfs, opencmis, mail;
 	}
+    
+    public void setSourceType(DocumentIOType sourceType) {
+        this.sourceType = sourceType;
+    }
+    
+    public void setTargetType(DocumentIOType targetType) {
+        this.targetType = targetType;
+    }
 }

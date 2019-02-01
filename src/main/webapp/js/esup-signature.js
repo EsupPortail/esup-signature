@@ -17,6 +17,15 @@
  */
 document.addEventListener('DOMContentLoaded', function() {
 	
+	var inputFile = document.getElementById("inputGroupFile01");
+	if(inputFile != null) {
+		inputFile.onchange = 
+    		function(){
+            var fileName = this.files[0].name;
+            document.getElementById("inputGroupLabel01").innerHTML = fileName;
+    	};
+	}
+	
 	//Messages modal
 	var dialogMsg = document.querySelector('#messageModal #dialog');
 	if(dialogMsg != null){
