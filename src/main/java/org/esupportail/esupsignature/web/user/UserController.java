@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature.web.user;
 
 import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -74,12 +76,13 @@ public class UserController {
     }
     
     @RequestMapping(params = "form", produces = "text/html")
-    public String createForm(Model uiModel) {
+    public String createForm(Model uiModel) throws IOException, SQLException {
 		String eppn = userService.getEppnFromAuthentication();
 		User user;
 		if(User.countFindUsersByEppnEquals(eppn) > 0) {
 			user = User.findUsersByEppnEquals(eppn).getSingleResult();
 	        uiModel.addAttribute("user", user);
+	    	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 		} else {
 			user = new User();
 		}
