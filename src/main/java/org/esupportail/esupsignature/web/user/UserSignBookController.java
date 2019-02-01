@@ -85,10 +85,11 @@ public class UserSignBookController {
     	if(documentToAdd != null) {
 	    	String eppn = userService.getEppnFromAuthentication();
 			SignBook signBook = SignBook.findSignBook(id);
-
 			SignRequest signRequest = signRequestService.createSignRequest(eppn, documentToAdd, new HashMap<String, String>(signBook.getParams()), signBook.getRecipientEmail());
 	        signBook.getSignRequests().add(signRequest);
 	        signBook.persist();
+	        signRequest.setSignBookId(signBook.getId());
+	        signRequest.merge();
 		} else {
 			redirectAttrs.addFlashAttribute("messageCustom", "file is required");
 		}

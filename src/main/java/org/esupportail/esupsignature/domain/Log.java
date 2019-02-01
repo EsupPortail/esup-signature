@@ -15,5 +15,7 @@ public class Log {
 	
 	private String eppn;
 	
+	private long signRequestId;
+	
 	//TODO : Logger tout au lieu de createdate et createby
 }

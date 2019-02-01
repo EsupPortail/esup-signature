@@ -127,10 +127,10 @@ public class SignRequestController {
         uiModel.addAttribute("maxPages", (int) 1);
         return "user/signrequests/list";
     }
-    
+   
     @RequestMapping(value = "/{id}", produces = "text/html")
     public String show(@PathVariable("id") Long id, Model uiModel) throws SQLException, IOException, Exception {
-		String eppn = userService.getEppnFromAuthentication();
+    	String eppn = userService.getEppnFromAuthentication();
     	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		addDateTimeFormatPatterns(uiModel);
         SignRequest signRequest = SignRequest.findSignRequest(id);
@@ -151,13 +151,14 @@ public class SignRequestController {
 	        uiModel.addAttribute("itemId", id);
 	        uiModel.addAttribute("imagePagesSize", pdfService.getTotalNumberOfPages(toConvertFile.getBigFile().toJavaIoFile()));
 	        uiModel.addAttribute("documentId", toConvertFile.getId());
-	    	if(signRequest.getCreateBy().equals(user.getEppn()) && signRequest.getRecipientEmail() != null) {
+	    	if(signRequest.getCreateBy().equals(user.getEppn()) && signRequest.getRecipientEmail() != null && !user.getEmail().equals(signRequest.getRecipientEmail())) {
 	    		uiModel.addAttribute("signable", "ko");
 	    	} else {
 	    		uiModel.addAttribute("signable", "ok");
 	    	}
 	        return "user/signrequests/show";
         } else {
+        	log.warn(eppn +" attempted to access signRequest " + id + " without write access");
         	return "redirect:/user/signrequests/";
         }
     }
@@ -259,6 +260,11 @@ public class SignRequestController {
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
     public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, Model uiModel) {
     	SignRequest signRequest = SignRequest.findSignRequest(id);
+    	SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
+    	if(signBook != null) {
+    		signBook.getSignRequests().remove(signRequest);
+    		signBook.merge();
+    	}
         signRequest.remove();
         uiModel.asMap().clear();
         uiModel.addAttribute("page", (page == null) ? "1" : page.toString());

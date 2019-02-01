@@ -82,7 +82,9 @@ public class UserController {
 		if(User.countFindUsersByEppnEquals(eppn) > 0) {
 			user = User.findUsersByEppnEquals(eppn).getSingleResult();
 	        uiModel.addAttribute("user", user);
-	    	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+	        if(user.getSignImage().getBigFile().getBinaryFile() != null) {
+	        	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+	        }
 		} else {
 			user = new User();
 		}

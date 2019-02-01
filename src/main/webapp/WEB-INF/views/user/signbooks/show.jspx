@@ -45,13 +45,6 @@
 						</div>
 		            </div>
 		        </form>
-		        <script type="text/javascript">
-		        	document.getElementById("inputGroupFile01").onchange = 
-			        		function(){
-			                var fileName = this.files[0].name;
-			                document.getElementById("inputGroupLabel01").innerHTML = fileName;
-		            	};
-        		</script>
 	        </dd>
        	</dl>
      	<table:table data="${signRequests}" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">

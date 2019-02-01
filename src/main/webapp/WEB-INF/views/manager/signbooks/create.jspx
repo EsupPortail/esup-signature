@@ -27,14 +27,16 @@
             <div class="col-lg-6">
                 <field:select checkboxes="false" cssClass="form-control" field="signType" id="c_org_esupportail_esupsignature_domain_SignBook_signType" items="${signTypes}" multiple="false" path="/" size="1" z="user-managed"/>
                 <field:select checkboxes="false" cssClass="form-control" field="newPageType" id="c_org_esupportail_esupsignature_domain_SignBook_newPageType" items="${newPageTypes}" multiple="false" path="/" size="1" z="user-managed"/>
-				<div class="form-group">
-			       <label class="col-lg-3 col-form-label" for="name">
-			           <strong>Model file</strong>
-			       </label>
-			       <div class="col-lg-9">
-			           <input required="required" class="form-control-file" data-buttonText="Choisir fichier" id="multipartFile" name="multipartFile" type="file"/>
-			       </div>
-			   </div>
+			<div class="form-group">
+			<label class="col-lg-3  col-form-label" for="newPageType"><strong>Add model</strong></label>
+			<div class="col-lg-9">
+				<div class="input-group">
+					<div class="custom-file">
+						<input required="required" class="custom-file-input" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01" /> <label class="custom-file-label" id="inputGroupLabel01" for="upload">Choose file</label>
+					</div>
+				</div>
+			</div>
+		</div>
             </div>
         </div>
         <field:input render="false" field="signPageNumber" id="c_org_esupportail_esupsignature_domain_SignBook_signPageNumber" z="user-managed"/>
