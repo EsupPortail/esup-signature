@@ -62,9 +62,9 @@
 			<div class="col-lg-8">
 				<div class="row">
 					<div class="col-lg-7">
-						<input type="button" id="previous" onclick="previousImage()" value="previous" />
+						<input type="button" class="btn btn-outline-dark" id="previous" onclick="previousImage()" value="previous" />
 						<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
-						<input type="button" id="next" onclick="nextImage()" value="next" />
+						<input type="button" class="btn btn-outline-dark float-right" id="next" onclick="nextImage()" value="next" />
 						<div id="pointer_div" onclick="point_it(event)" style="background-size: 595px;background-image:url('${documentUrl}/${signRequest.params.signPageNumber -1}');width:595px;height:842px;border:1px solid #CCC;">
 							<c:if test="${signable eq 'ok' and empty signRequest.signedFile}">
 								<i id="cross" style="left:${signRequest.params.xPos};top:${signRequest.params.yPos};position:relative;z-index:2;"> <img alt="signature" src="data:image/jpg;base64, ${signFile}" width="100" height="75" />
@@ -92,26 +92,15 @@
 											<dd>
 												Sign type : ${signRequest.params.signType} <br /> Add page : ${signRequest.params.newPageType} <br /> on page : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.signPageNumber}" id="signPageNumber" type="text" name="signPageNumber" /> <br /> X position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.xPos}" id="xPos" type="text" name="xPos" /> <br /> Y position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.yPos}" id="yPos" type="text" name="yPos" />
 												<script language="JavaScript">
-													function point_it(event) {
-														pos_x = event.offsetX ? (event.offsetX)
-																: event.pageX
-																		- document
-																				.getElementById("pointer_div").offsetLeft;
-														pos_y = event.offsetY ? (event.offsetY)
-																: event.pageY
-																		- document
-																				.getElementById("pointer_div").offsetTop;
-														document
-																.getElementById("cross").style.left = (pos_x - 10);
-														document
-																.getElementById("cross").style.top = (pos_y - 10);
-														document
-																.getElementById("cross").style.visibility = "visible";
-														document
-																.getElementById("xPos").value = pos_x;
-														document
-																.getElementById("yPos").value = pos_y - 5;
-													}
+												function point_it(event){
+													pos_x = event.offsetX?(event.offsetX):event.pageX-document.getElementById("pointer_div").offsetLeft;
+													pos_y = event.offsetY?(event.offsetY):event.pageY-document.getElementById("pointer_div").offsetTop;
+													document.getElementById("cross").style.left = (pos_x) ;
+													document.getElementById("cross").style.top = (pos_y) ;
+													document.getElementById("cross").style.visibility = "visible" ;
+													document.command.xPos.value = pos_x;
+													document.command.yPos.value = pos_y;
+												}
 												</script>
 											</dd>
 										</small>
@@ -203,15 +192,8 @@
 		</div>
 	</page:show>
 	<script language="JavaScript">
-		var nbImagePage = $
-		{
-			imagePagesSize
-		};
-		var currentImagePage = $
-		{
-			signRequest.params.signPageNumber
-		}
-		-1;
+		var nbImagePage = ${imagePagesSize};
+		var currentImagePage = ${signRequest.params.signPageNumber} - 1;
 		if (currentImagePage == 0) {
 			document.getElementById("previous").disabled = true;
 		}
@@ -222,8 +204,7 @@
 
 		function nextImage() {
 			currentImagePage++;
-			document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/"
-					+ currentImagePage + "')";
+			document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/" + currentImagePage + "')";
 			if (currentImagePage == nbImagePage - 1) {
 				document.getElementById("next").disabled = true;
 			}
@@ -235,8 +216,7 @@
 
 		function previousImage() {
 			currentImagePage--;
-			document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/"
-					+ currentImagePage + "')";
+			document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/" + currentImagePage + "')";
 			if (currentImagePage == 0) {
 				document.getElementById("previous").disabled = true;
 			}

@@ -46,9 +46,9 @@
 				</script>
 				<div class="row">
 				<div class="col-lg-9">
-					<input type="button" id="previous" onclick="previousImage()" value="previous" />
+					<input type="button" class="btn btn-outline-dark" id="previous" onclick="previousImage()" value="previous" />
 					<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl"/>
-					<input type="button" id="next" onclick="nextImage()" value="next" />
+					<input type="button" class="btn btn-outline-dark float-right" id="next" onclick="nextImage()" value="next" />
 					<div id="pointer_div" onclick="point_it(event)" style="background-size: 595px;background-image:url('${documentUrl}/${signbook.params.signPageNumber -1}');width:595px;height:842px;border:1px solid #CCC;">
 						<i id="cross" style="left:${signbook.params.xPos};top:${signbook.params.yPos};position:relative;z-index:2;">
 							<div alt="signature" style="width:100px;height:75px;border:1px solid #000;background-color: gray;text-align: center;opacity: 0.7;">	
