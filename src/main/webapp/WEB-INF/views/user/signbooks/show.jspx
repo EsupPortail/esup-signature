@@ -25,6 +25,16 @@
         <field:display field="signPageNumber" id="s_org_esupportail_esupsignature_domain_SignBook_signPageNumber" object="${signbook}" render="false" z="user-managed"/>
         <field:display field="XPos" id="s_org_esupportail_esupsignature_domain_SignBook_xPos" object="${signbook}" render="false" z="user-managed"/>
         <field:display field="YPos" id="s_org_esupportail_esupsignature_domain_SignBook_yPos" object="${signbook}" render="false" z="user-managed"/>
+        <dl class="display-group border-bottom m-0">
+			<dt class="col-lg-4">Download model</dt>
+			<dd>
+				<spring:url value="/user/signbooks/get-model-file/${id}" var="modelFileUrl" />
+				<button type="button" class="btn btn-primary" onclick="location.href='${modelFileUrl}'">
+					<i class="fas fa-download"> <!--  -->
+					</i> Download
+				</button>
+			</dd>
+		</dl>
         <br/>
         <dl class="display-group border-bottom m-0">
         	<dt class="col-lg-4">New signRequest</dt>

@@ -9,6 +9,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
@@ -24,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.roo.addon.web.mvc.controller.scaffold.RooWebScaffold;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,6 +38,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/user/signbooks")
 @Controller
 @RooWebScaffold(path = "user/signbooks", formBackingObject = SignBook.class)
+@Transactional
 public class UserSignBookController {
 
 	private static final Logger log = LoggerFactory.getLogger(UserSignBookController.class);
@@ -101,4 +104,16 @@ public class UserSignBookController {
 	    return "redirect:/user/signbooks/" + id;
     }
     
+    @RequestMapping(value = "/get-model-file/{id}", method = RequestMethod.GET)
+    public void getModelFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
+    	SignBook signBook = SignBook.findSignBook(id);
+        Document file = signBook.getModelFile();
+        try {
+            response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
+            response.setContentType(file.getContentType());
+            IOUtils.copy(file.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+        } catch (Exception e) {
+            log.error("get file error", e);
+        }
+    }
 }

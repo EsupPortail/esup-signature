@@ -29,6 +29,7 @@
                <menu:category activeMenu="${role=='user'}" id="c_user" label="User" z="user-managed">
 	  			<menu:item menuClass="dropdown-item" id="settings" label="Settings" url="/user/users/" activeMenu="${active=='user'}"/>
 	  			<menu:item menuClass="dropdown-item" id="signrequests" label="My documents" url="/user/signrequests/" activeMenu="${active=='user'}"/>
+	  			<menu:item menuClass="dropdown-item" id="signrequests" label="Signbooks" url="/user/signbooks/" activeMenu="${active=='user'}"/>
                </menu:category>
            </sec:authorize>
            <sec:authorize access="hasRole('ROLE_ADMIN')">            
