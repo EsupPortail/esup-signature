@@ -220,7 +220,7 @@ public class SignRequestController {
    			signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
    	    	if(signBook.getTargetType().equals(DocumentIOType.cifs)) {
    	    		try {
-   					cifsAccessImpl.putFile(signBook.getDocumentsTargetUri(), signRequest.getSignedFile().getFileName(), in, user, null);
+   					cifsAccessImpl.putFile("/" + signBook.getDocumentsTargetUri() + "/", signRequest.getSignedFile().getFileName(), in, user, null);
    				} catch (Exception e) {
    					log.error("cifs copy file error", e);
    					throw new EsupSignatureException("cifs copy file error", e);

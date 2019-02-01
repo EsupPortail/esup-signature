@@ -34,7 +34,7 @@ public class SignRequestService {
 	public SignRequest createSignRequest(String eppn, Document document, Map<String, String> params, String recipientEmail) {
 		
 		SignRequest signRequest = new SignRequest();
-		signRequest.setName(eppn + "-" + document.getFileName());
+		signRequest.setName(document.getFileName());
     	signRequest.setCreateBy(eppn);
     	signRequest.setCreateDate(new Date());
 		signRequest.setOriginalFile(document);
@@ -68,7 +68,7 @@ public class SignRequestService {
 				params.put("xPos", String.valueOf(xPos));
 				params.put("yPos", String.valueOf(yPos));
 				signRequest.setParams(params);
-				signRequest.setSignedFile(documentService.addFile(signedFile, signType + "-signed-" + signRequest.getOriginalFile().getFileName(), "application/pdf"));
+				signRequest.setSignedFile(documentService.addFile(signedFile, "signed_by_" + user.getEppn() + "_" + signRequest.getName(), "application/pdf"));
 				updateInfo(signRequest, SignRequestStatus.signed, user);
 	        }
         } catch (IOException e) {
