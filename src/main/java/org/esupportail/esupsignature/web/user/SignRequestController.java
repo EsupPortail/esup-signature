@@ -16,6 +16,7 @@ import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
+import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.domain.SignBook.NewPageType;
@@ -145,6 +146,7 @@ public class SignRequestController {
         	if(SignBook.findSignBook(signRequest.getSignBookId()) != null ) {
         		uiModel.addAttribute("inSignBookName", SignBook.findSignBook(signRequest.getSignBookId()).getName());
         	}
+        	uiModel.addAttribute("logs", Log.findLogsBySignRequestIdEquals(signRequest.getId()).getResultList());
         	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
         	uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 	        uiModel.addAttribute("signRequest", signRequest);
@@ -164,7 +166,7 @@ public class SignRequestController {
     }
     
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
-    public String create(@Valid SignRequest signRequest, @RequestParam("multipartFile") MultipartFile multipartFile, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
+    public String create(@Valid SignRequest signRequest, @RequestParam("multipartFile") MultipartFile multipartFile, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest, HttpServletRequest request) {
         if (bindingResult.hasErrors()) {
             uiModel.addAttribute("signRequest", signRequest);
             uiModel.addAttribute("recipientEmail", false);
@@ -172,7 +174,8 @@ public class SignRequestController {
         }
         uiModel.asMap().clear();
         String eppn = userService.getEppnFromAuthentication();
-		
+		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		user.setIp(request.getRemoteAddr());
         Map<String, String> params = new HashMap<>();
 		params.put("signType", signRequest.getSignType());
 		params.put("newPageType", signRequest.getNewPageType());
@@ -182,7 +185,7 @@ public class SignRequestController {
 
 		try {
 			Document document = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
-			signRequest = signRequestService.createSignRequest(eppn, document, params, signRequest.getRecipientEmail());
+			signRequest = signRequestService.createSignRequest(user, document, params, signRequest.getRecipientEmail());
 
 		} catch (IOException e) {
 			log.error("error to add file : " + multipartFile.getOriginalFilename(), e);
@@ -196,9 +199,10 @@ public class SignRequestController {
     		@RequestParam(value = "xPos", required=true) int xPos,
     		@RequestParam(value = "yPos", required=true) int yPos,
     		@RequestParam(value = "signPageNumber", required=true) int signPageNumber,
-    		@RequestParam(value = "password", required=false) String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) throws SQLException, EsupSignatureException, FileNotFoundException {
+    		@RequestParam(value = "password", required=false) String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) throws SQLException, EsupSignatureException, FileNotFoundException {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		user.setIp(request.getRemoteAddr());
     	SignRequest signRequest = SignRequest.findSignRequest(id);
 
     	if((signRequest.getCreateBy().equals(user.getEppn()) && signRequest.getRecipientEmail() != null) 
@@ -234,9 +238,10 @@ public class SignRequestController {
     }
 	
     @RequestMapping(value = "/refuse/{id}")
-    public String signdoc(@PathVariable("id") Long id, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) throws SQLException {
+    public String signdoc(@PathVariable("id") Long id, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) throws SQLException {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		user.setIp(request.getRemoteAddr());
     	SignRequest signRequest = SignRequest.findSignRequest(id);
 
     	if((signRequest.getCreateBy().equals(user.getEppn()) && signRequest.getRecipientEmail() != null) 
@@ -253,7 +258,7 @@ public class SignRequestController {
 				log.warn(e.getMessage(), e);
 			}
     	}
-    	signRequestService.updateInfo(signRequest, SignRequestStatus.refused, user);
+    	signRequestService.updateInfo(signRequest, SignRequestStatus.refused, "documentRefused", user, "SUCCESS");
         return "redirect:/user/signrequests/";
     }
     
@@ -299,9 +304,10 @@ public class SignRequestController {
     }    
     
     @RequestMapping(value = "/send-to-signbook/{id}", method = RequestMethod.GET)
-    public String sendToSignBook(@PathVariable("id") Long id, @RequestParam(value = "signBookId", required = false) long signBookId, HttpServletResponse response, RedirectAttributes redirectAttrs, Model model) {
+    public String sendToSignBook(@PathVariable("id") Long id, @RequestParam(value = "signBookId", required = false) long signBookId, HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		user.setIp(request.getRemoteAddr());
     	SignRequest signRequest = SignRequest.findSignRequest(id);
     	SignBook signBook = SignBook.findSignBook(signBookId);
     	try {

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.esupportail.esupsignature.domain.Document;
@@ -14,6 +15,7 @@ import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.domain.SignBook.NewPageType;
 import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
+import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -80,12 +82,14 @@ public class UserSignBookController {
 
     @RequestMapping(value = "/addDoc/{id}", method = RequestMethod.POST)
     public String addDoc(@PathVariable("id") Long id,
-    		@RequestParam("multipartFile") MultipartFile multipartFile, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) throws IOException {
+    		@RequestParam("multipartFile") MultipartFile multipartFile, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) throws IOException {
 		Document documentToAdd = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
     	if(documentToAdd != null) {
 	    	String eppn = userService.getEppnFromAuthentication();
+	    	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+	    	user.setIp(request.getRemoteAddr());
 			SignBook signBook = SignBook.findSignBook(id);
-			SignRequest signRequest = signRequestService.createSignRequest(eppn, documentToAdd, new HashMap<String, String>(signBook.getParams()), signBook.getRecipientEmail());
+			SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, new HashMap<String, String>(signBook.getParams()), signBook.getRecipientEmail());
 	        signBook.getSignRequests().add(signRequest);
 	        signBook.persist();
 	        signRequest.setSignBookId(signBook.getId());

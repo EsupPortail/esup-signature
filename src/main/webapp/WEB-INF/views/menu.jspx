@@ -17,6 +17,9 @@
                             <menu:item menuClass="dropdown-item" id="i_signbook_new" messageCode="global_menu_new" url="/manager/signbooks?form" z="user-managed"/>
                             <menu:item activeMenu="${active=='manager/signbooks'}" menuClass="dropdown-item" id="i_signbook_list" messageCode="global_menu_list" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
                         </menu:category>
+                        <menu:category id="c_log" z="user-managed">
+                            <menu:item menuClass="dropdown-item" id="i_log_list" messageCode="global_menu_list" url="/manager/logs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+                        </menu:category>
                         <menu:category id="c_taglog" render="false" z="user-managed">
                             <menu:item menuClass="dropdown-item" id="i_taglog_list" messageCode="global_menu_list" url="/manager/taglogs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
                         </menu:category>

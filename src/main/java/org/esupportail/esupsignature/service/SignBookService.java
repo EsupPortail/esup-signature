@@ -37,7 +37,7 @@ public class SignBookService {
         try {
         	SmbFile[] files = cifsAccessImpl.listFiles(source, user);
         	Document documentToAdd = documentService.addFile(files[0].getInputStream(), files[0].getName(), files[0].getContentLengthLong(), files[0].getContentType());
-            SignRequest signRequest = signRequestService.createSignRequest(user.getEppn(), documentToAdd, new HashMap<String, String>(signBook.getParams()), signBook.getRecipientEmail());
+            SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, new HashMap<String, String>(signBook.getParams()), signBook.getRecipientEmail());
             signBook.getSignRequests().add(signRequest);
             signBook.persist();
             files[0].getInputStream().close();
@@ -56,9 +56,10 @@ public class SignBookService {
 	    	signRequest.setRecipientEmail(signBook.getRecipientEmail());
 	    	signRequest.setParams(new HashMap<String, String>(signBook.getParams()));
 	    	signRequest.setSignBookId(signBook.getId());
+	    	signRequest.setStatus(SignRequestStatus.uploaded);
 	    	signRequest.merge();
 	    	signBook.getSignRequests().add(signRequest);
-	    	signRequestService.updateInfo(signRequest, SignRequestStatus.pending, user);
+	    	signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "importInSignBook", user, "SUCCESS");
 	    	signBook.merge();
 		} else {
 			throw new EsupSignatureException("allready in this signbook");
@@ -67,7 +68,7 @@ public class SignBookService {
 	
 	public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException, SQLException {
 		if(signBook.getSignRequests().contains(signRequest)) {
-			signRequestService.updateInfo(signRequest, SignRequestStatus.signed, user);
+			signRequestService.updateInfo(signRequest, SignRequestStatus.signed, "removeFromSignBook", user, "SUCCESS");
 			signRequest.setSignBookId(0);
 	    	signRequest.merge();
 	    	signBook.getSignRequests().remove(signRequest);

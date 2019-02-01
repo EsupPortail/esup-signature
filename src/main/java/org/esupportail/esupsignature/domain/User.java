@@ -25,6 +25,9 @@ public class User {
     
     @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     private Document signImage = new Document();
+
+    @Transient
+    private String ip;
     
     @Transient
     private String publicKey;

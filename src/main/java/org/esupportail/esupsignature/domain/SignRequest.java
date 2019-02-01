@@ -47,12 +47,6 @@ public class SignRequest {
 
     private String createBy;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
-    private Date updateDate;
-
-    private String updateBy;
-
     private String recipientEmail;
     
     @Size(max = 500)
@@ -76,7 +70,7 @@ public class SignRequest {
     private String signBookName;
     
 	public enum SignRequestStatus {
-		start, pending, canceled, checked, signed, refused, deleted;
+		uploaded, pending, canceled, checked, signed, refused, deleted;
 	}
 
 	@Transient

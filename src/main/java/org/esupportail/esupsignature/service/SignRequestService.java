@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.esupportail.esupsignature.domain.Document;
+import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook.NewPageType;
 import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
@@ -31,26 +32,35 @@ public class SignRequestService {
 	@Resource
 	DocumentService documentService;
 	
-	public SignRequest createSignRequest(String eppn, Document document, Map<String, String> params, String recipientEmail) {
+	public SignRequest createSignRequest(User user, Document document, Map<String, String> params, String recipientEmail) {
 		
 		SignRequest signRequest = new SignRequest();
 		signRequest.setName(document.getFileName());
-    	signRequest.setCreateBy(eppn);
+    	signRequest.setCreateBy(user.getEppn());
     	signRequest.setCreateDate(new Date());
 		signRequest.setOriginalFile(document);
 		signRequest.setSignedFile(null);
 		signRequest.setSignBookId(0);
-		signRequest.setStatus(SignRequestStatus.pending);
+		signRequest.setStatus(SignRequestStatus.uploaded);
 		signRequest.setParams(params);
 		signRequest.setRecipientEmail(recipientEmail);
         signRequest.persist();
+		updateInfo(signRequest, SignRequestStatus.pending, "createSignRequest", user, "SUCCESS");
         return signRequest;
 	}
 	
-	public void updateInfo(SignRequest signRequest, SignRequestStatus signRequestStatus, User user) {
+	public void updateInfo(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, User user, String returnCode) {
+		Log log = new Log();
+		log.setSignRequestId(signRequest.getId());
+		log.setEppn(user.getEppn());
+		log.setInitialStatus(signRequest.getStatus().toString());
+		log.setLogDate(new Date());
+		log.setFinalStatus(signRequestStatus.toString());
+		log.setIp(user.getIp());
+		log.setAction(action);
+		log.setReturnCode(returnCode);
+		log.persist();
 		signRequest.setStatus(signRequestStatus);
-    	signRequest.setUpdateBy(user.getEppn());
-    	signRequest.setUpdateDate(new Date());
 	}
 	
 	public InputStream sign(SignRequest signRequest, User user, String base64PemCert, int signPageNumber, int xPos, int yPos) throws FileNotFoundException {
@@ -69,7 +79,7 @@ public class SignRequestService {
 				params.put("yPos", String.valueOf(yPos));
 				signRequest.setParams(params);
 				signRequest.setSignedFile(documentService.addFile(signedFile, "signed_by_" + user.getEppn() + "_" + signRequest.getName(), "application/pdf"));
-				updateInfo(signRequest, SignRequestStatus.signed, user);
+				updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
 	        }
         } catch (IOException e) {
         	log.error("file to sign or sign image opening error", e);

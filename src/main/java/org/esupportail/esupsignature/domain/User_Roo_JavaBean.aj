@@ -48,6 +48,14 @@ privileged aspect User_Roo_JavaBean {
         this.signImage = signImage;
     }
     
+    public String User.getIp() {
+        return this.ip;
+    }
+    
+    public void User.setIp(String ip) {
+        this.ip = ip;
+    }
+    
     public String User.getPublicKey() {
         return this.publicKey;
     }

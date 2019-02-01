@@ -34,22 +34,6 @@ privileged aspect SignRequest_Roo_JavaBean {
         this.createBy = createBy;
     }
     
-    public Date SignRequest.getUpdateDate() {
-        return this.updateDate;
-    }
-    
-    public void SignRequest.setUpdateDate(Date updateDate) {
-        this.updateDate = updateDate;
-    }
-    
-    public String SignRequest.getUpdateBy() {
-        return this.updateBy;
-    }
-    
-    public void SignRequest.setUpdateBy(String updateBy) {
-        this.updateBy = updateBy;
-    }
-    
     public String SignRequest.getRecipientEmail() {
         return this.recipientEmail;
     }

@@ -4,6 +4,7 @@
 package org.esupportail.esupsignature.web;
 
 import org.esupportail.esupsignature.domain.Document;
+import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.TagLog;
 import org.esupportail.esupsignature.web.ApplicationConversionServiceFactoryBean;
@@ -35,6 +36,30 @@ privileged aspect ApplicationConversionServiceFactoryBean_Roo_ConversionService 
         return new org.springframework.core.convert.converter.Converter<java.lang.String, org.esupportail.esupsignature.domain.Document>() {
             public org.esupportail.esupsignature.domain.Document convert(String id) {
                 return getObject().convert(getObject().convert(id, Long.class), Document.class);
+            }
+        };
+    }
+    
+    public Converter<Log, String> ApplicationConversionServiceFactoryBean.getLogToStringConverter() {
+        return new org.springframework.core.convert.converter.Converter<org.esupportail.esupsignature.domain.Log, java.lang.String>() {
+            public String convert(Log log) {
+                return new StringBuilder().append(log.getLogDate()).append(' ').append(log.getEppn()).append(' ').append(log.getAction()).append(' ').append(log.getInitialStatus()).toString();
+            }
+        };
+    }
+    
+    public Converter<Long, Log> ApplicationConversionServiceFactoryBean.getIdToLogConverter() {
+        return new org.springframework.core.convert.converter.Converter<java.lang.Long, org.esupportail.esupsignature.domain.Log>() {
+            public org.esupportail.esupsignature.domain.Log convert(java.lang.Long id) {
+                return Log.findLog(id);
+            }
+        };
+    }
+    
+    public Converter<String, Log> ApplicationConversionServiceFactoryBean.getStringToLogConverter() {
+        return new org.springframework.core.convert.converter.Converter<java.lang.String, org.esupportail.esupsignature.domain.Log>() {
+            public org.esupportail.esupsignature.domain.Log convert(String id) {
+                return getObject().convert(getObject().convert(id, Long.class), Log.class);
             }
         };
     }
@@ -91,6 +116,9 @@ privileged aspect ApplicationConversionServiceFactoryBean_Roo_ConversionService 
         registry.addConverter(getDocumentToStringConverter());
         registry.addConverter(getIdToDocumentConverter());
         registry.addConverter(getStringToDocumentConverter());
+        registry.addConverter(getLogToStringConverter());
+        registry.addConverter(getIdToLogConverter());
+        registry.addConverter(getStringToLogConverter());
         registry.addConverter(getSignBookToStringConverter());
         registry.addConverter(getIdToSignBookConverter());
         registry.addConverter(getStringToSignBookConverter());

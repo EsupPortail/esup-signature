@@ -6,94 +6,94 @@ package org.esupportail.esupsignature.domain;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.domain.Log;
 import org.springframework.transaction.annotation.Transactional;
 
-privileged aspect User_Roo_Jpa_ActiveRecord {
+privileged aspect Log_Roo_Jpa_ActiveRecord {
     
     @PersistenceContext
-    transient EntityManager User.entityManager;
+    transient EntityManager Log.entityManager;
     
-    public static final List<String> User.fieldNames4OrderClauseFilter = java.util.Arrays.asList("name", "firstname", "eppn", "email", "signImage", "ip", "publicKey", "password", "signImageBase64", "keystore");
+    public static final List<String> Log.fieldNames4OrderClauseFilter = java.util.Arrays.asList("logDate", "eppn", "action", "initialStatus", "finalStatus", "returnCode", "ip", "signRequestId");
     
-    public static final EntityManager User.entityManager() {
-        EntityManager em = new User().entityManager;
+    public static final EntityManager Log.entityManager() {
+        EntityManager em = new Log().entityManager;
         if (em == null) throw new IllegalStateException("Entity manager has not been injected (is the Spring Aspects JAR configured as an AJC/AJDT aspects library?)");
         return em;
     }
     
-    public static long User.countUsers() {
-        return entityManager().createQuery("SELECT COUNT(o) FROM User o", Long.class).getSingleResult();
+    public static long Log.countLogs() {
+        return entityManager().createQuery("SELECT COUNT(o) FROM Log o", Long.class).getSingleResult();
     }
     
-    public static List<User> User.findAllUsers() {
-        return entityManager().createQuery("SELECT o FROM User o", User.class).getResultList();
+    public static List<Log> Log.findAllLogs() {
+        return entityManager().createQuery("SELECT o FROM Log o", Log.class).getResultList();
     }
     
-    public static List<User> User.findAllUsers(String sortFieldName, String sortOrder) {
-        String jpaQuery = "SELECT o FROM User o";
+    public static List<Log> Log.findAllLogs(String sortFieldName, String sortOrder) {
+        String jpaQuery = "SELECT o FROM Log o";
         if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
             jpaQuery = jpaQuery + " ORDER BY " + sortFieldName;
             if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
                 jpaQuery = jpaQuery + " " + sortOrder;
             }
         }
-        return entityManager().createQuery(jpaQuery, User.class).getResultList();
+        return entityManager().createQuery(jpaQuery, Log.class).getResultList();
     }
     
-    public static User User.findUser(Long id) {
+    public static Log Log.findLog(Long id) {
         if (id == null) return null;
-        return entityManager().find(User.class, id);
+        return entityManager().find(Log.class, id);
     }
     
-    public static List<User> User.findUserEntries(int firstResult, int maxResults) {
-        return entityManager().createQuery("SELECT o FROM User o", User.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
+    public static List<Log> Log.findLogEntries(int firstResult, int maxResults) {
+        return entityManager().createQuery("SELECT o FROM Log o", Log.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
     }
     
-    public static List<User> User.findUserEntries(int firstResult, int maxResults, String sortFieldName, String sortOrder) {
-        String jpaQuery = "SELECT o FROM User o";
+    public static List<Log> Log.findLogEntries(int firstResult, int maxResults, String sortFieldName, String sortOrder) {
+        String jpaQuery = "SELECT o FROM Log o";
         if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
             jpaQuery = jpaQuery + " ORDER BY " + sortFieldName;
             if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
                 jpaQuery = jpaQuery + " " + sortOrder;
             }
         }
-        return entityManager().createQuery(jpaQuery, User.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
+        return entityManager().createQuery(jpaQuery, Log.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
     }
     
     @Transactional
-    public void User.persist() {
+    public void Log.persist() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.persist(this);
     }
     
     @Transactional
-    public void User.remove() {
+    public void Log.remove() {
         if (this.entityManager == null) this.entityManager = entityManager();
         if (this.entityManager.contains(this)) {
             this.entityManager.remove(this);
         } else {
-            User attached = User.findUser(this.id);
+            Log attached = Log.findLog(this.id);
             this.entityManager.remove(attached);
         }
     }
     
     @Transactional
-    public void User.flush() {
+    public void Log.flush() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.flush();
     }
     
     @Transactional
-    public void User.clear() {
+    public void Log.clear() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.clear();
     }
     
     @Transactional
-    public User User.merge() {
+    public Log Log.merge() {
         if (this.entityManager == null) this.entityManager = entityManager();
-        User merged = this.entityManager.merge(this);
+        Log merged = this.entityManager.merge(this);
         this.entityManager.flush();
         return merged;
     }
