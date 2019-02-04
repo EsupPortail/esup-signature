@@ -90,7 +90,13 @@
 										<dt class="col-lg-4">Sign params</dt>
 										<small>
 											<dd>
-												Sign type : ${signRequest.params.signType} <br /> Add page : ${signRequest.params.newPageType} <br /> on page : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.signPageNumber}" id="signPageNumber" type="text" name="signPageNumber" /> <br /> X position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.xPos}" id="xPos" type="text" name="xPos" /> <br /> Y position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.yPos}" id="yPos" type="text" name="yPos" />
+												Sign type : ${signRequest.params.signType}
+												<br /> 
+												Add page : ${signRequest.params.newPageType}
+												<br />
+												on page : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.signPageNumber}" id="signPageNumber" type="text" name="signPageNumber" />
+												<br />X position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.xPos}" id="xPos" type="text" name="xPos" />
+												<br />Y position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.yPos}" id="yPos" type="text" name="yPos" />
 												<script language="JavaScript">
 												function point_it(event){
 													pos_x = event.offsetX?(event.offsetX):event.pageX-document.getElementById("pointer_div").offsetLeft;
@@ -98,8 +104,8 @@
 													document.getElementById("cross").style.left = (pos_x) ;
 													document.getElementById("cross").style.top = (pos_y) ;
 													document.getElementById("cross").style.visibility = "visible" ;
-													document.command.xPos.value = pos_x;
-													document.command.yPos.value = pos_y;
+													document.getElementById("xPos").value = pos_x;
+													document.getElementById("yPos").value = pos_y;
 												}
 												</script>
 											</dd>

@@ -43,7 +43,7 @@ import eu.europa.esig.dss.validation.RestDocumentValidationServiceImpl;
 import eu.europa.esig.dss.validation.SoapDocumentValidationService;
 import eu.europa.esig.dss.validation.SoapDocumentValidationServiceImpl;
 
-@Configuration
+//@Configuration
 @ImportResource({ "classpath:META-INF/cxf/cxf.xml" })
 public class CXFConfig {
 

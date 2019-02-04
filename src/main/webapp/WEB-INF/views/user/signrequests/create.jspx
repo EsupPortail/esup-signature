@@ -3,7 +3,17 @@
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
     <form:create id="fc_org_esupportail_esupsignature_domain_SignRequest" modelAttribute="signRequest" multipart="true" path="/user/signrequests" render="${empty dependencies}" z="user-managed">
-        <field:input cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignRequest_name" z="user-managed"/>
+  		<div class="form-group">
+			<label class="col-lg-3  col-form-label" for="newPageType"><strong>Add file</strong></label>
+			<div class="col-lg-9">
+				<div class="input-group">
+					<div class="custom-file">
+						<input class="custom-file-input" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01" /> <label class="custom-file-label" id="inputGroupLabel01" for="upload">Choose file</label>
+					</div>
+				</div>
+			</div>
+		</div>
+        <field:input render="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignRequest_name" z="user-managed"/>
         <field:datetime dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" render="false" z="user-managed"/>
         <field:input field="createBy" id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" render="false" z="user-managed"/>
         <field:datetime dateTimePattern="${signRequest_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" render="false" z="user-managed"/>
@@ -18,16 +28,6 @@
 		<field:input render="false" cssClass="form-control" field="xPos" id="c_org_esupportail_esupsignature_domain_SignRequest_xPos" z="user-managed"/>
 		<field:input render="false" cssClass="form-control" field="yPos" id="c_org_esupportail_esupsignature_domain_SignRequest_yPos" z="user-managed"/>
 		<field:input render="${recipientEmail}" cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" z="user-managed"/>
-		<div class="form-group">
-			<label class="col-lg-3  col-form-label" for="newPageType"><strong>Add file</strong></label>
-			<div class="col-lg-9">
-				<div class="input-group">
-					<div class="custom-file">
-						<input class="custom-file-input" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01" /> <label class="custom-file-label" id="inputGroupLabel01" for="upload">Choose file</label>
-					</div>
-				</div>
-			</div>
-		</div>
 	</form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_SignRequest" render="${not empty dependencies}" z="user-managed"/>
 </div>

@@ -3,9 +3,9 @@
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
     <page:show id="ps_org_esupportail_esupsignature_domain_SignBook" object="${signbook}" path="/manager/signbooks" z="user-managed">
-        <form autocomplete="off" action="/manager/signbooks/updateParams/${id}" name="command" id="command" method="post">
+        <form autocomplete="off" action="/manager/signbooks/updateParams/${id}" method="post">
         <div class="row">
-	        <div class="col-lg-6">
+	        <div class="col-lg-4">
 		        <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignBook_name" object="${signbook}" z="user-managed"/>
 		        <field:display field="description" id="s_org_esupportail_esupsignature_domain_SignBook_description" object="${signbook}" z="user-managed"/>
 		        <field:display field="sourceType" id="s_org_esupportail_esupsignature_domain_SignBook_sourceType" object="${signbook}" z="user-managed"/>
@@ -31,21 +31,10 @@
 					<field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_SignBook_updateBy" object="${signbook}" z="user-managed"/>
 				</small>		        
 	        </div>
-	        <div class="col-lg-6">
+	        <div class="col-lg-8">
 				<dt class="col-lg-4">Model</dt>
-   		   		<script language="JavaScript">
-					function point_it(event){
-						pos_x = event.offsetX?(event.offsetX):event.pageX-document.getElementById("pointer_div").offsetLeft;
-						pos_y = event.offsetY?(event.offsetY):event.pageY-document.getElementById("pointer_div").offsetTop;
-						document.getElementById("cross").style.left = (pos_x) ;
-						document.getElementById("cross").style.top = (pos_y) ;
-						document.getElementById("cross").style.visibility = "visible" ;
-						document.command.xPos.value = pos_x;
-						document.command.yPos.value = pos_y;
-					}
-				</script>
 				<div class="row">
-				<div class="col-lg-9">
+				<div class="col-lg-7">
 					<input type="button" class="btn btn-outline-dark" id="previous" onclick="previousImage()" value="previous" />
 					<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl"/>
 					<input type="button" class="btn btn-outline-dark float-right" id="next" onclick="nextImage()" value="next" />
@@ -57,25 +46,33 @@
 						</i>
 					</div>
 				</div>
-				<div class="col-lg-3	">
+				<div class="col-lg-5">
 		        <dl class="display-group border-bottom m-0">
-		        	<b>Sign params</b>
+					<dt class="col-lg-4">Sign params</dt>
 					<small>
-				        <dd>
-				        Sign type : ${signbook.params.signType}
-				        <br/>
-			  	        Add page : ${signbook.params.newPageType}
-		
-				        <br/>
-				        on page : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signbook.params.signPageNumber}" type="text" name="signPageNumber" />
-				        <br/>
-				    	X position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signbook.params.xPos}" type="text" name="xPos" />
-				    	<br/>
-				    	Y position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signbook.params.yPos}" type="text" name="yPos" />
-				    	</dd>
-				    </small>
+						<dd>
+							Sign type : ${signRequest.params.signType}
+							<br /> 
+							Add page : ${signRequest.params.newPageType}
+							<br />
+							on page : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signbook.params.signPageNumber}" id="signPageNumber" type="text" name="signPageNumber" />
+							<br />X position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signbook.params.xPos}" id="xPos" type="text" name="xPos" />
+							<br />Y position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signbook.params.yPos}" id="yPos" type="text" name="yPos" />
+							<script language="JavaScript">
+							function point_it(event){
+								pos_x = event.offsetX?(event.offsetX):event.pageX-document.getElementById("pointer_div").offsetLeft;
+								pos_y = event.offsetY?(event.offsetY):event.pageY-document.getElementById("pointer_div").offsetTop;
+								document.getElementById("cross").style.left = (pos_x) ;
+								document.getElementById("cross").style.top = (pos_y) ;
+								document.getElementById("cross").style.visibility = "visible" ;
+								document.getElementById("xPos").value = pos_x;
+								document.getElementById("yPos").value = pos_y;
+							}
+							</script>
+						</dd>
+					</small>
 				</dl>
-				<input alt="Update params" class="btn btn-success" id="Update params" title="Update params" type="submit" value="Update params" />
+				<input alt="Update params" class="btn btn-success float-right" id="Update params" title="Update params" type="submit" value="Update params" />
 				</div>
 				</div>
 	        </div>
@@ -91,7 +88,7 @@
 		if(currentImagePage == nbImagePage - 1) {
 			document.getElementById("next").disabled = true;
 		}
-		document.command.signPageNumber.value = currentImagePage + 1;
+		document.getElementById("signPageNumber").value = currentImagePage + 1;
 		
 		function nextImage() {
 			currentImagePage++;
@@ -102,7 +99,7 @@
 			if(currentImagePage > 0) {
 				document.getElementById("previous").disabled = false;
 			}
-			document.command.signPageNumber.value = currentImagePage + 1;
+			document.getElementById("signPageNumber").value = currentImagePage + 1;
 		}
 
 		function previousImage() {
@@ -114,7 +111,7 @@
 			if(nbImagePage - 1 > currentImagePage) {
 				document.getElementById("next").disabled = false;
 			}
-			document.command.signPageNumber.value = currentImagePage + 1;
+			document.getElementById("signPageNumber").value = currentImagePage + 1;
 		}
 	</script>
 </div>

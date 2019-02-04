@@ -18,7 +18,6 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.filter.DelegatingFilterProxy;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
-import org.springframework.web.multipart.support.MultipartFilter;
 import org.springframework.web.servlet.DispatcherServlet;
 
 
@@ -50,13 +49,13 @@ public class EsupSignatureInitializer implements WebApplicationInitializer {
 		
 		ContextLoaderListener listener = new ContextLoaderListener(rootAppContext);
 		servletContext.addListener(listener);
-		
+		/*		
 		CXFServlet cxf = new CXFServlet();
 		BusFactory.setDefaultBus(cxf.getBus());
 		ServletRegistration.Dynamic cxfServlet = servletContext.addServlet("CXFServlet", cxf);
 		cxfServlet.setLoadOnStartup(1);
 		cxfServlet.addMapping("/services/*");
-		
+		*/
 		servletContext.getSessionCookieConfig().setSecure(cookieSecure);
 		servletContext.setSessionTrackingModes(Collections.singleton(SessionTrackingMode.COOKIE));
 	}

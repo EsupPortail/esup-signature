@@ -12,7 +12,7 @@ import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.x509.CertificateToken;
 import eu.europa.esig.dss.x509.KeyStoreCertificateSource;
 
-@Component
+//@Component
 public class KeystoreService {
 
 	@Autowired

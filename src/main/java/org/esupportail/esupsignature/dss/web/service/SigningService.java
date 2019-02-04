@@ -230,7 +230,7 @@ public class SigningService {
 			imageParameters.setHeight(height);
 
 			parameters.setSignatureImageParameters(imageParameters);
-
+			/*
 			// Create common certificate verifier
 			CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
 			// Create PAdESService for signature
@@ -239,19 +239,19 @@ public class SigningService {
 			String tspServer = "http://zeitstempel.dfn.de/";
 			OnlineTSPSource onlineTSPSource = new OnlineTSPSource(tspServer);
 			service.setTspSource(onlineTSPSource);
-			
+
 			TimestampToken contentTimestamp = service.getContentTimestamp(toSignDocument, parameters);
 			parameters.setContentTimestamps(Arrays.asList(contentTimestamp));
-			
+			 */					
 			// Get the SignedInfo segment that need to be signed.
-			ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
+			//ToBeSigned dataToSign = padesService.getDataToSign(toSignDocument, parameters);
 
 			// This function obtains the signature value for signed information using the
 			// private key and specified algorithm
-			DigestAlgorithm digestAlgorithm = parameters.getDigestAlgorithm();
+			//DigestAlgorithm digestAlgorithm = parameters.getDigestAlgorithm();
 			SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
 			SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
-			signedDocument = service.signDocument(toSignDocument, parameters, signatureValue);
+			signedDocument = (DSSDocument) padesService.signDocument(toSignDocument, parameters, signatureValue);
 		} catch (Exception e) {
 			logger.error("Unable to execute signDocument : " + e.getMessage(), e);
 		}

@@ -17,6 +17,8 @@
  */
 document.addEventListener('DOMContentLoaded', function() {
 	
+	
+	//input type file
 	var inputFile = document.getElementById("inputGroupFile01");
 	if(inputFile != null) {
 		inputFile.onchange = 
