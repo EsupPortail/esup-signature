@@ -70,7 +70,7 @@ public class SignRequest {
     private String signBookName;
     
 	public enum SignRequestStatus {
-		uploaded, pending, canceled, checked, signed, refused, deleted;
+		uploaded, pending, canceled, checked, signed, refused, deleted, completed;
 	}
 
 	@Transient

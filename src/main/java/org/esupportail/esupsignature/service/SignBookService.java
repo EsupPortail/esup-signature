@@ -68,7 +68,7 @@ public class SignBookService {
 	
 	public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException, SQLException {
 		if(signBook.getSignRequests().contains(signRequest)) {
-			signRequestService.updateInfo(signRequest, SignRequestStatus.signed, "removeFromSignBook", user, "SUCCESS");
+			signRequestService.updateInfo(signRequest, SignRequestStatus.completed, "removeFromSignBook", user, "SUCCESS");
 			signRequest.setSignBookId(0);
 	    	signRequest.merge();
 	    	signBook.getSignRequests().remove(signRequest);
