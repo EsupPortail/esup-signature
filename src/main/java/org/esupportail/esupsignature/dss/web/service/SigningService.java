@@ -39,7 +39,6 @@ import eu.europa.esig.dss.pades.SignatureImageTextParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.TimestampToken;
@@ -256,6 +255,8 @@ public class SigningService {
 			imageParameters.setxAxis(200);
 			imageParameters.setyAxis(600);
 
+			//TODO get parameters from session user
+			
 			// Initialize text to generate for visual signature
 			SignatureImageTextParameters textParameters = new SignatureImageTextParameters();
 			textParameters.setFont(new Font("serif", Font.PLAIN, 14));
@@ -264,10 +265,6 @@ public class SigningService {
 			imageParameters.setTextParameters(textParameters);
 
 			parameters.setSignatureImageParameters(imageParameters);
-
-
-			// Get the SignedInfo segment that need to be signed.
-			ToBeSigned dataToSign = padesService.getDataToSign(toSignDocument, parameters);
 
 			// This function obtains the signature value for signed information using the
 			// private key and specified algorithm
