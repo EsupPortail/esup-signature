@@ -6,11 +6,13 @@
   	<jsp:output omit-xml-declaration="yes" />
 
 	<spring:url value="/resources/css/bootstrap.css" var="bootstrap_css_url" />
+	<spring:url value="/resources/css/jquery-ui.css" var="jquery-ui_css_url" />
 	<spring:url value="/resources/css/esup-signature.css" var="esup_signature_css_url" />
 	<spring:url value="/resources/css/croppie.css" var="cropper_css_url" />
 	
 	<spring:url value="/resources/js/exif.js" var="exif_js_url" />
 	<spring:url value="/resources/js/croppie.js" var="cropper_js_url" />
+	<spring:url value="/resources/js/jquery-ui.js" var="jquery-ui_js_url" />
 	<spring:url value="/resources/js/bootstrap-native-v4.js" var="bootstrap_js_url" />
 	<spring:url value="/resources/js/Chart.js" var="chart_js_url" />
 	<spring:url value="/resources/js/esup-signature.js" var="esup_signature_js_url" />
@@ -26,12 +28,14 @@
 	<meta name="theme-color" content="#ffffff" />
   
 	<link rel="stylesheet" type="text/css" href="${bootstrap_css_url}" />
+	<link rel="stylesheet" type="text/css" href="${jquery-ui_css_url}" />
 	<link rel="stylesheet" type="text/css" href="${esup_signature_css_url}" />
 	<link rel="stylesheet" type="text/css" href="${cropper_css_url}" />
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous" />
 	<link rel="SHORTCUT ICON" href="${favicon}" />
 
 	<script src="${bootstrap_js_url}" type="text/javascript"><!-- --></script>
+	<script src="${jquery-ui_js_url}" type="text/javascript"><!-- --></script>
 	<script src="${chart_js_url}" type="text/javascript"><!-- --></script>	
 	<script src="${exif_js_url}" type="text/javascript"><!-- --></script>
 	<script src="${cropper_js_url}" type="text/javascript"><!-- --></script>

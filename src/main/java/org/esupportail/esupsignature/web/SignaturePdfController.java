@@ -66,7 +66,7 @@ public class SignaturePdfController {
 
 		// Pre-configure for PAdES
 		signaturePdfForm.setSignatureForm(SignatureForm.PAdES);
-		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
+		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_LTA);
 		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
 		signaturePdfForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
 
@@ -120,10 +120,9 @@ public class SignaturePdfController {
 
 		signaturePdfForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 
-		DSSDocument document = signingService.visibleSignDocument(signaturePdfForm, 1, 200, 600, null, 100, 75);
+		DSSDocument document = signingService.visibleSignDocument(signaturePdfForm);
 		InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(document), document.getName(), document.getMimeType());
 		model.addAttribute("signedPdfDocument", signedPdfDocument);
-
 		SignDocumentResponse signedDocumentResponse = new SignDocumentResponse();
 		signedDocumentResponse.setUrlToDownload("download");
 		return signedDocumentResponse;

@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.dss.web.service;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.io.File;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -19,12 +21,10 @@ import eu.europa.esig.dss.ASiCContainerType;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSUtils;
-import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.FileDocument;
 import eu.europa.esig.dss.MimeType;
 import eu.europa.esig.dss.SignatureAlgorithm;
 import eu.europa.esig.dss.SignatureForm;
-import eu.europa.esig.dss.SignatureLevel;
 import eu.europa.esig.dss.SignatureValue;
 import eu.europa.esig.dss.ToBeSigned;
 import eu.europa.esig.dss.asic.ASiCWithCAdESSignatureParameters;
@@ -33,14 +33,13 @@ import eu.europa.esig.dss.asic.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.client.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters;
+import eu.europa.esig.dss.pades.SignatureImageTextParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
 import eu.europa.esig.dss.utils.Utils;
-import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.TimestampToken;
 import eu.europa.esig.dss.x509.CertificateToken;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
@@ -171,7 +170,7 @@ public class SigningService {
 	private void fillParameters(AbstractSignatureParameters parameters, AbstractSignatureForm form) {
 		parameters.setSignatureLevel(form.getSignatureLevel());
 		parameters.setDigestAlgorithm(form.getDigestAlgorithm());
-		// parameters.setEncryptionAlgorithm(form.getEncryptionAlgorithm()); retrieved from certificate
+		//parameters.setEncryptionAlgorithm(form.getEncryptionAlgorithm()); retrieved from certificate
 		parameters.bLevel().setSigningDate(form.getSigningDate());
 
 		parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
@@ -193,19 +192,53 @@ public class SigningService {
 		}
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DSSDocument visibleSignDocument(SignatureDocumentForm form, int page, int x, int y, File imageFile, int width, int height) {
+	public DSSDocument visibleSignDocument(SignatureDocumentForm form, CertificateToken certificateToken, List<CertificateToken> certificateTokenChain, int page, int x, int y, File imageFile, int width, int height) {
 		logger.info("Start signDocument with one document");
 		DSSDocument signedDocument = null;
 		try {
 			DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());
 
 			PAdESSignatureParameters parameters = new PAdESSignatureParameters();
-			// We choose the level of the signature (-B, -T, -LT, -LTA).
-			parameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
+			parameters.setSigningCertificate(certificateToken);
+			parameters.setCertificateChain(certificateTokenChain);
 
+			SignatureImageParameters imageParameters = new SignatureImageParameters();
+			imageParameters.setPage(page);
+			imageParameters.setxAxis(x);
+			imageParameters.setyAxis(y);
+			FileDocument fileDocumentImage = new FileDocument(imageFile);
+			fileDocumentImage.setMimeType(MimeType.PNG);
+			imageParameters.setImage(fileDocumentImage);
+			imageParameters.setWidth(width);
+			imageParameters.setHeight(height);
+			parameters.setSignatureImageParameters(imageParameters);
 			
-			// We set the signing certificate
+			parameters.setSignatureLevel(form.getSignatureLevel());
+			parameters.setDigestAlgorithm(form.getDigestAlgorithm());
+			parameters.bLevel().setSigningDate(form.getSigningDate());
+			parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
+
+			SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
+			SignatureValue signatureValue = new SignatureValue(sigAlgorithm, certificateToken.getCertificate().getSignature());
+			signedDocument = (DSSDocument) padesService.signDocument(toSignDocument, parameters, signatureValue);
+		} catch (Exception e) {
+			logger.error("Unable to execute signDocument : " + e.getMessage(), e);
+		}
+		logger.info("End signDocument with one document");
+		return signedDocument;
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public DSSDocument visibleSignDocument(SignatureDocumentForm form) {
+		logger.info("Start signDocument with one document");
+		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
+		DSSDocument signedDocument = null;
+		try {
+			DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());
+
+			PAdESSignatureParameters parameters = new PAdESSignatureParameters();
+			fillParameters(parameters, form);
+			parameters.setSignatureSize(100000);
 			parameters.setSigningCertificate(DSSUtils.loadCertificateFromBase64EncodedString(form.getBase64Certificate()));
 			// We set the certificate chain
 			List<String> base64CertificateChain = form.getBase64CertificateChain();
@@ -217,47 +250,35 @@ public class SigningService {
 
 			// Initialize visual signature
 			SignatureImageParameters imageParameters = new SignatureImageParameters();
-			imageParameters.setPage(page);
 			// the origin is the left and top corner of the page
-			imageParameters.setxAxis(x);
-			imageParameters.setyAxis(y);
+			imageParameters.setxAxis(200);
+			imageParameters.setyAxis(600);
+
 			// Initialize text to generate for visual signature
-			FileDocument fileDocumentImage = new FileDocument(imageFile);
-			fileDocumentImage.setMimeType(MimeType.PNG);
-			
-			imageParameters.setImage(fileDocumentImage);
-			imageParameters.setWidth(width);
-			imageParameters.setHeight(height);
+			SignatureImageTextParameters textParameters = new SignatureImageTextParameters();
+			textParameters.setFont(new Font("serif", Font.PLAIN, 14));
+			textParameters.setTextColor(Color.BLUE);
+			textParameters.setText("David Lemaignent");
+			imageParameters.setTextParameters(textParameters);
 
 			parameters.setSignatureImageParameters(imageParameters);
-			/*
-			// Create common certificate verifier
-			CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
-			// Create PAdESService for signature
-			PAdESService service = new PAdESService(commonCertificateVerifier);
 
-			String tspServer = "http://zeitstempel.dfn.de/";
-			OnlineTSPSource onlineTSPSource = new OnlineTSPSource(tspServer);
-			service.setTspSource(onlineTSPSource);
 
-			TimestampToken contentTimestamp = service.getContentTimestamp(toSignDocument, parameters);
-			parameters.setContentTimestamps(Arrays.asList(contentTimestamp));
-			 */					
 			// Get the SignedInfo segment that need to be signed.
-			//ToBeSigned dataToSign = padesService.getDataToSign(toSignDocument, parameters);
+			ToBeSigned dataToSign = padesService.getDataToSign(toSignDocument, parameters);
 
 			// This function obtains the signature value for signed information using the
 			// private key and specified algorithm
-			//DigestAlgorithm digestAlgorithm = parameters.getDigestAlgorithm();
 			SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
 			SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
-			signedDocument = (DSSDocument) padesService.signDocument(toSignDocument, parameters, signatureValue);
+			signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);
 		} catch (Exception e) {
 			logger.error("Unable to execute signDocument : " + e.getMessage(), e);
 		}
 		logger.info("End signDocument with one document");
 		return signedDocument;
 	}
+	
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument signDocument(SignatureDocumentForm form) {

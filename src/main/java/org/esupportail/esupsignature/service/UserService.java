@@ -24,11 +24,12 @@ public class UserService {
 	
     public String getEppnFromAuthentication() {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
     	String eppn = auth.getName();
     	if(personDao != null) {
     		List<PersonLdap> persons =  personDao.getPersonNamesByUid(auth.getName());
-			eppn = persons.get(0).getEduPersonPrincipalName();
+    		if(persons.size() > 0) {
+    			eppn = persons.get(0).getEduPersonPrincipalName();
+    		}
     	}
     	return eppn;
     }

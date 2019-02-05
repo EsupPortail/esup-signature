@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -20,6 +21,8 @@ import org.esupportail.esupsignature.domain.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import eu.europa.esig.dss.x509.CertificateToken;
 
 @Service
 public class SignRequestService {
@@ -63,7 +66,7 @@ public class SignRequestService {
 		signRequest.setStatus(signRequestStatus);
 	}
 	
-	public InputStream sign(SignRequest signRequest, User user, String base64PemCert, int signPageNumber, int xPos, int yPos) throws FileNotFoundException {
+	public InputStream sign(SignRequest signRequest, User user, int signPageNumber, int xPos, int yPos, CertificateToken certificateToken, List<CertificateToken> certificateTokenChain) throws FileNotFoundException {
 		InputStream in = null;
 		Map<String, String> params = signRequest.getParams();    	
     	File signImage = user.getSignImage().getBigFile().toJavaIoFile();
@@ -71,7 +74,7 @@ public class SignRequestService {
     	NewPageType newPageType = NewPageType.valueOf(params.get("newPageType"));
     	SignType signType = SignType.valueOf(params.get("signType"));
         try {
-        	File signedFile = pdfService.signPdf(toSignFile, signImage, signType, base64PemCert, signPageNumber, xPos, yPos, newPageType);
+        	File signedFile = pdfService.signPdf(toSignFile, signImage, signType, signPageNumber, xPos, yPos, newPageType, certificateToken, certificateTokenChain);
         	in = new FileInputStream(signedFile);
 	        if(signedFile != null) {
 	        	params.put("signPageNumber", String.valueOf(signPageNumber));

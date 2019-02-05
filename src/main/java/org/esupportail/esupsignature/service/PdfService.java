@@ -29,7 +29,6 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
 import org.esupportail.esupsignature.domain.SignBook.NewPageType;
 import org.esupportail.esupsignature.domain.SignBook.SignType;
-import org.esupportail.esupsignature.dss.web.model.DataToSignParams;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.service.SigningService;
 import org.slf4j.Logger;
@@ -47,6 +46,8 @@ import eu.europa.esig.dss.InMemoryDocument;
 import eu.europa.esig.dss.SignatureForm;
 import eu.europa.esig.dss.SignatureLevel;
 import eu.europa.esig.dss.SignaturePackaging;
+import eu.europa.esig.dss.x509.CertificateToken;
+import eu.europa.esig.dss.x509.KeyStoreCertificateSource;
 
 @Service
 public class PdfService {
@@ -65,8 +66,8 @@ public class PdfService {
 	private int xCenter = 297;
 	private int yCenter = 421;
 	
-	public File signPdf(File toSignFile, File signImage, SignType signType, String base64PemCert, int pageNumber, int xPos, int yPos, NewPageType newPageType ) throws IOException {
-		toSignFile = toPdfA(toSignFile);
+	public File signPdf(File toSignFile, File signImage, SignType signType, int pageNumber, int xPos, int yPos, NewPageType newPageType, CertificateToken certificateToken, List<CertificateToken> certificateTokenChain) throws IOException {
+		//toSignFile = toPdfA(toSignFile);
     	File signedFile = null;
     	if(newPageType.equals(NewPageType.onBegin)) {
         	log.info("add page on begin");
@@ -89,42 +90,27 @@ public class PdfService {
         } else 
         if(signType.equals(SignType.certPAdES)) {
         	log.info("cades signature");
-          	signedFile = certSignPdf(toSignFile, base64PemCert, null, signImage, pageNumber, xPos, yPos);
+          	signedFile = pAdESSign(toSignFile, null, signImage, pageNumber, xPos, yPos, certificateToken, certificateTokenChain);
         }
         return signedFile;
 
 	}
 	
-	public File certSignPdf(File file, String certif, List<String> certifChain, File imageFile, int page, int x, int y) throws IOException {
+	public File pAdESSign(File file, List<String> certifChain, File imageFile, int page, int x, int y, CertificateToken certificateToken, List<CertificateToken> certificateTokenChain) throws IOException {
 		
-		DataToSignParams params = new DataToSignParams();
-        List<String> certificateChain = new ArrayList<String>();
-        certificateChain.add(certif);
-        if(certifChain != null && certifChain.size() > 0){
-        	for(String chain : certifChain) {
-        		certificateChain.add(chain);
-        	}
-        }
-        params.setCertificateChain(certificateChain);
-        params.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
-        params.setSigningCertificate(certif);
-        
         SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
 		signaturePdfForm.setSignatureForm(SignatureForm.PAdES);
-		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
+		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_LTA);
 		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
 		signaturePdfForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
-		signaturePdfForm.setBase64Certificate(params.getSigningCertificate());
-		signaturePdfForm.setBase64CertificateChain(params.getCertificateChain());
-		signaturePdfForm.setBase64SignatureValue("");
-		signaturePdfForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
+		signaturePdfForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 		signaturePdfForm.setSigningDate(new Date());
 
 		MultipartFile multipartFile = new MockMultipartFile(file.getName(), file.getName(), "application/pdf", new FileInputStream(file));
 
 		signaturePdfForm.setDocumentToSign(multipartFile);		
         
-		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, page, x, y, imageFile, signWidth, signHeight);
+		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, certificateToken, certificateTokenChain, page, x, y, imageFile, signWidth, signHeight);
 
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         

@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.user;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +48,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import eu.europa.esig.dss.x509.CertificateToken;
 
 @RequestMapping("/user/signrequests")
 @Controller
@@ -199,7 +202,7 @@ public class SignRequestController {
     		@RequestParam(value = "xPos", required=true) int xPos,
     		@RequestParam(value = "yPos", required=true) int yPos,
     		@RequestParam(value = "signPageNumber", required=true) int signPageNumber,
-    		@RequestParam(value = "password", required=false) String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) throws SQLException, EsupSignatureException, FileNotFoundException {
+    		@RequestParam(value = "password", required=false) String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) throws SQLException, EsupSignatureException, IOException {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		user.setIp(request.getRemoteAddr());
@@ -211,15 +214,12 @@ public class SignRequestController {
         	redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
     		return "redirect:/user/signrequests/" + id;
     	}
-    	SignType signType = SignType.valueOf(signRequest.getParams().get("signType"));
-    	String base64PemCert = "";
-    	if(signType.equals(SignType.certPAdES)) {
-    		if(password == null) password = "";
-        	userKeystoreService.setPassword(password);
-    		base64PemCert = userKeystoreService.getBase64PemCertificat(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn());
-    	}
-    	InputStream in = signRequestService.sign(signRequest, user, base64PemCert, signPageNumber, xPos, yPos);
-		
+    	if(password == null) password = "";
+    	userKeystoreService.setPassword(password);
+    	File keystore = user.getKeystore().getBigFile().toJavaIoFile();
+    	CertificateToken certificateToken = userKeystoreService.getCertificateToken(keystore);
+		List<CertificateToken> certificateTokenChain = userKeystoreService.getCertificateTokenChain(keystore);
+    	InputStream in = signRequestService.sign(signRequest, user, signPageNumber, xPos, yPos, certificateToken, certificateTokenChain);
     	if(signRequest.getSignBookId() != 0) {
     		SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
    			signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
