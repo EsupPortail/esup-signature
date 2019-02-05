@@ -29,8 +29,10 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
 import org.esupportail.esupsignature.domain.SignBook.NewPageType;
 import org.esupportail.esupsignature.domain.SignBook.SignType;
+import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.service.SigningService;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +57,9 @@ public class PdfService {
 	@Resource
 	private FileService fileService;
 	
+	@Resource
+	private UserKeystoreService userKeystoreService;
+	
 	@Autowired
 	private SigningService signingService;
 	
@@ -64,7 +69,7 @@ public class PdfService {
 	private int xCenter = 297;
 	private int yCenter = 421;
 	
-	public File signPdf(File toSignFile, File signImage, SignType signType, int pageNumber, int xPos, int yPos, NewPageType newPageType, CertificateToken certificateToken, CertificateToken[] certificateTokenChain, SignatureTokenConnection signingToken) throws IOException {
+	public File signPdf(File toSignFile, File signImage, SignType signType, int pageNumber, int xPos, int yPos, NewPageType newPageType, User user, String password) throws IOException, EsupSignatureException {
 		//toSignFile = toPdfA(toSignFile);
     	File signedFile = null;
     	if(newPageType.equals(NewPageType.onBegin)) {
@@ -88,21 +93,15 @@ public class PdfService {
         } else 
         if(signType.equals(SignType.certPAdES)) {
         	log.info("cades signature");
-          	signedFile = pAdESSign(toSignFile, signImage, pageNumber, xPos, yPos, certificateToken, certificateTokenChain, signingToken);
+          	signedFile = pAdESSign(toSignFile, signImage, pageNumber, xPos, yPos, user, password);
         }
         return signedFile;
 
 	}
 	
-	public File pAdESSign(File toSignFile, File signImage, int pageNumber, int xPos, int yPos, CertificateToken certificateToken, CertificateToken[] certificateTokenChain, SignatureTokenConnection signingToken) throws IOException {
+	public File pAdESSign(File toSignFile, File signImage, int pageNumber, int xPos, int yPos, User user, String password) throws IOException, EsupSignatureException {
 		
         SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
-        signaturePdfForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
-		List<String> base64CertificateChain = new ArrayList<>();
-		for(CertificateToken token : certificateTokenChain) {
-			base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
-		}
-		signaturePdfForm.setBase64CertificateChain(base64CertificateChain);
 		signaturePdfForm.setSignatureForm(SignatureForm.PAdES);
 		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
 		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
@@ -111,7 +110,20 @@ public class PdfService {
 		signaturePdfForm.setSigningDate(new Date());
 		signaturePdfForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
         
-		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, signingToken, certificateToken, certificateTokenChain, pageNumber, xPos, yPos, signImage, signWidth, signHeight);
+		File keyStoreFile = user.getKeystore().getBigFile().toJavaIoFile();
+		
+		SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
+		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
+		CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
+
+        signaturePdfForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
+		List<String> base64CertificateChain = new ArrayList<>();
+		for(CertificateToken token : certificateTokenChain) {
+			base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
+		}
+		signaturePdfForm.setBase64CertificateChain(base64CertificateChain);
+		
+		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, signatureTokenConnection, certificateToken, certificateTokenChain, pageNumber, xPos, yPos, signImage, signWidth, signHeight);
 
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         

@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.user;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
@@ -30,12 +29,12 @@ import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -47,9 +46,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import eu.europa.esig.dss.token.SignatureTokenConnection;
-import eu.europa.esig.dss.x509.CertificateToken;
 
 @RequestMapping("/user/signrequests")
 @Controller
@@ -64,12 +60,13 @@ public class SignRequestController {
 		return "user/signrequests";
 	}
 	
+	private String password = "";
+	long startTime;
+	
 	@Resource
 	private CifsAccessImpl cifsAccessImpl;
 	
-	@Resource
-	private UserKeystoreService userKeystoreService;
-	
+
 	@Resource
 	private SignRequestService signRequestService;
 	
@@ -214,15 +211,9 @@ public class SignRequestController {
         	redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
     		return "redirect:/user/signrequests/" + id;
     	}
-    	if(password == null) password = "";
-    	userKeystoreService.setPassword(password);
-    	File keystore = user.getKeystore().getBigFile().toJavaIoFile();
-    	CertificateToken certificateToken;
+    	if("".equals(password)) this.password = password;
 		try {
-			certificateToken = userKeystoreService.getCertificateToken(keystore);
-			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keystore);
-			SignatureTokenConnection signingToken = userKeystoreService.getSignatureTokenConnection(keystore);
-	    	InputStream in = signRequestService.sign(signRequest, user, signPageNumber, xPos, yPos, certificateToken, certificateTokenChain, signingToken);
+	    	InputStream in = signRequestService.sign(signRequest, user, this.password, signPageNumber, xPos, yPos);
 	    	if(signRequest.getSignBookId() != 0) {
 	    		SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
 	   			signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
@@ -232,6 +223,7 @@ public class SignRequestController {
 	    	}
 		} catch (EsupSignatureException e) {
 			log.error("sign-doc error", e);
+			//TODO messages exceptions
 			redirectAttrs.addFlashAttribute("messageCustom", "bad password");
 		}
 
@@ -333,4 +325,14 @@ public class SignRequestController {
         uiModel.addAttribute("signRequest_createdate_date_format", "dd/MM/yyyy");
         uiModel.addAttribute("signRequest_updatedate_date_format", "dd/MM/yyyy");
     }
+    
+	@Scheduled(fixedDelay = 5000)
+	public void clearPassword () {
+		if(startTime > 0) {
+			if(System.currentTimeMillis() - startTime > 300000) {
+				password = "";
+				startTime = 0;
+			}
+		}
+	}
 }

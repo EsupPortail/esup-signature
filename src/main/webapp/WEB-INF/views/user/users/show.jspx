@@ -17,8 +17,10 @@
 	   		<dd>
 				<c:if test="${not empty keystore}">
 			    	${keystore}
+			    	<!-- TODO disable if password in session -->
 				    <form action="viewCert" method="post">
 			        	<input type="hidden" name="id" value="${user.id}" />
+			        	
 			        	<input class="form-control" type="password" name="password" />
 			        	<input class="btn btn-primary" type="submit" value="Voir certificat" />
 			        </form>

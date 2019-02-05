@@ -2,11 +2,9 @@ package org.esupportail.esupsignature.service;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -18,12 +16,10 @@ import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import eu.europa.esig.dss.token.SignatureTokenConnection;
-import eu.europa.esig.dss.x509.CertificateToken;
 
 @Service
 public class SignRequestService {
@@ -67,7 +63,7 @@ public class SignRequestService {
 		signRequest.setStatus(signRequestStatus);
 	}
 	
-	public InputStream sign(SignRequest signRequest, User user, int signPageNumber, int xPos, int yPos, CertificateToken certificateToken, CertificateToken[] certificateTokenChain, SignatureTokenConnection signingToken) {
+	public InputStream sign(SignRequest signRequest, User user, String password, int signPageNumber, int xPos, int yPos) {
 		InputStream in = null;
 		Map<String, String> params = signRequest.getParams();    	
     	File signImage = user.getSignImage().getBigFile().toJavaIoFile();
@@ -75,7 +71,7 @@ public class SignRequestService {
     	NewPageType newPageType = NewPageType.valueOf(params.get("newPageType"));
     	SignType signType = SignType.valueOf(params.get("signType"));
         try {
-        	File signedFile = pdfService.signPdf(toSignFile, signImage, signType, signPageNumber, xPos, yPos, newPageType, certificateToken, certificateTokenChain, signingToken);
+        	File signedFile = pdfService.signPdf(toSignFile, signImage, signType, signPageNumber, xPos, yPos, newPageType, user, password);
         	in = new FileInputStream(signedFile);
 	        if(signedFile != null) {
 	        	params.put("signPageNumber", String.valueOf(signPageNumber));
@@ -87,6 +83,8 @@ public class SignRequestService {
 	        }
         } catch (IOException e) {
         	log.error("file to sign or sign image opening error", e);
+		} catch (EsupSignatureException e) {
+			log.error("sign process error", e);
 		}
         return in;
 	}

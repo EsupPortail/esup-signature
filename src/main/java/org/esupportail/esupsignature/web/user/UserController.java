@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -42,6 +43,9 @@ public class UserController {
 	public String getActiveMenu() {
 		return "user/users";
 	}
+	
+	private String password = "";
+	long startTime;
 	
 	@Autowired(required = false)
 	PersonLdapDao personDao;
@@ -135,10 +139,10 @@ public class UserController {
     public String viewCert(@RequestParam("id") long id, @RequestParam("password") String password, RedirectAttributes redirectAttrs) throws Exception {
         User user = User.findUser(id);
         if(password != null && !password.isEmpty()) {
-        	userKeystoreService.setPassword(password);
+        	this.password = password;
         }
         try {
-        	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getBigFile().toJavaIoFile()));
+        	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getBigFile().toJavaIoFile(), this.password));
         } catch (Exception e) {
         	log.error("open keystore fail", e);
         	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
@@ -151,4 +155,14 @@ public class UserController {
         uiModel.addAttribute("files", Document.findAllDocuments());
     }
 
+	@Scheduled(fixedDelay = 5000)
+	public void clearPassword () {
+		if(startTime > 0) {
+			if(System.currentTimeMillis() - startTime > 300000) {
+				password = "";
+				startTime = 0;
+			}
+		}
+	}
+	
 }
