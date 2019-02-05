@@ -13,6 +13,7 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.jempbox.xmp.XMPMetadata;
 import org.apache.jempbox.xmp.pdfa.XMPSchemaPDFAId;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -43,6 +44,7 @@ import eu.europa.esig.dss.InMemoryDocument;
 import eu.europa.esig.dss.SignatureForm;
 import eu.europa.esig.dss.SignatureLevel;
 import eu.europa.esig.dss.SignaturePackaging;
+import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.x509.CertificateToken;
 
 @Service
@@ -62,7 +64,7 @@ public class PdfService {
 	private int xCenter = 297;
 	private int yCenter = 421;
 	
-	public File signPdf(File toSignFile, File signImage, SignType signType, int pageNumber, int xPos, int yPos, NewPageType newPageType, CertificateToken certificateToken, CertificateToken[] certificateTokenChain) throws IOException {
+	public File signPdf(File toSignFile, File signImage, SignType signType, int pageNumber, int xPos, int yPos, NewPageType newPageType, CertificateToken certificateToken, CertificateToken[] certificateTokenChain, SignatureTokenConnection signingToken) throws IOException {
 		//toSignFile = toPdfA(toSignFile);
     	File signedFile = null;
     	if(newPageType.equals(NewPageType.onBegin)) {
@@ -86,15 +88,21 @@ public class PdfService {
         } else 
         if(signType.equals(SignType.certPAdES)) {
         	log.info("cades signature");
-          	signedFile = pAdESSign(toSignFile, signImage, pageNumber, xPos, yPos, certificateToken, certificateTokenChain);
+          	signedFile = pAdESSign(toSignFile, signImage, pageNumber, xPos, yPos, certificateToken, certificateTokenChain, signingToken);
         }
         return signedFile;
 
 	}
 	
-	public File pAdESSign(File toSignFile, File signImage, int pageNumber, int xPos, int yPos, CertificateToken certificateToken, CertificateToken[] certificateTokenChain) throws IOException {
+	public File pAdESSign(File toSignFile, File signImage, int pageNumber, int xPos, int yPos, CertificateToken certificateToken, CertificateToken[] certificateTokenChain, SignatureTokenConnection signingToken) throws IOException {
 		
         SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
+        signaturePdfForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
+		List<String> base64CertificateChain = new ArrayList<>();
+		for(CertificateToken token : certificateTokenChain) {
+			base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
+		}
+		signaturePdfForm.setBase64CertificateChain(base64CertificateChain);
 		signaturePdfForm.setSignatureForm(SignatureForm.PAdES);
 		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
 		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
@@ -103,7 +111,7 @@ public class PdfService {
 		signaturePdfForm.setSigningDate(new Date());
 		signaturePdfForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
         
-		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, certificateToken, certificateTokenChain, pageNumber, xPos, yPos, signImage, signWidth, signHeight);
+		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, signingToken, certificateToken, certificateTokenChain, pageNumber, xPos, yPos, signImage, signWidth, signHeight);
 
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         

@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.x509.CertificateToken;
 
 @Service
@@ -66,7 +67,7 @@ public class SignRequestService {
 		signRequest.setStatus(signRequestStatus);
 	}
 	
-	public InputStream sign(SignRequest signRequest, User user, int signPageNumber, int xPos, int yPos, CertificateToken certificateToken, CertificateToken[] certificateTokenChain) {
+	public InputStream sign(SignRequest signRequest, User user, int signPageNumber, int xPos, int yPos, CertificateToken certificateToken, CertificateToken[] certificateTokenChain, SignatureTokenConnection signingToken) {
 		InputStream in = null;
 		Map<String, String> params = signRequest.getParams();    	
     	File signImage = user.getSignImage().getBigFile().toJavaIoFile();
@@ -74,7 +75,7 @@ public class SignRequestService {
     	NewPageType newPageType = NewPageType.valueOf(params.get("newPageType"));
     	SignType signType = SignType.valueOf(params.get("signType"));
         try {
-        	File signedFile = pdfService.signPdf(toSignFile, signImage, signType, signPageNumber, xPos, yPos, newPageType, certificateToken, certificateTokenChain);
+        	File signedFile = pdfService.signPdf(toSignFile, signImage, signType, signPageNumber, xPos, yPos, newPageType, certificateToken, certificateTokenChain, signingToken);
         	in = new FileInputStream(signedFile);
 	        if(signedFile != null) {
 	        	params.put("signPageNumber", String.valueOf(signPageNumber));

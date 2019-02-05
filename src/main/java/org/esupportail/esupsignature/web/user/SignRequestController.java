@@ -48,6 +48,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.x509.CertificateToken;
 
 @RequestMapping("/user/signrequests")
@@ -220,7 +221,8 @@ public class SignRequestController {
 		try {
 			certificateToken = userKeystoreService.getCertificateToken(keystore);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keystore);
-	    	InputStream in = signRequestService.sign(signRequest, user, signPageNumber, xPos, yPos, certificateToken, certificateTokenChain);
+			SignatureTokenConnection signingToken = userKeystoreService.getSignatureTokenConnection(keystore);
+	    	InputStream in = signRequestService.sign(signRequest, user, signPageNumber, xPos, yPos, certificateToken, certificateTokenChain, signingToken);
 	    	if(signRequest.getSignBookId() != 0) {
 	    		SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
 	   			signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);

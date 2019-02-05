@@ -117,9 +117,9 @@ public class SignaturePdfController {
 	@ResponseBody
 	public SignDocumentResponse signDocument(Model model, @RequestBody @Valid SignatureValueAsString signatureValue,
 			@ModelAttribute("signaturePdfForm") @Valid SignatureDocumentForm signaturePdfForm, BindingResult result) {
-
+		System.err.println(signatureValue.getSignatureValue());	
 		signaturePdfForm.setBase64SignatureValue(signatureValue.getSignatureValue());
-
+		
 		DSSDocument document = signingService.visibleSignDocument(signaturePdfForm);
 		InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(document), document.getName(), document.getMimeType());
 		model.addAttribute("signedPdfDocument", signedPdfDocument);

@@ -39,6 +39,8 @@ import eu.europa.esig.dss.pades.SignatureImageTextParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.TimestampToken;
 import eu.europa.esig.dss.x509.CertificateToken;
@@ -178,7 +180,6 @@ public class SigningService {
 		if (form.getContentTimestamp() != null) {
 			parameters.setContentTimestamps(Arrays.asList(WebAppUtils.toTimestampToken(form.getContentTimestamp())));
 		}
-
 		CertificateToken signingCertificate = DSSUtils.loadCertificateFromBase64EncodedString(form.getBase64Certificate());
 		parameters.setSigningCertificate(signingCertificate);
 
@@ -192,7 +193,7 @@ public class SigningService {
 		}
 	}
 
-	public DSSDocument visibleSignDocument(SignatureDocumentForm form, CertificateToken certificateToken, CertificateToken[] certificateTokenChain, int page, int x, int y, File imageFile, int width, int height) {
+	public DSSDocument visibleSignDocument(SignatureDocumentForm form, SignatureTokenConnection signingToken, CertificateToken certificateToken, CertificateToken[] certificateTokenChain, int page, int x, int y, File imageFile, int width, int height) {
 		logger.info("Start signDocument with one document");
 		DSSDocument signedDocument = null;
 		try {
@@ -218,9 +219,9 @@ public class SigningService {
 			parameters.bLevel().setSigningDate(form.getSigningDate());
 			parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
 			parameters.setSignatureSize(100000);
-
-			SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
-			SignatureValue signatureValue = new SignatureValue(sigAlgorithm, certificateToken.getCertificate().getSignature());
+				
+			ToBeSigned dataToSign = padesService.getDataToSign(toSignDocument, parameters);
+			SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
 			signedDocument = (DSSDocument) padesService.signDocument(toSignDocument, parameters, signatureValue);
 		} catch (Exception e) {
 			logger.error("Unable to execute signDocument : " + e.getMessage(), e);

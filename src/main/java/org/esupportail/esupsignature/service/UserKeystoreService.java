@@ -11,7 +11,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +20,8 @@ import org.springframework.stereotype.Service;
 
 import eu.europa.esig.dss.token.KSPrivateKeyEntry;
 import eu.europa.esig.dss.token.KeyStoreSignatureTokenConnection;
+import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.x509.CertificateToken;
 import eu.europa.esig.dss.x509.KeyStoreCertificateSource;
 
@@ -73,6 +74,16 @@ public class UserKeystoreService {
 			log.error("error en get pem cert from keystore", e);
 		}
 		return null;
+	}
+	
+	public SignatureTokenConnection getSignatureTokenConnection(File keyStoreFile) throws EsupSignatureException {
+		try {
+			Pkcs12SignatureToken token = new Pkcs12SignatureToken(keyStoreFile, new PasswordProtection(password.toCharArray()));
+			return token;
+		} catch (Exception e) {
+			log.error("open keystore fail", e);
+			throw new EsupSignatureException("open keystore fail", e);
+		}
 	}
 	
 	public CertificateToken getCertificateToken(File keyStoreFile) throws EsupSignatureException {
