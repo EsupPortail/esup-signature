@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.web.user;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
@@ -138,7 +137,7 @@ public class SignRequestController {
     	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		addDateTimeFormatPatterns(uiModel);
         SignRequest signRequest = SignRequest.findSignRequest(id);
-        if(signRequest.getCreateBy().equals(eppn) || signRequest.getRecipientEmail().equals(user.getEmail())) {
+        if(signRequest.getCreateBy().equals(eppn) || (signRequest.getRecipientEmail() != null && signRequest.getRecipientEmail().equals(user.getEmail()))) {
         	Document toConvertFile;
         	if(signRequest.getStatus().equals(SignRequestStatus.signed)) {
         		toConvertFile = signRequest.getSignedFile();
@@ -202,7 +201,7 @@ public class SignRequestController {
     		@RequestParam(value = "xPos", required=true) int xPos,
     		@RequestParam(value = "yPos", required=true) int yPos,
     		@RequestParam(value = "signPageNumber", required=true) int signPageNumber,
-    		@RequestParam(value = "password", required=false) String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) throws SQLException, EsupSignatureException, IOException {
+    		@RequestParam(value = "password", required=false) String password, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		user.setIp(request.getRemoteAddr());
@@ -217,22 +216,22 @@ public class SignRequestController {
     	if(password == null) password = "";
     	userKeystoreService.setPassword(password);
     	File keystore = user.getKeystore().getBigFile().toJavaIoFile();
-    	CertificateToken certificateToken = userKeystoreService.getCertificateToken(keystore);
-		List<CertificateToken> certificateTokenChain = userKeystoreService.getCertificateTokenChain(keystore);
-    	InputStream in = signRequestService.sign(signRequest, user, signPageNumber, xPos, yPos, certificateToken, certificateTokenChain);
-    	if(signRequest.getSignBookId() != 0) {
-    		SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
-   			signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
-   	    	if(signBook.getTargetType().equals(DocumentIOType.cifs)) {
-   	    		try {
-   					cifsAccessImpl.putFile("/" + signBook.getDocumentsTargetUri() + "/", signRequest.getSignedFile().getFileName(), in, user, null);
-   				} catch (Exception e) {
-   					log.error("cifs copy file error", e);
-   					throw new EsupSignatureException("cifs copy file error", e);
-   				}
-   	    	}
-
-    	}
+    	CertificateToken certificateToken;
+		try {
+			certificateToken = userKeystoreService.getCertificateToken(keystore);
+			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keystore);
+	    	InputStream in = signRequestService.sign(signRequest, user, signPageNumber, xPos, yPos, certificateToken, certificateTokenChain);
+	    	if(signRequest.getSignBookId() != 0) {
+	    		SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
+	   			signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
+	   	    	if(signBook.getTargetType().equals(DocumentIOType.cifs)) {
+  					cifsAccessImpl.putFile("/" + signBook.getDocumentsTargetUri() + "/", signRequest.getSignedFile().getFileName(), in, user, null);
+	   	    	}
+	    	}
+		} catch (EsupSignatureException e) {
+			log.error("sign-doc error", e);
+			redirectAttrs.addFlashAttribute("messageCustom", "bad password");
+		}
 
         return "redirect:/user/signrequests/" + id;
     }

@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.esupportail.esupsignature.dss.web.model.CertificateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.utils.Utils;

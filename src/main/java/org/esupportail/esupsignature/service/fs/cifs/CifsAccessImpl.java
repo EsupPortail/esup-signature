@@ -263,7 +263,7 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 	 * @throws Exception 
 	 */
 	@Override
-	public boolean putFile(String dir, String filename, InputStream inputStream, User user, UploadActionType uploadOption) throws Exception {
+	public boolean putFile(String dir, String filename, InputStream inputStream, User user, UploadActionType uploadOption) {
 
 		boolean success = false;
 		SmbFile newFile = null;
@@ -299,9 +299,11 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 			log.info("can't upload file : " + e.getMessage(), e);
 		} catch (IOException e) {
 			log.warn("can't upload file : " + e.getMessage(), e);
+		} catch (Exception e) {
+			log.error("put file error", e);
 		}
 		
-		if(!success && newFile != null) {
+		if(!success && newFile != null) {	
 			// problem when uploading the file -> the file uploaded is corrupted
 			// best is to delete it
 			try {

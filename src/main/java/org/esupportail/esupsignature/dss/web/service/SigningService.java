@@ -192,7 +192,7 @@ public class SigningService {
 		}
 	}
 
-	public DSSDocument visibleSignDocument(SignatureDocumentForm form, CertificateToken certificateToken, List<CertificateToken> certificateTokenChain, int page, int x, int y, File imageFile, int width, int height) {
+	public DSSDocument visibleSignDocument(SignatureDocumentForm form, CertificateToken certificateToken, CertificateToken[] certificateTokenChain, int page, int x, int y, File imageFile, int width, int height) {
 		logger.info("Start signDocument with one document");
 		DSSDocument signedDocument = null;
 		try {
@@ -217,6 +217,7 @@ public class SigningService {
 			parameters.setDigestAlgorithm(form.getDigestAlgorithm());
 			parameters.bLevel().setSigningDate(form.getSigningDate());
 			parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
+			parameters.setSignatureSize(100000);
 
 			SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
 			SignatureValue signatureValue = new SignatureValue(sigAlgorithm, certificateToken.getCertificate().getSignature());

@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @RequestMapping("/user/users")
@@ -93,7 +94,7 @@ public class UserController {
     }
     
     @RequestMapping(method = RequestMethod.POST, produces = "text/html")
-    public String create(@Valid User user, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttrs) throws Exception {
+    public String create(@Valid User user, @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttrs) throws Exception {
     	if (bindingResult.hasErrors()) {
         	populateEditForm(uiModel, user);
             return "user/users/update";
@@ -102,7 +103,13 @@ public class UserController {
 		String eppn = userService.getEppnFromAuthentication();
 		User userToUpdate = null;
 		userToUpdate = User.findUsersByEppnEquals(eppn).getSingleResult();
-        if(!user.getPublicKey().isEmpty()) {
+        if(!multipartKeystore.isEmpty()) {
+            if(userToUpdate.getKeystore().getBigFile().getBinaryFile() != null) {
+            	userToUpdate.getKeystore().remove();
+            }
+            userToUpdate.setKeystore(documentService.addFile(multipartKeystore, multipartKeystore.getOriginalFilename()));
+        } else 
+		if(!user.getPublicKey().isEmpty()) {
             File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
             if(userToUpdate.getKeystore().getBigFile().getBinaryFile() != null) {
             	userToUpdate.getKeystore().remove();
@@ -129,11 +136,9 @@ public class UserController {
         User user = User.findUser(id);
         if(password != null && !password.isEmpty()) {
         	userKeystoreService.setPassword(password);
-        } else {
-        	userKeystoreService.setPassword("");
         }
         try {
-        	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getBigFile().toJavaIoFile(), user.getEppn(), user.getEppn()));
+        	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getBigFile().toJavaIoFile()));
         } catch (Exception e) {
         	log.error("open keystore fail", e);
         	redirectAttrs.addFlashAttribute("messageCustom", "bad password");

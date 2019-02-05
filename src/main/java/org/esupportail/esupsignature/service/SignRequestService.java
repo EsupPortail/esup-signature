@@ -66,7 +66,7 @@ public class SignRequestService {
 		signRequest.setStatus(signRequestStatus);
 	}
 	
-	public InputStream sign(SignRequest signRequest, User user, int signPageNumber, int xPos, int yPos, CertificateToken certificateToken, List<CertificateToken> certificateTokenChain) throws FileNotFoundException {
+	public InputStream sign(SignRequest signRequest, User user, int signPageNumber, int xPos, int yPos, CertificateToken certificateToken, CertificateToken[] certificateTokenChain) {
 		InputStream in = null;
 		Map<String, String> params = signRequest.getParams();    	
     	File signImage = user.getSignImage().getBigFile().toJavaIoFile();

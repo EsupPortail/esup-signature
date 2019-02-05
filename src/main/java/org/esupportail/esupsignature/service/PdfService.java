@@ -4,7 +4,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -34,9 +33,7 @@ import org.esupportail.esupsignature.dss.web.service.SigningService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSUtils;
@@ -47,7 +44,6 @@ import eu.europa.esig.dss.SignatureForm;
 import eu.europa.esig.dss.SignatureLevel;
 import eu.europa.esig.dss.SignaturePackaging;
 import eu.europa.esig.dss.x509.CertificateToken;
-import eu.europa.esig.dss.x509.KeyStoreCertificateSource;
 
 @Service
 public class PdfService {
@@ -66,7 +62,7 @@ public class PdfService {
 	private int xCenter = 297;
 	private int yCenter = 421;
 	
-	public File signPdf(File toSignFile, File signImage, SignType signType, int pageNumber, int xPos, int yPos, NewPageType newPageType, CertificateToken certificateToken, List<CertificateToken> certificateTokenChain) throws IOException {
+	public File signPdf(File toSignFile, File signImage, SignType signType, int pageNumber, int xPos, int yPos, NewPageType newPageType, CertificateToken certificateToken, CertificateToken[] certificateTokenChain) throws IOException {
 		//toSignFile = toPdfA(toSignFile);
     	File signedFile = null;
     	if(newPageType.equals(NewPageType.onBegin)) {
@@ -90,27 +86,24 @@ public class PdfService {
         } else 
         if(signType.equals(SignType.certPAdES)) {
         	log.info("cades signature");
-          	signedFile = pAdESSign(toSignFile, null, signImage, pageNumber, xPos, yPos, certificateToken, certificateTokenChain);
+          	signedFile = pAdESSign(toSignFile, signImage, pageNumber, xPos, yPos, certificateToken, certificateTokenChain);
         }
         return signedFile;
 
 	}
 	
-	public File pAdESSign(File file, List<String> certifChain, File imageFile, int page, int x, int y, CertificateToken certificateToken, List<CertificateToken> certificateTokenChain) throws IOException {
+	public File pAdESSign(File toSignFile, File signImage, int pageNumber, int xPos, int yPos, CertificateToken certificateToken, CertificateToken[] certificateTokenChain) throws IOException {
 		
         SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
 		signaturePdfForm.setSignatureForm(SignatureForm.PAdES);
-		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_LTA);
+		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
 		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
 		signaturePdfForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
 		signaturePdfForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 		signaturePdfForm.setSigningDate(new Date());
-
-		MultipartFile multipartFile = new MockMultipartFile(file.getName(), file.getName(), "application/pdf", new FileInputStream(file));
-
-		signaturePdfForm.setDocumentToSign(multipartFile);		
+		signaturePdfForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
         
-		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, certificateToken, certificateTokenChain, page, x, y, imageFile, signWidth, signHeight);
+		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, certificateToken, certificateTokenChain, pageNumber, xPos, yPos, signImage, signWidth, signHeight);
 
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
