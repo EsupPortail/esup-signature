@@ -12,6 +12,7 @@ import java.security.cert.X509Certificate;
 import java.util.Base64;
 
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -64,17 +65,17 @@ public class UserKeystoreService {
 		return null;
 	}
 	
-	public SignatureTokenConnection getSignatureTokenConnection(File keyStoreFile, String password) throws EsupSignatureException {
+	public SignatureTokenConnection getSignatureTokenConnection(File keyStoreFile, String password) throws EsupSignatureKeystoreException {
 		try {
 			Pkcs12SignatureToken token = new Pkcs12SignatureToken(keyStoreFile, new PasswordProtection(password.toCharArray()));
 			return token;
 		} catch (Exception e) {
 			log.error("open keystore fail", e);
-			throw new EsupSignatureException("open keystore fail", e);
+			throw new EsupSignatureKeystoreException("open keystore fail", e);
 		}
 	}
 	
-	public CertificateToken getCertificateToken(File keyStoreFile, String password) throws EsupSignatureException {
+	public CertificateToken getCertificateToken(File keyStoreFile, String password) throws EsupSignatureKeystoreException {
 		try {
 			KeyStoreSignatureTokenConnection token = new KeyStoreSignatureTokenConnection(keyStoreFile, keystoreType, new PasswordProtection(password.toCharArray()));
 			KSPrivateKeyEntry ksPrivateKeyEntry = (KSPrivateKeyEntry) token.getKeys().get(0);
@@ -82,11 +83,11 @@ public class UserKeystoreService {
 			return ksPrivateKeyEntry.getCertificate();
 		} catch (Exception e) {
 			log.error("open keystore fail", e);
-			throw new EsupSignatureException("open keystore fail", e);
+			throw new EsupSignatureKeystoreException("get certificat token fail", e);
 		}
 	}
 	
-	public CertificateToken[] getCertificateTokenChain(File keyStoreFile, String password)throws EsupSignatureException   {
+	public CertificateToken[] getCertificateTokenChain(File keyStoreFile, String password)throws EsupSignatureKeystoreException   {
 		try {
 			KeyStoreSignatureTokenConnection token = new KeyStoreSignatureTokenConnection(keyStoreFile, keystoreType, new PasswordProtection(password.toCharArray()));
 			KSPrivateKeyEntry ksPrivateKeyEntry = (KSPrivateKeyEntry) token.getKeys().get(0);
@@ -95,7 +96,7 @@ public class UserKeystoreService {
 			return certificateTokens;
 		} catch (IOException e) {
 			log.error("open keystore fail", e);
-			throw new EsupSignatureException("open keystore fail", e);
+			throw new EsupSignatureKeystoreException("get certificat chain fail", e);
 		}
 		
 	}

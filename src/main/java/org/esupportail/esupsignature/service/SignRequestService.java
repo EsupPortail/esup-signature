@@ -1,9 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Date;
 import java.util.Map;
 
@@ -16,7 +14,7 @@ import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.User;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -31,6 +29,9 @@ public class SignRequestService {
 	
 	@Resource
 	DocumentService documentService;
+	
+	@Resource
+	FileService fileService;
 	
 	public SignRequest createSignRequest(User user, Document document, Map<String, String> params, String recipientEmail) {
 		
@@ -63,29 +64,24 @@ public class SignRequestService {
 		signRequest.setStatus(signRequestStatus);
 	}
 	
-	public InputStream sign(SignRequest signRequest, User user, String password, int signPageNumber, int xPos, int yPos) {
-		InputStream in = null;
-		Map<String, String> params = signRequest.getParams();    	
+	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException {
     	File signImage = user.getSignImage().getBigFile().toJavaIoFile();
         File toSignFile = signRequest.getOriginalFile().getBigFile().toJavaIoFile();
-    	NewPageType newPageType = NewPageType.valueOf(params.get("newPageType"));
-    	SignType signType = SignType.valueOf(params.get("signType"));
+    	NewPageType newPageType = NewPageType.valueOf(signRequest.getParams().get("newPageType"));
+    	SignType signType = SignType.valueOf(signRequest.getParams().get("signType"));
+    	int signPageNumber = Integer.valueOf(signRequest.getParams().get("signPageNumber"));
+    	int xPos = Integer.valueOf(signRequest.getParams().get("xPos"));
+    	int yPos = Integer.valueOf(signRequest.getParams().get("yPos"));
         try {
-        	File signedFile = pdfService.signPdf(toSignFile, signImage, signType, signPageNumber, xPos, yPos, newPageType, user, password);
-        	in = new FileInputStream(signedFile);
-	        if(signedFile != null) {
-	        	params.put("signPageNumber", String.valueOf(signPageNumber));
-				params.put("xPos", String.valueOf(xPos));
-				params.put("yPos", String.valueOf(yPos));
-				signRequest.setParams(params);
-				signRequest.setSignedFile(documentService.addFile(signedFile, "signed_by_" + user.getEppn() + "_" + signRequest.getName(), "application/pdf"));
-				updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
-	        }
+        	if(fileService.getContentType(toSignFile).equals("application/pdf")) {
+	        	File signedFile = pdfService.signPdf(toSignFile, signImage, signType, signPageNumber, xPos, yPos, newPageType, user, password);
+		        if(signedFile != null) {
+					signRequest.setSignedFile(documentService.addFile(signedFile, "signed_by_" + user.getEppn() + "_" + signRequest.getName(), "application/pdf"));
+					updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
+		        }
+        	}
         } catch (IOException e) {
         	log.error("file to sign or sign image opening error", e);
-		} catch (EsupSignatureException e) {
-			log.error("sign process error", e);
 		}
-        return in;
 	}
 }

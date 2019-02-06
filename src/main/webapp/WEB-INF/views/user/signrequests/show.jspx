@@ -73,7 +73,7 @@
 						</div>
 					</div>
 					<div class="col-lg-5">
-						<form autocomplete="off" action="/user/signrequests/sign-doc/${id}" method="post">
+						<form autocomplete="off" action="/user/signrequests/sign/${id}" method="post">
 							<dl class="display-group border-bottom m-0">
 								<dt class="col-lg-4">Get original document</dt>
 								<dd>

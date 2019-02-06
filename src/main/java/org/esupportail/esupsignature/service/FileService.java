@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.Base64;
 
@@ -65,6 +66,15 @@ public class FileService {
 	    ImageIO.write(thumbnail, "png", fileImage);	
 	    return fileImage;
 	}  
+
+	public String getContentType(File file) {
+		try {
+			return Files.probeContentType(file.toPath());
+		} catch (IOException e) {
+			log.error("can't get content type", e);
+		}
+		return null;
+	}
 	
 	public String getBase64Image(Document file) throws IOException, SQLException {
 		BufferedImage imBuff = ImageIO.read(file.getBigFile().getBinaryFile().getBinaryStream());

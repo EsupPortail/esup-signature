@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.web.user;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
@@ -24,6 +26,7 @@ import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.PdfService;
@@ -194,8 +197,8 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + signRequest.getId();
     }
 
-    @RequestMapping(value = "/sign-doc/{id}", method = RequestMethod.POST)
-    public String signdoc(@PathVariable("id") Long id, 
+    @RequestMapping(value = "/sign/{id}", method = RequestMethod.POST)
+    public String sign(@PathVariable("id") Long id, 
     		@RequestParam(value = "xPos", required=true) int xPos,
     		@RequestParam(value = "yPos", required=true) int yPos,
     		@RequestParam(value = "signPageNumber", required=true) int signPageNumber,
@@ -204,34 +207,43 @@ public class SignRequestController {
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		user.setIp(request.getRemoteAddr());
     	SignRequest signRequest = SignRequest.findSignRequest(id);
-
+		Map<String, String> params = signRequest.getParams();    	
+    	params.put("signPageNumber", String.valueOf(signPageNumber));
+		params.put("xPos", String.valueOf(xPos));
+		params.put("yPos", String.valueOf(yPos));
+		signRequest.setParams(params);
+		signRequest.merge();
     	if((signRequest.getCreateBy().equals(user.getEppn()) && signRequest.getRecipientEmail() != null) 
     			||
     	   (signRequest.getRecipientEmail() != null && !signRequest.getRecipientEmail().equals(user.getEmail()))) {
         	redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
     		return "redirect:/user/signrequests/" + id;
     	}
-    	if("".equals(password)) this.password = password;
+    	if(!"".equals(password)) this.password = password;
 		try {
-	    	InputStream in = signRequestService.sign(signRequest, user, this.password, signPageNumber, xPos, yPos);
+	    	signRequestService.sign(signRequest, user, this.password);
 	    	if(signRequest.getSignBookId() != 0) {
 	    		SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
 	   			signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
 	   	    	if(signBook.getTargetType().equals(DocumentIOType.cifs)) {
-  					cifsAccessImpl.putFile("/" + signBook.getDocumentsTargetUri() + "/", signRequest.getSignedFile().getFileName(), in, user, null);
+	   		    	InputStream in = new FileInputStream(signRequest.getSignedFile().getBigFile().toJavaIoFile());
+	   	    		cifsAccessImpl.putFile("/" + signBook.getDocumentsTargetUri() + "/", signRequest.getSignedFile().getFileName(), in, user, null);
 	   	    	}
 	    	}
+		} catch (EsupSignatureKeystoreException e) {
+			log.error("keystore error", e);
+			redirectAttrs.addFlashAttribute("messageCustom", "bad password");
+		} catch (FileNotFoundException e) {
+			log.error("error on cifs copy", e);
 		} catch (EsupSignatureException e) {
 			log.error("sign-doc error", e);
-			//TODO messages exceptions
-			redirectAttrs.addFlashAttribute("messageCustom", "bad password");
 		}
 
         return "redirect:/user/signrequests/" + id;
     }
 	
     @RequestMapping(value = "/refuse/{id}")
-    public String signdoc(@PathVariable("id") Long id, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) throws SQLException {
+    public String refuse(@PathVariable("id") Long id, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) throws SQLException {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		user.setIp(request.getRemoteAddr());

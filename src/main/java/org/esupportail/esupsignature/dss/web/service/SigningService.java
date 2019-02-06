@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.dss.web.service;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.io.File;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,10 +20,11 @@ import eu.europa.esig.dss.ASiCContainerType;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSUtils;
-import eu.europa.esig.dss.FileDocument;
-import eu.europa.esig.dss.MimeType;
+import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.SignatureAlgorithm;
 import eu.europa.esig.dss.SignatureForm;
+import eu.europa.esig.dss.SignatureLevel;
+import eu.europa.esig.dss.SignaturePackaging;
 import eu.europa.esig.dss.SignatureValue;
 import eu.europa.esig.dss.ToBeSigned;
 import eu.europa.esig.dss.asic.ASiCWithCAdESSignatureParameters;
@@ -191,43 +191,26 @@ public class SigningService {
 			parameters.setCertificateChain(certificateChain);
 		}
 	}
-
-	public DSSDocument visibleSignDocument(SignatureDocumentForm form, SignatureTokenConnection signingToken, CertificateToken certificateToken, CertificateToken[] certificateTokenChain, int page, int x, int y, File imageFile, int width, int height) {
-		logger.info("Start signDocument with one document");
+	
+	public SignatureDocumentForm getPadesSignatureDocumentForm() {
+		SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
+		signaturePdfForm.setSignatureForm(SignatureForm.PAdES);
+		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
+		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
+		signaturePdfForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
+		return signaturePdfForm;
+	}
+	
+	public DSSDocument padesSignDocument(SignatureDocumentForm signaturePdfForm, PAdESSignatureParameters parameters, SignatureTokenConnection signingToken) {
 		DSSDocument signedDocument = null;
-		try {
-			DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());
-
-			PAdESSignatureParameters parameters = new PAdESSignatureParameters();
-			parameters.setSigningCertificate(certificateToken);
-			parameters.setCertificateChain(certificateTokenChain);
-
-			SignatureImageParameters imageParameters = new SignatureImageParameters();
-			imageParameters.setPage(page);
-			imageParameters.setxAxis(x);
-			imageParameters.setyAxis(y);
-			FileDocument fileDocumentImage = new FileDocument(imageFile);
-			fileDocumentImage.setMimeType(MimeType.PNG);
-			imageParameters.setImage(fileDocumentImage);
-			imageParameters.setWidth(width);
-			imageParameters.setHeight(height);
-			parameters.setSignatureImageParameters(imageParameters);
-			
-			parameters.setSignatureLevel(form.getSignatureLevel());
-			parameters.setDigestAlgorithm(form.getDigestAlgorithm());
-			parameters.bLevel().setSigningDate(form.getSigningDate());
-			parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
-			parameters.setSignatureSize(100000);
-				
-			ToBeSigned dataToSign = padesService.getDataToSign(toSignDocument, parameters);
-			SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
-			signedDocument = (DSSDocument) padesService.signDocument(toSignDocument, parameters, signatureValue);
-		} catch (Exception e) {
-			logger.error("Unable to execute signDocument : " + e.getMessage(), e);
-		}
-		logger.info("End signDocument with one document");
+		fillParameters(parameters, signaturePdfForm);
+		DSSDocument toSignDocument = WebAppUtils.toDSSDocument(signaturePdfForm.getDocumentToSign());
+		ToBeSigned dataToSign = padesService.getDataToSign(toSignDocument, parameters);
+		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
+		signedDocument = (DSSDocument) padesService.signDocument(toSignDocument, parameters, signatureValue);
 		return signedDocument;
 	}
+
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument visibleSignDocument(SignatureDocumentForm form) {

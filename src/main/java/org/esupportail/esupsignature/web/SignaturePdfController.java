@@ -32,12 +32,8 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSUtils;
-import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.InMemoryDocument;
 import eu.europa.esig.dss.MimeType;
-import eu.europa.esig.dss.SignatureForm;
-import eu.europa.esig.dss.SignatureLevel;
-import eu.europa.esig.dss.SignaturePackaging;
 import eu.europa.esig.dss.ToBeSigned;
 import eu.europa.esig.dss.utils.Utils;
 
@@ -62,14 +58,7 @@ public class SignaturePdfController {
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String showSignatureParameters(Model model, HttpServletRequest request) {
-		SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
-
-		// Pre-configure for PAdES
-		signaturePdfForm.setSignatureForm(SignatureForm.PAdES);
-		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_LTA);
-		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
-		signaturePdfForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
-
+		SignatureDocumentForm signaturePdfForm = signingService.getPadesSignatureDocumentForm();
 		model.addAttribute("signaturePdfForm", signaturePdfForm);
 		model.addAttribute("downloadNexuUrl", downloadNexuUrl);
 		return SIGNATURE_PDF_PARAMETERS;

@@ -16,14 +16,21 @@ import javax.imageio.ImageIO;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.jempbox.xmp.XMPMetadata;
 import org.apache.jempbox.xmp.pdfa.XMPSchemaPDFAId;
+import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
+import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
@@ -32,7 +39,7 @@ import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.service.SigningService;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,12 +47,12 @@ import org.springframework.stereotype.Service;
 
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSUtils;
-import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.EncryptionAlgorithm;
+import eu.europa.esig.dss.FileDocument;
 import eu.europa.esig.dss.InMemoryDocument;
-import eu.europa.esig.dss.SignatureForm;
-import eu.europa.esig.dss.SignatureLevel;
-import eu.europa.esig.dss.SignaturePackaging;
+import eu.europa.esig.dss.MimeType;
+import eu.europa.esig.dss.pades.PAdESSignatureParameters;
+import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.x509.CertificateToken;
 
@@ -69,8 +76,8 @@ public class PdfService {
 	private int xCenter = 297;
 	private int yCenter = 421;
 	
-	public File signPdf(File toSignFile, File signImage, SignType signType, int pageNumber, int xPos, int yPos, NewPageType newPageType, User user, String password) throws IOException, EsupSignatureException {
-		//toSignFile = toPdfA(toSignFile);
+	public File signPdf(File toSignFile, File signImage, SignType signType, int pageNumber, int xPos, int yPos, NewPageType newPageType, User user, String password) throws IOException, EsupSignatureKeystoreException {
+		toSignFile = toPdfA(toSignFile);
     	File signedFile = null;
     	if(newPageType.equals(NewPageType.onBegin)) {
         	log.info("add page on begin");
@@ -93,38 +100,55 @@ public class PdfService {
         } else 
         if(signType.equals(SignType.certPAdES)) {
         	log.info("cades signature");
-          	signedFile = pAdESSign(toSignFile, signImage, pageNumber, xPos, yPos, user, password);
+          	signedFile = padesSign(toSignFile, signImage, pageNumber, xPos, yPos, user, password);
         }
         return signedFile;
 
 	}
 	
-	public File pAdESSign(File toSignFile, File signImage, int pageNumber, int xPos, int yPos, User user, String password) throws IOException, EsupSignatureException {
+	public File padesSign(File toSignFile, File signImage, int pageNumber, int xPos, int yPos, User user, String password) throws IOException, EsupSignatureKeystoreException {
 		
-        SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
-		signaturePdfForm.setSignatureForm(SignatureForm.PAdES);
-		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
-		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
-		signaturePdfForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
-		signaturePdfForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
-		signaturePdfForm.setSigningDate(new Date());
-		signaturePdfForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
+        SignatureDocumentForm signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
+		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
+		signatureDocumentForm.setSigningDate(new Date());
+		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
         
 		File keyStoreFile = user.getKeystore().getBigFile().toJavaIoFile();
-		
 		SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
 		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
 		CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
 
-        signaturePdfForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
+        signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
 		List<String> base64CertificateChain = new ArrayList<>();
 		for(CertificateToken token : certificateTokenChain) {
 			base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
 		}
-		signaturePdfForm.setBase64CertificateChain(base64CertificateChain);
-		
-		DSSDocument dssDocument = signingService.visibleSignDocument(signaturePdfForm, signatureTokenConnection, certificateToken, certificateTokenChain, pageNumber, xPos, yPos, signImage, signWidth, signHeight);
+		signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
 
+		SignatureImageParameters imageParameters = new SignatureImageParameters();
+		imageParameters.setPage(pageNumber);
+		imageParameters.setxAxis(xPos);
+		imageParameters.setyAxis(yPos);
+		FileDocument fileDocumentImage = new FileDocument(signImage);
+		fileDocumentImage.setMimeType(MimeType.PNG);
+		imageParameters.setImage(fileDocumentImage);
+		imageParameters.setWidth(signWidth);
+		imageParameters.setHeight(signHeight);
+		
+		PAdESSignatureParameters parameters = new PAdESSignatureParameters();
+		parameters.setSigningCertificate(certificateToken);
+		parameters.setCertificateChain(certificateTokenChain);
+		parameters.setSignatureImageParameters(imageParameters);
+		//TODO ajuster signatue size
+		parameters.setSignatureSize(100000);
+		/*
+		parameters.setSignatureLevel(form.getSignatureLevel());
+		parameters.setDigestAlgorithm(form.getDigestAlgorithm());
+		parameters.bLevel().setSigningDate(form.getSigningDate());
+		parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
+		*/
+		
+		DSSDocument dssDocument = signingService.padesSignDocument(signatureDocumentForm, parameters, signatureTokenConnection);
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
         return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), "pdf");
@@ -153,10 +177,40 @@ public class PdfService {
 
 	}
 
+	public File flatten(File pdfFile) {
+        try {
+			File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
+			PDDocument pdDocument = PDDocument.load(pdfFile);
+			PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+			pdAcroForm.setNeedAppearances(false);
+			pdAcroForm.flatten();
+	        try {
+				pdDocument.save(targetFile);
+	        } catch (Exception e) {
+				log.error("PDF/A convert error", e);
+			}
+			pdDocument.close();
+	        return targetFile;
+        } catch (IOException e) {
+			log.error("file read error", e);
+		}
+        return pdfFile;
+	}	
+	
 	public File toPdfA(File pdfFile) {
         try {
 			File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
 			PDDocument pdDocument = PDDocument.load(pdfFile);
+			PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+			if(pdAcroForm != null) {
+				pdAcroForm.setNeedAppearances(false);
+				PDResources pdResources = new PDResources();
+				pdAcroForm.setDefaultResources(pdResources);
+
+			    List<PDField> fields = new ArrayList<>(pdAcroForm.getFields());
+			    processFields(fields, pdResources);
+			    pdAcroForm.flatten();
+			}
 			PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
 	        PDMetadata metadata = new PDMetadata(pdDocument);
 	        cat.setMetadata(metadata);
@@ -179,6 +233,41 @@ public class PdfService {
 		}
         return pdfFile;
 	}	
+	
+	private static void processFields(List<PDField> fields, PDResources resources) {
+	    fields.stream().forEach(f -> {
+	        f.setReadOnly(true);
+	        COSDictionary cosObject = f.getCOSObject();
+	        String value = cosObject.getString(COSName.DV) == null ?
+	                       cosObject.getString(COSName.V) : cosObject.getString(COSName.DV);
+	        System.out.println("Setting " + f.getFieldType() + ": " + value);
+	        try {
+	        	if(value == null) {
+	        		value = "";
+	        		if(f.getFieldType().equals("Btn")) {
+	        			value = "Off";
+	        		}
+	        	}
+	            f.setValue(value);
+	        } catch (IOException e) {
+	            if (e.getMessage().matches("Could not find font: /.*")) {
+	                String fontName = e.getMessage().replaceAll("^[^/]*/", "");
+	                System.out.println("Adding fallback font for: " + fontName);
+	                resources.put(COSName.getPDFName(fontName), PDType1Font.HELVETICA);
+	                try {
+	                    f.setValue(value);
+	                } catch (IOException e1) {
+	                    e1.printStackTrace();
+	                }
+	            } else {
+	                e.printStackTrace();
+	            }
+	        }
+	        if (f instanceof PDNonTerminalField) {
+	            processFields(((PDNonTerminalField) f).getChildren(), resources);
+	        }
+	    });
+	}
 	
 	public File addImage(File pdfFile, File signImage, int page, int x, int y) throws IOException {
 	
