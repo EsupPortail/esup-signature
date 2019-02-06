@@ -5,8 +5,7 @@
 	<jsp:output omit-xml-declaration="yes" />
 	<script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-1.11.1.min.js"><!-- --></script>
    <div class="col-md-9">
-   <h2>NexU signature process ${rootUrl}</h2>
-
+   <h2>NexU signature process</h2>
    <div class="progress">
        <div class="progress-bar progress-bar-striped active" style="width: 10%;" id="bar">
            <span id="bar-text">Loading certificates...</span>
@@ -14,6 +13,13 @@
    </div>
    <div id="error" style="display: none" class="alert alert-danger" role="danger">
         <strong id="errorText">Oops... an error occurred </strong><span id="errorcontent"></span>
+    </div>
+    <div class="alert alert-success" role="danger" id="success">
+        <strong>Success</strong>
+        <spring:url var="returnUrl" value="/user/signrequests/${signRequest.id}" />
+		<a href="${returnUrl}" class="btn btn-warning btnSeccion" id="btnSeccion3" value="Refresh">
+			<i class="fas fa-clipboard-check"><!--  --></i>Return
+		</a>
     </div>
 	</div>
     <script type="text/javascript" src="http://localhost:9795/nexu.js"><!-- --></script>

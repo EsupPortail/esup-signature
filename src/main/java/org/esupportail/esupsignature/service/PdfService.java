@@ -7,8 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
@@ -35,7 +35,6 @@ import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
 import org.esupportail.esupsignature.domain.SignBook.NewPageType;
-import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.service.SigningService;
@@ -73,44 +72,34 @@ public class PdfService {
 	private int pdfToImageDpi = 72;
 	private int signWidth = 100;
 	private int signHeight = 75;
-	private int xCenter = 297;
-	private int yCenter = 421;
+	private static int xCenter = 297;
+	private static int yCenter = 421;
 	
-	public File signPdf(File toSignFile, File signImage, SignType signType, int pageNumber, int xPos, int yPos, NewPageType newPageType, User user, String password) throws IOException, EsupSignatureKeystoreException {
+	public static File formatPdf(File toSignFile, Map<String, String> params) {
 		toSignFile = toPdfA(toSignFile);
-    	File signedFile = null;
-    	if(newPageType.equals(NewPageType.onBegin)) {
+    	if(NewPageType.valueOf(params.get("newPageType")).equals(NewPageType.onBegin)) {
         	log.info("add page on begin");
         	toSignFile = addBlankPage(toSignFile, 0);
-        	pageNumber = 1;
-        	xPos = xCenter;
-        	yPos = yCenter;
+        	params.put("signPageNumber", "1");
+        	params.put("xPos", String.valueOf(xCenter));
+        	params.put("yPos", String.valueOf(yCenter));
         } else 
-        if(newPageType.equals(NewPageType.onEnd)) {
+        if(NewPageType.valueOf(params.get("newPageType")).equals(NewPageType.onEnd)) {
         	log.info("add page on end");
         	toSignFile = addBlankPage(toSignFile, -1);
-        	pageNumber = getTotalNumberOfPages(toSignFile) + 1;
-        	xPos = xCenter;
-        	yPos = yCenter;
+        	params.put("signPageNumber", String.valueOf(getTotalNumberOfPages(toSignFile)));
+        	params.put("xPos", String.valueOf(xCenter));
+        	params.put("yPos", String.valueOf(yCenter));
         }
-    	
-        if(signType.equals(SignType.imageStamp)) {
-        	log.info("imageStamp signature " + xPos + " : " + yPos);
-        	signedFile = addImage(toSignFile, signImage, pageNumber, xPos, yPos);
-        } else 
-        if(signType.equals(SignType.certPAdES)) {
-        	log.info("cades signature");
-          	signedFile = padesSign(toSignFile, signImage, pageNumber, xPos, yPos, user, password);
-        }
-        return signedFile;
-
+    	return toSignFile;
 	}
 	
-	public File padesSign(File toSignFile, File signImage, int pageNumber, int xPos, int yPos, User user, String password) throws IOException, EsupSignatureKeystoreException {
+	public File padesSign(File toSignFile, File signImage, Map<String, String> params, User user, String password) throws EsupSignatureKeystoreException {
+		
+		toSignFile = formatPdf(toSignFile, params);
 		
         SignatureDocumentForm signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
 		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
-		signatureDocumentForm.setSigningDate(new Date());
 		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
         
 		File keyStoreFile = user.getKeystore().getBigFile().toJavaIoFile();
@@ -126,9 +115,9 @@ public class PdfService {
 		signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
 
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
-		imageParameters.setPage(pageNumber);
-		imageParameters.setxAxis(xPos);
-		imageParameters.setyAxis(yPos);
+		imageParameters.setPage(Integer.valueOf(params.get("signPageNumber")));
+		imageParameters.setxAxis(Integer.valueOf(params.get("xPos")));
+		imageParameters.setyAxis(Integer.valueOf(params.get("yPos")));
 		FileDocument fileDocumentImage = new FileDocument(signImage);
 		fileDocumentImage.setMimeType(MimeType.PNG);
 		imageParameters.setImage(fileDocumentImage);
@@ -141,40 +130,83 @@ public class PdfService {
 		parameters.setSignatureImageParameters(imageParameters);
 		//TODO ajuster signatue size
 		parameters.setSignatureSize(100000);
-		/*
-		parameters.setSignatureLevel(form.getSignatureLevel());
-		parameters.setDigestAlgorithm(form.getDigestAlgorithm());
-		parameters.bLevel().setSigningDate(form.getSigningDate());
-		parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
-		*/
 		
 		DSSDocument dssDocument = signingService.padesSignDocument(signatureDocumentForm, parameters, signatureTokenConnection);
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
-        return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), "pdf");
+        try {
+			return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), "pdf");
+		} catch (IOException e) {
+			log.error("error to read signed file", e);
+		}
+        return null;
 	}
 	
-	public File addBlankPage(File pdfFile, int position) throws IOException {
+	public File stampImageSign(File toSignFile, File signImage, Map<String, String> params) {
+		toSignFile = formatPdf(toSignFile, params);
+		try {
+			BufferedImage bufferedImage = ImageIO.read(signImage);
+	        AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+	        tx.translate(0, -bufferedImage.getHeight(null));
+	        AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+	        bufferedImage = op.filter(bufferedImage, null);
+			
+			File flipedSignImage = File.createTempFile("preview", ".png");
+			ImageIO.write(bufferedImage, "png", flipedSignImage);
+			
+			File targetFile =  File.createTempFile("output", ".pdf");
 
-	    File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
-		PDDocument pdDocument = PDDocument.load(pdfFile);
-		PDDocument targetPDDocument = new PDDocument();
-		PDPage blankPage = new PDPage(PDRectangle.A4);
-		if(position == 0) {
-			targetPDDocument.addPage(blankPage);
-		} 
-		
-		for(PDPage page : pdDocument.getPages()) {
-			targetPDDocument.addPage(page);
-		}
-		
-		if(position == -1) {
-			targetPDDocument.addPage(blankPage);
-		}
-		targetPDDocument.save(targetFile);
-		targetPDDocument.close();
-	    return targetFile;
+			PDDocument pdDocument = PDDocument.load(toSignFile);
+	       
+	        PDPage pdPage = pdDocument.getPage(Integer.valueOf(params.get("signPageNumber")) - 1);
 
+			PDImageXObject pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
+					
+			PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, false, true);
+			float height=pdPage.getMediaBox().getHeight();
+			contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
+	        
+			Matrix matrix = pdPage.getMatrix();
+			matrix.rotate(180);
+			matrix.translate(Integer.valueOf(params.get("xPos")), Integer.valueOf(params.get("yPos")));
+
+			//contentStream.drawXObject(pdImage, x, y, signWidth, signHeight);
+			contentStream.drawImage(pdImage, Integer.valueOf(params.get("xPos")), Integer.valueOf(params.get("yPos")), signWidth, signHeight);
+			contentStream.close();
+			
+			pdDocument.save(targetFile);
+			pdDocument.close();
+		    return targetFile;
+		} catch (IOException e) {
+			log.error("error to add image", e);
+		}
+		return null;
+	}
+	
+	public static File addBlankPage(File pdfFile, int position) {
+		try {
+			File targetFile = File.createTempFile(pdfFile.getName(), ".pdf");
+			PDDocument pdDocument = PDDocument.load(pdfFile);
+			PDDocument targetPDDocument = new PDDocument();
+			PDPage blankPage = new PDPage(PDRectangle.A4);
+			if(position == 0) {
+				targetPDDocument.addPage(blankPage);
+			} 
+			
+			for(PDPage page : pdDocument.getPages()) {
+				targetPDDocument.addPage(page);
+			}
+			
+			if(position == -1) {
+				targetPDDocument.addPage(blankPage);
+			}
+			targetPDDocument.save(targetFile);
+			targetPDDocument.close();
+		    return targetFile;
+		} catch (IOException e) {
+			log.error("error to add blank page", e);
+		}
+		return null;
 	}
 
 	public File flatten(File pdfFile) {
@@ -197,7 +229,7 @@ public class PdfService {
         return pdfFile;
 	}	
 	
-	public File toPdfA(File pdfFile) {
+	public static File toPdfA(File pdfFile) {
         try {
 			File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
 			PDDocument pdDocument = PDDocument.load(pdfFile);
@@ -240,7 +272,6 @@ public class PdfService {
 	        COSDictionary cosObject = f.getCOSObject();
 	        String value = cosObject.getString(COSName.DV) == null ?
 	                       cosObject.getString(COSName.V) : cosObject.getString(COSName.DV);
-	        System.out.println("Setting " + f.getFieldType() + ": " + value);
 	        try {
 	        	if(value == null) {
 	        		value = "";
@@ -269,43 +300,6 @@ public class PdfService {
 	    });
 	}
 	
-	public File addImage(File pdfFile, File signImage, int page, int x, int y) throws IOException {
-	
-		BufferedImage bufferedImage = ImageIO.read(signImage);
-
-        AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
-        tx.translate(0, -bufferedImage.getHeight(null));
-        AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-        bufferedImage = op.filter(bufferedImage, null);
-		
-		File flipedSignImage = File.createTempFile("preview", ".png");
-		ImageIO.write(bufferedImage, "png", flipedSignImage);
-		
-		File targetFile =  File.createTempFile("output", ".pdf");
-
-		PDDocument pdDocument = PDDocument.load(pdfFile);
-       
-        PDPage pdPage = pdDocument.getPage(page - 1);
-
-		PDImageXObject pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
-				
-		PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, false, true);
-		float height=pdPage.getMediaBox().getHeight();
-		contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
-        
-		Matrix matrix = pdPage.getMatrix();
-		matrix.rotate(180);
-		matrix.translate(x, y);
-
-		//contentStream.drawXObject(pdImage, x, y, signWidth, signHeight);
-		contentStream.drawImage(pdImage, x, y, signWidth, signHeight);
-		contentStream.close();
-		
-		pdDocument.save(targetFile);
-		pdDocument.close();
-	    return targetFile;
-	}
-	
 	public List<String> pagesAsBase64Images(File pdfFile) throws IOException   {
 		List<String> imagePages = new ArrayList<String>();
 		PDDocument pdDocument = PDDocument.load(pdfFile);
@@ -318,11 +312,15 @@ public class PdfService {
         return imagePages;
 	}
 	
-	public int getTotalNumberOfPages(File pdfFile) throws IOException {
-		PDDocument pdDocument = PDDocument.load(pdfFile);
-		int numberOfPages =pdDocument.getNumberOfPages();
-		pdDocument.close();
-		return numberOfPages;
+	public static Integer getTotalNumberOfPages(File pdfFile) {
+		try {
+			PDDocument pdDocument = PDDocument.load(pdfFile);
+			int numberOfPages =pdDocument.getNumberOfPages();
+			return numberOfPages;
+		} catch (IOException e) {
+			log.error("error to get number of pages", e);
+		}
+		return null;
 	}
 	
 	public String pageAsBase64Image(File pdfFile, int page) throws Exception {

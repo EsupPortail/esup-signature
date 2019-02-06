@@ -85,7 +85,7 @@ public class SignBook {
 	private String yPos;
     
 	public enum SignType {
-		validation, imageStamp, certPAdES;
+		validate, imageStamp, certPAdES, nexuPAdES;
 		//certXAdES, nexuPAdES, nexuXAdES;
 	}
 	

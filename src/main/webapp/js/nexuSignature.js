@@ -2,6 +2,7 @@ var tokenId;
 var keyId;
 
 window.onload = function() {
+    $("#success").hide();
     getCertificates();
 };
 
@@ -25,7 +26,7 @@ function getDataToSign(certificateData) {
         keyId = certificateData.response.keyId;
         var toSend = { signingCertificate: signingCertificate, certificateChain: certificateChain, encryptionAlgorithm: encryptionAlgorithm };
         
-        callUrl("http://dsi-7.univ-rouen.fr/sign-a-pdf/get-data-to-sign", "POST",  JSON.stringify(toSend), sign, error);
+        callUrl("http://dsi-7.univ-rouen.fr/user/nexu-sign/get-data-to-sign", "POST",  JSON.stringify(toSend), sign, error);
     }
 }
 
@@ -46,16 +47,14 @@ function signDocument(signatureData) {
     updateProgressBar("Signing the document...", "75%");
     var signatureValue = signatureData.response.signatureValue;
     var toSend = {signatureValue:signatureValue};
-    callUrl("http://dsi-7.univ-rouen.fr/sign-a-pdf/sign-document", "POST", JSON.stringify(toSend), downloadSignedDocument, error);
+    callUrl("http://dsi-7.univ-rouen.fr/user/nexu-sign/sign-document", "POST", JSON.stringify(toSend), end, error);
 }
 
-function downloadSignedDocument(signDocumentResponse) {
-    var url = signDocumentResponse.urlToDownload;
-    url = "http://dsi-7.univ-rouen.fr/sign-a-pdf/download";
-    window.open(url, "_self");
+function end() {
     updateProgressBar("Done !", "100%");
     $('#bar').removeClass('progress-bar-striped active');
     $('#bar').addClass('progress-bar-success');
+    $('#success').show();
 }
 
 function error(error) {

@@ -120,6 +120,7 @@ public class SignRequest {
         }
         
         List<Order> orders = new ArrayList<Order>();
+        orders.add(criteriaBuilder.asc(signRequestRoot.get("status")));
         if(sortOrder.equals("asc")){
         	orders.add(criteriaBuilder.asc(signRequestRoot.get(sortFieldName)));
         } else {
