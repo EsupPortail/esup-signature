@@ -6,7 +6,6 @@ package org.esupportail.esupsignature.web;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
-import org.esupportail.esupsignature.domain.TagLog;
 import org.esupportail.esupsignature.web.ApplicationConversionServiceFactoryBean;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.core.convert.converter.Converter;
@@ -88,30 +87,6 @@ privileged aspect ApplicationConversionServiceFactoryBean_Roo_ConversionService 
         };
     }
     
-    public Converter<TagLog, String> ApplicationConversionServiceFactoryBean.getTagLogToStringConverter() {
-        return new org.springframework.core.convert.converter.Converter<org.esupportail.esupsignature.domain.TagLog, java.lang.String>() {
-            public String convert(TagLog tagLog) {
-                return new StringBuilder().append(tagLog.getDate()).append(' ').append(tagLog.getTarif()).append(' ').append(tagLog.getEppnInit()).toString();
-            }
-        };
-    }
-    
-    public Converter<Long, TagLog> ApplicationConversionServiceFactoryBean.getIdToTagLogConverter() {
-        return new org.springframework.core.convert.converter.Converter<java.lang.Long, org.esupportail.esupsignature.domain.TagLog>() {
-            public org.esupportail.esupsignature.domain.TagLog convert(java.lang.Long id) {
-                return TagLog.findTagLog(id);
-            }
-        };
-    }
-    
-    public Converter<String, TagLog> ApplicationConversionServiceFactoryBean.getStringToTagLogConverter() {
-        return new org.springframework.core.convert.converter.Converter<java.lang.String, org.esupportail.esupsignature.domain.TagLog>() {
-            public org.esupportail.esupsignature.domain.TagLog convert(String id) {
-                return getObject().convert(getObject().convert(id, Long.class), TagLog.class);
-            }
-        };
-    }
-    
     public void ApplicationConversionServiceFactoryBean.installLabelConverters(FormatterRegistry registry) {
         registry.addConverter(getDocumentToStringConverter());
         registry.addConverter(getIdToDocumentConverter());
@@ -122,9 +97,6 @@ privileged aspect ApplicationConversionServiceFactoryBean_Roo_ConversionService 
         registry.addConverter(getSignBookToStringConverter());
         registry.addConverter(getIdToSignBookConverter());
         registry.addConverter(getStringToSignBookConverter());
-        registry.addConverter(getTagLogToStringConverter());
-        registry.addConverter(getIdToTagLogConverter());
-        registry.addConverter(getStringToTagLogConverter());
     }
     
     public void ApplicationConversionServiceFactoryBean.afterPropertiesSet() {

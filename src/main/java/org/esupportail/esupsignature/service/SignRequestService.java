@@ -1,7 +1,10 @@
 package org.esupportail.esupsignature.service;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.Map;
 
@@ -9,12 +12,16 @@ import javax.annotation.Resource;
 
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
-import org.esupportail.esupsignature.domain.SignBook.NewPageType;
+import org.esupportail.esupsignature.domain.SignBook;
+import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
+import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,16 +29,49 @@ import org.springframework.stereotype.Service;
 @Service
 public class SignRequestService {
 	
-	private static final Logger log = LoggerFactory.getLogger(SignRequestService.class);
+	private static final Logger logger = LoggerFactory.getLogger(SignRequestService.class);
 	
 	@Resource
 	PdfService pdfService;
 	
 	@Resource
+	CifsAccessImpl cifsAccessImpl;
+	
+	@Resource
 	DocumentService documentService;
 	
 	@Resource
+	SignBookService signBookService;
+	
+	@Resource
 	FileService fileService;
+	
+	public boolean checkUserSignRights(User user, SignRequest signRequest) {
+    	if(
+    			signRequest.getStatus().equals(SignRequestStatus.pending) 
+    			&&
+    			(
+    			(signRequest.getCreateBy().equals(user.getEppn()) && signRequest.getRecipientEmail() == null) 
+    			||
+    			(signRequest.getRecipientEmail() != null && signRequest.getRecipientEmail().equals(user.getEmail())))) 
+    	{
+    	    return true;
+    	} else {
+    		return false;
+    	}
+	}
+	
+	public boolean checkUserViewRights(User user, SignRequest signRequest) {
+    	if(
+    			signRequest.getCreateBy().equals(user.getEppn())
+    			||
+    			(signRequest.getRecipientEmail() != null && signRequest.getRecipientEmail().equals(user.getEmail()))) 
+    	{
+    	    return true;
+    	} else {
+    		return false;
+    	}
+	}
 	
 	public SignRequest createSignRequest(User user, Document document, Map<String, String> params, String recipientEmail) {
 		
@@ -62,26 +102,57 @@ public class SignRequestService {
 		log.setReturnCode(returnCode);
 		log.persist();
 		signRequest.setStatus(signRequestStatus);
+		if (signRequest.getSignBookId() != 0) {
+			SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
+			try {
+				signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
+			} catch (EsupSignatureException e) {
+			}
+			if (signBook.getTargetType().equals(DocumentIOType.cifs)) {
+				try {
+					InputStream in = new FileInputStream(signRequest.getSignedFile().getBigFile().toJavaIoFile());
+					cifsAccessImpl.putFile("/" + signBook.getDocumentsTargetUri() + "/",
+							signRequest.getSignedFile().getFileName(), in, user, null);
+				} catch (FileNotFoundException e) {
+					logger.error("error on cifs copy", e);				}
+			}
+
+		}
+			
 	}
 	
-	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException {
+	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException, EsupSignatureIOException {
     	File signImage = user.getSignImage().getBigFile().toJavaIoFile();
         File toSignFile = signRequest.getOriginalFile().getBigFile().toJavaIoFile();
-    	NewPageType newPageType = NewPageType.valueOf(signRequest.getParams().get("newPageType"));
     	SignType signType = SignType.valueOf(signRequest.getParams().get("signType"));
-    	int signPageNumber = Integer.valueOf(signRequest.getParams().get("signPageNumber"));
-    	int xPos = Integer.valueOf(signRequest.getParams().get("xPos"));
-    	int yPos = Integer.valueOf(signRequest.getParams().get("yPos"));
-        try {
-        	if(fileService.getContentType(toSignFile).equals("application/pdf")) {
-	        	File signedFile = pdfService.signPdf(toSignFile, signImage, signType, signPageNumber, xPos, yPos, newPageType, user, password);
-		        if(signedFile != null) {
-					signRequest.setSignedFile(documentService.addFile(signedFile, "signed_by_" + user.getEppn() + "_" + signRequest.getName(), "application/pdf"));
-					updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
-		        }
-        	}
-        } catch (IOException e) {
-        	log.error("file to sign or sign image opening error", e);
+
+    	if(fileService.getContentType(toSignFile).equals("application/pdf")) {
+    		File signedFile = null;
+            if(signType.equals(SignType.imageStamp)) {
+            	logger.info("imageStamp signature ");
+            	signedFile = pdfService.stampImageSign(toSignFile, signImage, signRequest.getParams());
+            } else 
+            if(signType.equals(SignType.certPAdES)) {
+            	logger.info("cades signature");
+              	signedFile = pdfService.padesSign(toSignFile, signImage, signRequest.getParams(), user, password);
+            }
+
+	        if(signedFile != null) {
+	        	addSignedFile(signRequest, signedFile, user);
+	        }
+    	} else {
+    		logger.warn("only pdf sign");
+    	}
+
+	}
+	
+	public void addSignedFile(SignRequest signRequest, File signedFile, User user) throws EsupSignatureIOException {
+		try {
+			signRequest.setSignedFile(documentService.addFile(signedFile, "signed_by_" + user.getEppn() + "_" + signRequest.getName(), "application/pdf"));
+			updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");		
+		} catch (IOException e) {
+			throw new EsupSignatureIOException("error on save signed file", e);
 		}
 	}
+	
 }

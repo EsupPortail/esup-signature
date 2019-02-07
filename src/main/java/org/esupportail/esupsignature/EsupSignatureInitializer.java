@@ -7,8 +7,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.SessionTrackingMode;
 
-import org.apache.cxf.BusFactory;
-import org.apache.cxf.transport.servlet.CXFServlet;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.web.WebApplicationInitializer;
@@ -49,13 +47,7 @@ public class EsupSignatureInitializer implements WebApplicationInitializer {
 		
 		ContextLoaderListener listener = new ContextLoaderListener(rootAppContext);
 		servletContext.addListener(listener);
-		/*		
-		CXFServlet cxf = new CXFServlet();
-		BusFactory.setDefaultBus(cxf.getBus());
-		ServletRegistration.Dynamic cxfServlet = servletContext.addServlet("CXFServlet", cxf);
-		cxfServlet.setLoadOnStartup(1);
-		cxfServlet.addMapping("/services/*");
-		*/
+		
 		servletContext.getSessionCookieConfig().setSecure(cookieSecure);
 		servletContext.setSessionTrackingModes(Collections.singleton(SessionTrackingMode.COOKIE));
 	}

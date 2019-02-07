@@ -30,12 +30,6 @@ public class User {
     private String ip;
     
     @Transient
-    private String publicKey;
-
-    @Transient
-    private String password;
-    
-    @Transient
     private String signImageBase64;
     
     @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)

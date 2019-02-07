@@ -1,8 +1,7 @@
 package org.esupportail.esupsignature.dss.web.service;
 
-import java.awt.Color;
-import java.awt.Font;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,8 +33,6 @@ import eu.europa.esig.dss.asic.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
-import eu.europa.esig.dss.pades.SignatureImageParameters;
-import eu.europa.esig.dss.pades.SignatureImageTextParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
@@ -198,6 +195,7 @@ public class SigningService {
 		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
 		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
 		signaturePdfForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
+		signaturePdfForm.setSigningDate(new Date());
 		return signaturePdfForm;
 	}
 	
@@ -213,44 +211,13 @@ public class SigningService {
 
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DSSDocument visibleSignDocument(SignatureDocumentForm form) {
+	public DSSDocument padesSignDocument(SignatureDocumentForm form, PAdESSignatureParameters parameters) {
 		logger.info("Start signDocument with one document");
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
 		DSSDocument signedDocument = null;
 		try {
 			DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());
-
-			PAdESSignatureParameters parameters = new PAdESSignatureParameters();
 			fillParameters(parameters, form);
-			parameters.setSignatureSize(100000);
-			parameters.setSigningCertificate(DSSUtils.loadCertificateFromBase64EncodedString(form.getBase64Certificate()));
-			// We set the certificate chain
-			List<String> base64CertificateChain = form.getBase64CertificateChain();
-			List<CertificateToken> certificateChain = new LinkedList<CertificateToken>();
-			for (String base64Certificate : base64CertificateChain) {
-				certificateChain.add(DSSUtils.loadCertificateFromBase64EncodedString(base64Certificate));
-			}
-			parameters.setCertificateChain(certificateChain);
-
-			// Initialize visual signature
-			SignatureImageParameters imageParameters = new SignatureImageParameters();
-			// the origin is the left and top corner of the page
-			imageParameters.setxAxis(200);
-			imageParameters.setyAxis(600);
-
-			//TODO get parameters from session user
-			
-			// Initialize text to generate for visual signature
-			SignatureImageTextParameters textParameters = new SignatureImageTextParameters();
-			textParameters.setFont(new Font("serif", Font.PLAIN, 14));
-			textParameters.setTextColor(Color.BLUE);
-			textParameters.setText("David Lemaignent");
-			imageParameters.setTextParameters(textParameters);
-
-			parameters.setSignatureImageParameters(imageParameters);
-
-			// This function obtains the signature value for signed information using the
-			// private key and specified algorithm
 			SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
 			SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
 			signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);

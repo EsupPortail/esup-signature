@@ -18,8 +18,7 @@
     limitations under the License.
 
 -->
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context" xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd         http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
-	
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:util="http://www.springframework.org/schema/util" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">	
 	<bean id="ldapUserDetailsService"
 		class="org.springframework.security.ldap.userdetails.LdapUserDetailsService">
 		<constructor-arg>
@@ -48,7 +47,7 @@
 			</map>
 		</property>
 	</bean>
-	
+	<!-- 
 	<bean id="shibAuthUserDetailsService"
 		class="org.esupportail.esupsignature.security.shib.ShibAuthenticatedUserDetailsService">
 		<property name="mappingGroupesRoles">
@@ -58,5 +57,32 @@
 			</map>
 		</property>
 	</bean>
-	
+	 -->
+		<bean id="shibAuthUserDetailsService"
+                class="org.esupportail.esupsignature.security.shib.ShibAuthenticatedUserDetailsService">
+                <property name="mappingGroupesRoles" ref="mappingGroupesRoles"/>
+                <property name="group2UserRoleService" ref="group2UserRoleService"/>
+        </bean>
+        
+        <bean id="group2UserRoleService"
+                class="org.esupportail.esupsignature.security.Group2UserRoleService">
+                <property name="mappingGroupesRoles" ref="mappingGroupesRoles"/>
+                <property name="groupService" ref="groupService"/>
+        </bean>
+
+        <bean id="groupService" class="org.esupportail.esupsignature.security.SpelGroupService">
+          <property name="groups4eppnSpel">
+            <map>
+              <entry key="group_admin" value="#eppn=='user1@univ-ville.fr' or #eppn=='user2@univ-ville.fr'"/>
+              <entry key="group_manager" value="true"/>
+            </map>
+          </property>
+        </bean>
+
+        <util:map id="mappingGroupesRoles">
+	        <entry key="group_admin" value="ROLE_ADMIN" />
+	        <entry key="group_manager" value="ROLE_MANAGER" />
+        </util:map>
+
+
 </beans>

@@ -1,13 +1,14 @@
 package org.esupportail.esupsignature.web.user;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +37,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @Scope(value="session")
 @Transactional
+@EnableScheduling
 public class UserController {
 
 	private static final Logger log = LoggerFactory.getLogger(UserController.class);
@@ -43,9 +46,6 @@ public class UserController {
 	public String getActiveMenu() {
 		return "user/users";
 	}
-	
-	private String password = "";
-	long startTime;
 	
 	@Autowired(required = false)
 	PersonLdapDao personDao;
@@ -61,7 +61,15 @@ public class UserController {
 	
 	@Resource
 	private UserService userService;
-    
+	
+	private String password = "";
+	long startTime;
+	
+	public void setPassword(String password) {
+		startTime = System.currentTimeMillis();
+		this.password = password;
+	}
+	
     @RequestMapping(produces = "text/html")
     public String show(Model uiModel) throws Exception {
 		String eppn = userService.getEppnFromAuthentication();
@@ -112,13 +120,6 @@ public class UserController {
             	userToUpdate.getKeystore().remove();
             }
             userToUpdate.setKeystore(documentService.addFile(multipartKeystore, multipartKeystore.getOriginalFilename()));
-        } else 
-		if(!user.getPublicKey().isEmpty()) {
-            File file = userKeystoreService.createKeystore(user.getEppn(), user.getEppn(), user.getPublicKey(), user.getPassword());
-            if(userToUpdate.getKeystore().getBigFile().getBinaryFile() != null) {
-            	userToUpdate.getKeystore().remove();
-            }
-            userToUpdate.setKeystore(documentService.addFile(file, file.getName(), "application/jks"));
         }
         Document oldSignImage = userToUpdate.getSignImage();
         if(!user.getSignImageBase64().isEmpty()) {
@@ -135,11 +136,12 @@ public class UserController {
         return "redirect:/user/users/";
     }
     
-    @RequestMapping(value = "/viewCert", method = RequestMethod.POST, produces = "text/html")
-    public String viewCert(@RequestParam("id") long id, @RequestParam("password") String password, RedirectAttributes redirectAttrs) throws Exception {
-        User user = User.findUser(id);
-        if(password != null && !password.isEmpty()) {
-        	this.password = password;
+    @RequestMapping(value = "/viewCert", method = RequestMethod.GET, produces = "text/html")
+    public String viewCert(@RequestParam("password") String password, RedirectAttributes redirectAttrs) throws Exception {
+		String eppn = userService.getEppnFromAuthentication();
+		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+        if(password != null && !password.isEmpty() && this.password.equals("")) {
+        	setPassword(password);
         }
         try {
         	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getBigFile().toJavaIoFile(), this.password));
@@ -150,6 +152,21 @@ public class UserController {
         return "redirect:/user/users/";
     }
     
+	@RequestMapping(value = "/get-keystore-file", method = RequestMethod.GET)
+	public void getSignedFile(HttpServletResponse response, Model model) {
+		String eppn = userService.getEppnFromAuthentication();
+		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		
+		Document file = user.getKeystore();
+		try {
+			response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
+			response.setContentType(file.getContentType());
+			IOUtils.copy(file.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+		} catch (Exception e) {
+			log.error("get file error", e);
+		}
+	}
+    
     void populateEditForm(Model uiModel, User user) {
         uiModel.addAttribute("user", user);
         uiModel.addAttribute("files", Document.findAllDocuments());
@@ -158,7 +175,7 @@ public class UserController {
 	@Scheduled(fixedDelay = 5000)
 	public void clearPassword () {
 		if(startTime > 0) {
-			if(System.currentTimeMillis() - startTime > 300000) {
+			if(System.currentTimeMillis() - startTime > 60000) {
 				password = "";
 				startTime = 0;
 			}

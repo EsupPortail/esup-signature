@@ -15,33 +15,26 @@
 			<div class="col-lg-9">
 				<div class="input-group">
 					<div class="custom-file">
-						<input type="file" class="custom-file-input" name="multipartKeystore" id="inputGroupFile02" value="Choose a file" aria-describedby="inputGroupFileAddon02" /> <label class="custom-file-label" id="inputGroupLabel02" for="upload">Choose file</label>
-					</div>
+						<input type="file" accept="application/x-pkcs12" class="custom-file-input" name="multipartKeystore" id="inputGroupFile02" value="Choose a file" aria-describedby="inputGroupFileAddon02" /> <label class="custom-file-label" id="inputGroupLabel02" for="upload">Choose PKCS12 file</label>
+					</div>	
 				</div>
 			</div>
 		</div>
-		<b>or</b>
-		<field:textarea cssClass="form-control" field="publicKey" id="c_org_esupportail_esupsignature_domain_User_publicKey" z="user-managed" />
-		<field:input cssClass="form-control" type="password" field="password" id="c_org_esupportail_esupsignature_domain_User_password" z="user-managed" />
 		<div class="form-group">
 			<label class="col-lg-3  col-form-label" for="newPageType"><strong>Sign image</strong></label>
 			<div class="col-lg-9">
-				<div class="row">
-					<c:if test="${not empty signFile}">
-						<div class="col-lg-3 text-center">
-							<b>Actual sign image</b> <img alt="signature" src="data:image/jpg;base64, ${signFile}" />
-						</div>
-					</c:if>
-					<div class="col-lg-9">
-						<div class="input-group">
-							<div class="custom-file">
-								<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" /> <label class="custom-file-label" id="inputGroupLabel01" for="upload">Choose file</label>
-							</div>
-						</div>
-						<div id="vanilla-demo">
-							<!--  -->
-						</div>
+				<c:if test="${not empty signFile}">
+					<div class="col-lg-3 text-center">
+						<b>Actual sign image</b> <img alt="signature" src="data:image/jpg;base64, ${signFile}" />
 					</div>
+				</c:if>
+				<div class="input-group">
+					<div class="custom-file">
+						<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" /> <label class="custom-file-label" id="inputGroupLabel01" for="upload">Choose image file</label>
+					</div>
+				</div>
+				<div id="vanilla-demo">
+					<!--  -->
 				</div>
 			</div>
 		</div>
