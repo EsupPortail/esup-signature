@@ -40,7 +40,7 @@
                </menu:category>
            </sec:authorize>
            <sec:authorize access="hasRole('ROLE_MANAGER')">
-           		<menu:category activeMenu="${role=='manager'}" id="c_manager" label="Manager" z="user-managed">
+           		<menu:category render="false" activeMenu="${role=='manager'}" id="c_manager" label="Manager" z="user-managed">
 	               <menu:item menuClass="dropdown-item" id="i_signbook_list" messageCode="global_menu_list" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
 	               <menu:item menuClass="dropdown-item" id="i_taglog_list" messageCode="global_menu_list" url="/manager/taglogs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
 	         	   <menu:item menuClass="dropdown-item" id="i_user_list" messageCode="global_menu_list" url="/manager/users?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
