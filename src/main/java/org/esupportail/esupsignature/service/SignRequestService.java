@@ -122,7 +122,6 @@ public class SignRequestService {
 	}
 	
 	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException, EsupSignatureIOException {
-    	File signImage = user.getSignImage().getBigFile().toJavaIoFile();
         File toSignFile = signRequest.getOriginalFile().getBigFile().toJavaIoFile();
     	SignType signType = SignType.valueOf(signRequest.getParams().get("signType"));
 
@@ -130,13 +129,12 @@ public class SignRequestService {
     		File signedFile = null;
             if(signType.equals(SignType.imageStamp)) {
             	logger.info("imageStamp signature ");
-            	signedFile = pdfService.stampImageSign(toSignFile, signImage, signRequest.getParams());
+            	signedFile = pdfService.stampImageSign(toSignFile, signRequest.getParams(), user);
             } else 
             if(signType.equals(SignType.certPAdES)) {
             	logger.info("cades signature");
-              	signedFile = pdfService.padesSign(toSignFile, signImage, signRequest.getParams(), user, password);
+              	signedFile = pdfService.padesSign(toSignFile, signRequest.getParams(), user, password);
             }
-
 	        if(signedFile != null) {
 	        	addSignedFile(signRequest, signedFile, user);
 	        }

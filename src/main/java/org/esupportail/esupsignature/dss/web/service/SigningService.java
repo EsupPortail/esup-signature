@@ -171,7 +171,7 @@ public class SigningService {
 		//parameters.setEncryptionAlgorithm(form.getEncryptionAlgorithm()); retrieved from certificate
 		parameters.bLevel().setSigningDate(form.getSigningDate());
 
-		parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
+		//parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
 
 		if (form.getContentTimestamp() != null) {
 			parameters.setContentTimestamps(Arrays.asList(WebAppUtils.toTimestampToken(form.getContentTimestamp())));
@@ -190,6 +190,7 @@ public class SigningService {
 	}
 	
 	public SignatureDocumentForm getPadesSignatureDocumentForm() {
+		//TODO : en param
 		SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
 		signaturePdfForm.setSignatureForm(SignatureForm.PAdES);
 		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
@@ -200,34 +201,22 @@ public class SigningService {
 	}
 	
 	public DSSDocument padesSignDocument(SignatureDocumentForm signaturePdfForm, PAdESSignatureParameters parameters, SignatureTokenConnection signingToken) {
+		logger.info("Start padesSignDocument with database keystore");
 		DSSDocument signedDocument = null;
 		fillParameters(parameters, signaturePdfForm);
 		DSSDocument toSignDocument = WebAppUtils.toDSSDocument(signaturePdfForm.getDocumentToSign());
 		ToBeSigned dataToSign = padesService.getDataToSign(toSignDocument, parameters);
-		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
-		signedDocument = (DSSDocument) padesService.signDocument(toSignDocument, parameters, signatureValue);
-		return signedDocument;
-	}
-
-	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DSSDocument padesSignDocument(SignatureDocumentForm form, PAdESSignatureParameters parameters) {
-		logger.info("Start signDocument with one document");
-		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
-		DSSDocument signedDocument = null;
-		try {
-			DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());
-			fillParameters(parameters, form);
-			SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
-			SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
-			signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);
-		} catch (Exception e) {
-			logger.error("Unable to execute signDocument : " + e.getMessage(), e);
+		SignatureValue signatureValue = null;
+		if(signingToken != null) {
+			signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
+		} else {
+			SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(signaturePdfForm.getEncryptionAlgorithm(), signaturePdfForm.getDigestAlgorithm());
+			signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(signaturePdfForm.getBase64SignatureValue()));
 		}
-		logger.info("End signDocument with one document");
+		signedDocument = (DSSDocument) padesService.signDocument(toSignDocument, parameters, signatureValue);
+		logger.info("End padesSignDocument with database keystore");
 		return signedDocument;
 	}
-	
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument signDocument(SignatureDocumentForm form) {

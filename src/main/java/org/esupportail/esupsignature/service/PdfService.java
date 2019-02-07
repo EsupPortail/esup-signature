@@ -94,7 +94,8 @@ public class PdfService {
     	return toSignFile;
 	}
 	
-	public File padesSign(File toSignFile, File signImage, Map<String, String> params, User user, String password) throws EsupSignatureKeystoreException {
+	public File padesSign(File toSignFile, Map<String, String> params, User user, String password) throws EsupSignatureKeystoreException {
+		File signImage = user.getSignImage().getBigFile().toJavaIoFile();
 		
 		toSignFile = formatPdf(toSignFile, params);
 		
@@ -142,7 +143,38 @@ public class PdfService {
         return null;
 	}
 	
-	public File stampImageSign(File toSignFile, File signImage, Map<String, String> params) {
+	public File nexuPadesSign(Map<String, String> params, User user, SignatureDocumentForm signatureDocumentForm) throws EsupSignatureKeystoreException {
+
+		File signImage = user.getSignImage().getBigFile().toJavaIoFile();
+        
+		SignatureImageParameters imageParameters = new SignatureImageParameters();
+		imageParameters.setPage(Integer.valueOf(params.get("signPageNumber")));
+		imageParameters.setxAxis(Integer.valueOf(params.get("xPos")));
+		imageParameters.setyAxis(Integer.valueOf(params.get("yPos")));
+		FileDocument fileDocumentImage = new FileDocument(signImage);
+		fileDocumentImage.setMimeType(MimeType.PNG);
+		imageParameters.setImage(fileDocumentImage);
+		imageParameters.setWidth(signWidth);
+		imageParameters.setHeight(signHeight);
+		
+		PAdESSignatureParameters parameters = new PAdESSignatureParameters();
+		parameters.setSignatureImageParameters(imageParameters);
+		//TODO ajuster signatue size
+		parameters.setSignatureSize(100000);
+		
+		DSSDocument dssDocument = signingService.padesSignDocument(signatureDocumentForm, parameters, null);
+        InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
+        
+        try {
+			return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), "pdf");
+		} catch (IOException e) {
+			log.error("error to read signed file", e);
+		}
+        return null;
+	}
+	
+	public File stampImageSign(File toSignFile, Map<String, String> params, User user) {
+    	File signImage = user.getSignImage().getBigFile().toJavaIoFile();
 		toSignFile = formatPdf(toSignFile, params);
 		try {
 			BufferedImage bufferedImage = ImageIO.read(signImage);
