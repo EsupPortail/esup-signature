@@ -77,7 +77,10 @@ public class NexuProcessController {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
     		SignatureDocumentForm signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
-    		File toSignFile = PdfService.formatPdf(signRequest.getOriginalFile().getBigFile().toJavaIoFile(), signRequest.getParams());
+    		File toSignFile = signRequest.getOriginalFile().getBigFile().toJavaIoFile();
+    		if(fileService.getContentType(toSignFile).equals("application/pdf")) {
+    			toSignFile = pdfService.stampImage(signRequest.getOriginalFile().getBigFile().toJavaIoFile(), signRequest.getParams(), user);
+    		}
     		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
 			model.addAttribute("signRequest", signRequest);
 			model.addAttribute("signaturePdfForm", signatureDocumentForm);
@@ -115,14 +118,14 @@ public class NexuProcessController {
 
 	@RequestMapping(value = "/sign-document", method = RequestMethod.POST)
 	@ResponseBody
+	//TODO : javascript nexu attend SignDocumentResponse ?? 
 	public SignDocumentResponse signDocument(Model model, @RequestBody @Valid SignatureValueAsString signatureValue,
 			@ModelAttribute("signaturePdfForm") @Valid SignatureDocumentForm signaturePdfForm, @ModelAttribute("signRequest") SignRequest signRequest, BindingResult result) throws EsupSignatureKeystoreException {
 		signaturePdfForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 		String eppn = userService.getEppnFromAuthentication();
     	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
         try {
-        	File signedFile = pdfService.nexuPadesSign(signRequest.getParams(), user, signaturePdfForm);
-        	signRequestService.addSignedFile(signRequest, signedFile, user);
+        	signRequestService.nexuSign(signRequest, user, signaturePdfForm);
         	signRequest.merge();
         	return new SignDocumentResponse();
 		} catch (EsupSignatureIOException e) {

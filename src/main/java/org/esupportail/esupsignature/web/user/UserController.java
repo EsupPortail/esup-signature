@@ -140,7 +140,7 @@ public class UserController {
     public String viewCert(@RequestParam("password") String password, RedirectAttributes redirectAttrs) throws Exception {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
-        if(password != null && !password.isEmpty() && this.password.equals("")) {
+		if (!"".equals(password)) {
         	setPassword(password);
         }
         try {

@@ -29,10 +29,7 @@ import org.springframework.roo.addon.tostring.RooToString;
 public class SignBook {
 
 	String name;
-	/*
-	@Enumerated(EnumType.STRING)
-	private SignBookType signBookType;
-	*/
+
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
@@ -85,14 +82,16 @@ public class SignBook {
 	private String yPos;
     
 	public enum SignType {
-		validate, imageStamp, certPAdES, nexuPAdES;
-		//certXAdES, nexuPAdES, nexuXAdES;
+		validate, imageStamp, certSign, nexuSign;
 	}
 	
 	public enum NewPageType {
 		none, onBegin, onEnd;
 	}
-/*
+	/*
+	@Enumerated(EnumType.STRING)
+	private SignBookType signBookType;
+	
 	public enum SignBookType {
 		oneShot, fixedParams, fixedIO, fixedParamsAndIO, custom;
 	}

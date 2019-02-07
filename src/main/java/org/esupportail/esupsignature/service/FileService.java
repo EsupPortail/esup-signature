@@ -16,6 +16,7 @@ import java.util.Base64;
 import javax.imageio.ImageIO;
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.slf4j.Logger;
@@ -74,6 +75,10 @@ public class FileService {
 			log.error("can't get content type", e);
 		}
 		return null;
+	}
+	
+	public String getExtenstion(File file) {
+		return FilenameUtils.getExtension(file.getName());
 	}
 	
 	public String getBase64Image(Document file) throws IOException, SQLException {
