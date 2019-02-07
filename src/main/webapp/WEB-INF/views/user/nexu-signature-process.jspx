@@ -16,9 +16,10 @@
     </div>
     <div class="alert alert-success" role="danger" id="success">
         <strong>Success</strong>
+        <br/>
         <spring:url var="returnUrl" value="/user/signrequests/${signRequest.id}" />
-		<a href="${returnUrl}" class="btn btn-warning btnSeccion" id="btnSeccion3" value="Refresh">
-			<i class="fas fa-clipboard-check"><!--  --></i>Return
+		<a href="${returnUrl}" class="btn btn-success btnSeccion" id="btnSeccion3" value="Refresh">
+			<i class="fas fa-clipboard-check"><!--  --></i> Finish
 		</a>
     </div>
 	</div>

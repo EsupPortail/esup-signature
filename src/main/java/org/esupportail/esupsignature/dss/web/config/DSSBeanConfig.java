@@ -1,25 +1,21 @@
 package org.esupportail.esupsignature.dss.web.config;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.KeyStore.PasswordProtection;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 
-import org.bouncycastle.tsp.TimeStampToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
-import eu.europa.esig.dss.DSSUtils;
-import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.asic.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.client.crl.OnlineCRLSource;
+import eu.europa.esig.dss.client.http.DataLoader;
 import eu.europa.esig.dss.client.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.client.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.client.http.commons.OCSPDataLoader;
@@ -29,14 +25,13 @@ import eu.europa.esig.dss.client.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.RemoteDocumentSignatureServiceImpl;
 import eu.europa.esig.dss.signature.RemoteMultipleDocumentsSignatureServiceImpl;
-import eu.europa.esig.dss.token.KeyStoreSignatureTokenConnection;
-import eu.europa.esig.dss.token.RemoteSignatureTokenConnection;
-import eu.europa.esig.dss.token.RemoteSignatureTokenConnectionImpl;
 import eu.europa.esig.dss.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.tsl.service.TSLRepository;
+import eu.europa.esig.dss.tsl.service.TSLValidationJob;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.RemoteDocumentValidationService;
+import eu.europa.esig.dss.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.x509.crl.CRLSource;
 import eu.europa.esig.dss.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.signature.XAdESService;
@@ -48,6 +43,9 @@ public class DSSBeanConfig {
 	@Value("${default.validation.policy}")
 	private String defaultValidationPolicy;
 
+	@Value("${tsp.server}")
+	private String tspServer;
+	
 	@Value("${current.lotl.url}")
 	private String lotlUrl;
 
@@ -62,13 +60,13 @@ public class DSSBeanConfig {
 
 	@Value("${oj.content.keystore.type}")
 	private String ksType;
-/*
+
 	@Value("${oj.content.keystore.filename}")
 	private String ksFilename;
 
 	@Value("${oj.content.keystore.password}")
 	private String ksPassword;
-*/
+
 	/*
 	@Value("${dss.server.signing.keystore.type}")
 	private String serverSigningKeystoreType;
@@ -162,17 +160,7 @@ public class DSSBeanConfig {
 	}
 
 	@Bean TSPSource tspSource() {
-		String tspServer = "http://tsa.belgium.be/connect";
 		OnlineTSPSource tspSource = new OnlineTSPSource(tspServer);
-		DigestAlgorithm digestAlgorithm = DigestAlgorithm.SHA256;
-		byte[] toDigest;
-		try {
-			toDigest = "esup-signature".getBytes("UTF-8");
-			byte[] digestValue = DSSUtils.digest(digestAlgorithm, toDigest);
-			TimeStampToken tsr = tspSource.getTimeStampResponse(digestAlgorithm, digestValue);
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
 		return tspSource;
 	}
 	
@@ -259,13 +247,13 @@ public class DSSBeanConfig {
 		tslRepository.setTrustedListsCertificateSource(trustedListSource);
 		return tslRepository;
 	}
-/*
+
 	@Bean
 	public KeyStoreCertificateSource ojContentKeyStore() throws IOException {
 		return new KeyStoreCertificateSource(new ClassPathResource(ksFilename).getFile(), ksType, ksPassword);
 	}
-*/
-	/*
+
+	
 	
 	@Bean
 	public TSLValidationJob tslValidationJob(DataLoader dataLoader, TSLRepository tslRepository, KeyStoreCertificateSource ojContentKeyStore) {
@@ -282,6 +270,6 @@ public class DSSBeanConfig {
 		return validationJob;
 	}
 	
-*/
+
 
 }

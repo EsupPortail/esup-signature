@@ -38,21 +38,8 @@
 		<appender-ref ref="STDOUT" />
 	</root>
 
-
 	<logger name="org.esupportail" additivity="false" level="DEBUG">
 		<appender-ref ref="STDOUT" />
-		<!-- <appender-ref ref="EMAIL" /> -->
 	</logger>
-	
-	<!-- 
-	<logger name="org.springframework.aop.interceptor" additivity="false" level="TRACE">
-		<appender-ref ref="STDOUT" />
-	</logger>
-	
-	
-	<logger name="org.springframework.beans.factory" additivity="false" level="TRACE">
-		<appender-ref ref="STDOUT" />
-	</logger>
-	 -->
 	
 </configuration>
