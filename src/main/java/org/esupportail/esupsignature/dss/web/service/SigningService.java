@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.dss.web.service;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
@@ -33,11 +35,14 @@ import eu.europa.esig.dss.asic.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
+import eu.europa.esig.dss.pades.SignatureImageParameters;
+import eu.europa.esig.dss.pades.SignatureImageTextParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.utils.Utils;
+import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.TimestampToken;
 import eu.europa.esig.dss.x509.CertificateToken;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
@@ -189,9 +194,68 @@ public class SigningService {
 		}
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public DSSDocument visibleSignDocument(SignatureDocumentForm form) {
+		logger.info("Start signDocument with one document");
+		DSSDocument signedDocument = null;
+		try {
+			DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());
+
+			PAdESSignatureParameters parameters = new PAdESSignatureParameters();
+			// We choose the level of the signature (-B, -T, -LT, -LTA).
+			parameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
+
+			
+			// We set the signing certificate
+			parameters.setSigningCertificate(DSSUtils.loadCertificateFromBase64EncodedString(form.getBase64Certificate()));
+			// We set the certificate chain
+			List<String> base64CertificateChain = form.getBase64CertificateChain();
+			List<CertificateToken> certificateChain = new LinkedList<CertificateToken>();
+			for (String base64Certificate : base64CertificateChain) {
+				certificateChain.add(DSSUtils.loadCertificateFromBase64EncodedString(base64Certificate));
+			}
+			parameters.setCertificateChain(certificateChain);
+
+			// Initialize visual signature
+			SignatureImageParameters imageParameters = new SignatureImageParameters();
+			// the origin is the left and top corner of the page
+			imageParameters.setxAxis(200);
+			imageParameters.setyAxis(600);
+
+			// Initialize text to generate for visual signature
+			SignatureImageTextParameters textParameters = new SignatureImageTextParameters();
+			textParameters.setFont(new Font("serif", Font.PLAIN, 14));
+			textParameters.setTextColor(Color.BLUE);
+			textParameters.setText("David Lemaignent");
+			imageParameters.setTextParameters(textParameters);
+
+			parameters.setSignatureImageParameters(imageParameters);
+
+			// Create common certificate verifier
+			CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
+			// Create PAdESService for signature
+			PAdESService service = new PAdESService(commonCertificateVerifier);
+
+			// Get the SignedInfo segment that need to be signed.
+			ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
+
+			// This function obtains the signature value for signed information using the
+			// private key and specified algorithm
+			DigestAlgorithm digestAlgorithm = parameters.getDigestAlgorithm();
+			SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
+			SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
+			signedDocument = service.signDocument(toSignDocument, parameters, signatureValue);
+		} catch (Exception e) {
+			logger.error("Unable to execute signDocument : " + e.getMessage(), e);
+		}
+		logger.info("End signDocument with one document");
+		return signedDocument;
+	}
+	
 	public SignatureDocumentForm getPadesSignatureDocumentForm() {
 		//TODO : en param
 		SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
+		signaturePdfForm.setContainerType(null);
 		signaturePdfForm.setSignatureForm(SignatureForm.PAdES);
 		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
 		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);

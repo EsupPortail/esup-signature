@@ -144,7 +144,7 @@ public class PdfService {
 	}
 	
 	public File nexuPadesSign(Map<String, String> params, User user, SignatureDocumentForm signatureDocumentForm) throws EsupSignatureKeystoreException {
-
+		/*
 		File signImage = user.getSignImage().getBigFile().toJavaIoFile();
         
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
@@ -161,8 +161,8 @@ public class PdfService {
 		parameters.setSignatureImageParameters(imageParameters);
 		//TODO ajuster signatue size
 		parameters.setSignatureSize(100000);
-		
-		DSSDocument dssDocument = signingService.padesSignDocument(signatureDocumentForm, parameters, null);
+		*/
+		DSSDocument dssDocument = signingService.signDocument(signatureDocumentForm);
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
         try {
