@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.esupportail.esupsignature.security.Group2UserRoleService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -38,8 +39,15 @@ implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken>
 	
 	protected Map<String, String> mappingGroupesRoles;
 	
+	protected Group2UserRoleService group2UserRoleService;
+
+	
 	public void setMappingGroupesRoles(Map<String, String> mappingGroupesRoles) {
 		this.mappingGroupesRoles = mappingGroupesRoles;
+	}
+	
+	public void setGroup2UserRoleService(Group2UserRoleService group2UserRoleService) {
+		this.group2UserRoleService = group2UserRoleService;
 	}
 	
 	public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
@@ -50,7 +58,9 @@ implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken>
 				authorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(credential)));
 			}
 		}
-		
+		for(String roleFromLdap : group2UserRoleService.getRoles(token.getName())) {
+			authorities.add(new SimpleGrantedAuthority(roleFromLdap));
+		}
 		return createUserDetails(token, authorities);
 	}
 
