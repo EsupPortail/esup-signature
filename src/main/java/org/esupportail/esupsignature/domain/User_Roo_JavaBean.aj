@@ -56,22 +56,6 @@ privileged aspect User_Roo_JavaBean {
         this.ip = ip;
     }
     
-    public String User.getPublicKey() {
-        return this.publicKey;
-    }
-    
-    public void User.setPublicKey(String publicKey) {
-        this.publicKey = publicKey;
-    }
-    
-    public String User.getPassword() {
-        return this.password;
-    }
-    
-    public void User.setPassword(String password) {
-        this.password = password;
-    }
-    
     public String User.getSignImageBase64() {
         return this.signImageBase64;
     }
