@@ -62,11 +62,13 @@ public class SignRequestController {
 	private String password = "";
 	long startTime;
 
+	public void setPassword(String password) {
+		startTime = System.currentTimeMillis();
+		this.password = password;
+	}
+	
 	@Resource
 	private SignRequestService signRequestService;
-
-	@Resource
-	private PdfService pdfService;
 
 	@Resource
 	private SignBookService signBookService;
@@ -120,12 +122,17 @@ public class SignRequestController {
 					.getResultList();
 			uiModel.addAttribute("mydocs", "active");
 		}
-		uiModel.addAttribute("nbToSignRequests",
-				SignRequest.countFindSignRequests("", user.getEmail(), SignRequestStatus.pending, ""));
-		uiModel.addAttribute("nbPedingSignRequests",
-				SignRequest.countFindSignRequests(user.getEppn(), "", SignRequestStatus.pending, ""));
+		int sizeNo = size == null ? 10 : size.intValue();
+
+		float nrOfPages = (float) SignRequest.countFindSignRequests(eppn, "", null, "") / sizeNo;
+
+		uiModel.addAttribute("maxPages",
+				(int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
+		uiModel.addAttribute("page", page);
+		uiModel.addAttribute("size", size);
+		uiModel.addAttribute("nbToSignRequests",SignRequest.countFindSignRequests("", user.getEmail(), SignRequestStatus.pending, ""));
+		uiModel.addAttribute("nbPedingSignRequests",SignRequest.countFindSignRequests(user.getEppn(), "", SignRequestStatus.pending, ""));
 		uiModel.addAttribute("signRequests", signRequests);
-		uiModel.addAttribute("maxPages", (int) 1);
 		return "user/signrequests/list";
 	}
 
@@ -150,9 +157,10 @@ public class SignRequestController {
 			uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 			uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 			uiModel.addAttribute("signRequest", signRequest);
+			uiModel.addAttribute("documentType", fileService.getExtenstion(toConvertFile.getJavaIoFile()));
 			uiModel.addAttribute("itemId", id);
 			uiModel.addAttribute("imagePagesSize",
-					PdfService.getTotalNumberOfPages(toConvertFile.getBigFile().toJavaIoFile()));
+					PdfService.getTotalNumberOfPages(toConvertFile.getJavaIoFile()));
 			uiModel.addAttribute("documentId", toConvertFile.getId());
 			if (signRequestService.checkUserSignRights(user, signRequest)) {
 				uiModel.addAttribute("signable", "ok");
@@ -213,14 +221,15 @@ public class SignRequestController {
 			params.put("yPos", String.valueOf(yPos));
 			signRequest.setParams(params);
 			signRequest.merge();
-			if (!"".equals(password))
-				this.password = password;
+			if (!"".equals(password)) {
+	        	setPassword(password);
+			}
 			try {
 				SignType signType = SignType.valueOf(signRequest.getParams().get("signType"));
 				if(signType.equals(SignType.validate)) {
 					signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
 				} else 
-				if(signType.equals(SignType.nexuPAdES)) {
+				if(signType.equals(SignType.nexuSign)) {
 					return "redirect:/user/nexu-sign/" + id;
 				} else {
 					signRequestService.sign(signRequest, user, this.password);
@@ -229,6 +238,8 @@ public class SignRequestController {
 				log.error("keystore error", e);
 				redirectAttrs.addFlashAttribute("messageCustom", "bad password");
 			} catch (EsupSignatureIOException e) {
+				log.error(e.getMessage(), e);
+			} catch (EsupSignatureException e) {
 				log.error(e.getMessage(), e);
 			}
 			return "redirect:/user/signrequests/" + id;
@@ -341,7 +352,7 @@ public class SignRequestController {
 	@Scheduled(fixedDelay = 5000)
 	public void clearPassword() {
 		if (startTime > 0) {
-			if (System.currentTimeMillis() - startTime > 300000) {
+			if (System.currentTimeMillis() - startTime > 60000) {
 				password = "";
 				startTime = 0;
 			}

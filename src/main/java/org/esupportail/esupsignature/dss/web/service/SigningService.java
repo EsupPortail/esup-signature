@@ -170,7 +170,6 @@ public class SigningService {
 		parameters.setDigestAlgorithm(form.getDigestAlgorithm());
 		//parameters.setEncryptionAlgorithm(form.getEncryptionAlgorithm()); retrieved from certificate
 		parameters.bLevel().setSigningDate(form.getSigningDate());
-
 		parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
 
 		if (form.getContentTimestamp() != null) {
@@ -190,7 +189,9 @@ public class SigningService {
 	}
 	
 	public SignatureDocumentForm getPadesSignatureDocumentForm() {
+		//TODO : bean properties ?
 		SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
+		signaturePdfForm.setContainerType(null);
 		signaturePdfForm.setSignatureForm(SignatureForm.PAdES);
 		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
 		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
@@ -198,37 +199,33 @@ public class SigningService {
 		signaturePdfForm.setSigningDate(new Date());
 		return signaturePdfForm;
 	}
+
+	public SignatureDocumentForm getXadesSignatureDocumentForm() {
+		//TODO : bean properties ?
+		SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
+		signaturePdfForm.setContainerType(ASiCContainerType.ASiC_E);
+		signaturePdfForm.setSignatureForm(SignatureForm.XAdES);
+		signaturePdfForm.setSignatureLevel(SignatureLevel.XAdES_BASELINE_T);
+		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
+		signaturePdfForm.setSignaturePackaging(SignaturePackaging.DETACHED);
+		signaturePdfForm.setSigningDate(new Date());
+		return signaturePdfForm;
+	}
 	
-	public DSSDocument padesSignDocument(SignatureDocumentForm signaturePdfForm, PAdESSignatureParameters parameters, SignatureTokenConnection signingToken) {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public DSSDocument certSignDocument(SignatureDocumentForm signaturePdfForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
+		logger.info("Start certSignDocument with database keystore");
+		DocumentSignatureService service = getSignatureService(signaturePdfForm.getContainerType(), signaturePdfForm.getSignatureForm());
 		DSSDocument signedDocument = null;
 		fillParameters(parameters, signaturePdfForm);
 		DSSDocument toSignDocument = WebAppUtils.toDSSDocument(signaturePdfForm.getDocumentToSign());
-		ToBeSigned dataToSign = padesService.getDataToSign(toSignDocument, parameters);
+		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
-		signedDocument = (DSSDocument) padesService.signDocument(toSignDocument, parameters, signatureValue);
+		signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);
+		logger.info("End certSignDocument with database keystore");
 		return signedDocument;
 	}
 
-	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DSSDocument padesSignDocument(SignatureDocumentForm form, PAdESSignatureParameters parameters) {
-		logger.info("Start signDocument with one document");
-		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
-		DSSDocument signedDocument = null;
-		try {
-			DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());
-			fillParameters(parameters, form);
-			SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
-			SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
-			signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);
-		} catch (Exception e) {
-			logger.error("Unable to execute signDocument : " + e.getMessage(), e);
-		}
-		logger.info("End signDocument with one document");
-		return signedDocument;
-	}
-	
-	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument signDocument(SignatureDocumentForm form) {
 		logger.info("Start signDocument with one document");

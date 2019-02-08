@@ -246,7 +246,7 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 		try {
 			SmbFile file = cd(dir, user);
 			InputStream inputStream = file.getInputStream();
-			return fileService.inputStreamToFile(inputStream, file.getName(), file.getContentType());
+			return fileService.inputStreamToFile(inputStream, file.getName());
 		} catch (SmbException e) {
 			log.warn("can't download file : " + e.getMessage(), e);
 		} catch (IOException e) {

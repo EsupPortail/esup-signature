@@ -47,14 +47,14 @@ function signDocument(signatureData) {
     updateProgressBar("Signing the document...", "75%");
     var signatureValue = signatureData.response.signatureValue;
     var toSend = {signatureValue:signatureValue};
-    callUrl("https://esup-signature.univ-ville.fr/user/nexu-sign/sign-document", "POST", JSON.stringify(toSend), end, error);
+    callUrl("https://esup-signature.univ-ville.fr/user/nexu-sign/sign-document", "POST", JSON.stringify(toSend), downloadSignedDocument, error);
 }
 
-function end() {
+function downloadSignedDocument(signDocumentResponse) {
     updateProgressBar("Done !", "100%");
     $('#bar').removeClass('progress-bar-striped active');
     $('#bar').addClass('progress-bar-success');
-    $('#success').show();
+    $("#success").show();
 }
 
 function error(error) {

@@ -9,13 +9,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.Base64;
 
 import javax.imageio.ImageIO;
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.slf4j.Logger;
@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.google.common.io.Files;
 
 import net.coobird.thumbnailator.Thumbnails;
 
@@ -40,8 +42,8 @@ public class FileService {
 		return null;
 	}
 	
-	public File inputStreamToFile(InputStream inputStream, String prefix, String suffix) throws IOException {
-		File file = File.createTempFile(prefix, suffix);
+	public File inputStreamToFile(InputStream inputStream, String name) throws IOException {
+		File file = new File(Files.createTempDir(), name);
 		OutputStream outputStream = new FileOutputStream(file);
 		IOUtils.copy(inputStream, outputStream);
 		outputStream.close();
@@ -69,11 +71,15 @@ public class FileService {
 
 	public String getContentType(File file) {
 		try {
-			return Files.probeContentType(file.toPath());
+			return java.nio.file.Files.probeContentType(file.toPath());
 		} catch (IOException e) {
 			log.error("can't get content type", e);
 		}
 		return null;
+	}
+	
+	public String getExtenstion(File file) {
+		return FilenameUtils.getExtension(file.getName());
 	}
 	
 	public String getBase64Image(Document file) throws IOException, SQLException {
@@ -95,5 +101,5 @@ public class FileService {
 		ImageIO.write(image, type, os);
 		return new ByteArrayInputStream(os.toByteArray());
 	}
-	
+
 }

@@ -56,7 +56,6 @@ public class UserKeystoreService {
 			Pkcs12SignatureToken token = new Pkcs12SignatureToken(keyStoreFile, new PasswordProtection(password.toCharArray()));
 			System.err.println(token.getKeys().size());
 			KSPrivateKeyEntry ksPrivateKeyEntry = (KSPrivateKeyEntry) token.getKeys().get(0);
-			//KSPrivateKeyEntry ksPrivateKeyEntry = (KSPrivateKeyEntry) token.getKey("lemaida3@univ-rouen.fr", new PasswordProtection(password.toCharArray()));
 			token.close();
 			return ksPrivateKeyEntry.getCertificate();
 		} catch (Exception e) {

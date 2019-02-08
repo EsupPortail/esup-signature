@@ -8,7 +8,7 @@
 			<div class="col-lg-9">
 				<div class="input-group">
 					<div class="custom-file">
-						<input class="custom-file-input" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01" /> <label class="custom-file-label" id="inputGroupLabel01" for="upload">Choose file</label>
+						<input class="custom-file-input" required="required" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01" /> <label class="custom-file-label" id="inputGroupLabel01" for="upload">Choose file</label>
 					</div>
 				</div>
 			</div>

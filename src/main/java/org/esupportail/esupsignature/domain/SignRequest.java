@@ -92,7 +92,11 @@ public class SignRequest {
         this.status = status;
     }
     
-    public static TypedQuery<SignRequest> findSignRequests(String createBy, String recipientEmail, SignRequestStatus status, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
+    public String getSignTypeLabel() {
+		return params.get("signType");
+	}
+
+	public static TypedQuery<SignRequest> findSignRequests(String createBy, String recipientEmail, SignRequestStatus status, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
     	EntityManager em = SignRequest.entityManager();
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<SignRequest> query = criteriaBuilder.createQuery(SignRequest.class);

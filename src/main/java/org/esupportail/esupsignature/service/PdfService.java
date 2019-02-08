@@ -13,7 +13,6 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.jempbox.xmp.XMPMetadata;
 import org.apache.jempbox.xmp.pdfa.XMPSchemaPDFAId;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -36,24 +35,11 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
 import org.esupportail.esupsignature.domain.SignBook.NewPageType;
 import org.esupportail.esupsignature.domain.User;
-import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
-import org.esupportail.esupsignature.dss.web.service.SigningService;
-import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import eu.europa.esig.dss.DSSDocument;
-import eu.europa.esig.dss.DSSUtils;
-import eu.europa.esig.dss.EncryptionAlgorithm;
-import eu.europa.esig.dss.FileDocument;
-import eu.europa.esig.dss.InMemoryDocument;
-import eu.europa.esig.dss.MimeType;
-import eu.europa.esig.dss.pades.PAdESSignatureParameters;
-import eu.europa.esig.dss.pades.SignatureImageParameters;
-import eu.europa.esig.dss.token.SignatureTokenConnection;
-import eu.europa.esig.dss.x509.CertificateToken;
+import com.google.common.io.Files;
 
 @Service
 public class PdfService {
@@ -63,20 +49,12 @@ public class PdfService {
 	@Resource
 	private FileService fileService;
 	
-	@Resource
-	private UserKeystoreService userKeystoreService;
-	
-	@Autowired
-	private SigningService signingService;
-	
+	//TODO properties ?
 	private int pdfToImageDpi = 72;
-	private int signWidth = 100;
-	private int signHeight = 75;
-	private static int xCenter = 297;
-	private static int yCenter = 421;
+	private int xCenter = 297;
+	private int yCenter = 421;
 	
-	public static File formatPdf(File toSignFile, Map<String, String> params) {
-		toSignFile = toPdfA(toSignFile);
+	public File formatPdf(File toSignFile, Map<String, String> params) {
     	if(NewPageType.valueOf(params.get("newPageType")).equals(NewPageType.onBegin)) {
         	log.info("add page on begin");
         	toSignFile = addBlankPage(toSignFile, 0);
@@ -91,58 +69,12 @@ public class PdfService {
         	params.put("xPos", String.valueOf(xCenter));
         	params.put("yPos", String.valueOf(yCenter));
         }
+		toSignFile = toPdfA(toSignFile);
     	return toSignFile;
 	}
-	
-	public File padesSign(File toSignFile, File signImage, Map<String, String> params, User user, String password) throws EsupSignatureKeystoreException {
 		
-		toSignFile = formatPdf(toSignFile, params);
-		
-        SignatureDocumentForm signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
-		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
-		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
-        
-		File keyStoreFile = user.getKeystore().getBigFile().toJavaIoFile();
-		SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
-		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
-		CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
-
-        signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
-		List<String> base64CertificateChain = new ArrayList<>();
-		for(CertificateToken token : certificateTokenChain) {
-			base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
-		}
-		signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
-
-		SignatureImageParameters imageParameters = new SignatureImageParameters();
-		imageParameters.setPage(Integer.valueOf(params.get("signPageNumber")));
-		imageParameters.setxAxis(Integer.valueOf(params.get("xPos")));
-		imageParameters.setyAxis(Integer.valueOf(params.get("yPos")));
-		FileDocument fileDocumentImage = new FileDocument(signImage);
-		fileDocumentImage.setMimeType(MimeType.PNG);
-		imageParameters.setImage(fileDocumentImage);
-		imageParameters.setWidth(signWidth);
-		imageParameters.setHeight(signHeight);
-		
-		PAdESSignatureParameters parameters = new PAdESSignatureParameters();
-		parameters.setSigningCertificate(certificateToken);
-		parameters.setCertificateChain(certificateTokenChain);
-		parameters.setSignatureImageParameters(imageParameters);
-		//TODO ajuster signatue size
-		parameters.setSignatureSize(100000);
-		
-		DSSDocument dssDocument = signingService.padesSignDocument(signatureDocumentForm, parameters, signatureTokenConnection);
-        InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
-        
-        try {
-			return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), "pdf");
-		} catch (IOException e) {
-			log.error("error to read signed file", e);
-		}
-        return null;
-	}
-	
-	public File stampImageSign(File toSignFile, File signImage, Map<String, String> params) {
+	public File stampImage(File toSignFile, Map<String, String> params, User user) {
+    	File signImage = user.getSignImage().getJavaIoFile();
 		toSignFile = formatPdf(toSignFile, params);
 		try {
 			BufferedImage bufferedImage = ImageIO.read(signImage);
@@ -154,7 +86,7 @@ public class PdfService {
 			File flipedSignImage = File.createTempFile("preview", ".png");
 			ImageIO.write(bufferedImage, "png", flipedSignImage);
 			
-			File targetFile =  File.createTempFile("output", ".pdf");
+			File targetFile =  new File(Files.createTempDir(), toSignFile.getName());
 
 			PDDocument pdDocument = PDDocument.load(toSignFile);
 	       
@@ -171,7 +103,7 @@ public class PdfService {
 			matrix.translate(Integer.valueOf(params.get("xPos")), Integer.valueOf(params.get("yPos")));
 
 			//contentStream.drawXObject(pdImage, x, y, signWidth, signHeight);
-			contentStream.drawImage(pdImage, Integer.valueOf(params.get("xPos")), Integer.valueOf(params.get("yPos")), signWidth, signHeight);
+			contentStream.drawImage(pdImage, Integer.valueOf(params.get("xPos")), Integer.valueOf(params.get("yPos")), SignRequestService.signWidth, SignRequestService.signHeight);
 			contentStream.close();
 			
 			pdDocument.save(targetFile);
@@ -183,7 +115,7 @@ public class PdfService {
 		return null;
 	}
 	
-	public static File addBlankPage(File pdfFile, int position) {
+	public File addBlankPage(File pdfFile, int position) {
 		try {
 			File targetFile = File.createTempFile(pdfFile.getName(), ".pdf");
 			PDDocument pdDocument = PDDocument.load(pdfFile);
@@ -229,9 +161,9 @@ public class PdfService {
         return pdfFile;
 	}	
 	
-	public static File toPdfA(File pdfFile) {
+	public File toPdfA(File pdfFile) {
         try {
-			File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
+			File targetFile =  new File(Files.createTempDir(), pdfFile.getName());
 			PDDocument pdDocument = PDDocument.load(pdfFile);
 			PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
 			if(pdAcroForm != null) {
@@ -266,7 +198,7 @@ public class PdfService {
         return pdfFile;
 	}	
 	
-	private static void processFields(List<PDField> fields, PDResources resources) {
+	private void processFields(List<PDField> fields, PDResources resources) {
 	    fields.stream().forEach(f -> {
 	        f.setReadOnly(true);
 	        COSDictionary cosObject = f.getCOSObject();

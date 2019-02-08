@@ -1,12 +1,9 @@
 package org.esupportail.esupsignature.web.user;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.xml.bind.DatatypeConverter;
 
@@ -19,7 +16,9 @@ import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureValueAsString;
 import org.esupportail.esupsignature.dss.web.service.SigningService;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
@@ -40,14 +39,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import eu.europa.esig.dss.DSSDocument;
-import eu.europa.esig.dss.DSSUtils;
-import eu.europa.esig.dss.FileDocument;
-import eu.europa.esig.dss.InMemoryDocument;
-import eu.europa.esig.dss.MimeType;
 import eu.europa.esig.dss.ToBeSigned;
-import eu.europa.esig.dss.pades.PAdESSignatureParameters;
-import eu.europa.esig.dss.pades.SignatureImageParameters;
 
 @Controller
 @SessionAttributes(value = { "signaturePdfForm", "signedPdfDocument", "signRequest" })
@@ -65,6 +57,9 @@ public class NexuProcessController {
 
 	@Autowired
 	private SigningService signingService;
+
+	@Resource
+	private PdfService pdfService;
 	
 	@Resource
 	private FileService fileService;
@@ -74,9 +69,6 @@ public class NexuProcessController {
 	
 	@Resource
 	private SignRequestService signRequestService;
-	
-	private int signWidth = 100;
-	private int signHeight = 75;
 
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String showSignatureParameters(@PathVariable("id") Long id, Model model, HttpServletRequest request, RedirectAttributes redirectAttrs) {
@@ -84,8 +76,13 @@ public class NexuProcessController {
     	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
-    		SignatureDocumentForm signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
-			signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(signRequest.getOriginalFile().getBigFile().toJavaIoFile(), "application/pdf"));
+    		SignatureDocumentForm signatureDocumentForm = signingService.getXadesSignatureDocumentForm();
+    		File toSignFile = signRequest.getOriginalFile().getJavaIoFile();
+    		if(fileService.getContentType(toSignFile).equals("application/pdf")) {
+    			signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
+    			toSignFile = pdfService.stampImage(signRequest.getOriginalFile().getJavaIoFile(), signRequest.getParams(), user);
+    		}
+    		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
 			model.addAttribute("signRequest", signRequest);
 			model.addAttribute("signaturePdfForm", signatureDocumentForm);
 			model.addAttribute("digestAlgorithm", signatureDocumentForm.getDigestAlgorithm());
@@ -122,52 +119,20 @@ public class NexuProcessController {
 
 	@RequestMapping(value = "/sign-document", method = RequestMethod.POST)
 	@ResponseBody
+	//TODO : javascript nexu attend SignDocumentResponse ?? 
 	public SignDocumentResponse signDocument(Model model, @RequestBody @Valid SignatureValueAsString signatureValue,
-			@ModelAttribute("signaturePdfForm") @Valid SignatureDocumentForm signaturePdfForm, @ModelAttribute("signRequest") SignRequest signRequest, BindingResult result) {
+			@ModelAttribute("signaturePdfForm") @Valid SignatureDocumentForm signaturePdfForm, @ModelAttribute("signRequest") SignRequest signRequest, BindingResult result) throws EsupSignatureKeystoreException {
 		signaturePdfForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 		String eppn = userService.getEppnFromAuthentication();
     	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
-    	
-    	File signImage = user.getSignImage().getBigFile().toJavaIoFile();
-
-    	Map<String, String> params = signRequest.getParams();
-		SignatureImageParameters imageParameters = new SignatureImageParameters();
-		imageParameters.setPage(Integer.valueOf(params.get("signPageNumber")));
-		imageParameters.setxAxis(Integer.valueOf(params.get("xPos")));
-		imageParameters.setyAxis(Integer.valueOf(params.get("yPos")));
-		FileDocument fileDocumentImage = new FileDocument(signImage);
-		fileDocumentImage.setMimeType(MimeType.PNG);
-		imageParameters.setImage(fileDocumentImage);
-		imageParameters.setWidth(signWidth);
-		imageParameters.setHeight(signHeight);
-		
-		PAdESSignatureParameters parameters = new PAdESSignatureParameters();
-		parameters.setSignatureImageParameters(imageParameters);
-		parameters.setSignatureSize(100000);
-    	
-		DSSDocument document = signingService.padesSignDocument(signaturePdfForm, parameters);
-		
-		InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(document), document.getName(), document.getMimeType());
         try {
-        	File signedFile = fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), "pdf");
-        	signRequestService.addSignedFile(signRequest, signedFile, user);
+        	signRequestService.nexuSign(signRequest, user, signaturePdfForm);
         	signRequest.merge();
-        	model.addAttribute("signRequest", signRequest);
-    		model.addAttribute("signedPdfDocument", signedPdfDocument);
-    		SignDocumentResponse signedDocumentResponse = new SignDocumentResponse();
-    		signedDocumentResponse.setUrlToDownload("download");
-    		return signedDocumentResponse;
-		} catch (IOException e) {
-			log.error("error to read signed file", e);
+        	return new SignDocumentResponse();
 		} catch (EsupSignatureIOException e) {
 			log.error(e.getMessage(), e);
 		}
         return null;
 	}
 
-	@RequestMapping(value = "/end", method = RequestMethod.GET)
-	public String end(@ModelAttribute("signedPdfDocument") InMemoryDocument signedDocument, @ModelAttribute("signRequest") SignRequest signRequest, HttpServletResponse response) {
-		return "redirect:/user/signrequests/" + signRequest.getId(); 
-	}
-	
 }

@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 
 import javax.annotation.Resource;
