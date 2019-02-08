@@ -71,7 +71,7 @@
 						<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
 						<input type="button" class="btn btn-outline-dark float-right" id="next" onclick="nextImage()" value="next" />
 						<div id="pointer_div" onclick="point_it(event)" style="background-size: 595px;background-image:url('${documentUrl}/${signRequest.params.signPageNumber -1}');width:595px;height:842px;border:1px solid #CCC;">
-							<c:if test="${signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' and not signRequest.params.signType eq 'validate'}">						
+							<c:if test="${signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' and signRequest.params.signType ne 'validate'}">						
 								<i id="cross" style="left:${signRequest.params.xPos};top:${signRequest.params.yPos};position:relative;z-index:2;"> <img alt="signature" src="data:image/jpg;base64, ${signFile}" width="100" height="75" />
 								</i>
 							</c:if>
@@ -81,7 +81,7 @@
 					<div class="col-lg-5 jumbotron">
 						<form autocomplete="off" action="/user/signrequests/sign/${id}" method="post">
 							<c:choose>
-								<c:when test="${documentType eq 'pdf' and signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' and not signRequest.params.signType eq 'validate'}">
+								<c:when test="${documentType eq 'pdf' and signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' and signRequest.params.signType ne 'validate'}">
 									<dl class="display-group border-bottom m-0">
 										<dt class="col-lg-4">Sign position</dt>
 										<small>
