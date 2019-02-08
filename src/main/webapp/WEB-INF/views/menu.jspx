@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<div xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:menu="urn:jsptagdir:/WEB-INF/tags/menu" xmlns:sec="http://www.springframework.org/security/tags" id="menu" version="2.0">
+<div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:menu="urn:jsptagdir:/WEB-INF/tags/menu" xmlns:sec="http://www.springframework.org/security/tags" id="menu" version="2.0">
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
     <nav class="nav nav-pills navbar-expand-sm navbar-light bg-light">
@@ -12,24 +12,26 @@
             </c:if>
             <sec:authorize access="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')">
                 <c:if test="${role=='manager'}">
-                    <menu:item activeMenu="${active=='manager/signbooks'}" menuClass="nav-link" id="i_signbook_list" label="SignBooks" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
-                    <menu:item activeMenu="${active=='manager/logs'}" menuClass="nav-link" id="i_log_list" label="Logs" url="/manager/logs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
-
-                    <menu:category render="false" id="c_log" z="user-managed">
-                        <menu:item menuClass="dropdown-item" id="i_log_list" messageCode="global_menu_list" url="/manager/logs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+                    <menu:item activeMenu="${active=='manager/signbooks'}" id="i_signbook_list" label="SignBooks" menuClass="nav-link" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+                    <menu:item activeMenu="${active=='manager/logs'}" id="i_log_list" label="Logs" menuClass="nav-link" url="/manager/logs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+                    <menu:category id="c_log" render="false" z="user-managed">
+                        <menu:item id="i_log_list" menuClass="dropdown-item" messageCode="global_menu_list" url="/manager/logs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
                     </menu:category>
-                    <menu:category render="false" id="c_user" z="user-managed">
-                        <menu:item menuClass="dropdown-item" id="i_user_new" messageCode="global_menu_new" url="/manager/users?form" z="user-managed"/>
-                        <menu:item menuClass="dropdown-item" id="i_user_list" messageCode="global_menu_list" render="" url="/manager/users?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+                    <menu:category render="false" id="c_signbook" z="user-managed">
+        		        <menu:item id="i_signbook_new" messageCode="global_menu_new" url="/manager/signbooks?form" z="user-managed"/>
+		            </menu:category>
+                    <menu:category id="c_user" render="false" z="user-managed">
+                        <menu:item id="i_user_new" menuClass="dropdown-item" messageCode="global_menu_new" url="/manager/users?form" z="user-managed"/>
+                        <menu:item id="i_user_list" menuClass="dropdown-item" messageCode="global_menu_list" render="" url="/manager/users?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
                     </menu:category>
-                    <menu:category render="false" id="c_signrequest" z="user-managed">
-                        <menu:item menuClass="dropdown-item" id="i_signrequest_new" messageCode="global_menu_new" url="/manager/signrequests?form" z="user-managed"/>
-                        <menu:item menuClass="dropdown-item" id="i_signrequest_list" messageCode="global_menu_list" url="/manager/signrequests?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+                    <menu:category id="c_signrequest" render="false" z="user-managed">
+                        <menu:item id="i_signrequest_new" menuClass="dropdown-item" messageCode="global_menu_new" url="/manager/signrequests?form" z="user-managed"/>
+                        <menu:item id="i_signrequest_list" menuClass="dropdown-item" messageCode="global_menu_list" url="/manager/signrequests?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
                     </menu:category>
-	              <menu:category render="false" id="c_document" z="user-managed">
-	                  <menu:item menuClass="dropdown-item" id="i_document_new" messageCode="global_menu_new" url="/user/documents?form" z="user-managed"/>
-	                  <menu:item menuClass="dropdown-item" id="i_document_list" messageCode="global_menu_list" url="/user/documents?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
-	              </menu:category>
+                    <menu:category id="c_document" render="false" z="user-managed">
+                        <menu:item id="i_document_new" menuClass="dropdown-item" messageCode="global_menu_new" url="/user/documents?form" z="user-managed"/>
+                        <menu:item id="i_document_list" menuClass="dropdown-item" messageCode="global_menu_list" url="/user/documents?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+                    </menu:category>
                 </c:if>
             </sec:authorize>
             <sec:authorize access="hasRole('ROLE_ADMIN')">
@@ -38,6 +40,7 @@
                     <menu:item activeMenu="${active=='su'}" id="su" label="SU" menuClass="nav-link" url="/admin/su"/>
                 </c:if>
             </sec:authorize>
+
         </menu:menu>
     </nav>
 </div>

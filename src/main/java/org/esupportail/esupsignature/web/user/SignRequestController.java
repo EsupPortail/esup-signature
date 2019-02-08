@@ -122,10 +122,17 @@ public class SignRequestController {
 					.getResultList();
 			uiModel.addAttribute("mydocs", "active");
 		}
+		int sizeNo = size == null ? 10 : size.intValue();
+
+		float nrOfPages = (float) SignRequest.countFindSignRequests(eppn, "", null, "") / sizeNo;
+
+		uiModel.addAttribute("maxPages",
+				(int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
+		uiModel.addAttribute("page", page);
+		uiModel.addAttribute("size", size);
 		uiModel.addAttribute("nbToSignRequests",SignRequest.countFindSignRequests("", user.getEmail(), SignRequestStatus.pending, ""));
 		uiModel.addAttribute("nbPedingSignRequests",SignRequest.countFindSignRequests(user.getEppn(), "", SignRequestStatus.pending, ""));
 		uiModel.addAttribute("signRequests", signRequests);
-		uiModel.addAttribute("maxPages", (int) 1);
 		return "user/signrequests/list";
 	}
 

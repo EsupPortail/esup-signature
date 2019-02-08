@@ -71,7 +71,7 @@
 						<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
 						<input type="button" class="btn btn-outline-dark float-right" id="next" onclick="nextImage()" value="next" />
 						<div id="pointer_div" onclick="point_it(event)" style="background-size: 595px;background-image:url('${documentUrl}/${signRequest.params.signPageNumber -1}');width:595px;height:842px;border:1px solid #CCC;">
-							<c:if test="${signable eq 'ok' and empty signRequest.signedFile}">
+							<c:if test="${signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' and not signRequest.params.signType eq 'validate'}">						
 								<i id="cross" style="left:${signRequest.params.xPos};top:${signRequest.params.yPos};position:relative;z-index:2;"> <img alt="signature" src="data:image/jpg;base64, ${signFile}" width="100" height="75" />
 								</i>
 							</c:if>
@@ -81,7 +81,7 @@
 					<div class="col-lg-5 jumbotron">
 						<form autocomplete="off" action="/user/signrequests/sign/${id}" method="post">
 							<c:choose>
-								<c:when test="${documentType eq 'pdf' and signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' }">
+								<c:when test="${documentType eq 'pdf' and signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' and not signRequest.params.signType eq 'validate'}">
 									<dl class="display-group border-bottom m-0">
 										<dt class="col-lg-4">Sign position</dt>
 										<small>
@@ -143,7 +143,7 @@
 											</dd>
 										</dl>
 										<dl class="display-group border-bottom m-0">
-											<dt class="col-lg-4">Sign document</dt>
+											<dt class="col-lg-4">Actions</dt>
 											<dd>
 												<div class="form-group">
 													<c:choose>
@@ -186,18 +186,25 @@
 
 														</c:when>
 														<c:otherwise>
-															<input alt="Signer" class="btn btn-primary" id="signe" title="Signe" type="submit" value="Sign" />
+															<c:choose>
+															<c:when test="${signRequest.params.signType eq 'validate'}">
+																<input alt="Signer" class="btn btn-success" id="signe" title="Signe" type="submit" value="Validate" />
+															</c:when>
+															<c:otherwise>
+																<input alt="Signer" class="btn btn-primary" id="signe" title="Signe" type="submit" value="Sign" />
+															</c:otherwise>
+															</c:choose>
 														</c:otherwise>
 													</c:choose>
+												<spring:url value="/user/signrequests/refuse/${id}" var="refuseUrl" />
+												<button type="button" onclick="location.href='${refuseUrl}'" class="btn btn-danger">
+													<i class="fas fa-ban">
+														<!--  -->
+													</i> Refuse
+												</button>
 												</div>
 											</dd>
 										</dl>
-										<spring:url value="/user/signrequests/refuse/${id}" var="refuseUrl" />
-										<button type="button" onclick="location.href='${refuseUrl}'" class="btn btn-danger">
-											<i class="fas fa-ban">
-												<!--  -->
-											</i> Refuse
-										</button>
 									</c:if>
 								</c:otherwise>
 							</c:choose>

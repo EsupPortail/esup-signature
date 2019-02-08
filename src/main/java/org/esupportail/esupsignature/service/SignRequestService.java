@@ -238,7 +238,7 @@ public class SignRequestService {
 		log.setReturnCode(returnCode);
 		log.persist();
 		signRequest.setStatus(signRequestStatus);
-		if (signRequest.getSignBookId() != 0) {
+		if (signRequest.getSignBookId() != 0 && signRequestStatus.equals(SignRequestStatus.signed)) {
 			SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
 			try {
 				signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
