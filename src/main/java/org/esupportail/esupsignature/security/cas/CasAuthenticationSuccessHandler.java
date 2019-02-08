@@ -20,14 +20,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class CasAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
-	@Autowired
+	@Autowired(required = false)
 	PersonLdapDao personDao;
 	
 	private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 	
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-			Authentication authentication) throws IOException, ServletException {
+		Authentication authentication) throws IOException, ServletException {
 		List<PersonLdap> persons =  personDao.getPersonNamesByUid(authentication.getName());
 		String eppn = persons.get(0).getEduPersonPrincipalName();
 		User user;
