@@ -4,8 +4,18 @@
 	<jsp:output omit-xml-declaration="yes" />
 	<page:show update="false" id="ps_org_esupportail_esupsignature_domain_SignRequest" object="${signRequest}" path="/user/signrequests" z="user-managed">
 		<div class="row">
-			<div class="col-lg-4">
+			<div class="col-lg-4 jumbotron">
 				<field:display field="name" id="s_org_esupportail_esupsignature_domain_SignRequest_name" object="${signRequest}" z="user-managed" />
+				<dl class="display-group border-bottom m-0">
+					<dt class="col-lg-7">Get original document</dt>
+					<dd>
+						<spring:url value="/user/signrequests/get-original-file/${id}" var="originalFileUrl" />
+						<button type="button" class="btn btn-warning" onclick="location.href='${originalFileUrl}'">
+							<i class="fas fa-download"> <!--  -->
+							</i> Download
+						</button>
+					</dd>
+				</dl>
 				<field:display field="description" id="s_org_esupportail_esupsignature_domain_SignRequest_description" object="${signRequest}" z="user-managed" />
 				<dl class="display-group border-bottom m-0">
 					<dt class="col-lg-4">In signbook</dt>
@@ -17,7 +27,7 @@
 				<field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_SignRequest_signedFile" object="${signRequest}" render="false" z="user-managed" />
 				<field:display render="false" field="signType" id="s_org_esupportail_esupsignature_domain_SignRequest_signType" object="${signRequest}" z="user-managed" />
 				<dl class="display-group border-bottom m-0">
-					<dt class="col-lg-4">Status</dt>
+					<dt class="col-lg-7">Status</dt>
 					<dd>
 						<c:choose>
 							<c:when test="${signRequest.status eq 'pending'}">
@@ -50,20 +60,8 @@
 						</c:choose>
 					</dd>
 				</dl>
-				<br /> 
-				<small> 
-					<field:display date="true" dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignRequest_createDate" object="${signRequest}" z="user-managed" /> 
-					<field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignRequest_createBy" object="${signRequest}" z="user-managed" />
-					<b>Logs</b>
-					<table:table cssClass="table-xs" create="false" view="false" data="${logs}" delete="false" id="l_org_esupportail_esupsignature_domain_Log" path="/manager/logs" update="false" z="user-manager">
-			            <table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Log_logDate" property="logDate" z="user-manager"/>
-			            <table:column id="c_org_esupportail_esupsignature_domain_Log_eppn" property="eppn" z="user-manager"/>
-			            <table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_action" property="action" z="user-manager"/>
-			            <table:column id="c_org_esupportail_esupsignature_domain_Log_initialStatus" property="initialStatus" z="user-manager"/>
-			            <table:column id="c_org_esupportail_esupsignature_domain_Log_finalStatus" property="finalStatus" z="user-manager"/>
-			            <table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_returnCode" property="returnCode" z="user-manager"/>
-			        </table:table>					
-				</small>
+				<field:display date="true" dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignRequest_createDate" object="${signRequest}" z="user-managed" /> 
+				<field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignRequest_createBy" object="${signRequest}" z="user-managed" />
 			</div>
 			<div class="col-lg-8">
 				<div class="row">
@@ -80,28 +78,14 @@
 						</div>
 					</div>
 					</c:if>
-					<div class="col-lg-5">
+					<div class="col-lg-5 jumbotron">
 						<form autocomplete="off" action="/user/signrequests/sign/${id}" method="post">
-							<dl class="display-group border-bottom m-0">
-								<dt class="col-lg-4">Get original document</dt>
-								<dd>
-									<spring:url value="/user/signrequests/get-original-file/${id}" var="originalFileUrl" />
-									<button type="button" class="btn btn-warning" onclick="location.href='${originalFileUrl}'">
-										<i class="fas fa-download"> <!--  -->
-										</i> Download
-									</button>
-								</dd>
-							</dl>
 							<c:choose>
 								<c:when test="${documentType eq 'pdf' and signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' }">
 									<dl class="display-group border-bottom m-0">
-										<dt class="col-lg-4">Sign params</dt>
+										<dt class="col-lg-4">Sign position</dt>
 										<small>
 											<dd>
-												Sign type : ${signRequest.params.signType}
-												<br /> 
-												Add page : ${signRequest.params.newPageType}
-												<br />
 												on page : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.signPageNumber}" id="signPageNumber" type="text" name="signPageNumber" />
 												<br />X position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.xPos}" id="xPos" type="text" name="xPos" />
 												<br />Y position : <input autocomplete="off" class="form-control form-control-sm col-4" value="${signRequest.params.yPos}" id="yPos" type="text" name="yPos" />
@@ -129,7 +113,15 @@
 							<c:choose>
 								<c:when test="${not empty signRequest.signedFile}">
 									<dl class="display-group border-bottom m-0">
-										<dt class="col-lg-4">Get signed document</dt>
+										<dt class="col-lg-6">Sign file name</dt>
+										<dd>
+										<small>
+										${signRequest.signedFile.fileName}
+										</small>
+										</dd>
+									</dl>
+									<dl class="display-group border-bottom m-0">
+										<dt class="col-lg-7">Get signed document</dt>
 										<dd>
 											<spring:url value="/user/signrequests/get-signed-file/${id}" var="signedFileUrl" />
 											<button type="button" class="btn btn-success" onclick="location.href='${signedFileUrl}'">
@@ -141,6 +133,15 @@
 								</c:when>
 								<c:otherwise>
 									<c:if test="${signable eq 'ok'}">
+										<dl class="display-group border-bottom m-0">
+											<dt class="col-lg-4">Sign params</dt>
+											<dd>
+												Sign type : ${signRequest.params.signType}
+												<br /> 
+												Add page : ${signRequest.params.newPageType}
+												<br />
+											</dd>
+										</dl>
 										<dl class="display-group border-bottom m-0">
 											<dt class="col-lg-4">Sign document</dt>
 											<dd>
@@ -220,6 +221,17 @@
 								</div>
 							</form>
 						</c:if>
+						<b>Logs</b>
+						<small> 
+							<table:table cssClass="table-xs" create="false" view="false" data="${logs}" delete="false" id="l_org_esupportail_esupsignature_domain_Log" path="/manager/logs" update="false" z="user-manager">
+					            <table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Log_logDate" property="logDate" z="user-manager"/>
+					            <table:column id="c_org_esupportail_esupsignature_domain_Log_eppn" property="eppn" z="user-manager"/>
+					            <table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_action" property="action" z="user-manager"/>
+					            <table:column id="c_org_esupportail_esupsignature_domain_Log_initialStatus" property="initialStatus" z="user-manager"/>
+					            <table:column id="c_org_esupportail_esupsignature_domain_Log_finalStatus" property="finalStatus" z="user-manager"/>
+					            <table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_returnCode" property="returnCode" z="user-manager"/>
+					        </table:table>					
+						</small>
 					</div>
 				</div>
 			</div>

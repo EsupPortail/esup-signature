@@ -20,13 +20,13 @@ public class DocumentService {
 	@Resource
 	private FileService fileService;
 
-	public Document addFile(String base64File, String name, String type) throws IOException {
-		return addFile(fileService.fromBase64Image(base64File, name), name, type);
+	public Document addFile(String base64File, String name, String contentType) throws IOException {
+		return addFile(fileService.fromBase64Image(base64File, name), name, contentType);
     }
 
 	
-	public Document addFile(File file, String name, String type) throws FileNotFoundException, IOException {
-		return addFile(new FileInputStream(file), name, file.length(), type);
+	public Document addFile(File file, String name, String contentType) throws FileNotFoundException, IOException {
+		return addFile(new FileInputStream(file), name, file.length(), contentType);
     }
 	
 	public Document addFile(MultipartFile multipartFile, String name) throws IOException {

@@ -13,7 +13,6 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.FilenameUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
@@ -161,7 +160,7 @@ public class SignRequestService {
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
         try {
-			return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), FilenameUtils.getExtension(signedPdfDocument.getName()));
+			return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName());
 		} catch (IOException e) {
 			logger.error("error to read signed file", e);
 		}
@@ -195,7 +194,7 @@ public class SignRequestService {
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
         try {
-			return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), ".zip");
+			return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName());
 		} catch (IOException e) {
 			logger.error("error to read signed file", e);
 		}
@@ -209,7 +208,7 @@ public class SignRequestService {
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
         try {
-        	File signedFile = fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), FilenameUtils.getExtension(signedPdfDocument.getName()));
+        	File signedFile = fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName());
         	if(signedFile != null){
             	addSignedFile(signRequest, signedFile, user);        		
         	}
@@ -220,7 +219,7 @@ public class SignRequestService {
 	
 	public void addSignedFile(SignRequest signRequest, File signedFile, User user) throws EsupSignatureIOException {
 		try {
-			signRequest.setSignedFile(documentService.addFile(signedFile, "signed_by_" + user.getEppn() + "_" + signedFile.getName(), fileService.getContentType(signedFile)));
+			signRequest.setSignedFile(documentService.addFile(signedFile, "signed_" + signRequest.getSignTypeLabel() + "_" + user.getEppn() + "_" + signedFile.getName(), fileService.getContentType(signedFile)));
 			updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");		
 		} catch (IOException e) {
 			throw new EsupSignatureIOException("error on save signed file", e);

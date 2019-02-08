@@ -39,6 +39,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.google.common.io.Files;
+
 @Service
 public class PdfService {
 
@@ -84,7 +86,7 @@ public class PdfService {
 			File flipedSignImage = File.createTempFile("preview", ".png");
 			ImageIO.write(bufferedImage, "png", flipedSignImage);
 			
-			File targetFile =  File.createTempFile("output", ".pdf");
+			File targetFile =  new File(Files.createTempDir(), toSignFile.getName());
 
 			PDDocument pdDocument = PDDocument.load(toSignFile);
 	       
@@ -161,7 +163,7 @@ public class PdfService {
 	
 	public File toPdfA(File pdfFile) {
         try {
-			File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
+			File targetFile =  new File(Files.createTempDir(), pdfFile.getName());
 			PDDocument pdDocument = PDDocument.load(pdfFile);
 			PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
 			if(pdAcroForm != null) {

@@ -268,7 +268,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			// we prefer here to use our getMimeType : for Excel files and co 
 			// String contentType = fc.getContentInfo().getContentType();
 			InputStream inputStream = fc.getInputStream();
-			return fileService.inputStreamToFile(inputStream, file.getName().toString(), file.getType().toString());
+			return fileService.inputStreamToFile(inputStream, file.getName().toString());
 		} catch (FileSystemException e) {
 			log.warn("can't download file : " + e.getMessage(), e);
 		}

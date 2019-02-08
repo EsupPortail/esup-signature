@@ -10,13 +10,14 @@ import java.sql.SQLException;
 import javax.persistence.FetchType;
 import javax.persistence.OneToOne;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.roo.addon.javabean.RooJavaBean;
 import org.springframework.roo.addon.jpa.activerecord.RooJpaActiveRecord;
 import org.springframework.roo.addon.tostring.RooToString;
+
+import com.google.common.io.Files;
 
 @RooJavaBean
 @RooToString(excludeFields = { "bigFile", "file" })
@@ -41,7 +42,7 @@ public class Document {
     public File getJavaIoFile() {
     	try {
 			InputStream inputStream = bigFile.getBinaryFile().getBinaryStream();
-		    File targetFile = File.createTempFile(getPrefix(fileName), "." + FilenameUtils.getExtension(fileName));
+		    File targetFile = new File(Files.createTempDir(), fileName);
 		    OutputStream outputStream = new FileOutputStream(targetFile);
 		    IOUtils.copy(inputStream, outputStream);
 		    outputStream.close();
@@ -51,10 +52,4 @@ public class Document {
 		}
     	return null;
 	}
- 
-    private static String getPrefix(String fileName) {
-        if(fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0)
-        return fileName.substring(0, fileName.lastIndexOf("."));
-        else return "";
-    }
 }

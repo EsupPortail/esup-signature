@@ -37,6 +37,7 @@
             <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" z="user-managed"/>
 			<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_signBookName" property="signBookName" z="user-managed"/>
             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" property="recipientEmail" z="user-managed"/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_signType" property="signTypeLabel" z="user-managed"/>
             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed"/>
         </table:table>
     <page:list id="pl_org_esupportail_esupsignature_domain_SignRequest" items="${signRequests}" z="user-managed" />
