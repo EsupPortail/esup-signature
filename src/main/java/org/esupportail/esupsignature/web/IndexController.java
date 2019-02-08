@@ -43,12 +43,9 @@ public class IndexController {
 		if(!eppn.equals("anonymousUser")) {
 			if(User.countFindUsersByEppnEquals(eppn) > 0) {
 				return "redirect:/user/signrequests";
-			} else {
-				return "redirect:/user/signrequests/";
 			}
-		} else {
-			return "index";
 		}
+		return "index";
 	}
 	
 	@RequestMapping("/login")
