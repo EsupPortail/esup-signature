@@ -3,7 +3,13 @@
 	<jsp:directive.page contentType="text/html;charset=UTF-8" />
 	<jsp:output omit-xml-declaration="yes" />
 	<c:if test="${empty signImage}">
-		<div class="card card-body bg-info">Merci de compléter vos information pour pouvoir commencer à signer</div>
+		<div class="card card-body bg-info">
+		Merci de compléter vos information pour pouvoir commencer à signer
+		<br/>
+		- Un keystore au format PKCS12
+		<br/>
+		- Un fichier image pour la signature 
+		</div>
 	</c:if>
 	<form:create id="fc_org_esupportail_esupsignature_domain_User" modelAttribute="user" multipart="true" path="/user/users/" render="${empty dependencies}" z="user-managed">
 		<field:input readonly="true" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_User_name" z="user-managed" />

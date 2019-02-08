@@ -23,7 +23,7 @@
 		</a>
     </div>
 	</div>
-    <script type="text/javascript" src="http://localhost:9795/nexu.js"><!-- --></script>
+    <script type="text/javascript" src="${nexuUrl}/nexu.js"><!-- --></script>
     <spring:url value="/resources/js/nexuSignature.js" var="nexuSignature_js_url" />
 	<script type="text/javascript" src="${nexuSignature_js_url}"><!-- --></script>
 </div>
