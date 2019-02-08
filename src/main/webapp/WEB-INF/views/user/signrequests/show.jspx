@@ -67,6 +67,7 @@
 			</div>
 			<div class="col-lg-8">
 				<div class="row">
+					<c:if test="${documentType eq 'pdf'}">
 					<div class="col-lg-7">
 						<input type="button" class="btn btn-outline-dark" id="previous" onclick="previousImage()" value="previous" />
 						<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
@@ -78,6 +79,7 @@
 							</c:if>
 						</div>
 					</div>
+					</c:if>
 					<div class="col-lg-5">
 						<form autocomplete="off" action="/user/signrequests/sign/${id}" method="post">
 							<dl class="display-group border-bottom m-0">
@@ -91,7 +93,7 @@
 								</dd>
 							</dl>
 							<c:choose>
-								<c:when test="${signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' }">
+								<c:when test="${documentType eq 'pdf' and signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' }">
 									<dl class="display-group border-bottom m-0">
 										<dt class="col-lg-4">Sign params</dt>
 										<small>
@@ -144,7 +146,7 @@
 											<dd>
 												<div class="form-group">
 													<c:choose>
-														<c:when test="${signRequest.params.signType eq 'certPAdES' or signRequest.params.signType eq 'certXAdES'}">
+														<c:when test="${signRequest.params.signType eq 'certSign'}">
 															<c:choose>
 																<c:when test="${not empty keystore}">
 																	<label class="col-lg-6 col-form-label" for="password"><strong>Keystore password</strong> </label>
@@ -158,11 +160,11 @@
 																	</div>
 																</c:when>
 																<c:otherwise>
-																	<div class="card card-body bg-info">Merci de saisir une clé privée pour signer en PAdES</div>
+																	<div class="card card-body bg-info">No keystore found in your settings</div>
 																</c:otherwise>
 															</c:choose>
 														</c:when>
-														<c:when test="${signRequest.params.signType eq 'nexuPAdES' or signRequest.params.signType eq 'nexuXAdES'}">
+														<c:when test="${signRequest.params.signType eq 'nexuSign'}">
 															<div class="form-group">
 																<div id="nexu_missing_alert" style="display: none;" class="alert alert-warning">
 																	<span id="warning-text">NexU not detected or not started ! </span>

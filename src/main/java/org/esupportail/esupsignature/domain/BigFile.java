@@ -18,25 +18,17 @@
 
 package org.esupportail.esupsignature.domain;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.sql.Blob;
-import java.sql.SQLException;
 import java.util.List;
 
 import javax.persistence.Basic;
 import javax.persistence.FetchType;
 import javax.persistence.Lob;
 
-import org.apache.commons.io.IOUtils;
 import org.hibernate.LobHelper;
 import org.hibernate.Session;
 import org.hibernate.annotations.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.roo.addon.javabean.RooJavaBean;
 import org.springframework.roo.addon.jpa.activerecord.RooJpaActiveRecord;
 import org.springframework.roo.addon.tostring.RooToString;
@@ -47,8 +39,6 @@ import org.springframework.roo.addon.tostring.RooToString;
 public class BigFile {
 
     public static final List<String> fieldNames4OrderClauseFilter = java.util.Arrays.asList("binaryFile");
-	
-	private static final Logger log = LoggerFactory.getLogger(BigFile.class);
 	
 	@Lob
 	@Type(type="org.hibernate.type.BlobType")
@@ -63,19 +53,5 @@ public class BigFile {
         LobHelper helper = session.getLobHelper(); 
         this.binaryFile = helper.createBlob(inputStream, length); 
     }
-    
-    public File toJavaIoFile() {
-    	try {
-			InputStream inputStream = getBinaryFile().getBinaryStream();
-		    File targetFile = File.createTempFile("outFile", ".tmp");
-		    OutputStream outputStream = new FileOutputStream(targetFile);
-		    IOUtils.copy(inputStream, outputStream);
-		    outputStream.close();
-			return targetFile;
-    	} catch (SQLException | IOException e) {
-    		log.error("error to convert BigFile to java.io.File", e);
-		}
-    	return null;
-	}
     
 }

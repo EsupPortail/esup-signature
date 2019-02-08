@@ -203,26 +203,26 @@ public class SigningService {
 	public SignatureDocumentForm getXadesSignatureDocumentForm() {
 		//TODO : bean properties ?
 		SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
-		signaturePdfForm.setContainerType(null);
+		signaturePdfForm.setContainerType(ASiCContainerType.ASiC_E);
 		signaturePdfForm.setSignatureForm(SignatureForm.XAdES);
 		signaturePdfForm.setSignatureLevel(SignatureLevel.XAdES_BASELINE_T);
 		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
-		signaturePdfForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
+		signaturePdfForm.setSignaturePackaging(SignaturePackaging.DETACHED);
 		signaturePdfForm.setSigningDate(new Date());
 		return signaturePdfForm;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument certSignDocument(SignatureDocumentForm signaturePdfForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
-		logger.info("Start padesSignDocument with database keystore");
+		logger.info("Start certSignDocument with database keystore");
 		DocumentSignatureService service = getSignatureService(signaturePdfForm.getContainerType(), signaturePdfForm.getSignatureForm());
 		DSSDocument signedDocument = null;
 		fillParameters(parameters, signaturePdfForm);
 		DSSDocument toSignDocument = WebAppUtils.toDSSDocument(signaturePdfForm.getDocumentToSign());
-		SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(signaturePdfForm.getEncryptionAlgorithm(), signaturePdfForm.getDigestAlgorithm());
-		SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(signaturePdfForm.getBase64SignatureValue()));
+		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
+		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
 		signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);
-		logger.info("End padesSignDocument with database keystore");
+		logger.info("End certSignDocument with database keystore");
 		return signedDocument;
 	}
 

@@ -150,9 +150,10 @@ public class SignRequestController {
 			uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 			uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 			uiModel.addAttribute("signRequest", signRequest);
+			uiModel.addAttribute("documentType", fileService.getExtenstion(toConvertFile.getJavaIoFile()));
 			uiModel.addAttribute("itemId", id);
 			uiModel.addAttribute("imagePagesSize",
-					PdfService.getTotalNumberOfPages(toConvertFile.getBigFile().toJavaIoFile()));
+					PdfService.getTotalNumberOfPages(toConvertFile.getJavaIoFile()));
 			uiModel.addAttribute("documentId", toConvertFile.getId());
 			if (signRequestService.checkUserSignRights(user, signRequest)) {
 				uiModel.addAttribute("signable", "ok");

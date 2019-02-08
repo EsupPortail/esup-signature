@@ -144,7 +144,7 @@ public class UserController {
         	setPassword(password);
         }
         try {
-        	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getBigFile().toJavaIoFile(), this.password));
+        	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getJavaIoFile(), this.password));
         } catch (Exception e) {
         	log.error("open keystore fail", e);
         	redirectAttrs.addFlashAttribute("messageCustom", "bad password");

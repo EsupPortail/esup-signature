@@ -40,7 +40,7 @@ public class DocumentController {
 	@RequestMapping(value = "/{id}/getimagepdfpage/{page}", method = RequestMethod.GET)
 	public void getImagePdfAsByteArray(@PathVariable("id") Long id, @PathVariable("page") int page, HttpServletResponse response) throws Exception {
 		Document document = Document.findDocument(id);
-		InputStream in = pdfService.pageAsInputStream(document.getBigFile().toJavaIoFile(), page);
+		InputStream in = pdfService.pageAsInputStream(document.getJavaIoFile(), page);
 	    response.setContentType(MediaType.IMAGE_PNG_VALUE);
 	    IOUtils.copy(in, response.getOutputStream());
 	}

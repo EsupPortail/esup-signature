@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FilenameUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
@@ -38,6 +39,7 @@ import eu.europa.esig.dss.EncryptionAlgorithm;
 import eu.europa.esig.dss.FileDocument;
 import eu.europa.esig.dss.InMemoryDocument;
 import eu.europa.esig.dss.MimeType;
+import eu.europa.esig.dss.asic.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
@@ -89,11 +91,11 @@ public class SignRequestService {
 	}
 	
 	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureIOException, EsupSignatureException {
-        File toSignFile = signRequest.getOriginalFile().getBigFile().toJavaIoFile();
+        File toSignFile = signRequest.getOriginalFile().getJavaIoFile();
     	SignType signType = SignType.valueOf(signRequest.getParams().get("signType"));
 		File signedFile = null;
     	if(fileService.getContentType(toSignFile).equals("application/pdf")) {
-            if(signType.equals(SignType.imageStamp)) {
+            if(signType.equals(SignType.pdfImageStamp)) {
             	logger.info(user.getEppn() + " launch add imageStamp for signRequest : " + signRequest.getId());
             	signedFile = pdfService.stampImage(toSignFile, signRequest.getParams(), user);
             } else 
@@ -102,7 +104,7 @@ public class SignRequestService {
               	signedFile = padesSign(signRequest, user, password);
             }
     	} else {
-    		if(signType.equals(SignType.imageStamp)) {
+    		if(signType.equals(SignType.pdfImageStamp)) {
         		logger.warn("only pdf can get visible sign");
         	} else 
             if(signType.equals(SignType.certSign)) {
@@ -118,15 +120,15 @@ public class SignRequestService {
 	}
 
 	public File padesSign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException {
-		File signImage = user.getSignImage().getBigFile().toJavaIoFile();
+		File signImage = user.getSignImage().getJavaIoFile();
 		
-		File toSignFile = pdfService.formatPdf(signRequest.getOriginalFile().getBigFile().toJavaIoFile(), signRequest.getParams());
+		File toSignFile = pdfService.formatPdf(signRequest.getOriginalFile().getJavaIoFile(), signRequest.getParams());
 		
         SignatureDocumentForm signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
 		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
         
-		File keyStoreFile = user.getKeystore().getBigFile().toJavaIoFile();
+		File keyStoreFile = user.getKeystore().getJavaIoFile();
 		SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
 		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
 		CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
@@ -159,7 +161,7 @@ public class SignRequestService {
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
         try {
-			return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), "pdf");
+			return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), FilenameUtils.getExtension(signedPdfDocument.getName()));
 		} catch (IOException e) {
 			logger.error("error to read signed file", e);
 		}
@@ -167,13 +169,13 @@ public class SignRequestService {
 	}
 
 	public File xadesSign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException {
-		File toSignFile = signRequest.getOriginalFile().getBigFile().toJavaIoFile();
+		File toSignFile = signRequest.getOriginalFile().getJavaIoFile();
 		
         SignatureDocumentForm signatureDocumentForm = signingService.getXadesSignatureDocumentForm();
 		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, fileService.getContentType(toSignFile)));
         
-		File keyStoreFile = user.getKeystore().getBigFile().toJavaIoFile();
+		File keyStoreFile = user.getKeystore().getJavaIoFile();
 		SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
 		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
 		CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
@@ -185,7 +187,7 @@ public class SignRequestService {
 		}
 		signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
 		
-		PAdESSignatureParameters parameters = new PAdESSignatureParameters();
+		ASiCWithXAdESSignatureParameters parameters = new ASiCWithXAdESSignatureParameters();
 		parameters.setSigningCertificate(certificateToken);
 		parameters.setCertificateChain(certificateTokenChain);
 
@@ -193,7 +195,7 @@ public class SignRequestService {
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
         try {
-			return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), fileService.getExtenstion(toSignFile));
+			return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), ".zip");
 		} catch (IOException e) {
 			logger.error("error to read signed file", e);
 		}
@@ -207,7 +209,7 @@ public class SignRequestService {
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         
         try {
-        	File signedFile = fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), "pdf");
+        	File signedFile = fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName(), FilenameUtils.getExtension(signedPdfDocument.getName()));
         	if(signedFile != null){
             	addSignedFile(signRequest, signedFile, user);        		
         	}
@@ -218,7 +220,7 @@ public class SignRequestService {
 	
 	public void addSignedFile(SignRequest signRequest, File signedFile, User user) throws EsupSignatureIOException {
 		try {
-			signRequest.setSignedFile(documentService.addFile(signedFile, "signed_by_" + user.getEppn() + "_" + signRequest.getName(), fileService.getContentType(signedFile)));
+			signRequest.setSignedFile(documentService.addFile(signedFile, "signed_by_" + user.getEppn() + "_" + signedFile.getName(), fileService.getContentType(signedFile)));
 			updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");		
 		} catch (IOException e) {
 			throw new EsupSignatureIOException("error on save signed file", e);
@@ -245,7 +247,7 @@ public class SignRequestService {
 			}
 			if (signBook.getTargetType().equals(DocumentIOType.cifs)) {
 				try {
-					InputStream in = new FileInputStream(signRequest.getSignedFile().getBigFile().toJavaIoFile());
+					InputStream in = new FileInputStream(signRequest.getSignedFile().getJavaIoFile());
 					cifsAccessImpl.putFile("/" + signBook.getDocumentsTargetUri() + "/",
 							signRequest.getSignedFile().getFileName(), in, user, null);
 				} catch (FileNotFoundException e) {

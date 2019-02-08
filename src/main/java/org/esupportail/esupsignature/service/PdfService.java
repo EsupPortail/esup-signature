@@ -72,7 +72,7 @@ public class PdfService {
 	}
 		
 	public File stampImage(File toSignFile, Map<String, String> params, User user) {
-    	File signImage = user.getSignImage().getBigFile().toJavaIoFile();
+    	File signImage = user.getSignImage().getJavaIoFile();
 		toSignFile = formatPdf(toSignFile, params);
 		try {
 			BufferedImage bufferedImage = ImageIO.read(signImage);

@@ -12,8 +12,10 @@
             </c:if>
             <sec:authorize access="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')">
                 <c:if test="${role=='manager'}">
-                    <menu:item activeMenu="${active=='manager/signbooks'}" menuClass="nav-link" id="i_signbook_list" messageCode="global_menu_list" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
-                    <menu:category id="c_log" z="user-managed">
+                    <menu:item activeMenu="${active=='manager/signbooks'}" menuClass="nav-link" id="i_signbook_list" label="SignBooks" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+                    <menu:item activeMenu="${active=='manager/logs'}" menuClass="nav-link" id="i_log_list" label="Logs" url="/manager/logs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+
+                    <menu:category render="false" id="c_log" z="user-managed">
                         <menu:item menuClass="dropdown-item" id="i_log_list" messageCode="global_menu_list" url="/manager/logs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
                     </menu:category>
                     <menu:category render="false" id="c_user" z="user-managed">

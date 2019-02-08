@@ -82,7 +82,7 @@ public class SignBook {
 	private String yPos;
     
 	public enum SignType {
-		validate, imageStamp, certSign, nexuSign;
+		validate, pdfImageStamp, certSign, nexuSign;
 	}
 	
 	public enum NewPageType {

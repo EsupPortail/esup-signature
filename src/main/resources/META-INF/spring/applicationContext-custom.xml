@@ -24,11 +24,6 @@
 		<property name="defaultLocale" value="fr" />
 	</bean>
 
-	<bean id="pdfViewResolver" class="org.springframework.web.servlet.view.ResourceBundleViewResolver">
-        <property name="order" value="1"/>
-        <property name="basename" value="views"/>
-    </bean>
-
 	<bean id="ldapTemplate" class="org.springframework.ldap.core.LdapTemplate">  
 		<constructor-arg ref="ldapContextSource" />  
    	</bean>

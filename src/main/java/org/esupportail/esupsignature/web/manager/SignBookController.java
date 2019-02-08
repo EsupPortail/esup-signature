@@ -121,7 +121,7 @@ public class SignBookController {
 		Document modelFile = signBook.getModelFile();
 		if (modelFile.getSize() > 0) {
 			uiModel.addAttribute("imagePagesSize",
-					pdfService.getTotalNumberOfPages(modelFile.getBigFile().toJavaIoFile()));
+					pdfService.getTotalNumberOfPages(modelFile.getJavaIoFile()));
 			uiModel.addAttribute("documentId", modelFile.getId());
 		}
 
