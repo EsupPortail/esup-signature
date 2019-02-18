@@ -2,19 +2,27 @@
 <div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:menu="urn:jsptagdir:/WEB-INF/tags/menu" xmlns:sec="http://www.springframework.org/security/tags" id="menu" version="2.0">
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
-    <nav class="nav nav-pills navbar-expand-sm navbar-light bg-light">
+    <nav class="nav nav-tabs navbar-expand-sm navbar-light bg-light">
+    	<div class="collapse navbar-collapse justify-content-between" id="${fn:escapeXml(id)}">
         <menu:menu id="_menu" z="user-managed">
             <menu:item id="c_accueil" label="Accueil" menuClass="nav-link" render="false" url="/" z="user-managed"/>
             <c:if test="${role=='user'}">
             	<c:if test="${not empty signFile or active ne 'user/users'}">
-                	<menu:item activeMenu="${active=='user/signrequests'}" id="signrequests" label="My documents" menuClass="nav-link" url="/user/signrequests/"/>
-                	<menu:item activeMenu="${active=='user/signbooks'}" id="signbooks" label="Sign books" menuClass="nav-link" url="/user/signbooks/"/>
+				<div class="navbar-nav">
+                	<menu:item activeMenu="${active=='user/signrequests'}" id="i_signrequest_list" messageCode="menu_item_user_documents" menuClass="nav-link" url="/user/signrequests/"/>
+                	<menu:item activeMenu="${active=='user/signbooks'}" id="i_signbook_list" menuClass="nav-link" url="/user/signbooks/"/>
+                	</div>
                 </c:if>
-                <menu:item activeMenu="${active=='user/users'}" id="settings" label="Settings" menuClass="nav-link" url="/user/users/"/>
+                <div class="navbar-nav">
+	                <li class="nav-item">
+	                <menu:item activeMenu="${active=='user/users'}" id="settings" label=" " menuClass="nav-link fa fa-cog" url="/user/users/"/>
+	                </li>
+                </div>
             </c:if>	
             <sec:authorize access="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')">
                 <c:if test="${role=='manager'}">
-                    <menu:item activeMenu="${active=='manager/signbooks'}" id="i_signbook_list" label="SignBooks" menuClass="nav-link" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
+                <div class="navbar-nav">
+                    <menu:item activeMenu="${active=='manager/signbooks'}" id="i_signbook_list" menuClass="nav-link" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
                     <menu:item activeMenu="${active=='manager/logs'}" id="i_log_list" label="Logs" menuClass="nav-link" url="/manager/logs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
                     <menu:category id="c_log" render="false" z="user-managed">
                         <menu:item id="i_log_list" menuClass="dropdown-item" messageCode="global_menu_list" url="/manager/logs?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
@@ -34,6 +42,7 @@
                         <menu:item id="i_document_new" menuClass="dropdown-item" messageCode="global_menu_new" url="/user/documents?form" z="user-managed"/>
                         <menu:item id="i_document_list" menuClass="dropdown-item" messageCode="global_menu_list" url="/user/documents?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
                     </menu:category>
+                    </div>
                 </c:if>
             </sec:authorize>
             <sec:authorize access="hasRole('ROLE_ADMIN')">
@@ -44,5 +53,6 @@
             </sec:authorize>
 
         </menu:menu>
+        </div>
     </nav>
 </div>

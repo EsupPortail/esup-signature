@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
+<div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:spring="http://www.springframework.org/tags" version="2.0">
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
 	<div class="btn-group float-right clearfix">
 		<a alt="Signer un nouveau document" class="btn btn-info" href="/user/signrequests?form" title="Signer un nouveau Document">
-			<span class="fas fa-pencil-alt"><!--  --></span> Signer un nouveau Document
+			<span class="fas fa-pencil-alt"><!--  --></span> <spring:message code="menu_item_signrequest_new" />
 		</a>
 		<a alt="Signer un nouveau document" class="btn btn-primary" href="/user/signrequests?form&amp;recipientEmail=true" title="Signer un nouveau Document">
-			<span class="fa fa-paper-plane"><!--  --></span> Envoyer pour signature
+			<span class="fa fa-paper-plane"><!--  --></span> <spring:message code="menu_item_signrequest_send" />
 		</a>
 	</div>
 	<ul role="tablist" id="myTab" class="nav nav-tabs navbar-light bg-light">
+ 		<li class="navbar-brand">Filtres : </li>
 		<li class="nav-item">
-			<a class="nav-link ${mydocs}" role="tab" aria-controls="mydocs" href="/user/signrequests/">My documents
+			<a class="nav-link ${mydocs}" role="tab" aria-controls="mydocs" href="/user/signrequests/">
+			<spring:message code="menu_item_user_my_documents" />
 				<c:if test="${nbPedingSignRequests > 0}">
 					<i class="fas fa-exclamation-circle text-primary"><!--  --></i>
 				</c:if>		
@@ -20,7 +22,7 @@
 		</li>
 		<li class="nav-item">
 			<a class="nav-link ${tosigndocs}" role="tab" aria-controls="tosigndocs" href="/user/signrequests/?findBy=recipientEmail">
-				To sign documents
+				<spring:message code="menu_item_user_to_sign_documents" />
 				<c:if test="${nbToSignRequests > 0}">
 					<i class="fas fa-exclamation-circle text-danger"><!--  --></i>
 				</c:if>			

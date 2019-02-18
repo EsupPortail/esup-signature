@@ -115,3 +115,12 @@ form.delete {
     background-color: #787674 !important;
 }
 
+.nav-tabs .navbar-nav > li a { 
+    border: 1px solid #CCCCCC; 
+}
+    
+.nav-tabs .navbar-nav > li > a.active,
+.nav-tabs .navbar-nav > li a:focus,
+.nav-tabs .navbar-nav > li a:hover {
+    border-bottom-color: transparent !important;
+}

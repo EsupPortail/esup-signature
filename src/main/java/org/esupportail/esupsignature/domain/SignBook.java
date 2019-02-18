@@ -97,7 +97,7 @@ public class SignBook {
 	}
 	*/
     public enum DocumentIOType {
-		webform, cifs, vfs, opencmis, mail;
+		cifs, vfs, opencmis, mail;
 	}
     
     public void setSourceType(DocumentIOType sourceType) {
