@@ -14,9 +14,7 @@
                 	</div>
                 </c:if>
                 <div class="navbar-nav">
-	                <li class="nav-item">
-	                <menu:item activeMenu="${active=='user/users'}" id="settings" label=" " menuClass="nav-link fa fa-cog" url="/user/users/"/>
-	                </li>
+	                <menu:item activeMenu="${active=='user/users'}" id="i_user_new" bootstrapIcon="fa fa-cog" label=" " menuClass="nav-link" url="/user/users/"/>
                 </div>
             </c:if>	
             <sec:authorize access="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')">

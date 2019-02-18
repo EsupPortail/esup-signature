@@ -17,7 +17,6 @@
  */
 document.addEventListener('DOMContentLoaded', function() {
 	
-	
 	//input type file
 	var inputFile = document.getElementById("inputGroupFile01");
 	if(inputFile != null) {
@@ -50,18 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		   window.location.href='';
 		}
 	}
-	
-	//Custom roocol link
-	var links = document.querySelectorAll('.viewEtudiant');
-	[].forEach.call(links, function(link) {
-		if(link.querySelector('a') != null){
-			link.querySelector('a').classList.add('btn');
-			link.querySelector('a').classList.add('btn-info');
-			link.querySelector('a').classList.add('far');
-			link.querySelector('a').classList.add('fa-eye');
-			link.querySelector('a').text = '';
-		}
-	});
 	
 	//Chart JS
 	Chart.defaults.global.responsive= true;

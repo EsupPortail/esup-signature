@@ -23,12 +23,12 @@
       <spring:message code="${messageCode}" var="label" arguments="${label}" htmlEscape="true" />
     </c:if>
     <c:choose>
-	<c:when test="${menuClass eq 'nav-link'}">
+	<c:when test="${fn:contains(menuClass, 'nav-link')}">
 	    <li class="nav-item">
 	    <spring:url value="${url}" var="menu_item_url"/>
 	    <a class="${menuClass}  ${activeMenu ? 'active' : ''}" href="${menu_item_url}" title="${fn:escapeXml(label)}" >
 	    <c:if test="${not empty bootstrapIcon}">
-	    	<span class="glyphicon glyphicon-${bootstrapIcon}" aria-hidden="true"></span>
+	    	<i class="${bootstrapIcon}" aria-hidden="true"><!--  --></i>&amp;nbsp;
 	    </c:if>
 	      <c:out value="${label}" escapeXml="false" />
 	    </a>

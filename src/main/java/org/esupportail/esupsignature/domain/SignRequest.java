@@ -38,7 +38,6 @@ public class SignRequest {
 
 	protected final static Logger log = LoggerFactory.getLogger(SignRequest.class);
 
-	
 	String name;
 	
     @Temporal(TemporalType.TIMESTAMP)
@@ -95,6 +94,8 @@ public class SignRequest {
     public String getSignTypeLabel() {
 		return params.get("signType");
 	}
+    
+    
 
 	public static TypedQuery<SignRequest> findSignRequests(String createBy, String recipientEmail, SignRequestStatus status, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
     	EntityManager em = SignRequest.entityManager();

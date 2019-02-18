@@ -41,7 +41,7 @@
 							<c:when test="${signRequest.status eq 'signed'}">
 								<button type="button" class="btn btn-outline-success">
 									<i class="fas fa-file-signature"> <!--  -->
-									</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_Signed" />
+									</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
 								</button>
 							</c:when>
 							<c:when test="${signRequest.status eq 'refused'}">
@@ -264,7 +264,7 @@
 			</div>
 		</div>
 	</page:show>
-	<script language="JavaScript">
+	<script language="text/javascript">
 		var nbImagePage = ${imagePagesSize};
 		var currentImagePage = ${signRequest.params.signPageNumber} - 1;
 		if (currentImagePage == 0) {

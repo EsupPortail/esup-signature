@@ -39,8 +39,28 @@
             <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" z="user-managed"/>
 			<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_signBookName" property="signBookName" z="user-managed"/>
             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" property="recipientEmail" z="user-managed"/>
-            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_signType" property="signTypeLabel" z="user-managed"/>
-            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed"/>
+            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_signType" property="signTypeLabel" z="user-managed"/>
+            <table:column cssClass="status" id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed"/>
         </table:table>
     <page:list id="pl_org_esupportail_esupsignature_domain_SignRequest" items="${signRequests}" z="user-managed" />
+  	<script type="text/javascript">
+		document.addEventListener('DOMContentLoaded', function() {
+			var myObject = {
+					'pending': "<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />",
+					'signed': "<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />",
+					'checked': "<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />",
+					'refused': "<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />",
+					'canceled': "<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_canceled" />",
+			}
+			var keyNames = Object.keys(myObject);
+				//Custom roocol link
+				var status = document.querySelectorAll('.status');
+				[].forEach.call(status, function(item) {
+					if(item.textContent != "Status"){
+						item.innerHTML = myObject[item.textContent];
+					}
+
+				});
+		});
+	</script>
 </div>
