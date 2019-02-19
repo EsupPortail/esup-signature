@@ -97,7 +97,7 @@ public class SignRequest {
     
     
 
-	public static TypedQuery<SignRequest> findSignRequests(String createBy, String recipientEmail, SignRequestStatus status, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
+	public static TypedQuery<SignRequest> findSignRequests(String createBy, String recipientEmail, SignRequestStatus status, Long signBookId, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
     	EntityManager em = SignRequest.entityManager();
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<SignRequest> query = criteriaBuilder.createQuery(SignRequest.class);
@@ -111,6 +111,10 @@ public class SignRequest {
     	
         if(!recipientEmail.isEmpty()) {
         	predicates.add(criteriaBuilder.equal(signRequestRoot.get("recipientEmail"), recipientEmail));
+        }
+
+        if(signBookId != null) {
+        	predicates.add(criteriaBuilder.equal(signRequestRoot.get("signBookId"), signBookId));
         }
         
         if(status != null) {

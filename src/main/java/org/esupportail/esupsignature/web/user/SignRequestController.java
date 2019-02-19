@@ -46,6 +46,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @RequestMapping("/user/signrequests")
 @Controller
 @Transactional
@@ -93,11 +97,15 @@ public class SignRequestController {
 	@RequestMapping(produces = "text/html")
 	public String list(@RequestParam(value = "page", required = false) Integer page,
 			@RequestParam(value = "findBy", required = false) String findBy,
+			@RequestParam(value = "signBookId", required = false) Long signBookId,
 			@RequestParam(value = "size", required = false) Integer size,
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
 			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
 		//TODO multiple sign
 		
+		if(findBy == null) {
+			findBy = "recipientEmail";
+		}
 		String eppn = userService.getEppnFromAuthentication();
 		if (User.countFindUsersByEppnEquals(eppn) == 0) {
 			return "redirect:/user/users/?form";
@@ -116,11 +124,12 @@ public class SignRequestController {
 		}
 		List<SignRequest> signRequests = null;
 		if (findBy != null && findBy.equals("recipientEmail")) {
-			signRequests = SignRequest.findSignRequests("", user.getEmail(), SignRequestStatus.pending, "", page, size,
+			signRequests = SignRequest.findSignRequests("", user.getEmail(), SignRequestStatus.pending, signBookId, "", page, size,
 					sortFieldName, sortOrder).getResultList();
 			uiModel.addAttribute("tosigndocs", "active");
 		} else {
-			signRequests = SignRequest.findSignRequests(eppn, "", null, "", page, size, sortFieldName, sortOrder)
+			signBookId = null;
+			signRequests = SignRequest.findSignRequests(eppn, "", null, null, "", page, size, sortFieldName, sortOrder)
 					.getResultList();
 			uiModel.addAttribute("mydocs", "active");
 		}
@@ -132,9 +141,12 @@ public class SignRequestController {
 				(int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
 		uiModel.addAttribute("page", page);
 		uiModel.addAttribute("size", size);
+		uiModel.addAttribute("findBy", findBy);
+		uiModel.addAttribute("signBookId", signBookId);
 		uiModel.addAttribute("nbToSignRequests",SignRequest.countFindSignRequests("", user.getEmail(), SignRequestStatus.pending, ""));
 		uiModel.addAttribute("nbPedingSignRequests",SignRequest.countFindSignRequests(user.getEppn(), "", SignRequestStatus.pending, ""));
 		uiModel.addAttribute("signRequests", signRequests);
+		uiModel.addAttribute("signBooks", SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList());
 		return "user/signrequests/list";
 	}
 
@@ -249,6 +261,52 @@ public class SignRequestController {
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
 			return "redirect:/user/signrequests/";
 		}
+	}
+	
+	@RequestMapping(value = "/sign-multiple", method = RequestMethod.POST)
+	public String signMultiple(
+			@RequestParam(value = "ids", required = true) String ids,
+			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
+			HttpServletResponse response, Model model, HttpServletRequest request) throws JsonParseException, JsonMappingException, IOException {
+		String eppn = userService.getEppnFromAuthentication();
+		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		user.setIp(request.getRemoteAddr());
+		ObjectMapper mapper = new ObjectMapper();
+		Long[] signRequestIds = mapper.readValue(ids, Long[].class);
+		
+//		SignRequest signRequestModel = SignRequest.findSignRequest(signRequestIds[0]);
+//		SignBook signBook = SignBook.findSignBook(signRequestModel.getSignBookId());
+
+		for(Long id : signRequestIds){
+			SignRequest signRequest = SignRequest.findSignRequest(id);
+			if (signRequestService.checkUserSignRights(user, signRequest)) {
+				if (!"".equals(password)) {
+		        	setPassword(password);
+				}
+				try {
+					SignType signType = SignType.valueOf(signRequest.getParams().get("signType"));
+					if(signType.equals(SignType.validate)) {
+						signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
+					} else 
+					if(signType.equals(SignType.nexuSign)) {
+						return "redirect:/user/nexu-sign/" + id;
+					} else {
+						signRequestService.sign(signRequest, user, this.password);
+					}
+				} catch (EsupSignatureKeystoreException e) {
+					log.error("keystore error", e);
+					redirectAttrs.addFlashAttribute("messageCustom", "bad password");
+				} catch (EsupSignatureIOException e) {
+					log.error(e.getMessage(), e);
+				} catch (EsupSignatureException e) {
+					log.error(e.getMessage(), e);
+				}
+			} else {
+				redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
+			}
+			
+		}
+		return "redirect:/user/signrequests/";
 	}
 
 	@RequestMapping(value = "/refuse/{id}")

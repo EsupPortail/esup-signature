@@ -4,28 +4,80 @@
 	<jsp:output omit-xml-declaration="yes" />
 	<ul style="display: none" role="tablist" id="myTab" class="nav nav-tabs navbar-light bg-light">
 		<li class="navbar-brand">Filtres :</li>
-		<li class="nav-item"><a class="nav-link ${mydocs}" role="tab" aria-controls="mydocs" href="/user/signrequests/"> <spring:message code="menu_item_user_my_documents" /> <c:if test="${nbPedingSignRequests > 0}">
-					<i class="fas fa-exclamation-circle text-primary"> <!--  -->
-					</i>
-				</c:if>
-		</a></li>
-		<li class="nav-item"><a class="nav-link ${tosigndocs}" role="tab" aria-controls="tosigndocs" href="/user/signrequests/?findBy=recipientEmail"> <spring:message code="menu_item_user_to_sign_documents" /> <c:if test="${nbToSignRequests > 0}">
-					<i class="fas fa-exclamation-circle text-danger"> <!--  -->
-					</i>
-				</c:if>
-		</a></li>
+		<li class="nav-item"></li>
 	</ul>
 	<div class="card">
-		<div class="card-header">Actions :
-			<div class="btn-group col-lg-6">
+		<div class="card-header">
+				<form action="" method="get">
+				<div class="input-group">
+					<div class="input-group-prepend">
+						<div class="input-group-text">Filtres</div>
+					</div>
+					<select class="form-control" name="findBy" onchange="submit();">
+						<c:choose>
+							<c:when test="${findBy eq 'recipientEmail'}">
+								<option value="recipientEmail">
+									<spring:message code="menu_item_user_to_sign_documents" />
+								</option>
+								<option value="">
+									<spring:message code="menu_item_user_my_documents" />
+								</option>
+							</c:when>
+							<c:otherwise>
+								<option value="recipientEmail">
+									<spring:message code="menu_item_user_to_sign_documents" />
+								</option>
+								<option value="" selected="selected">
+									<spring:message code="menu_item_user_my_documents" />
+								</option>
+							</c:otherwise>
+						</c:choose>
+					</select>
+
+					<div class="input-group-prepend">
+						<div class="input-group-text">Signbook</div>
+					</div>
+					<select class="form-control" name="signBookId" onchange="submit();">
+						<option value="" disabled="disabled" selected="selected">Choose signbook</option>
+						<c:forEach items="${signBooks}" var="signBook">
+						<c:choose>
+							<c:when test="${signBookId eq signBook.id}">
+								<option value="${signBook.id}" selected="selected">${signBook.name}</option>
+							</c:when>
+							<c:otherwise>
+								<option value="${signBook.id}">${signBook.name}</option>
+							</c:otherwise>
+						</c:choose>
+						</c:forEach>
+					</select>
+				</div>
+
+			</form>
+
+			<div class="input-group">
+				<div class="input-group-prepend">
+					<div class="input-group-text">Actions</div>
+				</div>
 				<button id="opendocs" alt="Open docs" class="btn btn-info" onclick="openCheckedDocs()" title="open docs">
-					<span class="far fa-eye"> <!--  --></span> <spring:message code="menu_item_open_docs" />
+					<span class="far fa-eye"> <!--  --></span>
+					<spring:message code="menu_item_open_docs" />
 				</button>
-				<button id="signdocs" alt="Sign docs" class="btn btn-success" href="/user/signrequests/sign?" title="Sign docs" disabled="disabled">
-					<span class="fa fa-paper-plane"> <!--  --></span><spring:message code="menu_item_sign_docs" />
-				</button>
+				<div class="input-group-prepend">
+				<input class="form-control" id="passwordField" placeholder="Keystore password" name="password" type="password" />
+				</div>
+				<div class="input-group-append">
+					<button id="signdocs" alt="Sign docs" class="btn btn-success" onclick="submitSignDocs()" title="Sign docs" disabled="disabled">
+						<span class="fa fa-pencil-alt"> <!--  --></span>
+						<spring:message code="menu_item_sign_docs" />
+					</button>
+				</div>
+				<form autocomplete="off" id="signDocsForm" action="/user/signrequests/sign-multiple" method="post">
+					<input type="hidden" id="password" name="password" />
+					<input type="hidden" id="ids" name="ids" />
+				</form>
 			</div>
 		</div>
+		<button style="display: none;" id="alertsigndocs" alt="Sign docs" class="btn btn-outline-danger" title="" disabled="disabled">Impossible de signer en masse la selection actuelle</button>
 		<div class="card-body">
 			<div class="table-responsive">
 				<table class="table table-sm table-striped table-hover">
@@ -36,7 +88,7 @@
 							<th class="none">Date de création</th>
 							<th class="none">Créé par</th>
 							<th class="none">Email destinataire</th>
-							<th class="type"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype"/></th>
+							<th class="type"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" /></th>
 							<th class="status">Status</th>
 							<th>Voir</th>
 							<th>Supprimer</th>
@@ -50,7 +102,10 @@
 								<td class="none"><fmt:formatDate value="${signRequest.createDate}" pattern="dd/MM/yyyy HH:mm" /></td>
 								<td class="none">${signRequest.createBy}</td>
 								<td class="none">${signRequest.recipientEmail}</td>
-								<td class="type"><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.params.signType}"/></td>
+								<td class="type"><input type="hidden" id="signbook_${signRequest.id}" value="${signRequest.signBookId}" />
+									<button type="button" class="btn btn-outline-dark col-12" id="type_${signRequest.id}" value="${signRequest.params.signType}">
+										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.params.signType}" />
+									</button></td>
 								<td class="status"><c:choose>
 										<c:when test="${signRequest.status eq 'pending'}">
 											<button type="button" class="btn btn-outline-primary col-12" id="status_${signRequest.id}" value="${signRequest.status}">
@@ -80,13 +135,19 @@
 												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
 											</button>
 										</c:when>
+										<c:when test="${signRequest.status eq 'completed'}">
+											<button type="button" class="btn btn-outline-warning col-12">
+												<i class="fas fa-flag-checkered"> <!--  -->
+												</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
+											</button>
+										</c:when>			
 										<c:otherwise>
 									Unknow
 								</c:otherwise>
 									</c:choose></td>
 								<td class="utilbox"><a class="btn btn-success far fa-eye" title="Sign Request" alt="Sign Request" href="/user/signrequests/${signRequest.id}"> <!--  -->
 								</a></td>
-								<td class="utilbox"><form id="command" class="delete" action="/user/signrequests/${signRequest.id}" method="post">
+								<td class="utilbox"><form class="delete" action="/user/signrequests/${signRequest.id}" method="post">
 										<input type="hidden" name="_method" value="DELETE" />
 										<button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" value="Supprimer Sign Request" type="submit" title="Supprimer Sign Request" class="btn btn-danger far fa-trash-alt" alt="Supprimer Sign Request" />
 									</form></td>
@@ -94,34 +155,44 @@
 						</c:forEach>
 					</tbody>
 					<tfoot>
-				        <tr>
-				          <td colspan="100%">
-							<c:if test="${not empty maxPages}">
-				              <util:pagination numberOfResult="false" maxPages="${maxPages}" page="${param.page}" size="${param.size}"/>
-				            </c:if>
-			                <c:if test="${not empty param.page}">
-			                    <input name="page" type="hidden" value="1" />
-			                  </c:if>
-			                  <c:if test="${not empty param.size}">
-			                    <input name="size" type="hidden" value="${fn:escapeXml(param.size)}" />
-			                  </c:if>
-				          </td>
-			          	</tr>
-			        </tfoot>
+						<tr>
+							<td colspan="100%"><c:if test="${not empty maxPages}">
+									<util:pagination numberOfResult="false" maxPages="${maxPages}" page="${param.page}" size="${param.size}" />
+								</c:if> <c:if test="${not empty param.page}">
+									<input name="page" type="hidden" value="1" />
+								</c:if> <c:if test="${not empty param.size}">
+									<input name="size" type="hidden" value="${fn:escapeXml(param.size)}" />
+								</c:if></td>
+						</tr>
+					</tfoot>
 				</table>
 			</div>
 		</div>
 	</div>
 	<script type="text/javascript">
-	var checkBoxes = document.querySelectorAll(".check");
+		var checkBoxes = document.querySelectorAll(".check");
 
-	function openCheckedDocs() {
-		[].forEach.call(checkBoxes, function(checkBox) {
-			if (checkBox.checked) {
-				window.open('/user/signrequests/get-original-file/' + checkBox.value , '_blank');
-			}
-		});
-	}
+		function openCheckedDocs() {
+			[].forEach.call(checkBoxes, function(checkBox) {
+				if (checkBox.checked) {
+					window.open('/user/signrequests/get-original-file/'
+							+ checkBox.value, '_blank');
+				}
+			});
+		}
+
+		function submitSignDocs() {
+			var toSignResquest = new Array();
+			[].forEach.call(checkBoxes, function(checkBox) {
+				if (checkBox.checked) {
+					toSignResquest.push(checkBox.value);
+				}
+			});
+			document.getElementById("ids").value = JSON
+					.stringify(toSignResquest);
+			document.getElementById("password").value = document.getElementById("passwordField").value 
+			document.getElementById("signDocsForm").submit();
+		}
 	</script>
 	<table:table render="false" data="${signRequests}" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">
 		<table:column id="c_org_esupportail_esupsignature_domain_SignRequest_name" property="name" z="user-managed" />

@@ -43,6 +43,7 @@ public class DocumentController {
 		InputStream in = pdfService.pageAsInputStream(document.getJavaIoFile(), page);
 	    response.setContentType(MediaType.IMAGE_PNG_VALUE);
 	    IOUtils.copy(in, response.getOutputStream());
+	    in.close();
 	}
 	
 }

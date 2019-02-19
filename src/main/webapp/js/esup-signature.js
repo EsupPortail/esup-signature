@@ -56,6 +56,9 @@ document.addEventListener('DOMContentLoaded', function() {
 	var checkBoxes = document.querySelectorAll(".check");
 	var openDocsButton = document.getElementById("opendocs");
 	var signDocsButton = document.getElementById("signdocs");
+	var alertSignDocsButton = document.getElementById("alertsigndocs");
+	var passwordField = document.getElementById("passwordField");
+	passwordField.style.display = "none";	
 	if (selectAll != null) {
 		openDocsButton.disabled = true;
 		selectAll.onchange = function() {
@@ -66,7 +69,8 @@ document.addEventListener('DOMContentLoaded', function() {
 					checkBox.checked = false;
 				}
 			});
-
+			checkOpenDocButtonEnable();
+			checkSignDocButtonEnable();
 		};
 	}
 	
@@ -90,18 +94,31 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	function checkSignDocButtonEnable() {
 		signDocsButton.disabled = true;
+		passwordField.style.display = "none";
+		var oldSignBook = "";
 		for (i = 0; i < checkBoxes.length; i++) {
 			if(checkBoxes[i].checked) {
-				if(document.getElementById("status_" + checkBoxes[i].value).value != "pending") {
+				var status = document.getElementById("status_" + checkBoxes[i].value).value;
+				var signBook = document.getElementById("signbook_" + checkBoxes[i].value).value;
+				var type = document.getElementById("type_" + checkBoxes[i].value).value;
+				if(type == 'certSign') {
+					passwordField.style.display = "block";
+				} else {
+					passwordField.style.display = "none";
+				}
+				if(status != "pending" || (oldSignBook != "" && oldSignBook != signBook)) {
 					signDocsButton.disabled = true;
+					alertSignDocsButton.style.display = "block";
+					passwordField.style.display = "none";
 					break;
 				} else {
+					oldSignBook = signBook;
+					alertSignDocsButton.style.display = "none";
 					signDocsButton.disabled = false;
 				}
 			}
 			
 		}
 	}
-
 	
 });

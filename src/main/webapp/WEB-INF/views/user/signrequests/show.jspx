@@ -56,6 +56,12 @@
 									</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
 								</button>
 							</c:when>
+							<c:when test="${signRequest.status eq 'completed'}">
+								<button type="button" class="btn btn-outline-warning">
+									<i class="fas fa-flag-checkered"> <!--  -->
+									</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
+								</button>
+							</c:when>							
 							<c:otherwise>
 								Unknow
 							</c:otherwise>
@@ -264,7 +270,7 @@
 			</div>
 		</div>
 	</page:show>
-	<script language="text/javascript">
+	<script language="JavaScript">
 		var nbImagePage = ${imagePagesSize};
 		var currentImagePage = ${signRequest.params.signPageNumber} - 1;
 		if (currentImagePage == 0) {

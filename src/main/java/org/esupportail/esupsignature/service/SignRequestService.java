@@ -244,6 +244,7 @@ public class SignRequestService {
 				signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
 			} catch (EsupSignatureException e) {
 			}
+			/*
 			if (signBook.getTargetType().equals(DocumentIOType.cifs)) {
 				try {
 					InputStream in = new FileInputStream(signRequest.getSignedFile().getJavaIoFile());
@@ -252,6 +253,7 @@ public class SignRequestService {
 				} catch (FileNotFoundException e) {
 					logger.error("error on cifs copy", e);				}
 			}
+			*/
 		}
 	}
 	

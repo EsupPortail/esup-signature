@@ -79,7 +79,7 @@
         </div>
         </form>
     </page:show>
-    <script language="JavaScript">			
+    <script language="javascript">			
 		var nbImagePage = ${imagePagesSize};
 		var currentImagePage = ${signbook.params.signPageNumber} - 1;
 		if(currentImagePage == 0) {
