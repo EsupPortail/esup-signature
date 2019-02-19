@@ -1,66 +1,149 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:spring="http://www.springframework.org/tags" version="2.0">
-    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
-    <jsp:output omit-xml-declaration="yes"/>
-	<div class="btn-group float-right clearfix">
-		<a alt="Signer un nouveau document" class="btn btn-info" href="/user/signrequests?form" title="Signer un nouveau Document">
-			<span class="fas fa-pencil-alt"><!--  --></span> <spring:message code="menu_item_signrequest_new" />
-		</a>
-		<a alt="Signer un nouveau document" class="btn btn-primary" href="/user/signrequests?form&amp;recipientEmail=true" title="Signer un nouveau Document">
-			<span class="fa fa-paper-plane"><!--  --></span> <spring:message code="menu_item_signrequest_send" />
-		</a>
-	</div>
-	<ul role="tablist" id="myTab" class="nav nav-tabs navbar-light bg-light">
- 		<li class="navbar-brand">Filtres : </li>
-		<li class="nav-item">
-			<a class="nav-link ${mydocs}" role="tab" aria-controls="mydocs" href="/user/signrequests/">
-			<spring:message code="menu_item_user_my_documents" />
-				<c:if test="${nbPedingSignRequests > 0}">
-					<i class="fas fa-exclamation-circle text-primary"><!--  --></i>
-				</c:if>		
-			</a>
-		</li>
-		<li class="nav-item">
-			<a class="nav-link ${tosigndocs}" role="tab" aria-controls="tosigndocs" href="/user/signrequests/?findBy=recipientEmail">
-				<spring:message code="menu_item_user_to_sign_documents" />
-				<c:if test="${nbToSignRequests > 0}">
-					<i class="fas fa-exclamation-circle text-danger"><!--  --></i>
-				</c:if>			
-			</a>
-		</li>
+<div xmlns:fmt="http://java.sun.com/jsp/jstl/fmt" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:spring="http://www.springframework.org/tags" xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:util="urn:jsptagdir:/WEB-INF/tags/util" version="2.0">
+	<jsp:directive.page contentType="text/html;charset=UTF-8" />
+	<jsp:output omit-xml-declaration="yes" />
+	<ul style="display: none" role="tablist" id="myTab" class="nav nav-tabs navbar-light bg-light">
+		<li class="navbar-brand">Filtres :</li>
+		<li class="nav-item"><a class="nav-link ${mydocs}" role="tab" aria-controls="mydocs" href="/user/signrequests/"> <spring:message code="menu_item_user_my_documents" /> <c:if test="${nbPedingSignRequests > 0}">
+					<i class="fas fa-exclamation-circle text-primary"> <!--  -->
+					</i>
+				</c:if>
+		</a></li>
+		<li class="nav-item"><a class="nav-link ${tosigndocs}" role="tab" aria-controls="tosigndocs" href="/user/signrequests/?findBy=recipientEmail"> <spring:message code="menu_item_user_to_sign_documents" /> <c:if test="${nbToSignRequests > 0}">
+					<i class="fas fa-exclamation-circle text-danger"> <!--  -->
+					</i>
+				</c:if>
+		</a></li>
 	</ul>
-	<br/>
-        <table:table data="${signRequests}" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">
-            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_name" property="name" z="user-managed"/>
-            <table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" property="createDate" z="user-managed"/>
-            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" property="createBy" z="user-managed"/>
-            <table:column render="false" date="true" dateTimePattern="${signRequest_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" property="updateDate" z="user-managed"/>
-            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" property="updateBy" z="user-managed"/>
-            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" z="user-managed"/>
-			<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_signBookName" property="signBookName" z="user-managed"/>
-            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" property="recipientEmail" z="user-managed"/>
-            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_signType" property="signTypeLabel" z="user-managed"/>
-            <table:column cssClass="status" id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed"/>
-        </table:table>
-    <page:list id="pl_org_esupportail_esupsignature_domain_SignRequest" items="${signRequests}" z="user-managed" />
-  	<script type="text/javascript">
-		document.addEventListener('DOMContentLoaded', function() {
-			var myObject = {
-					'pending': "<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />",
-					'signed': "<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />",
-					'checked': "<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />",
-					'refused': "<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />",
-					'canceled': "<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_canceled" />",
-			}
-			var keyNames = Object.keys(myObject);
-				//Custom roocol link
-				var status = document.querySelectorAll('.status');
-				[].forEach.call(status, function(item) {
-					if(item.textContent != "Status"){
-						item.innerHTML = myObject[item.textContent];
-					}
+	<div class="card">
+		<div class="card-header">Actions :
+			<div class="btn-group col-lg-6">
+				<button id="opendocs" alt="Open docs" class="btn btn-info" onclick="openCheckedDocs()" title="open docs">
+					<span class="far fa-eye"> <!--  --></span> <spring:message code="menu_item_open_docs" />
+				</button>
+				<button id="signdocs" alt="Sign docs" class="btn btn-success" href="/user/signrequests/sign?" title="Sign docs" disabled="disabled">
+					<span class="fa fa-paper-plane"> <!--  --></span><spring:message code="menu_item_sign_docs" />
+				</button>
+			</div>
+		</div>
+		<div class="card-body">
+			<div class="table-responsive">
+				<table class="table table-sm table-striped table-hover">
+					<thead>
+						<tr>
+							<th data-type="html"><input id="selectall" type="checkbox" /></th>
+							<th class="none">Nom</th>
+							<th class="none">Date de création</th>
+							<th class="none">Créé par</th>
+							<th class="none">Email destinataire</th>
+							<th class="type"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype"/></th>
+							<th class="status">Status</th>
+							<th>Voir</th>
+							<th>Supprimer</th>
+						</tr>
+					</thead>
+					<tbody>
+						<c:forEach items="${signRequests}" var="signRequest">
+							<tr class="roocol">
+								<td class="none"><input value="${signRequest.id}" name="check" type="checkbox" class="check" /></td>
+								<td class="none">${signRequest.name}</td>
+								<td class="none"><fmt:formatDate value="${signRequest.createDate}" pattern="dd/MM/yyyy HH:mm" /></td>
+								<td class="none">${signRequest.createBy}</td>
+								<td class="none">${signRequest.recipientEmail}</td>
+								<td class="type"><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.params.signType}"/></td>
+								<td class="status"><c:choose>
+										<c:when test="${signRequest.status eq 'pending'}">
+											<button type="button" class="btn btn-outline-primary col-12" id="status_${signRequest.id}" value="${signRequest.status}">
+												<i class="fas fa-clock"> <!--  -->
+												</i>
+												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
+											</button>
+										</c:when>
+										<c:when test="${signRequest.status eq 'signed'}">
+											<button type="button" class="btn btn-outline-success col-12" id="status_${signRequest.id}" value="${signRequest.status}">
+												<i class="fas fa-file-signature"> <!--  -->
+												</i>
+												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
+											</button>
+										</c:when>
+										<c:when test="${signRequest.status eq 'refused'}">
+											<button type="button" class="btn btn-outline-danger col-12" id="status_${signRequest.id}" value="${signRequest.status}">
+												<i class="fas fa-ban"> <!--  -->
+												</i>
+												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
+											</button>
+										</c:when>
+										<c:when test="${signRequest.status eq 'checked'}">
+											<button type="button" class="btn btn-outline-success col-12" id="status_${signRequest.id}" value="${signRequest.status}">
+												<i class="far fa-check-circle"> <!--  -->
+												</i>
+												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
+											</button>
+										</c:when>
+										<c:otherwise>
+									Unknow
+								</c:otherwise>
+									</c:choose></td>
+								<td class="utilbox"><a class="btn btn-success far fa-eye" title="Sign Request" alt="Sign Request" href="/user/signrequests/${signRequest.id}"> <!--  -->
+								</a></td>
+								<td class="utilbox"><form id="command" class="delete" action="/user/signrequests/${signRequest.id}" method="post">
+										<input type="hidden" name="_method" value="DELETE" />
+										<button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" value="Supprimer Sign Request" type="submit" title="Supprimer Sign Request" class="btn btn-danger far fa-trash-alt" alt="Supprimer Sign Request" />
+									</form></td>
+							</tr>
+						</c:forEach>
+					</tbody>
+					<tfoot>
+				        <tr>
+				          <td colspan="100%">
+							<c:if test="${not empty maxPages}">
+				              <util:pagination numberOfResult="false" maxPages="${maxPages}" page="${param.page}" size="${param.size}"/>
+				            </c:if>
+			                <c:if test="${not empty param.page}">
+			                    <input name="page" type="hidden" value="1" />
+			                  </c:if>
+			                  <c:if test="${not empty param.size}">
+			                    <input name="size" type="hidden" value="${fn:escapeXml(param.size)}" />
+			                  </c:if>
+				          </td>
+			          	</tr>
+			        </tfoot>
+				</table>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+	var checkBoxes = document.querySelectorAll(".check");
 
-				});
+	function openCheckedDocs() {
+		[].forEach.call(checkBoxes, function(checkBox) {
+			if (checkBox.checked) {
+				window.open('/user/signrequests/get-original-file/' + checkBox.value , '_blank');
+			}
 		});
+	}
 	</script>
+	<table:table render="false" data="${signRequests}" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">
+		<table:column id="c_org_esupportail_esupsignature_domain_SignRequest_name" property="name" z="user-managed" />
+		<table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" property="createDate" z="user-managed" />
+		<table:column id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" property="createBy" z="user-managed" />
+		<table:column render="false" date="true" dateTimePattern="${signRequest_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" property="updateDate" z="user-managed" />
+		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" property="updateBy" z="user-managed" />
+		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" z="user-managed" />
+		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_signBookName" property="signBookName" z="user-managed" />
+		<table:column id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" property="recipientEmail" z="user-managed" />
+		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_signType" property="signTypeLabel" z="user-managed" />
+		<table:column cssClass="status" id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed" />
+	</table:table>
+	<page:list id="pl_org_esupportail_esupsignature_domain_SignRequest" items="${signRequests}" z="user-managed" />
+	<div class=" col-lg-12 text-right">
+		<div class="btn-group">
+			<a alt="Signer un nouveau document" class="btn btn-info" href="/user/signrequests?form" title="Signer un nouveau Document"> <span class="fas fa-pencil-alt"> <!--  -->
+			</span> <spring:message code="menu_item_signrequest_new" />
+			</a> <a alt="Signer un nouveau document" class="btn btn-primary" href="/user/signrequests?form&amp;recipientEmail=true" title="Signer un nouveau Document"> <span class="fa fa-paper-plane"> <!--  -->
+			</span> <spring:message code="menu_item_signrequest_send" />
+			</a>
+		</div>
+	</div>
+
 </div>

@@ -44,129 +44,64 @@ document.addEventListener('DOMContentLoaded', function() {
 		myModalInstance.show();
 	}
 	
+	//TODO a virer ?
 	if(document.querySelector('#cancelFilters') != null) {
 		document.querySelector('#cancelFilters').onclick = function() {
 		   window.location.href='';
 		}
 	}
 	
-	//Chart JS
-	Chart.defaults.global.responsive= true;
-	Chart.defaults.global.maintainAspectRatio=false;
-	Chart.defaults.global.responsiveAnimationDuration=0;
-	Chart.defaults.global.legend.labels.fontFamily = "Arial";
-	Chart.defaults.global.legend.labels.boxWidth = 20;
-	Chart.defaults.global.legend.position= "bottom";
-	Chart.defaults.global.title.fontFamily = "Arial";
-	Chart.defaults.global.title.fontSize = 14;
-	Chart.defaults.global.title.display= false;
-	Chart.defaults.global.elements.point.radius=7;
-	Chart.defaults.global.elements.point.backgroundColor= "#fff";
-	Chart.defaults.global.elements.point.borderColor= "rgba(0,0,0,1)";
-	Chart.defaults.global.elements.line.tension=0.2;
-	Chart.defaults.global.elements.line.backgroundColor= "rgba(220,220,220,0.5)";
-	Chart.defaults.global.elements.line.borderColor= "rgba(100,100,100,0.7)";
-	Chart.pluginService.register({
-		  beforeRender: function (chart) {
-		    if (chart.config.options.showAllTooltips) {
-		        chart.pluginTooltips = [];
-		        chart.config.data.datasets.forEach(function (dataset, i) {
-		            chart.getDatasetMeta(i).data.forEach(function (sector, j) {
-		                chart.pluginTooltips.push(new Chart.Tooltip({
-		                    _chart: chart.chart,
-		                    _chartInstance: chart,
-		                    _data: chart.data,
-		                    _options: chart.options.tooltips,
-		                    _active: [sector]
-		                }, chart));
-		            });
-		        });
-		        chart.options.tooltips.enabled = false;
-		    }
-		    
-		},
-		afterDraw: function (chart, easing) {
-		    if (chart.config.options.showAllTooltips) {
-		        if (!chart.allTooltipsOnce) {
-		            if (easing !== 1)
-		                return;
-		            chart.allTooltipsOnce = true;
-		        }
-		        chart.options.tooltips.enabled = true;
-		        Chart.helpers.each(chart.pluginTooltips, function (tooltip) {
-		            tooltip.initialize();
-		            tooltip.update();
-		            tooltip.pivot();
-		            tooltip.transition(easing).draw();
-		        });
-		    }
-		}
+	//ui list signRequest
+	var selectAll = document.getElementById("selectall");
+	var checkBoxes = document.querySelectorAll(".check");
+	var openDocsButton = document.getElementById("opendocs");
+	var signDocsButton = document.getElementById("signdocs");
+	if (selectAll != null) {
+		openDocsButton.disabled = true;
+		selectAll.onchange = function() {
+			[].forEach.call(checkBoxes, function(checkBox) {
+				if (selectAll.checked) {
+					checkBox.checked = true;
+				} else {
+					checkBox.checked = false;
+				}
+			});
+
+		};
+	}
+	
+	[].forEach.call(checkBoxes, function(checkBox) {
+		checkBox.addEventListener('click', function(event) {
+			checkOpenDocButtonEnable();
+			checkSignDocButtonEnable();
+		});
 	});
+	
+	function checkOpenDocButtonEnable() {
+		for (i = 0; i < checkBoxes.length; i++) {
+			if(checkBoxes[i].checked) {
+				openDocsButton.disabled = false;
+				break;
+			} else {
+				openDocsButton.disabled = true;
+			}
+		}
+	}
+	
+	function checkSignDocButtonEnable() {
+		signDocsButton.disabled = true;
+		for (i = 0; i < checkBoxes.length; i++) {
+			if(checkBoxes[i].checked) {
+				if(document.getElementById("status_" + checkBoxes[i].value).value != "pending") {
+					signDocsButton.disabled = true;
+					break;
+				} else {
+					signDocsButton.disabled = false;
+				}
+			}
+			
+		}
+	}
+
+	
 });
-
-function getTagByLocationDoughnut(name, tooltips) {
-	var request = new XMLHttpRequest();
-	request.open('GET',  "stats/chartJson?model=numberTagByLocation" + name + "&annee="+annee, true);
-	request.onload = function(){
-		if(request.status >= 200 && request.status < 400) {
-		    var data = JSON.parse(this.response);
-			var ctx = document.getElementById("tagsByLocation" + name);
-	    	var tagsByLocationInscChart = new Chart(ctx, {
-	    		type: 'doughnut',
-	    		data: data,
-	    		options: {
-	    			animation:{
-	        			animateRotate:true,
-	        			animateScale:true
-	        		},
-        			title: {
-        				text: "tagsByLocation" + name
-        			},
-        			showAllTooltips: tooltips,
-        			tooltips: {
-
-        				callbacks: {
-        					label:function(item, data){
-        						var sum = 0;
-        						data.datasets[0].data.forEach(
-        							function addNumber(value) { sum += parseInt(value); }
-        						);
-        						pourcent = data.datasets[0].data[item.index] / sum * 100;
-        						return data.labels[item.index]+" : "+data.datasets[0].data[item.index] + " - "+ Math.round(pourcent*100)/100 +"%";
-        					}
-	                
-        				}
-        			}
-	            },
-	    	});
-		}
-	}
-	request.send();
-}
-
-function getNumberTagByWeekChart(name, tooltips) {
-	var request = new XMLHttpRequest();
-	request.open('GET',  "stats/chartJson?model=numberTagByWeek" + name + "&annee="+annee, true);
-	request.onload = function() {
-		if(request.status >= 200 && request.status < 400) {
-		    var data = JSON.parse(this.response);
-	    	var ctx = document.getElementById("tagsByWeek" + name).getContext("2d");
-	    	var repartionComposantesChart = new Chart(ctx, {
-	    		type: 'bar',
-	    		data: data,
-	    		options: {
-	    			animation:{
-	    				animateRotate:true,
-	    				animateScale:true
-	        		},
-	        		title: {
-	        			text: "tagsByWeek" + name,
-	        		},
-	        		showAllTooltips: tooltips,
-	    		},
-	    	});
-		}
-	}
-	request.send();
-}
-
