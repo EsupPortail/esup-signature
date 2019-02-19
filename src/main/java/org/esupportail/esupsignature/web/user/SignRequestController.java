@@ -96,6 +96,8 @@ public class SignRequestController {
 			@RequestParam(value = "size", required = false) Integer size,
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
 			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
+		//TODO multiple sign
+		
 		String eppn = userService.getEppnFromAuthentication();
 		if (User.countFindUsersByEppnEquals(eppn) == 0) {
 			return "redirect:/user/users/?form";

@@ -84,6 +84,7 @@ public class UserController {
         if(user.getSignImage().getBigFile().getBinaryFile() != null) {
         	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
         }
+        uiModel.addAttribute("isPasswordSet", password != "");
         uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         return "user/users/show";
     }
@@ -137,10 +138,10 @@ public class UserController {
     }
     
     @RequestMapping(value = "/viewCert", method = RequestMethod.GET, produces = "text/html")
-    public String viewCert(@RequestParam("password") String password, RedirectAttributes redirectAttrs) throws Exception {
+    public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttrs) throws Exception {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
-		if (!"".equals(password)) {
+		if (password != null && !"".equals(password)) {
         	setPassword(password);
         }
         try {
@@ -156,7 +157,6 @@ public class UserController {
 	public void getSignedFile(HttpServletResponse response, Model model) {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
-		
 		Document file = user.getKeystore();
 		try {
 			response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
