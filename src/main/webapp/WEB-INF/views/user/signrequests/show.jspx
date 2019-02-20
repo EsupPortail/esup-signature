@@ -4,7 +4,7 @@
 	<jsp:output omit-xml-declaration="yes" />
 	<page:show update="false" id="ps_org_esupportail_esupsignature_domain_SignRequest" object="${signRequest}" path="/user/signrequests" z="user-managed">
 		<div class="row">
-			<div class="col-lg-4 jumbotron">
+			<div class="col-lg-4 jumbotron border">
 				<field:display field="name" id="s_org_esupportail_esupsignature_domain_SignRequest_name" object="${signRequest}" z="user-managed" />
 				<dl class="display-group border-bottom m-0">
 					<dt class="col-lg-7">
@@ -87,8 +87,43 @@
 							</c:if>
 						</div>
 					</div>
+					<script language="JavaScript">
+						var nbImagePage = ${imagePagesSize};
+						var currentImagePage = ${signRequest.params.signPageNumber} - 1;
+						if (currentImagePage == 0) {
+							document.getElementById("previous").disabled = true;
+						}
+						if (currentImagePage == nbImagePage - 1) {
+							document.getElementById("next").disabled = true;
+						}
+						document.getElementById("signPageNumber").value = currentImagePage + 1;
+				
+						function nextImage() {
+							currentImagePage++;
+							document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/" + currentImagePage + "')";
+							if (currentImagePage == nbImagePage - 1) {
+								document.getElementById("next").disabled = true;
+							}
+							if (currentImagePage > 0) {
+								document.getElementById("previous").disabled = false;
+							}
+							document.getElementById("signPageNumber").value = currentImagePage + 1;
+						}
+				
+						function previousImage() {
+							currentImagePage--;
+							document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/" + currentImagePage + "')";
+							if (currentImagePage == 0) {
+								document.getElementById("previous").disabled = true;
+							}
+							if (nbImagePage - 1 > currentImagePage) {
+								document.getElementById("next").disabled = false;
+							}
+							document.getElementById("signPageNumber").value = currentImagePage + 1;
+						}
+					</script>					
 					</c:if>
-					<div class="col-lg-5 jumbotron">
+					<div class="col-lg-5 jumbotron border">
 						<form autocomplete="off" action="/user/signrequests/sign/${id}" method="post">
 							<c:choose>
 								<c:when test="${documentType eq 'pdf' and signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' and signRequest.params.signType ne 'validate'}">
@@ -273,39 +308,4 @@
 			</div>
 		</div>
 	</page:show>
-	<script language="JavaScript">
-		var nbImagePage = ${imagePagesSize};
-		var currentImagePage = ${signRequest.params.signPageNumber} - 1;
-		if (currentImagePage == 0) {
-			document.getElementById("previous").disabled = true;
-		}
-		if (currentImagePage == nbImagePage - 1) {
-			document.getElementById("next").disabled = true;
-		}
-		document.getElementById("signPageNumber").value = currentImagePage + 1;
-
-		function nextImage() {
-			currentImagePage++;
-			document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/" + currentImagePage + "')";
-			if (currentImagePage == nbImagePage - 1) {
-				document.getElementById("next").disabled = true;
-			}
-			if (currentImagePage > 0) {
-				document.getElementById("previous").disabled = false;
-			}
-			document.getElementById("signPageNumber").value = currentImagePage + 1;
-		}
-
-		function previousImage() {
-			currentImagePage--;
-			document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/" + currentImagePage + "')";
-			if (currentImagePage == 0) {
-				document.getElementById("previous").disabled = true;
-			}
-			if (nbImagePage - 1 > currentImagePage) {
-				document.getElementById("next").disabled = false;
-			}
-			document.getElementById("signPageNumber").value = currentImagePage + 1;
-		}
-	</script>
 </div>

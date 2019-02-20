@@ -103,11 +103,6 @@ public class SignRequestController {
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
 			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
 		//TODO multiple sign
-		
-		if(findBy == null) {
-			findBy = "recipientEmail";
-		}
-		
 		SignRequestStatus statusFilterEnum = null;
 		if(statusFilter != null) {
 			statusFilterEnum = SignRequestStatus.valueOf(statusFilter);
@@ -181,7 +176,7 @@ public class SignRequestController {
 			uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 			uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 			uiModel.addAttribute("signRequest", signRequest);
-			uiModel.addAttribute("documentType", fileService.getExtenstion(toConvertFile.getJavaIoFile()));
+			uiModel.addAttribute("documentType", fileService.getExtension(toConvertFile.getJavaIoFile()));
 			uiModel.addAttribute("itemId", id);
 			uiModel.addAttribute("imagePagesSize",
 					PdfService.getTotalNumberOfPages(toConvertFile.getJavaIoFile()));
@@ -383,7 +378,7 @@ public class SignRequestController {
 		Document file = signRequest.getSignedFile();
 		try {
 			response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
-			response.setContentType(file.getContentType());
+			response.setContentType(file.getContentType());				
 			IOUtils.copy(file.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
 		} catch (Exception e) {
 			log.error("get file error", e);

@@ -104,6 +104,8 @@ public class SignRequestService {
             if(signType.equals(SignType.certSign)) {
             	logger.info(user.getEppn() + " launch xades signature for signRequest : " + signRequest.getId());
               	signedFile = xadesSign(signRequest, user, password);
+              	//mime type application/vnd.etsi.asic-e+zip
+              	signedFile = fileService.renameFile(signedFile, fileService.getNameOnly(signedFile) + ".ascis");
             }
     	}
         if(signedFile != null) {
@@ -183,7 +185,6 @@ public class SignRequestService {
 		ASiCWithXAdESSignatureParameters parameters = new ASiCWithXAdESSignatureParameters();
 		parameters.setSigningCertificate(certificateToken);
 		parameters.setCertificateChain(certificateTokenChain);
-
 		DSSDocument dssDocument = signingService.certSignDocument(signatureDocumentForm, parameters, signatureTokenConnection);
         InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
         

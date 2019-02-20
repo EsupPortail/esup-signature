@@ -203,11 +203,11 @@ public class SigningService {
 	public SignatureDocumentForm getXadesSignatureDocumentForm() {
 		//TODO : bean properties ?
 		SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
-		signaturePdfForm.setContainerType(ASiCContainerType.ASiC_E);
+		signaturePdfForm.setContainerType(ASiCContainerType.ASiC_S);
 		signaturePdfForm.setSignatureForm(SignatureForm.XAdES);
 		signaturePdfForm.setSignatureLevel(SignatureLevel.XAdES_BASELINE_T);
 		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
-		signaturePdfForm.setSignaturePackaging(SignaturePackaging.DETACHED);
+		signaturePdfForm.setSignaturePackaging(null);
 		signaturePdfForm.setSigningDate(new Date());
 		return signaturePdfForm;
 	}
