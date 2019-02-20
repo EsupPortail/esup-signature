@@ -2,7 +2,14 @@
 <div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:form="urn:jsptagdir:/WEB-INF/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:spring="http://www.springframework.org/tags" version="2.0">
 	<jsp:directive.page contentType="text/html;charset=UTF-8" />
 	<jsp:output omit-xml-declaration="yes" />
-	<form:update id="fu_org_esupportail_esupsignature_domain_User" modelAttribute="user" multipart="true" path="/user/users" versionField="none" z="user-managed">
+	<div class="card card-body bg-info">
+		Merci de compléter vos information pour pouvoir commencer à signer :
+		<br/>
+		- Un keystore au format PKCS12
+		<br/>
+		- Un fichier image pour la signature 
+	</div>
+	<form:create id="fc_org_esupportail_esupsignature_domain_User" modelAttribute="user" multipart="true" path="/user/users/" render="${empty dependencies}" z="user-managed">
 		<field:input readonly="true" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_User_name" z="user-managed" />
 		<field:input readonly="true" cssClass="form-control" field="firstname" id="c_org_esupportail_esupsignature_domain_User_firstname" z="user-managed" />
 		<field:input readonly="true" cssClass="form-control" field="eppn" id="c_org_esupportail_esupsignature_domain_User_eppn" z="user-managed" />
@@ -20,11 +27,6 @@
 		<div class="form-group">
 			<label class="col-lg-3  col-form-label" for="newPageType"><strong>Sign image</strong></label>
 			<div class="col-lg-9">
-				<c:if test="${not empty signFile}">
-					<div class="col-lg-3 text-center">
-						<b>Actual sign image</b> <img alt="signature" src="data:image/jpg;base64, ${signFile}" />
-					</div>
-				</c:if>
 				<div class="input-group">
 					<div class="custom-file">
 						<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" /> <label class="custom-file-label" id="inputGroupLabel01" for="upload">Choose image file</label>
@@ -38,7 +40,7 @@
 		<input type="hidden" name="signImageBase64" id="signImageBase64" />
 		<field:select render="false" field="signImage" id="c_org_esupportail_esupsignature_domain_User_signImage" itemValue="id" items="${files}" path="/files" z="user-managed" />
 		<field:select render="false" field="keystore" id="c_org_esupportail_esupsignature_domain_User_keystore" itemValue="id" items="${files}" path="/files" z="user-managed" />
-	</form:update>
+	</form:create>
 	<form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_User" render="${not empty dependencies}" z="user-managed" />
 
 	<script type="text/javascript">

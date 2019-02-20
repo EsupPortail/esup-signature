@@ -108,35 +108,35 @@
 									</button></td>
 								<td class="status"><c:choose>
 										<c:when test="${signRequest.status eq 'pending'}">
-											<button type="button" class="btn btn-outline-primary col-12" id="status_${signRequest.id}" value="${signRequest.status}">
+											<button type="button" class="btn btn-outline-primary btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
 												<i class="fas fa-clock"> <!--  -->
 												</i>
 												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
 											</button>
 										</c:when>
 										<c:when test="${signRequest.status eq 'signed'}">
-											<button type="button" class="btn btn-outline-success col-12" id="status_${signRequest.id}" value="${signRequest.status}">
+											<button type="button" class="btn btn-outline-success btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
 												<i class="fas fa-file-signature"> <!--  -->
 												</i>
 												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
 											</button>
 										</c:when>
 										<c:when test="${signRequest.status eq 'refused'}">
-											<button type="button" class="btn btn-outline-danger col-12" id="status_${signRequest.id}" value="${signRequest.status}">
+											<button type="button" class="btn btn-outline-danger btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
 												<i class="fas fa-ban"> <!--  -->
 												</i>
 												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
 											</button>
 										</c:when>
 										<c:when test="${signRequest.status eq 'checked'}">
-											<button type="button" class="btn btn-outline-success col-12" id="status_${signRequest.id}" value="${signRequest.status}">
+											<button type="button" class="btn btn-outline-success btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
 												<i class="far fa-check-circle"> <!--  -->
 												</i>
 												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
 											</button>
 										</c:when>
 										<c:when test="${signRequest.status eq 'completed'}">
-											<button type="button" class="btn btn-outline-warning col-12">
+											<button type="button" class="btn btn-outline-warning btn-sm  col-12" id="status_${signRequest.id}" value="${signRequest.status}">
 												<i class="fas fa-flag-checkered"> <!--  -->
 												</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
 											</button>
@@ -167,6 +167,7 @@
 					</tfoot>
 				</table>
 			</div>
+	<page:list id="pl_org_esupportail_esupsignature_domain_SignRequest" items="${signRequests}" z="user-managed" />
 		</div>
 	</div>
 	<script type="text/javascript">
@@ -206,7 +207,6 @@
 		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_signType" property="signTypeLabel" z="user-managed" />
 		<table:column cssClass="status" id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed" />
 	</table:table>
-	<page:list id="pl_org_esupportail_esupsignature_domain_SignRequest" items="${signRequests}" z="user-managed" />
 	<div class=" col-lg-12 text-right">
 		<div class="btn-group">
 			<a alt="Signer un nouveau document" class="btn btn-info" href="/user/signrequests?form" title="Signer un nouveau Document"> <span class="fas fa-pencil-alt"> <!--  -->

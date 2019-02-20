@@ -95,15 +95,18 @@ public class UserController {
 		User user;
 		if(User.countFindUsersByEppnEquals(eppn) > 0) {
 			user = User.findUsersByEppnEquals(eppn).getSingleResult();
-	        uiModel.addAttribute("user", user);
-	        if(user.getSignImage().getBigFile().getBinaryFile() != null) {
+	        uiModel.addAttribute("user", user);	        
+			if(user.getSignImage().getBigFile().getBinaryFile() != null) {
 	        	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+	    		return "user/users/update";
+	        } else {
+				return "user/users/create";
 	        }
 		} else {
 			user = new User();
+			return "user/users/create";
 		}
-        uiModel.addAttribute("user", user);
-		return "user/users/update";
+
     }
     
     @RequestMapping(method = RequestMethod.POST, produces = "text/html")

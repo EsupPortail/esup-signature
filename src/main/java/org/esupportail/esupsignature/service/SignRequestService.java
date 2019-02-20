@@ -12,7 +12,6 @@ import javax.annotation.Resource;
 import org.apache.commons.codec.binary.Base64;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
-import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
@@ -233,13 +232,15 @@ public class SignRequestService {
 		log.setReturnCode(returnCode);
 		log.persist();
 		signRequest.setStatus(signRequestStatus);
+		//TODO quelles condition pour stattus completed
+		/*
 		if (signRequest.getSignBookId() != 0 && signRequestStatus.equals(SignRequestStatus.signed)) {
 			SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
 			try {
 				signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
 			} catch (EsupSignatureException e) {
 			}
-			/*
+			
 			if (signBook.getTargetType().equals(DocumentIOType.cifs)) {
 				try {
 					InputStream in = new FileInputStream(signRequest.getSignedFile().getJavaIoFile());
@@ -248,8 +249,9 @@ public class SignRequestService {
 				} catch (FileNotFoundException e) {
 					logger.error("error on cifs copy", e);				}
 			}
-			*/
+			
 		}
+		*/
 	}
 	
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {

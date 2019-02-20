@@ -323,6 +323,8 @@ public class SignRequestController {
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
 			return "redirect:/user/signrequests/" + id;
 		}
+		//TODO quelles condition pour stattus completed
+		/*
 		if (signRequest.getSignBookId() != 0) {
 			SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
 			try {
@@ -331,6 +333,7 @@ public class SignRequestController {
 				log.warn(e.getMessage(), e);
 			}
 		}
+		*/
 		signRequestService.updateInfo(signRequest, SignRequestStatus.refused, "documentRefused", user, "SUCCESS");
 		return "redirect:/user/signrequests/";
 	}

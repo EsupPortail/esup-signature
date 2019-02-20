@@ -18,6 +18,7 @@ import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
+import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
@@ -25,16 +26,22 @@ import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.color.PDOutputIntent;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
+import org.apache.pdfbox.preflight.PreflightDocument;
+import org.apache.pdfbox.preflight.ValidationResult;
+import org.apache.pdfbox.preflight.ValidationResult.ValidationError;
+import org.apache.pdfbox.preflight.parser.PreflightParser;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
 import org.apache.xmpbox.XMPMetadata;
+import org.apache.xmpbox.schema.DublinCoreSchema;
 import org.apache.xmpbox.schema.PDFAIdentificationSchema;
-import org.apache.xmpbox.xml.DomXmpParser;
+import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.domain.SignBook.NewPageType;
 import org.esupportail.esupsignature.domain.User;
@@ -169,21 +176,30 @@ public class PdfService {
 	public boolean checkPdfA(File pdfFile) {
 		log.info("check pdfa validity");
 		try {
-			
-			PDDocument document = PDDocument.load(pdfFile);
-		    PDDocumentCatalog catalog = document.getDocumentCatalog();
-		    PDMetadata meta = catalog.getMetadata();
-		    DomXmpParser xmpParser = new DomXmpParser();
-		    //xmpParser.setStrictParsing(true);
-		    InputStream is = meta.createInputStream();
-		    XMPMetadata metadata = xmpParser.parse(is);
+			PreflightParser parser = new PreflightParser(pdfFile);  
+			parser.parse();
+			PreflightDocument document = parser.getPreflightDocument();
+	        document.validate();  
+	        ValidationResult result = document.getResult();  
 		    document.close();
-		    PDFAIdentificationSchema id = metadata.getPDFIdentificationSchema();
-		    if (id == null) {
-		    	log.warn("not conform PDFA");
+	        for(ValidationError v : result.getErrorsList()) {
+	        	if(v.getErrorCode().startsWith("7")) {
+	        		log.warn("pdf validation error " + v.getErrorCode() + " : " + v.getDetails());
+	        	}
+	        	//TODO probleme pdfa non conforme
+	        	if(v.getErrorCode().equals("7.1")) {
+	        		log.info("contains PDFA metedata");
+	        		return true;
+	        	}
+	        }
+		    XMPMetadata metadata = result.getXmpMetaData();
+		    if (metadata == null) {
+		    	log.warn("not complient to PDFA");
 		        return false;
 		    } else {
-		    	log.info("conform PDFA");
+		    	PDFAIdentificationSchema id = metadata.getPDFIdentificationSchema();
+		    	System.err.println(id.getConformance());
+		    	log.info("complient to PDFA");
 		    	return true;
 		    }
 
@@ -197,7 +213,9 @@ public class PdfService {
         try {
 			File targetFile =  new File(Files.createTempDir(), pdfFile.getName());
 			PDDocument pdDocument = PDDocument.load(pdfFile);
-			PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+	        PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
+			PDAcroForm pdAcroForm = cat.getAcroForm();
+			PDDocumentInformation info = pdDocument.getDocumentInformation();
 			if(pdAcroForm != null) {
 				pdAcroForm.setNeedAppearances(false);
 				PDResources pdResources = new PDResources();
@@ -209,31 +227,57 @@ public class PdfService {
 			}
 	        try {
 		        XMPMetadata xmpMetadata = XMPMetadata.createXMPMetadata();
+	        
+		        DublinCoreSchema dublinCoreSchema = xmpMetadata.createAndAddDublinCoreSchema();
+		        dublinCoreSchema.setTitle(info.getTitle());
+		        
+		        XMPBasicSchema xmpBasicSchema = xmpMetadata.createAndAddXMPBasicSchema();
+		        xmpBasicSchema.setCreatorTool(info.getCreator());
+		        xmpBasicSchema.setCreateDate(info.getCreationDate());
+		        xmpBasicSchema.setModifyDate(info.getModificationDate());
+
+		        
 		        PDFAIdentificationSchema pdfaid = new PDFAIdentificationSchema(xmpMetadata);
 	        	pdfaid.setConformance("B");
 		        pdfaid.setPart(1);
+		        pdfaid.setAboutAsSimple(null);
 		        xmpMetadata.addSchema(pdfaid);
+		        
 		        XmpSerializer serializer = new XmpSerializer();
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 serializer.serialize(xmpMetadata, baos, false);
+            
 		        PDMetadata metadata = new PDMetadata(pdDocument);
                 metadata.importXMPMetadata(baos.toByteArray());
-		        PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
 		        cat.setMetadata(metadata);
+
+		        InputStream colorProfile = PdfService.class.getResourceAsStream("/sRGB.icc");
+	            PDOutputIntent intent = new PDOutputIntent(pdDocument, colorProfile);
+	            intent.setInfo("sRGB IEC61966-2.1");
+	            intent.setOutputCondition("sRGB IEC61966-2.1");
+	            intent.setOutputConditionIdentifier("sRGB IEC61966-2.1");
+	            intent.setRegistryName("http://www.color.org");
+	            cat.addOutputIntent(intent);
+	            		
 		        pdDocument.save(targetFile);
+				pdDocument.close();
+		        return targetFile;		        
 	        } catch (Exception e) {
 				log.error("PDF/A convert error", e);
 			}
-			pdDocument.close();
-	        return targetFile;
         } catch (IOException e) {
 			log.error("file read error", e);
 		}
-        return pdfFile;
+        return null;
 	}	
 	
 	private void processFields(List<PDField> fields, PDResources resources) {
 	    fields.stream().forEach(f -> {
+	    	log.debug("process :" + f.getFullyQualifiedName() + " : " + f.getFieldType());
+	    	if(f.getFieldType().equals("Sig")) {
+	    		//TODO gerer les signatures
+	    		return;
+	    	}
 	        f.setReadOnly(true);
 	        COSDictionary cosObject = f.getCOSObject();
 	        String value = cosObject.getString(COSName.DV) == null ?
