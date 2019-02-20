@@ -23,7 +23,7 @@
 		<jackson-jaxrs-json-provider.version>2.9.7</jackson-jaxrs-json-provider.version>
 		<hsqldb.version>2.4.1</hsqldb.version>
 		<nexu.version>1.22</nexu.version>
-		<pdfbox.version>2.0.13</pdfbox.version>
+		<pdfbox.version>2.0.12</pdfbox.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -422,9 +422,15 @@
 		</dependency>
 		<dependency>
 		    <groupId>org.apache.pdfbox</groupId>
-		    <artifactId>jempbox</artifactId>
-		    <version>1.8.16</version>
+		    <artifactId>preflight</artifactId>
+		    <version>${pdfbox.version}</version>
 		</dependency>
+		<dependency>
+		    <groupId>org.apache.pdfbox</groupId>
+		    <artifactId>xmpbox</artifactId>
+		    <version>${pdfbox.version}</version>
+		</dependency>
+
         <dependency>
 		    <groupId>net.sf.supercsv</groupId>
 		    <artifactId>super-csv</artifactId>

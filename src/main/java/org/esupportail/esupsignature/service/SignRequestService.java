@@ -1,10 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,7 +13,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
-import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
@@ -121,17 +117,16 @@ public class SignRequestService {
 	public File padesSign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException {
 		File signImage = user.getSignImage().getJavaIoFile();
 		
-		File toSignFile = pdfService.formatPdf(signRequest.getOriginalFile().getJavaIoFile(), signRequest.getParams());
-		
-        SignatureDocumentForm signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
-		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
-		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
-        
 		File keyStoreFile = user.getKeystore().getJavaIoFile();
 		SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
 		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
 		CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
 
+		File toSignFile = pdfService.formatPdf(signRequest.getOriginalFile().getJavaIoFile(), signRequest.getParams());		
+        SignatureDocumentForm signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
+		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
+		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
+		
         signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
 		List<String> base64CertificateChain = new ArrayList<>();
 		for(CertificateToken token : certificateTokenChain) {

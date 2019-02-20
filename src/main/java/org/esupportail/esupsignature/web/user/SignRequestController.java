@@ -250,7 +250,7 @@ public class SignRequestController {
 				}
 			} catch (EsupSignatureKeystoreException e) {
 				log.error("keystore error", e);
-				redirectAttrs.addFlashAttribute("messageCustom", "bad password");
+				redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
 			} catch (EsupSignatureIOException e) {
 				log.error(e.getMessage(), e);
 			} catch (EsupSignatureException e) {
@@ -295,7 +295,7 @@ public class SignRequestController {
 					}
 				} catch (EsupSignatureKeystoreException e) {
 					log.error("keystore error", e);
-					redirectAttrs.addFlashAttribute("messageCustom", "bad password");
+					redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
 				} catch (EsupSignatureIOException e) {
 					log.error(e.getMessage(), e);
 				} catch (EsupSignatureException e) {

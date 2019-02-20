@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,8 +14,6 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 
-import org.apache.jempbox.xmp.XMPMetadata;
-import org.apache.jempbox.xmp.pdfa.XMPSchemaPDFAId;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -33,6 +32,10 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
+import org.apache.xmpbox.XMPMetadata;
+import org.apache.xmpbox.schema.PDFAIdentificationSchema;
+import org.apache.xmpbox.xml.DomXmpParser;
+import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.domain.SignBook.NewPageType;
 import org.esupportail.esupsignature.domain.User;
 import org.slf4j.Logger;
@@ -69,7 +72,9 @@ public class PdfService {
         	params.put("xPos", String.valueOf(xCenter));
         	params.put("yPos", String.valueOf(yCenter));
         }
-		toSignFile = toPdfA(toSignFile);
+    	if(!checkPdfA(toSignFile)) {
+			toSignFile = toPdfA(toSignFile);
+    	}
     	return toSignFile;
 	}
 		
@@ -161,6 +166,33 @@ public class PdfService {
         return pdfFile;
 	}	
 	
+	public boolean checkPdfA(File pdfFile) {
+		log.info("check pdfa validity");
+		try {
+			
+			PDDocument document = PDDocument.load(pdfFile);
+		    PDDocumentCatalog catalog = document.getDocumentCatalog();
+		    PDMetadata meta = catalog.getMetadata();
+		    DomXmpParser xmpParser = new DomXmpParser();
+		    //xmpParser.setStrictParsing(true);
+		    InputStream is = meta.createInputStream();
+		    XMPMetadata metadata = xmpParser.parse(is);
+		    document.close();
+		    PDFAIdentificationSchema id = metadata.getPDFIdentificationSchema();
+		    if (id == null) {
+		    	log.warn("not conform PDFA");
+		        return false;
+		    } else {
+		    	log.info("conform PDFA");
+		    	return true;
+		    }
+
+		} catch (Exception e) {
+			log.error("check error", e);
+		}
+		return false;
+	}
+	
 	public File toPdfA(File pdfFile) {
         try {
 			File targetFile =  new File(Files.createTempDir(), pdfFile.getName());
@@ -175,18 +207,20 @@ public class PdfService {
 			    processFields(fields, pdResources);
 			    pdAcroForm.flatten();
 			}
-			PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
-	        PDMetadata metadata = new PDMetadata(pdDocument);
-	        cat.setMetadata(metadata);
-	        XMPMetadata xmp = new XMPMetadata();
-	        XMPSchemaPDFAId pdfaid = new XMPSchemaPDFAId(xmp);
-	        xmp.addSchema(pdfaid);
-	        pdfaid.setConformance("B");
-	        pdfaid.setPart(1);
-	        pdfaid.setAbout("");
 	        try {
-		        metadata.importXMPMetadata(xmp.asByteArray());
-				pdDocument.save(targetFile);
+		        XMPMetadata xmpMetadata = XMPMetadata.createXMPMetadata();
+		        PDFAIdentificationSchema pdfaid = new PDFAIdentificationSchema(xmpMetadata);
+	        	pdfaid.setConformance("B");
+		        pdfaid.setPart(1);
+		        xmpMetadata.addSchema(pdfaid);
+		        XmpSerializer serializer = new XmpSerializer();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                serializer.serialize(xmpMetadata, baos, false);
+		        PDMetadata metadata = new PDMetadata(pdDocument);
+                metadata.importXMPMetadata(baos.toByteArray());
+		        PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
+		        cat.setMetadata(metadata);
+		        pdDocument.save(targetFile);
 	        } catch (Exception e) {
 				log.error("PDF/A convert error", e);
 			}
@@ -220,10 +254,10 @@ public class PdfService {
 	                try {
 	                    f.setValue(value);
 	                } catch (IOException e1) {
-	                    e1.printStackTrace();
+	                    log.error("process fields error", e1);
 	                }
 	            } else {
-	                e.printStackTrace();
+	            	log.error("process fields error", e);
 	            }
 	        }
 	        if (f instanceof PDNonTerminalField) {
