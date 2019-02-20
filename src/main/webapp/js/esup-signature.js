@@ -58,8 +58,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	var signDocsButton = document.getElementById("signdocs");
 	var alertSignDocsButton = document.getElementById("alertsigndocs");
 	var passwordField = document.getElementById("passwordField");
-	passwordField.style.display = "none";	
 	if (selectAll != null) {
+		passwordField.style.display = "none";	
 		openDocsButton.disabled = true;
 		selectAll.onchange = function() {
 			[].forEach.call(checkBoxes, function(checkBox) {
@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	function checkSignDocButtonEnable() {
 		signDocsButton.disabled = true;
 		passwordField.style.display = "none";
+		alertSignDocsButton.style.display = "none";
 		var oldSignBook = "";
 		for (i = 0; i < checkBoxes.length; i++) {
 			if(checkBoxes[i].checked) {

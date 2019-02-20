@@ -344,14 +344,19 @@ public class PdfService {
 	
 	public BufferedImage pageAsBufferedImage(File pdfFile, int page) throws Exception {
 		PDDocument pdDocument = PDDocument.load(pdfFile);
-        PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
-        BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfToImageDpi, ImageType.RGB);
+		PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
+		BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfToImageDpi, ImageType.RGB);
         pdDocument.close();
-        return bufferedImage;
+		return bufferedImage;
 	}
 
 	public InputStream pageAsInputStream(File pdfFile, int page) throws Exception {
-		return fileService.bufferedImageToInputStream(pageAsBufferedImage(pdfFile, page), "png");
+		BufferedImage bufferedImage = pageAsBufferedImage(pdfFile, page);
+		InputStream inputStream = fileService.bufferedImageToInputStream(bufferedImage, "png");
+		bufferedImage.flush();
+		return inputStream; 
+		
+		
         
 	}
 	

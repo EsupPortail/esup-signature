@@ -97,6 +97,7 @@ public class SignRequestController {
 	@RequestMapping(produces = "text/html")
 	public String list(@RequestParam(value = "page", required = false) Integer page,
 			@RequestParam(value = "findBy", required = false) String findBy,
+			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "signBookId", required = false) Long signBookId,
 			@RequestParam(value = "size", required = false) Integer size,
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
@@ -106,6 +107,12 @@ public class SignRequestController {
 		if(findBy == null) {
 			findBy = "recipientEmail";
 		}
+		
+		SignRequestStatus statusFilterEnum = null;
+		if(statusFilter != null) {
+			statusFilterEnum = SignRequestStatus.valueOf(statusFilter);
+		}
+		
 		String eppn = userService.getEppnFromAuthentication();
 		if (User.countFindUsersByEppnEquals(eppn) == 0) {
 			return "redirect:/user/users/?form";
@@ -123,22 +130,22 @@ public class SignRequestController {
 			sortFieldName = "createDate";
 		}
 		List<SignRequest> signRequests = null;
+		float nrOfPages = 1;
+		int sizeNo = size == null ? 10 : size.intValue();
 		if (findBy != null && findBy.equals("recipientEmail")) {
 			signRequests = SignRequest.findSignRequests("", user.getEmail(), SignRequestStatus.pending, signBookId, "", page, size,
 					sortFieldName, sortOrder).getResultList();
+			nrOfPages = (float) SignRequest.countFindSignRequests("", user.getEmail(), SignRequestStatus.pending, "") / sizeNo;
 			uiModel.addAttribute("tosigndocs", "active");
 		} else {
 			signBookId = null;
-			signRequests = SignRequest.findSignRequests(eppn, "", null, null, "", page, size, sortFieldName, sortOrder)
+			signRequests = SignRequest.findSignRequests(eppn, "", statusFilterEnum, null, "", page, size, sortFieldName, sortOrder)
 					.getResultList();
+			nrOfPages = (float) SignRequest.countFindSignRequests(eppn, "", statusFilterEnum, "") / sizeNo;
 			uiModel.addAttribute("mydocs", "active");
 		}
-		int sizeNo = size == null ? 10 : size.intValue();
 
-		float nrOfPages = (float) SignRequest.countFindSignRequests(eppn, "", null, "") / sizeNo;
-
-		uiModel.addAttribute("maxPages",
-				(int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
+		uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
 		uiModel.addAttribute("page", page);
 		uiModel.addAttribute("size", size);
 		uiModel.addAttribute("findBy", findBy);
@@ -147,6 +154,9 @@ public class SignRequestController {
 		uiModel.addAttribute("nbPedingSignRequests",SignRequest.countFindSignRequests(user.getEppn(), "", SignRequestStatus.pending, ""));
 		uiModel.addAttribute("signRequests", signRequests);
 		uiModel.addAttribute("signBooks", SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList());
+		uiModel.addAttribute("statusFilter", statusFilter);
+		uiModel.addAttribute("statuses", SignRequest.SignRequestStatus.values());
+		uiModel.addAttribute("queryUrl", "?findBy="+findBy);
 		return "user/signrequests/list";
 	}
 

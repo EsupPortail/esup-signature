@@ -33,12 +33,27 @@
 							</c:otherwise>
 						</c:choose>
 					</select>
-
 					<div class="input-group-prepend">
-						<div class="input-group-text">Signbook</div>
+						<div class="input-group-text"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_status" /></div>
+					</div>
+					<select class="form-control" name="statusFilter" onchange="submit();">
+						<option value="" disabled="disabled" selected="selected"><spring:message code="menu_item_choose_status" /></option>
+						<c:forEach items="${statuses}" var="status">
+						<c:choose>
+							<c:when test="${status eq statusFilter}">
+								<option value="${status}" selected="selected"><spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_${status}" /></option>
+							</c:when>
+							<c:otherwise>
+								<option value="${status}"><spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_${status}" /></option>
+							</c:otherwise>
+						</c:choose>
+						</c:forEach>
+					</select>
+					<div class="input-group-prepend">
+						<div class="input-group-text"><spring:message code="label_org_esupportail_esupsignature_domain_signbook" /></div>
 					</div>
 					<select class="form-control" name="signBookId" onchange="submit();">
-						<option value="" disabled="disabled" selected="selected">Choose signbook</option>
+						<option value="" disabled="disabled" selected="selected"><spring:message code="menu_item_choose_signbook" /></option>
 						<c:forEach items="${signBooks}" var="signBook">
 						<c:choose>
 							<c:when test="${signBookId eq signBook.id}">
@@ -84,14 +99,14 @@
 					<thead>
 						<tr>
 							<th data-type="html"><input id="selectall" type="checkbox" /></th>
-							<th class="none">Nom</th>
-							<th class="none">Date de création</th>
-							<th class="none">Créé par</th>
-							<th class="none">Email destinataire</th>
+							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_name" /></th>
+							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createdate" /></th>
+							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createby" /></th>
+							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_recipientemail" /></th>
 							<th class="type"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" /></th>
-							<th class="status">Status</th>
-							<th>Voir</th>
-							<th>Supprimer</th>
+							<th class="status"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_status" /></th>
+							<th><spring:message code="button_view" /></th>
+							<th><spring:message code="button_delete" /></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -103,7 +118,7 @@
 								<td class="none">${signRequest.createBy}</td>
 								<td class="none">${signRequest.recipientEmail}</td>
 								<td class="type"><input type="hidden" id="signbook_${signRequest.id}" value="${signRequest.signBookId}" />
-									<button type="button" class="btn btn-outline-dark col-12" id="type_${signRequest.id}" value="${signRequest.params.signType}">
+									<button type="button" class="btn btn-outline-dark btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.params.signType}">
 										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.params.signType}" />
 									</button></td>
 								<td class="status"><c:choose>

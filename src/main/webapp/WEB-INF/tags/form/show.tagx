@@ -78,7 +78,7 @@
 			   <c:if test="${delete}">
                 <spring:url value="${path}/${itemId}" var="delete_form_url" />
                 <spring:url value="/resources/images/delete.png" var="delete_image_url" />
-                <form:form action="${delete_form_url}" method="DELETE">
+                <form:form id="delete" action="${delete_form_url}" method="DELETE">
                   <spring:message arguments="${typeName}" code="button_delete" var="delete_label" htmlEscape="false" />
                   <c:set var="delete_confirm_msg">
                     <spring:escapeBody javaScriptEscape="true">
