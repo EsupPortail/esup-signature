@@ -93,35 +93,37 @@ public class PdfService {
     	File signImage = user.getSignImage().getJavaIoFile();
 		toSignFile = formatPdf(toSignFile, params);
 		try {
-			BufferedImage bufferedImage = ImageIO.read(signImage);
-	        AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
-	        tx.translate(0, -bufferedImage.getHeight(null));
-	        AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-	        bufferedImage = op.filter(bufferedImage, null);
-			
-			File flipedSignImage = File.createTempFile("preview", ".png");
-			ImageIO.write(bufferedImage, "png", flipedSignImage);
-			
 			File targetFile =  new File(Files.createTempDir(), toSignFile.getName());
-
 			PDDocument pdDocument = PDDocument.load(toSignFile);
-	       
 	        PDPage pdPage = pdDocument.getPage(Integer.valueOf(params.get("signPageNumber")) - 1);
-
-			PDImageXObject pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
+	        
+			PDImageXObject pdImage;
 					
 			PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, false, true);
-			float height=pdPage.getMediaBox().getHeight();
-			contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
-	        
-			Matrix matrix = pdPage.getMatrix();
-			matrix.rotate(180);
-			matrix.translate(Integer.valueOf(params.get("xPos")), Integer.valueOf(params.get("yPos")));
+			float height = pdPage.getMediaBox().getHeight();
+			float width = pdPage.getMediaBox().getWidth();
 
-			//contentStream.drawXObject(pdImage, x, y, signWidth, signHeight);
-			contentStream.drawImage(pdImage, Integer.valueOf(params.get("xPos")), Integer.valueOf(params.get("yPos")), 100, 75);
+			if((int) getPdfInfos(toSignFile).get("rotation") == 0) {
+				BufferedImage bufferedImage = ImageIO.read(signImage);
+		        AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+		        tx.translate(0, -bufferedImage.getHeight(null));
+		        AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+		        bufferedImage = op.filter(bufferedImage, null);
+				
+				File flipedSignImage = File.createTempFile("preview", ".png");
+				ImageIO.write(bufferedImage, "png", flipedSignImage);
+				pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
+				contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
+				contentStream.drawImage(pdImage, Integer.valueOf(params.get("xPos")), Integer.valueOf(params.get("yPos")), 100, 75);
+
+			} else {
+				AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
+			    contentStream.transform(new Matrix(at));
+			    pdImage = PDImageXObject.createFromFileByContent(signImage, pdDocument);
+				contentStream.drawImage(pdImage, Integer.valueOf(params.get("xPos")), Integer.valueOf(params.get("yPos")) - 37 , 100, 75);
+
+			}
 			contentStream.close();
-			
 			pdDocument.save(targetFile);
 			pdDocument.close();
 		    return targetFile;
@@ -337,18 +339,23 @@ public class PdfService {
 		return null;
 	}
 	
-	public Map<String, Object> getPdfWidth(File pdfFile) {
+	public Map<String, Object> getPdfInfos(File pdfFile) {
 		Map<String, Object> infos = new HashMap<>();
 		try {
 			PDDocument pdDocument = PDDocument.load(pdfFile);
-			PDPage pdPage = pdDocument.getPage(1);
+			PDPage pdPage = pdDocument.getPage(0);
 			PDRectangle pdRectangle = pdPage.getMediaBox();
-			int width = (int) pdRectangle.getWidth();
-			int height = (int) pdRectangle.getHeight();
-			infos.put("width", width);
-			infos.put("height", height);
-			boolean isLandscape = width > height;
-			infos.put("orientation", isLandscape);
+			float width = pdRectangle.getWidth();
+			float height = pdRectangle.getHeight();
+			int rotation = pdPage.getRotation();
+			if(rotation == 0) {
+				infos.put("width", width);
+				infos.put("height", height);
+			} else {
+				infos.put("width", height);
+				infos.put("height", width);
+			}
+			infos.put("rotation", rotation);
 		} catch (IOException e) {
 			log.error("error on get pdf infos", e);
 		}

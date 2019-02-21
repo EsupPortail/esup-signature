@@ -36,6 +36,7 @@ import eu.europa.esig.dss.MimeType;
 import eu.europa.esig.dss.asic.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters;
+import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureRotation;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.x509.CertificateToken;
 
@@ -120,7 +121,7 @@ public class SignRequestService {
 		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
 		CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
 
-		File toSignFile = pdfService.formatPdf(signRequest.getOriginalFile().getJavaIoFile(), signRequest.getParams());		
+		File toSignFile = pdfService.formatPdf(signRequest.getOriginalFile().getJavaIoFile(), signRequest.getParams());	
         SignatureDocumentForm signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
 		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
@@ -133,14 +134,24 @@ public class SignRequestService {
 		signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
 
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
-		imageParameters.setPage(Integer.valueOf(signRequest.getParams().get("signPageNumber")));
-		imageParameters.setxAxis(Integer.valueOf(signRequest.getParams().get("xPos")));
-		imageParameters.setyAxis(Integer.valueOf(signRequest.getParams().get("yPos")));
+
 		FileDocument fileDocumentImage = new FileDocument(signImage);
 		fileDocumentImage.setMimeType(MimeType.PNG);
 		imageParameters.setImage(fileDocumentImage);
-		imageParameters.setWidth(100);
-		imageParameters.setHeight(75);
+		
+		imageParameters.setPage(Integer.valueOf(signRequest.getParams().get("signPageNumber")));
+		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
+		if((int) pdfService.getPdfInfos(toSignFile).get("rotation") == 0) {
+			imageParameters.setWidth(100);
+			imageParameters.setHeight(75);
+			imageParameters.setxAxis(Integer.valueOf(signRequest.getParams().get("xPos")));
+			imageParameters.setyAxis(Integer.valueOf(signRequest.getParams().get("yPos")));
+		} else {
+			imageParameters.setWidth(75);
+			imageParameters.setHeight(100);
+			imageParameters.setxAxis(Integer.valueOf(signRequest.getParams().get("xPos")) - 50 );
+			imageParameters.setyAxis(Integer.valueOf(signRequest.getParams().get("yPos")));
+		}
 		
 		PAdESSignatureParameters parameters = new PAdESSignatureParameters();
 		parameters.setSigningCertificate(certificateToken);

@@ -174,6 +174,7 @@ public class SignRequestController {
 			if (SignBook.findSignBook(signRequest.getSignBookId()) != null) {
 				uiModel.addAttribute("inSignBookName", SignBook.findSignBook(signRequest.getSignBookId()).getName());
 			}
+			uiModel.addAttribute("infos", pdfService.getPdfInfos(toConvertFile.getJavaIoFile()));
 			uiModel.addAttribute("logs", Log.findLogsBySignRequestIdEquals(signRequest.getId()).getResultList());
 			uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 			uiModel.addAttribute("keystore", user.getKeystore().getFileName());
