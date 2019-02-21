@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -334,6 +335,24 @@ public class PdfService {
 			log.error("error to get number of pages", e);
 		}
 		return null;
+	}
+	
+	public Map<String, Object> getPdfWidth(File pdfFile) {
+		Map<String, Object> infos = new HashMap<>();
+		try {
+			PDDocument pdDocument = PDDocument.load(pdfFile);
+			PDPage pdPage = pdDocument.getPage(1);
+			PDRectangle pdRectangle = pdPage.getMediaBox();
+			int width = (int) pdRectangle.getWidth();
+			int height = (int) pdRectangle.getHeight();
+			infos.put("width", width);
+			infos.put("height", height);
+			boolean isLandscape = width > height;
+			infos.put("orientation", isLandscape);
+		} catch (IOException e) {
+			log.error("error on get pdf infos", e);
+		}
+		return infos ;
 	}
 	
 	public String pageAsBase64Image(File pdfFile, int page) throws Exception {

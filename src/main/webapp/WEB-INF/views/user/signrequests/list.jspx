@@ -75,18 +75,16 @@
 					<div class="input-group-text">Actions :</div>
 				</div>
 				<div class="input-group-append">
-					<button id="opendocs" alt="Open docs" class="btn btn-primary" onclick="openCheckedDocs()" title="open docs">
-						<span class="far fa-eye"> <!--  --></span>
-						<spring:message code="menu_item_open_docs" />
+					<button id="opendocs" alt="Open docs" class="btn btn-info" onclick="openCheckedDocs()" title="open docs">
+						<span class="far fa-eye"><!--  --></span>&amp;nbsp;<spring:message code="menu_item_open_docs" />
 					</button>
 				</div>
 				<div class="input-group-append">
 					<input class="form-control" id="passwordField" placeholder="Keystore password" name="password" type="password" />
 				</div>
 				<div class="input-group-append">
-					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Sign docs" class="btn btn-success" onclick="submitSignDocs()" title="Sign docs" disabled="disabled">
-						<span class="fa fa-pencil-alt"> <!--  --></span>
-						<spring:message code="menu_item_sign_docs" />
+					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Sign docs" class="btn btn-primary" onclick="submitSignDocs()" title="Sign docs" disabled="disabled">
+						<span class="fa fa-pencil-alt"><!--  --></span>&amp;nbsp;<spring:message code="menu_item_sign_docs" />
 					</button>
 				</div>
 				<div class="input-group-text">
@@ -96,11 +94,11 @@
 					<div class="input-group-text">Nouveau :</div>
 				</div>
 				<div class="input-group-append">
-					<a alt="Signer un nouveau document" class="btn btn-success" href="/user/signrequests?form" title="Signer un nouveau Document"> <span class="fas fa-pencil-alt"> <!--  --></span> <spring:message code="menu_item_signrequest_new" />
+					<a alt="Signer un nouveau document" class="btn btn-primary" href="/user/signrequests?form" title="Signer un nouveau Document"> <span class="fas fa-pencil-alt"><!--  --></span>&amp;nbsp;<spring:message code="menu_item_signrequest_new" />
 					</a>
 				</div>
 				<div class="input-group-append">
-					<a alt="Signer un nouveau document" class="btn btn-warning" href="/user/signrequests?form&amp;recipientEmail=true" title="Signer un nouveau Document"> <span class="fa fa-paper-plane"> <!--  --></span> <spring:message code="menu_item_signrequest_send" />
+					<a alt="Envoyer un nouveau document" class="btn btn-warning" href="/user/signrequests?form&amp;recipientEmail=true" title="Signer un nouveau Document"><span class="fa fa-paper-plane"><!--  --></span>&amp;nbsp;<spring:message code="menu_item_signrequest_send" />
 					</a>
 				</div>
 			</div>
@@ -174,7 +172,7 @@
 									Unknow
 								</c:otherwise>
 									</c:choose></td>
-								<td class="utilbox"><a class="btn btn-success far fa-eye" title="Sign Request" alt="Sign Request" href="/user/signrequests/${signRequest.id}"> <!--  -->
+								<td class="utilbox"><a class="btn btn-info far fa-eye" title="Sign Request" alt="Sign Request" href="/user/signrequests/${signRequest.id}"> <!--  -->
 								</a></td>
 								<td class="utilbox"><form class="delete" action="/user/signrequests/${signRequest.id}" method="post">
 										<input type="hidden" name="_method" value="DELETE" />

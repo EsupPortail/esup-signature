@@ -18,6 +18,7 @@
                 </c:if>
                 <div class="navbar-nav">
 	                <menu:item activeMenu="${active=='user/users'}" id="i_user_new" bootstrapIcon="fa fa-cog" label=" " menuClass="nav-link" url="/user/users/"/>
+           			<button aria-controls="collapseHelp" aria-expanded="false" data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info"><span class="fas fa-info-circle"></span></button>
                 </div>
             </c:if>	
             <sec:authorize access="hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')">
@@ -44,15 +45,18 @@
                         <menu:item id="i_document_list" menuClass="dropdown-item" messageCode="global_menu_list" url="/user/documents?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed"/>
                     </menu:category>
                     </div>
+           			<button aria-controls="collapseHelp" aria-expanded="false" data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info"><span class="fas fa-info-circle"></span></button>
                 </c:if>
             </sec:authorize>
             <sec:authorize access="hasRole('ROLE_ADMIN')">
                 <c:if test="${role=='admin'}">
-                    <menu:item activeMenu="${active=='sessions'}" id="adminview" label="Sessions" menuClass="nav-link" url="/admin/currentsessions"/>
-                    <menu:item activeMenu="${active=='su'}" id="su" label="SU" menuClass="nav-link" url="/admin/su"/>
+                    <div class="navbar-nav">
+                    	<menu:item activeMenu="${active=='sessions'}" id="adminview" label="Sessions" menuClass="nav-link" url="/admin/currentsessions"/>
+                    	<menu:item activeMenu="${active=='su'}" id="su" label="SU" menuClass="nav-link" url="/admin/su"/>
+                    </div>
+          			<button aria-controls="collapseHelp" aria-expanded="false" data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info"><span class="fas fa-info-circle"></span></button>
                 </c:if>
             </sec:authorize>
-
         </menu:menu>
         </div>
     </nav>
