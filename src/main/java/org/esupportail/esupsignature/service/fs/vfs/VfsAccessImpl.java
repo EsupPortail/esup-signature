@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -147,7 +148,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			if (path == null || path.length() == 0) {
 				returnValue = root; 
 			} else {
-				returnValue = root.resolveFile(path);
+				returnValue = root.resolveFile(getUri() + path);
 			}
 
 			//Added for GIP Recia : make sure that the file is up to date
@@ -158,6 +159,14 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		} 
 	}
 	
+	public List<File> listFiles(String url, User user) throws Exception {
+		List<File> files = new ArrayList<>();
+		FileObject resource = cd(url, user);		
+		for(FileObject fileObject : resource.getChildren()) {
+			files.add(fileService.inputStreamToFile(fileObject.getContent().getInputStream(), fileObject.getName().getBaseName()));
+		}
+		return files;
+	}
 	
 	private boolean isFileHidden(FileObject file) {
 		boolean isHidden = false;

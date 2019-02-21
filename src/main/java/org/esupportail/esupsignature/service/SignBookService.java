@@ -1,21 +1,24 @@
 package org.esupportail.esupsignature.service;
 
+import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.annotation.Resource;
 
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
+import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
+import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import jcifs.smb.SmbFile;
 
 @Service
 public class SignBookService {
@@ -23,8 +26,14 @@ public class SignBookService {
 	private static final Logger log = LoggerFactory.getLogger(SignBookService.class);
 	
 	@Resource
+	FileService fileService;
+	
+	@Resource
 	private CifsAccessImpl cifsAccessImpl;
 
+	@Resource
+	private VfsAccessImpl vfsAccessImpl;
+	
 	@Resource
 	private SignRequestService signRequestService;
 	
@@ -32,16 +41,20 @@ public class SignBookService {
 	private DocumentService documentService;
 	
 	
-	public void importFilesFromCIFS(String source, SignBook signBook, User user) {
+	public void importFilesFromSource(SignBook signBook, User user) {
+		FsAccessService fsAccessService = null;
+		if(signBook.getSourceType().equals(DocumentIOType.cifs)) {
+			fsAccessService = cifsAccessImpl;
+		} else if(signBook.getSourceType().equals(DocumentIOType.vfs)) {
+			fsAccessService = vfsAccessImpl;
+		}
         try {
-        	SmbFile[] files = cifsAccessImpl.listFiles(source, user);
-        	Document documentToAdd = documentService.addFile(files[0].getInputStream(), files[0].getName(), files[0].getContentLengthLong(), files[0].getContentType());
+        	List<File> files = fsAccessService.listFiles(signBook.getDocumentsSourceUri(), user);
+        	Document documentToAdd = documentService.addFile(files.get(0), files.get(0).getName(), fileService.getContentType(files.get(0)));
             SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, new HashMap<String, String>(signBook.getParams()), signBook.getRecipientEmail());
             signBook.getSignRequests().add(signRequest);
             signBook.persist();
-            files[0].getInputStream().close();
-            files[0].close();
-            cifsAccessImpl.remove("/" + signBook.getDocumentsSourceUri() + "/", user);
+            fsAccessService.remove("/" + signBook.getDocumentsSourceUri() + "/", user);
         } catch (Exception e) {
         	log.error("read cifs file error : ", e);
         }

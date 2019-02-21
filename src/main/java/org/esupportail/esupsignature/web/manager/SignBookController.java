@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.PdfService;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,9 @@ public class SignBookController {
 		return "manager/signbooks";
 	}
 
+	@Resource
+	SignBookService signBookService;
+	
 	@Resource
 	UserService userService;
 
@@ -179,5 +183,22 @@ public class SignBookController {
 		return "manager/signbooks/list";
 	}
 
-	// TODO : Update
+	@RequestMapping(value = "/get-file-from-source/{id}", produces = "text/html")
+	public String getFileFromSource(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws IOException {
+		String eppn = userService.getEppnFromAuthentication();
+		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		SignBook signBook = SignBook.findSignBook(id);
+
+		if (!signBook.getCreateBy().equals(user.getEppn())) {
+			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+			return "redirect:/manager/signbooks/" + id;
+		}
+		
+		signBookService.importFilesFromSource(signBook, user);
+		//importFilesFromSource
+		return "redirect:/manager/signbooks/" + id;
+
+	}
+
+
 }

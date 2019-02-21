@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -317,15 +318,21 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 
-	public SmbFile[] listFiles(String url, User user) throws Exception {
+	public List<File> listFiles(String url, User user) throws Exception {
+		List<File> files = new ArrayList<>();
 		SmbFile resource = cd(url, user);		
 		if(jcifsSynchronizeRootListing && this.root.equals(resource)) {
 			synchronized (this.root.getCanonicalPath()) {
-				return resource.listFiles();
+				for(SmbFile smbFile : resource.listFiles()) {
+					files.add(fileService.inputStreamToFile(smbFile.getInputStream(), smbFile.getName()));
+				}
 			}
 		} else {
-			return resource.listFiles();
+			for(SmbFile smbFile : resource.listFiles()) {
+				files.add(fileService.inputStreamToFile(smbFile.getInputStream(), smbFile.getName()));
+			}
 		}
+		return files;
 	}
 
 	public void destroy() throws Exception {

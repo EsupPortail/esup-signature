@@ -93,6 +93,8 @@ public abstract class FsAccessService {
 	protected abstract boolean isOpened();
 
 	public abstract boolean remove(String path, User user) throws Exception;
+	
+	public abstract List<File> listFiles(String url, User user) throws Exception;
 
 	public abstract String createFile(String parentPath, String title, String type, User user) throws Exception;
 

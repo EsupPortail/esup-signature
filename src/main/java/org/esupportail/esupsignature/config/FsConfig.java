@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.config;
 import java.util.Properties;
 
 import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
+import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,20 +12,23 @@ import org.springframework.context.annotation.Configuration;
 public class FsConfig {
 
 	@Value("${fs.cifs.uri}")
-	private String uri;
+	private String cifsUri;
 	@Value("${fs.cifs.login}")
-	private String login;
+	private String cifsLogin;
 	@Value("${fs.cifs.password}")
-	private String password;
+	private String cifsPassword;
+
+	@Value("${fs.vfs.uri}")
+	private String vfsUri;
 	
 	@Bean
 	public CifsAccessImpl cifsAccessImpl(){
 		CifsAccessImpl cifsAccessImpl = new CifsAccessImpl();
 		cifsAccessImpl.setDriveName("CIFS");
-		cifsAccessImpl.setUri(uri);
+		cifsAccessImpl.setUri(cifsUri);
 		cifsAccessImpl.setJcifsConfigProperties(cifsProperties());
-		cifsAccessImpl.setLogin(login);
-		cifsAccessImpl.setPassword(password);
+		cifsAccessImpl.setLogin(cifsLogin);
+		cifsAccessImpl.setPassword(cifsPassword);
 		return cifsAccessImpl;
 	}
 
@@ -38,4 +42,15 @@ public class FsConfig {
 		return properties;
 	
 	}
+	
+	@Bean
+	public VfsAccessImpl vfsAccessImpl(){
+		VfsAccessImpl vfsAccessImpl = new VfsAccessImpl();
+		vfsAccessImpl.setDriveName("VFS");
+		vfsAccessImpl.setUri(vfsUri);
+		//vfsAccessImpl.setLogin(login);
+		//vfsAccessImpl.setPassword(password);
+		return vfsAccessImpl;
+	}
+
 }
