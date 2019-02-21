@@ -43,12 +43,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RequestMapping("/user/signrequests")
 @Controller
@@ -62,7 +62,7 @@ public class SignRequestController {
 	public String getActiveMenu() {
 		return "user/signrequests";
 	}
-
+	private String progress = "0";
 	private String password = "";
 	long startTime;
 
@@ -269,20 +269,17 @@ public class SignRequestController {
 	}
 	
 	@RequestMapping(value = "/sign-multiple", method = RequestMethod.POST)
-	public String signMultiple(
-			@RequestParam(value = "ids", required = true) String ids,
+	public void signMultiple(
+			@RequestParam(value = "ids", required = true) Long[] ids,
 			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
 			HttpServletResponse response, Model model, HttpServletRequest request) throws JsonParseException, JsonMappingException, IOException {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		user.setIp(request.getRemoteAddr());
-		ObjectMapper mapper = new ObjectMapper();
-		Long[] signRequestIds = mapper.readValue(ids, Long[].class);
-		
-//		SignRequest signRequestModel = SignRequest.findSignRequest(signRequestIds[0]);
-//		SignBook signBook = SignBook.findSignBook(signRequestModel.getSignBookId());
-
-		for(Long id : signRequestIds){
+		float totalToSign = ids.length;
+		float nbSigned = 0;
+		progress = "0";
+		for(Long id : ids){
 			SignRequest signRequest = SignRequest.findSignRequest(id);
 			if (signRequestService.checkUserSignRights(user, signRequest)) {
 				if (!"".equals(password)) {
@@ -294,26 +291,39 @@ public class SignRequestController {
 						signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
 					} else 
 					if(signType.equals(SignType.nexuSign)) {
-						return "redirect:/user/nexu-sign/" + id;
+						log.error("no multiple nexu sign");
+						progress = "not_autorized";
 					} else {
 						signRequestService.sign(signRequest, user, this.password);
 					}
 				} catch (EsupSignatureKeystoreException e) {
 					log.error("keystore error", e);
-					redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
+					progress = "security_bad_password";
+					break;
 				} catch (EsupSignatureIOException e) {
 					log.error(e.getMessage(), e);
 				} catch (EsupSignatureException e) {
 					log.error(e.getMessage(), e);
 				}
 			} else {
-				redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
+				log.error("not autorized to sign");
+				progress = "not_autorized";
 			}
-			
+			nbSigned++;
+			float percent = (nbSigned / totalToSign) * 100;
+			progress = String.valueOf((int) percent);
+			System.err.println(progress);
 		}
-		return "redirect:/user/signrequests/";
 	}
-
+	
+	@ResponseBody
+	@RequestMapping(value = "/get-progress")
+	public String getProgress(RedirectAttributes redirectAttrs, HttpServletResponse response,
+			Model model, HttpServletRequest request) {
+		log.debug("getProgress : " + progress);
+		return progress;
+	}
+	
 	@RequestMapping(value = "/refuse/{id}")
 	public String refuse(@PathVariable("id") Long id, RedirectAttributes redirectAttrs, HttpServletResponse response,
 			Model model, HttpServletRequest request) throws SQLException {
@@ -328,7 +338,7 @@ public class SignRequestController {
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
 			return "redirect:/user/signrequests/" + id;
 		}
-		//TODO quelles condition pour stattus completed
+		//TODO quelles condition pour statut completed
 		/*
 		if (signRequest.getSignBookId() != 0) {
 			SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
@@ -419,6 +429,7 @@ public class SignRequestController {
 
 	@Scheduled(fixedDelay = 5000)
 	public void clearPassword() {
+		//TODO : param password session time
 		if (startTime > 0) {
 			if (System.currentTimeMillis() - startTime > 60000) {
 				password = "";

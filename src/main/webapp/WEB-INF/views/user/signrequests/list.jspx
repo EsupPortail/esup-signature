@@ -4,7 +4,10 @@
 	<jsp:output omit-xml-declaration="yes" />
 	<div class="card">
 		<div class="card-header">
-				<form action="" method="get">
+			<form action="" method="get">
+			    <input name="disable-pwd-mgr-1" type="password" id="disable-pwd-mgr-1" style="display: none;" value="disable-pwd-mgr-1" />
+    			<input name="disable-pwd-mgr-2" type="password" id="disable-pwd-mgr-2" style="display: none;" value="disable-pwd-mgr-2" />
+   				<input name="disable-pwd-mgr-3" type="password" id="disable-pwd-mgr-3" style="display: none;" value="disable-pwd-mgr-3" />
 				<div class="input-group">
 					<div class="input-group-prepend">
 						<div class="input-group-text">Filtres</div>
@@ -30,36 +33,40 @@
 						</c:choose>
 					</select>
 					<div class="input-group-prepend">
-						<div class="input-group-text"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_status" /></div>
+						<div class="input-group-text">
+							<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_status" />
+						</div>
 					</div>
 					<select class="form-control" name="statusFilter" onchange="submit();">
 						<option value="" disabled="disabled" selected="selected"><spring:message code="menu_item_choose_status" /></option>
 						<option value=""><spring:message code="menu_item_all" /></option>
 						<c:forEach items="${statuses}" var="status">
-						<c:choose>
-							<c:when test="${status eq statusFilter}">
-								<option value="${status}" selected="selected"><spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_${status}" /></option>
-							</c:when>
-							<c:otherwise>
-								<option value="${status}"><spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_${status}" /></option>
-							</c:otherwise>
-						</c:choose>
+							<c:choose>
+								<c:when test="${status eq statusFilter}">
+									<option value="${status}" selected="selected"><spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_${status}" /></option>
+								</c:when>
+								<c:otherwise>
+									<option value="${status}"><spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_${status}" /></option>
+								</c:otherwise>
+							</c:choose>
 						</c:forEach>
 					</select>
 					<div class="input-group-prepend">
-						<div class="input-group-text"><spring:message code="label_org_esupportail_esupsignature_domain_signbook" /></div>
+						<div class="input-group-text">
+							<spring:message code="label_org_esupportail_esupsignature_domain_signbook" />
+						</div>
 					</div>
 					<select class="form-control" name="signBookId" onchange="submit();">
 						<option value="" disabled="disabled" selected="selected"><spring:message code="menu_item_choose_signbook" /></option>
 						<c:forEach items="${signBooks}" var="signBook">
-						<c:choose>
-							<c:when test="${signBookId eq signBook.id}">
-								<option value="${signBook.id}" selected="selected">${signBook.name}</option>
-							</c:when>
-							<c:otherwise>
-								<option value="${signBook.id}">${signBook.name}</option>
-							</c:otherwise>
-						</c:choose>
+							<c:choose>
+								<c:when test="${signBookId eq signBook.id}">
+									<option value="${signBook.id}" selected="selected">${signBook.name}</option>
+								</c:when>
+								<c:otherwise>
+									<option value="${signBook.id}">${signBook.name}</option>
+								</c:otherwise>
+							</c:choose>
 						</c:forEach>
 					</select>
 				</div>
@@ -75,28 +82,27 @@
 					<spring:message code="menu_item_open_docs" />
 				</button>
 				<div class="input-group-prepend">
-				<input class="form-control" id="passwordField" placeholder="Keystore password" name="password" type="password" />
+					<input class="form-control" id="passwordField" placeholder="Keystore password" name="password" type="password" />
 				</div>
 				<div class="input-group-append">
-					<button id="signdocs" alt="Sign docs" class="btn btn-success" onclick="submitSignDocs()" title="Sign docs" disabled="disabled">
+					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Sign docs" class="btn btn-success" onclick="submitSignDocs()" title="Sign docs" disabled="disabled" >
 						<span class="fa fa-pencil-alt"> <!--  --></span>
 						<spring:message code="menu_item_sign_docs" />
 					</button>
 				</div>
 				<form autocomplete="off" id="signDocsForm" action="/user/signrequests/sign-multiple" method="post">
-					<input type="hidden" id="password" name="password" />
-					<input type="hidden" id="ids" name="ids" />
+					<input type="hidden" id="password" name="password" /> <input type="hidden" id="ids" name="ids" />
 				</form>
 
-		<div class="btn-group">
-			<a alt="Signer un nouveau document" class="btn btn-info" href="/user/signrequests?form" title="Signer un nouveau Document"> <span class="fas fa-pencil-alt"> <!--  -->
-			</span> <spring:message code="menu_item_signrequest_new" />
-			</a> <a alt="Signer un nouveau document" class="btn btn-primary" href="/user/signrequests?form&amp;recipientEmail=true" title="Signer un nouveau Document"> <span class="fa fa-paper-plane"> <!--  -->
-			</span> <spring:message code="menu_item_signrequest_send" />
-			</a>
-		</div>
+				<div class="btn-group">
+					<a alt="Signer un nouveau document" class="btn btn-info" href="/user/signrequests?form" title="Signer un nouveau Document"> <span class="fas fa-pencil-alt"> <!--  -->
+					</span> <spring:message code="menu_item_signrequest_new" />
+					</a> <a alt="Signer un nouveau document" class="btn btn-primary" href="/user/signrequests?form&amp;recipientEmail=true" title="Signer un nouveau Document"> <span class="fa fa-paper-plane"> <!--  -->
+					</span> <spring:message code="menu_item_signrequest_send" />
+					</a>
+				</div>
 
-				
+
 			</div>
 		</div>
 		<button style="display: none;" id="alertsigndocs" alt="Sign docs" class="btn btn-outline-danger" title="" disabled="disabled">Impossible de signer en masse la selection actuelle</button>
@@ -160,9 +166,10 @@
 										<c:when test="${signRequest.status eq 'completed'}">
 											<button type="button" class="btn btn-outline-warning btn-sm  col-12" id="status_${signRequest.id}" value="${signRequest.status}">
 												<i class="fas fa-flag-checkered"> <!--  -->
-												</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
+												</i>
+												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
 											</button>
-										</c:when>			
+										</c:when>
 										<c:otherwise>
 									Unknow
 								</c:otherwise>
@@ -194,7 +201,7 @@
 	</div>
 	<script type="text/javascript">
 		var checkBoxes = document.querySelectorAll(".check");
-
+		var getProgressTimer = null;
 		function openCheckedDocs() {
 			[].forEach.call(checkBoxes, function(checkBox) {
 				if (checkBox.checked) {
@@ -211,11 +218,59 @@
 					toSignResquest.push(checkBox.value);
 				}
 			});
+			/*
 			document.getElementById("ids").value = JSON
 					.stringify(toSignResquest);
-			document.getElementById("password").value = document.getElementById("passwordField").value 
+			document.getElementById("password").value = document
+					.getElementById("passwordField").value
 			document.getElementById("signDocsForm").submit();
+			*/
+			var params = "ids="+ toSignResquest + "&amp;password=" + document.getElementById("passwordField").value;
+			sendData(params);
+			
 		}
+
+		function sendData(params) {
+	    	document.getElementById("passwordError").style.display = "none";
+	    	document.getElementById("closeModal").style.display = "none";
+	    	document.getElementById("bar").style.display = "none";
+	    	document.getElementById("loader").style.display = "block";
+    		getProgressTimer =  setInterval(function() {getProgress();}, 1000);
+			var xmlHttp = new XMLHttpRequest();
+		  	xmlHttp.open('POST', '/user/signrequests/sign-multiple', true);
+		  	xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		  	xmlHttp.send(params);
+		}
+		
+		function getProgress() {
+			console.log("getProgress");
+			var xmlHttp = new XMLHttpRequest();
+		    xmlHttp.open( "GET", "get-progress", false );
+			xmlHttp.onreadystatechange = function() {
+			    var result = xmlHttp.responseText;
+			    if(result == "security_bad_password") {
+			    	document.getElementById("passwordError").style.display = "block";
+			    	document.getElementById("closeModal").style.display = "block";
+			    	document.getElementById("loader").style.display = "none";
+			    	clearInterval(getProgressTimer);
+			    } else if(result == "100") {
+			    	document.getElementById("closeModal").style.display = "block";
+					document.getElementById("bar").style.display = "block";
+			    	document.getElementById("bar").style.width = result + "%";
+			    	document.getElementById("bar-text").innerHTML = result + "%";
+			    	document.getElementById("loader").style.display = "none";
+			    	clearInterval(getProgressTimer);
+			    } else {
+					document.getElementById("bar").style.display = "block";
+			    	document.getElementById("bar").style.width = result + "%";
+			    	document.getElementById("bar-text").innerHTML = result + "%"; 
+			    }
+			}
+		    xmlHttp.send(null);
+		    return;
+		}
+		
+
 	</script>
 	<table:table render="false" data="${signRequests}" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">
 		<table:column id="c_org_esupportail_esupsignature_domain_SignRequest_name" property="name" z="user-managed" />
@@ -229,4 +284,21 @@
 		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_signType" property="signTypeLabel" z="user-managed" />
 		<table:column cssClass="status" id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed" />
 	</table:table>
+	<div id="wait" class="modal fade" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-body text-center">
+					<h5>Signature en cours</h5>
+					<div class="progress">
+						<div class="progress-bar progress-bar-striped active" style="width: 0%;" id="bar">
+					    	<span id="bar-text"><!--  --></span>
+				    	</div>
+			   		</div>
+					<div id="loader" class="loader"><!--  --></div>
+					<div style="display: none;" id="passwordError" class="alert alert-danger" role="alert"><spring:message code="security_bad_password" /></div>
+					<button onclick="javascript:window.location.reload()" id="closeModal" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
