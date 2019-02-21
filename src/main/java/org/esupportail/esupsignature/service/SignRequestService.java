@@ -65,9 +65,6 @@ public class SignRequestService {
 	@Resource
 	FileService fileService;
 	
-	static int signWidth = 100;
-	static int signHeight = 75;
-	
 	public SignRequest createSignRequest(User user, Document document, Map<String, String> params, String recipientEmail) {
 		SignRequest signRequest = new SignRequest();
 		signRequest.setName(document.getFileName());
@@ -142,8 +139,8 @@ public class SignRequestService {
 		FileDocument fileDocumentImage = new FileDocument(signImage);
 		fileDocumentImage.setMimeType(MimeType.PNG);
 		imageParameters.setImage(fileDocumentImage);
-		imageParameters.setWidth(signWidth);
-		imageParameters.setHeight(signHeight);
+		imageParameters.setWidth(100);
+		imageParameters.setHeight(75);
 		
 		PAdESSignatureParameters parameters = new PAdESSignatureParameters();
 		parameters.setSigningCertificate(certificateToken);
@@ -233,7 +230,7 @@ public class SignRequestService {
 		log.setReturnCode(returnCode);
 		log.persist();
 		signRequest.setStatus(signRequestStatus);
-		//TODO quelles condition pour stattus completed
+		//TODO quelles condition pour status completed
 		/*
 		if (signRequest.getSignBookId() != 0 && signRequestStatus.equals(SignRequestStatus.signed)) {
 			SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());

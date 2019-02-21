@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsFor
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import eu.europa.esig.dss.ASiCContainerType;
@@ -48,6 +49,19 @@ public class SigningService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SigningService.class);
 
+	@Value("${sign.pades.digestAlgorithm}")
+	private String padesDigestAlgorithm;
+	@Value("${sign.pades.signatureLevel}")
+	private String padesSignatureLevel;
+	@Value("${sign.pades.signaturePackaging}")
+	private String padesSignaturePackaging;
+	@Value("${sign.xades.digestAlgorithm}")
+	private String xadesDigestAlgorithm;
+	@Value("${sign.xades.signatureLevel}")
+	private String xadesSignatureLevel;
+	@Value("${sign.xades.containerType}")
+	private String xadesContainerType;
+	
 	@Autowired
 	private CAdESService cadesService;
 
@@ -189,24 +203,22 @@ public class SigningService {
 	}
 	
 	public SignatureDocumentForm getPadesSignatureDocumentForm() {
-		//TODO : bean properties ?
 		SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
 		signaturePdfForm.setContainerType(null);
 		signaturePdfForm.setSignatureForm(SignatureForm.PAdES);
-		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
-		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
-		signaturePdfForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
+		signaturePdfForm.setSignatureLevel(SignatureLevel.valueOf(padesSignatureLevel));
+		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.valueOf(padesDigestAlgorithm));
+		signaturePdfForm.setSignaturePackaging(SignaturePackaging.valueOf(padesSignaturePackaging));
 		signaturePdfForm.setSigningDate(new Date());
 		return signaturePdfForm;
 	}
 
 	public SignatureDocumentForm getXadesSignatureDocumentForm() {
-		//TODO : bean properties ?
 		SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
-		signaturePdfForm.setContainerType(ASiCContainerType.ASiC_S);
+		signaturePdfForm.setContainerType(ASiCContainerType.valueOf(xadesContainerType));
 		signaturePdfForm.setSignatureForm(SignatureForm.XAdES);
-		signaturePdfForm.setSignatureLevel(SignatureLevel.XAdES_BASELINE_T);
-		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
+		signaturePdfForm.setSignatureLevel(SignatureLevel.valueOf(xadesSignatureLevel));
+		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.valueOf(xadesDigestAlgorithm));
 		signaturePdfForm.setSignaturePackaging(null);
 		signaturePdfForm.setSigningDate(new Date());
 		return signaturePdfForm;

@@ -199,7 +199,7 @@ public class PgJdbcCacheCRLSource implements CRLSource {
 			rollback(c);
 			throw e;
 		} catch (Exception ex) {
-			// TODO
+			LOG.error("Error create table", ex);
 		} finally {
 			closeQuietly(c, s, null);
 		}

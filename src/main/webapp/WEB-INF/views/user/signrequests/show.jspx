@@ -87,7 +87,7 @@
 							</c:if>
 						</div>
 					</div>
-					<script language="JavaScript">
+					<script type="text/javascript">
 						var nbImagePage = ${imagePagesSize};
 						var currentImagePage = ${signRequest.params.signPageNumber} - 1;
 						if (currentImagePage == 0) {
@@ -128,7 +128,7 @@
 							<c:choose>
 								<c:when test="${documentType eq 'pdf' and signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' and signRequest.params.signType ne 'validate'}">
 									<dl class="display-group border-bottom m-0">
-										<dt class="col-lg-12">Sign position</dt>
+										<dt class="col-lg-12"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signposition" /></dt>
 										<small>
 											<dd>
 											<div class="row">
@@ -142,20 +142,20 @@
 													Y position : <input autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.params.yPos}" id="yPos" type="text" name="yPos" />
 												</div>
 											</div>
-												<script language="JavaScript">
-												function point_it(event){
-													pos_x = event.offsetX?(event.offsetX):event.pageX-document.getElementById("pointer_div").offsetLeft;
-													pos_y = event.offsetY?(event.offsetY):event.pageY-document.getElementById("pointer_div").offsetTop;
-													document.getElementById("cross").style.left = (pos_x) ;
-													document.getElementById("cross").style.top = (pos_y) ;
-													document.getElementById("cross").style.visibility = "visible" ;
-													document.getElementById("xPos").value = pos_x;
-													document.getElementById("yPos").value = pos_y;
-												}
-												</script>
 											</dd>
 										</small>
 									</dl>
+									<script type="text/javascript">
+										function point_it(event){
+											pos_x = event.offsetX?(event.offsetX):event.pageX-document.getElementById("pointer_div").offsetLeft;
+											pos_y = event.offsetY?(event.offsetY):event.pageY-document.getElementById("pointer_div").offsetTop;
+											document.getElementById("cross").style.left = (pos_x) ;
+											document.getElementById("cross").style.top = (pos_y) ;
+											document.getElementById("cross").style.visibility = "visible" ;
+											document.getElementById("xPos").value = pos_x;
+											document.getElementById("yPos").value = pos_y;
+										}
+									</script>
 								</c:when>
 								<c:otherwise>
 									<input value="${signRequest.params.signPageNumber}" type="hidden" id="signPageNumber" name="signPageNumber" />

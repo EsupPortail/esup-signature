@@ -63,6 +63,7 @@ public class SignBookController {
 		signBook.setNewPageType(signBook.getParams().get("newPageType"));
 		uiModel.addAttribute("signBook", signBook);
 		uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
+		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
 		// uiModel.addAttribute("signBookTypes",
 		// Arrays.asList(SignBookType.values()));
 		uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));

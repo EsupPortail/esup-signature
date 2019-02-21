@@ -5,9 +5,9 @@
 	<div class="card card-body bg-info">
 		Merci de compléter vos information pour pouvoir commencer à signer :
 		<br/>
-		- Un keystore au format PKCS12
+		- Un keystore au format PKCS12 (Obligatoire pour la signature au format PAdES/XAdES)
 		<br/>
-		- Un fichier image pour la signature 
+		- Un fichier image pour la signature  (Obligatoire)
 	</div>
 	<form:create id="fc_org_esupportail_esupsignature_domain_User" modelAttribute="user" multipart="true" path="/user/users/" render="${empty dependencies}" z="user-managed">
 		<field:input readonly="true" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_User_name" z="user-managed" />

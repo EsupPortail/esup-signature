@@ -47,6 +47,7 @@ import org.esupportail.esupsignature.domain.SignBook.NewPageType;
 import org.esupportail.esupsignature.domain.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.google.common.io.Files;
@@ -59,10 +60,12 @@ public class PdfService {
 	@Resource
 	private FileService fileService;
 	
-	//TODO properties ?
-	private int pdfToImageDpi = 72;
-	private int xCenter = 297;
-	private int yCenter = 421;
+	@Value("${pdf.pdfToImageDpi}")
+	private int pdfToImageDpi;
+	@Value("${pdf.xCenter}")
+	private int xCenter;
+	@Value("${pdf.xCenter}")
+	private int yCenter;	
 	
 	public File formatPdf(File toSignFile, Map<String, String> params) {
     	if(NewPageType.valueOf(params.get("newPageType")).equals(NewPageType.onBegin)) {
@@ -115,7 +118,7 @@ public class PdfService {
 			matrix.translate(Integer.valueOf(params.get("xPos")), Integer.valueOf(params.get("yPos")));
 
 			//contentStream.drawXObject(pdImage, x, y, signWidth, signHeight);
-			contentStream.drawImage(pdImage, Integer.valueOf(params.get("xPos")), Integer.valueOf(params.get("yPos")), SignRequestService.signWidth, SignRequestService.signHeight);
+			contentStream.drawImage(pdImage, Integer.valueOf(params.get("xPos")), Integer.valueOf(params.get("yPos")), 100, 75);
 			contentStream.close();
 			
 			pdDocument.save(targetFile);
@@ -322,7 +325,7 @@ public class PdfService {
         return imagePages;
 	}
 	
-	public static Integer getTotalNumberOfPages(File pdfFile) {
+	public Integer getTotalNumberOfPages(File pdfFile) {
 		try {
 			PDDocument pdDocument = PDDocument.load(pdfFile);
 			int numberOfPages =pdDocument.getNumberOfPages();

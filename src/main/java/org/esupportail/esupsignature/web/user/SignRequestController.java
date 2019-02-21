@@ -81,6 +81,9 @@ public class SignRequestController {
 	private DocumentService documentService;
 
 	@Resource
+	private PdfService pdfService;
+	
+	@Resource
 	private FileService fileService;
 
 	@Resource
@@ -102,7 +105,6 @@ public class SignRequestController {
 			@RequestParam(value = "size", required = false) Integer size,
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
 			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
-		//TODO multiple sign
 		SignRequestStatus statusFilterEnum = null;
 		if(statusFilter != null) {
 			statusFilterEnum = SignRequestStatus.valueOf(statusFilter);
@@ -179,7 +181,7 @@ public class SignRequestController {
 			uiModel.addAttribute("documentType", fileService.getExtension(toConvertFile.getJavaIoFile()));
 			uiModel.addAttribute("itemId", id);
 			uiModel.addAttribute("imagePagesSize",
-					PdfService.getTotalNumberOfPages(toConvertFile.getJavaIoFile()));
+					pdfService.getTotalNumberOfPages(toConvertFile.getJavaIoFile()));
 			uiModel.addAttribute("documentId", toConvertFile.getId());
 			if (signRequestService.checkUserSignRights(user, signRequest)) {
 				uiModel.addAttribute("signable", "ok");
