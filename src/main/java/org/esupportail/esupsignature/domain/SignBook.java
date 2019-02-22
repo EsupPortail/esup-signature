@@ -57,10 +57,10 @@ public class SignBook {
     
     private String documentsTargetUri;    
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.ALL }, orphanRemoval = true)
     private Document modelFile = new Document();
     
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<SignRequest> signRequests = new ArrayList<SignRequest>();
 
     @ElementCollection(fetch = FetchType.EAGER)

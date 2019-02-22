@@ -194,7 +194,7 @@ public class SignBookController {
 			return "redirect:/manager/signbooks/" + id;
 		}
 		
-		signBookService.importFilesFromSource(signBook, user);
+		signBookService.importFilesFromSource(signBook);
 		//importFilesFromSource
 		return "redirect:/manager/signbooks/" + id;
 

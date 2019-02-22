@@ -69,7 +69,7 @@ public class SignRequestService {
 	public SignRequest createSignRequest(User user, Document document, Map<String, String> params, String recipientEmail) {
 		SignRequest signRequest = new SignRequest();
 		signRequest.setName(document.getFileName());
-    	signRequest.setCreateBy(user.getEppn());
+		signRequest.setCreateBy(user.getEppn());
     	signRequest.setCreateDate(new Date());
 		signRequest.setOriginalFile(document);
 		signRequest.setSignedFile(null);
@@ -233,10 +233,10 @@ public class SignRequestService {
 		Log log = new Log();
 		log.setSignRequestId(signRequest.getId());
 		log.setEppn(user.getEppn());
+		log.setIp(user.getIp());
 		log.setInitialStatus(signRequest.getStatus().toString());
 		log.setLogDate(new Date());
 		log.setFinalStatus(signRequestStatus.toString());
-		log.setIp(user.getIp());
 		log.setAction(action);
 		log.setReturnCode(returnCode);
 		log.persist();

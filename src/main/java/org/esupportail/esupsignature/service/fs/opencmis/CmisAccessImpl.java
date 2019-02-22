@@ -32,7 +32,6 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
@@ -91,7 +90,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 		this.rootPath = rootPath;
 	}
 
-	protected void manipulateUri(Map userInfos, String formUsername) {
+	protected void manipulateUri(Map<String, String> userInfos, String formUsername) {
 		if(rootPath != null & userInfos != null) {
 			for(String userInfoKey : (Set<String>)userInfos.keySet()) { 
 					String userInfo = (String)userInfos.get(userInfoKey);
@@ -124,16 +123,16 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 		return path;
 	}
 	
-	private CmisObject getCmisObject(String path, User user) throws Exception {
-		this.open(user);
+	private CmisObject getCmisObject(String path) throws Exception {
+		this.open();
 		CmisObject cmisObject = cmisSession.getObjectByPath(constructPath(path));
 		return cmisObject;
 	}
 
 	@Override
-	public void open(User user) throws Exception {
+	public void open() throws Exception {
 	
-		super.open(user);
+		super.open();
 		
 		if(!this.isOpened()) {
 		
@@ -169,8 +168,8 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 
 
 	@Override
-	public List<File> listFiles(String path, User user) throws Exception {	
-		Folder folder =  (Folder)  getCmisObject(path, user);
+	public List<File> listFiles(String path) throws Exception {	
+		Folder folder =  (Folder)  getCmisObject(path);
 		ItemIterable<CmisObject> pl = folder.getChildren();
 		List<File> files = new ArrayList<File>();
 		for (CmisObject cmisObject : pl) {
@@ -185,8 +184,8 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public File getFile(String dir, User user) throws Exception {
-		CmisObject cmisObject = getCmisObject(dir, user);
+	public File getFile(String path) throws Exception {
+		CmisObject cmisObject = getCmisObject(path);
 		return cmisObjectToFile(cmisObject);
 	}
 	
@@ -202,16 +201,16 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public String createFile(String parentPath, String title, String type, User user) throws Exception {
-		Folder parent = (Folder)getCmisObject(parentPath, user);
+	public String createFile(String parentPath, String title, String type) throws Exception {
+		Folder parent = (Folder)getCmisObject(parentPath);
 		CmisObject createdObject = null; 
 		if("folder".equals(type)) {
-			Map prop = new HashMap();
+			Map<String, String> prop = new HashMap<String, String>();
 			prop.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_FOLDER.value());
 			prop.put(PropertyIds.NAME, String.valueOf(title));
 			createdObject = parent.createFolder(prop, null, null, null, cmisSession.getDefaultContext());
 		} else if("file".equals(type)) {
-			Map prop = new HashMap();
+			Map<String, String> prop = new HashMap<String, String>();
 			prop.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_DOCUMENT.value());
 			prop.put(PropertyIds.NAME, String.valueOf(title));
 			createdObject = parent.createDocument(prop, null, null, null, null, null, cmisSession.getDefaultContext());
@@ -220,9 +219,9 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 	@Override
-	public boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy, User user) throws Exception {
+	public boolean moveCopyFilesIntoDirectory(String path, List<String> filesToCopy, boolean copy) throws Exception {
 		try {
-			Folder targetFolder = (Folder)getCmisObject(dir, user);
+			Folder targetFolder = (Folder)getCmisObject(path);
 			if(copy) {
 				return false;
 				/*for(String fileTocopy : filesToCopy) {
@@ -241,13 +240,13 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 						sourceFolderId = lid_nameList.get(0);
 					} else {
 						// that's the root
-						sourceFolderId = getCmisObject("", user).getId();
+						sourceFolderId = getCmisObject("").getId();
 					}
 
 					ObjectId sourceFolderObjectId = cmisSession.createObjectId(sourceFolderId);
 					ObjectId targetFolderObjectId = cmisSession.createObjectId(targetFolder.getId());
 
-					FileableCmisObject cmisObjectToCutPast = (FileableCmisObject) getCmisObject(fileTocopy, user);
+					FileableCmisObject cmisObjectToCutPast = (FileableCmisObject) getCmisObject(fileTocopy);
 					cmisObjectToCutPast.move(sourceFolderObjectId, targetFolderObjectId);
 				}
 			}
@@ -259,34 +258,34 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean putFile(String dir, String filename, InputStream inputStream, User user, UploadActionType uploadOption) throws Exception {
+	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws Exception {
 		//must manage the upload option.
 		log.error("You need to implements feature about upload options!");
-		Folder targetFolder = (Folder)getCmisObject(dir, user);
-		Map prop = new HashMap();
+		Folder targetFolder = (Folder)getCmisObject(dir);
+		Map<String, String> prop = new HashMap<String, String>();
 		prop.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_DOCUMENT.value());
 		prop.put(PropertyIds.NAME, String.valueOf(filename));
 		String mimeType = new MimetypesFileTypeMap().getContentType(filename);
 		ContentStream stream = new ContentStreamImpl(filename, null, mimeType, inputStream);
 		Document document = targetFolder.createDocument(prop, stream, VersioningState.NONE, null, null, null, cmisSession.getDefaultContext());
-		HashMap m = new HashMap();
+		HashMap<String, String> m = new HashMap<String, String>();
         m.put("cmis:name",filename);
         document.updateProperties(m); 
 		return true;
 	}
 
 	@Override
-	public boolean remove(String path, User user) throws Exception {
+	public boolean remove(String path) throws Exception {
 		System.err.println(path);
-		CmisObject cmisObject = getCmisObject(path, user);
+		CmisObject cmisObject = getCmisObject(path);
 		cmisObject.delete(true);
 		return true;
 	}
 
 	@Override
-	public boolean renameFile(String path, String title, User user) throws Exception {
-		CmisObject cmisObject = getCmisObject(path, user);
-		HashMap m = new HashMap();
+	public boolean renameFile(String path, String title) throws Exception {
+		CmisObject cmisObject = getCmisObject(path);
+		HashMap<String, String> m = new HashMap<String, String>();
         m.put("cmis:name",title);
         cmisObject.updateProperties(m); 
 		return true;

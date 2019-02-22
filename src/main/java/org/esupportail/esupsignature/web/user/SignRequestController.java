@@ -130,13 +130,13 @@ public class SignRequestController {
 		float nrOfPages = 1;
 		int sizeNo = size == null ? 10 : size.intValue();
 		if (findBy != null && findBy.equals("recipientEmail")) {
-			signRequests = SignRequest.findSignRequests("", user.getEmail(), SignRequestStatus.pending, signBookId, "", page, size,
+			signRequests = SignRequest.findSignRequests(eppn, user.getEmail(), SignRequestStatus.pending, signBookId, "", page, size,
 					sortFieldName, sortOrder).getResultList();
 			nrOfPages = (float) SignRequest.countFindSignRequests("", user.getEmail(), SignRequestStatus.pending, "") / sizeNo;
 			uiModel.addAttribute("tosigndocs", "active");
 		} else {
 			signBookId = null;
-			signRequests = SignRequest.findSignRequests(eppn, "", statusFilterEnum, null, "", page, size, sortFieldName, sortOrder)
+			signRequests = SignRequest.findSignRequests(eppn, user.getEmail(), statusFilterEnum, null, "", page, size, sortFieldName, sortOrder)
 					.getResultList();
 			nrOfPages = (float) SignRequest.countFindSignRequests(eppn, "", statusFilterEnum, "") / sizeNo;
 			uiModel.addAttribute("mydocs", "active");

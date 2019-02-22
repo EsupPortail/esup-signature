@@ -51,10 +51,10 @@ public class SignRequest {
     @Size(max = 500)
     private String description;
     
-    @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.ALL }, orphanRemoval = true)
     private Document originalFile = new Document();
     
-    @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.ALL }, orphanRemoval = true)
     private Document signedFile = new Document();
     
     @Enumerated(EnumType.STRING)
@@ -104,15 +104,19 @@ public class SignRequest {
         Root<SignRequest> signRequestRoot = query.from(SignRequest.class);
 
     	List<Predicate> predicates = new ArrayList<Predicate>();
-
+    	Predicate predicatesOwner;
+    	Predicate createByPredicates = null;
+    	Predicate recipientEmailPredicates = null;
         if(!createBy.isEmpty()) {
-        	predicates.add(criteriaBuilder.equal(signRequestRoot.get("createBy"), createBy));
+        	createByPredicates = criteriaBuilder.equal(signRequestRoot.get("createBy"), createBy);
         }
-    	
         if(!recipientEmail.isEmpty()) {
-        	predicates.add(criteriaBuilder.equal(signRequestRoot.get("recipientEmail"), recipientEmail));
+        	recipientEmailPredicates = criteriaBuilder.equal(signRequestRoot.get("recipientEmail"), recipientEmail);
         }
-
+        
+        predicatesOwner = criteriaBuilder.or(createByPredicates, recipientEmailPredicates);
+        predicates.add(predicatesOwner);
+        
         if(signBookId != null) {
         	predicates.add(criteriaBuilder.equal(signRequestRoot.get("signBookId"), signBookId));
         }

@@ -27,7 +27,6 @@ import javax.mail.Quota;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.fs.uri.UriManipulateService;
 
 public abstract class FsAccessService {
@@ -75,7 +74,7 @@ public abstract class FsAccessService {
 		}
 	}
 
-	protected void open(User user) throws Exception {
+	protected void open() throws Exception {
 		if(!this.isOpened()) {
 			manipulateUri();
 		}
@@ -96,19 +95,19 @@ public abstract class FsAccessService {
 
 	protected abstract boolean isOpened();
 
-	public abstract boolean remove(String path, User user) throws Exception;
+	public abstract boolean remove(String path) throws Exception;
 	
-	public abstract List<File> listFiles(String url, User user) throws Exception;
+	public abstract List<File> listFiles(String path) throws Exception;
 
-	public abstract String createFile(String parentPath, String title, String type, User user) throws Exception;
+	public abstract String createFile(String parentPath, String title, String type) throws Exception;
 
-	public abstract boolean renameFile(String path, String title, User user) throws Exception;
+	public abstract boolean renameFile(String path, String title) throws Exception;
 
-	public abstract boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy, User user) throws Exception;
+	public abstract boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws Exception;
 
-	public abstract File getFile(String dir, User user) throws Exception;
+	public abstract File getFile(String dir) throws Exception;
 
-	public abstract boolean putFile(String dir, String filename,InputStream inputStream, User user, UploadActionType uploadOption) throws Exception;
+	public abstract boolean putFile(String dir, String filename,InputStream inputStream, UploadActionType uploadOption) throws Exception;
 
 	public boolean supportIntraCopyPast() {
 		return true;

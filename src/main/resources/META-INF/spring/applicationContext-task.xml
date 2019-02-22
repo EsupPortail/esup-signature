@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+
+    Licensed to ESUP-Portail under one or more contributor license
+    agreements. See the NOTICE file distributed with this work for
+    additional information regarding copyright ownership.
+
+    ESUP-Portail licenses this file to you under the Apache License,
+    Version 2.0 (the "License"); you may not use this file except in
+    compliance with the License. You may obtain a copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<beans xmlns:task="http://www.springframework.org/schema/task" xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd" >
+
+	<bean id="scheduledTaskService" class="org.esupportail.esupsignature.service.ScheduledTaskService" />
+	
+	<bean id="globalScheduler" class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler">
+	    <property name="poolSize" value="5" />
+	    <property name="waitForTasksToCompleteOnShutdown" value="true" />
+	    <property name="awaitTerminationSeconds" value="1" />
+    </bean>
+	
+	<task:scheduled-tasks scheduler="globalScheduler">
+	    	<task:scheduled ref="scheduledTaskService" method="scanAllSignbooksSources" fixed-delay="60000" initial-delay="10000"/>
+	</task:scheduled-tasks>
+	
+</beans>

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.annotation.Resource;
+import javax.transaction.Transactional;
 
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
@@ -44,25 +45,35 @@ public class SignBookService {
 	@Resource
 	private DocumentService documentService;
 	
-	
-	public void importFilesFromSource(SignBook signBook, User user) {
-		FsAccessService fsAccessService = getFsAccessService(signBook.getSourceType());
-        try {
-        	List<File> files = fsAccessService.listFiles(signBook.getDocumentsSourceUri(), user);
-        	if(files.size() > 0) {
-	        	for(File file : files) {
-	            	Document documentToAdd = documentService.addFile(file, file.getName(), fileService.getContentType(file));
-	                SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, new HashMap<String, String>(signBook.getParams()), signBook.getRecipientEmail());
-	                signBook.getSignRequests().add(signRequest);
-	                signBook.persist();
-	                fsAccessService.remove(signBook.getDocumentsSourceUri() + "/" + file.getName(), user);
+	@Transactional
+	public void importFilesFromSource(SignBook signBook) {
+		if(signBook.getSourceType() != null && !signBook.getSourceType().equals(DocumentIOType.none)) {
+			log.info("retrieve from " + signBook.getSourceType() + " in " + signBook.getDocumentsSourceUri());
+			FsAccessService fsAccessService = getFsAccessService(signBook.getSourceType());
+	        try {
+	        	List<File> files = fsAccessService.listFiles(signBook.getDocumentsSourceUri());
+	        	if(files.size() > 0) {
+		        	for(File file : files) {
+		        		log.info("adding file : " + file.getName());
+		            	Document documentToAdd = documentService.addFile(file, file.getName(), fileService.getContentType(file));
+		            	User user = new User();
+		            	user.setEppn("robot");
+		            	user.setIp("127.0.0.1");
+		                SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, new HashMap<String, String>(signBook.getParams()), signBook.getRecipientEmail());
+		                
+		                signBook.getSignRequests().add(signRequest);
+		                signBook.persist();
+		                //fsAccessService.remove(signBook.getDocumentsSourceUri() + "/" + file.getName());
+		        	}
+	        	} else {
+	        		log.info("no file to import in this folder : " + signBook.getDocumentsSourceUri());
 	        	}
-        	} else {
-        		log.info("no file to import in this folder : " + signBook.getDocumentsSourceUri());
-        	}
-        } catch (Exception e) {
-        	log.error("read fsaccess error : ", e);
-        }
+	        } catch (Exception e) {
+	        	log.error("read fsaccess error : ", e);
+	        }
+		} else {
+			log.debug("no source type for this signbook");
+		}
 	}
 	
 	private FsAccessService getFsAccessService(DocumentIOType type) {

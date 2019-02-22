@@ -39,7 +39,6 @@ import org.apache.commons.vfs2.VFS;
 import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
 import org.apache.commons.vfs2.provider.local.LocalFile;
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
-import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.esupportail.esupsignature.service.fs.EsupStockFileExistException;
@@ -88,8 +87,8 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	protected void open(User user) throws Exception {
-		super.open(user);
+	protected void open() throws Exception {
+		super.open();
 		try {
 			if(!isOpened()) {
 				FileSystemOptions fsOptions = new FileSystemOptions();
@@ -138,10 +137,10 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		return (root != null);
 	}
 
-	private FileObject cd(String path, User userParameters) throws Exception {
+	private FileObject cd(String path) throws Exception {
 		try {
 			// assure that it'as already opened
-			this.open(userParameters);
+			this.open();
 			
 			FileObject returnValue = null;
 			
@@ -159,9 +158,10 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		} 
 	}
 	
-	public List<File> listFiles(String url, User user) throws Exception {
+	@Override
+	public List<File> listFiles(String url) throws Exception {
 		List<File> files = new ArrayList<>();
-		FileObject resource = cd(url, user);		
+		FileObject resource = cd(url);		
 		for(FileObject fileObject : resource.getChildren()) {
 			if(fileObject.isFile()) {
 				files.add(fileService.inputStreamToFile(fileObject.getContent().getInputStream(), fileObject.getName().getBaseName()));
@@ -188,11 +188,11 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean remove(String path, User userParameters) throws Exception {
+	public boolean remove(String path) throws Exception {
 		boolean success = false;
 		FileObject file;
 		try {
-			file = cd(path, userParameters);
+			file = cd(path);
 			success = file.delete();
 		} catch (FileSystemException e) {
 			log.info("can't delete file because of FileSystemException : "
@@ -203,9 +203,9 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public String createFile(String parentPath, String title, String type, User userParameters) throws Exception {
+	public String createFile(String parentPath, String title, String type) throws Exception {
 		try {
-			FileObject parent = cd(parentPath, userParameters);
+			FileObject parent = cd(parentPath);
 			FileObject child = parent.resolveFile(title);
 			if (!child.exists()) {
 				if ("folder".equals(type)) {
@@ -227,9 +227,9 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean renameFile(String path, String title, User userParameters) throws Exception {
+	public boolean renameFile(String path, String title) throws Exception {
 		try {
-			FileObject file = cd(path, userParameters);
+			FileObject file = cd(path);
 			FileObject newFile = file.getParent().resolveFile(title);
 			if (!newFile.exists()) {
 				file.moveTo(newFile);
@@ -245,12 +245,11 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean moveCopyFilesIntoDirectory(String dir,
-			List<String> filesToCopy, boolean copy, User userParameters) throws Exception {
+	public boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws Exception {
 		try {
-			FileObject folder = cd(dir, userParameters);
+			FileObject folder = cd(dir);
 			for (String fileToCopyPath : filesToCopy) {
-				FileObject fileToCopy = cd(fileToCopyPath, userParameters);
+				FileObject fileToCopy = cd(fileToCopyPath);
 				FileObject newFile = folder.resolveFile(fileToCopy.getName()
 						.getBaseName());
 				if (copy) {
@@ -269,15 +268,10 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public File getFile(String dir, User userParameters) throws Exception {
+	public File getFile(String dir) throws Exception {
 		try {
-			FileObject file = cd(dir, userParameters);
+			FileObject file = cd(dir);
 			FileContent fc = file.getContent();
-			long size = fc.getSize();
-			String baseName = fc.getFile().getName().getBaseName();
-			// fc.getContentInfo().getContentType() use URLConnection.getFileNameMap, 
-			// we prefer here to use our getMimeType : for Excel files and co 
-			// String contentType = fc.getContentInfo().getContentType();
 			InputStream inputStream = fc.getInputStream();
 			return fileService.inputStreamToFile(inputStream, file.getName().toString());
 		} catch (FileSystemException e) {
@@ -287,13 +281,13 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean putFile(String dir, String filename, InputStream inputStream, User userParameters, UploadActionType uploadOption) throws Exception {
+	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws Exception {
 
 		boolean success = false;
 		FileObject newFile = null;
 				
 		try {
-			FileObject folder = cd(dir, userParameters);
+			FileObject folder = cd(dir);
 			newFile = folder.resolveFile(filename);
 			if (newFile.exists()) {
 				switch (uploadOption) {
