@@ -95,9 +95,9 @@ public abstract class FsAccessService {
 
 	protected abstract boolean isOpened();
 
-	public abstract boolean remove(String path) throws Exception;
+	public abstract boolean remove(FsFile fsFile) throws Exception;
 	
-	public abstract List<File> listFiles(String path) throws Exception;
+	public abstract List<FsFile> listFiles(String path) throws Exception;
 
 	public abstract String createFile(String parentPath, String title, String type) throws Exception;
 
@@ -105,7 +105,7 @@ public abstract class FsAccessService {
 
 	public abstract boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws Exception;
 
-	public abstract File getFile(String dir) throws Exception;
+	public abstract FsFile getFile(String dir) throws Exception;
 
 	public abstract boolean putFile(String dir, String filename,InputStream inputStream, UploadActionType uploadOption) throws Exception;
 

@@ -77,7 +77,7 @@ public class SignRequestService {
 		signRequest.setStatus(SignRequestStatus.uploaded);
 		signRequest.setParams(params);
 		signRequest.setRecipientEmail(recipientEmail);
-        signRequest.persist();
+		signRequest.persist();
 		updateInfo(signRequest, SignRequestStatus.pending, "createSignRequest", user, "SUCCESS");
         return signRequest;
 	}
@@ -241,6 +241,8 @@ public class SignRequestService {
 		log.setReturnCode(returnCode);
 		log.persist();
 		signRequest.setStatus(signRequestStatus);
+		signRequest.merge();
+		//signRequest.persist();
 		//TODO quelles condition pour status completed
 		/*
 		if (signRequest.getSignBookId() != 0 && signRequestStatus.equals(SignRequestStatus.signed)) {

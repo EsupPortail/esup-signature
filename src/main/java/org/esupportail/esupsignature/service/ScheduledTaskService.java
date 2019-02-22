@@ -13,6 +13,7 @@ public class ScheduledTaskService {
 	@Resource
 	SignBookService signBookService;
 	
+	@Transactional
 	public void scanAllSignbooksSources() {
 		List<SignBook> signBooks = SignBook.findAllSignBooks();
 		for(SignBook signBook : signBooks) {

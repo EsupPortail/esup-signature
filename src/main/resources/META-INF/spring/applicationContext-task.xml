@@ -29,7 +29,7 @@
     </bean>
 	
 	<task:scheduled-tasks scheduler="globalScheduler">
-	    	<task:scheduled ref="scheduledTaskService" method="scanAllSignbooksSources" fixed-delay="60000" initial-delay="10000"/>
+	    	<task:scheduled ref="scheduledTaskService" method="scanAllSignbooksSources" fixed-delay="10000" initial-delay="5000"/>
 	</task:scheduled-tasks>
 	
 </beans>

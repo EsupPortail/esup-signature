@@ -20,7 +20,6 @@
  */
 package org.esupportail.esupsignature.service.fs.cifs;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,6 +34,7 @@ import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.esupportail.esupsignature.service.fs.EsupStockFileExistException;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
+import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.ResourceUtils;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
 import org.springframework.beans.factory.DisposableBean;
@@ -152,11 +152,11 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean remove(String path) throws Exception {
+	public boolean remove(FsFile fsFile) throws Exception {
 		boolean success = false;
 		SmbFile file;
 		try {
-			file = cd(path);
+			file = cd(fsFile.getPath() + fsFile.getFile().getName());
 			file.delete();
 			success = true;
 		} catch (SmbException e) {
@@ -164,7 +164,7 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 					+ e.getMessage(), e);
 			success = false;
 		}
-		log.debug("remove file " + path + ": " + success);
+		log.debug("remove file " + fsFile.getPath() + fsFile.getFile().getName() + ": " + success);
 		return success;
 	}
 
@@ -228,7 +228,8 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 					fileToCopy.copyTo(newFile);
 				} else {
 					fileToCopy.copyTo(newFile);
-					this.remove(fileToCopyPath);
+					//TODO repare
+					//this.remove(fileToCopyPath);
 				}
 
 			}
@@ -242,11 +243,13 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public File getFile(String dir) throws Exception {
+	public FsFile getFile(String dir) throws Exception {
 		try {
 			SmbFile file = cd(dir);
 			InputStream inputStream = file.getInputStream();
-			return fileService.inputStreamToFile(inputStream, file.getName());
+			FsFile fsFile = new FsFile();
+			fsFile.setFile(fileService.inputStreamToFile(inputStream, file.getName()));
+			return fsFile;
 		} catch (SmbException e) {
 			log.warn("can't download file : " + e.getMessage(), e);
 		} catch (IOException e) {
@@ -317,18 +320,22 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 
-	public List<File> listFiles(String url) throws Exception {
-		List<File> files = new ArrayList<>();
+	public List<FsFile> listFiles(String url) throws Exception {
+		List<FsFile> files = new ArrayList<>();
 		SmbFile resource = cd(url);		
 		if(jcifsSynchronizeRootListing && this.root.equals(resource)) {
 			synchronized (this.root.getCanonicalPath()) {
 				for(SmbFile smbFile : resource.listFiles()) {
-					files.add(fileService.inputStreamToFile(smbFile.getInputStream(), smbFile.getName()));
+					FsFile fsFile = new FsFile();
+					fsFile.setFile(fileService.inputStreamToFile(smbFile.getInputStream(), smbFile.getName()));
+					files.add(fsFile);
 				}
 			}
 		} else {
 			for(SmbFile smbFile : resource.listFiles()) {
-				files.add(fileService.inputStreamToFile(smbFile.getInputStream(), smbFile.getName()));
+				FsFile fsFile = new FsFile();
+				fsFile.setFile(fileService.inputStreamToFile(smbFile.getInputStream(), smbFile.getName()));
+				files.add(fsFile);
 			}
 		}
 		return files;

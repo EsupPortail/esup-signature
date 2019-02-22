@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
+import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.util.ResourceUtils;
@@ -49,7 +50,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	
 	protected Session cmisSession;
 	
-	protected String respositoryId = "test";
+	protected String respositoryId;
 	
 	private String login;
 	
@@ -125,6 +126,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	
 	private CmisObject getCmisObject(String path) throws Exception {
 		this.open();
+		System.err.println("get : " + path);
 		CmisObject cmisObject = cmisSession.getObjectByPath(constructPath(path));
 		return cmisObject;
 	}
@@ -168,15 +170,18 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 
 
 	@Override
-	public List<File> listFiles(String path) throws Exception {	
+	public List<FsFile> listFiles(String path) throws Exception {	
 		Folder folder =  (Folder)  getCmisObject(path);
 		ItemIterable<CmisObject> pl = folder.getChildren();
-		List<File> files = new ArrayList<File>();
+		List<FsFile> files = new ArrayList<FsFile>();
 		for (CmisObject cmisObject : pl) {
 			if(cmisObject.getBaseType().getBaseTypeId().equals(BaseTypeId.CMIS_DOCUMENT)) {
 				File file = cmisObjectToFile(cmisObject);
 				if(file != null) {
-					files.add(cmisObjectToFile(cmisObject));
+					FsFile fsFile = new FsFile();
+					fsFile.setFile(cmisObjectToFile(cmisObject));
+					fsFile.setId(cmisObject.getProperty("nuxeo:pathSegment").getValueAsString());
+					files.add(fsFile);
 				}
 			}
 		}
@@ -184,9 +189,12 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public File getFile(String path) throws Exception {
+	public FsFile getFile(String path) throws Exception {
 		CmisObject cmisObject = getCmisObject(path);
-		return cmisObjectToFile(cmisObject);
+		FsFile fsFile = new FsFile();
+		fsFile.setFile(cmisObjectToFile(cmisObject));
+		fsFile.setId(cmisObject.getId());
+		return fsFile;
 	}
 	
 	private File cmisObjectToFile(CmisObject cmisObject) {
@@ -275,9 +283,9 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean remove(String path) throws Exception {
-		System.err.println(path);
-		CmisObject cmisObject = getCmisObject(path);
+	public boolean remove(FsFile fsFile) throws Exception {
+		System.err.println(fsFile.getId());
+		CmisObject cmisObject = getCmisObject(fsFile.getPath() + "/" + fsFile.getId());
 		cmisObject.delete(true);
 		return true;
 	}

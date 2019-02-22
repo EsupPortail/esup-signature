@@ -46,10 +46,10 @@ public class DocumentService {
 		Document document = new Document();
         document.setFileName(name);
         document.getBigFile().setBinaryFileStream(inputStream, size);
-        document.getBigFile().persist();
+        //document.getBigFile().persist();
         document.setSize(size);
         document.setContentType(contentType);
-        document.persist();
+        //document.persist();
         return document;
 	}
 	

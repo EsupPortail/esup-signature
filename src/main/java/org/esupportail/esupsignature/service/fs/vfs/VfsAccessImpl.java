@@ -43,6 +43,7 @@ import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.esupportail.esupsignature.service.fs.EsupStockFileExistException;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
+import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.ResourceUtils;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
 import org.springframework.beans.factory.DisposableBean;
@@ -159,12 +160,14 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 	@Override
-	public List<File> listFiles(String url) throws Exception {
-		List<File> files = new ArrayList<>();
+	public List<FsFile> listFiles(String url) throws Exception {
+		List<FsFile> files = new ArrayList<>();
 		FileObject resource = cd(url);		
 		for(FileObject fileObject : resource.getChildren()) {
 			if(fileObject.isFile()) {
-				files.add(fileService.inputStreamToFile(fileObject.getContent().getInputStream(), fileObject.getName().getBaseName()));
+				FsFile fsFile = new FsFile();
+				fsFile.setFile(fileService.inputStreamToFile(fileObject.getContent().getInputStream(), fileObject.getName().getBaseName()));
+				files.add(fsFile);
 			}
 		}
 		return files;
@@ -188,17 +191,17 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean remove(String path) throws Exception {
+	public boolean remove(FsFile fsFile) throws Exception {
 		boolean success = false;
 		FileObject file;
 		try {
-			file = cd(path);
+			file = cd(fsFile.getPath() + fsFile.getFile().getName());
 			success = file.delete();
 		} catch (FileSystemException e) {
 			log.info("can't delete file because of FileSystemException : "
 					+ e.getMessage(), e);
 		}
-		log.debug("remove file " + path + ": " + success);
+		log.debug("remove file " + fsFile.getPath() + fsFile.getFile().getName() + ": " + success);
 		return success;
 	}
 
@@ -268,12 +271,14 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public File getFile(String dir) throws Exception {
+	public FsFile getFile(String dir) throws Exception {
 		try {
 			FileObject file = cd(dir);
 			FileContent fc = file.getContent();
 			InputStream inputStream = fc.getInputStream();
-			return fileService.inputStreamToFile(inputStream, file.getName().toString());
+			FsFile fsFile = new FsFile();
+			fsFile.setFile(fileService.inputStreamToFile(inputStream, file.getName().toString()));			
+			return fsFile;
 		} catch (FileSystemException e) {
 			log.warn("can't download file : " + e.getMessage(), e);
 		}
