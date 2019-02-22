@@ -34,6 +34,10 @@ public abstract class FsAccessService {
 
 	protected static final Log log = LogFactory.getLog(FsAccessService.class);
 
+	protected static String TOKEN_SPECIAL_CHAR =  "@";
+
+	protected static String TOKEN_FORM_USERNAME =  "@form_username@";
+	
 	protected UriManipulateService uriManipulateService;
 	
 	protected String driveName;

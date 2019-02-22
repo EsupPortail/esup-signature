@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.config;
 import java.util.Properties;
 
 import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
+import org.esupportail.esupsignature.service.fs.opencmis.CmisAccessImpl;
 import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,17 @@ public class FsConfig {
 
 	@Value("${fs.vfs.uri}")
 	private String vfsUri;
+
+	@Value("${fs.cmis.uri}")
+	private String cmisUri;
+	@Value("${fs.cmis.login}")
+	private String cmisLogin;
+	@Value("${fs.cmis.password}")
+	private String cmisPassword;
+	@Value("${fs.cmis.respositoryId}")
+	private String cmisRespositoryId;
+	@Value("${fs.cmis.rootPath}")
+	private String cmisRootPath;
 	
 	@Bean
 	public CifsAccessImpl cifsAccessImpl(){
@@ -53,4 +65,16 @@ public class FsConfig {
 		return vfsAccessImpl;
 	}
 
+	@Bean
+	public CmisAccessImpl cmisAccessImpl(){
+		CmisAccessImpl cmisAccessImpl = new CmisAccessImpl();
+		cmisAccessImpl.setDriveName("CMIS");
+		cmisAccessImpl.setUri(cmisUri);
+		cmisAccessImpl.setLogin(cmisLogin);
+		cmisAccessImpl.setPassword(cmisPassword);
+		cmisAccessImpl.setRespositoryId(cmisRespositoryId);
+		cmisAccessImpl.setRootPath(cmisRootPath);
+		return cmisAccessImpl;
+	}
+	
 }

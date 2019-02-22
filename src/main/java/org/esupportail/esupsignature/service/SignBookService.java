@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
+import org.esupportail.esupsignature.service.fs.opencmis.CmisAccessImpl;
 import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,13 +27,16 @@ public class SignBookService {
 	private static final Logger log = LoggerFactory.getLogger(SignBookService.class);
 	
 	@Resource
-	FileService fileService;
+	private FileService fileService;
 	
 	@Resource
 	private CifsAccessImpl cifsAccessImpl;
 
 	@Resource
 	private VfsAccessImpl vfsAccessImpl;
+
+	@Resource
+	private CmisAccessImpl cmisAccessImpl;
 	
 	@Resource
 	private SignRequestService signRequestService;
@@ -42,22 +46,41 @@ public class SignBookService {
 	
 	
 	public void importFilesFromSource(SignBook signBook, User user) {
-		FsAccessService fsAccessService = null;
-		if(signBook.getSourceType().equals(DocumentIOType.cifs)) {
-			fsAccessService = cifsAccessImpl;
-		} else if(signBook.getSourceType().equals(DocumentIOType.vfs)) {
-			fsAccessService = vfsAccessImpl;
-		}
+		FsAccessService fsAccessService = getFsAccessService(signBook.getSourceType());
         try {
         	List<File> files = fsAccessService.listFiles(signBook.getDocumentsSourceUri(), user);
-        	Document documentToAdd = documentService.addFile(files.get(0), files.get(0).getName(), fileService.getContentType(files.get(0)));
-            SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, new HashMap<String, String>(signBook.getParams()), signBook.getRecipientEmail());
-            signBook.getSignRequests().add(signRequest);
-            signBook.persist();
-            fsAccessService.remove("/" + signBook.getDocumentsSourceUri() + "/", user);
+        	if(files.size() > 0) {
+	        	for(File file : files) {
+	            	Document documentToAdd = documentService.addFile(file, file.getName(), fileService.getContentType(file));
+	                SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, new HashMap<String, String>(signBook.getParams()), signBook.getRecipientEmail());
+	                signBook.getSignRequests().add(signRequest);
+	                signBook.persist();
+	                fsAccessService.remove(signBook.getDocumentsSourceUri() + "/" + file.getName(), user);
+	        	}
+        	} else {
+        		log.info("no file to import in this folder : " + signBook.getDocumentsSourceUri());
+        	}
         } catch (Exception e) {
-        	log.error("read cifs file error : ", e);
+        	log.error("read fsaccess error : ", e);
         }
+	}
+	
+	private FsAccessService getFsAccessService(DocumentIOType type) {
+		FsAccessService fsAccessService = null;
+		switch (type) {
+			case cifs:
+				fsAccessService = cifsAccessImpl;
+				break;
+			case vfs:
+				fsAccessService = vfsAccessImpl;
+				break;
+			case cmis:
+				fsAccessService = cmisAccessImpl;
+				break;
+			default:
+				break;
+		}
+		return fsAccessService;
 	}
 	
 	public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {

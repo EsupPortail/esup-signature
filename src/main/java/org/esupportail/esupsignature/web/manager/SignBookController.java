@@ -183,7 +183,7 @@ public class SignBookController {
 		return "manager/signbooks/list";
 	}
 
-	@RequestMapping(value = "/get-file-from-source/{id}", produces = "text/html")
+	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
 	public String getFileFromSource(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws IOException {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();

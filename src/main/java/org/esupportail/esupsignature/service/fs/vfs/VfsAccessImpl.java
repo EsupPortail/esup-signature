@@ -163,7 +163,9 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		List<File> files = new ArrayList<>();
 		FileObject resource = cd(url, user);		
 		for(FileObject fileObject : resource.getChildren()) {
-			files.add(fileService.inputStreamToFile(fileObject.getContent().getInputStream(), fileObject.getName().getBaseName()));
+			if(fileObject.isFile()) {
+				files.add(fileService.inputStreamToFile(fileObject.getContent().getInputStream(), fileObject.getName().getBaseName()));
+			}
 		}
 		return files;
 	}
