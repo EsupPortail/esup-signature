@@ -324,10 +324,10 @@
 					document.getElementById("closeModal").style.display = "block";
 					document.getElementById("bar").style.display = "block";
 					document.getElementById("bar").style.width = result + "%";
-					document.getElementById("bar-text").innerHTML = result
-							+ "%";
+					document.getElementById("bar-text").innerHTML = result + "%";
 					document.getElementById("loader").style.display = "none";
 					clearInterval(getProgressTimer);
+					window.location.reload()
 				} else {
 					document.getElementById("bar").style.display = "block";
 					document.getElementById("bar").style.width = result + "%";
