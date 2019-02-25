@@ -3,7 +3,11 @@
 	<jsp:output omit-xml-declaration="yes" />
 	<div class="col-md-9">
 		<h2>Validation service - Result</h2>
-		${simpleReport}
 
+		<a href="/user/validation/download-detailed-report" role="button" class="btn btn-primary">
+		<i class="fa fa-download" aria-hidden="true"><!--  --></i>&amp;nbsp;Download report</a>
+		<p>
+		${simpleReport}
+		</p>
 	</div>
 </div>

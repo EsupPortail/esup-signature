@@ -14,6 +14,7 @@
 						</c:if>
                 	<menu:item activeMenu="${active=='user/signrequests'}" id="i_signrequest_list" messageCode="menu_item_user_documents" menuClass="nav-link" url="/user/signrequests/"/>
                 	<menu:item activeMenu="${active=='user/signbooks'}" id="i_signbook_list" menuClass="nav-link" url="/user/signbooks/"/>
+                	<menu:item activeMenu="${active=='user/validation'}" id="i_validation_link" label="Validation" menuClass="nav-link" url="/user/validation/"/>
                 	</div>
                 </c:if>
                 <div class="navbar-nav">

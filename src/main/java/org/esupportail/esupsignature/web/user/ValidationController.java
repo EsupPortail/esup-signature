@@ -34,9 +34,14 @@ import eu.europa.esig.dss.validation.reports.Reports;
 @SessionAttributes({ "simpleReportXml", "detailedReportXml" })
 @RequestMapping(value = "/user/validation")
 public class ValidationController {
-
+	
 	private static final Logger logger = LoggerFactory.getLogger(ValidationController.class);
 
+	@ModelAttribute("active")
+	public String getActiveMenu() {
+		return "user/validation";
+	}
+	
 	private static final String SIMPLE_REPORT_ATTRIBUTE = "simpleReportXml";
 	private static final String DETAILED_REPORT_ATTRIBUTE = "detailedReportXml";
 
@@ -63,6 +68,7 @@ public class ValidationController {
 
 	@RequestMapping(method = RequestMethod.POST)
 	public String validate(@ModelAttribute("multipartFile") @Valid MultipartFile multipartFile, Model model) {
+		//TODO service ?
 		SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(WebAppUtils.toDSSDocument(multipartFile));
 		documentValidator.setCertificateVerifier(certificateVerifier);
 		documentValidator.setValidationLevel(ValidationLevel.BASIC_SIGNATURES);
@@ -80,7 +86,7 @@ public class ValidationController {
 
 		String xmlDetailedReport = reports.getXmlDetailedReport();
 		model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
-
+		model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
 		model.addAttribute("diagnosticTree", reports.getXmlDiagnosticData());
 
 		return "user/validation-result";
