@@ -143,3 +143,27 @@ form.delete {
 .custom-file-input:lang(fr) ~ .custom-file-label::after {
   content: "Parcourir" !important;
 }
+
+.panel-default>.panel-heading, .panel-primary>.panel-heading {
+	color: white;
+	background-image: inherit;
+	background-color: #5986bd;
+	border-color: #5986bd;
+}
+
+.panel-default {
+	border-color: #5986bd;
+}
+
+.panel-heading {
+    padding: 10px 15px;
+    border-bottom: 1px solid transparent;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+
+.panel-warning>.panel-heading {
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+    border-color: #faebcc;
+}
