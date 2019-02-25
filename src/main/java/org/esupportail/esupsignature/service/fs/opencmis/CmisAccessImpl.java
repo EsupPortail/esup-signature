@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.service.fs.opencmis;
 
-import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -126,7 +126,6 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	
 	private CmisObject getCmisObject(String path) throws Exception {
 		this.open();
-		System.err.println("get : " + path);
 		CmisObject cmisObject = cmisSession.getObjectByPath(constructPath(path));
 		return cmisObject;
 	}
@@ -173,39 +172,32 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	public List<FsFile> listFiles(String path) throws Exception {	
 		Folder folder =  (Folder)  getCmisObject(path);
 		ItemIterable<CmisObject> pl = folder.getChildren();
-		List<FsFile> files = new ArrayList<FsFile>();
+		List<FsFile> fsFiles = new ArrayList<FsFile>();
 		for (CmisObject cmisObject : pl) {
 			if(cmisObject.getBaseType().getBaseTypeId().equals(BaseTypeId.CMIS_DOCUMENT)) {
-				File file = cmisObjectToFile(cmisObject);
-				if(file != null) {
-					FsFile fsFile = new FsFile();
-					fsFile.setFile(cmisObjectToFile(cmisObject));
-					fsFile.setId(cmisObject.getProperty("nuxeo:pathSegment").getValueAsString());
-					files.add(fsFile);
-				}
+				fsFiles.add(toFsFile(cmisObject));
 			}
 		}
-		return files;
+		return fsFiles;
 	}
 
 	@Override
 	public FsFile getFile(String path) throws Exception {
 		CmisObject cmisObject = getCmisObject(path);
-		FsFile fsFile = new FsFile();
-		fsFile.setFile(cmisObjectToFile(cmisObject));
-		fsFile.setId(cmisObject.getId());
-		return fsFile;
+		return toFsFile(cmisObject);
 	}
 	
-	private File cmisObjectToFile(CmisObject cmisObject) {
-		try {
-			Document document = (Document) cmisObject;
-			InputStream inputStream = document.getContentStream().getStream();
-			return fileService.inputStreamToFile(inputStream, document.getContentStreamFileName());
-		} catch (Exception e) {
-			log.error("error on convert to file", e);
-		}
-		return null;
+	private FsFile toFsFile(CmisObject cmisObject) throws IOException {
+		FsFile fsFile = new FsFile();
+		Document document = (Document) cmisObject;
+		InputStream inputStream = document.getContentStream().getStream();
+		fsFile.setFile(fileService.inputStreamToFile(inputStream, document.getContentStreamFileName()));
+		fsFile.setName(document.getName());
+		fsFile.setContentType(document.getContentStreamMimeType());
+		fsFile.setId(cmisObject.getProperty("nuxeo:pathSegment").getValueAsString());
+		fsFile.setCreateBy(cmisObject.getCreatedBy());
+		fsFile.setCreateDate(cmisObject.getCreationDate().getTime());
+		return fsFile;
 	}
 
 	@Override
@@ -231,11 +223,11 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 		try {
 			Folder targetFolder = (Folder)getCmisObject(path);
 			if(copy) {
-				return false;
-				/*for(String fileTocopy : filesToCopy) {
+				//return false;
+				for(String fileTocopy : filesToCopy) {
 					FileableCmisObject cmisObjectToCopy = (FileableCmisObject) getCmisObject(fileTocopy);
 					cmisObjectToCopy.addToFolder(targetFolder, true);
-				}*/
+				}
 			} else {
 				for(String fileTocopy : filesToCopy) {
 
@@ -284,7 +276,6 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 
 	@Override
 	public boolean remove(FsFile fsFile) throws Exception {
-		System.err.println(fsFile.getId());
 		CmisObject cmisObject = getCmisObject(fsFile.getPath() + "/" + fsFile.getId());
 		cmisObject.delete(true);
 		return true;

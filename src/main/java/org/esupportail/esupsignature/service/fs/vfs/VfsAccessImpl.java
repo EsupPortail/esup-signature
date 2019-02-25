@@ -17,7 +17,6 @@
  */
 package org.esupportail.esupsignature.service.fs.vfs;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,7 +36,6 @@ import org.apache.commons.vfs2.FileSystemOptions;
 import org.apache.commons.vfs2.Selectors;
 import org.apache.commons.vfs2.VFS;
 import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
-import org.apache.commons.vfs2.provider.local.LocalFile;
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.fs.EsupStockException;
@@ -161,41 +159,24 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	
 	@Override
 	public List<FsFile> listFiles(String url) throws Exception {
-		List<FsFile> files = new ArrayList<>();
-		FileObject resource = cd(url);		
-		for(FileObject fileObject : resource.getChildren()) {
-			if(fileObject.isFile()) {
-				FsFile fsFile = new FsFile();
-				fsFile.setFile(fileService.inputStreamToFile(fileObject.getContent().getInputStream(), fileObject.getName().getBaseName()));
-				files.add(fsFile);
+		List<FsFile> fsFiles = new ArrayList<>();
+		FileObject resource = cd(url);
+		if(resource.isFolder()){ 
+			for(FileObject fileObject : resource.getChildren()) {
+				if(fileObject.isFile()) {
+					fsFiles.add(toFsFile(fileObject));
+				}
 			}
 		}
-		return files;
+		return fsFiles;
 	}
 	
-	private boolean isFileHidden(FileObject file) {
-		boolean isHidden = false;
-		// file.isHidden() works in current version of VFS (1.0) only for local file object :(
-		if(file instanceof LocalFile) {
-			try {
-				isHidden = file.isHidden();
-			} catch (FileSystemException e) {
-				log.warn("Error on file.isHidden() method ...", e);
-			}
-		} else {
-			// at the moment here we just check if the file begins with a dot 
-			// ... so it works just for unix files ...
-			isHidden = file.getName().getBaseName().startsWith(".");
-		}
-		return isHidden;
-	}
-
 	@Override
 	public boolean remove(FsFile fsFile) throws Exception {
 		boolean success = false;
 		FileObject file;
 		try {
-			file = cd(fsFile.getPath() + fsFile.getFile().getName());
+			file = cd(fsFile.getPath() + "/" + fsFile.getFile().getName());
 			success = file.delete();
 		} catch (FileSystemException e) {
 			log.info("can't delete file because of FileSystemException : "
@@ -273,18 +254,26 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	@Override
 	public FsFile getFile(String dir) throws Exception {
 		try {
-			FileObject file = cd(dir);
-			FileContent fc = file.getContent();
-			InputStream inputStream = fc.getInputStream();
-			FsFile fsFile = new FsFile();
-			fsFile.setFile(fileService.inputStreamToFile(inputStream, file.getName().toString()));			
-			return fsFile;
+			FileObject fileObject = cd(dir);
+			return toFsFile(fileObject);
 		} catch (FileSystemException e) {
 			log.warn("can't download file : " + e.getMessage(), e);
 		}
 		return null;
 	}
 
+	private FsFile toFsFile(FileObject fileObject) throws IOException {
+		FileContent fileContent = fileObject.getContent();
+		InputStream inputStream = fileContent.getInputStream();
+		FsFile fsFile = new FsFile();
+		fsFile.setName(fileObject.getName().getBaseName());
+		fsFile.setContentType(fileObject.getContent().getContentInfo().getContentType());
+		fsFile.setFile(fileService.inputStreamToFile(inputStream, fileObject.getName().getBaseName()));
+		//TODO recup creator + date
+		//System.err.println(fileContent.getAttributes());
+		return fsFile;
+	}
+	
 	@Override
 	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws Exception {
 

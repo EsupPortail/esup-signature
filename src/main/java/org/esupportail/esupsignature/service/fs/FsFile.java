@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.fs;
 
 import java.io.File;
+import java.util.Date;
 
 public class FsFile {
 
@@ -8,8 +9,9 @@ public class FsFile {
 	String id;
 	String name;
 	String path;
+	String contentType;
 	String createBy;
-	String createDate;
+	Date createDate;
 	
 	public File getFile() {
 		return file;
@@ -35,10 +37,10 @@ public class FsFile {
 	public void setCreateBy(String createBy) {
 		this.createBy = createBy;
 	}
-	public String getCreateDate() {
+	public Date getCreateDate() {
 		return createDate;
 	}
-	public void setCreateDate(String createDate) {
+	public void setCreateDate(Date createDate) {
 		this.createDate = createDate;
 	}
 	public String getPath() {
@@ -47,6 +49,11 @@ public class FsFile {
 	public void setPath(String path) {
 		this.path = path;
 	}
-	
+	public String getContentType() {
+		return contentType;
+	}
+	public void setContentType(String contentType) {
+		this.contentType = contentType;
+	}
 	
 }

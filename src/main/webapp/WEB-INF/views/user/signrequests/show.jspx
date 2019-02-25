@@ -5,6 +5,92 @@
 	<page:show update="false" id="ps_org_esupportail_esupsignature_domain_SignRequest" object="${signRequest}" path="/user/signrequests" z="user-managed">
 		<div class="row">
 		<div class="col-lg-5">
+			<div class="card bg-light">
+			<div class="card-header">
+			<button class="btn btn-link" data-toggle="collapse" data-target="#collapseInfos" aria-expanded="true" aria-controls="collapseInfos">
+				Infos&amp;nbsp;<i class="fas fa-caret-down"><!--  --></i>
+			</button>
+			</div>
+			<div id="collapseInfos" class="collapse hide" aria-labelledby="headingOne" data-parent="#accordion">
+			<div class="card-body">
+				<field:display field="name" id="s_org_esupportail_esupsignature_domain_SignRequest_name" object="${signRequest}" z="user-managed" />
+				<dl class="display-group border-bottom m-0">
+					<dt class="col-lg-7">
+						<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_originalfile" />
+					</dt>
+					<dd>
+						<spring:url value="/user/signrequests/get-original-file/${id}" var="originalFileUrl" />
+						<button type="button" class="btn btn-warning" onclick="window.open('${originalFileUrl}', '_blank')">
+							<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" />
+						</button>
+					</dd>
+				</dl>
+				<field:display pre="true" field="description" id="s_org_esupportail_esupsignature_domain_SignRequest_description" object="${signRequest}" z="user-managed" />
+				<dl class="display-group border-bottom m-0">
+					<dt class="col-lg-5"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" /></dt>
+					<dd>${inSignBookName}</dd>
+				</dl>
+				<field:display field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" object="${signRequest}" z="user-managed" />
+				<field:display render="false" field="status" id="s_org_esupportail_esupsignature_domain_SignRequest_status" object="${signRequest}" z="user-managed" />
+				<field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_SignRequest_originalFile" object="${signRequest}" render="false" z="user-managed" />
+				<field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_SignRequest_signedFile" object="${signRequest}" render="false" z="user-managed" />
+				<field:display render="false" field="signType" id="s_org_esupportail_esupsignature_domain_SignRequest_signType" object="${signRequest}" z="user-managed" />
+				<dl class="display-group border-bottom m-0">
+					<dt class="col-lg-7">Status</dt>
+					<dd>
+						<c:choose>
+							<c:when test="${signRequest.status eq 'pending'}">
+								<button type="button" class="btn btn-outline-primary btn-sm">
+									<i class="fas fa-clock"> <!--  -->
+									</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
+								</button>
+							</c:when>
+							<c:when test="${signRequest.status eq 'signed'}">
+								<button type="button" class="btn btn-outline-success btn-sm">
+									<i class="fas fa-file-signature"> <!--  -->
+									</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
+								</button>
+							</c:when>
+							<c:when test="${signRequest.status eq 'refused'}">
+								<button type="button" class="btn btn-outline-danger btn-sm">
+									<i class="fas fa-ban"> <!--  -->
+									</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
+								</button>
+							</c:when>
+							<c:when test="${signRequest.status eq 'checked'}">
+								<button type="button" class="btn btn-outline-success btn-sm">
+									<i class="far fa-check-circle"> <!--  -->
+									</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
+								</button>
+							</c:when>
+							<c:when test="${signRequest.status eq 'completed'}">
+								<button type="button" class="btn btn-outline-warning btn-sm">
+									<i class="fas fa-flag-checkered"> <!--  -->
+									</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
+								</button>
+							</c:when>							
+							<c:otherwise>
+								Unknow
+							</c:otherwise>
+						</c:choose>
+					</dd>
+				</dl>
+				<field:display date="true" dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignRequest_createDate" object="${signRequest}" z="user-managed" /> 
+				<field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignRequest_createBy" object="${signRequest}" z="user-managed" />
+				<b>Logs</b>
+				<small> 
+					<table:table cssClass="table-xs" create="false" view="false" data="${logs}" delete="false" id="l_org_esupportail_esupsignature_domain_Log" path="/manager/logs" update="false" z="user-manager">
+			            <table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Log_logDate" property="logDate" z="user-manager"/>
+			            <table:column id="c_org_esupportail_esupsignature_domain_Log_eppn" property="eppn" z="user-manager"/>
+			            <table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_action" property="action" z="user-manager"/>
+			            <table:column id="c_org_esupportail_esupsignature_domain_Log_initialStatus" property="initialStatus" z="user-manager"/>
+			            <table:column id="c_org_esupportail_esupsignature_domain_Log_finalStatus" property="finalStatus" z="user-manager"/>
+			            <table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_returnCode" property="returnCode" z="user-manager"/>
+			        </table:table>					
+				</small>
+			</div>
+			</div>
+			</div>
 		<div class="card bg-light">
 			<div class="card-header">
 				<button class="btn btn-link" data-toggle="collapse" data-target="#collapseTools" aria-expanded="true" aria-controls="collapseTools">
@@ -176,92 +262,6 @@
 					</form>
 				</c:if>
 				</div>
-			</div>
-			</div>
-			<div class="card bg-light">
-			<div class="card-header">
-			<button class="btn btn-link" data-toggle="collapse" data-target="#collapseInfos" aria-expanded="true" aria-controls="collapseInfos">
-				Infos&amp;nbsp;<i class="fas fa-caret-down"><!--  --></i>
-			</button>
-			</div>
-			<div id="collapseInfos" class="collapse hide" aria-labelledby="headingOne" data-parent="#accordion">
-			<div class="card-body">
-				<field:display field="name" id="s_org_esupportail_esupsignature_domain_SignRequest_name" object="${signRequest}" z="user-managed" />
-				<dl class="display-group border-bottom m-0">
-					<dt class="col-lg-7">
-						<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_originalfile" />
-					</dt>
-					<dd>
-						<spring:url value="/user/signrequests/get-original-file/${id}" var="originalFileUrl" />
-						<button type="button" class="btn btn-warning" onclick="window.open('${originalFileUrl}', '_blank')">
-							<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" />
-						</button>
-					</dd>
-				</dl>
-				<field:display pre="true" field="description" id="s_org_esupportail_esupsignature_domain_SignRequest_description" object="${signRequest}" z="user-managed" />
-				<dl class="display-group border-bottom m-0">
-					<dt class="col-lg-4"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" /></dt>
-					<dd>${inSignBookName}</dd>
-				</dl>
-				<field:display field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" object="${signRequest}" z="user-managed" />
-				<field:display render="false" field="status" id="s_org_esupportail_esupsignature_domain_SignRequest_status" object="${signRequest}" z="user-managed" />
-				<field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_SignRequest_originalFile" object="${signRequest}" render="false" z="user-managed" />
-				<field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_SignRequest_signedFile" object="${signRequest}" render="false" z="user-managed" />
-				<field:display render="false" field="signType" id="s_org_esupportail_esupsignature_domain_SignRequest_signType" object="${signRequest}" z="user-managed" />
-				<dl class="display-group border-bottom m-0">
-					<dt class="col-lg-7">Status</dt>
-					<dd>
-						<c:choose>
-							<c:when test="${signRequest.status eq 'pending'}">
-								<button type="button" class="btn btn-outline-primary btn-sm">
-									<i class="fas fa-clock"> <!--  -->
-									</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
-								</button>
-							</c:when>
-							<c:when test="${signRequest.status eq 'signed'}">
-								<button type="button" class="btn btn-outline-success btn-sm">
-									<i class="fas fa-file-signature"> <!--  -->
-									</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
-								</button>
-							</c:when>
-							<c:when test="${signRequest.status eq 'refused'}">
-								<button type="button" class="btn btn-outline-danger btn-sm">
-									<i class="fas fa-ban"> <!--  -->
-									</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
-								</button>
-							</c:when>
-							<c:when test="${signRequest.status eq 'checked'}">
-								<button type="button" class="btn btn-outline-success btn-sm">
-									<i class="far fa-check-circle"> <!--  -->
-									</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
-								</button>
-							</c:when>
-							<c:when test="${signRequest.status eq 'completed'}">
-								<button type="button" class="btn btn-outline-warning btn-sm">
-									<i class="fas fa-flag-checkered"> <!--  -->
-									</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
-								</button>
-							</c:when>							
-							<c:otherwise>
-								Unknow
-							</c:otherwise>
-						</c:choose>
-					</dd>
-				</dl>
-				<field:display date="true" dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignRequest_createDate" object="${signRequest}" z="user-managed" /> 
-				<field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignRequest_createBy" object="${signRequest}" z="user-managed" />
-				<b>Logs</b>
-				<small> 
-					<table:table cssClass="table-xs" create="false" view="false" data="${logs}" delete="false" id="l_org_esupportail_esupsignature_domain_Log" path="/manager/logs" update="false" z="user-manager">
-			            <table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Log_logDate" property="logDate" z="user-manager"/>
-			            <table:column id="c_org_esupportail_esupsignature_domain_Log_eppn" property="eppn" z="user-manager"/>
-			            <table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_action" property="action" z="user-manager"/>
-			            <table:column id="c_org_esupportail_esupsignature_domain_Log_initialStatus" property="initialStatus" z="user-manager"/>
-			            <table:column id="c_org_esupportail_esupsignature_domain_Log_finalStatus" property="finalStatus" z="user-manager"/>
-			            <table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_returnCode" property="returnCode" z="user-manager"/>
-			        </table:table>					
-				</small>
-			</div>
 			</div>
 			</div>
 			</div>

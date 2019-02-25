@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -228,8 +229,9 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 					fileToCopy.copyTo(newFile);
 				} else {
 					fileToCopy.copyTo(newFile);
-					//TODO repare
-					//this.remove(fileToCopyPath);
+					FsFile fsFileToRemove = new FsFile();
+					fsFileToRemove.setFile(fileService.inputStreamToFile(fileToCopy.getInputStream(), fileToCopy.getName()));
+					this.remove(fsFileToRemove);
 				}
 
 			}
@@ -245,11 +247,8 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 	@Override
 	public FsFile getFile(String dir) throws Exception {
 		try {
-			SmbFile file = cd(dir);
-			InputStream inputStream = file.getInputStream();
-			FsFile fsFile = new FsFile();
-			fsFile.setFile(fileService.inputStreamToFile(inputStream, file.getName()));
-			return fsFile;
+			SmbFile smbFile = cd(dir);
+			return toFsFile(smbFile);
 		} catch (SmbException e) {
 			log.warn("can't download file : " + e.getMessage(), e);
 		} catch (IOException e) {
@@ -321,30 +320,38 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 	
 
 	public List<FsFile> listFiles(String url) throws Exception {
-		List<FsFile> files = new ArrayList<>();
+		List<FsFile> fsFiles = new ArrayList<>();
 		SmbFile resource = cd(url);		
 		if(jcifsSynchronizeRootListing && this.root.equals(resource)) {
 			synchronized (this.root.getCanonicalPath()) {
 				for(SmbFile smbFile : resource.listFiles()) {
-					FsFile fsFile = new FsFile();
-					fsFile.setFile(fileService.inputStreamToFile(smbFile.getInputStream(), smbFile.getName()));
-					files.add(fsFile);
+					fsFiles.add(toFsFile(smbFile));
 				}
 			}
 		} else {
 			for(SmbFile smbFile : resource.listFiles()) {
 				FsFile fsFile = new FsFile();
 				fsFile.setFile(fileService.inputStreamToFile(smbFile.getInputStream(), smbFile.getName()));
-				files.add(fsFile);
+				fsFiles.add(fsFile);
 			}
 		}
-		return files;
+		return fsFiles;
+	}
+	
+	private FsFile toFsFile(SmbFile smbFile) throws IOException {
+		FsFile fsFile = new FsFile();
+		fsFile.setName(smbFile.getName());
+		fsFile.setContentType(smbFile.getContentType());
+		fsFile.setFile(fileService.inputStreamToFile(smbFile.getInputStream(), smbFile.getName()));
+		fsFile.setCreateBy(smbFile.getOwnerUser().getAccountName());
+		fsFile.setCreateDate(new Date(smbFile.getDate()));
+		return fsFile;
 	}
 
 	public void destroy() throws Exception {
 		this.close();
 	}
-
+	
 	/**
 	 * Getter of attribute resourceUtils
 	 * @return <code>ResourceUtils</code> the attribute resourceUtils

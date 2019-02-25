@@ -17,7 +17,6 @@
  */
 package org.esupportail.esupsignature.service.fs;
 
-import java.io.File;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;

@@ -127,8 +127,12 @@
 				.getElementById("_c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri");
 		var targetUri = document
 				.getElementById("_c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri");
-		sourceUri.style.display = "none";
-		targetUri.style.display = "none";
+		if(sourceUri.value == "") {
+			sourceUri.style.display = "none";
+		}
+		if(targetUri.value == "") {
+			targetUri.style.display = "none";
+		}
 		sourceSelector.onchange = function() {
 			if (sourceSelector.value != "none") {
 				sourceUri.style.display = "block";
