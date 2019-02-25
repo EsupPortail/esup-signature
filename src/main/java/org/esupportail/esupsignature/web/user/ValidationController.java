@@ -42,9 +42,6 @@ public class ValidationController {
 		return "user/validation";
 	}
 	
-	private static final String SIMPLE_REPORT_ATTRIBUTE = "simpleReportXml";
-	private static final String DETAILED_REPORT_ATTRIBUTE = "detailedReportXml";
-
 	@Autowired
 	private CertificateVerifier certificateVerifier;
 
@@ -95,7 +92,7 @@ public class ValidationController {
 	@RequestMapping(value = "/download-simple-report")
 	public void downloadSimpleReport(HttpSession session, HttpServletResponse response) {
 		try {
-			String simpleReport = (String) session.getAttribute(SIMPLE_REPORT_ATTRIBUTE);
+			String simpleReport = (String) session.getAttribute("simpleReportXml");
 
 			response.setContentType(MimeType.PDF.getMimeTypeString());
 			response.setHeader("Content-Disposition", "attachment; filename=DSS-Simple-report.pdf");
@@ -109,7 +106,7 @@ public class ValidationController {
 	@RequestMapping(value = "/download-detailed-report")
 	public void downloadDetailedReport(HttpSession session, HttpServletResponse response) {
 		try {
-			String detailedReport = (String) session.getAttribute(DETAILED_REPORT_ATTRIBUTE);
+			String detailedReport = (String) session.getAttribute("detailedReportXml");
 
 			response.setContentType(MimeType.PDF.getMimeTypeString());
 			response.setHeader("Content-Disposition", "attachment; filename=DSS-Detailed-report.pdf");
