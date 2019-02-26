@@ -5,7 +5,6 @@ package org.esupportail.esupsignature.domain;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignRequest;
@@ -115,14 +114,6 @@ privileged aspect SignBook_Roo_JavaBean {
     
     public void SignBook.setSignRequestParams(SignRequestParams signRequestParams) {
         this.signRequestParams = signRequestParams;
-    }
-    
-    public Map<String, String> SignBook.getParams() {
-        return this.params;
-    }
-    
-    public void SignBook.setParams(Map<String, String> params) {
-        this.params = params;
     }
     
     public String SignBook.getSignType() {

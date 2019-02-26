@@ -64,7 +64,7 @@ public class SignBookService {
 		        			user.setEppn("robot");
 		        			user.setIp("127.0.0.1");
 		        		}
-		                SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, new HashMap<String, String>(signBook.getParams()), signBook.getRecipientEmail());
+		                SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmail());
 		    	        signRequest.setSignBookId(signBook.getId());
 		    	        signRequest.merge();
 		    			signBook.getSignRequests().add(signRequest);
@@ -107,7 +107,7 @@ public class SignBookService {
 	    	signRequest.setOriginalFile(signRequest.getSignedFile());
 	    	signRequest.setSignedFile(null);
 	    	signRequest.setRecipientEmail(signBook.getRecipientEmail());
-	    	signRequest.setParams(new HashMap<String, String>(signBook.getParams()));
+	    	signRequest.setSignRequestParams(signBook.getSignRequestParams());
 	    	signRequest.setSignBookId(signBook.getId());
 	    	signRequest.setStatus(SignRequestStatus.uploaded);
 	    	signRequest.merge();

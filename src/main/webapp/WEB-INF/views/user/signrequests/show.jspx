@@ -101,20 +101,20 @@
 			<div class="card-body">
 				<form autocomplete="off" action="/user/signrequests/sign/${id}" method="post">
 					<c:choose>
-						<c:when test="${documentType eq 'pdf' and signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' and signRequest.params.signType ne 'validate'}">
+						<c:when test="${documentType eq 'pdf' and signable eq 'ok' and empty signRequest.signedFile and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'validate'}">
 							<dl class="display-group border-bottom m-0">
 								<dt class="col-lg-12"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signposition" /></dt>
 								<small>
 									<dd>
 									<div class="row">
 										<div class="col-lg-4">
-											Page : <input autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.params.signPageNumber}" id="signPageNumber" type="text" name="signPageNumber" />
+											Page : <input autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.signPageNumber}" id="signPageNumber" type="text" name="signPageNumber" />
 										</div>
 										<div class="col-lg-4">
-											X position : <input autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.params.xPos}" id="xPos" type="text" name="xPos" />
+											X position : <input autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.XPos}" id="xPos" type="text" name="xPos" />
 										</div>
 										<div class="col-lg-4">
-											Y position : <input autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.params.yPos}" id="yPos" type="text" name="yPos" />
+											Y position : <input autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.YPos}" id="yPos" type="text" name="yPos" />
 										</div>
 									</div>
 									</dd>
@@ -133,9 +133,9 @@
 							</script>
 						</c:when>
 						<c:otherwise>
-							<input value="${signRequest.params.signPageNumber}" type="hidden" id="signPageNumber" name="signPageNumber" />
-							<input value="${signRequest.params.xPos}" type="hidden" id="xPos" name="xPos" />
-							<input value="${signRequest.params.yPos}" type="hidden" id="yPos" name="yPos" />
+							<input value="${signRequest.signRequestParams.signPageNumber}" type="hidden" id="signPageNumber" name="signPageNumber" />
+							<input value="${signRequest.signRequestParams.XPos}" type="hidden" id="xPos" name="xPos" />
+							<input value="${signRequest.signRequestParams.YPos}" type="hidden" id="yPos" name="yPos" />
 						</c:otherwise>
 					</c:choose>
 					<c:choose>
@@ -157,7 +157,7 @@
 									<dd>
 										<div class="form-group">
 											<c:choose>
-												<c:when test="${signRequest.params.signType eq 'certSign'}">
+												<c:when test="${signRequest.signRequestParams.signType eq 'certSign'}">
 													<c:choose>
 														<c:when test="${not empty keystore}">
 															<label class="col-lg-4 col-form-label" for="password"><spring:message code="label_org_esupportail_esupsignature_domain_user_password" /></label>
@@ -176,7 +176,7 @@
 														</c:otherwise>
 													</c:choose>
 												</c:when>
-												<c:when test="${signRequest.params.signType eq 'nexuSign'}">
+												<c:when test="${signRequest.signRequestParams.signType eq 'nexuSign'}">
 													<spring:url value="/resources/js/jsSignatureLevel.js" var="jsSignatureLevel_js_url" />
 													<script type="text/javascript" src="${jsSignatureLevel_js_url}"><!-- --></script>
 													<script type="text/javascript" src="/js/nexu-deploy.js"><!-- --></script>
@@ -201,7 +201,7 @@
 												</c:when>
 												<c:otherwise>
 													<c:choose>
-													<c:when test="${signRequest.params.signType eq 'validate'}">
+													<c:when test="${signRequest.signRequestParams.signType eq 'validate'}">
 														<spring:message code="button_validate" var="validateLabel" />
 														<input alt="${validateLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${validateLabel}" />
 													</c:when>
@@ -234,12 +234,12 @@
 						<dt class="col-lg-12"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_params"/></dt>
 						<dd>
 							<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype"/> :
-							<button type="button" class="btn btn-outline-dark btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.params.signType}"> 
-								<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.params.signType}"/>
+							<button type="button" class="btn btn-outline-dark btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}"> 
+								<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}"/>
 							</button>
 							<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype"/> : 
-							<button type="button" class="btn btn-outline-dark btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.params.signType}">
-								<spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signRequest.params.newPageType}"/>
+							<button type="button" class="btn btn-outline-dark btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+								<spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signRequest.signRequestParams.newPageType}"/>
 							</button>
 						</dd>
 					</dl>
@@ -293,9 +293,9 @@
 						</div>
 						<div class="d-flex justify-content-center">
 						<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
-						<div id="pointer_div" onclick="point_it(event)" style="background-size: ${infos.width}px;background-image:url('${documentUrl}/${signRequest.params.signPageNumber -1}');width:${infos.width}px;height:${infos.height}px;border:1px solid #CCC;">
-							<c:if test="${signable eq 'ok' and empty signRequest.signedFile and signRequest.params.newPageType eq 'none' and signRequest.params.signType ne 'validate'}">						
-								<i id="cross" style="left:${signRequest.params.xPos};top:${signRequest.params.yPos};position:relative;z-index:2;"> <img alt="signature" src="data:image/jpg;base64, ${signFile}" width="100" height="75" />
+						<div id="pointer_div" onclick="point_it(event)" style="background-size: ${infos.width}px;background-image:url('${documentUrl}/${signRequest.signRequestParams.signPageNumber -1}');width:${infos.width}px;height:${infos.height}px;border:1px solid #CCC;">
+							<c:if test="${signable eq 'ok' and empty signRequest.signedFile and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'validate'}">						
+								<i id="cross" style="left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;z-index:2;"> <img alt="signature" src="data:image/jpg;base64, ${signFile}" width="100" height="75" />
 								</i>
 							</c:if>
 						</div>
@@ -303,7 +303,7 @@
 					</div>
 					<script type="text/javascript">
 						var nbImagePage = ${imagePagesSize};
-						var currentImagePage = ${signRequest.params.signPageNumber} - 1;
+						var currentImagePage = ${signRequest.signRequestParams.signPageNumber} - 1;
 						if (currentImagePage == 0) {
 							document.getElementById("previous").disabled = true;
 						}

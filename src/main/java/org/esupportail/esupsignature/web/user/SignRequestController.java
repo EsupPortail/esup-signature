@@ -3,9 +3,7 @@ package org.esupportail.esupsignature.web.user;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -214,16 +212,16 @@ public class SignRequestController {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		user.setIp(request.getRemoteAddr());
-		Map<String, String> params = new HashMap<>();
-		params.put("signType", signRequest.getSignType());
-		params.put("newPageType", signRequest.getNewPageType());
-		params.put("signPageNumber", "1");
-		params.put("xPos", "0");
-		params.put("yPos", "0");
-
+		SignRequestParams signRequestParams = new SignRequestParams();
+		signRequestParams.setSignType(SignType.valueOf(signRequest.getSignType()));
+		signRequestParams.setNewPageType(NewPageType.valueOf(signRequest.getNewPageType()));
+		signRequestParams.setSignPageNumber(1);
+		signRequestParams.setXPos(0);
+		signRequestParams.setYPos(0);
+		signRequestParams.persist();
 		try {
 			Document document = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
-			signRequest = signRequestService.createSignRequest(user, document, params, signRequest.getRecipientEmail());
+			signRequest = signRequestService.createSignRequest(user, document, signRequestParams, signRequest.getRecipientEmail());
 
 		} catch (IOException e) {
 			log.error("error to add file : " + multipartFile.getOriginalFilename(), e);
@@ -243,17 +241,15 @@ public class SignRequestController {
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
-			Map<String, String> params = signRequest.getParams();
-			params.put("signPageNumber", String.valueOf(signPageNumber));
-			params.put("xPos", String.valueOf(xPos));
-			params.put("yPos", String.valueOf(yPos));
-			signRequest.setParams(params);
+			signRequest.getSignRequestParams().setSignPageNumber(signPageNumber);
+			signRequest.getSignRequestParams().setXPos(xPos);
+			signRequest.getSignRequestParams().setYPos(yPos);
 			signRequest.merge();
 			if (!"".equals(password)) {
 	        	setPassword(password);
 			}
 			try {
-				SignRequestParams.SignType signType = SignRequestParams.SignType.valueOf(signRequest.getParams().get("signType"));
+				SignRequestParams.SignType signType = signRequest.getSignRequestParams().getSignType();
 				if(signType.equals(SignRequestParams.SignType.validate)) {
 					signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
 				} else 
@@ -295,7 +291,7 @@ public class SignRequestController {
 		        	setPassword(password);
 				}
 				try {
-					SignRequestParams.SignType signType = SignRequestParams.SignType.valueOf(signRequest.getParams().get("signType"));
+					SignRequestParams.SignType signType = signRequest.getSignRequestParams().getSignType();
 					if(signType.equals(SignRequestParams.SignType.validate)) {
 						signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
 					} else 

@@ -2,11 +2,8 @@ package org.esupportail.esupsignature.domain;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.persistence.ElementCollection;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -65,9 +62,6 @@ public class SignBook {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private SignRequestParams signRequestParams = new SignRequestParams();
-    
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Map<String, String> params = new HashMap<String, String>();
 	
     @Transient
 	private String signType;

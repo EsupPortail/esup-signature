@@ -2,11 +2,8 @@ package org.esupportail.esupsignature.domain;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.persistence.ElementCollection;
 import javax.persistence.EntityManager;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -64,9 +61,6 @@ public class SignRequest {
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;	
     
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Map<String, String> params = new HashMap<String, String>();
-    
     private long signBookId;
     
     @Transient
@@ -94,12 +88,6 @@ public class SignRequest {
     public void setStatus(SignRequestStatus status) {
         this.status = status;
     }
-    
-    public String getSignTypeLabel() {
-		return params.get("signType");
-	}
-    
-    
 
 	public static TypedQuery<SignRequest> findSignRequests(String createBy, String recipientEmail, SignRequestStatus status, Long signBookId, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
     	EntityManager em = SignRequest.entityManager();

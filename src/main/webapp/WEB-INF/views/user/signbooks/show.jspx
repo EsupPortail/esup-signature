@@ -30,6 +30,7 @@
         <field:display field="signPageNumber" id="s_org_esupportail_esupsignature_domain_SignBook_signPageNumber" object="${signbook}" render="false" z="user-managed"/>
         <field:display field="XPos" id="s_org_esupportail_esupsignature_domain_SignBook_xPos" object="${signbook}" render="false" z="user-managed"/>
         <field:display field="YPos" id="s_org_esupportail_esupsignature_domain_SignBook_yPos" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="signRequestParams" id="s_org_esupportail_esupsignature_domain_SignBook_signRequestParams" object="${signbook}" render="false" z="user-managed"/>
         <dl class="display-group border-bottom m-0">
             <dt class="col-lg-5">
                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_modelfile"/>
@@ -84,6 +85,5 @@
             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" property="recipientEmail" z="user-managed"/>
             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed"/>
         </table:table>
-        <field:display field="signRequestParams" id="s_org_esupportail_esupsignature_domain_SignBook_signRequestParams" object="${signbook}" z="pOF1NvatD6uWlUBqDyu4fNhecDQ="/>
     </page:show>
 </div>

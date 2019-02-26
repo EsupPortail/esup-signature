@@ -7,22 +7,6 @@ import org.esupportail.esupsignature.domain.SignRequestParams;
 
 privileged aspect SignRequestParams_Roo_JavaBean {
     
-    public SignType SignRequestParams.getSignType() {
-        return this.signType;
-    }
-    
-    public void SignRequestParams.setSignType(SignType signType) {
-        this.signType = signType;
-    }
-    
-    public NewPageType SignRequestParams.getNewPageType() {
-        return this.newPageType;
-    }
-    
-    public void SignRequestParams.setNewPageType(NewPageType newPageType) {
-        this.newPageType = newPageType;
-    }
-    
     public int SignRequestParams.getSignPageNumber() {
         return this.signPageNumber;
     }
@@ -31,19 +15,19 @@ privileged aspect SignRequestParams_Roo_JavaBean {
         this.signPageNumber = signPageNumber;
     }
     
-    public float SignRequestParams.getXPos() {
+    public int SignRequestParams.getXPos() {
         return this.xPos;
     }
     
-    public void SignRequestParams.setXPos(float xPos) {
+    public void SignRequestParams.setXPos(int xPos) {
         this.xPos = xPos;
     }
     
-    public float SignRequestParams.getYPos() {
+    public int SignRequestParams.getYPos() {
         return this.yPos;
     }
     
-    public void SignRequestParams.setYPos(float yPos) {
+    public void SignRequestParams.setYPos(int yPos) {
         this.yPos = yPos;
     }
     

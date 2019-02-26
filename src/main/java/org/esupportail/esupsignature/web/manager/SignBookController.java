@@ -3,8 +3,6 @@ package org.esupportail.esupsignature.web.manager;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -64,13 +62,9 @@ public class SignBookController {
 	PdfService pdfService;
 
 	void populateEditForm(Model uiModel, SignBook signBook) {
-		signBook.setSignType(signBook.getParams().get("signType"));
-		signBook.setNewPageType(signBook.getParams().get("newPageType"));
 		uiModel.addAttribute("signBook", signBook);
 		uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
 		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
-		// uiModel.addAttribute("signBookTypes",
-		// Arrays.asList(SignBookType.values()));
 		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
 		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
 		addDateTimeFormatPatterns(uiModel);
@@ -94,8 +88,8 @@ public class SignBookController {
 			signBookToUpdate.setSourceType(signBook.getSourceType());
 			signBookToUpdate.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
 			signBookToUpdate.setTargetType(signBook.getTargetType());
-			signBookToUpdate.getParams().put("signType", signBook.getSignType());
-			signBookToUpdate.getParams().put("newPageType", signBook.getNewPageType());
+			signBookToUpdate.getSignRequestParams().setSignType(SignType.valueOf(signBook.getSignType()));
+			signBookToUpdate.getSignRequestParams().setNewPageType(NewPageType.valueOf(signBook.getNewPageType()));
 			Document newModel = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
 			if(newModel != null) {
 				Document oldModel = signBookToUpdate.getModelFile();
@@ -107,13 +101,14 @@ public class SignBookController {
 			signBook.setCreateBy(eppn);
 			signBook.setCreateDate(new Date());
 			signBook.setModelFile(documentService.addFile(multipartFile, multipartFile.getOriginalFilename()));
-			Map<String, String> params = new HashMap<>();
-			params.put("signType", signBook.getSignType());
-			params.put("newPageType", signBook.getNewPageType());
-			params.put("signPageNumber", "1");
-			params.put("xPos", "0");
-			params.put("yPos", "0");
-			signBook.setParams(params);
+			SignRequestParams signRequestParams = new SignRequestParams();
+			signRequestParams.setSignType(SignType.valueOf(signBook.getSignType()));
+			signRequestParams.setNewPageType(NewPageType.valueOf(signBook.getNewPageType()));
+			signRequestParams.setSignPageNumber(1);
+			signRequestParams.setXPos(0);
+			signRequestParams.setYPos(0);
+			signRequestParams.persist();
+			signBook.setSignRequestParams(signRequestParams);
 			signBook.persist();
 		}
 		uiModel.asMap().clear();
@@ -150,12 +145,9 @@ public class SignBookController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/signbooks/" + id;
 		}
-
-		Map<String, String> params = signBook.getParams();
-		params.put("signPageNumber", String.valueOf(signPageNumber));
-		params.put("xPos", String.valueOf(xPos));
-		params.put("yPos", String.valueOf(yPos));
-		signBook.setParams(params);
+		signBook.getSignRequestParams().setSignPageNumber(signPageNumber);
+		signBook.getSignRequestParams().setXPos(xPos);
+		signBook.getSignRequestParams().setYPos(yPos);
 		signBook.setUpdateBy(eppn);
 		signBook.setUpdateDate(new Date());
 

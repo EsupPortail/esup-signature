@@ -45,7 +45,6 @@ import org.apache.xmpbox.schema.PDFAIdentificationSchema;
 import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.domain.SignRequestParams;
-import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.domain.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,20 +68,20 @@ public class PdfService {
 	@Value("${pdf.xCenter}")
 	private int yCenter;	
 	
-	public File formatPdf(File toSignFile, Map<String, String> params) {
-    	if(SignRequestParams.NewPageType.valueOf(params.get("newPageType")).equals(SignRequestParams.NewPageType.onBegin)) {
+	public File formatPdf(File toSignFile, SignRequestParams params) {
+    	if(SignRequestParams.NewPageType.onBegin.equals(params.getNewPageType())) {
         	log.info("add page on begin");
         	toSignFile = addBlankPage(toSignFile, 0);
-        	params.put("signPageNumber", "1");
-        	params.put("xPos", String.valueOf(xCenter));
-        	params.put("yPos", String.valueOf(yCenter));
+        	params.setSignPageNumber(1);
+        	params.setXPos(xCenter);
+        	params.setYPos(yCenter);
         } else 
-        if(SignRequestParams.NewPageType.valueOf(params.get("newPageType")).equals(SignRequestParams.NewPageType.onEnd)) {
+        if(SignRequestParams.NewPageType.onEnd.equals(params.getNewPageType())) {
         	log.info("add page on end");
         	toSignFile = addBlankPage(toSignFile, -1);
-        	params.put("signPageNumber", String.valueOf(getTotalNumberOfPages(toSignFile)));
-        	params.put("xPos", String.valueOf(xCenter));
-        	params.put("yPos", String.valueOf(yCenter));
+        	params.setSignPageNumber(getTotalNumberOfPages(toSignFile));
+        	params.setXPos(xCenter);
+        	params.setYPos(yCenter);
         }
     	if(!checkPdfA(toSignFile)) {
 			toSignFile = toPdfA(toSignFile);
@@ -90,13 +89,13 @@ public class PdfService {
     	return toSignFile;
 	}
 		
-	public File stampImage(File toSignFile, Map<String, String> params, User user) {
+	public File stampImage(File toSignFile, SignRequestParams params, User user) {
     	File signImage = user.getSignImage().getJavaIoFile();
 		toSignFile = formatPdf(toSignFile, params);
 		try {
 			File targetFile =  new File(Files.createTempDir(), toSignFile.getName());
 			PDDocument pdDocument = PDDocument.load(toSignFile);
-	        PDPage pdPage = pdDocument.getPage(Integer.valueOf(params.get("signPageNumber")) - 1);
+	        PDPage pdPage = pdDocument.getPage(params.getSignPageNumber() - 1);
 	        
 			PDImageXObject pdImage;
 					
@@ -115,13 +114,13 @@ public class PdfService {
 				ImageIO.write(bufferedImage, "png", flipedSignImage);
 				pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
 				contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
-				contentStream.drawImage(pdImage, Integer.valueOf(params.get("xPos")), Integer.valueOf(params.get("yPos")), 100, 75);
+				contentStream.drawImage(pdImage, (int) params.getXPos(), (int) params.getYPos(), 100, 75);
 
 			} else {
 				AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
 			    contentStream.transform(new Matrix(at));
 			    pdImage = PDImageXObject.createFromFileByContent(signImage, pdDocument);
-				contentStream.drawImage(pdImage, Integer.valueOf(params.get("xPos")), Integer.valueOf(params.get("yPos")) - 37 , 100, 75);
+				contentStream.drawImage(pdImage, (int) params.getXPos(), (int) params.getYPos() - 37 , 100, 75);
 
 			}
 			contentStream.close();

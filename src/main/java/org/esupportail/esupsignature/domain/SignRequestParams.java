@@ -23,8 +23,23 @@ public class SignRequestParams {
 
 	private int signPageNumber;
 	
-	private float xPos;
+	private int xPos;
 
-	private float yPos;
+	private int yPos;
 	
+    public SignType getSignType() {
+        return this.signType;
+    }
+    
+    public void setSignType(SignType signType) {
+        this.signType = signType;
+    }
+    
+    public NewPageType getNewPageType() {
+        return this.newPageType;
+    }
+    
+    public void setNewPageType(NewPageType newPageType) {
+        this.newPageType = newPageType;
+    }
 }

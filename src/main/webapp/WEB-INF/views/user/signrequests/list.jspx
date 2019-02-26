@@ -129,8 +129,8 @@
 								<td class="none">${signRequest.createBy}</td>
 								<td class="none">${signRequest.recipientEmail}</td>
 								<td class="type"><input type="hidden" id="signbook_${signRequest.id}" value="${signRequest.signBookId}" />
-									<button type="button" class="btn btn-outline-dark btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.params.signType}">
-										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.params.signType}" />
+									<button type="button" class="btn btn-outline-dark btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" />
 									</button></td>
 								<td class="status"><c:choose>
 										<c:when test="${signRequest.status eq 'pending'}">
@@ -288,13 +288,13 @@
 					toSignResquest.push(checkBox.value);
 				}
 			});
-			var params = "ids=" + toSignResquest + "&amp;password="
+			var signRequestParams = "ids=" + toSignResquest + "&amp;password="
 					+ document.getElementById("passwordField").value;
-			sendData(params);
+			sendData(signRequestParams);
 	
 		}
 	
-		function sendData(params) {
+		function sendData(signRequestParams) {
 			document.getElementById("passwordError").style.display = "none";
 			document.getElementById("closeModal").style.display = "none";
 			document.getElementById("bar").style.display = "none";
@@ -306,7 +306,7 @@
 			xmlHttp.open('POST', '/user/signrequests/sign-multiple', true);
 			xmlHttp.setRequestHeader('Content-Type',
 					'application/x-www-form-urlencoded');
-			xmlHttp.send(params);
+			xmlHttp.send(signRequestParams);
 		}
 	
 		function getProgress() {

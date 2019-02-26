@@ -79,7 +79,7 @@ public class NexuProcessController {
     		File toSignFile = signRequest.getOriginalFile().getJavaIoFile();
     		if(fileService.getContentType(toSignFile).equals("application/pdf")) {
     			signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
-    			toSignFile = pdfService.stampImage(signRequest.getOriginalFile().getJavaIoFile(), signRequest.getParams(), user);
+    			toSignFile = pdfService.stampImage(signRequest.getOriginalFile().getJavaIoFile(), signRequest.getSignRequestParams(), user);
     		}
     		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
 			model.addAttribute("signRequest", signRequest);
