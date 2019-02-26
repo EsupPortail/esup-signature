@@ -11,6 +11,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -56,6 +57,9 @@ public class SignRequest {
     
     @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
     private Document signedFile = new Document();
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    private SignRequestParams signRequestParams = new SignRequestParams();
     
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;	

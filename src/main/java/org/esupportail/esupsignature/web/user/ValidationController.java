@@ -1,21 +1,18 @@
 package org.esupportail.esupsignature.web.user;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
-import org.esupportail.esupsignature.dss.web.WebAppUtils;
 import org.esupportail.esupsignature.dss.web.model.ValidationForm;
 import org.esupportail.esupsignature.dss.web.service.FOPService;
 import org.esupportail.esupsignature.dss.web.service.XSLTService;
+import org.esupportail.esupsignature.service.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -25,8 +22,6 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import eu.europa.esig.dss.MimeType;
-import eu.europa.esig.dss.validation.CertificateVerifier;
-import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
 
@@ -41,18 +36,15 @@ public class ValidationController {
 	public String getActiveMenu() {
 		return "user/validation";
 	}
-	
-	@Autowired
-	private CertificateVerifier certificateVerifier;
 
 	@Autowired
 	private XSLTService xsltService;
 
 	@Autowired
 	private FOPService fopService;
-
-	@Autowired
-	private Resource defaultPolicy;
+	
+	@Resource
+	private ValidationService validationService;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String showValidationForm(Model model, HttpServletRequest request) {
@@ -65,18 +57,7 @@ public class ValidationController {
 
 	@RequestMapping(method = RequestMethod.POST)
 	public String validate(@ModelAttribute("multipartFile") @Valid MultipartFile multipartFile, Model model) {
-		//TODO service ?
-		SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(WebAppUtils.toDSSDocument(multipartFile));
-		documentValidator.setCertificateVerifier(certificateVerifier);
-		documentValidator.setValidationLevel(ValidationLevel.BASIC_SIGNATURES);
-
-		Reports reports = null;
-		try (InputStream is = defaultPolicy.getInputStream()) {
-			reports = documentValidator.validateDocument(is);
-		} catch (IOException e) {
-			logger.error("Unable to parse policy : " + e.getMessage(), e);
-		}
-
+		Reports reports = validationService.validate(multipartFile);
 
 		String xmlSimpleReport = reports.getXmlSimpleReport();
 		model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));

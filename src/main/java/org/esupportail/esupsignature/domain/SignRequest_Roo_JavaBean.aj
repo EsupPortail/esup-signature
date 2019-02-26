@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.Map;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignRequest;
+import org.esupportail.esupsignature.domain.SignRequestParams;
 
 privileged aspect SignRequest_Roo_JavaBean {
     
@@ -64,6 +65,14 @@ privileged aspect SignRequest_Roo_JavaBean {
     
     public void SignRequest.setSignedFile(Document signedFile) {
         this.signedFile = signedFile;
+    }
+    
+    public SignRequestParams SignRequest.getSignRequestParams() {
+        return this.signRequestParams;
+    }
+    
+    public void SignRequest.setSignRequestParams(SignRequestParams signRequestParams) {
+        this.signRequestParams = signRequestParams;
     }
     
     public SignRequestStatus SignRequest.getStatus() {

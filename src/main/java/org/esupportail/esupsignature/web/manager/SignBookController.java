@@ -14,9 +14,10 @@ import javax.validation.Valid;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
-import org.esupportail.esupsignature.domain.SignBook.NewPageType;
-import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
+import org.esupportail.esupsignature.domain.SignRequestParams;
+import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
+import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.PdfService;
@@ -70,8 +71,8 @@ public class SignBookController {
 		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
 		// uiModel.addAttribute("signBookTypes",
 		// Arrays.asList(SignBookType.values()));
-		uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
-		uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
+		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
+		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
 		addDateTimeFormatPatterns(uiModel);
 		uiModel.addAttribute("signrequests", SignRequest.findAllSignRequests());
 	}

@@ -12,9 +12,10 @@ import javax.annotation.Resource;
 import org.apache.commons.codec.binary.Base64;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
-import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
+import org.esupportail.esupsignature.domain.SignRequestParams;
+import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -83,22 +84,22 @@ public class SignRequestService {
 	
 	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureIOException, EsupSignatureException {
         File toSignFile = signRequest.getOriginalFile().getJavaIoFile();
-    	SignType signType = SignType.valueOf(signRequest.getParams().get("signType"));
+    	SignRequestParams.SignType signType = SignRequestParams.SignType.valueOf(signRequest.getParams().get("signType"));
 		File signedFile = null;
     	if(fileService.getContentType(toSignFile).equals("application/pdf")) {
-            if(signType.equals(SignType.pdfImageStamp)) {
+            if(signType.equals(SignRequestParams.SignType.pdfImageStamp)) {
             	logger.info(user.getEppn() + " launch add imageStamp for signRequest : " + signRequest.getId());
             	signedFile = pdfService.stampImage(toSignFile, signRequest.getParams(), user);
             } else 
-            if(signType.equals(SignType.certSign)) {
+            if(signType.equals(SignRequestParams.SignType.certSign)) {
             	logger.info(user.getEppn() + " launch cades visible signature for signRequest : " + signRequest.getId());
               	signedFile = padesSign(signRequest, user, password);
             }
     	} else {
-    		if(signType.equals(SignType.pdfImageStamp)) {
+    		if(signType.equals(SignRequestParams.SignType.pdfImageStamp)) {
         		logger.warn("only pdf can get visible sign");
         	} else 
-            if(signType.equals(SignType.certSign)) {
+            if(signType.equals(SignRequestParams.SignType.certSign)) {
             	logger.info(user.getEppn() + " launch xades signature for signRequest : " + signRequest.getId());
               	signedFile = xadesSign(signRequest, user, password);
               	//mime type application/vnd.etsi.asic-e+zip

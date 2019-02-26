@@ -16,10 +16,11 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
-import org.esupportail.esupsignature.domain.SignBook.NewPageType;
-import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
+import org.esupportail.esupsignature.domain.SignRequestParams;
+import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
+import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
@@ -32,6 +33,7 @@ import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
@@ -62,6 +64,10 @@ public class SignRequestController {
 	public String getActiveMenu() {
 		return "user/signrequests";
 	}
+	
+	@Value("${sign.passwordTimeout}")
+	private long passwordTimeout;
+	
 	private String progress = "0";
 	private String password = "";
 	long startTime;
@@ -247,11 +253,11 @@ public class SignRequestController {
 	        	setPassword(password);
 			}
 			try {
-				SignType signType = SignType.valueOf(signRequest.getParams().get("signType"));
-				if(signType.equals(SignType.validate)) {
+				SignRequestParams.SignType signType = SignRequestParams.SignType.valueOf(signRequest.getParams().get("signType"));
+				if(signType.equals(SignRequestParams.SignType.validate)) {
 					signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
 				} else 
-				if(signType.equals(SignType.nexuSign)) {
+				if(signType.equals(SignRequestParams.SignType.nexuSign)) {
 					return "redirect:/user/nexu-sign/" + id;
 				} else {
 					signRequestService.sign(signRequest, user, this.password);
@@ -289,11 +295,11 @@ public class SignRequestController {
 		        	setPassword(password);
 				}
 				try {
-					SignType signType = SignType.valueOf(signRequest.getParams().get("signType"));
-					if(signType.equals(SignType.validate)) {
+					SignRequestParams.SignType signType = SignRequestParams.SignType.valueOf(signRequest.getParams().get("signType"));
+					if(signType.equals(SignRequestParams.SignType.validate)) {
 						signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
 					} else 
-					if(signType.equals(SignType.nexuSign)) {
+					if(signType.equals(SignRequestParams.SignType.nexuSign)) {
 						log.error("no multiple nexu sign");
 						progress = "not_autorized";
 					} else {
@@ -421,8 +427,8 @@ public class SignRequestController {
 		uiModel.addAttribute("signRequest", signRequest);
 		addDateTimeFormatPatterns(uiModel);
 		uiModel.addAttribute("files", Document.findAllDocuments());
-		uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
-		uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
+		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
+		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
 	}
 
 	void addDateTimeFormatPatterns(Model uiModel) {
@@ -432,9 +438,8 @@ public class SignRequestController {
 
 	@Scheduled(fixedDelay = 5000)
 	public void clearPassword() {
-		//TODO : param password session time
 		if (startTime > 0) {
-			if (System.currentTimeMillis() - startTime > 60000) {
+			if (System.currentTimeMillis() - startTime > passwordTimeout) {
 				password = "";
 				startTime = 0;
 			}

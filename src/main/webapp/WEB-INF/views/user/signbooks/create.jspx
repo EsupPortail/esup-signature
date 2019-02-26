@@ -22,6 +22,7 @@
         <field:input field="signPageNumber" id="c_org_esupportail_esupsignature_domain_SignBook_signPageNumber" z="Wh0ciLJQv6104Hvhuzhqw8nGSRc="/>
         <field:input field="xPos" id="c_org_esupportail_esupsignature_domain_SignBook_xPos" z="zggg6JWr3y8lzfTH+PVJcCCEyLA="/>
         <field:input field="yPos" id="c_org_esupportail_esupsignature_domain_SignBook_yPos" z="yJnRJtvAnyprWFOfBQAWtNCmb/A="/>
+        <field:select field="signRequestParams" id="c_org_esupportail_esupsignature_domain_SignBook_signRequestParams" itemValue="id" items="${signrequestparamses}" path="/signrequestparamses" z="ILeGzNZRgDtb8BigixiIGZLza6Y="/>
     </form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_SignBook" render="${not empty dependencies}" z="4Q6Z2m8kaslQ9bFqkQS4LQpBq1E="/>
 </div>

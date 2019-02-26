@@ -11,6 +11,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -62,6 +63,9 @@ public class SignBook {
     @ManyToMany(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.ALL })
     private List<SignRequest> signRequests = new ArrayList<SignRequest>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private SignRequestParams signRequestParams = new SignRequestParams();
+    
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<String, String> params = new HashMap<String, String>();
 	
@@ -80,13 +84,6 @@ public class SignBook {
 	@Transient
 	private String yPos;
     
-	public enum SignType {
-		certSign, pdfImageStamp, nexuSign, validate;
-	}
-	
-	public enum NewPageType {
-		none, onBegin, onEnd;
-	}
 	/*
 	@Enumerated(EnumType.STRING)
 	private SignBookType signBookType;

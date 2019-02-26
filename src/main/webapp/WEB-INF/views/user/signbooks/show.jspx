@@ -1,84 +1,89 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:spring="http://www.springframework.org/tags" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
-	<jsp:directive.page contentType="text/html;charset=UTF-8" />
-	<jsp:output omit-xml-declaration="yes" />
-	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
-		<div class="card card-body bg-info text-white">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <div aria-expanded="true" class="collapse" id="collapseHelp" style="">
+        <div class="card card-body bg-info text-white">
 			Les doccuments envoyés dans le parapheur doivent correspondre au type et au format du modèle
 		</div>
-	</div>
-	<page:show delete="false" id="ps_org_esupportail_esupsignature_domain_SignBook" object="${signbook}" path="/user/signbooks" update="false" z="user-managed">
-		<field:display field="name" id="s_org_esupportail_esupsignature_domain_SignBook_name" object="${signbook}" z="ttzXcneuN4WeTIjYYirpZwkIPD4=" />
-		<field:display field="signBookType" id="s_org_esupportail_esupsignature_domain_SignBook_signBookType" object="${signbook}" render="false" z="user-managed" />
-		<field:display date="true" dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignBook_createDate" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignBook_createBy" object="${signbook}" render="false" z="user-managed" />
-		<field:display date="true" dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_SignBook_updateDate" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_SignBook_updateBy" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="description" id="s_org_esupportail_esupsignature_domain_SignBook_description" object="${signbook}" z="RX6QowkmjzzwfpzRnaSxUv3q0xc=" />
-		<field:display field="sourceUserEmail" id="s_org_esupportail_esupsignature_domain_SignBook_sourceUserEmail" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="sourceType" id="s_org_esupportail_esupsignature_domain_SignBook_sourceType" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="documentsSourceUri" id="s_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignBook_recipientEmail" object="${signbook}" z="biuCVTTQ2mhsqRzHAjWD155y+PA=" />
-		<field:display field="targetType" id="s_org_esupportail_esupsignature_domain_SignBook_targetType" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="documentsTargetUri" id="s_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="modelFile" id="s_org_esupportail_esupsignature_domain_SignBook_modelFile" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="signRequests" id="s_org_esupportail_esupsignature_domain_SignBook_signRequests" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="params" id="s_org_esupportail_esupsignature_domain_SignBook_params" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="status" id="s_org_esupportail_esupsignature_domain_SignBook_status" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="signType" id="s_org_esupportail_esupsignature_domain_SignBook_signType" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="newPageType" id="s_org_esupportail_esupsignature_domain_SignBook_newPageType" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="signPageNumber" id="s_org_esupportail_esupsignature_domain_SignBook_signPageNumber" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="XPos" id="s_org_esupportail_esupsignature_domain_SignBook_xPos" object="${signbook}" render="false" z="user-managed" />
-		<field:display field="YPos" id="s_org_esupportail_esupsignature_domain_SignBook_yPos" object="${signbook}" render="false" z="user-managed" />
-		<dl class="display-group border-bottom m-0">
-			<dt class="col-lg-5">
-				<spring:message code="label_org_esupportail_esupsignature_domain_signbook_modelfile" />
-			</dt>
-			<dd>
-				<spring:url value="/user/signbooks/get-model-file/${id}" var="modelFileUrl" />
-				<button type="button" class="btn btn-primary" onclick="window.open('${modelFileUrl}', '_blank')">
-					<i class="fas fa-download"> <!--  -->
-					</i>&amp;nbsp;
-					<spring:message code="button_download" />
-				</button>
-			</dd>
-		</dl>
-		<br />
-		<dl class="display-group border-bottom m-0">
-			<dt class="col-lg-5">
-				<spring:message code="menu_item_signrequest_send" />
-			</dt>
-			<dd class="col-lg-7">
-				<form action="/user/signbooks/addDoc/${id}" enctype="multipart/form-data" method="post">
-					<div class="form-group">
-						<div class="input-group">
-							<div class="input-group-prepend">
-								<span class="input-group-text" id="inputGroupFileAddon01">
-									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_add_file" />
-								</span>
-							</div>
-							<div class="custom-file">
-								<input class="custom-file-input" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01" /> <label class="custom-file-label" id="inputGroupLabel01" for="upload"><spring:message code="button_choose_file" /></label>
-							</div>
-							<div class="input-group-append">
-								<spring:message code="menu_item_upload" var="uploadLabel" />
-								<input alt="Upload" class="btn btn-success" id="Upload" title="Upload" type="submit" value="${uploadLabel}" />
-							</div>
-						</div>
-					</div>
-				</form>
-			</dd>
-		</dl>
-		<table:table data="${signRequests}" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">
-			<table:column id="c_org_esupportail_esupsignature_domain_SignRequest_name" property="name" z="user-managed" />
-			<table:column date="true" dateTimePattern="${signRequest_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" property="createDate" z="user-managed" />
-			<table:column id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" property="createBy" z="user-managed" />
-			<table:column render="false" date="true" dateTimePattern="${signRequest_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" property="updateDate" z="user-managed" />
-			<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" property="updateBy" z="user-managed" />
-			<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" z="user-managed" />
-			<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_signBookName" property="signBookName" z="user-managed" />
-			<table:column id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" property="recipientEmail" z="user-managed" />
-			<table:column id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed" />
-		</table:table>
-	</page:show>
+    </div>
+    <page:show delete="false" id="ps_org_esupportail_esupsignature_domain_SignBook" object="${signbook}" path="/user/signbooks" update="false" z="user-managed">
+        <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignBook_name" object="${signbook}" z="ttzXcneuN4WeTIjYYirpZwkIPD4="/>
+        <field:display field="signBookType" id="s_org_esupportail_esupsignature_domain_SignBook_signBookType" object="${signbook}" render="false" z="user-managed"/>
+        <field:display date="true" dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignBook_createDate" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignBook_createBy" object="${signbook}" render="false" z="user-managed"/>
+        <field:display date="true" dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_SignBook_updateDate" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_SignBook_updateBy" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="description" id="s_org_esupportail_esupsignature_domain_SignBook_description" object="${signbook}" z="RX6QowkmjzzwfpzRnaSxUv3q0xc="/>
+        <field:display field="sourceUserEmail" id="s_org_esupportail_esupsignature_domain_SignBook_sourceUserEmail" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="sourceType" id="s_org_esupportail_esupsignature_domain_SignBook_sourceType" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="documentsSourceUri" id="s_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignBook_recipientEmail" object="${signbook}" z="biuCVTTQ2mhsqRzHAjWD155y+PA="/>
+        <field:display field="targetType" id="s_org_esupportail_esupsignature_domain_SignBook_targetType" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="documentsTargetUri" id="s_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="modelFile" id="s_org_esupportail_esupsignature_domain_SignBook_modelFile" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="signRequests" id="s_org_esupportail_esupsignature_domain_SignBook_signRequests" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="params" id="s_org_esupportail_esupsignature_domain_SignBook_params" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="status" id="s_org_esupportail_esupsignature_domain_SignBook_status" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="signType" id="s_org_esupportail_esupsignature_domain_SignBook_signType" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="newPageType" id="s_org_esupportail_esupsignature_domain_SignBook_newPageType" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="signPageNumber" id="s_org_esupportail_esupsignature_domain_SignBook_signPageNumber" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="XPos" id="s_org_esupportail_esupsignature_domain_SignBook_xPos" object="${signbook}" render="false" z="user-managed"/>
+        <field:display field="YPos" id="s_org_esupportail_esupsignature_domain_SignBook_yPos" object="${signbook}" render="false" z="user-managed"/>
+        <dl class="display-group border-bottom m-0">
+            <dt class="col-lg-5">
+                <spring:message code="label_org_esupportail_esupsignature_domain_signbook_modelfile"/>
+            </dt>
+            <dd>
+                <spring:url value="/user/signbooks/get-model-file/${id}" var="modelFileUrl"/>
+                <button class="btn btn-primary" onclick="window.open('${modelFileUrl}', '_blank')" type="button">
+                    <i class="fas fa-download">
+                        <!--  -->
+                    </i>&amp;nbsp;
+					<spring:message code="button_download"/>
+                </button>
+            </dd>
+        </dl>
+        <br/>
+        <dl class="display-group border-bottom m-0">
+            <dt class="col-lg-5">
+                <spring:message code="menu_item_signrequest_send"/>
+            </dt>
+            <dd class="col-lg-7">
+                <form action="/user/signbooks/addDoc/${id}" enctype="multipart/form-data" method="post">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="inputGroupFileAddon01">
+                                    <spring:message code="label_org_esupportail_esupsignature_domain_signrequest_add_file"/>
+                                </span>
+                            </div>
+                            <div class="custom-file">
+                                <input aria-describedby="inputGroupFileAddon01" class="custom-file-input" id="inputGroupFile01" name="multipartFile" type="file"/>
+                                <label class="custom-file-label" for="upload" id="inputGroupLabel01">
+                                    <spring:message code="button_choose_file"/>
+                                </label>
+                            </div>
+                            <div class="input-group-append">
+                                <spring:message code="menu_item_upload" var="uploadLabel"/>
+                                <input alt="Upload" class="btn btn-success" id="Upload" title="Upload" type="submit" value="${uploadLabel}"/>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </dd>
+        </dl>
+        <table:table data="${signRequests}" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">
+            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_name" property="name" z="user-managed"/>
+            <table:column date="true" dateTimePattern="${signRequest_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" property="createDate" z="user-managed"/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" property="createBy" z="user-managed"/>
+            <table:column date="true" dateTimePattern="${signRequest_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" property="updateDate" render="false" z="user-managed"/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" property="updateBy" render="false" z="user-managed"/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" render="false" z="user-managed"/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_signBookName" property="signBookName" render="false" z="user-managed"/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" property="recipientEmail" z="user-managed"/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed"/>
+        </table:table>
+        <field:display field="signRequestParams" id="s_org_esupportail_esupsignature_domain_SignBook_signRequestParams" object="${signbook}" z="pOF1NvatD6uWlUBqDyu4fNhecDQ="/>
+    </page:show>
 </div>

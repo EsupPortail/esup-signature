@@ -9,6 +9,7 @@ import java.util.Map;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignRequest;
+import org.esupportail.esupsignature.domain.SignRequestParams;
 
 privileged aspect SignBook_Roo_JavaBean {
     
@@ -106,6 +107,14 @@ privileged aspect SignBook_Roo_JavaBean {
     
     public void SignBook.setSignRequests(List<SignRequest> signRequests) {
         this.signRequests = signRequests;
+    }
+    
+    public SignRequestParams SignBook.getSignRequestParams() {
+        return this.signRequestParams;
+    }
+    
+    public void SignBook.setSignRequestParams(SignRequestParams signRequestParams) {
+        this.signRequestParams = signRequestParams;
     }
     
     public Map<String, String> SignBook.getParams() {

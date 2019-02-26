@@ -44,7 +44,8 @@ import org.apache.xmpbox.schema.DublinCoreSchema;
 import org.apache.xmpbox.schema.PDFAIdentificationSchema;
 import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.xml.XmpSerializer;
-import org.esupportail.esupsignature.domain.SignBook.NewPageType;
+import org.esupportail.esupsignature.domain.SignRequestParams;
+import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.domain.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,14 +70,14 @@ public class PdfService {
 	private int yCenter;	
 	
 	public File formatPdf(File toSignFile, Map<String, String> params) {
-    	if(NewPageType.valueOf(params.get("newPageType")).equals(NewPageType.onBegin)) {
+    	if(SignRequestParams.NewPageType.valueOf(params.get("newPageType")).equals(SignRequestParams.NewPageType.onBegin)) {
         	log.info("add page on begin");
         	toSignFile = addBlankPage(toSignFile, 0);
         	params.put("signPageNumber", "1");
         	params.put("xPos", String.valueOf(xCenter));
         	params.put("yPos", String.valueOf(yCenter));
         } else 
-        if(NewPageType.valueOf(params.get("newPageType")).equals(NewPageType.onEnd)) {
+        if(SignRequestParams.NewPageType.valueOf(params.get("newPageType")).equals(SignRequestParams.NewPageType.onEnd)) {
         	log.info("add page on end");
         	toSignFile = addBlankPage(toSignFile, -1);
         	params.put("signPageNumber", String.valueOf(getTotalNumberOfPages(toSignFile)));
@@ -280,10 +281,6 @@ public class PdfService {
 	private void processFields(List<PDField> fields, PDResources resources) {
 	    fields.stream().forEach(f -> {
 	    	log.debug("process :" + f.getFullyQualifiedName() + " : " + f.getFieldType());
-	    	if(f.getFieldType().equals("Sig")) {
-	    		//TODO gerer les signatures
-	    		return;
-	    	}
 	        f.setReadOnly(true);
 	        COSDictionary cosObject = f.getCOSObject();
 	        String value = cosObject.getString(COSName.DV) == null ?
@@ -294,6 +291,10 @@ public class PdfService {
 	        		if(f.getFieldType().equals("Btn")) {
 	        			value = "Off";
 	        		}
+	    	    	if(f.getFieldType().equals("Sig")) {
+	    	    		//TODO gerer les signatures
+	    	    		return;
+	    	    	}
 	        	}
 	            f.setValue(value);
 	        } catch (IOException e) {

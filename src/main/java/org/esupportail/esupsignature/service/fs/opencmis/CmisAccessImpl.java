@@ -163,8 +163,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	
 	@Override
 	public void close() {
-		// TODO
-		cmisSession = null;
+		cmisSession.clear();
 	}
 
 
