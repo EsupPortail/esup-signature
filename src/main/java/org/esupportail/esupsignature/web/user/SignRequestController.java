@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.user;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -11,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
@@ -168,26 +170,35 @@ public class SignRequestController {
 		addDateTimeFormatPatterns(uiModel);
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
-			Document toConvertFile;
+			Document toConvertDocument;
 			if (signRequest.getStatus().equals(SignRequestStatus.signed)) {
-				toConvertFile = signRequest.getSignedFile();
+				toConvertDocument = signRequest.getSignedFile();
 			} else {
-				toConvertFile = signRequest.getOriginalFile();
+				toConvertDocument = signRequest.getOriginalFile();
 			}
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
 			if (SignBook.findSignBook(signRequest.getSignBookId()) != null) {
 				uiModel.addAttribute("inSignBookName", SignBook.findSignBook(signRequest.getSignBookId()).getName());
 			}
-			uiModel.addAttribute("infos", pdfService.getPdfInfos(toConvertFile.getJavaIoFile()));
+			File toConvertFile = toConvertDocument.getJavaIoFile();
+			PDRectangle pdRectangle = pdfService.getPdfRectangle(toConvertFile);
+			if(pdfService.getRotation(toConvertFile) == 0) {
+				uiModel.addAttribute("pdfWidth", pdRectangle.getWidth());
+				uiModel.addAttribute("pdfHeight", pdRectangle.getHeight());
+			} else {
+				uiModel.addAttribute("pdfWidth", pdRectangle.getHeight());
+				uiModel.addAttribute("pdfHeight", pdRectangle.getWidth());
+			}
+			
 			uiModel.addAttribute("logs", Log.findLogsBySignRequestIdEquals(signRequest.getId()).getResultList());
 			uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 			uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 			uiModel.addAttribute("signRequest", signRequest);
-			uiModel.addAttribute("documentType", fileService.getExtension(toConvertFile.getJavaIoFile()));
+			uiModel.addAttribute("documentType", fileService.getExtension(toConvertFile));
 			uiModel.addAttribute("itemId", id);
 			uiModel.addAttribute("imagePagesSize",
-					pdfService.getTotalNumberOfPages(toConvertFile.getJavaIoFile()));
-			uiModel.addAttribute("documentId", toConvertFile.getId());
+					pdfService.getTotalNumberOfPages(toConvertFile));
+			uiModel.addAttribute("documentId", toConvertDocument.getId());
 			if (signRequestService.checkUserSignRights(user, signRequest)) {
 				uiModel.addAttribute("signable", "ok");
 			}

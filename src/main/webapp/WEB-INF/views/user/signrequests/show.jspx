@@ -293,7 +293,7 @@
 						</div>
 						<div class="d-flex justify-content-center">
 						<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
-						<div id="pointer_div" onclick="point_it(event)" style="background-size: ${infos.width}px;background-image:url('${documentUrl}/${signRequest.signRequestParams.signPageNumber -1}');width:${infos.width}px;height:${infos.height}px;border:1px solid #CCC;">
+						<div id="pointer_div" onclick="point_it(event)" style="background-size: ${pdfWidth}px;background-image:url('${documentUrl}/${signRequest.signRequestParams.signPageNumber -1}');width:${pdfWidth}px;height:${pdfHeight}px;border:1px solid #CCC;">
 							<c:if test="${signable eq 'ok' and empty signRequest.signedFile and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'validate'}">						
 								<i id="cross" style="left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;z-index:2;"> <img alt="signature" src="data:image/jpg;base64, ${signFile}" width="100" height="75" />
 								</i>

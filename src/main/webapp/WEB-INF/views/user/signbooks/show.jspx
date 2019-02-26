@@ -4,7 +4,7 @@
     <jsp:output omit-xml-declaration="yes"/>
     <div aria-expanded="true" class="collapse" id="collapseHelp" style="">
         <div class="card card-body bg-info text-white">
-			Les doccuments envoyés dans le parapheur doivent correspondre au type et au format du modèle
+			Les documents envoyés dans le parapheur doivent correspondre au type et au format du modèle
 		</div>
     </div>
     <page:show delete="false" id="ps_org_esupportail_esupsignature_domain_SignBook" object="${signbook}" path="/user/signbooks" update="false" z="user-managed">

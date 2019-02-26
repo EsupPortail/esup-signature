@@ -139,16 +139,16 @@ public class SignRequestService {
 		
 		imageParameters.setPage(signRequest.getSignRequestParams().getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
-		if((int) pdfService.getPdfInfos(toSignFile).get("rotation") == 0) {
+		if(pdfService.getRotation(toSignFile) == 0) {
 			imageParameters.setWidth(100);
 			imageParameters.setHeight(75);
-			imageParameters.setxAxis((int) signRequest.getSignRequestParams().getXPos());
-			imageParameters.setyAxis((int) signRequest.getSignRequestParams().getYPos());
+			imageParameters.setxAxis(signRequest.getSignRequestParams().getXPos());
+			imageParameters.setyAxis(signRequest.getSignRequestParams().getYPos());
 		} else {
 			imageParameters.setWidth(75);
 			imageParameters.setHeight(100);
-			imageParameters.setxAxis((int) signRequest.getSignRequestParams().getXPos() - 50 );
-			imageParameters.setyAxis((int) signRequest.getSignRequestParams().getYPos());
+			imageParameters.setxAxis(signRequest.getSignRequestParams().getXPos() - 50);
+			imageParameters.setyAxis(signRequest.getSignRequestParams().getYPos());
 		}
 		
 		PAdESSignatureParameters parameters = new PAdESSignatureParameters();

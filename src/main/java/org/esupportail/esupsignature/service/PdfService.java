@@ -8,9 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
@@ -103,7 +101,7 @@ public class PdfService {
 			float height = pdPage.getMediaBox().getHeight();
 			float width = pdPage.getMediaBox().getWidth();
 
-			if((int) getPdfInfos(toSignFile).get("rotation") == 0) {
+			if(getRotation(toSignFile) == 0) {
 				BufferedImage bufferedImage = ImageIO.read(signImage);
 		        AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
 		        tx.translate(0, -bufferedImage.getHeight(null));
@@ -339,27 +337,26 @@ public class PdfService {
 		return null;
 	}
 	
-	public Map<String, Object> getPdfInfos(File pdfFile) {
-		Map<String, Object> infos = new HashMap<>();
+	public int getRotation(File pdfFile) {
 		try {
 			PDDocument pdDocument = PDDocument.load(pdfFile);
 			PDPage pdPage = pdDocument.getPage(0);
-			PDRectangle pdRectangle = pdPage.getMediaBox();
-			float width = pdRectangle.getWidth();
-			float height = pdRectangle.getHeight();
-			int rotation = pdPage.getRotation();
-			if(rotation == 0) {
-				infos.put("width", width);
-				infos.put("height", height);
-			} else {
-				infos.put("width", height);
-				infos.put("height", width);
-			}
-			infos.put("rotation", rotation);
+			return pdPage.getRotation();
 		} catch (IOException e) {
-			log.error("error on get pdf infos", e);
+			log.error("error to get rotation", e);
 		}
-		return infos ;
+		return -1;
+	}
+	
+	public PDRectangle getPdfRectangle(File pdfFile) {
+		try {
+			PDDocument pdDocument = PDDocument.load(pdfFile);
+			PDPage pdPage = pdDocument.getPage(0);
+			return pdPage.getMediaBox();
+		} catch (IOException e) {
+			log.error("error on get pdf rectangle", e);
+		}
+		return null;
 	}
 	
 	public String pageAsBase64Image(File pdfFile, int page) throws Exception {
