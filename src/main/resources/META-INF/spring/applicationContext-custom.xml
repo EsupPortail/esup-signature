@@ -18,7 +18,7 @@
     limitations under the License.
 
 -->
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:util="http://www.springframework.org/schema/util"  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
 	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.FixedLocaleResolver">
 		<property name="defaultLocale" value="fr" />
@@ -39,5 +39,10 @@
 		<property name="userDn" value="cn=consult,dc=univ-rouen,dc=fr" />
 		<property name="password" value="iletoqp" />
     </bean>
-	
+
+	<util:list id="trustedCertificatUrlList">
+		<value>https://dl.cacerts.digicert.com/DigiCertAssuredIDRootCA.crt</value>
+		<value>https://www.certinomis.fr/publi/cer/AC_Racine_G3.cer</value>
+	</util:list>
+    
 </beans>

@@ -1,13 +1,102 @@
 <div xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:spring="http://www.springframework.org/tags" xmlns:util="urn:jsptagdir:/WEB-INF/tags/util" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:sec="http://www.springframework.org/security/tags" xmlns:form="http://www.springframework.org/tags/form">
 	<jsp:directive.page contentType="text/html;charset=UTF-8" />
 	<jsp:output omit-xml-declaration="yes" />
-	<div class="col-md-9">
+	<div class="row">
+	<div class="col-lg-8">
 		<h2>Validation service - Result</h2>
-
-		<a href="/user/validation/download-detailed-report" role="button" class="btn btn-primary">
+		<ul class="nav nav-tabs" id="myTab" role="tablist">
+		  <li class="nav-item">
+		    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#simple" role="tab" aria-controls="simple" aria-selected="true">Simple report</a>
+		  </li>
+		  <li class="nav-item">
+		    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#detailed" role="tab" aria-controls="detailed" aria-selected="false">Detailed report</a>
+		  </li>
+		<li>		<a href="/user/validation/download-detailed-report" role="button" class="btn btn-primary">
 		<i class="fa fa-download" aria-hidden="true"><!--  --></i>&amp;nbsp;Download report</a>
-		<p>
-		${simpleReport}
-		</p>
+		</li>
+		</ul>
+		<div class="tab-content" id="myTabContent">
+			<div class="tab-pane fade show active" id="simple" role="tabpanel" aria-labelledby="home-tab">${simpleReport}</div>
+  			<div class="tab-pane fade" id="detailed" role="tabpanel" aria-labelledby="profile-tab">${detailedReport}</div>
+		</div>
 	</div>
+	<div class="col-lg-4">
+	<div class="card bg-light">
+	<div class="card-header">Infos</div>
+	<div class="card-body">
+	<dl>
+	<dd><button class="btn btn-danger col-4">&amp;nbsp;</button></dd><dt>TOTAL_FAILED : indicates that either the signature format is incorrect or that the digital signature value fails verification</dt>
+	<dd><button class="btn btn-warning col-4">&amp;nbsp;</button></dd><dt>INDETERMINATE : indicates that the format and digital signature verifications have not failed but there is insufficient information to determine if the electronic signature is valid</dt>
+	<dd><button class="btn btn-success col-4">&amp;nbsp;</button></dd><dt>TOTAL-PASSED : indicates that the signature has passed verification and it complies with the signature validation policy</dt>
+	</dl>
+	</div>
+	</div>
+	</div>
+	</div>
+	<script type="text/javascript">
+	//Hack to convert panel to card (bootstrap 4)
+	document.addEventListener('DOMContentLoaded', function() {
+		var divs = document.getElementsByTagName("div");
+		[].forEach.call(divs, function(div) {
+			if (div.classList.contains('panel')) {
+				div.classList.remove('panel');
+				div.classList.add('card');
+			}
+
+			if (div.classList.contains('panel-heading')) {
+				div.classList.remove('panel-heading');
+				div.classList.add('card-header');
+				div.innerHTML = '<i class="fas fa-plus"><!-- --></i>' + div.innerHTML;
+			}
+
+			if (div.classList.contains('panel-body')) {
+				div.classList.remove('panel-body');
+				div.classList.add('card-body');
+				div.classList.add('bg-light');
+			}
+			
+			if (div.classList.contains('panel-primary')) {
+				div.classList.remove('panel-primary');
+				div.classList.add('bg-light');
+			}
+			
+			if (div.classList.contains('panel-success')) {
+				div.classList.remove('panel-success');
+				div.classList.add('bg-success');
+			}
+
+			if (div.classList.contains('panel-warning')) {
+				div.classList.remove('panel-warning');
+				div.classList.add('bg-warning');
+			}
+
+			if (div.classList.contains('panel-danger')) {
+				div.classList.remove('panel-danger');
+				div.classList.add('bg-danger');
+			}
+			
+		});
+		
+		var spans = document.getElementsByTagName("span");
+		[].forEach.call(spans, function(span) {
+			if (span.classList.contains('glyphicon-ok-sign')) {
+				span.classList.remove('glyphicon');
+				span.classList.remove('glyphicon-ok-sign');
+				span.classList.add('fas');
+				span.classList.add('fa-check-circle');
+			}
+			if (span.classList.contains('glyphicon-remove-sign')) {
+				span.classList.remove('glyphicon');
+				span.classList.remove('glyphicon-remove-sign');
+				span.classList.add('fas');
+				span.classList.add('fa-times-circle');
+				
+			}
+						
+		});
+		
+	});
+
+	</script>
+	
 </div>

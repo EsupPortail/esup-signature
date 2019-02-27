@@ -116,44 +116,4 @@ privileged aspect SignBook_Roo_JavaBean {
         this.signRequestParams = signRequestParams;
     }
     
-    public String SignBook.getSignType() {
-        return this.signType;
-    }
-    
-    public void SignBook.setSignType(String signType) {
-        this.signType = signType;
-    }
-    
-    public String SignBook.getNewPageType() {
-        return this.newPageType;
-    }
-    
-    public void SignBook.setNewPageType(String newPageType) {
-        this.newPageType = newPageType;
-    }
-    
-    public String SignBook.getSignPageNumber() {
-        return this.signPageNumber;
-    }
-    
-    public void SignBook.setSignPageNumber(String signPageNumber) {
-        this.signPageNumber = signPageNumber;
-    }
-    
-    public String SignBook.getXPos() {
-        return this.xPos;
-    }
-    
-    public void SignBook.setXPos(String xPos) {
-        this.xPos = xPos;
-    }
-    
-    public String SignBook.getYPos() {
-        return this.yPos;
-    }
-    
-    public void SignBook.setYPos(String yPos) {
-        this.yPos = yPos;
-    }
-    
 }

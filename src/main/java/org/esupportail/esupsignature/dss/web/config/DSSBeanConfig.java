@@ -1,6 +1,16 @@
 package org.esupportail.esupsignature.dss.web.config;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
@@ -11,11 +21,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
+import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.asic.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.client.crl.OnlineCRLSource;
-import eu.europa.esig.dss.client.http.DataLoader;
 import eu.europa.esig.dss.client.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.client.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.client.http.commons.OCSPDataLoader;
@@ -25,12 +35,15 @@ import eu.europa.esig.dss.client.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.RemoteDocumentSignatureServiceImpl;
 import eu.europa.esig.dss.signature.RemoteMultipleDocumentsSignatureServiceImpl;
+import eu.europa.esig.dss.tsl.ServiceInfo;
 import eu.europa.esig.dss.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.tsl.service.TSLRepository;
 import eu.europa.esig.dss.tsl.service.TSLValidationJob;
+import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.RemoteDocumentValidationService;
+import eu.europa.esig.dss.x509.CertificateToken;
 import eu.europa.esig.dss.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.x509.crl.CRLSource;
 import eu.europa.esig.dss.x509.tsp.TSPSource;
@@ -39,7 +52,7 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 
 @Configuration
 public class DSSBeanConfig {
-
+	
 	@Value("${default.validation.policy}")
 	private String defaultValidationPolicy;
 
@@ -67,7 +80,6 @@ public class DSSBeanConfig {
 	@Value("${oj.content.keystore.password}")
 	private String ksPassword;
 
-	/*
 	@Value("${dss.server.signing.keystore.type}")
 	private String serverSigningKeystoreType;
 
@@ -76,19 +88,17 @@ public class DSSBeanConfig {
 
 	@Value("${dss.server.signing.keystore.password}")
 	private String serverSigningKeystorePassword;
-*/
-	/*
-	@Autowired
-	private TSPSource tspSource;
-	*/
-	
+
 	@Resource
 	private DataSource dataSource;
 
 	// can be null
 	@Autowired(required = false)
 	private ProxyConfig proxyConfig;
-
+	
+	@Resource(name="trustedCertificatUrlList")
+	private List<String> trustedCertificatUrlList;
+	
 	@Bean
 	public CommonsDataLoader dataLoader() {
 		CommonsDataLoader dataLoader = new CommonsDataLoader();
@@ -135,8 +145,45 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public TrustedListsCertificateSource trustedListSource() {
-		return new TrustedListsCertificateSource();
+	public TrustedListsCertificateSource trustedListSource() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
+		TSLRepository tslRepository = new TSLRepository();
+		TrustedListsCertificateSource certificateSource = new TrustedListsCertificateSource();
+		tslRepository.setTrustedListsCertificateSource(certificateSource);
+		List<ServiceInfo> serviceInfos = new ArrayList<>();
+		serviceInfos.add(new ServiceInfo());
+		for(String trustedCertificatUrl : trustedCertificatUrlList) {
+			InputStream in = new URL(trustedCertificatUrl).openStream();
+			CertificateToken certificateToken = DSSUtils.loadCertificate(in);
+			certificateSource.addCertificate(certificateToken, serviceInfos);
+		}
+
+		KeyStoreCertificateSource keyStoreCertificateSource; 
+		File keystoreFile = new File("src/main/resources/keystore.p12");
+		if(keystoreFile.exists()) {
+			keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
+		}else {
+			keyStoreCertificateSource  = new KeyStoreCertificateSource((InputStream) null, ksType, ksPassword);
+		}
+
+		TSLValidationJob validationJob = new TSLValidationJob();
+		validationJob.setDataLoader(dataLoader());
+		validationJob.setRepository(tslRepository);
+		validationJob.setLotlUrl(lotlUrl);
+		validationJob.setLotlRootSchemeInfoUri(lotlRootSchemeInfoUri);
+		validationJob.setLotlCode(lotlCountryCode);
+		validationJob.setOjUrl(ojUrl);
+		validationJob.setOjContentKeyStore(keyStoreCertificateSource);
+		validationJob.setCheckLOTLSignature(true);
+		validationJob.setCheckTSLSignatures(true);
+		validationJob.refresh();
+		
+		keyStoreCertificateSource.addAllCertificatesToKeyStore(certificateSource.getCertificates());
+		
+		OutputStream fos = new FileOutputStream("src/main/resources/keystore.p12");
+		keyStoreCertificateSource.store(fos);
+		Utils.closeQuietly(fos);
+		
+		return certificateSource;
 	}
 
 	@Bean
@@ -148,8 +195,8 @@ public class DSSBeanConfig {
 		certificateVerifier.setDataLoader(dataLoader());
 
 		// Default configs
-		certificateVerifier.setExceptionOnMissingRevocationData(false);
-		certificateVerifier.setCheckRevocationForUntrustedChains(false);
+		certificateVerifier.setExceptionOnMissingRevocationData(true);
+		certificateVerifier.setCheckRevocationForUntrustedChains(true);
 
 		return certificateVerifier;
 	}
@@ -246,28 +293,6 @@ public class DSSBeanConfig {
 		TSLRepository tslRepository = new TSLRepository();
 		tslRepository.setTrustedListsCertificateSource(trustedListSource);
 		return tslRepository;
-	}
-
-	@Bean
-	public KeyStoreCertificateSource ojContentKeyStore() throws IOException {
-		return new KeyStoreCertificateSource(new ClassPathResource(ksFilename).getFile(), ksType, ksPassword);
-	}
-
-	
-	
-	@Bean
-	public TSLValidationJob tslValidationJob(DataLoader dataLoader, TSLRepository tslRepository, KeyStoreCertificateSource ojContentKeyStore) {
-		TSLValidationJob validationJob = new TSLValidationJob();
-		validationJob.setDataLoader(dataLoader);
-		validationJob.setRepository(tslRepository);
-		validationJob.setLotlUrl(lotlUrl);
-		validationJob.setLotlRootSchemeInfoUri(lotlRootSchemeInfoUri);
-		validationJob.setLotlCode(lotlCountryCode);
-		validationJob.setOjUrl(ojUrl);
-		validationJob.setOjContentKeyStore(ojContentKeyStore);
-		validationJob.setCheckLOTLSignature(true);
-		validationJob.setCheckTSLSignatures(true);
-		return validationJob;
 	}
 	
 

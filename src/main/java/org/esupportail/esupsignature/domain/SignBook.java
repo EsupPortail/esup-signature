@@ -12,7 +12,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -62,21 +61,6 @@ public class SignBook {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private SignRequestParams signRequestParams = new SignRequestParams();
-	
-    @Transient
-	private String signType;
-    
-	@Transient
-	private String newPageType;
-
-	@Transient
-	private String signPageNumber;
-	
-	@Transient
-	private String xPos;
-
-	@Transient
-	private String yPos;
     
 	/*
 	@Enumerated(EnumType.STRING)

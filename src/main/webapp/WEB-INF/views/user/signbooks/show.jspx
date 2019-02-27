@@ -81,7 +81,6 @@
             <table:column date="true" dateTimePattern="${signRequest_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" property="updateDate" render="false" z="user-managed"/>
             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" property="updateBy" render="false" z="user-managed"/>
             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" render="false" z="user-managed"/>
-            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_signBookName" property="signBookName" render="false" z="user-managed"/>
             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" property="recipientEmail" z="user-managed"/>
             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed"/>
         </table:table>

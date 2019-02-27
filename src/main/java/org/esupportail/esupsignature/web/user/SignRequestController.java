@@ -212,7 +212,7 @@ public class SignRequestController {
 
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(@Valid SignRequest signRequest, @RequestParam("multipartFile") MultipartFile multipartFile,
-			BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest,
+			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
 			HttpServletRequest request) {
 		if (bindingResult.hasErrors()) {
 			uiModel.addAttribute("signRequest", signRequest);
@@ -224,8 +224,8 @@ public class SignRequestController {
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		user.setIp(request.getRemoteAddr());
 		SignRequestParams signRequestParams = new SignRequestParams();
-		signRequestParams.setSignType(SignType.valueOf(signRequest.getSignType()));
-		signRequestParams.setNewPageType(NewPageType.valueOf(signRequest.getNewPageType()));
+		signRequestParams.setSignType(SignType.valueOf(signType));
+		signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
 		signRequestParams.setSignPageNumber(1);
 		signRequestParams.setXPos(0);
 		signRequestParams.setYPos(0);

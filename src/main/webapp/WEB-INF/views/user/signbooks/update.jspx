@@ -16,11 +16,6 @@
         <field:input field="documentsTargetUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" z="+aH48HMjvqLm0h8EYzaTGO4EJRA="/>
         <field:select field="modelFile" id="c_org_esupportail_esupsignature_domain_SignBook_modelFile" itemValue="id" items="${documents}" path="/user/documents" z="PFBXlCsqKcL1WBsnsRAfV/9fypI="/>
         <field:select field="signRequests" id="c_org_esupportail_esupsignature_domain_SignBook_signRequests" itemValue="id" items="${signrequests}" multiple="true" path="/signrequests" z="4hgGFnbI24zcaV+G2hZsqBsoGQY="/>
-        <field:input field="signType" id="c_org_esupportail_esupsignature_domain_SignBook_signType" z="KFXeOW9vgBODDOsZlLBhmARauKU="/>
-        <field:input field="newPageType" id="c_org_esupportail_esupsignature_domain_SignBook_newPageType" z="0RCzvFLYjpB/pioaDCsq0+ELnKE="/>
-        <field:input field="signPageNumber" id="c_org_esupportail_esupsignature_domain_SignBook_signPageNumber" z="Wh0ciLJQv6104Hvhuzhqw8nGSRc="/>
-        <field:input field="xPos" id="c_org_esupportail_esupsignature_domain_SignBook_xPos" z="zggg6JWr3y8lzfTH+PVJcCCEyLA="/>
-        <field:input field="yPos" id="c_org_esupportail_esupsignature_domain_SignBook_yPos" z="yJnRJtvAnyprWFOfBQAWtNCmb/A="/>
         <field:select field="signRequestParams" id="c_org_esupportail_esupsignature_domain_SignBook_signRequestParams" itemValue="id" items="${signrequestparamses}" path="/signrequestparamses" z="ILeGzNZRgDtb8BigixiIGZLza6Y="/>
     </form:update>
 </div>

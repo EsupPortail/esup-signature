@@ -11,7 +11,12 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import eu.europa.esig.dss.client.http.commons.CommonsDataLoader;
+import eu.europa.esig.dss.tsl.TrustedListsCertificateSource;
+import eu.europa.esig.dss.tsl.service.TSLRepository;
+import eu.europa.esig.dss.tsl.service.TSLValidationJob;
 import eu.europa.esig.dss.validation.CertificateVerifier;
+import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
@@ -28,10 +33,11 @@ public class ValidationService {
 	private Resource defaultPolicy;
 	
 	public Reports validate(MultipartFile multipartFile) {
+		
 		SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(WebAppUtils.toDSSDocument(multipartFile));
+		log.info("validate with : " + documentValidator.getClass());
 		documentValidator.setCertificateVerifier(certificateVerifier);
 		documentValidator.setValidationLevel(ValidationLevel.BASIC_SIGNATURES);
-
 		Reports reports = null;
 		try (InputStream is = defaultPolicy.getInputStream()) {
 			reports = documentValidator.validateDocument(is);

@@ -73,7 +73,7 @@ public class SignBookController {
 	
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(@Valid SignBook signBook, @RequestParam("multipartFile") MultipartFile multipartFile,
-			BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) throws IOException {
+			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, HttpServletRequest httpServletRequest) throws IOException {
 		if (bindingResult.hasErrors()) {
 			populateEditForm(uiModel, signBook);
 			return "manager/signbooks/create";
@@ -88,8 +88,8 @@ public class SignBookController {
 			signBookToUpdate.setSourceType(signBook.getSourceType());
 			signBookToUpdate.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
 			signBookToUpdate.setTargetType(signBook.getTargetType());
-			signBookToUpdate.getSignRequestParams().setSignType(SignType.valueOf(signBook.getSignType()));
-			signBookToUpdate.getSignRequestParams().setNewPageType(NewPageType.valueOf(signBook.getNewPageType()));
+			signBookToUpdate.getSignRequestParams().setSignType(SignType.valueOf(signType));
+			signBookToUpdate.getSignRequestParams().setNewPageType(NewPageType.valueOf(newPageType));
 			Document newModel = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
 			if(newModel != null) {
 				Document oldModel = signBookToUpdate.getModelFile();
@@ -102,8 +102,8 @@ public class SignBookController {
 			signBook.setCreateDate(new Date());
 			signBook.setModelFile(documentService.addFile(multipartFile, multipartFile.getOriginalFilename()));
 			SignRequestParams signRequestParams = new SignRequestParams();
-			signRequestParams.setSignType(SignType.valueOf(signBook.getSignType()));
-			signRequestParams.setNewPageType(NewPageType.valueOf(signBook.getNewPageType()));
+			signRequestParams.setSignType(SignType.valueOf(signType));
+			signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
 			signRequestParams.setSignPageNumber(1);
 			signRequestParams.setXPos(0);
 			signRequestParams.setYPos(0);

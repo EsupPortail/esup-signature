@@ -12,7 +12,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -36,7 +35,7 @@ public class SignRequest {
 
 	protected final static Logger log = LoggerFactory.getLogger(SignRequest.class);
 
-	String name;
+	private String name;
 	
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
@@ -63,27 +62,9 @@ public class SignRequest {
     
     private long signBookId;
     
-    @Transient
-    private String signBookName;
-    
 	public enum SignRequestStatus {
 		uploaded, pending, canceled, checked, signed, refused, deleted, completed;
 	}
-
-	@Transient
-	private String signType;
-    
-	@Transient
-	private String newPageType;
-
-	@Transient
-	private String signPageNumber;
-	
-	@Transient
-	private String xPos;
-
-	@Transient
-	private String yPos;
 	
     public void setStatus(SignRequestStatus status) {
         this.status = status;
