@@ -6,16 +6,20 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.dss.web.model.ValidationForm;
 import org.esupportail.esupsignature.dss.web.service.FOPService;
 import org.esupportail.esupsignature.dss.web.service.XSLTService;
+import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
@@ -42,9 +46,12 @@ public class ValidationController {
 
 	@Autowired
 	private FOPService fopService;
-	
+		
 	@Resource
 	private ValidationService validationService;
+	
+	@Resource
+	private FileService fileService;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String showValidationForm(Model model, HttpServletRequest request) {
@@ -69,7 +76,24 @@ public class ValidationController {
 
 		return "user/validation-result";
 	}
+	
+	@Transactional
+	@RequestMapping(value = "/document/{id}")
+	public String validateDocument(@PathVariable(name="id") long id, Model model) {
+		SignRequest signRequest = SignRequest.findSignRequest(id);
+		Reports reports = validationService.validate(fileService.toMultipartFile(signRequest.getSignedFile().getJavaIoFile(), signRequest.getSignedFile().getContentType()));
+		
+		String xmlSimpleReport = reports.getXmlSimpleReport();
+		model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));
 
+		String xmlDetailedReport = reports.getXmlDetailedReport();
+		model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
+		model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
+		model.addAttribute("diagnosticTree", reports.getXmlDiagnosticData());
+
+		return "user/validation-result";
+	}
+	
 	@RequestMapping(value = "/download-simple-report")
 	public void downloadSimpleReport(HttpSession session, HttpServletResponse response) {
 		try {

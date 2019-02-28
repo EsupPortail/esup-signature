@@ -147,6 +147,8 @@
 									<button type="button" class="btn btn-success" onclick="window.open('${signedFileUrl}', '_blank')">
 										<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" />
 									</button>
+									<br/>
+									<a href="/user/validation/document/${id}">Validate</a>
 								</dd>
 							</dl>
 						</c:when>

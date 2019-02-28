@@ -49,6 +49,8 @@ import eu.europa.esig.dss.x509.crl.CRLToken;
 /**
  * CRLSource that retrieve information from a JDBC datasource
  */
+//TODO REPAIR
+
 public class PgJdbcCacheCRLSource implements CRLSource {
 
 	private static final Logger LOG = LoggerFactory.getLogger(JdbcCacheCRLSource.class);
@@ -61,7 +63,7 @@ public class PgJdbcCacheCRLSource implements CRLSource {
 	/**
 	 * used in the init method to create the table, if not existing: ID (char40 = SHA1 length) and DATA (blob)
 	 */
-	private static final String SQL_INIT_CREATE_TABLE = "CREATE TABLE CACHED_CRL (ID CHAR(40), DATA BYTEA, SIGNATURE_ALGORITHM VARCHAR(20), THIS_UPDATE TIMESTAMP, NEXT_UPDATE TIMESTAMP, EXPIRED_CERTS_ON_CRL TIMESTAMP, ISSUER TEXT, ISSUER_PRINCIPAL_MATCH BOOLEAN, SIGNATURE_INTACT BOOLEAN, CRL_SIGN_KEY_USAGE BOOLEAN, UNKNOWN_CRITICAL_EXTENSION BOOLEAN, SIGNATURE_INVALID_REASON VARCHAR(256))";
+	private static final String SQL_INIT_CREATE_TABLE = "CREATE TABLE CACHED_CRL (ID CHAR(40), DATA BYTEA, SIGNATURE_ALGORITHM VARCHAR(256), THIS_UPDATE TIMESTAMP, NEXT_UPDATE TIMESTAMP, EXPIRED_CERTS_ON_CRL TIMESTAMP, ISSUER TEXT, ISSUER_PRINCIPAL_MATCH BOOLEAN, SIGNATURE_INTACT BOOLEAN, CRL_SIGN_KEY_USAGE BOOLEAN, UNKNOWN_CRITICAL_EXTENSION BOOLEAN, SIGNATURE_INVALID_REASON VARCHAR(256))";
 
 	/**
 	 * used in the find method to select the crl via the id
@@ -259,7 +261,7 @@ public class PgJdbcCacheCRLSource implements CRLSource {
 				cached.setSignatureInvalidityReason(rs.getString(SQL_FIND_QUERY_SIGNATURE_INVALID_REASON));
 				return cached;
 			}
-			c.commit();
+			//c.commit();
 		} catch (SQLException e) {
 			LOG.error("Unable to select CRL from the DB", e);
 			rollback(c);
@@ -317,7 +319,7 @@ public class PgJdbcCacheCRLSource implements CRLSource {
 			s.setBoolean(11, token.isUnknownCriticalExtension());
 			s.setString(12, token.getSignatureInvalidityReason());
 			s.executeUpdate();
-			c.commit();
+			//c.commit();
 		} catch (SQLException e) {
 			LOG.error("Unable to insert CRL in the DB", e);
 			rollback(c);

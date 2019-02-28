@@ -1,10 +1,8 @@
 package org.esupportail.esupsignature.dss.web.config;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -16,6 +14,7 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +24,7 @@ import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.asic.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
+import eu.europa.esig.dss.client.crl.JdbcCacheCRLSource;
 import eu.europa.esig.dss.client.crl.OnlineCRLSource;
 import eu.europa.esig.dss.client.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.client.http.commons.FileCacheDataLoader;
@@ -39,7 +39,6 @@ import eu.europa.esig.dss.tsl.ServiceInfo;
 import eu.europa.esig.dss.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.tsl.service.TSLRepository;
 import eu.europa.esig.dss.tsl.service.TSLValidationJob;
-import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.RemoteDocumentValidationService;
@@ -89,7 +88,12 @@ public class DSSBeanConfig {
 	@Value("${dss.server.signing.keystore.password}")
 	private String serverSigningKeystorePassword;
 
-	@Resource
+	@Autowired
+	@Qualifier(value="cacheDataSource")
+	private DataSource cacheDataSource;
+	
+	@Autowired
+	@Qualifier(value="dataSource")
 	private DataSource dataSource;
 
 	// can be null
@@ -112,7 +116,7 @@ public class DSSBeanConfig {
 		ocspDataLoader.setProxyConfig(proxyConfig);
 		return ocspDataLoader;
 	}
-
+/*
 	@Bean
 	public FileCacheDataLoader fileCacheDataLoader() {
 		FileCacheDataLoader fileCacheDataLoader = new FileCacheDataLoader();
@@ -121,7 +125,7 @@ public class DSSBeanConfig {
 		// fileCacheDataLoader.setFileCacheDirectory(new File("/tmp"));
 		return fileCacheDataLoader;
 	}
-
+*/
 	@Bean
 	public OnlineCRLSource onlineCRLSource() {
 		OnlineCRLSource onlineCRLSource = new OnlineCRLSource();
@@ -131,8 +135,8 @@ public class DSSBeanConfig {
 
 	@Bean
 	public CRLSource cachedCRLSource() throws Exception {
-		PgJdbcCacheCRLSource jdbcCacheCRLSource = new PgJdbcCacheCRLSource();
-		jdbcCacheCRLSource.setDataSource(dataSource);
+		JdbcCacheCRLSource jdbcCacheCRLSource = new JdbcCacheCRLSource();
+		jdbcCacheCRLSource.setDataSource(cacheDataSource);
 		jdbcCacheCRLSource.setCachedSource(onlineCRLSource());
 		return jdbcCacheCRLSource;
 	}
@@ -178,11 +182,11 @@ public class DSSBeanConfig {
 		validationJob.refresh();
 		
 		keyStoreCertificateSource.addAllCertificatesToKeyStore(certificateSource.getCertificates());
-		
+		/*
 		OutputStream fos = new FileOutputStream("src/main/resources/keystore.p12");
 		keyStoreCertificateSource.store(fos);
 		Utils.closeQuietly(fos);
-		
+		*/
 		return certificateSource;
 	}
 
@@ -273,7 +277,7 @@ public class DSSBeanConfig {
 		return service;
 	}
 
-	/*
+/*
 	@Bean
 	public KeyStoreSignatureTokenConnection remoteToken() throws IOException {
 		return new KeyStoreSignatureTokenConnection(new ClassPathResource(serverSigningKeystoreFilename).getFile(), serverSigningKeystoreType,
