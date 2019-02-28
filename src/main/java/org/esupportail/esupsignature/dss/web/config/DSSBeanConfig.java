@@ -1,8 +1,11 @@
 package org.esupportail.esupsignature.dss.web.config;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -27,7 +30,6 @@ import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.client.crl.JdbcCacheCRLSource;
 import eu.europa.esig.dss.client.crl.OnlineCRLSource;
 import eu.europa.esig.dss.client.http.commons.CommonsDataLoader;
-import eu.europa.esig.dss.client.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.client.http.commons.OCSPDataLoader;
 import eu.europa.esig.dss.client.http.proxy.ProxyConfig;
 import eu.europa.esig.dss.client.ocsp.OnlineOCSPSource;
@@ -39,6 +41,7 @@ import eu.europa.esig.dss.tsl.ServiceInfo;
 import eu.europa.esig.dss.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.tsl.service.TSLRepository;
 import eu.europa.esig.dss.tsl.service.TSLValidationJob;
+import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.RemoteDocumentValidationService;
@@ -116,16 +119,7 @@ public class DSSBeanConfig {
 		ocspDataLoader.setProxyConfig(proxyConfig);
 		return ocspDataLoader;
 	}
-/*
-	@Bean
-	public FileCacheDataLoader fileCacheDataLoader() {
-		FileCacheDataLoader fileCacheDataLoader = new FileCacheDataLoader();
-		fileCacheDataLoader.setDataLoader(dataLoader());
-		// Per default uses "java.io.tmpdir" property
-		// fileCacheDataLoader.setFileCacheDirectory(new File("/tmp"));
-		return fileCacheDataLoader;
-	}
-*/
+
 	@Bean
 	public OnlineCRLSource onlineCRLSource() {
 		OnlineCRLSource onlineCRLSource = new OnlineCRLSource();
@@ -149,7 +143,7 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public TrustedListsCertificateSource trustedListSource() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
+	public TrustedListsCertificateSource trustedListSource() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException, URISyntaxException {
 		TSLRepository tslRepository = new TSLRepository();
 		TrustedListsCertificateSource certificateSource = new TrustedListsCertificateSource();
 		tslRepository.setTrustedListsCertificateSource(certificateSource);
@@ -162,10 +156,13 @@ public class DSSBeanConfig {
 		}
 
 		KeyStoreCertificateSource keyStoreCertificateSource; 
-		File keystoreFile = new File("src/main/resources/keystore.p12");
-		if(keystoreFile.exists()) {
+		ClassPathResource resource = new ClassPathResource(ksFilename);
+		File keystoreFile;
+		if(resource.exists()) {
+			keystoreFile = resource.getFile();
 			keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
 		}else {
+			keystoreFile = new File(getClass().getResource("/").getPath(), ksFilename);
 			keyStoreCertificateSource  = new KeyStoreCertificateSource((InputStream) null, ksType, ksPassword);
 		}
 
@@ -182,11 +179,11 @@ public class DSSBeanConfig {
 		validationJob.refresh();
 		
 		keyStoreCertificateSource.addAllCertificatesToKeyStore(certificateSource.getCertificates());
-		/*
-		OutputStream fos = new FileOutputStream("src/main/resources/keystore.p12");
+		
+		OutputStream fos = new FileOutputStream(keystoreFile);
 		keyStoreCertificateSource.store(fos);
 		Utils.closeQuietly(fos);
-		*/
+		
 		return certificateSource;
 	}
 
