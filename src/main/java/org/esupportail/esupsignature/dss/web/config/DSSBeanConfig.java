@@ -5,8 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -16,6 +14,7 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 
+import org.esupportail.esupsignature.dss.web.service.OJService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +22,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
-import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.asic.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
@@ -40,7 +38,6 @@ import eu.europa.esig.dss.signature.RemoteMultipleDocumentsSignatureServiceImpl;
 import eu.europa.esig.dss.tsl.ServiceInfo;
 import eu.europa.esig.dss.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.tsl.service.TSLRepository;
-import eu.europa.esig.dss.tsl.service.TSLValidationJob;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
@@ -60,18 +57,6 @@ public class DSSBeanConfig {
 
 	@Value("${tsp.server}")
 	private String tspServer;
-	
-	@Value("${current.lotl.url}")
-	private String lotlUrl;
-
-	@Value("${lotl.country.code}")
-	private String lotlCountryCode;
-
-	@Value("${lotl.root.scheme.info.uri}")
-	private String lotlRootSchemeInfoUri;
-
-	@Value("${current.oj.url}")
-	private String ojUrl;
 
 	@Value("${oj.content.keystore.type}")
 	private String ksType;
@@ -143,48 +128,32 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public TrustedListsCertificateSource trustedListSource() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException, URISyntaxException {
+	public TrustedListsCertificateSource trustedListSource() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
 		TSLRepository tslRepository = new TSLRepository();
 		TrustedListsCertificateSource certificateSource = new TrustedListsCertificateSource();
 		tslRepository.setTrustedListsCertificateSource(certificateSource);
 		List<ServiceInfo> serviceInfos = new ArrayList<>();
 		serviceInfos.add(new ServiceInfo());
-		for(String trustedCertificatUrl : trustedCertificatUrlList) {
-			InputStream in = new URL(trustedCertificatUrl).openStream();
-			CertificateToken certificateToken = DSSUtils.loadCertificate(in);
-			certificateSource.addCertificate(certificateToken, serviceInfos);
-		}
-
 		KeyStoreCertificateSource keyStoreCertificateSource; 
-		ClassPathResource resource = new ClassPathResource(ksFilename);
-		File keystoreFile;
-		if(resource.exists()) {
-			keystoreFile = resource.getFile();
+		File keystoreFile = new File(ksFilename);
+		if(keystoreFile.exists()) {
 			keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
-		}else {
-			keystoreFile = new File(getClass().getResource("/").getPath(), ksFilename);
+			for(CertificateToken certificateToken : keyStoreCertificateSource.getCertificates()) {
+				certificateSource.addCertificate(certificateToken, serviceInfos);
+			}
+		} else {
+			File parent = keystoreFile.getParentFile();
+			if (!parent.exists() && !parent.mkdirs()) {
+			    throw new IllegalStateException("Couldn't create dir: " + parent);
+			}
+			keystoreFile.createNewFile();
 			keyStoreCertificateSource  = new KeyStoreCertificateSource((InputStream) null, ksType, ksPassword);
+			keyStoreCertificateSource.addAllCertificatesToKeyStore(certificateSource.getCertificates());
+			OutputStream fos = new FileOutputStream(ksFilename);
+			keyStoreCertificateSource.store(fos);
+			Utils.closeQuietly(fos);
 		}
-
-		TSLValidationJob validationJob = new TSLValidationJob();
-		validationJob.setDataLoader(dataLoader());
-		validationJob.setRepository(tslRepository);
-		validationJob.setLotlUrl(lotlUrl);
-		validationJob.setLotlRootSchemeInfoUri(lotlRootSchemeInfoUri);
-		validationJob.setLotlCode(lotlCountryCode);
-		validationJob.setOjUrl(ojUrl);
-		validationJob.setOjContentKeyStore(keyStoreCertificateSource);
-		validationJob.setCheckLOTLSignature(true);
-		validationJob.setCheckTSLSignatures(true);
-		validationJob.refresh();
-		
-		keyStoreCertificateSource.addAllCertificatesToKeyStore(certificateSource.getCertificates());
-		
-		OutputStream fos = new FileOutputStream(keystoreFile);
-		keyStoreCertificateSource.store(fos);
-		Utils.closeQuietly(fos);
-		
-		return certificateSource;
+	return certificateSource;
 	}
 
 	@Bean

@@ -1,10 +1,13 @@
 package org.esupportail.esupsignature.service;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 
 import javax.annotation.Resource;
 
 import org.esupportail.esupsignature.domain.SignBook;
+import org.esupportail.esupsignature.dss.web.service.OJService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,7 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class ScheduledTaskService {
 
 	@Resource
-	SignBookService signBookService;
+	private SignBookService signBookService;
+	
+	@Resource
+	private OJService oJService;
 
 	@Transactional
 	public void scanAllSignbooksSources() {
@@ -21,7 +27,10 @@ public class ScheduledTaskService {
 			signBookService.importFilesFromSource(signBook);
 			
 		}
-		
+	}
+	
+	public void refreshOJKeystore() throws MalformedURLException, IOException {
+		oJService.refresh();
 	}
 	
 }
