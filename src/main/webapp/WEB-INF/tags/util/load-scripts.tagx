@@ -19,10 +19,10 @@
 	<script  src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"><!-- --></script>
 	<link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.0/themes/smoothness/jquery-ui.css" />
 	
-	<spring:url value="/resources/images/favicon.png" var="favicon" />
+	<spring:url value="/resources/images/favicon.ico" var="favicon" />
 	
 	<link rel="SHORTCUT ICON" href="${favicon}" />
-	<link rel="icon" type="image/png" href="/resources/images/favicon.png" />
+	<link rel="icon" type="image/png" href="/resources/images/favicon.ico" />
 	<link rel="manifest" href="/resources/images/manifest.json" />
 
 	<meta name="msapplication-TileColor" content="#da532c" />

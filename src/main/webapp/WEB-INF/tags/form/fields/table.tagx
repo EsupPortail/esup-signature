@@ -179,10 +179,11 @@
               <spring:eval expression="item[typeIdFieldName]" />
             </c:set>
             <c:if test="${view}">
-              <td class="utilbox"><spring:url value="${path}/${itemId}" var="show_form_url" /> <spring:url value="/resources/images/show.png" var="show_image_url" /> <spring:message arguments="${typeName}" code="entity_show" var="show_label" htmlEscape="false" /> <a href="${show_form_url}" alt="${fn:escapeXml(show_label)}" title="${fn:escapeXml(show_label)}" class="btn btn-success far fa-eye">
-                  <!--img
-									alt="${fn:escapeXml(show_label)}" class="image" src="${show_image_url}" title="${fn:escapeXml(show_label)}" /-->
-                </a></td>
+              <td class="utilbox">
+              	<spring:url value="${path}/${itemId}" var="show_form_url" />
+              	<spring:message arguments="${typeName}" code="entity_show" var="show_label" htmlEscape="false" />
+              		<a href="${show_form_url}" alt="${fn:escapeXml(show_label)}" title="${fn:escapeXml(show_label)}" class="btn btn-info far fa-eye"><!--  --></a>
+            	</td>
             </c:if>
             <c:if test="${update}">
               <td class="utilbox">

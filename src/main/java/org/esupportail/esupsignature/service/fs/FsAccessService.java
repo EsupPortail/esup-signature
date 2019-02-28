@@ -17,7 +17,6 @@
  */
 package org.esupportail.esupsignature.service.fs;
 
-import java.io.File;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,13 +26,16 @@ import javax.mail.Quota;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.fs.uri.UriManipulateService;
 
 public abstract class FsAccessService {
 
 	protected static final Log log = LogFactory.getLog(FsAccessService.class);
 
+	protected static String TOKEN_SPECIAL_CHAR =  "@";
+
+	protected static String TOKEN_FORM_USERNAME =  "@form_username@";
+	
 	protected UriManipulateService uriManipulateService;
 	
 	protected String driveName;
@@ -71,7 +73,7 @@ public abstract class FsAccessService {
 		}
 	}
 
-	protected void open(User user) throws Exception {
+	protected void open() throws Exception {
 		if(!this.isOpened()) {
 			manipulateUri();
 		}
@@ -92,17 +94,19 @@ public abstract class FsAccessService {
 
 	protected abstract boolean isOpened();
 
-	public abstract boolean remove(String path, User user) throws Exception;
+	public abstract boolean remove(FsFile fsFile) throws Exception;
+	
+	public abstract List<FsFile> listFiles(String path) throws Exception;
 
-	public abstract String createFile(String parentPath, String title, String type, User user) throws Exception;
+	public abstract String createFile(String parentPath, String title, String type) throws Exception;
 
-	public abstract boolean renameFile(String path, String title, User user) throws Exception;
+	public abstract boolean renameFile(String path, String title) throws Exception;
 
-	public abstract boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy, User user) throws Exception;
+	public abstract boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws Exception;
 
-	public abstract File getFile(String dir, User user) throws Exception;
+	public abstract FsFile getFile(String dir) throws Exception;
 
-	public abstract boolean putFile(String dir, String filename,InputStream inputStream, User user, UploadActionType uploadOption) throws Exception;
+	public abstract boolean putFile(String dir, String filename,InputStream inputStream, UploadActionType uploadOption) throws Exception;
 
 	public boolean supportIntraCopyPast() {
 		return true;

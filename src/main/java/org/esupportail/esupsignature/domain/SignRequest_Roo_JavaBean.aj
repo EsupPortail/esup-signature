@@ -4,9 +4,9 @@
 package org.esupportail.esupsignature.domain;
 
 import java.util.Date;
-import java.util.Map;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignRequest;
+import org.esupportail.esupsignature.domain.SignRequestParams;
 
 privileged aspect SignRequest_Roo_JavaBean {
     
@@ -66,16 +66,16 @@ privileged aspect SignRequest_Roo_JavaBean {
         this.signedFile = signedFile;
     }
     
+    public SignRequestParams SignRequest.getSignRequestParams() {
+        return this.signRequestParams;
+    }
+    
+    public void SignRequest.setSignRequestParams(SignRequestParams signRequestParams) {
+        this.signRequestParams = signRequestParams;
+    }
+    
     public SignRequestStatus SignRequest.getStatus() {
         return this.status;
-    }
-    
-    public Map<String, String> SignRequest.getParams() {
-        return this.params;
-    }
-    
-    public void SignRequest.setParams(Map<String, String> params) {
-        this.params = params;
     }
     
     public long SignRequest.getSignBookId() {
@@ -84,54 +84,6 @@ privileged aspect SignRequest_Roo_JavaBean {
     
     public void SignRequest.setSignBookId(long signBookId) {
         this.signBookId = signBookId;
-    }
-    
-    public String SignRequest.getSignBookName() {
-        return this.signBookName;
-    }
-    
-    public void SignRequest.setSignBookName(String signBookName) {
-        this.signBookName = signBookName;
-    }
-    
-    public String SignRequest.getSignType() {
-        return this.signType;
-    }
-    
-    public void SignRequest.setSignType(String signType) {
-        this.signType = signType;
-    }
-    
-    public String SignRequest.getNewPageType() {
-        return this.newPageType;
-    }
-    
-    public void SignRequest.setNewPageType(String newPageType) {
-        this.newPageType = newPageType;
-    }
-    
-    public String SignRequest.getSignPageNumber() {
-        return this.signPageNumber;
-    }
-    
-    public void SignRequest.setSignPageNumber(String signPageNumber) {
-        this.signPageNumber = signPageNumber;
-    }
-    
-    public String SignRequest.getXPos() {
-        return this.xPos;
-    }
-    
-    public void SignRequest.setXPos(String xPos) {
-        this.xPos = xPos;
-    }
-    
-    public String SignRequest.getYPos() {
-        return this.yPos;
-    }
-    
-    public void SignRequest.setYPos(String yPos) {
-        this.yPos = yPos;
     }
     
 }

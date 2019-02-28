@@ -10,6 +10,7 @@ import java.io.InputStream;
 
 import javax.annotation.Resource;
 
+import org.esupportail.esupsignature.domain.BigFile;
 import org.esupportail.esupsignature.domain.Document;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,16 +38,17 @@ public class DocumentService {
     }
 	
 	public Document addFile(InputStream inputStream, String name, long size, String contentType) throws IOException {
-        Document document = persistDocument(inputStream, name, size, contentType);
-        return document;
+        return persistDocument(inputStream, name, size, contentType);
     }
 
 	
 	public Document persistDocument(InputStream inputStream, String name, long size, String contentType) throws IOException {
 		Document document = new Document();
         document.setFileName(name);
-        document.getBigFile().setBinaryFileStream(inputStream, size);
-        document.getBigFile().persist();
+        BigFile bigFile = new BigFile();
+        bigFile.setBinaryFileStream(inputStream, size);
+        bigFile.persist();
+        document.setBigFile(bigFile);
         document.setSize(size);
         document.setContentType(contentType);
         document.persist();

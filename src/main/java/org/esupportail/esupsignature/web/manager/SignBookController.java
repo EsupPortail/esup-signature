@@ -3,8 +3,6 @@ package org.esupportail.esupsignature.web.manager;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -14,12 +12,14 @@ import javax.validation.Valid;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
-import org.esupportail.esupsignature.domain.SignBook.NewPageType;
-import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
+import org.esupportail.esupsignature.domain.SignRequestParams;
+import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
+import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.PdfService;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +50,9 @@ public class SignBookController {
 	}
 
 	@Resource
+	SignBookService signBookService;
+	
+	@Resource
 	UserService userService;
 
 	@Resource
@@ -59,21 +62,18 @@ public class SignBookController {
 	PdfService pdfService;
 
 	void populateEditForm(Model uiModel, SignBook signBook) {
-		signBook.setSignType(signBook.getParams().get("signType"));
-		signBook.setNewPageType(signBook.getParams().get("newPageType"));
 		uiModel.addAttribute("signBook", signBook);
 		uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
-		// uiModel.addAttribute("signBookTypes",
-		// Arrays.asList(SignBookType.values()));
-		uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
-		uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
+		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
+		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
+		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
 		addDateTimeFormatPatterns(uiModel);
 		uiModel.addAttribute("signrequests", SignRequest.findAllSignRequests());
 	}
 	
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(@Valid SignBook signBook, @RequestParam("multipartFile") MultipartFile multipartFile,
-			BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) throws IOException {
+			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, HttpServletRequest httpServletRequest) throws IOException {
 		if (bindingResult.hasErrors()) {
 			populateEditForm(uiModel, signBook);
 			return "manager/signbooks/create";
@@ -88,8 +88,8 @@ public class SignBookController {
 			signBookToUpdate.setSourceType(signBook.getSourceType());
 			signBookToUpdate.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
 			signBookToUpdate.setTargetType(signBook.getTargetType());
-			signBookToUpdate.getParams().put("signType", signBook.getSignType());
-			signBookToUpdate.getParams().put("newPageType", signBook.getNewPageType());
+			signBookToUpdate.getSignRequestParams().setSignType(SignType.valueOf(signType));
+			signBookToUpdate.getSignRequestParams().setNewPageType(NewPageType.valueOf(newPageType));
 			Document newModel = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
 			if(newModel != null) {
 				Document oldModel = signBookToUpdate.getModelFile();
@@ -101,13 +101,14 @@ public class SignBookController {
 			signBook.setCreateBy(eppn);
 			signBook.setCreateDate(new Date());
 			signBook.setModelFile(documentService.addFile(multipartFile, multipartFile.getOriginalFilename()));
-			Map<String, String> params = new HashMap<>();
-			params.put("signType", signBook.getSignType());
-			params.put("newPageType", signBook.getNewPageType());
-			params.put("signPageNumber", "1");
-			params.put("xPos", "0");
-			params.put("yPos", "0");
-			signBook.setParams(params);
+			SignRequestParams signRequestParams = new SignRequestParams();
+			signRequestParams.setSignType(SignType.valueOf(signType));
+			signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
+			signRequestParams.setSignPageNumber(1);
+			signRequestParams.setXPos(0);
+			signRequestParams.setYPos(0);
+			signRequestParams.persist();
+			signBook.setSignRequestParams(signRequestParams);
 			signBook.persist();
 		}
 		uiModel.asMap().clear();
@@ -144,12 +145,9 @@ public class SignBookController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/signbooks/" + id;
 		}
-
-		Map<String, String> params = signBook.getParams();
-		params.put("signPageNumber", String.valueOf(signPageNumber));
-		params.put("xPos", String.valueOf(xPos));
-		params.put("yPos", String.valueOf(yPos));
-		signBook.setParams(params);
+		signBook.getSignRequestParams().setSignPageNumber(signPageNumber);
+		signBook.getSignRequestParams().setXPos(xPos);
+		signBook.getSignRequestParams().setYPos(yPos);
 		signBook.setUpdateBy(eppn);
 		signBook.setUpdateDate(new Date());
 
@@ -178,5 +176,21 @@ public class SignBookController {
 		return "manager/signbooks/list";
 	}
 
-	// TODO : Update
+	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
+	public String getFileFromSource(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws IOException {
+		String eppn = userService.getEppnFromAuthentication();
+		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		SignBook signBook = SignBook.findSignBook(id);
+
+		if (!signBook.getCreateBy().equals(user.getEppn())) {
+			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+			return "redirect:/manager/signbooks/" + id;
+		}
+		
+		signBookService.importFilesFromSource(signBook);
+		return "redirect:/manager/signbooks/" + id;
+
+	}
+
+
 }

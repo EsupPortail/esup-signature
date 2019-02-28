@@ -34,7 +34,7 @@ public class IndexManagerController {
 	
 	@RequestMapping
 	public String index(HttpServletRequest request) {
-			return "redirect:/manager/etudiants";
+			return "redirect:/manager/signbooks";
 	}
 
 }

@@ -54,7 +54,6 @@ public class UserKeystoreService {
 	public CertificateToken getCertificateToken(File keyStoreFile, String password) throws EsupSignatureKeystoreException {
 		try {
 			Pkcs12SignatureToken token = new Pkcs12SignatureToken(keyStoreFile, new PasswordProtection(password.toCharArray()));
-			System.err.println(token.getKeys().size());
 			KSPrivateKeyEntry ksPrivateKeyEntry = (KSPrivateKeyEntry) token.getKeys().get(0);
 			token.close();
 			return ksPrivateKeyEntry.getCertificate();

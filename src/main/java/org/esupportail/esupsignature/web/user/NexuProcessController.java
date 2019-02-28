@@ -11,15 +11,14 @@ import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.dss.web.model.DataToSignParams;
 import org.esupportail.esupsignature.dss.web.model.GetDataToSignResponse;
-import org.esupportail.esupsignature.dss.web.model.SignDocumentResponse;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureValueAsString;
-import org.esupportail.esupsignature.dss.web.service.SigningService;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.SigningService;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +79,7 @@ public class NexuProcessController {
     		File toSignFile = signRequest.getOriginalFile().getJavaIoFile();
     		if(fileService.getContentType(toSignFile).equals("application/pdf")) {
     			signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
-    			toSignFile = pdfService.stampImage(signRequest.getOriginalFile().getJavaIoFile(), signRequest.getParams(), user);
+    			toSignFile = pdfService.stampImage(signRequest.getOriginalFile().getJavaIoFile(), signRequest.getSignRequestParams(), user);
     		}
     		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
 			model.addAttribute("signRequest", signRequest);
@@ -119,8 +118,7 @@ public class NexuProcessController {
 
 	@RequestMapping(value = "/sign-document", method = RequestMethod.POST)
 	@ResponseBody
-	//TODO : javascript nexu attend SignDocumentResponse ?? 
-	public SignDocumentResponse signDocument(Model model, @RequestBody @Valid SignatureValueAsString signatureValue,
+	public void signDocument(Model model, @RequestBody @Valid SignatureValueAsString signatureValue,
 			@ModelAttribute("signaturePdfForm") @Valid SignatureDocumentForm signaturePdfForm, @ModelAttribute("signRequest") SignRequest signRequest, BindingResult result) throws EsupSignatureKeystoreException {
 		signaturePdfForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 		String eppn = userService.getEppnFromAuthentication();
@@ -128,11 +126,10 @@ public class NexuProcessController {
         try {
         	signRequestService.nexuSign(signRequest, user, signaturePdfForm);
         	signRequest.merge();
-        	return new SignDocumentResponse();
 		} catch (EsupSignatureIOException e) {
 			log.error(e.getMessage(), e);
 		}
-        return null;
+        return;
 	}
 
 }
