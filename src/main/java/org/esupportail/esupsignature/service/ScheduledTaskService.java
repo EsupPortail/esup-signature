@@ -17,7 +17,8 @@ public class ScheduledTaskService {
 	@Resource
 	private SignBookService signBookService;
 	
-	private OJService oJService = new OJService();
+	@Resource
+	private OJService oJService;
 
 	@Transactional
 	public void scanAllSignbooksSources() {

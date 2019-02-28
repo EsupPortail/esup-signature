@@ -7,12 +7,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,12 +69,13 @@ public class OJService {
 	
 	@PostConstruct
 	public void getCertificats() throws MalformedURLException, IOException {
+		Security.addProvider(new BouncyCastleProvider());
 		List<ServiceInfo> serviceInfos = getServicesInfos();
 		File keystoreFile = new File(ksFilename);
-		KeyStoreCertificateSource keyStoreCertificateSource;
+		BouncyKeyStoreCertificateSource keyStoreCertificateSource;
 		if(keystoreFile.exists()) {
 			try {
-				keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
+				keyStoreCertificateSource = new BouncyKeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
 				for(CertificateToken certificateToken : keyStoreCertificateSource.getCertificates()) {
 					trustedListSource.addCertificate(certificateToken, serviceInfos);
 				}
@@ -87,7 +90,7 @@ public class OJService {
 			    log.error("Couldn't create dir: " + parent);
 			} else {
 				keystoreFile.createNewFile();
-				keyStoreCertificateSource  = new KeyStoreCertificateSource((InputStream) null, ksType, ksPassword);
+				keyStoreCertificateSource  = new BouncyKeyStoreCertificateSource((InputStream) null, ksType, ksPassword);
 				keyStoreCertificateSource.addAllCertificatesToKeyStore(trustedListSource.getCertificates());
 				OutputStream fos = new FileOutputStream(ksFilename);
 				keyStoreCertificateSource.store(fos);
