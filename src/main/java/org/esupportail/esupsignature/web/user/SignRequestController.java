@@ -181,15 +181,16 @@ public class SignRequestController {
 				uiModel.addAttribute("inSignBookName", SignBook.findSignBook(signRequest.getSignBookId()).getName());
 			}
 			File toConvertFile = toConvertDocument.getJavaIoFile();
-			PDRectangle pdRectangle = pdfService.getPdfRectangle(toConvertFile);
-			if(pdfService.getRotation(toConvertFile) == 0) {
-				uiModel.addAttribute("pdfWidth", pdRectangle.getWidth());
-				uiModel.addAttribute("pdfHeight", pdRectangle.getHeight());
-			} else {
-				uiModel.addAttribute("pdfWidth", pdRectangle.getHeight());
-				uiModel.addAttribute("pdfHeight", pdRectangle.getWidth());
+			if(toConvertDocument.getContentType().equals("application/pdf")) {
+				PDRectangle pdRectangle = pdfService.getPdfRectangle(toConvertFile);
+				if(pdfService.getRotation(toConvertFile) == 0) {
+					uiModel.addAttribute("pdfWidth", pdRectangle.getWidth());
+					uiModel.addAttribute("pdfHeight", pdRectangle.getHeight());
+				} else {
+					uiModel.addAttribute("pdfWidth", pdRectangle.getHeight());
+					uiModel.addAttribute("pdfHeight", pdRectangle.getWidth());
+				}
 			}
-			
 			uiModel.addAttribute("logs", Log.findLogsBySignRequestIdEquals(signRequest.getId()).getResultList());
 			uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 			uiModel.addAttribute("keystore", user.getKeystore().getFileName());

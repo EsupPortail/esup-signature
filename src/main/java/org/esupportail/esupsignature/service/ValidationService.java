@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.dss.web.WebAppUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,12 +28,15 @@ public class ValidationService {
 	@Autowired
 	private Resource defaultPolicy;
 	
+	@Value("${validation.level}")
+	private String validationLevel;
+	
 	public Reports validate(MultipartFile multipartFile) {
 		
 		SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(WebAppUtils.toDSSDocument(multipartFile));
 		log.info("validate with : " + documentValidator.getClass());
 		documentValidator.setCertificateVerifier(certificateVerifier);
-		documentValidator.setValidationLevel(ValidationLevel.BASIC_SIGNATURES);
+		documentValidator.setValidationLevel(ValidationLevel.valueOf(validationLevel));
 		Reports reports = null;
 		try (InputStream is = defaultPolicy.getInputStream()) {
 			reports = documentValidator.validateDocument(is);
