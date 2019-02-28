@@ -11,7 +11,6 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -19,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import eu.europa.esig.dss.DSSException;
@@ -67,7 +67,7 @@ public class OJService {
 	@Autowired
 	private TrustedListsCertificateSource trustedListSource;
 	
-	@PostConstruct
+	@Scheduled(fixedDelay=Long.MAX_VALUE)
 	public void getCertificats() throws MalformedURLException, IOException {
 		Security.addProvider(new BouncyCastleProvider());
 		List<ServiceInfo> serviceInfos = getServicesInfos();
@@ -86,7 +86,7 @@ public class OJService {
 		} else {
 			log.info("create oj keystore");
 			File parent = keystoreFile.getParentFile();
-			if (!parent.exists() && !parent.mkdirs()) {
+			if (parent != null && !parent.exists() && !parent.mkdirs()) {
 			    log.error("Couldn't create dir: " + parent);
 			} else {
 				keystoreFile.createNewFile();
