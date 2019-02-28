@@ -22,10 +22,9 @@ import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.x509.CertificateToken;
-import eu.europa.esig.dss.x509.CommonCertificateSource;
 import eu.europa.esig.dss.x509.KeyStoreCertificateSource;
 
-public class BouncyKeyStoreCertificateSource extends CommonCertificateSource {
+public class BouncyKeyStoreCertificateSource extends KeyStoreCertificateSource {
 
 	private static final long serialVersionUID = 1L;
 
@@ -39,7 +38,7 @@ public class BouncyKeyStoreCertificateSource extends CommonCertificateSource {
 	}
 	
 	public BouncyKeyStoreCertificateSource(final InputStream ksStream, final String ksType, final String ksPassword) {
-		super();
+		super((InputStream)null, ksType, ksPassword);
 		initKeystore(ksStream, ksType, ksPassword);
 	}
 	

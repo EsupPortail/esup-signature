@@ -103,7 +103,7 @@ public class OJService {
 	public void refresh() throws MalformedURLException, IOException {
 		log.info("start refreshing oj keystore");
 		File keystoreFile = new File(ksFilename);
-		KeyStoreCertificateSource keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
+		BouncyKeyStoreCertificateSource keyStoreCertificateSource = new BouncyKeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
 		
 		TSLRepository tslRepository = new TSLRepository();
 		
