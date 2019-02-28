@@ -4,6 +4,12 @@
 	<definition extends="default" name="user/index">
         <put-attribute name="body" value="/WEB-INF/views/user/index.jspx"/>
     </definition>
+	<definition extends="default" name="user/validation">
+        <put-attribute name="body" value="/WEB-INF/views/user/validation.jspx"/>
+    </definition>
+	<definition extends="default" name="user/validation-result">
+        <put-attribute name="body" value="/WEB-INF/views/user/validation-result.jspx"/>
+    </definition>
     <definition extends="default" name="user/nexu-signature-process">
     	<put-attribute name="body" value="/WEB-INF/views/user/nexu-signature-process.jspx" />
   	</definition>     

@@ -2,11 +2,13 @@ package org.esupportail.esupsignature;
 
 import java.util.Collections;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.SessionTrackingMode;
 
+import org.esupportail.esupsignature.dss.web.service.OJService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.web.WebApplicationInitializer;
@@ -23,7 +25,7 @@ public class EsupSignatureInitializer implements WebApplicationInitializer {
 
 	@Value("${cookie.secure}")
 	private boolean cookieSecure;
-
+	
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
 
@@ -47,9 +49,10 @@ public class EsupSignatureInitializer implements WebApplicationInitializer {
 		
 		ContextLoaderListener listener = new ContextLoaderListener(rootAppContext);
 		servletContext.addListener(listener);
-		
 		servletContext.getSessionCookieConfig().setSecure(cookieSecure);
 		servletContext.setSessionTrackingModes(Collections.singleton(SessionTrackingMode.COOKIE));
+		
+		
 	}
 
 }

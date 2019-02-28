@@ -20,6 +20,8 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.aspectj.AnnotationTransactionAspect;
 
+import com.zaxxer.hikari.HikariDataSource;
+
 @Configuration
 @EnableSpringConfigured
 @EnableTransactionManagement(mode=AdviceMode.ASPECTJ)
@@ -40,6 +42,18 @@ public class PersistenceConfig {
 	private String hibernateHbm2ddlAuto;
 	@Value("${database.hibernate.hbm2ddl.import_files}")
 	private String hibernateHbm2ddlImportFiles;
+	
+	@Value("${datasource.username}")
+	private String cacheUsername;
+
+	@Value("${datasource.password}")
+	private String cachePassword;
+
+	@Value("${datasource.url}")
+	private String cacheDataSourceUrl;
+
+	@Value("${datasource.driver.class}")
+	private String cacheDataSourceDriverClassName;
 	
 	private Map<String, ?> hibernateJpaProperties() {
 	    HashMap<String, String> properties = new HashMap<>();
@@ -92,4 +106,16 @@ public class PersistenceConfig {
         annotationTransactionAspect.setTransactionManager(transactionManager);
         return annotationTransactionAspect;
     }
+	
+	@Bean
+	public DataSource cacheDataSource() {
+		HikariDataSource ds = new HikariDataSource();
+		ds.setPoolName("DSS-Hikari-Pool");
+		ds.setJdbcUrl(cacheDataSourceUrl);
+		ds.setDriverClassName(cacheDataSourceDriverClassName);
+		ds.setUsername(cacheUsername);
+		ds.setPassword(cachePassword);
+		ds.setAutoCommit(false);
+		return ds;
+	}
 }

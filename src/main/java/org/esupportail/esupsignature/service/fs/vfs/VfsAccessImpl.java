@@ -17,10 +17,10 @@
  */
 package org.esupportail.esupsignature.service.fs.vfs;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -36,13 +36,12 @@ import org.apache.commons.vfs2.FileSystemOptions;
 import org.apache.commons.vfs2.Selectors;
 import org.apache.commons.vfs2.VFS;
 import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
-import org.apache.commons.vfs2.provider.local.LocalFile;
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
-import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.esupportail.esupsignature.service.fs.EsupStockFileExistException;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
+import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.ResourceUtils;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
 import org.springframework.beans.factory.DisposableBean;
@@ -87,8 +86,8 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	protected void open(User user) throws Exception {
-		super.open(user);
+	protected void open() throws Exception {
+		super.open();
 		try {
 			if(!isOpened()) {
 				FileSystemOptions fsOptions = new FileSystemOptions();
@@ -137,17 +136,17 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		return (root != null);
 	}
 
-	private FileObject cd(String path, User userParameters) throws Exception {
+	private FileObject cd(String path) throws Exception {
 		try {
 			// assure that it'as already opened
-			this.open(userParameters);
+			this.open();
 			
 			FileObject returnValue = null;
 			
 			if (path == null || path.length() == 0) {
 				returnValue = root; 
 			} else {
-				returnValue = root.resolveFile(path);
+				returnValue = root.resolveFile(getUri() + path);
 			}
 
 			//Added for GIP Recia : make sure that the file is up to date
@@ -158,43 +157,39 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		} 
 	}
 	
-	
-	private boolean isFileHidden(FileObject file) {
-		boolean isHidden = false;
-		// file.isHidden() works in current version of VFS (1.0) only for local file object :(
-		if(file instanceof LocalFile) {
-			try {
-				isHidden = file.isHidden();
-			} catch (FileSystemException e) {
-				log.warn("Error on file.isHidden() method ...", e);
-			}
-		} else {
-			// at the moment here we just check if the file begins with a dot 
-			// ... so it works just for unix files ...
-			isHidden = file.getName().getBaseName().startsWith(".");
-		}
-		return isHidden;
-	}
-
 	@Override
-	public boolean remove(String path, User userParameters) throws Exception {
+	public List<FsFile> listFiles(String url) throws Exception {
+		List<FsFile> fsFiles = new ArrayList<>();
+		FileObject resource = cd(url);
+		if(resource.isFolder()){ 
+			for(FileObject fileObject : resource.getChildren()) {
+				if(fileObject.isFile()) {
+					fsFiles.add(toFsFile(fileObject));
+				}
+			}
+		}
+		return fsFiles;
+	}
+	
+	@Override
+	public boolean remove(FsFile fsFile) throws Exception {
 		boolean success = false;
 		FileObject file;
 		try {
-			file = cd(path, userParameters);
+			file = cd(fsFile.getPath() + "/" + fsFile.getFile().getName());
 			success = file.delete();
 		} catch (FileSystemException e) {
 			log.info("can't delete file because of FileSystemException : "
 					+ e.getMessage(), e);
 		}
-		log.debug("remove file " + path + ": " + success);
+		log.debug("remove file " + fsFile.getPath() + fsFile.getFile().getName() + ": " + success);
 		return success;
 	}
 
 	@Override
-	public String createFile(String parentPath, String title, String type, User userParameters) throws Exception {
+	public String createFile(String parentPath, String title, String type) throws Exception {
 		try {
-			FileObject parent = cd(parentPath, userParameters);
+			FileObject parent = cd(parentPath);
 			FileObject child = parent.resolveFile(title);
 			if (!child.exists()) {
 				if ("folder".equals(type)) {
@@ -216,9 +211,9 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean renameFile(String path, String title, User userParameters) throws Exception {
+	public boolean renameFile(String path, String title) throws Exception {
 		try {
-			FileObject file = cd(path, userParameters);
+			FileObject file = cd(path);
 			FileObject newFile = file.getParent().resolveFile(title);
 			if (!newFile.exists()) {
 				file.moveTo(newFile);
@@ -234,12 +229,11 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean moveCopyFilesIntoDirectory(String dir,
-			List<String> filesToCopy, boolean copy, User userParameters) throws Exception {
+	public boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws Exception {
 		try {
-			FileObject folder = cd(dir, userParameters);
+			FileObject folder = cd(dir);
 			for (String fileToCopyPath : filesToCopy) {
-				FileObject fileToCopy = cd(fileToCopyPath, userParameters);
+				FileObject fileToCopy = cd(fileToCopyPath);
 				FileObject newFile = folder.resolveFile(fileToCopy.getName()
 						.getBaseName());
 				if (copy) {
@@ -258,31 +252,36 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public File getFile(String dir, User userParameters) throws Exception {
+	public FsFile getFile(String dir) throws Exception {
 		try {
-			FileObject file = cd(dir, userParameters);
-			FileContent fc = file.getContent();
-			long size = fc.getSize();
-			String baseName = fc.getFile().getName().getBaseName();
-			// fc.getContentInfo().getContentType() use URLConnection.getFileNameMap, 
-			// we prefer here to use our getMimeType : for Excel files and co 
-			// String contentType = fc.getContentInfo().getContentType();
-			InputStream inputStream = fc.getInputStream();
-			return fileService.inputStreamToFile(inputStream, file.getName().toString());
+			FileObject fileObject = cd(dir);
+			return toFsFile(fileObject);
 		} catch (FileSystemException e) {
 			log.warn("can't download file : " + e.getMessage(), e);
 		}
 		return null;
 	}
 
+	private FsFile toFsFile(FileObject fileObject) throws IOException {
+		FileContent fileContent = fileObject.getContent();
+		InputStream inputStream = fileContent.getInputStream();
+		FsFile fsFile = new FsFile();
+		fsFile.setName(fileObject.getName().getBaseName());
+		fsFile.setContentType(fileObject.getContent().getContentInfo().getContentType());
+		fsFile.setFile(fileService.inputStreamToFile(inputStream, fileObject.getName().getBaseName()));
+		//TODO recup creator + date
+		//System.err.println(fileContent.getAttributes());
+		return fsFile;
+	}
+	
 	@Override
-	public boolean putFile(String dir, String filename, InputStream inputStream, User userParameters, UploadActionType uploadOption) throws Exception {
+	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws Exception {
 
 		boolean success = false;
 		FileObject newFile = null;
 				
 		try {
-			FileObject folder = cd(dir, userParameters);
+			FileObject folder = cd(dir);
 			newFile = folder.resolveFile(filename);
 			if (newFile.exists()) {
 				switch (uploadOption) {

@@ -5,10 +5,10 @@ package org.esupportail.esupsignature.domain;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignRequest;
+import org.esupportail.esupsignature.domain.SignRequestParams;
 
 privileged aspect SignBook_Roo_JavaBean {
     
@@ -108,52 +108,12 @@ privileged aspect SignBook_Roo_JavaBean {
         this.signRequests = signRequests;
     }
     
-    public Map<String, String> SignBook.getParams() {
-        return this.params;
+    public SignRequestParams SignBook.getSignRequestParams() {
+        return this.signRequestParams;
     }
     
-    public void SignBook.setParams(Map<String, String> params) {
-        this.params = params;
-    }
-    
-    public String SignBook.getSignType() {
-        return this.signType;
-    }
-    
-    public void SignBook.setSignType(String signType) {
-        this.signType = signType;
-    }
-    
-    public String SignBook.getNewPageType() {
-        return this.newPageType;
-    }
-    
-    public void SignBook.setNewPageType(String newPageType) {
-        this.newPageType = newPageType;
-    }
-    
-    public String SignBook.getSignPageNumber() {
-        return this.signPageNumber;
-    }
-    
-    public void SignBook.setSignPageNumber(String signPageNumber) {
-        this.signPageNumber = signPageNumber;
-    }
-    
-    public String SignBook.getXPos() {
-        return this.xPos;
-    }
-    
-    public void SignBook.setXPos(String xPos) {
-        this.xPos = xPos;
-    }
-    
-    public String SignBook.getYPos() {
-        return this.yPos;
-    }
-    
-    public void SignBook.setYPos(String yPos) {
-        this.yPos = yPos;
+    public void SignBook.setSignRequestParams(SignRequestParams signRequestParams) {
+        this.signRequestParams = signRequestParams;
     }
     
 }

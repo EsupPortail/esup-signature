@@ -2,19 +2,16 @@ package org.esupportail.esupsignature.domain;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.persistence.ElementCollection;
 import javax.persistence.EntityManager;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -38,8 +35,7 @@ public class SignRequest {
 
 	protected final static Logger log = LoggerFactory.getLogger(SignRequest.class);
 
-	
-	String name;
+	private String name;
 	
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
@@ -58,58 +54,44 @@ public class SignRequest {
     @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
     private Document signedFile = new Document();
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    private SignRequestParams signRequestParams = new SignRequestParams();
+    
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;	
     
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Map<String, String> params = new HashMap<String, String>();
-    
     private long signBookId;
-    
-    @Transient
-    private String signBookName;
     
 	public enum SignRequestStatus {
 		uploaded, pending, canceled, checked, signed, refused, deleted, completed;
 	}
-
-	@Transient
-	private String signType;
-    
-	@Transient
-	private String newPageType;
-
-	@Transient
-	private String signPageNumber;
-	
-	@Transient
-	private String xPos;
-
-	@Transient
-	private String yPos;
 	
     public void setStatus(SignRequestStatus status) {
         this.status = status;
     }
-    
-    public String getSignTypeLabel() {
-		return params.get("signType");
-	}
 
-	public static TypedQuery<SignRequest> findSignRequests(String createBy, String recipientEmail, SignRequestStatus status, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
+	public static TypedQuery<SignRequest> findSignRequests(String createBy, String recipientEmail, SignRequestStatus status, Long signBookId, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
     	EntityManager em = SignRequest.entityManager();
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<SignRequest> query = criteriaBuilder.createQuery(SignRequest.class);
         Root<SignRequest> signRequestRoot = query.from(SignRequest.class);
 
     	List<Predicate> predicates = new ArrayList<Predicate>();
-
+    	Predicate predicatesOwner;
+    	Predicate createByPredicates = null;
+    	Predicate recipientEmailPredicates = null;
         if(!createBy.isEmpty()) {
-        	predicates.add(criteriaBuilder.equal(signRequestRoot.get("createBy"), createBy));
+        	createByPredicates = criteriaBuilder.equal(signRequestRoot.get("createBy"), createBy);
         }
-    	
         if(!recipientEmail.isEmpty()) {
-        	predicates.add(criteriaBuilder.equal(signRequestRoot.get("recipientEmail"), recipientEmail));
+        	recipientEmailPredicates = criteriaBuilder.equal(signRequestRoot.get("recipientEmail"), recipientEmail);
+        }
+        
+        predicatesOwner = criteriaBuilder.or(createByPredicates, recipientEmailPredicates);
+        predicates.add(predicatesOwner);
+        
+        if(signBookId != null) {
+        	predicates.add(criteriaBuilder.equal(signRequestRoot.get("signBookId"), signBookId));
         }
         
         if(status != null) {

@@ -6,13 +6,5 @@ Esup-signature permet de signer des documents aux formats CAdES, XAdES ou par si
 La signature s'appuie sur la solution DSS de la Commission Européenne, voir :
 https://ec.europa.eu/cefdigital/wiki/pages/viewpage.action?pageId=46992515
 
-L'application est en cours de développement (en Java Spring), elle propose pour l'instant :
-
-- Création des utilisateurs via l'authentification CAS ou Shibboleth
-- Upload de documents
-- Signature par apposition d'un tampon image dans un PDF
-- Signature PAdES (PDF) à l'aide d'un certificat
-- Ajout de page de garde et conversion PDF/A
-- Module pour sélectionner l'endroit de la signature
-
-Demo : https://esup-signature-demo.univ-rouen.fr
+Pour plus de détails voir:
+https://www.esup-portail.org/wiki/display/SIGN/esup-signature

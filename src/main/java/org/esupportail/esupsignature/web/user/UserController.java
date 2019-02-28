@@ -84,6 +84,7 @@ public class UserController {
         if(user.getSignImage().getBigFile().getBinaryFile() != null) {
         	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
         }
+        uiModel.addAttribute("isPasswordSet", password != "");
         uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         return "user/users/show";
     }
@@ -94,15 +95,18 @@ public class UserController {
 		User user;
 		if(User.countFindUsersByEppnEquals(eppn) > 0) {
 			user = User.findUsersByEppnEquals(eppn).getSingleResult();
-	        uiModel.addAttribute("user", user);
-	        if(user.getSignImage().getBigFile().getBinaryFile() != null) {
+	        uiModel.addAttribute("user", user);	        
+			if(user.getSignImage().getBigFile().getBinaryFile() != null) {
 	        	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+	    		return "user/users/update";
+	        } else {
+				return "user/users/create";
 	        }
 		} else {
 			user = new User();
+			return "user/users/create";
 		}
-        uiModel.addAttribute("user", user);
-		return "user/users/update";
+
     }
     
     @RequestMapping(method = RequestMethod.POST, produces = "text/html")
@@ -137,17 +141,17 @@ public class UserController {
     }
     
     @RequestMapping(value = "/viewCert", method = RequestMethod.GET, produces = "text/html")
-    public String viewCert(@RequestParam("password") String password, RedirectAttributes redirectAttrs) throws Exception {
+    public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttrs) throws Exception {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
-		if (!"".equals(password)) {
+		if (password != null && !"".equals(password)) {
         	setPassword(password);
         }
         try {
         	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getJavaIoFile(), this.password));
         } catch (Exception e) {
         	log.error("open keystore fail", e);
-        	redirectAttrs.addFlashAttribute("messageCustom", "bad password");
+        	redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
 		}
         return "redirect:/user/users/";
     }
@@ -156,7 +160,6 @@ public class UserController {
 	public void getSignedFile(HttpServletResponse response, Model model) {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
-		
 		Document file = user.getKeystore();
 		try {
 			response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");

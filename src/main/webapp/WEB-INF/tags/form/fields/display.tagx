@@ -33,7 +33,7 @@
 
 
 		<dl class="display-group border-bottom m-0">
-			<dt class="col-lg-4">
+			<dt class="col-lg-5">
 				<c:choose>
 					<c:when test="${empty renderLabel or renderLabel}">
 						<c:out value="${label}" />

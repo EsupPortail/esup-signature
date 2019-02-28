@@ -1,11 +1,10 @@
 package org.esupportail.esupsignature.web.user;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -13,13 +12,15 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
-import org.esupportail.esupsignature.domain.SignBook.NewPageType;
-import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
+import org.esupportail.esupsignature.domain.SignRequestParams;
+import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
+import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
@@ -32,6 +33,7 @@ import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
@@ -43,8 +45,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 @RequestMapping("/user/signrequests")
 @Controller
@@ -58,7 +64,11 @@ public class SignRequestController {
 	public String getActiveMenu() {
 		return "user/signrequests";
 	}
-
+	
+	@Value("${sign.passwordTimeout}")
+	private long passwordTimeout;
+	
+	private String progress = "0";
 	private String password = "";
 	long startTime;
 
@@ -77,6 +87,9 @@ public class SignRequestController {
 	private DocumentService documentService;
 
 	@Resource
+	private PdfService pdfService;
+	
+	@Resource
 	private FileService fileService;
 
 	@Resource
@@ -93,9 +106,16 @@ public class SignRequestController {
 	@RequestMapping(produces = "text/html")
 	public String list(@RequestParam(value = "page", required = false) Integer page,
 			@RequestParam(value = "findBy", required = false) String findBy,
+			@RequestParam(value = "statusFilter", required = false) String statusFilter,
+			@RequestParam(value = "signBookId", required = false) Long signBookId,
 			@RequestParam(value = "size", required = false) Integer size,
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
 			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
+		SignRequestStatus statusFilterEnum = null;
+		if(statusFilter != null) {
+			statusFilterEnum = SignRequestStatus.valueOf(statusFilter);
+		}
+		
 		String eppn = userService.getEppnFromAuthentication();
 		if (User.countFindUsersByEppnEquals(eppn) == 0) {
 			return "redirect:/user/users/?form";
@@ -113,26 +133,33 @@ public class SignRequestController {
 			sortFieldName = "createDate";
 		}
 		List<SignRequest> signRequests = null;
+		float nrOfPages = 1;
+		int sizeNo = size == null ? 10 : size.intValue();
 		if (findBy != null && findBy.equals("recipientEmail")) {
-			signRequests = SignRequest.findSignRequests("", user.getEmail(), SignRequestStatus.pending, "", page, size,
+			signRequests = SignRequest.findSignRequests(eppn, user.getEmail(), SignRequestStatus.pending, signBookId, "", page, size,
 					sortFieldName, sortOrder).getResultList();
+			nrOfPages = (float) SignRequest.countFindSignRequests("", user.getEmail(), SignRequestStatus.pending, "") / sizeNo;
 			uiModel.addAttribute("tosigndocs", "active");
 		} else {
-			signRequests = SignRequest.findSignRequests(eppn, "", null, "", page, size, sortFieldName, sortOrder)
+			signBookId = null;
+			signRequests = SignRequest.findSignRequests(eppn, user.getEmail(), statusFilterEnum, null, "", page, size, sortFieldName, sortOrder)
 					.getResultList();
+			nrOfPages = (float) SignRequest.countFindSignRequests(eppn, "", statusFilterEnum, "") / sizeNo;
 			uiModel.addAttribute("mydocs", "active");
 		}
-		int sizeNo = size == null ? 10 : size.intValue();
 
-		float nrOfPages = (float) SignRequest.countFindSignRequests(eppn, "", null, "") / sizeNo;
-
-		uiModel.addAttribute("maxPages",
-				(int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
+		uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
 		uiModel.addAttribute("page", page);
 		uiModel.addAttribute("size", size);
+		uiModel.addAttribute("findBy", findBy);
+		uiModel.addAttribute("signBookId", signBookId);
 		uiModel.addAttribute("nbToSignRequests",SignRequest.countFindSignRequests("", user.getEmail(), SignRequestStatus.pending, ""));
 		uiModel.addAttribute("nbPedingSignRequests",SignRequest.countFindSignRequests(user.getEppn(), "", SignRequestStatus.pending, ""));
 		uiModel.addAttribute("signRequests", signRequests);
+		uiModel.addAttribute("signBooks", SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList());
+		uiModel.addAttribute("statusFilter", statusFilter);
+		uiModel.addAttribute("statuses", SignRequest.SignRequestStatus.values());
+		uiModel.addAttribute("queryUrl", "?findBy="+findBy);
 		return "user/signrequests/list";
 	}
 
@@ -143,25 +170,36 @@ public class SignRequestController {
 		addDateTimeFormatPatterns(uiModel);
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
-			Document toConvertFile;
+			Document toConvertDocument;
 			if (signRequest.getStatus().equals(SignRequestStatus.signed)) {
-				toConvertFile = signRequest.getSignedFile();
+				toConvertDocument = signRequest.getSignedFile();
 			} else {
-				toConvertFile = signRequest.getOriginalFile();
+				toConvertDocument = signRequest.getOriginalFile();
 			}
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
 			if (SignBook.findSignBook(signRequest.getSignBookId()) != null) {
 				uiModel.addAttribute("inSignBookName", SignBook.findSignBook(signRequest.getSignBookId()).getName());
 			}
+			File toConvertFile = toConvertDocument.getJavaIoFile();
+			if(toConvertDocument.getContentType().equals("application/pdf")) {
+				PDRectangle pdRectangle = pdfService.getPdfRectangle(toConvertFile);
+				if(pdfService.getRotation(toConvertFile) == 0) {
+					uiModel.addAttribute("pdfWidth", pdRectangle.getWidth());
+					uiModel.addAttribute("pdfHeight", pdRectangle.getHeight());
+				} else {
+					uiModel.addAttribute("pdfWidth", pdRectangle.getHeight());
+					uiModel.addAttribute("pdfHeight", pdRectangle.getWidth());
+				}
+			}
 			uiModel.addAttribute("logs", Log.findLogsBySignRequestIdEquals(signRequest.getId()).getResultList());
 			uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 			uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 			uiModel.addAttribute("signRequest", signRequest);
-			uiModel.addAttribute("documentType", fileService.getExtenstion(toConvertFile.getJavaIoFile()));
+			uiModel.addAttribute("documentType", fileService.getExtension(toConvertFile));
 			uiModel.addAttribute("itemId", id);
 			uiModel.addAttribute("imagePagesSize",
-					PdfService.getTotalNumberOfPages(toConvertFile.getJavaIoFile()));
-			uiModel.addAttribute("documentId", toConvertFile.getId());
+					pdfService.getTotalNumberOfPages(toConvertFile));
+			uiModel.addAttribute("documentId", toConvertDocument.getId());
 			if (signRequestService.checkUserSignRights(user, signRequest)) {
 				uiModel.addAttribute("signable", "ok");
 			}
@@ -175,7 +213,7 @@ public class SignRequestController {
 
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(@Valid SignRequest signRequest, @RequestParam("multipartFile") MultipartFile multipartFile,
-			BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest,
+			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
 			HttpServletRequest request) {
 		if (bindingResult.hasErrors()) {
 			uiModel.addAttribute("signRequest", signRequest);
@@ -186,16 +224,16 @@ public class SignRequestController {
 		String eppn = userService.getEppnFromAuthentication();
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		user.setIp(request.getRemoteAddr());
-		Map<String, String> params = new HashMap<>();
-		params.put("signType", signRequest.getSignType());
-		params.put("newPageType", signRequest.getNewPageType());
-		params.put("signPageNumber", "1");
-		params.put("xPos", "0");
-		params.put("yPos", "0");
-
+		SignRequestParams signRequestParams = new SignRequestParams();
+		signRequestParams.setSignType(SignType.valueOf(signType));
+		signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
+		signRequestParams.setSignPageNumber(1);
+		signRequestParams.setXPos(0);
+		signRequestParams.setYPos(0);
+		signRequestParams.persist();
 		try {
 			Document document = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
-			signRequest = signRequestService.createSignRequest(user, document, params, signRequest.getRecipientEmail());
+			signRequest = signRequestService.createSignRequest(user, document, signRequestParams, signRequest.getRecipientEmail());
 
 		} catch (IOException e) {
 			log.error("error to add file : " + multipartFile.getOriginalFilename(), e);
@@ -215,28 +253,26 @@ public class SignRequestController {
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
-			Map<String, String> params = signRequest.getParams();
-			params.put("signPageNumber", String.valueOf(signPageNumber));
-			params.put("xPos", String.valueOf(xPos));
-			params.put("yPos", String.valueOf(yPos));
-			signRequest.setParams(params);
+			signRequest.getSignRequestParams().setSignPageNumber(signPageNumber);
+			signRequest.getSignRequestParams().setXPos(xPos);
+			signRequest.getSignRequestParams().setYPos(yPos);
 			signRequest.merge();
 			if (!"".equals(password)) {
 	        	setPassword(password);
 			}
 			try {
-				SignType signType = SignType.valueOf(signRequest.getParams().get("signType"));
-				if(signType.equals(SignType.validate)) {
+				SignRequestParams.SignType signType = signRequest.getSignRequestParams().getSignType();
+				if(signType.equals(SignRequestParams.SignType.validate)) {
 					signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
 				} else 
-				if(signType.equals(SignType.nexuSign)) {
+				if(signType.equals(SignRequestParams.SignType.nexuSign)) {
 					return "redirect:/user/nexu-sign/" + id;
 				} else {
 					signRequestService.sign(signRequest, user, this.password);
 				}
 			} catch (EsupSignatureKeystoreException e) {
 				log.error("keystore error", e);
-				redirectAttrs.addFlashAttribute("messageCustom", "bad password");
+				redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
 			} catch (EsupSignatureIOException e) {
 				log.error(e.getMessage(), e);
 			} catch (EsupSignatureException e) {
@@ -248,7 +284,63 @@ public class SignRequestController {
 			return "redirect:/user/signrequests/";
 		}
 	}
-
+	
+	@RequestMapping(value = "/sign-multiple", method = RequestMethod.POST)
+	public void signMultiple(
+			@RequestParam(value = "ids", required = true) Long[] ids,
+			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
+			HttpServletResponse response, Model model, HttpServletRequest request) throws JsonParseException, JsonMappingException, IOException {
+		String eppn = userService.getEppnFromAuthentication();
+		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		user.setIp(request.getRemoteAddr());
+		float totalToSign = ids.length;
+		float nbSigned = 0;
+		progress = "0";
+		for(Long id : ids){
+			SignRequest signRequest = SignRequest.findSignRequest(id);
+			if (signRequestService.checkUserSignRights(user, signRequest)) {
+				if (!"".equals(password)) {
+		        	setPassword(password);
+				}
+				try {
+					SignRequestParams.SignType signType = signRequest.getSignRequestParams().getSignType();
+					if(signType.equals(SignRequestParams.SignType.validate)) {
+						signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
+					} else 
+					if(signType.equals(SignRequestParams.SignType.nexuSign)) {
+						log.error("no multiple nexu sign");
+						progress = "not_autorized";
+					} else {
+						signRequestService.sign(signRequest, user, this.password);
+					}
+				} catch (EsupSignatureKeystoreException e) {
+					log.error("keystore error", e);
+					progress = "security_bad_password";
+					break;
+				} catch (EsupSignatureIOException e) {
+					log.error(e.getMessage(), e);
+				} catch (EsupSignatureException e) {
+					log.error(e.getMessage(), e);
+				}
+			} else {
+				log.error("not autorized to sign");
+				progress = "not_autorized";
+			}
+			nbSigned++;
+			float percent = (nbSigned / totalToSign) * 100;
+			progress = String.valueOf((int) percent);
+			System.err.println(progress);
+		}
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/get-progress")
+	public String getProgress(RedirectAttributes redirectAttrs, HttpServletResponse response,
+			Model model, HttpServletRequest request) {
+		log.debug("getProgress : " + progress);
+		return progress;
+	}
+	
 	@RequestMapping(value = "/refuse/{id}")
 	public String refuse(@PathVariable("id") Long id, RedirectAttributes redirectAttrs, HttpServletResponse response,
 			Model model, HttpServletRequest request) throws SQLException {
@@ -263,6 +355,8 @@ public class SignRequestController {
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
 			return "redirect:/user/signrequests/" + id;
 		}
+		//TODO quelles conditions pour statut completed
+		/*
 		if (signRequest.getSignBookId() != 0) {
 			SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
 			try {
@@ -271,6 +365,7 @@ public class SignRequestController {
 				log.warn(e.getMessage(), e);
 			}
 		}
+		*/
 		signRequestService.updateInfo(signRequest, SignRequestStatus.refused, "documentRefused", user, "SUCCESS");
 		return "redirect:/user/signrequests/";
 	}
@@ -310,7 +405,7 @@ public class SignRequestController {
 		Document file = signRequest.getSignedFile();
 		try {
 			response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
-			response.setContentType(file.getContentType());
+			response.setContentType(file.getContentType());				
 			IOUtils.copy(file.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
 		} catch (Exception e) {
 			log.error("get file error", e);
@@ -340,8 +435,8 @@ public class SignRequestController {
 		uiModel.addAttribute("signRequest", signRequest);
 		addDateTimeFormatPatterns(uiModel);
 		uiModel.addAttribute("files", Document.findAllDocuments());
-		uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
-		uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
+		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
+		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
 	}
 
 	void addDateTimeFormatPatterns(Model uiModel) {
@@ -352,7 +447,7 @@ public class SignRequestController {
 	@Scheduled(fixedDelay = 5000)
 	public void clearPassword() {
 		if (startTime > 0) {
-			if (System.currentTimeMillis() - startTime > 60000) {
+			if (System.currentTimeMillis() - startTime > passwordTimeout) {
 				password = "";
 				startTime = 0;
 			}

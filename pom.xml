@@ -5,7 +5,7 @@
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
 	<packaging>war</packaging>
-	<version>0.3.0.BUILD-SNAPSHOT</version>
+	<version>0.4.0.BUILD-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<bouncycastle.version>1.60</bouncycastle.version>
@@ -17,13 +17,13 @@
 		<spring.version>4.3.20.RELEASE</spring.version>
 		<spring-security.version>4.1.5.RELEASE</spring-security.version>
 		<spring-data.version>2.1.3.RELEASE</spring-data.version>
-		<dss.framework.version>5.4.RC1</dss.framework.version>
+		<dss.framework.version>5.4</dss.framework.version>
 		<dss.framework.root.directory>${project.parent.basedir}/../dss</dss.framework.root.directory>
 		<cxf.version>3.2.7</cxf.version>
 		<jackson-jaxrs-json-provider.version>2.9.7</jackson-jaxrs-json-provider.version>
 		<hsqldb.version>2.4.1</hsqldb.version>
 		<nexu.version>1.22</nexu.version>
-		<pdfbox.version>2.0.13</pdfbox.version>
+		<pdfbox.version>2.0.12</pdfbox.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -422,9 +422,15 @@
 		</dependency>
 		<dependency>
 		    <groupId>org.apache.pdfbox</groupId>
-		    <artifactId>jempbox</artifactId>
-		    <version>1.8.16</version>
+		    <artifactId>preflight</artifactId>
+		    <version>${pdfbox.version}</version>
 		</dependency>
+		<dependency>
+		    <groupId>org.apache.pdfbox</groupId>
+		    <artifactId>xmpbox</artifactId>
+		    <version>${pdfbox.version}</version>
+		</dependency>
+
         <dependency>
 		    <groupId>net.sf.supercsv</groupId>
 		    <artifactId>super-csv</artifactId>
@@ -574,10 +580,24 @@
 		    </dependency>
 
 <dependency>
+    <groupId>org.apache.chemistry.opencmis</groupId>
+    <artifactId>chemistry-opencmis-client-impl</artifactId>
+    <version>1.1.0</version>
+</dependency>
+
+
+<dependency>
     <groupId>org.apache.commons</groupId>
     <artifactId>commons-vfs2</artifactId>
     <version>2.2</version>
 </dependency>
+
+<dependency>
+    <groupId>commons-net</groupId>
+    <artifactId>commons-net</artifactId>
+    <version>3.6</version>
+</dependency>
+
 
     <dependency>
       <groupId>com.jcraft</groupId>

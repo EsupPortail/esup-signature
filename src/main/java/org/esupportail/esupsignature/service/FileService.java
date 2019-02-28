@@ -78,8 +78,12 @@ public class FileService {
 		return null;
 	}
 	
-	public String getExtenstion(File file) {
+	public String getExtension(File file) {
 		return FilenameUtils.getExtension(file.getName());
+	}
+	
+	public String getNameOnly(File file) {
+		return FilenameUtils.getBaseName(file.getName());
 	}
 	
 	public String getBase64Image(Document file) throws IOException, SQLException {
@@ -102,4 +106,14 @@ public class FileService {
 		return new ByteArrayInputStream(os.toByteArray());
 	}
 
+	public File renameFile(File file, String name) {
+		File newfile = new File(Files.createTempDir(), name);
+		boolean result = file.renameTo(newfile);
+		if (result) {
+			return newfile;
+		} else {
+			return null;
+		}
+	}
+	
 }

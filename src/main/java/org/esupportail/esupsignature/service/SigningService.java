@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.dss.web.service;
+package org.esupportail.esupsignature.service;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -13,7 +13,8 @@ import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsFor
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import eu.europa.esig.dss.ASiCContainerType;
 import eu.europa.esig.dss.AbstractSignatureParameters;
@@ -43,11 +44,24 @@ import eu.europa.esig.dss.x509.CertificateToken;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
-@Component
+@Service
 public class SigningService {
 
-	private static final Logger logger = LoggerFactory.getLogger(SigningService.class);
+	private static final Logger log = LoggerFactory.getLogger(SigningService.class);
 
+	@Value("${sign.pades.digestAlgorithm}")
+	private String padesDigestAlgorithm;
+	@Value("${sign.pades.signatureLevel}")
+	private String padesSignatureLevel;
+	@Value("${sign.pades.signaturePackaging}")
+	private String padesSignaturePackaging;
+	@Value("${sign.xades.digestAlgorithm}")
+	private String xadesDigestAlgorithm;
+	@Value("${sign.xades.signatureLevel}")
+	private String xadesSignatureLevel;
+	@Value("${sign.xades.containerType}")
+	private String xadesContainerType;
+	
 	@Autowired
 	private CAdESService cadesService;
 
@@ -87,7 +101,7 @@ public class SigningService {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public ToBeSigned getDataToSign(SignatureDocumentForm form) {
-		logger.info("Start getDataToSign with one document");
+		log.info("Start getDataToSign with one document");
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
 
 		AbstractSignatureParameters parameters = fillParameters(form);
@@ -97,15 +111,15 @@ public class SigningService {
 			DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());
 			toBeSigned = service.getDataToSign(toSignDocument, parameters);
 		} catch (Exception e) {
-			logger.error("Unable to execute getDataToSign : " + e.getMessage(), e);
+			log.error("Unable to execute getDataToSign : " + e.getMessage(), e);
 		}
-		logger.info("End getDataToSign with one document");
+		log.info("End getDataToSign with one document");
 		return toBeSigned;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public ToBeSigned getDataToSign(SignatureMultipleDocumentsForm form) {
-		logger.info("Start getDataToSign with multiple documents");
+		log.info("Start getDataToSign with multiple documents");
 		MultipleDocumentsSignatureService service = getASiCSignatureService(form.getSignatureForm());
 
 		AbstractSignatureParameters parameters = fillParameters(form);
@@ -115,15 +129,15 @@ public class SigningService {
 			List<DSSDocument> toSignDocuments = WebAppUtils.toDSSDocuments(form.getDocumentsToSign());
 			toBeSigned = service.getDataToSign(toSignDocuments, parameters);
 		} catch (Exception e) {
-			logger.error("Unable to execute getDataToSign : " + e.getMessage(), e);
+			log.error("Unable to execute getDataToSign : " + e.getMessage(), e);
 		}
-		logger.info("End getDataToSign with multiple documents");
+		log.info("End getDataToSign with multiple documents");
 		return toBeSigned;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public TimestampToken getContentTimestamp(SignatureDocumentForm form) {
-		logger.info("Start getContentTimestamp with one document");
+		log.info("Start getContentTimestamp with one document");
 
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
 		AbstractSignatureParameters parameters = fillParameters(form);
@@ -131,20 +145,20 @@ public class SigningService {
 
 		TimestampToken contentTimestamp = service.getContentTimestamp(toSignDocument, parameters);
 
-		logger.info("End getContentTimestamp with one document");
+		log.info("End getContentTimestamp with one document");
 		return contentTimestamp;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public TimestampToken getContentTimestamp(SignatureMultipleDocumentsForm form) {
-		logger.info("Start getContentTimestamp with multiple documents");
+		log.info("Start getContentTimestamp with multiple documents");
 
 		MultipleDocumentsSignatureService service = getASiCSignatureService(form.getSignatureForm());
 		AbstractSignatureParameters parameters = fillParameters(form);
 
 		TimestampToken contentTimestamp = service.getContentTimestamp(WebAppUtils.toDSSDocuments(form.getDocumentsToSign()), parameters);
 
-		logger.info("End getContentTimestamp with  multiple documents");
+		log.info("End getContentTimestamp with  multiple documents");
 		return contentTimestamp;
 	}
 
@@ -189,32 +203,30 @@ public class SigningService {
 	}
 	
 	public SignatureDocumentForm getPadesSignatureDocumentForm() {
-		//TODO : bean properties ?
 		SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
 		signaturePdfForm.setContainerType(null);
 		signaturePdfForm.setSignatureForm(SignatureForm.PAdES);
-		signaturePdfForm.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
-		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
-		signaturePdfForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
+		signaturePdfForm.setSignatureLevel(SignatureLevel.valueOf(padesSignatureLevel));
+		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.valueOf(padesDigestAlgorithm));
+		signaturePdfForm.setSignaturePackaging(SignaturePackaging.valueOf(padesSignaturePackaging));
 		signaturePdfForm.setSigningDate(new Date());
 		return signaturePdfForm;
 	}
 
 	public SignatureDocumentForm getXadesSignatureDocumentForm() {
-		//TODO : bean properties ?
 		SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
-		signaturePdfForm.setContainerType(ASiCContainerType.ASiC_E);
+		signaturePdfForm.setContainerType(ASiCContainerType.valueOf(xadesContainerType));
 		signaturePdfForm.setSignatureForm(SignatureForm.XAdES);
-		signaturePdfForm.setSignatureLevel(SignatureLevel.XAdES_BASELINE_T);
-		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.SHA256);
-		signaturePdfForm.setSignaturePackaging(SignaturePackaging.DETACHED);
+		signaturePdfForm.setSignatureLevel(SignatureLevel.valueOf(xadesSignatureLevel));
+		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.valueOf(xadesDigestAlgorithm));
+		signaturePdfForm.setSignaturePackaging(null);
 		signaturePdfForm.setSigningDate(new Date());
 		return signaturePdfForm;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument certSignDocument(SignatureDocumentForm signaturePdfForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
-		logger.info("Start certSignDocument with database keystore");
+		log.info("Start certSignDocument with database keystore");
 		DocumentSignatureService service = getSignatureService(signaturePdfForm.getContainerType(), signaturePdfForm.getSignatureForm());
 		DSSDocument signedDocument = null;
 		fillParameters(parameters, signaturePdfForm);
@@ -222,13 +234,13 @@ public class SigningService {
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
 		signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);
-		logger.info("End certSignDocument with database keystore");
+		log.info("End certSignDocument with database keystore");
 		return signedDocument;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument signDocument(SignatureDocumentForm form) {
-		logger.info("Start signDocument with one document");
+		log.info("Start signDocument with one document");
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
 
 		AbstractSignatureParameters parameters = fillParameters(form);
@@ -240,15 +252,15 @@ public class SigningService {
 			SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
 			signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);
 		} catch (Exception e) {
-			logger.error("Unable to execute signDocument : " + e.getMessage(), e);
+			log.error("Unable to execute signDocument : " + e.getMessage(), e);
 		}
-		logger.info("End signDocument with one document");
+		log.info("End signDocument with one document");
 		return signedDocument;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument signDocument(SignatureMultipleDocumentsForm form) {
-		logger.info("Start signDocument with multiple documents");
+		log.info("Start signDocument with multiple documents");
 		MultipleDocumentsSignatureService service = getASiCSignatureService(form.getSignatureForm());
 
 		AbstractSignatureParameters parameters = fillParameters(form);
@@ -260,9 +272,9 @@ public class SigningService {
 			SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
 			signedDocument = (DSSDocument) service.signDocument(toSignDocuments, parameters, signatureValue);
 		} catch (Exception e) {
-			logger.error("Unable to execute signDocument : " + e.getMessage(), e);
+			log.error("Unable to execute signDocument : " + e.getMessage(), e);
 		}
-		logger.info("End signDocument with multiple documents");
+		log.info("End signDocument with multiple documents");
 		return signedDocument;
 	}
 
@@ -283,7 +295,7 @@ public class SigningService {
 				service = xadesService;
 				break;
 			default:
-				logger.error("Unknow signature form : " + signatureForm);
+				log.error("Unknow signature form : " + signatureForm);
 			}
 		}
 		return service;
@@ -307,7 +319,7 @@ public class SigningService {
 				parameters = new XAdESSignatureParameters();
 				break;
 			default:
-				logger.error("Unknow signature form : " + signatureForm);
+				log.error("Unknow signature form : " + signatureForm);
 			}
 		}
 		return parameters;
@@ -324,7 +336,7 @@ public class SigningService {
 			service = asicWithXAdESService;
 			break;
 		default:
-			logger.error("Unknow signature form : " + signatureForm);
+			log.error("Unknow signature form : " + signatureForm);
 		}
 		return service;
 	}
@@ -343,7 +355,7 @@ public class SigningService {
 			parameters = asicXadesParams;
 			break;
 		default:
-			logger.error("Unknow signature form for ASiC container: " + signatureForm);
+			log.error("Unknow signature form for ASiC container: " + signatureForm);
 		}
 		return parameters;
 	}

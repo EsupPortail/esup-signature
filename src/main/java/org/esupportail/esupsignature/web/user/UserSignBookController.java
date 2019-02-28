@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.web.user;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,9 +12,8 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
-import org.esupportail.esupsignature.domain.SignBook.NewPageType;
-import org.esupportail.esupsignature.domain.SignBook.SignType;
 import org.esupportail.esupsignature.domain.SignRequest;
+import org.esupportail.esupsignature.domain.SignRequestParams;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.PdfService;
@@ -64,8 +62,8 @@ public class UserSignBookController {
         uiModel.addAttribute("signBook", signBook);
         uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
         //uiModel.addAttribute("signBookTypes", Arrays.asList(SignBookType.values()));
-        uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
-        uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));        
+        uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
+        uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));        
         addDateTimeFormatPatterns(uiModel);
         uiModel.addAttribute("signrequests", SignRequest.findAllSignRequests());
     }
@@ -92,11 +90,9 @@ public class UserSignBookController {
 	    	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 	    	user.setIp(request.getRemoteAddr());
 			SignBook signBook = SignBook.findSignBook(id);
-			SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, new HashMap<String, String>(signBook.getParams()), signBook.getRecipientEmail());
-	        signBook.getSignRequests().add(signRequest);
-	        signBook.persist();
+			SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmail());
 	        signRequest.setSignBookId(signBook.getId());
-	        signRequest.merge();
+			signBook.getSignRequests().add(signRequest);
 		} else {
 			redirectAttrs.addFlashAttribute("messageCustom", "file is required");
 		}
