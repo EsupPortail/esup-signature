@@ -132,28 +132,7 @@ public class DSSBeanConfig {
 		TSLRepository tslRepository = new TSLRepository();
 		TrustedListsCertificateSource certificateSource = new TrustedListsCertificateSource();
 		tslRepository.setTrustedListsCertificateSource(certificateSource);
-		List<ServiceInfo> serviceInfos = new ArrayList<>();
-		serviceInfos.add(new ServiceInfo());
-		KeyStoreCertificateSource keyStoreCertificateSource; 
-		File keystoreFile = new File(ksFilename);
-		if(keystoreFile.exists()) {
-			keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
-			for(CertificateToken certificateToken : keyStoreCertificateSource.getCertificates()) {
-				certificateSource.addCertificate(certificateToken, serviceInfos);
-			}
-		} else {
-			File parent = keystoreFile.getParentFile();
-			if (!parent.exists() && !parent.mkdirs()) {
-			    throw new IllegalStateException("Couldn't create dir: " + parent);
-			}
-			keystoreFile.createNewFile();
-			keyStoreCertificateSource  = new KeyStoreCertificateSource((InputStream) null, ksType, ksPassword);
-			keyStoreCertificateSource.addAllCertificatesToKeyStore(certificateSource.getCertificates());
-			OutputStream fos = new FileOutputStream(ksFilename);
-			keyStoreCertificateSource.store(fos);
-			Utils.closeQuietly(fos);
-		}
-	return certificateSource;
+		return certificateSource;
 	}
 
 	@Bean

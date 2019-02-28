@@ -355,7 +355,7 @@ public class SignRequestController {
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
 			return "redirect:/user/signrequests/" + id;
 		}
-		//TODO quelles condition pour statut completed
+		//TODO quelles conditions pour statut completed
 		/*
 		if (signRequest.getSignBookId() != 0) {
 			SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());

@@ -241,7 +241,7 @@ public class SignRequestService {
 		signRequest.setStatus(signRequestStatus);
 		signRequest.merge();
 		//signRequest.persist();
-		//TODO quelles condition pour status completed
+		//TODO quelles conditions pour status completed
 		/*
 		if (signRequest.getSignBookId() != 0 && signRequestStatus.equals(SignRequestStatus.signed)) {
 			SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());

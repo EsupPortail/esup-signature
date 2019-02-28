@@ -66,8 +66,39 @@ public class OJService {
 	private TrustedListsCertificateSource trustedListSource;
 	
 	@PostConstruct
+	public void getCertificats() throws MalformedURLException, IOException {
+		List<ServiceInfo> serviceInfos = getServicesInfos();
+		File keystoreFile = new File(ksFilename);
+		KeyStoreCertificateSource keyStoreCertificateSource;
+		if(keystoreFile.exists()) {
+			try {
+				keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
+				for(CertificateToken certificateToken : keyStoreCertificateSource.getCertificates()) {
+					trustedListSource.addCertificate(certificateToken, serviceInfos);
+				}
+				log.info("Retrieve certificats from oj keystore OK");
+			} catch (DSSException e) {
+				log.error("Error on retrieve certificats from oj keystore", e);
+			}
+		} else {
+			log.info("create oj keystore");
+			File parent = keystoreFile.getParentFile();
+			if (!parent.exists() && !parent.mkdirs()) {
+			    log.error("Couldn't create dir: " + parent);
+			} else {
+				keystoreFile.createNewFile();
+				keyStoreCertificateSource  = new KeyStoreCertificateSource((InputStream) null, ksType, ksPassword);
+				keyStoreCertificateSource.addAllCertificatesToKeyStore(trustedListSource.getCertificates());
+				OutputStream fos = new FileOutputStream(ksFilename);
+				keyStoreCertificateSource.store(fos);
+				Utils.closeQuietly(fos);
+			}
+		}
+		refresh();
+	}
+	
 	public void refresh() throws MalformedURLException, IOException {
-		
+		log.info("start refreshing oj keystore");
 		File keystoreFile = new File(ksFilename);
 		KeyStoreCertificateSource keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
 		
@@ -92,8 +123,7 @@ public class OJService {
 			log.error("oj refresh error", e);
 		}
 		
-		List<ServiceInfo> serviceInfos = new ArrayList<>();
-		serviceInfos.add(new ServiceInfo());
+		List<ServiceInfo> serviceInfos = getServicesInfos();
 		
 		for(String trustedCertificatUrl : trustedCertificatUrlList) {
 			InputStream in = new URL(trustedCertificatUrl).openStream();
@@ -107,5 +137,11 @@ public class OJService {
 		OutputStream fos = new FileOutputStream(ksFilename);
 		keyStoreCertificateSource.store(fos);
 		Utils.closeQuietly(fos);
+	}
+	
+	public List<ServiceInfo> getServicesInfos() {
+		List<ServiceInfo> serviceInfos = new ArrayList<>();
+		serviceInfos.add(new ServiceInfo());
+		return serviceInfos;
 	}
 }
