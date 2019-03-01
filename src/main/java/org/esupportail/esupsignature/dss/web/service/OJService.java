@@ -67,7 +67,7 @@ public class OJService {
 	@Autowired
 	private TrustedListsCertificateSource trustedListSource;
 	
-	@Scheduled(fixedDelay=Long.MAX_VALUE)
+	@Scheduled(fixedDelay=Long.MAX_VALUE, initialDelay=10000)
 	public void getCertificats() throws MalformedURLException, IOException {
 		Security.addProvider(new BouncyCastleProvider());
 		List<ServiceInfo> serviceInfos = getServicesInfos();
