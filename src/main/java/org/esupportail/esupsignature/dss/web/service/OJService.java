@@ -11,7 +11,6 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -19,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import eu.europa.esig.dss.DSSException;
@@ -67,15 +67,15 @@ public class OJService {
 	@Autowired
 	private TrustedListsCertificateSource trustedListSource;
 	
-	@PostConstruct
+	@Scheduled(fixedDelay=Long.MAX_VALUE, initialDelay=10000)
 	public void getCertificats() throws MalformedURLException, IOException {
 		Security.addProvider(new BouncyCastleProvider());
 		List<ServiceInfo> serviceInfos = getServicesInfos();
 		File keystoreFile = new File(ksFilename);
-		BouncyKeyStoreCertificateSource keyStoreCertificateSource;
+		KeyStoreCertificateSource keyStoreCertificateSource;
 		if(keystoreFile.exists()) {
 			try {
-				keyStoreCertificateSource = new BouncyKeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
+				keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
 				for(CertificateToken certificateToken : keyStoreCertificateSource.getCertificates()) {
 					trustedListSource.addCertificate(certificateToken, serviceInfos);
 				}
@@ -86,11 +86,11 @@ public class OJService {
 		} else {
 			log.info("create oj keystore");
 			File parent = keystoreFile.getParentFile();
-			if (!parent.exists() && !parent.mkdirs()) {
+			if (parent != null && !parent.exists() && !parent.mkdirs()) {
 			    log.error("Couldn't create dir: " + parent);
 			} else {
 				keystoreFile.createNewFile();
-				keyStoreCertificateSource  = new BouncyKeyStoreCertificateSource((InputStream) null, ksType, ksPassword);
+				keyStoreCertificateSource  = new KeyStoreCertificateSource((InputStream) null, ksType, ksPassword);
 				keyStoreCertificateSource.addAllCertificatesToKeyStore(trustedListSource.getCertificates());
 				OutputStream fos = new FileOutputStream(ksFilename);
 				keyStoreCertificateSource.store(fos);
@@ -103,7 +103,7 @@ public class OJService {
 	public void refresh() throws MalformedURLException, IOException {
 		log.info("start refreshing oj keystore");
 		File keystoreFile = new File(ksFilename);
-		BouncyKeyStoreCertificateSource keyStoreCertificateSource = new BouncyKeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
+		KeyStoreCertificateSource keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
 		
 		TSLRepository tslRepository = new TSLRepository();
 		
