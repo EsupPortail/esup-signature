@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.dss.web.model.DataToSignParams;
 import org.esupportail.esupsignature.dss.web.model.GetDataToSignResponse;
+import org.esupportail.esupsignature.dss.web.model.SignDocumentResponse;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureValueAsString;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
@@ -118,18 +119,20 @@ public class NexuProcessController {
 
 	@RequestMapping(value = "/sign-document", method = RequestMethod.POST)
 	@ResponseBody
-	public void signDocument(Model model, @RequestBody @Valid SignatureValueAsString signatureValue,
+	public SignDocumentResponse signDocument(Model model, @RequestBody @Valid SignatureValueAsString signatureValue,
 			@ModelAttribute("signaturePdfForm") @Valid SignatureDocumentForm signaturePdfForm, @ModelAttribute("signRequest") SignRequest signRequest, BindingResult result) throws EsupSignatureKeystoreException {
+		SignDocumentResponse signedDocumentResponse;
 		signaturePdfForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 		String eppn = userService.getEppnFromAuthentication();
     	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
         try {
         	signRequestService.nexuSign(signRequest, user, signaturePdfForm);
-        	signRequest.merge();
 		} catch (EsupSignatureIOException e) {
 			log.error(e.getMessage(), e);
 		}
-        return;
+        signedDocumentResponse = new SignDocumentResponse();
+        signedDocumentResponse.setUrlToDownload("download");
+        return signedDocumentResponse;
 	}
 
 }
