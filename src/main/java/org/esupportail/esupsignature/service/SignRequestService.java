@@ -5,12 +5,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
 import org.apache.commons.codec.binary.Base64;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
+import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.SignRequestParams;
@@ -64,14 +66,17 @@ public class SignRequestService {
 	@Resource
 	FileService fileService;
 	
-	public SignRequest createSignRequest(User user, Document document, SignRequestParams signRequestParams, String recipientEmail) {
+	public SignRequest createSignRequest(User user, Document document, SignRequestParams signRequestParams, String recipientEmail, Long signBookId) {
 		SignRequest signRequest = new SignRequest();
 		signRequest.setName(document.getFileName());
 		signRequest.setCreateBy(user.getEppn());
     	signRequest.setCreateDate(new Date());
 		signRequest.setOriginalFile(document);
 		signRequest.setSignedFile(null);
-		signRequest.setSignBookId(0);
+		//signRequest.setSignBookId(0);
+		if(signBookId != null) {
+			signRequest.getSignBooks().put(signBookId, false);
+		}
 		signRequest.setStatus(SignRequestStatus.uploaded);
 		signRequest.setSignRequestParams(signRequestParams);
 		signRequest.setRecipientEmail(recipientEmail);
@@ -222,6 +227,17 @@ public class SignRequestService {
 		try {
 			signRequest.setSignedFile(documentService.addFile(signedFile, "signed_" + signRequest.getSignRequestParams().getSignType().toString() + "_" + user.getEppn() + "_" + signedFile.getName(), fileService.getContentType(signedFile)));
 			updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");		
+			if (signRequest.getSignBooks() != null) {
+				for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
+					SignBook signBook = SignBook.findSignBook(signBookId.getKey());
+					if(user.getEmail().equals(signBook.getRecipientEmail())) {
+						signRequest.getSignBooks().put(signBookId.getKey(), true);
+					}
+				}
+			}
+			if(isSignRequestCompleted(signRequest)) {
+				updateInfo(signRequest, SignRequestStatus.completed, "sign", user, "SUCCESS");		
+			}	
 		} catch (IOException e) {
 			throw new EsupSignatureIOException("error on save signed file", e);
 		}
@@ -240,27 +256,24 @@ public class SignRequestService {
 		log.persist();
 		signRequest.setStatus(signRequestStatus);
 		signRequest.merge();
-		//signRequest.persist();
-		//TODO quelles conditions pour status completed
-		/*
-		if (signRequest.getSignBookId() != 0 && signRequestStatus.equals(SignRequestStatus.signed)) {
-			SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
-			try {
-				signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
-			} catch (EsupSignatureException e) {
+	}
+	
+	public boolean isSignRequestCompleted(SignRequest signRequest) {
+		if (signRequest.getSignBooks() != null) {
+			for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
+				if(!signRequest.getSignBooks().get(signBookId.getKey()) && signRequest.isAllSignToComplete()) {
+					return false;
+				}
+				if(signRequest.getSignBooks().get(signBookId.getKey()) && !signRequest.isAllSignToComplete()) {
+					return true;
+				}
 			}
-			
-			if (signBook.getTargetType().equals(DocumentIOType.cifs)) {
-				try {
-					InputStream in = new FileInputStream(signRequest.getSignedFile().getJavaIoFile());
-					cifsAccessImpl.putFile("/" + signBook.getDocumentsTargetUri() + "/",
-							signRequest.getSignedFile().getFileName(), in, user, null);
-				} catch (FileNotFoundException e) {
-					logger.error("error on cifs copy", e);				}
-			}
-			
 		}
-		*/
+		if(signRequest.isAllSignToComplete()) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {

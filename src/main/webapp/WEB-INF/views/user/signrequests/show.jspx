@@ -46,7 +46,7 @@
 								<dt class="col-lg-5">
 									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" />
 								</dt>
-								<dd>${inSignBookName}</dd>
+								<dd>${inSignBookNames}</dd>
 							</dl>
 							<field:display field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" object="${signRequest}" z="user-managed" />
 							<field:display render="false" field="status" id="s_org_esupportail_esupsignature_domain_SignRequest_status" object="${signRequest}" z="user-managed" />

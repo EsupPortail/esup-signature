@@ -3,8 +3,10 @@ package org.esupportail.esupsignature.web.user;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -177,8 +179,12 @@ public class SignRequestController {
 				toConvertDocument = signRequest.getOriginalFile();
 			}
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
-			if (SignBook.findSignBook(signRequest.getSignBookId()) != null) {
-				uiModel.addAttribute("inSignBookName", SignBook.findSignBook(signRequest.getSignBookId()).getName());
+			if (signRequest.getSignBooks() != null) {
+				List<String> signBookNames = new ArrayList<>();
+				for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
+					signBookNames.add(SignBook.findSignBook(signBookId.getKey()).getName());
+				}
+				uiModel.addAttribute("inSignBookNames", signBookNames);
 			}
 			File toConvertFile = toConvertDocument.getJavaIoFile();
 			if(toConvertDocument.getContentType().equals("application/pdf")) {
@@ -233,7 +239,7 @@ public class SignRequestController {
 		signRequestParams.persist();
 		try {
 			Document document = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
-			signRequest = signRequestService.createSignRequest(user, document, signRequestParams, signRequest.getRecipientEmail());
+			signRequest = signRequestService.createSignRequest(user, document, signRequestParams, signRequest.getRecipientEmail(), null);
 
 		} catch (IOException e) {
 			log.error("error to add file : " + multipartFile.getOriginalFilename(), e);
@@ -374,10 +380,12 @@ public class SignRequestController {
 	public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page,
 			@RequestParam(value = "size", required = false) Integer size, Model uiModel) {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-		SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
-		if (signBook != null) {
-			signBook.getSignRequests().remove(signRequest);
-			signBook.merge();
+		for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
+			SignBook signBook = SignBook.findSignBook(signBookId.getKey());
+			if (signBook != null) {
+				signBook.getSignRequests().remove(signRequest);
+				signBook.merge();
+			}
 		}
 		signRequest.remove();
 		uiModel.asMap().clear();

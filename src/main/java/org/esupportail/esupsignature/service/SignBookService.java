@@ -64,8 +64,7 @@ public class SignBookService {
 		        			user.setEppn("robot");
 		        			user.setIp("127.0.0.1");
 		        		}
-		                SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmail());
-		    	        signRequest.setSignBookId(signBook.getId());
+		                SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmail(), signBook.getId());
 		    	        signRequest.merge();
 		    			signBook.getSignRequests().add(signRequest);
 		    	        signBook.merge();
@@ -108,7 +107,7 @@ public class SignBookService {
 	    	signRequest.setSignedFile(null);
 	    	signRequest.setRecipientEmail(signBook.getRecipientEmail());
 	    	signRequest.setSignRequestParams(signBook.getSignRequestParams());
-	    	signRequest.setSignBookId(signBook.getId());
+	    	signRequest.getSignBooks().put(signBook.getId(), false);
 	    	signRequest.setStatus(SignRequestStatus.uploaded);
 	    	signRequest.merge();
 	    	signBook.getSignRequests().add(signRequest);
@@ -122,7 +121,7 @@ public class SignBookService {
 	public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
 		if(signBook.getSignRequests().contains(signRequest)) {
 			signRequestService.updateInfo(signRequest, SignRequestStatus.completed, "removeFromSignBook", user, "SUCCESS");
-			signRequest.setSignBookId(0);
+			signRequest.getSignBooks().put(signBook.getId(), true);
 	    	signRequest.merge();
 	    	signBook.getSignRequests().remove(signRequest);
 	    	signBook.merge();

@@ -128,10 +128,14 @@
 								<td class="none"><fmt:formatDate value="${signRequest.createDate}" pattern="dd/MM/yyyy HH:mm" /></td>
 								<td class="none">${signRequest.createBy}</td>
 								<td class="none">${signRequest.recipientEmail}</td>
+								
+								<!-- 
 								<td class="type"><input type="hidden" id="signbook_${signRequest.id}" value="${signRequest.signBookId}" />
 									<button type="button" class="btn btn-outline-dark btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
 										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" />
-									</button></td>
+									</button>
+									</td>
+									 -->
 								<td class="status"><c:choose>
 										<c:when test="${signRequest.status eq 'pending'}">
 											<button type="button" class="btn btn-outline-primary btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">

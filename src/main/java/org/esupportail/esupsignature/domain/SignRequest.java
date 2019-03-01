@@ -2,8 +2,11 @@ package org.esupportail.esupsignature.domain;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.persistence.ElementCollection;
 import javax.persistence.EntityManager;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -60,9 +63,12 @@ public class SignRequest {
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;	
     
-    private long signBookId;
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Map<Long, Boolean> signBooks = new HashMap<Long, Boolean>();
     
-	public enum SignRequestStatus {
+    private boolean allSignToComplete = false;
+    
+    public enum SignRequestStatus {
 		uploaded, pending, canceled, checked, signed, refused, deleted, completed;
 	}
 	

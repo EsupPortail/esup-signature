@@ -32,6 +32,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriUtils;
+import org.springframework.web.util.WebUtils;
 
 @RequestMapping("/user/signbooks")
 @Controller
@@ -90,8 +92,7 @@ public class UserSignBookController {
 	    	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 	    	user.setIp(request.getRemoteAddr());
 			SignBook signBook = SignBook.findSignBook(id);
-			SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmail());
-	        signRequest.setSignBookId(signBook.getId());
+			SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmail(), signBook.getId());
 			signBook.getSignRequests().add(signRequest);
 		} else {
 			redirectAttrs.addFlashAttribute("messageCustom", "file is required");
@@ -111,5 +112,14 @@ public class UserSignBookController {
         } catch (Exception e) {
             log.error("get file error", e);
         }
+    }
+    
+    String encodeUrlPathSegment(String pathSegment, HttpServletRequest httpServletRequest) {
+        String enc = httpServletRequest.getCharacterEncoding();
+        if (enc == null) {
+            enc = WebUtils.DEFAULT_CHARACTER_ENCODING;
+        }
+        pathSegment = UriUtils.encodePathSegment(pathSegment, enc);
+        return pathSegment;
     }
 }

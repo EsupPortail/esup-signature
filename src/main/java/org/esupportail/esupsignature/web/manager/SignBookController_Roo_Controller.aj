@@ -3,7 +3,6 @@
 
 package org.esupportail.esupsignature.web.manager;
 
-import java.io.UnsupportedEncodingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.esupportail.esupsignature.domain.SignBook;
@@ -14,8 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.util.UriUtils;
-import org.springframework.web.util.WebUtils;
 
 privileged aspect SignBookController_Roo_Controller {
     
@@ -55,15 +52,6 @@ privileged aspect SignBookController_Roo_Controller {
     void SignBookController.addDateTimeFormatPatterns(Model uiModel) {
         uiModel.addAttribute("signBook_createdate_date_format", "dd/MM/yyyy HH:mm");
         uiModel.addAttribute("signBook_updatedate_date_format", "dd/MM/yyyy HH:mm");
-    }
-    
-    String SignBookController.encodeUrlPathSegment(String pathSegment, HttpServletRequest httpServletRequest) {
-        String enc = httpServletRequest.getCharacterEncoding();
-        if (enc == null) {
-            enc = WebUtils.DEFAULT_CHARACTER_ENCODING;
-        }
-        pathSegment = UriUtils.encodePathSegment(pathSegment, enc);
-        return pathSegment;
     }
     
 }

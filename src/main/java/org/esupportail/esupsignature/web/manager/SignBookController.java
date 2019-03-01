@@ -21,8 +21,6 @@ import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.roo.addon.web.mvc.controller.scaffold.RooWebScaffold;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,14 +33,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriUtils;
+import org.springframework.web.util.WebUtils;
 
 @RequestMapping("/manager/signbooks")
 @Controller
 @RooWebScaffold(path = "manager/signbooks", formBackingObject = SignBook.class)
 @Transactional
 public class SignBookController {
-
-	private static final Logger log = LoggerFactory.getLogger(SignBookController.class);
 
 	@ModelAttribute("active")
 	public String getActiveMenu() {
@@ -162,7 +160,7 @@ public class SignBookController {
 		String eppn = userService.getEppnFromAuthentication();
 		if (page != null || size != null) {
 			int sizeNo = size == null ? 10 : size.intValue();
-			final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
+			//final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
 			uiModel.addAttribute("signbooks",
 					SignBook.findSignBooksByCreateByEquals(eppn, sortFieldName, sortOrder).getResultList());
 			float nrOfPages = (float) SignBook.countSignBooks() / sizeNo;
@@ -192,5 +190,13 @@ public class SignBookController {
 
 	}
 
+    String encodeUrlPathSegment(String pathSegment, HttpServletRequest httpServletRequest) {
+        String enc = httpServletRequest.getCharacterEncoding();
+        if (enc == null) {
+            enc = WebUtils.DEFAULT_CHARACTER_ENCODING;
+        }
+        pathSegment = UriUtils.encodePathSegment(pathSegment, enc);
+        return pathSegment;
+    }
 
 }
