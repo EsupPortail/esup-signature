@@ -19,7 +19,7 @@
     </c:when>
     <c:otherwise>
 	    <c:if test="${empty colLabel}">
-	      <c:set value="col-lg-4  col-form-label" var="colLabel" />
+	      <c:set value="col-lg-3  col-form-label" var="colLabel" />
 	    </c:if>
 	    <c:if test="${empty colInput}">
 	      <c:set value="col-lg-6" var="colInput" />
@@ -36,7 +36,7 @@
 
     <div id="_${sec_id}_id" class="form-group">
       <label for="_${sec_field}_id" class="${colLabel}">
-        <c:out value="${label}" />
+        <strong><c:out value="${label}" /></strong>
       </label>
     <div class="${colInput}">
       <c:choose>

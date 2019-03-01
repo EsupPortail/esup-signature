@@ -46,6 +46,7 @@
         <field:select field="originalFile" id="c_org_esupportail_esupsignature_domain_SignRequest_originalFile" itemValue="id" items="${files}" path="/files" render="false" z="user-managed"/>
         <field:select field="signedFile" id="c_org_esupportail_esupsignature_domain_SignRequest_signedFile" itemValue="id" items="${files}" path="/files" render="false" z="user-managed"/>
         <field:select render="false" field="signType" id="c_org_esupportail_esupsignature_domain_SignRequest_signType" cssClass="form-control" path="/" multiple="false" size="1" checkboxes="false" items="${signTypes}" z="user-managed"/>
+        <field:checkbox field="allSignToComplete" id="c_org_esupportail_esupsignature_domain_SignRequest_allSignToComplete" z="user-managed"/>
 		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signType_id">
 			<label class="col-lg-3  col-form-label" for="signType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype" /></strong></label>
 			<div class="col-lg-9">
