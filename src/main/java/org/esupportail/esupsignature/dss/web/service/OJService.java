@@ -1,19 +1,28 @@
 package org.esupportail.esupsignature.dss.web.service;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.Security;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.annotation.Resource;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.esupportail.esupsignature.service.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,17 +76,22 @@ public class OJService {
 	@Autowired
 	private TrustedListsCertificateSource trustedListSource;
 	
+	@Resource
+	private FileService fileService;
+	
 	@Scheduled(fixedDelay=Long.MAX_VALUE, initialDelay=10000)
-	public void getCertificats() throws MalformedURLException, IOException {
+	public void getCertificats() throws MalformedURLException, IOException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
 		Security.addProvider(new BouncyCastleProvider());
 		List<ServiceInfo> serviceInfos = getServicesInfos();
 		File keystoreFile = new File(ksFilename);
-		KeyStoreCertificateSource keyStoreCertificateSource;
 		if(keystoreFile.exists()) {
 			try {
-				keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
-				for(CertificateToken certificateToken : keyStoreCertificateSource.getCertificates()) {
-					trustedListSource.addCertificate(certificateToken, serviceInfos);
+				KeyStore keystore = KeyStore.getInstance(ksType, "BC");
+			    FileInputStream is = new FileInputStream(ksFilename);
+			    keystore.load(is, ksPassword.toCharArray());
+			    Enumeration<String> aliases = keystore.aliases();
+				while (aliases.hasMoreElements()) {
+					trustedListSource.addCertificate(DSSUtils.loadCertificate(keystore.getCertificate(aliases.nextElement()).getEncoded()), serviceInfos);
 				}
 				log.info("Retrieve certificats from oj keystore OK");
 			} catch (DSSException e) {
@@ -90,7 +104,7 @@ public class OJService {
 			    log.error("Couldn't create dir: " + parent);
 			} else {
 				keystoreFile.createNewFile();
-				keyStoreCertificateSource  = new KeyStoreCertificateSource((InputStream) null, ksType, ksPassword);
+				KeyStoreCertificateSource keyStoreCertificateSource  = new KeyStoreCertificateSource((InputStream) null, ksType, ksPassword);
 				keyStoreCertificateSource.addAllCertificatesToKeyStore(trustedListSource.getCertificates());
 				OutputStream fos = new FileOutputStream(ksFilename);
 				keyStoreCertificateSource.store(fos);
@@ -100,13 +114,11 @@ public class OJService {
 		refresh();
 	}
 	
-	public void refresh() throws MalformedURLException, IOException {
+	public void refresh() {
 		log.info("start refreshing oj keystore");
-		File keystoreFile = new File(ksFilename);
-		KeyStoreCertificateSource keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, ksType, ksPassword);
-		
+		KeyStoreCertificateSource keyStoreCertificateSource  = new KeyStoreCertificateSource((InputStream) null, ksType, ksPassword);
+		List<ServiceInfo> serviceInfos = getServicesInfos();
 		TSLRepository tslRepository = new TSLRepository();
-		
 		tslRepository.setTrustedListsCertificateSource(trustedListSource);
 		
 		TSLValidationJob validationJob = new TSLValidationJob();
@@ -121,25 +133,27 @@ public class OJService {
 		validationJob.setCheckTSLSignatures(true);
 		
 		try {
+			File keystoreFile = new File(ksFilename);
+			File keystoreFileSav = new File(ksFilename + ".bak");
+			keystoreFileSav.createNewFile();
+			fileService.copyFile(keystoreFile, keystoreFileSav);
+			
 			validationJob.refresh();
-		} catch (DSSException e) {
+			for(String trustedCertificatUrl : trustedCertificatUrlList) {
+				InputStream in = new URL(trustedCertificatUrl).openStream();
+				CertificateToken certificateToken = DSSUtils.loadCertificate(in);
+				if(!trustedListSource.getCertificates().contains(certificateToken)) {
+					trustedListSource.addCertificate(certificateToken, serviceInfos);
+				}
+			}
+			keyStoreCertificateSource.addAllCertificatesToKeyStore(trustedListSource.getCertificates());
+			OutputStream fos = new FileOutputStream(ksFilename);
+			keyStoreCertificateSource.store(fos);
+			Utils.closeQuietly(fos);
+			log.info("refreshing oj keystore OK");
+		} catch (DSSException | IOException e) {
 			log.error("oj refresh error", e);
 		}
-		
-		List<ServiceInfo> serviceInfos = getServicesInfos();
-		
-		for(String trustedCertificatUrl : trustedCertificatUrlList) {
-			InputStream in = new URL(trustedCertificatUrl).openStream();
-			CertificateToken certificateToken = DSSUtils.loadCertificate(in);
-			if(!trustedListSource.getCertificates().contains(certificateToken)) {
-				trustedListSource.addCertificate(certificateToken, serviceInfos);
-			}
-		}
-		
-		keyStoreCertificateSource.addAllCertificatesToKeyStore(trustedListSource.getCertificates());
-		OutputStream fos = new FileOutputStream(ksFilename);
-		keyStoreCertificateSource.store(fos);
-		Utils.closeQuietly(fos);
 	}
 	
 	public List<ServiceInfo> getServicesInfos() {
