@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.service;
+package org.esupportail.esupsignature.service.pdf;
 
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
@@ -44,6 +44,7 @@ import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.domain.SignRequestParams;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.service.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,6 +68,7 @@ public class PdfService {
 	private int yCenter;	
 	
 	public File formatPdf(File toSignFile, SignRequestParams params) {
+    	PdfParameters pdfParameters = getPdfParameters(toSignFile);
     	if(SignRequestParams.NewPageType.onBegin.equals(params.getNewPageType())) {
         	log.info("add page on begin");
         	toSignFile = addBlankPage(toSignFile, 0);
@@ -77,7 +79,7 @@ public class PdfService {
         if(SignRequestParams.NewPageType.onEnd.equals(params.getNewPageType())) {
         	log.info("add page on end");
         	toSignFile = addBlankPage(toSignFile, -1);
-        	params.setSignPageNumber(getTotalNumberOfPages(toSignFile));
+        	params.setSignPageNumber(pdfParameters.getTotalNumberOfPages());
         	params.setXPos(xCenter);
         	params.setYPos(yCenter);
         }
@@ -89,6 +91,7 @@ public class PdfService {
 		
 	public File stampImage(File toSignFile, SignRequestParams params, User user) {
     	File signImage = user.getSignImage().getJavaIoFile();
+    	PdfParameters pdfParameters = getPdfParameters(toSignFile);
 		toSignFile = formatPdf(toSignFile, params);
 		try {
 			File targetFile =  new File(Files.createTempDir(), toSignFile.getName());
@@ -101,7 +104,7 @@ public class PdfService {
 			float height = pdPage.getMediaBox().getHeight();
 			float width = pdPage.getMediaBox().getWidth();
 
-			if(getRotation(toSignFile) == 0) {
+			if(pdfParameters.getRotation() == 0) {
 				BufferedImage bufferedImage = ImageIO.read(signImage);
 		        AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
 		        tx.translate(0, -bufferedImage.getHeight(null));
@@ -314,65 +317,91 @@ public class PdfService {
 	    });
 	}
 	
-	public List<String> pagesAsBase64Images(File pdfFile) throws IOException   {
+	public List<String> pagesAsBase64Images(File pdfFile) {
 		List<String> imagePages = new ArrayList<String>();
-		PDDocument pdDocument = PDDocument.load(pdfFile);
-        PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
-        for(int i = 0; i < (pdDocument.getNumberOfPages()); i++) {
-	        BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(i, pdfToImageDpi, ImageType.RGB);
-	        imagePages.add(fileService.getBase64Image(bufferedImage, pdfFile.getName()));
-        }
-        pdDocument.close();
+		PDDocument pdDocument = null;
+		try {
+			pdDocument = PDDocument.load(pdfFile);
+		  PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
+	        for(int i = 0; i < (pdDocument.getNumberOfPages()); i++) {
+		        BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(i, pdfToImageDpi, ImageType.RGB);
+		        imagePages.add(fileService.getBase64Image(bufferedImage, pdfFile.getName()));
+	        }
+		} catch (IOException e) {
+			log.error("error on get page as base 64 image", e);
+		} finally {
+			if (pdDocument != null) {
+				try {
+					pdDocument.close();
+				} catch (IOException e) {
+					log.error("enable to close document", e);
+				}
+	          }
+		}
         return imagePages;
 	}
 	
-	public Integer getTotalNumberOfPages(File pdfFile) {
+	public PdfParameters getPdfParameters(File pdfFile) {
+		PDDocument pdDocument = null;
 		try {
-			PDDocument pdDocument = PDDocument.load(pdfFile);
-			int numberOfPages =pdDocument.getNumberOfPages();
-			return numberOfPages;
-		} catch (IOException e) {
-			log.error("error to get number of pages", e);
-		}
-		return null;
-	}
-	
-	public int getRotation(File pdfFile) {
-		try {
-			PDDocument pdDocument = PDDocument.load(pdfFile);
+			pdDocument = PDDocument.load(pdfFile);
 			PDPage pdPage = pdDocument.getPage(0);
-			return pdPage.getRotation();
-		} catch (IOException e) {
-			log.error("error to get rotation", e);
-		}
-		return -1;
-	}
-	
-	public PDRectangle getPdfRectangle(File pdfFile) {
-		try {
-			PDDocument pdDocument = PDDocument.load(pdfFile);
-			PDPage pdPage = pdDocument.getPage(0);
-			return pdPage.getMediaBox();
+			PdfParameters pdfParameters = new PdfParameters((int) pdPage.getMediaBox().getWidth(), (int) pdPage.getMediaBox().getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
+			return pdfParameters;
 		} catch (IOException e) {
 			log.error("error on get pdf rectangle", e);
+		} finally {
+			if (pdDocument != null) {
+				try {
+					pdDocument.close();
+				} catch (IOException e) {
+					log.error("enable to close document", e);
+				}
+	          }
 		}
 		return null;
 	}
 	
-	public String pageAsBase64Image(File pdfFile, int page) throws Exception {
-		PDDocument pdDocument = PDDocument.load(pdfFile);
-        PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
-        BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfToImageDpi, ImageType.RGB);
-        String imagePage = fileService.getBase64Image(bufferedImage, pdfFile.getName());
-        pdDocument.close();
+	public String pageAsBase64Image(File pdfFile, int page) {
+		String imagePage = "";
+		PDDocument pdDocument = null;
+		try {
+			pdDocument = PDDocument.load(pdfFile);
+	        PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
+	        BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfToImageDpi, ImageType.RGB);
+	        imagePage = fileService.getBase64Image(bufferedImage, pdfFile.getName());
+		} catch (IOException e) {
+			log.error("error on convert page to base 64 image", e);
+		} finally {
+			if (pdDocument != null) {
+				try {
+					pdDocument.close();
+				} catch (IOException e) {
+					log.error("enable to close document", e);
+				}
+	          }
+		}
         return imagePage;
 	}
 	
-	public BufferedImage pageAsBufferedImage(File pdfFile, int page) throws Exception {
-		PDDocument pdDocument = PDDocument.load(pdfFile);
-		PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
-		BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfToImageDpi, ImageType.RGB);
-        pdDocument.close();
+	public BufferedImage pageAsBufferedImage(File pdfFile, int page) {
+		BufferedImage bufferedImage = null;
+		PDDocument pdDocument = null;
+		try {
+			pdDocument = PDDocument.load(pdfFile);
+			PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
+			bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfToImageDpi, ImageType.RGB);
+		} catch (IOException e) {
+			log.error("error on convert page to image", e);
+		} finally {
+			if (pdDocument != null) {
+				try {
+					pdDocument.close();
+				} catch (IOException e) {
+					log.error("enable to close document", e);
+				}
+	          }
+		}
 		return bufferedImage;
 	}
 

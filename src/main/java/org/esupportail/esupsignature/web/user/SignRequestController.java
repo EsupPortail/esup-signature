@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
@@ -28,10 +27,11 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
-import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.pdf.PdfParameters;
+import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -193,25 +193,20 @@ public class SignRequestController {
 					}
 				}
 			}
-			File toConvertFile = toDisplayDocument.getJavaIoFile();
+			File toDisplayFile = toDisplayDocument.getJavaIoFile();
 			if(toDisplayDocument.getContentType().equals("application/pdf")) {
-				PDRectangle pdRectangle = pdfService.getPdfRectangle(toConvertFile);
-				if(pdfService.getRotation(toConvertFile) == 0) {
-					uiModel.addAttribute("pdfWidth", pdRectangle.getWidth());
-					uiModel.addAttribute("pdfHeight", pdRectangle.getHeight());
-				} else {
-					uiModel.addAttribute("pdfWidth", pdRectangle.getHeight());
-					uiModel.addAttribute("pdfHeight", pdRectangle.getWidth());
-				}
+				PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayFile);
+				uiModel.addAttribute("pdfWidth", pdfParameters.getWidth());
+				uiModel.addAttribute("pdfHeight", pdfParameters.getHeight());
+				uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+
 			}
 			uiModel.addAttribute("logs", Log.findLogsBySignRequestIdEquals(signRequest.getId()).getResultList());
 			uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 			uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 			uiModel.addAttribute("signRequest", signRequest);
-			uiModel.addAttribute("documentType", fileService.getExtension(toConvertFile));
+			uiModel.addAttribute("documentType", fileService.getExtension(toDisplayFile));
 			uiModel.addAttribute("itemId", id);
-			uiModel.addAttribute("imagePagesSize",
-					pdfService.getTotalNumberOfPages(toConvertFile));
 			uiModel.addAttribute("documentId", toDisplayDocument.getId());
 			if (signRequestService.checkUserSignRights(user, signRequest)) {
 				uiModel.addAttribute("signable", "ok");

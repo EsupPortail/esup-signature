@@ -19,9 +19,10 @@ import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.DocumentService;
-import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.pdf.PdfParameters;
+import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.springframework.roo.addon.web.mvc.controller.scaffold.RooWebScaffold;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -120,9 +121,11 @@ public class SignBookController {
 		SignBook signBook = SignBook.findSignBook(id);
 		Document modelFile = signBook.getModelFile();
 		if (modelFile.getSize() > 0) {
-			uiModel.addAttribute("imagePagesSize",
-					pdfService.getTotalNumberOfPages(modelFile.getJavaIoFile()));
 			uiModel.addAttribute("documentId", modelFile.getId());
+			if(modelFile.getContentType().equals("application/pdf")) {
+				PdfParameters pdfParameters = pdfService.getPdfParameters(modelFile.getJavaIoFile());
+				uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+			}
 		}
 
 		uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());

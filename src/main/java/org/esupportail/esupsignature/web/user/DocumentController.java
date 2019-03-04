@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
-import org.esupportail.esupsignature.service.PdfService;
+import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.MediaType;
 import org.springframework.roo.addon.web.mvc.controller.scaffold.RooWebScaffold;

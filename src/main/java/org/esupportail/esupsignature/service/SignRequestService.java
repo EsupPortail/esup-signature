@@ -23,6 +23,8 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
+import org.esupportail.esupsignature.service.pdf.PdfParameters;
+import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -158,7 +160,8 @@ public class SignRequestService {
 		
 		imageParameters.setPage(signRequest.getSignRequestParams().getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
-		if(pdfService.getRotation(toSignFile) == 0) {
+		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile);
+		if(pdfParameters.getRotation() == 0) {
 			imageParameters.setWidth(100);
 			imageParameters.setHeight(75);
 			imageParameters.setxAxis(signRequest.getSignRequestParams().getXPos());
