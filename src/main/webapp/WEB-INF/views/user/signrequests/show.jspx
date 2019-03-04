@@ -46,8 +46,9 @@
 								<dt class="col-lg-5">
 									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" />
 								</dt>
-								<dd>${inSignBookNames}</dd>
+								<dd>${signRequest.signBooksLabels}</dd>
 							</dl>
+							<field:display field="allSignToComplete" id="s_org_esupportail_esupsignature_domain_SignRequest_allSignToComplete" object="${signRequest}" z="user-managed" />
 							<field:display field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" object="${signRequest}" z="user-managed" />
 							<field:display render="false" field="status" id="s_org_esupportail_esupsignature_domain_SignRequest_status" object="${signRequest}" z="user-managed" />
 							<field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_SignRequest_originalFile" object="${signRequest}" render="false" z="user-managed" />
@@ -109,7 +110,7 @@
 								<table:table cssClass="table-xs" create="false" view="false" data="${logs}" delete="false" id="l_org_esupportail_esupsignature_domain_Log" path="/manager/logs" update="false" z="user-manager">
 									<table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Log_logDate" property="logDate" z="user-manager" />
 									<table:column id="c_org_esupportail_esupsignature_domain_Log_eppn" property="eppn" z="user-manager" />
-									<table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_action" property="action" z="user-manager" />
+									<table:column id="c_org_esupportail_esupsignature_domain_Log_action" property="action" z="user-manager" />
 									<table:column id="c_org_esupportail_esupsignature_domain_Log_initialStatus" property="initialStatus" z="user-manager" />
 									<table:column id="c_org_esupportail_esupsignature_domain_Log_finalStatus" property="finalStatus" z="user-manager" />
 									<table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_returnCode" property="returnCode" z="user-manager" />
@@ -132,7 +133,7 @@
 						<div class="card-body">
 							<form autocomplete="off" action="/user/signrequests/sign/${id}" method="post">
 								<c:choose>
-									<c:when test="${documentType eq 'pdf' and signable eq 'ok' and empty signRequest.signedFile and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'validate'}">
+									<c:when test="${documentType eq 'pdf' and signable eq 'ok' and (empty signRequest.signedFile or signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'validate'}">
 										<dl class="display-group border-bottom m-0">
 											<dt class="col-lg-12">
 												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signposition" />
@@ -181,7 +182,7 @@
 									</c:otherwise>
 								</c:choose>
 								<c:choose>
-									<c:when test="${not empty signRequest.signedFile}">
+									<c:when test="${not empty signRequest.signedFile and signRequest.status eq 'signed'}">
 										<dl class="display-group border-bottom m-0">
 											<dt class="col-lg-6">
 												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signedfile" />
@@ -303,7 +304,7 @@
 									</button>
 								</dd>
 							</dl>
-							<c:if test="${signRequest.status eq 'signed' and not empty signBooks}">
+							
 								<spring:url value="/user/signrequests/send-to-signbook/${id}" var="sendToSignBookUrl" />
 								<form action="${sendToSignBookUrl}" method="get">
 									<label for="signBookId" class="col-form-label"><spring:message code="menu_item_sendtosignbook" /></label>
@@ -323,7 +324,7 @@
 										</div>
 									</div>
 								</form>
-							</c:if>
+							
 						</div>
 					</div>
 				</div>
@@ -340,7 +341,7 @@
 								<div class="col-lg-4 text-center">
 									<h5>
 										<c:choose>
-											<c:when test="${signRequest.status eq 'signed'}">
+											<c:when test="${not empty signRequest.signedFile}">
 												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signedfile" />
 											</c:when>
 											<c:otherwise>
@@ -357,23 +358,21 @@
 							<div class="d-flex justify-content-center">
 								<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
 								<div id="pointer_div" onclick="point_it(event)" style="background-size: ${pdfWidth}px;background-image:url('${documentUrl}/${signRequest.signRequestParams.signPageNumber -1}');width:${pdfWidth}px;height:${pdfHeight}px;border:1px solid #CCC;">
-									<c:if test="${signable eq 'ok' and empty signRequest.signedFile and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'validate'}">
-										<i id="cross" style="left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;z-index:2;"> <img alt="signature" src="data:image/jpg;base64, ${signFile}" width="100" height="75" />
-										</i>
+									<c:if test="${signable eq 'ok' and (empty signRequest.signedFile  or signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'validate'}">
+										<span id="cross" style="left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;z-index:2;">
+										<div style="background-size: 100px;background-image: url('data:image/png;base64,${signFile}'); width: 100px; height: 75px; line-height: 75px; text-align: center;">
+											<span style="opacity: 0.6; vertical-align: middle; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+												<strong>Preview</strong>
+											</span>
+										</div>
+										</span>
 									</c:if>
 								</div>
 							</div>
 						</div>
 						<script type="text/javascript">
-							var nbImagePage = $
-							{
-								imagePagesSize
-							};
-							var currentImagePage = $
-							{
-								signRequest.signRequestParams.signPageNumber
-							}
-							-1;
+							var nbImagePage = ${imagePagesSize};
+							var currentImagePage = ${signRequest.signRequestParams.signPageNumber} - 1;
 							if (currentImagePage == 0) {
 								document.getElementById("previous").disabled = true;
 							}

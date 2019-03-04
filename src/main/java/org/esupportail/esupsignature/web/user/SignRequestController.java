@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.web.user;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -172,22 +171,30 @@ public class SignRequestController {
 		addDateTimeFormatPatterns(uiModel);
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
-			Document toConvertDocument;
-			if (signRequest.getStatus().equals(SignRequestStatus.signed)) {
-				toConvertDocument = signRequest.getSignedFile();
+			Document toDisplayDocument;
+			if (signRequest.getSignedFile() != null) {
+				toDisplayDocument = signRequest.getSignedFile();
 			} else {
-				toConvertDocument = signRequest.getOriginalFile();
+				toDisplayDocument = signRequest.getOriginalFile();
 			}
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
 			if (signRequest.getSignBooks() != null) {
-				List<String> signBookNames = new ArrayList<>();
 				for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
-					signBookNames.add(SignBook.findSignBook(signBookId.getKey()).getName());
+					if(!signBookId.getValue()) {
+						SignBook signBook = SignBook.findSignBook(signBookId.getKey());
+						if(signBook.getRecipientEmail().equals(user.getEmail())) {
+							System.err.println("test");
+							signRequest.getSignRequestParams().setSignPageNumber(signBook.getSignRequestParams().getSignPageNumber());
+							signRequest.getSignRequestParams().setXPos(signBook.getSignRequestParams().getXPos());
+							signRequest.getSignRequestParams().setYPos(signBook.getSignRequestParams().getYPos());
+							signRequest.merge();
+							break;
+						}
+					}
 				}
-				uiModel.addAttribute("inSignBookNames", signBookNames);
 			}
-			File toConvertFile = toConvertDocument.getJavaIoFile();
-			if(toConvertDocument.getContentType().equals("application/pdf")) {
+			File toConvertFile = toDisplayDocument.getJavaIoFile();
+			if(toDisplayDocument.getContentType().equals("application/pdf")) {
 				PDRectangle pdRectangle = pdfService.getPdfRectangle(toConvertFile);
 				if(pdfService.getRotation(toConvertFile) == 0) {
 					uiModel.addAttribute("pdfWidth", pdRectangle.getWidth());
@@ -205,7 +212,7 @@ public class SignRequestController {
 			uiModel.addAttribute("itemId", id);
 			uiModel.addAttribute("imagePagesSize",
 					pdfService.getTotalNumberOfPages(toConvertFile));
-			uiModel.addAttribute("documentId", toConvertDocument.getId());
+			uiModel.addAttribute("documentId", toDisplayDocument.getId());
 			if (signRequestService.checkUserSignRights(user, signRequest)) {
 				uiModel.addAttribute("signable", "ok");
 			}
@@ -239,7 +246,7 @@ public class SignRequestController {
 		signRequestParams.persist();
 		try {
 			Document document = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
-			signRequest = signRequestService.createSignRequest(user, document, signRequestParams, signRequest.getRecipientEmail(), null);
+			signRequest = signRequestService.createSignRequest(signRequest, user, document, signRequestParams, signRequest.getRecipientEmail(), null);
 
 		} catch (IOException e) {
 			log.error("error to add file : " + multipartFile.getOriginalFilename(), e);
@@ -249,7 +256,8 @@ public class SignRequestController {
 	}
 
 	@RequestMapping(value = "/sign/{id}", method = RequestMethod.POST)
-	public String sign(@PathVariable("id") Long id, @RequestParam(value = "xPos", required = true) int xPos,
+	public String sign(@PathVariable("id") Long id, 
+			@RequestParam(value = "xPos", required = true) int xPos,
 			@RequestParam(value = "yPos", required = true) int yPos,
 			@RequestParam(value = "signPageNumber", required = true) int signPageNumber,
 			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
@@ -372,7 +380,7 @@ public class SignRequestController {
 			}
 		}
 		*/
-		signRequestService.updateInfo(signRequest, SignRequestStatus.refused, "documentRefused", user, "SUCCESS");
+		signRequestService.updateInfo(signRequest, SignRequestStatus.refused, "refuse", user, "SUCCESS");
 		return "redirect:/user/signrequests/";
 	}
 

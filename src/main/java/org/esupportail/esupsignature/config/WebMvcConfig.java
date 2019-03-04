@@ -18,7 +18,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.theme.CookieThemeResolver;
 import org.springframework.web.servlet.theme.ThemeChangeInterceptor;
@@ -32,9 +32,8 @@ import org.springframework.web.servlet.view.tiles3.TilesView;
 @ComponentScan(basePackages = {"org.esupportail.esupsignature"}, includeFilters= {
 		@ComponentScan.Filter(type=FilterType.ANNOTATION, classes={org.springframework.stereotype.Controller.class})
 		})
-public class WebMvcConfig extends WebMvcConfigurerAdapter {
+public class WebMvcConfig implements WebMvcConfigurer {
 
-	
 	@Override
 	  public void addViewControllers(ViewControllerRegistry registry) {
 	    registry.addViewController("/").setViewName("index");

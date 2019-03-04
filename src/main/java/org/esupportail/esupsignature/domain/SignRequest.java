@@ -76,6 +76,15 @@ public class SignRequest {
         this.status = status;
     }
 
+    public Map<String, Boolean> getSignBooksLabels() {
+    	Map<String, Boolean> signBookNames = new HashMap<>();
+		for(Map.Entry<Long, Boolean> signBookId : signBooks.entrySet()) {
+			signBookNames.put(SignBook.findSignBook(signBookId.getKey()).getName(), signBookId.getValue());
+		}
+		return signBookNames;
+		
+    }
+    
 	public static TypedQuery<SignRequest> findSignRequests(String createBy, String recipientEmail, SignRequestStatus status, Long signBookId, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
     	EntityManager em = SignRequest.entityManager();
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
@@ -112,12 +121,12 @@ public class SignRequest {
         }
         
         List<Order> orders = new ArrayList<Order>();
-        orders.add(criteriaBuilder.asc(signRequestRoot.get("status")));
         if(sortOrder.equals("asc")){
         	orders.add(criteriaBuilder.asc(signRequestRoot.get(sortFieldName)));
         } else {
         	orders.add(criteriaBuilder.desc(signRequestRoot.get(sortFieldName)));
         }
+        orders.add(criteriaBuilder.asc(signRequestRoot.get("status")));
         query.orderBy(orders);
         query.where(criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()])));
         query.select(signRequestRoot);

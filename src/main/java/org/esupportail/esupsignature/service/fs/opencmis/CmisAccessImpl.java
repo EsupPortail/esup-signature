@@ -168,8 +168,9 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 
 
 	@Override
-	public List<FsFile> listFiles(String path) throws Exception {	
+	public List<FsFile> listFiles(String path) throws Exception {
 		Folder folder =  (Folder)  getCmisObject(path);
+		log.info("get file list from : " + folder.getPath());
 		ItemIterable<CmisObject> pl = folder.getChildren();
 		List<FsFile> fsFiles = new ArrayList<FsFile>();
 		for (CmisObject cmisObject : pl) {
@@ -259,7 +260,6 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	@Override
 	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws Exception {
 		//must manage the upload option.
-		log.error("You need to implements feature about upload options!");
 		Folder targetFolder = (Folder)getCmisObject(dir);
 		Map<String, String> prop = new HashMap<String, String>();
 		prop.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_DOCUMENT.value());
@@ -269,7 +269,8 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 		Document document = targetFolder.createDocument(prop, stream, VersioningState.NONE, null, null, null, cmisSession.getDefaultContext());
 		HashMap<String, String> m = new HashMap<String, String>();
         m.put("cmis:name",filename);
-        document.updateProperties(m); 
+        //m.put("cmis:createdBy","toto");
+        document.updateProperties(m);
 		return true;
 	}
 

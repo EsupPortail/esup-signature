@@ -17,6 +17,7 @@ import org.esupportail.esupsignature.domain.SignRequestParams;
 import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -125,6 +126,7 @@ public class SignBookController {
 		}
 
 		uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());
+		uiModel.addAttribute("signRequests", signBook.getSignRequests());
 		uiModel.addAttribute("signbook", signBook);
 		uiModel.addAttribute("itemId", id);
 		return "manager/signbooks/show";
@@ -185,11 +187,26 @@ public class SignBookController {
 			return "redirect:/manager/signbooks/" + id;
 		}
 		
-		signBookService.importFilesFromSource(signBook);
+		signBookService.importFilesFromSource(signBook, user);
 		return "redirect:/manager/signbooks/" + id;
 
 	}
 
+	@RequestMapping(value = "/send-files-to-target/{id}", produces = "text/html")
+	public String sendFileToTarget(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureException {
+		String eppn = userService.getEppnFromAuthentication();
+		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		SignBook signBook = SignBook.findSignBook(id);
+
+		if (!signBook.getCreateBy().equals(user.getEppn())) {
+			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+			return "redirect:/manager/signbooks/" + id;
+		}
+		signBookService.exportFilesToTarget(signBook, user);
+		return "redirect:/manager/signbooks/" + id;
+
+	}
+	
     String encodeUrlPathSegment(String pathSegment, HttpServletRequest httpServletRequest) {
         String enc = httpServletRequest.getCharacterEncoding();
         if (enc == null) {

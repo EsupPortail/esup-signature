@@ -13,6 +13,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
+import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.SignRequestParams;
@@ -66,14 +67,12 @@ public class SignRequestService {
 	@Resource
 	FileService fileService;
 	
-	public SignRequest createSignRequest(User user, Document document, SignRequestParams signRequestParams, String recipientEmail, Long signBookId) {
-		SignRequest signRequest = new SignRequest();
+	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document, SignRequestParams signRequestParams, String recipientEmail, Long signBookId) {
 		signRequest.setName(document.getFileName());
 		signRequest.setCreateBy(user.getEppn());
     	signRequest.setCreateDate(new Date());
 		signRequest.setOriginalFile(document);
 		signRequest.setSignedFile(null);
-		//signRequest.setSignBookId(0);
 		if(signBookId != null) {
 			signRequest.getSignBooks().put(signBookId, false);
 		}
@@ -81,7 +80,7 @@ public class SignRequestService {
 		signRequest.setSignRequestParams(signRequestParams);
 		signRequest.setRecipientEmail(recipientEmail);
 		signRequest.persist();
-		updateInfo(signRequest, SignRequestStatus.pending, "createSignRequest", user, "SUCCESS");
+		updateInfo(signRequest, SignRequestStatus.pending, "create", user, "SUCCESS");
         return signRequest;
 	}
 	
@@ -115,7 +114,22 @@ public class SignRequestService {
         	throw new EsupSignatureException("enable to sign document");
         }
 	}
-
+	
+	public void nexuSign(SignRequest signRequest, User user, SignatureDocumentForm signatureDocumentForm) throws EsupSignatureKeystoreException, EsupSignatureIOException {
+		logger.info(user.getEppn() + " launch cades nexu signature for signRequest : " + signRequest.getId());
+		DSSDocument dssDocument = signingService.signDocument(signatureDocumentForm);
+        InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
+        
+        try {
+        	File signedFile = fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName());
+        	if(signedFile != null){
+            	addSignedFile(signRequest, signedFile, user);	
+        	}
+		} catch (IOException e) {
+			logger.error("error to read signed file", e);
+		}
+	}
+	
 	public File padesSign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException {
 		File signImage = user.getSignImage().getJavaIoFile();
 		
@@ -206,38 +220,38 @@ public class SignRequestService {
 		}
         return null;
 	}
-
-	
-	public void nexuSign(SignRequest signRequest, User user, SignatureDocumentForm signatureDocumentForm) throws EsupSignatureKeystoreException, EsupSignatureIOException {
-		logger.info(user.getEppn() + " launch cades nexu signature for signRequest : " + signRequest.getId());
-		DSSDocument dssDocument = signingService.signDocument(signatureDocumentForm);
-        InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
-        
-        try {
-        	File signedFile = fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName());
-        	if(signedFile != null){
-            	addSignedFile(signRequest, signedFile, user);        		
-        	}
-		} catch (IOException e) {
-			logger.error("error to read signed file", e);
-		}
-	}
 	
 	public void addSignedFile(SignRequest signRequest, File signedFile, User user) throws EsupSignatureIOException {
 		try {
 			signRequest.setSignedFile(documentService.addFile(signedFile, "signed_" + signRequest.getSignRequestParams().getSignType().toString() + "_" + user.getEppn() + "_" + signedFile.getName(), fileService.getContentType(signedFile)));
-			updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");		
 			if (signRequest.getSignBooks() != null) {
 				for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
 					SignBook signBook = SignBook.findSignBook(signBookId.getKey());
-					if(user.getEmail().equals(signBook.getRecipientEmail())) {
+					if(user.getEmail().equals(signBook.getRecipientEmail()) && !signRequest.getSignBooks().get(signBookId.getKey())) {
 						signRequest.getSignBooks().put(signBookId.getKey(), true);
+						break;
+					}
+				}
+			} else {
+				updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
+			}
+			if(isSignRequestCompleted(signRequest)) {
+				updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
+				for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
+					if(signBookId.getValue()) {
+						SignBook signBook = SignBook.findSignBook(signBookId.getKey());
+						if(!signBook.getTargetType().equals(DocumentIOType.none)){
+							try {
+								signBookService.exportFileToTarget(signBook, signedFile);
+								signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
+							} catch (EsupSignatureException e) {
+								logger.error("error on export file to fs", e);
+							}
+						}
+						break;
 					}
 				}
 			}
-			if(isSignRequestCompleted(signRequest)) {
-				updateInfo(signRequest, SignRequestStatus.completed, "sign", user, "SUCCESS");		
-			}	
 		} catch (IOException e) {
 			throw new EsupSignatureIOException("error on save signed file", e);
 		}
@@ -268,9 +282,11 @@ public class SignRequestService {
 					return true;
 				}
 			}
-		}
-		if(signRequest.isAllSignToComplete()) {
-			return true;
+			if(signRequest.isAllSignToComplete()) {
+				return true;
+			} else {
+				return false;
+			}
 		} else {
 			return false;
 		}
