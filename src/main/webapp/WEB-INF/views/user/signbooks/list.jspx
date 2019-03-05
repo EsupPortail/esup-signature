@@ -3,8 +3,8 @@
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
 	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
-	<div class="card card-body bg-info text-white">
-		Un parapheur contient un modele de document. Les paramètres de signature ainsi que le destinaire sont figés
+		<div class="card card-body bg-info text-white">
+			Un parapheur contient un modele de document. Les paramètres de signature ainsi que le destinaire sont figés
 		</div>
 	</div>
     <page:list id="pl_org_esupportail_esupsignature_domain_SignBook" items="${signbooks}" z="user-managed">

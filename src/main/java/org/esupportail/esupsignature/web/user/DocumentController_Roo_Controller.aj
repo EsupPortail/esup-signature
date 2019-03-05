@@ -36,6 +36,7 @@ privileged aspect DocumentController_Roo_Controller {
     
     @RequestMapping(value = "/{id}", produces = "text/html")
     public String DocumentController.show(@PathVariable("id") Long id, Model uiModel) {
+        addDateTimeFormatPatterns(uiModel);
         uiModel.addAttribute("document", Document.findDocument(id));
         uiModel.addAttribute("itemId", id);
         return "user/documents/show";
@@ -52,6 +53,7 @@ privileged aspect DocumentController_Roo_Controller {
         } else {
             uiModel.addAttribute("documents", Document.findAllDocuments(sortFieldName, sortOrder));
         }
+        addDateTimeFormatPatterns(uiModel);
         return "user/documents/list";
     }
     
@@ -82,8 +84,13 @@ privileged aspect DocumentController_Roo_Controller {
         return "redirect:/user/documents";
     }
     
+    void DocumentController.addDateTimeFormatPatterns(Model uiModel) {
+        uiModel.addAttribute("document_createdate_date_format", "dd/MM/yyyy HH:mm");
+    }
+    
     void DocumentController.populateEditForm(Model uiModel, Document document) {
         uiModel.addAttribute("document", document);
+        addDateTimeFormatPatterns(uiModel);
         uiModel.addAttribute("bigfiles", BigFile.findAllBigFiles());
     }
     

@@ -82,9 +82,10 @@ public class SignBookService {
 	
 	public void exportFilesToTarget(SignBook signBook, User user) throws EsupSignatureException {
 		for(SignRequest signRequest : signBook.getSignRequests()) {
-			if(signRequest.getStatus().equals(SignRequestStatus.signed)) {
-				exportFileToTarget(signBook, signRequest.getSignedFile().getJavaIoFile());
-				signRequestService.updateInfo(signRequest, SignRequestStatus.completed, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri() , user, "SUCCESS");
+			if(signRequest.getStatus().equals(SignRequestStatus.signed) && signRequestService.isSignRequestCompleted(signRequest)) {
+				exportFileToTarget(signBook, signRequestService.getLastDocument(signRequest).getJavaIoFile());
+				signRequestService.updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri() , user, "SUCCESS");
+				removeSignRequestFromSignBook(signRequest, signBook, user);
 			}
 		}
 	}
@@ -124,11 +125,6 @@ public class SignBookService {
 	
 	public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
 		if(!signBook.getSignRequests().contains(signRequest)) {
-			if(signRequest.getSignedFile() != null) {
-		    	signRequest.getOriginalFile().remove();
-		    	signRequest.setOriginalFile(signRequest.getSignedFile());
-		    	signRequest.setSignedFile(null);
-			}
 	    	signRequest.setRecipientEmail(signBook.getRecipientEmail());
 	    	signRequest.setSignRequestParams(signBook.getSignRequestParams());
 	    	signRequest.getSignBooks().put(signBook.getId(), false);

@@ -12,7 +12,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
@@ -51,11 +51,8 @@ public class SignRequest {
     @Size(max = 500)
     private String description;
     
-    @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
-    private Document originalFile = new Document();
-    
-    @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST }, orphanRemoval = true)
-    private Document signedFile = new Document();
+    @OneToMany
+    private List<Document> documents = new ArrayList<Document>();
     
     @ManyToOne(fetch = FetchType.LAZY)
     private SignRequestParams signRequestParams = new SignRequestParams();
@@ -69,7 +66,7 @@ public class SignRequest {
     private boolean allSignToComplete = false;
     
     public enum SignRequestStatus {
-		uploaded, pending, canceled, checked, signed, refused, deleted, completed;
+		uploaded, pending, canceled, checked, signed, refused, deleted, exported, completed;
 	}
 	
     public void setStatus(SignRequestStatus status) {

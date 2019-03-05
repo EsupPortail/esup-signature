@@ -2,6 +2,11 @@
 <div xmlns:fmt="http://java.sun.com/jsp/jstl/fmt" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:spring="http://www.springframework.org/tags" xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:util="urn:jsptagdir:/WEB-INF/tags/util" version="2.0">
 	<jsp:directive.page contentType="text/html;charset=UTF-8" />
 	<jsp:output omit-xml-declaration="yes" />
+	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
+		<div class="card card-body bg-info text-white">
+			List des documents vous concernant (à signer ou envoyés pour signature)
+		</div>
+	</div>
 	<div class="card">
 		<div class="card-header">
 			<form action="" method="get">
@@ -140,36 +145,37 @@
 										<c:when test="${signRequest.status eq 'pending'}">
 											<button type="button" class="btn btn-outline-primary btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
 												<i class="fas fa-clock"> <!--  -->
-												</i>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
+												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
 											</button>
 										</c:when>
 										<c:when test="${signRequest.status eq 'signed'}">
 											<button type="button" class="btn btn-outline-success btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
 												<i class="fas fa-file-signature"> <!--  -->
-												</i>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
+												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
 											</button>
 										</c:when>
 										<c:when test="${signRequest.status eq 'refused'}">
 											<button type="button" class="btn btn-outline-danger btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
 												<i class="fas fa-ban"> <!--  -->
-												</i>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
+												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
 											</button>
 										</c:when>
 										<c:when test="${signRequest.status eq 'checked'}">
 											<button type="button" class="btn btn-outline-success btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
 												<i class="far fa-check-circle"> <!--  -->
-												</i>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
+												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
 											</button>
 										</c:when>
+										<c:when test="${signRequest.status eq 'exported'}">
+											<button type="button" class="btn btn-outline-info btn-sm">
+												<i class="fas fa-file-export"> <!--  -->
+												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
+											</button>
+										</c:when>										
 										<c:when test="${signRequest.status eq 'completed'}">
 											<button type="button" class="btn btn-outline-warning btn-sm  col-12" id="status_${signRequest.id}" value="${signRequest.status}">
 												<i class="fas fa-flag-checkered"> <!--  -->
-												</i>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
+												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
 											</button>
 										</c:when>
 										<c:otherwise>

@@ -6,11 +6,13 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.dss.web.model.ValidationForm;
 import org.esupportail.esupsignature.dss.web.service.FOPService;
 import org.esupportail.esupsignature.dss.web.service.XSLTService;
 import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +55,9 @@ public class ValidationController {
 	@Resource
 	private FileService fileService;
 
+	@Resource
+	private SignRequestService signRequestService;
+	
 	@RequestMapping(method = RequestMethod.GET)
 	public String showValidationForm(Model model, HttpServletRequest request) {
 		ValidationForm validationForm = new ValidationForm();
@@ -81,7 +86,8 @@ public class ValidationController {
 	@RequestMapping(value = "/document/{id}")
 	public String validateDocument(@PathVariable(name="id") long id, Model model) {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-		Reports reports = validationService.validate(fileService.toMultipartFile(signRequest.getSignedFile().getJavaIoFile(), signRequest.getSignedFile().getContentType()));
+		Document toValideDocument = signRequestService.getLastDocument(signRequest);
+		Reports reports = validationService.validate(fileService.toMultipartFile(toValideDocument.getJavaIoFile(), toValideDocument.getContentType()));
 		
 		String xmlSimpleReport = reports.getXmlSimpleReport();
 		model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));

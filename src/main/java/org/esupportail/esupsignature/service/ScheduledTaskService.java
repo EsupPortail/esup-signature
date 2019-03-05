@@ -41,8 +41,7 @@ public class ScheduledTaskService {
 			User user = new User();
 			user.setEppn("Scheduler");
 			user.setIp("127.0.0.1");
-			signBookService.exportFilesToTarget(signBook, null);
-			
+			signBookService.exportFilesToTarget(signBook, user);
 		}
 	}
 	

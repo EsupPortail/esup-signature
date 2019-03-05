@@ -171,12 +171,13 @@ public class SignRequestController {
 		addDateTimeFormatPatterns(uiModel);
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
-			Document toDisplayDocument;
+			/*
 			if (signRequest.getSignedFile() != null) {
 				toDisplayDocument = signRequest.getSignedFile();
 			} else {
 				toDisplayDocument = signRequest.getOriginalFile();
 			}
+			*/
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
 			if (signRequest.getSignBooks() != null) {
 				for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
@@ -193,6 +194,8 @@ public class SignRequestController {
 					}
 				}
 			}
+			uiModel.addAttribute("documents", signRequest.getDocuments());
+			Document toDisplayDocument = signRequestService.getLastDocument(signRequest);
 			File toDisplayFile = toDisplayDocument.getJavaIoFile();
 			if(toDisplayDocument.getContentType().equals("application/pdf")) {
 				PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayFile);
@@ -400,11 +403,11 @@ public class SignRequestController {
 	@RequestMapping(value = "/get-original-file/{id}", method = RequestMethod.GET)
 	public void getOriginalFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-		Document file = signRequest.getOriginalFile();
+		Document document = signRequestService.getPreviousDocument(signRequest);
 		try {
-			response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
-			response.setContentType(file.getContentType());
-			IOUtils.copy(file.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+			response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+			response.setContentType(document.getContentType());
+			IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
 		} catch (Exception e) {
 			log.error("get file error", e);
 		}
@@ -413,13 +416,15 @@ public class SignRequestController {
 	@RequestMapping(value = "/get-signed-file/{id}", method = RequestMethod.GET)
 	public void getSignedFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-		Document file = signRequest.getSignedFile();
-		try {
-			response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
-			response.setContentType(file.getContentType());				
-			IOUtils.copy(file.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
-		} catch (Exception e) {
-			log.error("get file error", e);
+		if(signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.completed)) {
+			Document document = signRequestService.getLastDocument(signRequest);
+			try {
+				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+				response.setContentType(document.getContentType());				
+				IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+			} catch (Exception e) {
+				log.error("get file error", e);
+			}
 		}
 	}
 

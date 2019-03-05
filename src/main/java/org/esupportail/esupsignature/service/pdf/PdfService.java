@@ -349,7 +349,7 @@ public class PdfService {
 			PdfParameters pdfParameters = new PdfParameters((int) pdPage.getMediaBox().getWidth(), (int) pdPage.getMediaBox().getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
 			return pdfParameters;
 		} catch (IOException e) {
-			log.error("error on get pdf rectangle", e);
+			log.error("error on get pdf parameters", e);
 		} finally {
 			if (pdDocument != null) {
 				try {

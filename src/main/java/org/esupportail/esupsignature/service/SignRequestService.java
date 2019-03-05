@@ -70,11 +70,11 @@ public class SignRequestService {
 	FileService fileService;
 	
 	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document, SignRequestParams signRequestParams, String recipientEmail, Long signBookId) {
+		document.setCreateDate(new Date());
 		signRequest.setName(document.getFileName());
 		signRequest.setCreateBy(user.getEppn());
     	signRequest.setCreateDate(new Date());
-		signRequest.setOriginalFile(document);
-		signRequest.setSignedFile(null);
+		signRequest.getDocuments().add(document);
 		if(signBookId != null) {
 			signRequest.getSignBooks().put(signBookId, false);
 		}
@@ -87,7 +87,7 @@ public class SignRequestService {
 	}
 	
 	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureIOException, EsupSignatureException {
-        File toSignFile = signRequest.getOriginalFile().getJavaIoFile();
+		File toSignFile = getLastDocument(signRequest).getJavaIoFile();
     	SignRequestParams.SignType signType = signRequest.getSignRequestParams().getSignType();
 		File signedFile = null;
     	if(fileService.getContentType(toSignFile).equals("application/pdf")) {
@@ -139,11 +139,11 @@ public class SignRequestService {
 		SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
 		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
 		CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
-
-		File toSignFile = pdfService.formatPdf(signRequest.getOriginalFile().getJavaIoFile(), signRequest.getSignRequestParams());	
+		File toSignFile = getLastDocument(signRequest).getJavaIoFile();
+		File toSignFormatedFile = pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams());	
         SignatureDocumentForm signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
 		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
-		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
+		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFormatedFile, "application/pdf"));
 		
         signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
 		List<String> base64CertificateChain = new ArrayList<>();
@@ -160,7 +160,7 @@ public class SignRequestService {
 		
 		imageParameters.setPage(signRequest.getSignRequestParams().getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
-		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile);
+		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFormatedFile);
 		if(pdfParameters.getRotation() == 0) {
 			imageParameters.setWidth(100);
 			imageParameters.setHeight(75);
@@ -192,7 +192,7 @@ public class SignRequestService {
 	}
 
 	public File xadesSign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException {
-		File toSignFile = signRequest.getOriginalFile().getJavaIoFile();
+		File toSignFile = getLastDocument(signRequest).getJavaIoFile();
 		
         SignatureDocumentForm signatureDocumentForm = signingService.getXadesSignatureDocumentForm();
 		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
@@ -226,8 +226,9 @@ public class SignRequestService {
 	
 	public void addSignedFile(SignRequest signRequest, File signedFile, User user) throws EsupSignatureIOException {
 		try {
-			signRequest.setSignedFile(documentService.addFile(signedFile, "signed_" + signRequest.getSignRequestParams().getSignType().toString() + "_" + user.getEppn() + "_" + signedFile.getName(), fileService.getContentType(signedFile)));
-			if (signRequest.getSignBooks() != null) {
+			Document toaddDocument = documentService.addFile(signedFile, "signed_" + signRequest.getSignRequestParams().getSignType().toString() + "_" + user.getEppn() + "_" + signedFile.getName(), fileService.getContentType(signedFile));
+			signRequest.getDocuments().add(toaddDocument);
+			if (signRequest.getSignBooks() != null && signRequest.getSignBooks().size() > 0) {
 				for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
 					SignBook signBook = SignBook.findSignBook(signBookId.getKey());
 					if(user.getEmail().equals(signBook.getRecipientEmail()) && !signRequest.getSignBooks().get(signBookId.getKey())) {
@@ -238,6 +239,7 @@ public class SignRequestService {
 			} else {
 				updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
 			}
+			signRequest.merge();
 			if(isSignRequestCompleted(signRequest)) {
 				updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
 				for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
@@ -246,6 +248,7 @@ public class SignRequestService {
 						if(!signBook.getTargetType().equals(DocumentIOType.none)){
 							try {
 								signBookService.exportFileToTarget(signBook, signedFile);
+								updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri() , user, "SUCCESS");
 								signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
 							} catch (EsupSignatureException e) {
 								logger.error("error on export file to fs", e);
@@ -257,6 +260,20 @@ public class SignRequestService {
 			}
 		} catch (IOException e) {
 			throw new EsupSignatureIOException("error on save signed file", e);
+		}
+	}
+
+	public Document getLastDocument(SignRequest signRequest) {
+		List<Document> documents = signRequest.getDocuments();
+		return documents.get(documents.size() - 1);
+	}
+
+	public Document getPreviousDocument(SignRequest signRequest) {
+		List<Document> documents = signRequest.getDocuments();
+		if(documents.size() > 1) {
+			return documents.get(documents.size() - 2);
+		} else {
+			return documents.get(0);
 		}
 	}
 	
