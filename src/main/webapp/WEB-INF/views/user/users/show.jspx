@@ -1,46 +1,53 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:spring="http://www.springframework.org/tags" version="2.0">
-    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
-    <jsp:output omit-xml-declaration="yes"/>
-    <spring:message code="label_org_esupportail_esupsignature_domain_user_settings" var="title" />
-    <page:show create="false" delete="false" update="true" label="${title}" list="false" id="ps_org_esupportail_esupsignature_domain_User" object="${user}" path="/user/users" z="user-managed">
-        <field:display field="name" id="s_org_esupportail_esupsignature_domain_User_name" object="${user}" z="user-managed"/>
-        <field:display field="firstname" id="s_org_esupportail_esupsignature_domain_User_firstname" object="${user}" z="user-managed"/>
-        <field:display field="eppn" id="s_org_esupportail_esupsignature_domain_User_eppn" object="${user}" z="user-managed"/>
-        <field:display field="email" id="s_org_esupportail_esupsignature_domain_User_email" object="${user}" z="user-managed"/>
-        <field:display field="signImage" id="s_org_esupportail_esupsignature_domain_User_signImage" object="${user}" render="false" z="user-managed"/>
-        <field:display field="publicKey" id="s_org_esupportail_esupsignature_domain_User_publicKey" object="${user}" render="false" z="user-managed"/>
-        <field:display field="keystore" id="s_org_esupportail_esupsignature_domain_User_keystore" object="${user}" render="false" z="user-managed"/>
-	    <field:display render="false" field="password" id="s_org_esupportail_esupsignature_domain_User_password" object="${user}" z="user-managed"/>
-        <dl class="display-group border-bottom m-0">
-        	<dt class="col-lg-4"><spring:message code="label_org_esupportail_esupsignature_domain_user_signimage" /></dt>
-        	<dd><img alt="signature" src="data:image/jpg;base64, ${signFile}"/></dd></dl>
-   		<dl class="display-group border-bottom m-0">
-	   		<dt class="col-lg-4"><spring:message code="label_org_esupportail_esupsignature_domain_user_keystore" /></dt>
-	   		<dd>
+	<jsp:directive.page contentType="text/html;charset=UTF-8" />
+	<jsp:output omit-xml-declaration="yes" />
+	<spring:message code="label_org_esupportail_esupsignature_domain_user_settings" var="title" />
+	<page:show create="false" delete="false" update="true" label="${title}" list="false" id="ps_org_esupportail_esupsignature_domain_User" object="${user}" path="/user/users" z="user-managed">
+		<field:display field="name" id="s_org_esupportail_esupsignature_domain_User_name" object="${user}" z="user-managed" />
+		<field:display field="firstname" id="s_org_esupportail_esupsignature_domain_User_firstname" object="${user}" z="user-managed" />
+		<field:display field="eppn" id="s_org_esupportail_esupsignature_domain_User_eppn" object="${user}" z="user-managed" />
+		<field:display field="email" id="s_org_esupportail_esupsignature_domain_User_email" object="${user}" z="user-managed" />
+		<field:display field="signImage" id="s_org_esupportail_esupsignature_domain_User_signImage" object="${user}" render="false" z="user-managed" />
+		<field:display field="publicKey" id="s_org_esupportail_esupsignature_domain_User_publicKey" object="${user}" render="false" z="user-managed" />
+		<field:display field="keystore" id="s_org_esupportail_esupsignature_domain_User_keystore" object="${user}" render="false" z="user-managed" />
+		<field:display render="false" field="password" id="s_org_esupportail_esupsignature_domain_User_password" object="${user}" z="user-managed" />
+		<dl class="display-group border-bottom m-0">
+			<dt class="col-lg-4">
+				<spring:message code="label_org_esupportail_esupsignature_domain_user_signimage" />
+			</dt>
+			<dd>
+				<img alt="signature" src="data:image/jpg;base64, ${signFile}" />
+			</dd>
+		</dl>
+		<dl class="display-group border-bottom m-0">
+			<dt class="col-lg-4">
+				<spring:message code="label_org_esupportail_esupsignature_domain_user_keystore" />
+			</dt>
+			<dd>
 				<c:if test="${not empty keystore}">
-			    	<spring:url value="/user/users/get-keystore-file/${id}" var="keystoreFileUrl" />
+					<spring:url value="/user/users/get-keystore-file/${id}" var="keystoreFileUrl" />
 					<button type="button" class="btn btn-warning" onclick="location.href='${keystoreFileUrl}'">
 						<i class="fas fa-download"> <!--  -->
-						</i> <spring:message code="menu_item_user_download_keystore" />
+						</i>
+						<spring:message code="menu_item_user_download_keystore" />
 					</button>
-					<br/><br/>
-				    <form action="viewCert" method="get">
-				          <div class="input-group mb-2">
-				          <c:if test="${not isPasswordSet}">
-  					        <div class="input-group-prepend">
-					          <div class="input-group-text"><spring:message code="label_org_esupportail_esupsignature_domain_user_password" /></div>
-					        </div>
-			        	<input class="form-control" type="password" name="password" />
-						</c:if>
-						<div class="input-group-append">
-			        		<spring:message code="menu_item_user_check_certificat" var="checkCertLabel" />
-			        		<input class="btn btn-primary" type="submit" value="${checkCertLabel}" />
-			        	</div>
-			        	</div>
-			        </form>
+					<br />
+					<br />
+					<form action="viewCert" method="get">
+						<div class="input-group mb-2">
+							<c:if test="${not isPasswordSet}">
+								<spring:message code="label_org_esupportail_esupsignature_domain_user_password" var="passwordLabel" />
+								<input class="form-control" placeholder="${passwordLabel}" type="password" name="password" />
+							</c:if>
+							<div class="input-group-append">
+								<spring:message code="menu_item_user_check_certificat" var="checkCertLabel" />
+								<input class="btn btn-primary" type="submit" value="${checkCertLabel}" />
+							</div>
+						</div>
+					</form>
 				</c:if>
 			</dd>
-		</dl>        
-    </page:show>
+		</dl>
+	</page:show>
 </div>

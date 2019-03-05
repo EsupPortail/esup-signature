@@ -19,6 +19,7 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
@@ -87,9 +88,9 @@ public class SignRequest {
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<SignRequest> query = criteriaBuilder.createQuery(SignRequest.class);
         Root<SignRequest> signRequestRoot = query.from(SignRequest.class);
-
+        
     	List<Predicate> predicates = new ArrayList<Predicate>();
-    	Predicate predicatesOwner;
+    	Predicate predicatesOwner = null;
     	Predicate createByPredicates = null;
     	Predicate recipientEmailPredicates = null;
         if(!createBy.isEmpty()) {
@@ -98,12 +99,20 @@ public class SignRequest {
         if(!recipientEmail.isEmpty()) {
         	recipientEmailPredicates = criteriaBuilder.equal(signRequestRoot.get("recipientEmail"), recipientEmail);
         }
-        
-        predicatesOwner = criteriaBuilder.or(createByPredicates, recipientEmailPredicates);
-        predicates.add(predicatesOwner);
+        if(!createBy.isEmpty() && !recipientEmail.isEmpty()) {
+            predicatesOwner = criteriaBuilder.or(createByPredicates, recipientEmailPredicates);        	
+        } else if(!createBy.isEmpty()) {
+        	 predicatesOwner = criteriaBuilder.and(createByPredicates);
+        } else if(!recipientEmail.isEmpty()) {
+        	 predicatesOwner = criteriaBuilder.and(recipientEmailPredicates);
+        }
+        if(predicatesOwner != null) {
+        	predicates.add(predicatesOwner);
+        }
         
         if(signBookId != null) {
-        	predicates.add(criteriaBuilder.equal(signRequestRoot.get("signBookId"), signBookId));
+        	Join<SignBook, SignRequest> signBookJoin = signRequestRoot.join("signBooks");        	
+        	predicates.add(criteriaBuilder.equal(signBookJoin.get("id"), signBookId));
         }
         
         if(status != null) {

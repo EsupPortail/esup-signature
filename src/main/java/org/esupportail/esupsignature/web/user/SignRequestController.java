@@ -59,7 +59,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 @Scope(value = "session")
 public class SignRequestController {
 
-	private static final Logger log = LoggerFactory.getLogger(SignRequestController.class);
+	private static final Logger logger = LoggerFactory.getLogger(SignRequestController.class);
 
 	@ModelAttribute("active")
 	public String getActiveMenu() {
@@ -137,13 +137,13 @@ public class SignRequestController {
 		float nrOfPages = 1;
 		int sizeNo = size == null ? 10 : size.intValue();
 		if (findBy != null && findBy.equals("recipientEmail")) {
-			signRequests = SignRequest.findSignRequests(eppn, user.getEmail(), SignRequestStatus.pending, signBookId, "", page, size,
+			signRequests = SignRequest.findSignRequests("", user.getEmail(), SignRequestStatus.pending, signBookId, "", page, size,
 					sortFieldName, sortOrder).getResultList();
 			nrOfPages = (float) SignRequest.countFindSignRequests("", user.getEmail(), SignRequestStatus.pending, "") / sizeNo;
 			uiModel.addAttribute("tosigndocs", "active");
 		} else {
 			signBookId = null;
-			signRequests = SignRequest.findSignRequests(eppn, user.getEmail(), statusFilterEnum, null, "", page, size, sortFieldName, sortOrder)
+			signRequests = SignRequest.findSignRequests(eppn, "", statusFilterEnum, null, "", page, size, sortFieldName, sortOrder)
 					.getResultList();
 			nrOfPages = (float) SignRequest.countFindSignRequests(eppn, "", statusFilterEnum, "") / sizeNo;
 			uiModel.addAttribute("mydocs", "active");
@@ -184,7 +184,6 @@ public class SignRequestController {
 					if(!signBookId.getValue()) {
 						SignBook signBook = SignBook.findSignBook(signBookId.getKey());
 						if(signBook.getRecipientEmail().equals(user.getEmail())) {
-							System.err.println("test");
 							signRequest.getSignRequestParams().setSignPageNumber(signBook.getSignRequestParams().getSignPageNumber());
 							signRequest.getSignRequestParams().setXPos(signBook.getSignRequestParams().getXPos());
 							signRequest.getSignRequestParams().setYPos(signBook.getSignRequestParams().getYPos());
@@ -216,7 +215,7 @@ public class SignRequestController {
 			}
 			return "user/signrequests/show";
 		} else {
-			log.warn(eppn + " attempted to access signRequest " + id + " without write access");
+			logger.warn(eppn + " attempted to access signRequest " + id + " without write access");
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
 			return "redirect:/user/signrequests/";
 		}
@@ -247,7 +246,7 @@ public class SignRequestController {
 			signRequest = signRequestService.createSignRequest(signRequest, user, document, signRequestParams, signRequest.getRecipientEmail(), null);
 
 		} catch (IOException e) {
-			log.error("error to add file : " + multipartFile.getOriginalFilename(), e);
+			logger.error("error to add file : " + multipartFile.getOriginalFilename(), e);
 		}
 
 		return "redirect:/user/signrequests/" + signRequest.getId();
@@ -283,12 +282,12 @@ public class SignRequestController {
 					signRequestService.sign(signRequest, user, this.password);
 				}
 			} catch (EsupSignatureKeystoreException e) {
-				log.error("keystore error", e);
+				logger.error("keystore error", e);
 				redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
 			} catch (EsupSignatureIOException e) {
-				log.error(e.getMessage(), e);
+				logger.error(e.getMessage(), e);
 			} catch (EsupSignatureException e) {
-				log.error(e.getMessage(), e);
+				logger.error(e.getMessage(), e);
 			}
 			return "redirect:/user/signrequests/" + id;
 		} else {
@@ -320,22 +319,22 @@ public class SignRequestController {
 						signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
 					} else 
 					if(signType.equals(SignRequestParams.SignType.nexuSign)) {
-						log.error("no multiple nexu sign");
+						logger.error("no multiple nexu sign");
 						progress = "not_autorized";
 					} else {
 						signRequestService.sign(signRequest, user, this.password);
 					}
 				} catch (EsupSignatureKeystoreException e) {
-					log.error("keystore error", e);
+					logger.error("keystore error", e);
 					progress = "security_bad_password";
 					break;
 				} catch (EsupSignatureIOException e) {
-					log.error(e.getMessage(), e);
+					logger.error(e.getMessage(), e);
 				} catch (EsupSignatureException e) {
-					log.error(e.getMessage(), e);
+					logger.error(e.getMessage(), e);
 				}
 			} else {
-				log.error("not autorized to sign");
+				logger.error("not autorized to sign");
 				progress = "not_autorized";
 			}
 			nbSigned++;
@@ -349,7 +348,7 @@ public class SignRequestController {
 	@RequestMapping(value = "/get-progress")
 	public String getProgress(RedirectAttributes redirectAttrs, HttpServletResponse response,
 			Model model, HttpServletRequest request) {
-		log.debug("getProgress : " + progress);
+		logger.debug("getProgress : " + progress);
 		return progress;
 	}
 	
@@ -367,17 +366,16 @@ public class SignRequestController {
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
 			return "redirect:/user/signrequests/" + id;
 		}
-		//TODO quelles conditions pour statut completed
-		/*
-		if (signRequest.getSignBookId() != 0) {
-			SignBook signBook = SignBook.findSignBook(signRequest.getSignBookId());
-			try {
-				signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
-			} catch (EsupSignatureException e) {
-				log.warn(e.getMessage(), e);
+		if (signRequest.getSignBooks().size() > 0) {
+			for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
+				SignBook signBook = SignBook.findSignBook(signBookId.getKey());
+				if(user.getEmail().equals(signBook.getRecipientEmail()) && !signRequest.getSignBooks().get(signBookId.getKey())) {
+					signRequest.getSignBooks().put(signBookId.getKey(), true);
+					signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
+					break;
+				}
 			}
 		}
-		*/
 		signRequestService.updateInfo(signRequest, SignRequestStatus.refused, "refuse", user, "SUCCESS");
 		return "redirect:/user/signrequests/";
 	}
@@ -409,7 +407,7 @@ public class SignRequestController {
 			response.setContentType(document.getContentType());
 			IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
 		} catch (Exception e) {
-			log.error("get file error", e);
+			logger.error("get file error", e);
 		}
 	}
 
@@ -423,7 +421,7 @@ public class SignRequestController {
 				response.setContentType(document.getContentType());				
 				IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
 			} catch (Exception e) {
-				log.error("get file error", e);
+				logger.error("get file error", e);
 			}
 		}
 	}
@@ -440,7 +438,7 @@ public class SignRequestController {
 		try {
 			signBookService.importSignRequestInSignBook(signRequest, signBook, user);
 		} catch (EsupSignatureException e) {
-			log.warn(e.getMessage());
+			logger.warn(e.getMessage());
 			redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
 
 		}

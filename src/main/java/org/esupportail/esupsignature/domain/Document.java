@@ -28,7 +28,7 @@ import com.google.common.io.Files;
 @RooJpaActiveRecord
 public class Document {
 
-	private static final Logger log = LoggerFactory.getLogger(BigFile.class);
+	private static final Logger logger = LoggerFactory.getLogger(Document.class);
 
 	private String fileName;
 
@@ -56,7 +56,7 @@ public class Document {
 		    outputStream.close();
 			return targetFile;
     	} catch (SQLException | IOException e) {
-    		log.error("error to convert BigFile to java.io.File", e);
+    		logger.error("error to convert BigFile to java.io.File", e);
 		}
     	return null;
 	}

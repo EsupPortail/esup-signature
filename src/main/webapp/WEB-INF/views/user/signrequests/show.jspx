@@ -243,7 +243,8 @@
 																	<c:when test="${not empty keystore}">
 																		<div class="col-lg-8">
 																			<div class="input-group">
-																				<input class="form-control" placeholder="Password" id="password" name="password" type="password" />
+																				<spring:message code="label_org_esupportail_esupsignature_domain_user_password" var="passwordLabel" />
+																				<input class="form-control" placeholder="${passwordLabel}" id="password" name="password" type="password" />
 																				<div class="input-group-append">
 																					<spring:message code="button_sign" var="signLabel" />
 																					<input alt="${signLabel}" class="btn btn-primary" id="signe" title="Signe" type="submit" value="${signLabel}" />

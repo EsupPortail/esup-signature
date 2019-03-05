@@ -55,7 +55,7 @@ import com.google.common.io.Files;
 @Service
 public class PdfService {
 
-	private static final Logger log = LoggerFactory.getLogger(PdfService.class);
+	private static final Logger logger = LoggerFactory.getLogger(PdfService.class);
 
 	@Resource
 	private FileService fileService;
@@ -70,14 +70,14 @@ public class PdfService {
 	public File formatPdf(File toSignFile, SignRequestParams params) {
     	PdfParameters pdfParameters = getPdfParameters(toSignFile);
     	if(SignRequestParams.NewPageType.onBegin.equals(params.getNewPageType())) {
-        	log.info("add page on begin");
+        	logger.info("add page on begin");
         	toSignFile = addBlankPage(toSignFile, 0);
         	params.setSignPageNumber(1);
         	params.setXPos(xCenter);
         	params.setYPos(yCenter);
         } else 
         if(SignRequestParams.NewPageType.onEnd.equals(params.getNewPageType())) {
-        	log.info("add page on end");
+        	logger.info("add page on end");
         	toSignFile = addBlankPage(toSignFile, -1);
         	params.setSignPageNumber(pdfParameters.getTotalNumberOfPages());
         	params.setXPos(xCenter);
@@ -129,7 +129,7 @@ public class PdfService {
 			pdDocument.close();
 		    return targetFile;
 		} catch (IOException e) {
-			log.error("error to add image", e);
+			logger.error("error to add image", e);
 		}
 		return null;
 	}
@@ -155,7 +155,7 @@ public class PdfService {
 			targetPDDocument.close();
 		    return targetFile;
 		} catch (IOException e) {
-			log.error("error to add blank page", e);
+			logger.error("error to add blank page", e);
 		}
 		return null;
 	}
@@ -170,18 +170,18 @@ public class PdfService {
 	        try {
 				pdDocument.save(targetFile);
 	        } catch (Exception e) {
-				log.error("PDF/A convert error", e);
+				logger.error("PDF/A convert error", e);
 			}
 			pdDocument.close();
 	        return targetFile;
         } catch (IOException e) {
-			log.error("file read error", e);
+			logger.error("file read error", e);
 		}
         return pdfFile;
 	}	
 	
 	public boolean checkPdfA(File pdfFile) {
-		log.info("check pdfa validity");
+		logger.info("check pdfa validity");
 		try {
 			PreflightParser parser = new PreflightParser(pdfFile);  
 			parser.parse();
@@ -191,27 +191,27 @@ public class PdfService {
 		    document.close();
 	        for(ValidationError v : result.getErrorsList()) {
 	        	if(v.getErrorCode().startsWith("7")) {
-	        		log.warn("pdf validation error " + v.getErrorCode() + " : " + v.getDetails());
+	        		logger.warn("pdf validation error " + v.getErrorCode() + " : " + v.getDetails());
 	        	}
 	        	//TODO probleme pdfa non conforme
 	        	if(v.getErrorCode().equals("7.1")) {
-	        		log.info("contains PDFA metedata");
+	        		logger.info("contains PDFA metedata");
 	        		return true;
 	        	}
 	        }
 		    XMPMetadata metadata = result.getXmpMetaData();
 		    if (metadata == null) {
-		    	log.warn("not complient to PDFA");
+		    	logger.warn("not complient to PDFA");
 		        return false;
 		    } else {
 		    	PDFAIdentificationSchema id = metadata.getPDFIdentificationSchema();
 		    	System.err.println(id.getConformance());
-		    	log.info("complient to PDFA");
+		    	logger.info("complient to PDFA");
 		    	return true;
 		    }
 
 		} catch (Exception e) {
-			log.error("check error", e);
+			logger.error("check error", e);
 		}
 		return false;
 	}
@@ -270,17 +270,17 @@ public class PdfService {
 				pdDocument.close();
 		        return targetFile;		        
 	        } catch (Exception e) {
-				log.error("PDF/A convert error", e);
+				logger.error("PDF/A convert error", e);
 			}
         } catch (IOException e) {
-			log.error("file read error", e);
+			logger.error("file read error", e);
 		}
         return null;
 	}	
 	
 	private void processFields(List<PDField> fields, PDResources resources) {
 	    fields.stream().forEach(f -> {
-	    	log.debug("process :" + f.getFullyQualifiedName() + " : " + f.getFieldType());
+	    	logger.debug("process :" + f.getFullyQualifiedName() + " : " + f.getFieldType());
 	        f.setReadOnly(true);
 	        COSDictionary cosObject = f.getCOSObject();
 	        String value = cosObject.getString(COSName.DV) == null ?
@@ -305,10 +305,10 @@ public class PdfService {
 	                try {
 	                    f.setValue(value);
 	                } catch (IOException e1) {
-	                    log.error("process fields error", e1);
+	                    logger.error("process fields error", e1);
 	                }
 	            } else {
-	            	log.error("process fields error", e);
+	            	logger.error("process fields error", e);
 	            }
 	        }
 	        if (f instanceof PDNonTerminalField) {
@@ -328,13 +328,13 @@ public class PdfService {
 		        imagePages.add(fileService.getBase64Image(bufferedImage, pdfFile.getName()));
 	        }
 		} catch (IOException e) {
-			log.error("error on get page as base 64 image", e);
+			logger.error("error on get page as base 64 image", e);
 		} finally {
 			if (pdDocument != null) {
 				try {
 					pdDocument.close();
 				} catch (IOException e) {
-					log.error("enable to close document", e);
+					logger.error("enable to close document", e);
 				}
 	          }
 		}
@@ -349,13 +349,13 @@ public class PdfService {
 			PdfParameters pdfParameters = new PdfParameters((int) pdPage.getMediaBox().getWidth(), (int) pdPage.getMediaBox().getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
 			return pdfParameters;
 		} catch (IOException e) {
-			log.error("error on get pdf parameters", e);
+			logger.error("error on get pdf parameters", e);
 		} finally {
 			if (pdDocument != null) {
 				try {
 					pdDocument.close();
 				} catch (IOException e) {
-					log.error("enable to close document", e);
+					logger.error("enable to close document", e);
 				}
 	          }
 		}
@@ -371,13 +371,13 @@ public class PdfService {
 	        BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfToImageDpi, ImageType.RGB);
 	        imagePage = fileService.getBase64Image(bufferedImage, pdfFile.getName());
 		} catch (IOException e) {
-			log.error("error on convert page to base 64 image", e);
+			logger.error("error on convert page to base 64 image", e);
 		} finally {
 			if (pdDocument != null) {
 				try {
 					pdDocument.close();
 				} catch (IOException e) {
-					log.error("enable to close document", e);
+					logger.error("enable to close document", e);
 				}
 	          }
 		}
@@ -392,13 +392,13 @@ public class PdfService {
 			PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
 			bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfToImageDpi, ImageType.RGB);
 		} catch (IOException e) {
-			log.error("error on convert page to image", e);
+			logger.error("error on convert page to image", e);
 		} finally {
 			if (pdDocument != null) {
 				try {
 					pdDocument.close();
 				} catch (IOException e) {
-					log.error("enable to close document", e);
+					logger.error("enable to close document", e);
 				}
 	          }
 		}

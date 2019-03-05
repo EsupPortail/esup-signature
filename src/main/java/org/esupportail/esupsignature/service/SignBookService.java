@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -26,12 +27,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class SignBookService {
-	
-	private static final Logger log = LoggerFactory.getLogger(SignBookService.class);
-	
+
+	private static final Logger logger = LoggerFactory.getLogger(SignBookService.class);
+
 	@Resource
 	private FileService fileService;
-	
+
 	@Resource
 	private CifsAccessImpl cifsAccessImpl;
 
@@ -40,114 +41,131 @@ public class SignBookService {
 
 	@Resource
 	private CmisAccessImpl cmisAccessImpl;
-	
+
 	@Resource
 	private SignRequestService signRequestService;
-	
+
 	@Resource
 	private DocumentService documentService;
 
+	private FsAccessService getFsAccessService(DocumentIOType type) {
+		FsAccessService fsAccessService = null;
+		switch (type) {
+		case cifs:
+			fsAccessService = cifsAccessImpl;
+			break;
+		case vfs:
+			fsAccessService = vfsAccessImpl;
+			break;
+		case cmis:
+			fsAccessService = cmisAccessImpl;
+			break;
+		default:
+			break;
+		}
+		return fsAccessService;
+	}
+
 	public void importFilesFromSource(SignBook signBook, User user) {
-		if(signBook.getSourceType() != null && !signBook.getSourceType().equals(DocumentIOType.none)) {
-			log.info("retrieve from " + signBook.getSourceType() + " in " + signBook.getDocumentsSourceUri());
+		if (signBook.getSourceType() != null && !signBook.getSourceType().equals(DocumentIOType.none)) {
+			logger.info("retrieve from " + signBook.getSourceType() + " in " + signBook.getDocumentsSourceUri());
 			FsAccessService fsAccessService = getFsAccessService(signBook.getSourceType());
-	        try {
-	        	List<FsFile> fsFiles = fsAccessService.listFiles(signBook.getDocumentsSourceUri());
-	        	if(fsFiles.size() > 0) {
-		        	for(FsFile fsFile : fsFiles) {
-		        		log.info("adding file : " + fsFile.getFile().getName());
-		        		fsFile.setPath(signBook.getDocumentsSourceUri());
-		        		Document documentToAdd = documentService.addFile(fsFile.getFile(), fsFile.getName(), fsFile.getContentType());
-		        		if(fsFile.getCreateBy() != null && User.countFindUsersByEppnEquals(fsFile.getCreateBy()) > 0) {
-		        			user = User.findUsersByEppnEquals(fsFile.getCreateBy()).getSingleResult();
-		        			user.setIp("127.0.0.1");
-		        		}
-		                SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmail(), signBook.getId());
-		    	        signRequest.merge();
-		    			signBook.getSignRequests().add(signRequest);
-		    	        signBook.merge();
-		                fsAccessService.remove(fsFile);
-		                
-		        	}
-	        	} else {
-	        		log.info("no file to import in this folder : " + signBook.getDocumentsSourceUri());
-	        	}
-	        } catch (Exception e) {
-	        	log.error("read fsaccess error : ", e);
-	        }
+			try {
+				List<FsFile> fsFiles = fsAccessService.listFiles(signBook.getDocumentsSourceUri());
+				if (fsFiles.size() > 0) {
+					for (FsFile fsFile : fsFiles) {
+						logger.info("adding file : " + fsFile.getFile().getName());
+						fsFile.setPath(signBook.getDocumentsSourceUri());
+						Document documentToAdd = documentService.addFile(fsFile.getFile(), fsFile.getName(), fsFile.getContentType());
+						if (fsFile.getCreateBy() != null && User.countFindUsersByEppnEquals(fsFile.getCreateBy()) > 0) {
+							user = User.findUsersByEppnEquals(fsFile.getCreateBy()).getSingleResult();
+							user.setIp("127.0.0.1");
+						}
+						SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmail(), signBook.getId());
+						signRequest.merge();
+						signBook.getSignRequests().add(signRequest);
+						signBook.merge();
+						fsAccessService.remove(fsFile);
+
+					}
+				} else {
+					logger.info("no file to import in this folder : " + signBook.getDocumentsSourceUri());
+				}
+			} catch (Exception e) {
+				logger.error("read fsaccess error : ", e);
+			}
 		} else {
-			log.debug("no source type for this signbook");
+			logger.debug("no source type for this signbook");
 		}
 	}
-	
+
 	public void exportFilesToTarget(SignBook signBook, User user) throws EsupSignatureException {
-		for(SignRequest signRequest : signBook.getSignRequests()) {
-			if(signRequest.getStatus().equals(SignRequestStatus.signed) && signRequestService.isSignRequestCompleted(signRequest)) {
+		for (SignRequest signRequest : signBook.getSignRequests()) {
+			if (signRequest.getStatus().equals(SignRequestStatus.signed) && signRequestService.isSignRequestCompleted(signRequest)) {
 				exportFileToTarget(signBook, signRequestService.getLastDocument(signRequest).getJavaIoFile());
-				signRequestService.updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri() , user, "SUCCESS");
+				signRequestService.updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
 				removeSignRequestFromSignBook(signRequest, signBook, user);
 			}
 		}
 	}
-	
+
 	public void exportFileToTarget(SignBook signBook, File signedFile) throws EsupSignatureException {
-		if(signBook.getTargetType() != null && !signBook.getTargetType().equals(DocumentIOType.none)) {
-			log.info("send to " + signBook.getTargetType() + " in " + signBook.getDocumentsTargetUri());
+		if (signBook.getTargetType() != null && !signBook.getTargetType().equals(DocumentIOType.none)) {
+			logger.info("send to " + signBook.getTargetType() + " in " + signBook.getDocumentsTargetUri());
 			FsAccessService fsAccessService = getFsAccessService(signBook.getSourceType());
-	        try {
-	        	InputStream inputStream = new FileInputStream(signedFile);
-	        	fsAccessService.putFile(signBook.getDocumentsTargetUri(), signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
-	        } catch (Exception e) {
-	        	throw new EsupSignatureException("write fsaccess error : " , e);
-	        }
+			try {
+				InputStream inputStream = new FileInputStream(signedFile);
+				fsAccessService.putFile(signBook.getDocumentsTargetUri(), signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
+			} catch (Exception e) {
+				throw new EsupSignatureException("write fsaccess error : ", e);
+			}
 		} else {
-			log.debug("no target type for this signbook");
+			logger.debug("no target type for this signbook");
 		}
 	}
-	
-	private FsAccessService getFsAccessService(DocumentIOType type) {
-		FsAccessService fsAccessService = null;
-		switch (type) {
-			case cifs:
-				fsAccessService = cifsAccessImpl;
-				break;
-			case vfs:
-				fsAccessService = vfsAccessImpl;
-				break;
-			case cmis:
-				fsAccessService = cmisAccessImpl;
-				break;
-			default:
-				break;
-		}
-		return fsAccessService;
-	}
-	
+
 	public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
-		if(!signBook.getSignRequests().contains(signRequest)) {
-	    	signRequest.setRecipientEmail(signBook.getRecipientEmail());
-	    	signRequest.setSignRequestParams(signBook.getSignRequestParams());
-	    	signRequest.getSignBooks().put(signBook.getId(), false);
-	    	signRequest.merge();
-	    	signBook.getSignRequests().add(signRequest);
-	    	signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "imported in signbook " + signBook.getId(), user, "SUCCESS");
-	    	signBook.merge();
+		if (!signBook.getSignRequests().contains(signRequest)) {
+			SignBook testSignBook = getSignBookByUser(signRequest, user);
+			if(testSignBook == null) {
+				signRequest.setRecipientEmail(signBook.getRecipientEmail());
+				signRequest.setSignRequestParams(signBook.getSignRequestParams());
+				signRequest.getSignBooks().put(signBook.getId(), false);
+				signRequest.merge();
+				signBook.getSignRequests().add(signRequest);
+				signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "imported in signbook " + signBook.getId(), user, "SUCCESS");
+				signBook.merge();
+				logger.info("signRequest " + signRequest.getId() + " added to signBook : " + signBook.getId() + " by " + user.getEppn());
+			} else {
+				throw new EsupSignatureException("signRequest " + signRequest.getName() + " is already in signBook : " + testSignBook.getName() + " owned by " + user.getEppn());
+			}
 		} else {
-			throw new EsupSignatureException("allready in this signbook");
+			throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getId());
 		}
 	}
-	
+
 	public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook, User user) {
-		if(signBook.getSignRequests().contains(signRequest)) {
+		if (signBook.getSignRequests().contains(signRequest)) {
 			signRequestService.updateInfo(signRequest, SignRequestStatus.completed, "remove from signbook" + signBook.getId(), user, "SUCCESS");
 			signRequest.getSignBooks().clear();
-	    	signRequest.merge();
-	    	signBook.getSignRequests().remove(signRequest);
-	    	signBook.merge();
+			signRequest.merge();
+			signBook.getSignRequests().remove(signRequest);
+			signBook.merge();
 		} else {
-			log.error(signRequest.getId() + " not in this signbook : " + signBook.getName() + " " + signBook.getId());
+			logger.error(signRequest.getId() + " not in this signbook : " + signBook.getName() + " " + signBook.getId());
 		}
 	}
-	
-	
+
+	public SignBook getSignBookByUser(SignRequest signRequest, User user) {
+		if (signRequest.getSignBooks() != null && signRequest.getSignBooks().size() > 0) {
+			for (Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
+				SignBook signBook = SignBook.findSignBook(signBookId.getKey());
+				if (user.getEmail().equals(signBook.getRecipientEmail())) {
+					return signBook;
+				}
+			}
+		}
+		return null;
+	}
+
 }

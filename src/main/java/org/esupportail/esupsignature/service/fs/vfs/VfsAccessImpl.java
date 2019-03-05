@@ -25,8 +25,6 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileContent;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystem;
@@ -44,15 +42,17 @@ import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.ResourceUtils;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.util.FileCopyUtils;
 
 public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 
-	protected static final Log log = LogFactory.getLog(VfsAccessImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(VfsAccessImpl.class);
 
 	@Resource
-	FileService fileService;
+	private FileService fileService;
 	
 	protected FileSystemManager fsManager;
 
@@ -179,10 +179,10 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			file = cd(fsFile.getPath() + "/" + fsFile.getFile().getName());
 			success = file.delete();
 		} catch (FileSystemException e) {
-			log.info("can't delete file because of FileSystemException : "
+			logger.info("can't delete file because of FileSystemException : "
 					+ e.getMessage(), e);
 		}
-		log.debug("remove file " + fsFile.getPath() + fsFile.getFile().getName() + ": " + success);
+		logger.debug("remove file " + fsFile.getPath() + fsFile.getFile().getName() + ": " + success);
 		return success;
 	}
 
@@ -194,17 +194,17 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			if (!child.exists()) {
 				if ("folder".equals(type)) {
 					child.createFolder();
-					log.info("folder " + title + " created");
+					logger.info("folder " + title + " created");
 				} else {
 					child.createFile();
-					log.info("file " + title + " created");
+					logger.info("file " + title + " created");
 				}
 				return child.getName().getPath();
 			} else {
-				log.info("file " + title + " already exists !");
+				logger.info("file " + title + " already exists !");
 			}
 		} catch (FileSystemException e) {
-			log.info("can't create file because of FileSystemException : "
+			logger.info("can't create file because of FileSystemException : "
 					+ e.getMessage(), e);
 		}
 		return null;
@@ -219,10 +219,10 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 				file.moveTo(newFile);
 				return true;
 			} else {
-				log.info("file " + title + " already exists !");
+				logger.info("file " + title + " already exists !");
 			}
 		} catch (FileSystemException e) {
-			log.info("can't rename file because of FileSystemException : "
+			logger.info("can't rename file because of FileSystemException : "
 					+ e.getMessage(), e);
 		}
 		return false;
@@ -245,7 +245,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			}
 			return true;
 		} catch (FileSystemException e) {
-			log.warn("can't move/copy file because of FileSystemException : "
+			logger.warn("can't move/copy file because of FileSystemException : "
 					+ e.getMessage(), e);
 		}
 		return false;
@@ -257,7 +257,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			FileObject fileObject = cd(dir);
 			return toFsFile(fileObject);
 		} catch (FileSystemException e) {
-			log.warn("can't download file : " + e.getMessage(), e);
+			logger.warn("can't download file : " + e.getMessage(), e);
 		}
 		return null;
 	}
@@ -306,9 +306,9 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 
 			success = true;
 		} catch (FileSystemException e) {
-			log.info("can't upload file : " + e.getMessage(), e);
+			logger.info("can't upload file : " + e.getMessage(), e);
 		} catch (IOException e) {
-			log.warn("can't upload file : " + e.getMessage(), e);
+			logger.warn("can't upload file : " + e.getMessage(), e);
 		}
 		
 		if(!success && newFile != null) {
@@ -316,9 +316,9 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			// best is to delete it
 			try {
 				newFile.delete();
-				log.debug("delete corrupted file after bad upload ok ...");
+				logger.debug("delete corrupted file after bad upload ok ...");
 			} catch(Exception e) {
-				log.debug("can't delete corrupted file after bad upload " + e.getMessage());
+				logger.debug("can't delete corrupted file after bad upload " + e.getMessage());
 			}
 		}
 		

@@ -34,7 +34,7 @@ public class DbToolService {
 	final static String currentCarteCultureVersion = "0.1.x";
 
 	@Resource
-	DataSource dataSource;
+	private DataSource dataSource;
 	
 	@Transactional
 	public void upgrade() {

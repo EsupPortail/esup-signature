@@ -47,7 +47,7 @@ import eu.europa.esig.dss.ToBeSigned;
 @Transactional
 public class NexuProcessController {
 
-	private static final Logger log = LoggerFactory.getLogger(NexuProcessController.class);
+	private static final Logger logger = LoggerFactory.getLogger(NexuProcessController.class);
 
 	@Value("${nexuUrl}")
 	private String nexuUrl;
@@ -128,7 +128,7 @@ public class NexuProcessController {
         try {
         	signRequestService.nexuSign(signRequest, user, signaturePdfForm);
 		} catch (EsupSignatureIOException e) {
-			log.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 		}
         signedDocumentResponse = new SignDocumentResponse();
         signedDocumentResponse.setUrlToDownload("download");

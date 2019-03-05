@@ -41,7 +41,7 @@ import org.springframework.web.util.WebUtils;
 @Transactional
 public class UserSignBookController {
 
-	private static final Logger log = LoggerFactory.getLogger(UserSignBookController.class);
+	private static final Logger logger = LoggerFactory.getLogger(UserSignBookController.class);
 
 	@ModelAttribute("active")
 	public String getActiveMenu() {
@@ -52,13 +52,13 @@ public class UserSignBookController {
 	private SignRequestService signRequestService;
 	
 	@Resource
-	UserService userService;
+	private UserService userService;
 	
 	@Resource
-	DocumentService documentService;
+	private DocumentService documentService;
 	
 	@Resource
-	PdfService pdfService;
+	private PdfService pdfService;
 	
     void populateEditForm(Model uiModel, SignBook signBook) {
         uiModel.addAttribute("signBook", signBook);
@@ -110,7 +110,7 @@ public class UserSignBookController {
             response.setContentType(file.getContentType());
             IOUtils.copy(file.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
         } catch (Exception e) {
-            log.error("get file error", e);
+            logger.error("get file error", e);
         }
     }
     

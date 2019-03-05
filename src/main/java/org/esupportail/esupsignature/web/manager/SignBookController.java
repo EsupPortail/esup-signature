@@ -50,16 +50,16 @@ public class SignBookController {
 	}
 
 	@Resource
-	SignBookService signBookService;
+	private SignBookService signBookService;
 	
 	@Resource
-	UserService userService;
+	private UserService userService;
 
 	@Resource
-	DocumentService documentService;
+	private DocumentService documentService;
 
 	@Resource
-	PdfService pdfService;
+	private PdfService pdfService;
 
 	void populateEditForm(Model uiModel, SignBook signBook) {
 		uiModel.addAttribute("signBook", signBook);
@@ -73,7 +73,7 @@ public class SignBookController {
 	
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(@Valid SignBook signBook, @RequestParam("multipartFile") MultipartFile multipartFile,
-			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, HttpServletRequest httpServletRequest) throws IOException {
+			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, RedirectAttributes redirectAttrs, HttpServletRequest httpServletRequest) throws IOException {
 		if (bindingResult.hasErrors()) {
 			populateEditForm(uiModel, signBook);
 			return "manager/signbooks/create";
@@ -81,6 +81,7 @@ public class SignBookController {
 		String eppn = userService.getEppnFromAuthentication();
 		SignBook signBookToUpdate = null;
 		signBookToUpdate = SignBook.findSignBook(signBook.getId());
+		signBook.setName(signBook.getName().trim());
 		if (signBookToUpdate != null) {
 			signBookToUpdate.setName(signBook.getName());
 			signBookToUpdate.setRecipientEmail(signBook.getRecipientEmail());
@@ -98,6 +99,7 @@ public class SignBookController {
 			}
 			signBookToUpdate.merge();
 		} else {
+			if(SignBook.countFindSignBooksByNameEquals(signBook.getName()) == 0) {
 			signBook.setCreateBy(eppn);
 			signBook.setCreateDate(new Date());
 			signBook.setModelFile(documentService.addFile(multipartFile, multipartFile.getOriginalFilename()));
@@ -110,6 +112,10 @@ public class SignBookController {
 			signRequestParams.persist();
 			signBook.setSignRequestParams(signRequestParams);
 			signBook.persist();
+			} else {
+				redirectAttrs.addFlashAttribute("messageCustom", signBook.getName() + " already exist");
+				return "redirect:/manager/signbooks?form";
+			}
 		}
 		uiModel.asMap().clear();
 		return "redirect:/manager/signbooks/" + encodeUrlPathSegment(signBook.getId().toString(), httpServletRequest);

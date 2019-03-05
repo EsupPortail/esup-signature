@@ -24,13 +24,13 @@ import java.util.List;
 
 import javax.mail.Quota;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.esupportail.esupsignature.service.fs.uri.UriManipulateService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class FsAccessService {
 
-	protected static final Log log = LogFactory.getLog(FsAccessService.class);
+	private static final Logger logger = LoggerFactory.getLogger(FsAccessService.class);
 
 	protected static String TOKEN_SPECIAL_CHAR =  "@";
 

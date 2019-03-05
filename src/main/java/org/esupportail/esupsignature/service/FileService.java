@@ -31,13 +31,13 @@ import net.coobird.thumbnailator.Thumbnails;
 @Service
 public class FileService {
 	
-	private static final Logger log = LoggerFactory.getLogger(FileService.class);
+	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
 	
 	public MultipartFile toMultipartFile(File file, String mimeType) {
 		try {
 			return new MockMultipartFile(file.getName(), file.getName(), mimeType, new FileInputStream(file));
 		} catch (IOException e) {
-			log.error("enable to convert to multipartfile", e);
+			logger.error("enable to convert to multipartfile", e);
 		}
 		return null;
 	}
@@ -73,7 +73,7 @@ public class FileService {
 		try {
 			return java.nio.file.Files.probeContentType(file.toPath());
 		} catch (IOException e) {
-			log.error("can't get content type", e);
+			logger.error("can't get content type", e);
 		}
 		return null;
 	}

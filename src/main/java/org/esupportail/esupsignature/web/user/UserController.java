@@ -11,14 +11,12 @@ import javax.validation.Valid;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.User;
-import org.esupportail.esupsignature.ldap.PersonLdapDao;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -40,16 +38,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @EnableScheduling
 public class UserController {
 
-	private static final Logger log = LoggerFactory.getLogger(UserController.class);
+	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 	
 	@ModelAttribute("active")
 	public String getActiveMenu() {
 		return "user/users";
 	}
-	
-	@Autowired(required = false)
-	PersonLdapDao personDao;
-	
+
 	@Resource
 	private DocumentService documentService;
 	
@@ -150,7 +145,7 @@ public class UserController {
         try {
         	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getJavaIoFile(), this.password));
         } catch (Exception e) {
-        	log.error("open keystore fail", e);
+        	logger.error("open keystore fail", e);
         	redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
 		}
         return "redirect:/user/users/";
@@ -166,7 +161,7 @@ public class UserController {
 			response.setContentType(file.getContentType());
 			IOUtils.copy(file.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
 		} catch (Exception e) {
-			log.error("get file error", e);
+			logger.error("get file error", e);
 		}
 	}
     

@@ -30,21 +30,21 @@ import org.apache.chemistry.opencmis.commons.enums.Updatability;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.util.ResourceUtils;
 
 public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 
-	protected static final Log log = LogFactory.getLog(CmisAccessImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(CmisAccessImpl.class);
 	
 	@Resource
-	FileService fileService;
+	private FileService fileService;
 	
 	protected ResourceUtils resourceUtils;
 	
@@ -147,7 +147,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 			try {
 				cmisSession = SessionFactoryImpl.newInstance().createSession(parameters);	
 			} catch(Exception e) {
-				log.warn("failed to retrieve cmisSession : " + uri + " , repository is not accessible or simply not started ?", e);
+				logger.warn("failed to retrieve cmisSession : " + uri + " , repository is not accessible or simply not started ?", e);
 			}
 		}
 	}
@@ -170,7 +170,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	@Override
 	public List<FsFile> listFiles(String path) throws Exception {
 		Folder folder =  (Folder)  getCmisObject(path);
-		log.info("get file list from : " + folder.getPath());
+		logger.info("get file list from : " + folder.getPath());
 		ItemIterable<CmisObject> pl = folder.getChildren();
 		List<FsFile> fsFiles = new ArrayList<FsFile>();
 		for (CmisObject cmisObject : pl) {
@@ -252,7 +252,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 			}
 			return true;
 		} catch(CmisBaseException e) {
-			log.warn("error when copy/cust/past files : maybe that's because this operation is not allowed for the user ?", e);
+			logger.warn("error when copy/cust/past files : maybe that's because this operation is not allowed for the user ?", e);
 		}
 		return false;
 	}

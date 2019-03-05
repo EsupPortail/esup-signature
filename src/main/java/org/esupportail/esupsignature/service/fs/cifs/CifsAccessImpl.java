@@ -29,8 +29,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.esupportail.esupsignature.service.fs.EsupStockFileExistException;
@@ -38,6 +36,8 @@ import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.ResourceUtils;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,7 +56,7 @@ import jcifs.smb.SmbFile;
 @Service
 public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 
-	protected static final Log log = LogFactory.getLog(CifsAccessImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(CifsAccessImpl.class);
 
 	@Autowired
 	FileService fileService;
@@ -93,7 +93,7 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 				try {
 					cifsContext = new BaseContext(new PropertyConfiguration(jcifsConfigProperties));
 				} catch (CIFSException e) {
-					log.error(e, e.getCause());
+					logger.error(e.getMessage(), e);
 					throw new EsupStockException(e);
 				}
 			}
@@ -106,21 +106,21 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 					root = smbFile;
 				}
 			} catch (MalformedURLException me) {
-				log.error(me, me.getCause());
+				logger.error(me.getMessage(), me);
 				throw new EsupStockException(me);
 			} catch (SmbAuthException e) {
 				if (e.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
-					log.error("connect"+" :: bad password ");
+					logger.error("connect"+" :: bad password ");
 					throw new EsupStockException(e);
 				} else if (e.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
-					log.error("connect"+" :: bad login ");
+					logger.error("connect"+" :: bad login ");
 					throw new EsupStockException(e);
 				} else {
-					log.error("connect"+" :: "+e);
+					logger.error("connect"+" :: "+e);
 					throw new EsupStockException(e);
 				}
 			} catch (SmbException se) {
-				log.error("connect"+" :: "+se);
+				logger.error("connect"+" :: "+se);
 				throw new EsupStockException(se);
 			}
 		}
@@ -128,7 +128,7 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 
 	@Override
 	public void close() {
-		log.debug("Close : Nothing to do with jcifs!");
+		logger.debug("Close : Nothing to do with jcifs!");
 		this.root = null;
 	}
 
@@ -147,7 +147,7 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 				return root;
 			return new SmbFile(this.getUri() + path, cifsContext);
 		} catch (MalformedURLException me) {
-			log.error(me.getMessage());
+			logger.error(me.getMessage());
 			throw new EsupStockException(me);
 		}
 	}
@@ -161,11 +161,11 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 			file.delete();
 			success = true;
 		} catch (SmbException e) {
-			log.info("can't delete file because of SmbException : "
+			logger.info("can't delete file because of SmbException : "
 					+ e.getMessage(), e);
 			success = false;
 		}
-		log.debug("remove file " + fsFile.getPath() + fsFile.getFile().getName() + ": " + success);
+		logger.debug("remove file " + fsFile.getPath() + fsFile.getFile().getName() + ": " + success);
 		return success;
 	}
 
@@ -177,23 +177,23 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 				ppath = ppath + "/";
 			}
 			SmbFile newFile = new SmbFile(root.getPath() + ppath + title, this.cifsContext);
-			log.info("newFile : " + newFile.toString());
+			logger.info("newFile : " + newFile.toString());
 			if ("folder".equals(type)) {
 				newFile.mkdir();
-				log.info("folder " + title + " created");
+				logger.info("folder " + title + " created");
 			} else {
 				newFile.createNewFile();
-				log.info("file " + title + " created");
+				logger.info("file " + title + " created");
 			}
 			String path = newFile.getPath();
 			newFile.close();
 			return path;
 		} catch (SmbException e) {
-			//log.info("file " + title + " already exists !");
-			log.info("can't create file because of SmbException : "
+			//logger.info("file " + title + " already exists !");
+			logger.info("can't create file because of SmbException : "
 					+ e.getMessage(), e);
 		} catch (MalformedURLException e) {
-			log.error("problem in creation file that must not occur. " +  e.getMessage(), e);
+			logger.error("problem in creation file that must not occur. " +  e.getMessage(), e);
 		}
 		return null;
 	}
@@ -209,11 +209,11 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 				return true;
 			}
 		} catch (SmbException e) {
-			//log.info("file " + title + " already exists !");
-			log.info("can't rename file because of SmbException : "
+			//logger.info("file " + title + " already exists !");
+			logger.info("can't rename file because of SmbException : "
 					+ e.getMessage(), e);
 		}  catch (MalformedURLException e) {
-			log.error("problem in renaming file." +  e.getMessage(), e);
+			logger.error("problem in renaming file." +  e.getMessage(), e);
 		}
 		return false;
 	}
@@ -237,9 +237,9 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 			}
 			return true;
 		} catch (SmbException e) {
-			log.warn("can't move/copy file because of SmbException : "	+ e.getMessage(), e);
+			logger.warn("can't move/copy file because of SmbException : "	+ e.getMessage(), e);
 		} catch (MalformedURLException e) {
-			log.error("problem in creation file that must not occur." +  e.getMessage(), e);
+			logger.error("problem in creation file that must not occur." +  e.getMessage(), e);
 		}
 		return false;
 	}
@@ -250,9 +250,9 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 			SmbFile smbFile = cd(dir);
 			return toFsFile(smbFile);
 		} catch (SmbException e) {
-			log.warn("can't download file : " + e.getMessage(), e);
+			logger.warn("can't download file : " + e.getMessage(), e);
 		} catch (IOException e) {
-			log.error("problem in downloading file." +  e.getMessage(), e);
+			logger.error("problem in downloading file." +  e.getMessage(), e);
 		}
 		return null;
 	}
@@ -298,11 +298,11 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 			success = true;
 
 		} catch (SmbException e) {
-			log.info("can't upload file : " + e.getMessage(), e);
+			logger.info("can't upload file : " + e.getMessage(), e);
 		} catch (IOException e) {
-			log.warn("can't upload file : " + e.getMessage(), e);
+			logger.warn("can't upload file : " + e.getMessage(), e);
 		} catch (Exception e) {
-			log.error("put file error", e);
+			logger.error("put file error", e);
 		}
 		
 		if(!success && newFile != null) {	
@@ -310,9 +310,9 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 			// best is to delete it
 			try {
 				newFile.delete();
-				log.debug("delete corrupted file after bad upload ok ...");
+				logger.debug("delete corrupted file after bad upload ok ...");
 			} catch(Exception e) {
-				log.debug("can't delete corrupted file after bad upload " + e.getMessage());
+				logger.debug("can't delete corrupted file after bad upload " + e.getMessage());
 			}
 		}
 		return success;

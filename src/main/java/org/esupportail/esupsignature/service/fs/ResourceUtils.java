@@ -26,8 +26,8 @@ import java.util.Map;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.Resource;
@@ -35,7 +35,7 @@ import org.springframework.core.io.ResourceLoader;
 
 public class ResourceUtils implements InitializingBean, ResourceLoaderAware {
  
-	protected static final Log log = LogFactory.getLog(ResourceUtils.class);
+	private static final Logger logger = LoggerFactory.getLogger(ResourceUtils.class);
 
 	private Map<String, String> icons = new CaseInsensitiveMap();
 	
@@ -82,9 +82,9 @@ public class ResourceUtils implements InitializingBean, ResourceLoaderAware {
 				icons.put(iconName.substring(0, iconName.length()-4), "/esup-filemanager/img/icons/".concat(iconName));
 			}
 			
-			log.debug("mimetypes incons retrieved : " + icons.toString());
+			logger.debug("mimetypes incons retrieved : " + icons.toString());
 		} catch (FileNotFoundException e) {
-			log.error("FileNotFoundException getting icons ...", e);
+			logger.error("FileNotFoundException getting icons ...", e);
 		}
 		
 	}
