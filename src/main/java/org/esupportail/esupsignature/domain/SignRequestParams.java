@@ -1,5 +1,8 @@
 package org.esupportail.esupsignature.domain;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+
 import org.springframework.roo.addon.javabean.RooJavaBean;
 import org.springframework.roo.addon.jpa.activerecord.RooJpaActiveRecord;
 import org.springframework.roo.addon.tostring.RooToString;
@@ -16,9 +19,11 @@ public class SignRequestParams {
 	public enum NewPageType {
 		none, onBegin, onEnd;
 	}
-
+	
+	@Enumerated(EnumType.STRING)
 	private SignType signType;
     
+	@Enumerated(EnumType.STRING)
 	private NewPageType newPageType;
 
 	private int signPageNumber;

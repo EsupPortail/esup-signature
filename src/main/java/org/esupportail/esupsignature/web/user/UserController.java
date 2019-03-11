@@ -10,9 +10,12 @@ import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
+import org.esupportail.esupsignature.domain.SignBook;
+import org.esupportail.esupsignature.domain.SignBook.SignBookType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
@@ -56,6 +59,9 @@ public class UserController {
 	
 	@Resource
 	private UserService userService;
+
+	@Resource
+	private SignBookService signBookService;
 	
 	private String password = "";
 	long startTime;
@@ -79,6 +85,9 @@ public class UserController {
         if(user.getSignImage().getBigFile().getBinaryFile() != null) {
         	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
         }
+        
+        SignBook defaultSignBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
+        uiModel.addAttribute("defaultSignBook", defaultSignBook);
         uiModel.addAttribute("isPasswordSet", password != "");
         uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         return "user/users/show";

@@ -81,7 +81,7 @@ public class SignRequest {
 		
     }
     
-	public static TypedQuery<SignRequest> findSignRequests(String createBy, String recipientEmail, SignRequestStatus status, Long signBookId, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
+	public static TypedQuery<SignRequest> findSignRequests(String createBy, SignRequestStatus status, Long signBookId, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
     	EntityManager em = SignRequest.entityManager();
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<SignRequest> query = criteriaBuilder.createQuery(SignRequest.class);
@@ -90,21 +90,12 @@ public class SignRequest {
     	List<Predicate> predicates = new ArrayList<Predicate>();
     	Predicate predicatesOwner = null;
     	Predicate createByPredicates = null;
-    	Predicate recipientEmailPredicates = null;
         if(!createBy.isEmpty()) {
         	createByPredicates = criteriaBuilder.equal(signRequestRoot.get("createBy"), createBy);
         }
-        if(!recipientEmail.isEmpty()) {
-        	recipientEmailPredicates = criteriaBuilder.equal(signRequestRoot.get("recipientEmail"), recipientEmail);
-        }
-        if(!createBy.isEmpty() && !recipientEmail.isEmpty()) {
-            predicatesOwner = criteriaBuilder.or(createByPredicates, recipientEmailPredicates);        	
-        } else if(!createBy.isEmpty()) {
-        	 predicatesOwner = criteriaBuilder.and(createByPredicates);
-        } else if(!recipientEmail.isEmpty()) {
-        	 predicatesOwner = criteriaBuilder.and(recipientEmailPredicates);
-        }
-        if(predicatesOwner != null) {
+       	 predicatesOwner = criteriaBuilder.and(createByPredicates);
+
+       	 if(predicatesOwner != null) {
         	predicates.add(predicatesOwner);
         }
         
@@ -141,7 +132,7 @@ public class SignRequest {
         return em.createQuery(query).setFirstResult(firstResult).setMaxResults(sizeNo);
     }
 
-    public static long countFindSignRequests(String createBy, String recipientEmail, SignRequestStatus status, String searchString) {
+    public static long countFindSignRequests(String createBy, SignRequestStatus status, String searchString) {
     	EntityManager em = SignRequest.entityManager();
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
         CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);

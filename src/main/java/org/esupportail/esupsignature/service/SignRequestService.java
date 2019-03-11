@@ -85,6 +85,7 @@ public class SignRequestService {
 			SignBook signBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(recipientEmail, SignBookType.user).getSingleResult();
 			if(signBook != null) {
 				signRequest.getSignBooks().put(signBook.getId(), false);
+				signBook.getSignRequests().add(signRequest);
 			} else {
 				return null;
 			}
@@ -236,9 +237,10 @@ public class SignRequestService {
 		try {
 			Document toaddDocument = documentService.addFile(signedFile, "signed_" + signRequest.getSignRequestParams().getSignType().toString() + "_" + user.getEppn() + "_" + signedFile.getName(), fileService.getContentType(signedFile));
 			signRequest.getDocuments().add(toaddDocument);
-			SignBook signBook = signBookService.getSignBookByUser(signRequest, user);
+			SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 			if (signBook != null) {
 				signRequest.getSignBooks().put(signBook.getId(), true);
+				//TODO remove from parapheur
 			} else {
 				updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
 			}
@@ -312,26 +314,14 @@ public class SignRequestService {
 	}
 
 	public void refuse(SignRequest signRequest, User user) {
-		SignBook signBook = getSignBookBySignRequestAndUser(signRequest, user);
+		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		signRequest.getSignBooks().put(signBook.getId(), true);
 		signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
 		updateInfo(signRequest, SignRequestStatus.refused, "refuse", user, "SUCCESS");
 	}
 	
-	public SignBook getSignBookBySignRequestAndUser(SignRequest signRequest, User user) {
-		if (signRequest.getSignBooks().size() > 0) {
-			for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
-				SignBook signBook = SignBook.findSignBook(signBookId.getKey());
-				if(user.getEmail().equals(signBook.getRecipientEmail()) && signRequest.getSignBooks().containsKey(signBookId.getKey())) {
-					return signBook;
-				}
-			}
-		}
-		return null;
-	}
-	
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {
-		SignBook signBook = getSignBookBySignRequestAndUser(signRequest, user);
+		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		if (signRequest.getStatus().equals(SignRequestStatus.pending) && signBook != null) {
 			return true;
 		} else {
@@ -340,7 +330,7 @@ public class SignRequestService {
 	}
 
 	public boolean checkUserViewRights(User user, SignRequest signRequest) {
-		SignBook signBook = getSignBookBySignRequestAndUser(signRequest, user);
+		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		if (signRequest.getCreateBy().equals(user.getEppn()) || signBook != null) {
 			return true;
 		} else {

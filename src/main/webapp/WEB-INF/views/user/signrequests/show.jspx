@@ -78,20 +78,29 @@
 										<input value="${signRequest.signRequestParams.YPos}" type="hidden" id="yPos" name="yPos" />
 									</c:otherwise>
 								</c:choose>
+								<dl class="display-group border-bottom m-0">
+									<dt class="col-lg-4">
+										<spring:message code="label_org_esupportail_esupsignature_domain_currentsignbook" />
+									</dt>
+									<dd>
+										<button class="btn btn-light active col-12" type="button">
+										<i class="fas fa-book"><!--  --></i>&amp;nbsp;${curentSignBook.name}
+										</button>
+									</dd>
+								</dl>
 								<c:choose>
 									<c:when test="${signRequest.status eq 'signed' or signRequest.status eq 'completed'}">
 										<dl class="display-group border-bottom m-0">
-											<dt class="col-lg-6">
+											<dt class="col-lg-4">
 												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signedfile" />
 											</dt>
 											<dd>
 												<spring:url value="/user/signrequests/get-signed-file/${id}" var="signedFileUrl" />
 												<button type="button" class="btn btn-success" onclick="window.open('${signedFileUrl}', '_blank')">
-													<i class="fas fa-download"> <!--  -->
-													</i>&amp;nbsp;
-													<spring:message code="button_download" />
+													<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" />
 												</button>
-												<br /> <a href="/user/validation/document/${id}">Validate</a>
+												<br />
+												<a href="/user/validation/document/${id}"><spring:message code="menu_item_validate" /></a>
 											</dd>
 										</dl>
 									</c:when>
@@ -119,7 +128,7 @@
 																		</div>
 																	</c:when>
 																	<c:otherwise>
-																		<div class="card card-body bg-info">No keystore found in your settings</div>
+																		<div class="card card-body bg-info text-white"><spring:message code="help_user_nokeystore" /></div>
 																	</c:otherwise>
 																</c:choose>
 															</c:when>
@@ -244,12 +253,12 @@
 										    </tr>
 									  	</thead>
 									  	<tbody>
-										  	<tr>
-												<c:forEach items="${signRequest.signBooksLabels}" var="signBooksLabel">
+											<c:forEach items="${signRequest.signBooksLabels}" var="signBooksLabel">
+										  		<tr>
 													<td>${signBooksLabel.key}</td>
 													<td align="center">
 														<c:choose>
-															<c:when test="${signBooksLabel.key eq true}">
+															<c:when test="${signBooksLabel.value eq true}">
 																<i class="far fa-check-circle text-success"><!--  --></i>
 															</c:when>
 															<c:otherwise>
@@ -257,8 +266,8 @@
 															</c:otherwise>
 														</c:choose>
 													</td>
-												</c:forEach>
-											</tr>
+												</tr>
+											</c:forEach>
 										</tbody>
 									</table>
 								</dd>

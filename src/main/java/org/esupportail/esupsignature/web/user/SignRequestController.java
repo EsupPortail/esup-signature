@@ -137,26 +137,20 @@ public class SignRequestController {
 		List<SignRequest> signRequests = null;
 		float nrOfPages = 1;
 		int sizeNo = size == null ? 10 : size.intValue();
-		if (findBy != null && findBy.equals("recipientEmail")) {
-			signRequests = SignRequest.findSignRequests("", user.getEmail(), SignRequestStatus.pending, signBookId, "", page, size,
-					sortFieldName, sortOrder).getResultList();
-			nrOfPages = (float) SignRequest.countFindSignRequests("", user.getEmail(), SignRequestStatus.pending, "") / sizeNo;
-			uiModel.addAttribute("tosigndocs", "active");
-		} else {
-			signBookId = null;
-			signRequests = SignRequest.findSignRequests(eppn, "", statusFilterEnum, null, "", page, size, sortFieldName, sortOrder)
-					.getResultList();
-			nrOfPages = (float) SignRequest.countFindSignRequests(eppn, "", statusFilterEnum, "") / sizeNo;
-			uiModel.addAttribute("mydocs", "active");
-		}
+		signBookId = null;
+		signRequests = SignRequest.findSignRequests(eppn, statusFilterEnum, null, "", page, size, sortFieldName, sortOrder)
+				.getResultList();
+		nrOfPages = (float) SignRequest.countFindSignRequests(eppn, statusFilterEnum, "") / sizeNo;
+		uiModel.addAttribute("mydocs", "active");
 
 		uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
 		uiModel.addAttribute("page", page);
 		uiModel.addAttribute("size", size);
 		uiModel.addAttribute("findBy", findBy);
 		uiModel.addAttribute("signBookId", signBookId);
-		uiModel.addAttribute("nbToSignRequests",SignRequest.countFindSignRequests("", user.getEmail(), SignRequestStatus.pending, ""));
-		uiModel.addAttribute("nbPedingSignRequests",SignRequest.countFindSignRequests(user.getEppn(), "", SignRequestStatus.pending, ""));
+		//TODO repair dectect nb to sign
+		uiModel.addAttribute("nbToSignRequests",SignRequest.countFindSignRequests(eppn, SignRequestStatus.pending, ""));
+		uiModel.addAttribute("nbPedingSignRequests",SignRequest.countFindSignRequests(eppn, SignRequestStatus.pending, ""));
 		uiModel.addAttribute("signRequests", signRequests);
 		uiModel.addAttribute("signBooks", SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList());
 		uiModel.addAttribute("statusFilter", statusFilter);
@@ -173,14 +167,14 @@ public class SignRequestController {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
-			SignBook signBook = signRequestService.getSignBookBySignRequestAndUser(signRequest, user);
+			SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 			uiModel.addAttribute("curentSignBook", signBook);
-			/*
-			signRequest.getSignRequestParams().setSignPageNumber(signBook.getSignRequestParams().getSignPageNumber());
-			signRequest.getSignRequestParams().setXPos(signBook.getSignRequestParams().getXPos());
-			signRequest.getSignRequestParams().setYPos(signBook.getSignRequestParams().getYPos());
-			signRequest.merge();
-			*/
+			if(signBook.getSignBookType().equals(SignBookType.model)) {
+				signRequest.getSignRequestParams().setSignPageNumber(signBook.getSignRequestParams().getSignPageNumber());
+				signRequest.getSignRequestParams().setXPos(signBook.getSignRequestParams().getXPos());
+				signRequest.getSignRequestParams().setYPos(signBook.getSignRequestParams().getYPos());
+				signRequest.merge();
+			}
 			uiModel.addAttribute("documents", signRequest.getDocuments());
 			Document toDisplayDocument = signRequestService.getLastDocument(signRequest);
 			File toDisplayFile = toDisplayDocument.getJavaIoFile();
@@ -260,12 +254,13 @@ public class SignRequestController {
 	        	setPassword(password);
 			}
 			try {
-				SignBook signBook = signRequestService.getSignBookBySignRequestAndUser(signRequest, user);
-				SignRequestParams.SignType signType = signBook.getSignRequestParams().getSignType();
-				if(signType.equals(SignRequestParams.SignType.validate)) {
+				//SignBook signBook = signRequestService.getSignBookBySignRequestAndUser(signRequest, user);
+				
+				SignType signType = signRequest.getSignRequestParams().getSignType();
+				if(signType.equals(SignType.validate)) {
 					signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
 				} else 
-				if(signType.equals(SignRequestParams.SignType.nexuSign)) {
+				if(signType.equals(SignType.nexuSign)) {
 					return "redirect:/user/nexu-sign/" + id;
 				} else {
 					signRequestService.sign(signRequest, user, this.password);

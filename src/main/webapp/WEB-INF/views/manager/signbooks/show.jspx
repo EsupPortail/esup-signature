@@ -75,7 +75,7 @@
 						<field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignBook_createBy" object="${signbook}" z="user-managed" />
 						<field:display date="true" dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_SignBook_updateDate" object="${signbook}" render="false" z="user-managed" />
 						<field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_SignBook_updateBy" object="${signbook}" render="false" z="user-managed" />
-						<table:table view="false" delete="false" data="${signRequests}" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">
+						<table:table delete="false" data="${signRequests}" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">
 							<table:column id="c_org_esupportail_esupsignature_domain_SignRequest_name" property="name" z="user-managed" />
 							<table:column date="true" dateTimePattern="${signRequest_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" property="createDate" z="user-managed" />
 							<table:column id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" property="createBy" z="user-managed" />
@@ -87,6 +87,7 @@
 						</table:table>
 					</div>
 				</div>
+				<c:if test="${signbook.signBookType eq 'model'}">
 				<div class="card bg-light">
 					<div class="card-header">
 						<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signposition" />
@@ -135,7 +136,9 @@
 							</script>
 					</div>
 				</div>
+				</c:if>
 			</div>
+			<c:if test="${signbook.signBookType eq 'model'}">
 			<div class="col-lg-6">
 				<div class="row">
 					<div class="col-lg-12">
@@ -204,6 +207,7 @@
 						</script>
 				</div>
 			</div>
+			</c:if>
 		</div>
 	</page:show>
 </div>

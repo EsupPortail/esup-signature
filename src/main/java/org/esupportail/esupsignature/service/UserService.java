@@ -8,7 +8,11 @@ import javax.annotation.Resource;
 
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.domain.SignBook.SignBookType;
+import org.esupportail.esupsignature.domain.SignRequestParams;
+import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
+import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +62,13 @@ public class UserService {
 			signbook.setRecipientEmail(email);
 			signbook.setSignRequestParams(null);
 			signbook.setSignBookType(SignBookType.user);
+			signbook.setSourceType(DocumentIOType.none);
+			signbook.setTargetType(DocumentIOType.none);
+			SignRequestParams signRequestParams = new SignRequestParams();
+			signRequestParams.setNewPageType(NewPageType.none);
+			signRequestParams.setSignType(SignType.validate);
+			signRequestParams.persist();
+			signbook.setSignRequestParams(signRequestParams);
 			signbook.persist();
 		}
 

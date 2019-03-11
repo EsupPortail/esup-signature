@@ -72,6 +72,16 @@ public class SignBookController {
 		uiModel.addAttribute("signrequests", SignRequest.findAllSignRequests());
 	}
 	
+    @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
+    public String updateForm(@PathVariable("id") Long id, Model uiModel) {
+        SignBook signBook = SignBook.findSignBook(id);
+    	populateEditForm(uiModel, signBook);
+		if(signBook.getSignBookType().equals(SignBookType.user)) {
+			return "redirect:/manager/signbooks/" + signBook.getId();
+		}
+        return "manager/signbooks/update";
+    }
+	
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(@Valid SignBook signBook, @RequestParam("multipartFile") MultipartFile multipartFile,
 			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, RedirectAttributes redirectAttrs, HttpServletRequest httpServletRequest) throws IOException {
@@ -84,6 +94,9 @@ public class SignBookController {
 		signBookToUpdate = SignBook.findSignBook(signBook.getId());
 		signBook.setName(signBook.getName().trim());
 		if (signBookToUpdate != null) {
+			if(signBookToUpdate.getSignBookType().equals(SignBookType.user)) {
+				return "redirect:/manager/signbooks/" + signBook.getId();
+			}
 			signBookToUpdate.setName(signBook.getName());
 			signBookToUpdate.setRecipientEmail(signBook.getRecipientEmail());
 			signBookToUpdate.setDocumentsSourceUri(signBook.getDocumentsSourceUri());
@@ -127,15 +140,16 @@ public class SignBookController {
 	public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
 		addDateTimeFormatPatterns(uiModel);
 		SignBook signBook = SignBook.findSignBook(id);
-		Document modelFile = signBook.getModelFile();
-		if (modelFile.getSize() > 0) {
-			uiModel.addAttribute("documentId", modelFile.getId());
-			if(modelFile.getContentType().equals("application/pdf")) {
-				PdfParameters pdfParameters = pdfService.getPdfParameters(modelFile.getJavaIoFile());
-				uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+		if(signBook.getSignBookType().equals(SignBookType.model)) {
+			Document modelFile = signBook.getModelFile();
+			if (modelFile.getSize() > 0) {
+				uiModel.addAttribute("documentId", modelFile.getId());
+				if(modelFile.getContentType().equals("application/pdf")) {
+					PdfParameters pdfParameters = pdfService.getPdfParameters(modelFile.getJavaIoFile());
+					uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+				}
 			}
 		}
-
 		uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());
 		uiModel.addAttribute("signRequests", signBook.getSignRequests());
 		uiModel.addAttribute("signbook", signBook);

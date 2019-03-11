@@ -127,7 +127,7 @@ public class SignBookService {
 	public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
 		if (!signBook.getSignRequests().contains(signRequest)) {
 			User testSignBookUser = User.findUsersByEmailEquals(signBook.getRecipientEmail()).getSingleResult();
-			SignBook testSignBook = getSignBookByUser(signRequest, testSignBookUser);
+			SignBook testSignBook = getSignBookBySignRequestAndUser(signRequest, testSignBookUser);
 			if(testSignBook == null) {
 				signRequest.setSignRequestParams(signBook.getSignRequestParams());
 				signRequest.getSignBooks().put(signBook.getId(), false);
@@ -156,11 +156,11 @@ public class SignBookService {
 		}
 	}
 
-	public SignBook getSignBookByUser(SignRequest signRequest, User user) {
-		if (signRequest.getSignBooks() != null && signRequest.getSignBooks().size() > 0) {
-			for (Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
+	public SignBook getSignBookBySignRequestAndUser(SignRequest signRequest, User user) {
+		if (signRequest.getSignBooks().size() > 0) {
+			for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
 				SignBook signBook = SignBook.findSignBook(signBookId.getKey());
-				if (user.getEmail().equals(signBook.getRecipientEmail())) {
+				if(user.getEmail().equals(signBook.getRecipientEmail()) && signRequest.getSignBooks().containsKey(signBookId.getKey())) {
 					return signBook;
 				}
 			}

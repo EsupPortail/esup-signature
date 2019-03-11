@@ -132,9 +132,25 @@
 								<td class="none"><fmt:formatDate value="${signRequest.createDate}" pattern="dd/MM/yyyy HH:mm" /></td>
 								<td class="none">${signRequest.createBy}</td>
 								<td class="none">
-									<c:forEach items="${signRequest.signBooksLabels}" var="signBooksLabel">
-										<li>${signBooksLabel}</li>
-									</c:forEach>
+									<table class="table table-sm">
+									  	<tbody>
+											<c:forEach items="${signRequest.signBooksLabels}" var="signBooksLabel">
+									  			<tr>
+													<td>${signBooksLabel.key}</td>
+													<td align="center">
+														<c:choose>
+															<c:when test="${signBooksLabel.value eq true}">
+																<i class="far fa-check-circle text-success"><!--  --></i>
+															</c:when>
+															<c:otherwise>
+																<i class="far fa-times-circle text-danger"><!--  --></i>
+															</c:otherwise>
+														</c:choose>
+													</td>
+												</tr>
+											</c:forEach>
+										</tbody>
+									</table>
 								</td>
 								<td class="status"><c:choose>
 										<c:when test="${signRequest.status eq 'pending'}">
@@ -188,13 +204,15 @@
 					</tbody>
 					<tfoot>
 						<tr>
-							<td colspan="100%"><c:if test="${not empty maxPages}">
+							<td colspan="100%">
+								<c:if test="${not empty maxPages}">
 									<util:pagination numberOfResult="false" maxPages="${maxPages}" page="${param.page}" size="${param.size}" />
 								</c:if> <c:if test="${not empty param.page}">
 									<input name="page" type="hidden" value="1" />
 								</c:if> <c:if test="${not empty param.size}">
 									<input name="size" type="hidden" value="${fn:escapeXml(param.size)}" />
-								</c:if></td>
+								</c:if>
+							</td>
 						</tr>
 					</tfoot>
 				</table>
