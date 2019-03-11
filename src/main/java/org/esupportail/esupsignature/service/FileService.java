@@ -9,10 +9,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.Base64;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.io.FilenameUtils;
@@ -106,6 +108,14 @@ public class FileService {
 		return new ByteArrayInputStream(os.toByteArray());
 	}
 
+	public InputStream notFoundImageToInputStream(String type) throws IOException {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		InputStream is = new ByteArrayInputStream("PAGE NOT FOUND".getBytes(StandardCharsets.UTF_8));
+	    ImageInputStream iis = ImageIO.createImageInputStream(is);
+		ImageIO.write(ImageIO.read(iis), type, os);
+		return new ByteArrayInputStream(os.toByteArray());
+	}
+	
 	public File renameFile(File file, String name) {
 		File newfile = new File(Files.createTempDir(), name);
 		boolean result = file.renameTo(newfile);

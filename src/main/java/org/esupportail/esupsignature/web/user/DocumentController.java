@@ -10,7 +10,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
+import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.MediaType;
 import org.springframework.roo.addon.web.mvc.controller.scaffold.RooWebScaffold;
@@ -29,8 +32,13 @@ import org.springframework.web.util.WebUtils;
 @Scope(value="session")
 public class DocumentController {
 	
+	private static final Logger logger = LoggerFactory.getLogger(DocumentController.class);
+	
 	@Resource
 	private PdfService pdfService;
+
+	@Resource
+	private FileService fileService;
 	
 	@RequestMapping(value = "/{id}/getimage", method = RequestMethod.GET)
 	public void getImageAsByteArray(@PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException {
@@ -41,10 +49,22 @@ public class DocumentController {
 	}
 	
 	@RequestMapping(value = "/{id}/getimagepdfpage/{page}", method = RequestMethod.GET)
-	public void getImagePdfAsByteArray(@PathVariable("id") Long id, @PathVariable("page") int page, HttpServletResponse response) throws Exception {
-		//TODO pb	 fermeture pdfdoc
+	public void getImagePdfAsByteArray(@PathVariable("id") Long id, @PathVariable("page") int page, HttpServletResponse response) throws IOException {
 		Document document = Document.findDocument(id);
-		InputStream in = pdfService.pageAsInputStream(document.getJavaIoFile(), page);
+		InputStream in = null;
+		try {
+			in = pdfService.pageAsInputStream(document.getJavaIoFile(), page);
+		} catch (Exception e) {
+			logger.error("page " + page + " not found in this document");
+		}
+		if(in == null) {
+			try {
+				in = pdfService.pageAsInputStream(document.getJavaIoFile(), 0);
+			} catch (Exception e) {
+				logger.error("page " + page + " not found in this document");
+			}
+		}
+		//in = fileService.notFoundImageToInputStream("png");
 	    response.setContentType(MediaType.IMAGE_PNG_VALUE);
 	    IOUtils.copy(in, response.getOutputStream());
 	    in.close();

@@ -4,7 +4,7 @@
 	<jsp:output omit-xml-declaration="yes" />
 	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
 		<div class="card card-body bg-info text-white">
-			List des documents vous concernant (à signer ou envoyés pour signature)
+			Liste des documents concernant l'utilisateur courant (à signer ou envoyés pour signature)
 		</div>
 	</div>
 	<div class="card">
@@ -119,7 +119,6 @@
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createdate" /></th>
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createby" /></th>
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_recipientemail" /></th>
-							<th class="type"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" /></th>
 							<th class="status"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_status" /></th>
 							<th><spring:message code="button_view" /></th>
 							<th><spring:message code="button_delete" /></th>
@@ -133,14 +132,6 @@
 								<td class="none"><fmt:formatDate value="${signRequest.createDate}" pattern="dd/MM/yyyy HH:mm" /></td>
 								<td class="none">${signRequest.createBy}</td>
 								<td class="none">${signRequest.recipientEmail}</td>
-								
-								<!-- 
-								<td class="type"><input type="hidden" id="signbook_${signRequest.id}" value="${signRequest.signBookId}" />
-									<button type="button" class="btn btn-outline-dark btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
-										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" />
-									</button>
-									</td>
-									 -->
 								<td class="status"><c:choose>
 										<c:when test="${signRequest.status eq 'pending'}">
 											<button type="button" class="btn btn-outline-primary btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">

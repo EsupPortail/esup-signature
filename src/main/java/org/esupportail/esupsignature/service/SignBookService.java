@@ -126,7 +126,8 @@ public class SignBookService {
 
 	public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
 		if (!signBook.getSignRequests().contains(signRequest)) {
-			SignBook testSignBook = getSignBookByUser(signRequest, user);
+			User testSignBookUser = User.findUsersByEmailEquals(signBook.getRecipientEmail()).getSingleResult();
+			SignBook testSignBook = getSignBookByUser(signRequest, testSignBookUser);
 			if(testSignBook == null) {
 				signRequest.setRecipientEmail(signBook.getRecipientEmail());
 				signRequest.setSignRequestParams(signBook.getSignRequestParams());
