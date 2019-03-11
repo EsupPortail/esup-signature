@@ -1,11 +1,14 @@
 package org.esupportail.esupsignature.service;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.domain.SignBook.SignBookType;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,44 @@ public class UserService {
     
 	@Resource
 	private DocumentService documentService;
+	
+	public void updateUser(Authentication authentication) {
+		List<PersonLdap> persons =  personDao.getPersonNamesByUid(authentication.getName());
+		String eppn = persons.get(0).getEduPersonPrincipalName();
+        String email = persons.get(0).getMail();
+        String name = persons.get(0).getSn();
+        String firstName = persons.get(0).getGivenName();
+        updateUser(eppn, name, firstName, email);
+	}
+	
+	public void updateUser(String eppn, String name, String firstName, String email) {
+		User user;
+		if(User.countFindUsersByEppnEquals(eppn) > 0) {
+    		user = User.findUsersByEppnEquals(eppn).getSingleResult();
+    	} else {
+	    	user = new User();
+    	}
+		user.setName(name);
+		user.setFirstname(firstName);
+		user.setEppn(eppn);
+		user.setEmail(email);
+		if(user.getId() == null) {
+			user.persist();
+		} else {
+			user.merge();
+		}
+		if(SignBook.countFindSignBooksByRecipientEmailAndSignBookTypeEquals(email, SignBookType.user) == 0) {
+			SignBook signbook = new SignBook();
+			signbook.setName(firstName + " " + name);
+			signbook.setCreateBy(eppn);
+			signbook.setCreateDate(new Date());
+			signbook.setRecipientEmail(email);
+			signbook.setSignRequestParams(null);
+			signbook.setSignBookType(SignBookType.user);
+			signbook.persist();
+		}
+
+	}
 	
     public String getEppnFromAuthentication() {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();

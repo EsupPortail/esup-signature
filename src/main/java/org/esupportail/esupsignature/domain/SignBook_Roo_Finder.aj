@@ -79,6 +79,23 @@ privileged aspect SignBook_Roo_Finder {
         return q;
     }
     
+    public static TypedQuery<SignBook> SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(String recipientEmail, SignBookType signBookType, String sortFieldName, String sortOrder) {
+        if (recipientEmail == null || recipientEmail.length() == 0) throw new IllegalArgumentException("The recipientEmail argument is required");
+        if (signBookType == null) throw new IllegalArgumentException("The signBookType argument is required");
+        EntityManager em = SignBook.entityManager();
+        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM SignBook AS o WHERE o.recipientEmail = :recipientEmail AND o.signBookType = :signBookType");
+        if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
+            queryBuilder.append(" ORDER BY ").append(sortFieldName);
+            if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
+                queryBuilder.append(" ").append(sortOrder);
+            }
+        }
+        TypedQuery<SignBook> q = em.createQuery(queryBuilder.toString(), SignBook.class);
+        q.setParameter("recipientEmail", recipientEmail);
+        q.setParameter("signBookType", signBookType);
+        return q;
+    }
+    
     public static TypedQuery<SignBook> SignBook.findSignBooksByRecipientEmailEquals(String recipientEmail) {
         if (recipientEmail == null || recipientEmail.length() == 0) throw new IllegalArgumentException("The recipientEmail argument is required");
         EntityManager em = SignBook.entityManager();

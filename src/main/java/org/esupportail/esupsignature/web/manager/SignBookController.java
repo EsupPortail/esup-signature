@@ -12,6 +12,7 @@ import javax.validation.Valid;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
+import org.esupportail.esupsignature.domain.SignBook.SignBookType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequestParams;
 import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
@@ -111,6 +112,7 @@ public class SignBookController {
 			signRequestParams.setYPos(0);
 			signRequestParams.persist();
 			signBook.setSignRequestParams(signRequestParams);
+			signBook.setSignBookType(SignBookType.model);
 			signBook.persist();
 			} else {
 				redirectAttrs.addFlashAttribute("messageCustom", signBook.getName() + " already exist");

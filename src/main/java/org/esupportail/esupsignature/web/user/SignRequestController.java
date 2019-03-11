@@ -16,6 +16,7 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
+import org.esupportail.esupsignature.domain.SignBook.SignBookType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.SignRequestParams;
@@ -183,7 +184,7 @@ public class SignRequestController {
 				for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
 					if(!signBookId.getValue()) {
 						SignBook signBook = SignBook.findSignBook(signBookId.getKey());
-						if(signBook.getRecipientEmail().equals(user.getEmail())) {
+						if(signBook.getRecipientEmail().equals(user.getEmail()) && signBook.getSignBookType().equals(SignBookType.model)) {
 							signRequest.getSignRequestParams().setSignPageNumber(signBook.getSignRequestParams().getSignPageNumber());
 							signRequest.getSignRequestParams().setXPos(signBook.getSignRequestParams().getXPos());
 							signRequest.getSignRequestParams().setYPos(signBook.getSignRequestParams().getYPos());
@@ -223,7 +224,7 @@ public class SignRequestController {
 
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(@Valid SignRequest signRequest, @RequestParam("multipartFile") MultipartFile multipartFile,
-			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
+			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam("recipientEmail") String recipientEmail, @RequestParam("newPageType") String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
 			HttpServletRequest request) {
 		if (bindingResult.hasErrors()) {
 			uiModel.addAttribute("signRequest", signRequest);

@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
+import javax.persistence.EntityManager;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -13,6 +14,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
 import javax.validation.constraints.Size;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,7 +24,7 @@ import org.springframework.roo.addon.tostring.RooToString;
 
 @RooJavaBean
 @RooToString
-@RooJpaActiveRecord(finders={"findSignBooksByCreateByEquals", "findSignBooksByRecipientEmailEquals", "findSignBooksByNameEquals"})
+@RooJpaActiveRecord(finders={"findSignBooksByCreateByEquals", "findSignBooksByRecipientEmailEquals", "findSignBooksByNameEquals", "findSignBooksByRecipientEmailAndSignBookTypeEquals"})
 public class SignBook {
 
 	@Column(unique=true)
@@ -63,15 +65,14 @@ public class SignBook {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private SignRequestParams signRequestParams = new SignRequestParams();
-    
-	/*
+	
 	@Enumerated(EnumType.STRING)
 	private SignBookType signBookType;
 	
 	public enum SignBookType {
-		oneShot, fixedParams, fixedIO, fixedParamsAndIO, custom;
+		user, model;
 	}
-	*/
+	
     public enum DocumentIOType {
 		none, cifs, vfs, cmis, mail;
 	}
@@ -83,4 +84,29 @@ public class SignBook {
     public void setTargetType(DocumentIOType targetType) {
         this.targetType = targetType;
     }
+    
+    public void setSignBookType(SignBookType signBookType) {
+        this.signBookType = signBookType;
+    }
+
+    public static Long countFindSignBooksByRecipientEmailAndSignBookTypeEquals(String recipientEmail, SignBookType signBookType) {
+        if (recipientEmail == null || recipientEmail.length() == 0) throw new IllegalArgumentException("The recipientEmail argument is required");
+        if (signBookType == null) throw new IllegalArgumentException("The signBookType argument is required");
+        EntityManager em = SignBook.entityManager();
+        TypedQuery q = em.createQuery("SELECT COUNT(o) FROM SignBook AS o WHERE o.recipientEmail = :recipientEmail AND o.signBookType = :signBookType", Long.class);
+        q.setParameter("recipientEmail", recipientEmail);
+        q.setParameter("signBookType", signBookType);
+        return ((Long) q.getSingleResult());
+    }
+ 
+    public static TypedQuery<SignBook> findSignBooksByRecipientEmailAndSignBookTypeEquals(String recipientEmail, SignBookType signBookType) {
+        if (recipientEmail == null || recipientEmail.length() == 0) throw new IllegalArgumentException("The recipientEmail argument is required");
+        if (signBookType == null) throw new IllegalArgumentException("The signBookType argument is required");
+        EntityManager em = SignBook.entityManager();
+        TypedQuery<SignBook> q = em.createQuery("SELECT o FROM SignBook AS o WHERE o.recipientEmail = :recipientEmail AND o.signBookType = :signBookType", SignBook.class);
+        q.setParameter("recipientEmail", recipientEmail);
+        q.setParameter("signBookType", signBookType);
+        return q;
+    }
+    
 }

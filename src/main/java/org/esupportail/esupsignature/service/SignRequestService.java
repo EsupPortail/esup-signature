@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
+import org.esupportail.esupsignature.domain.SignBook.SignBookType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.SignRequestParams;
@@ -70,6 +71,9 @@ public class SignRequestService {
 	private FileService fileService;
 
 	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document, SignRequestParams signRequestParams, String recipientEmail, Long signBookId) {
+		if(recipientEmail == null) {
+			recipientEmail = user.getEmail();
+		}
 		document.setCreateDate(new Date());
 		signRequest.setName(document.getFileName());
 		signRequest.setCreateBy(user.getEppn());
@@ -77,6 +81,13 @@ public class SignRequestService {
 		signRequest.getDocuments().add(document);
 		if (signBookId != null) {
 			signRequest.getSignBooks().put(signBookId, false);
+		} else {
+			SignBook signBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(recipientEmail, SignBookType.user).getSingleResult();
+			if(signBook != null) {
+				signRequest.getSignBooks().put(signBook.getId(), false);
+			} else {
+				return null;
+			}
 		}
 		signRequest.setStatus(SignRequestStatus.uploaded);
 		signRequest.setSignRequestParams(signRequestParams);

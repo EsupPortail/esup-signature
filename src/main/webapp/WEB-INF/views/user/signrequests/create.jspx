@@ -77,7 +77,20 @@
 		<field:input render="false" cssClass="form-control" field="signPageNumber" id="c_org_esupportail_esupsignature_domain_SignRequest_signPageNumber" z="user-managed"/>
 		<field:input render="false" cssClass="form-control" field="xPos" id="c_org_esupportail_esupsignature_domain_SignRequest_xPos" z="user-managed"/>
 		<field:input render="false" cssClass="form-control" field="yPos" id="c_org_esupportail_esupsignature_domain_SignRequest_yPos" z="user-managed"/>
-		<field:input render="${recipientEmail}" cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" z="user-managed"/>
+		<field:input render="false" cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" z="user-managed"/>
+
+		<c:if test="${recipientEmail}">
+			<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
+				<label class="col-lg-3  col-form-label" for="newPageType">
+					<strong>
+						<spring:message code="label_org_esupportail_esupsignature_domain_signbook_recipientemail" />
+					</strong>
+				</label>
+				<div class="col-lg-9">
+					<input type="text" name="recipientEmail" id="recipientEmail" class="form-control" />
+				</div>
+			</div>
+		</c:if>
 	</form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_SignRequest" render="${not empty dependencies}" z="user-managed"/>
 </div>
