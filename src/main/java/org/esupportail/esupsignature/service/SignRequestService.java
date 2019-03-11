@@ -91,7 +91,6 @@ public class SignRequestService {
 		}
 		signRequest.setStatus(SignRequestStatus.uploaded);
 		signRequest.setSignRequestParams(signRequestParams);
-		signRequest.setRecipientEmail(recipientEmail);
 		signRequest.persist();
 		updateInfo(signRequest, SignRequestStatus.pending, "create", user, "SUCCESS");
 		return signRequest;
@@ -312,8 +311,28 @@ public class SignRequestService {
 		}
 	}
 
+	public void refuse(SignRequest signRequest, User user) {
+		SignBook signBook = getSignBookBySignRequestAndUser(signRequest, user);
+		signRequest.getSignBooks().put(signBook.getId(), true);
+		signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
+		updateInfo(signRequest, SignRequestStatus.refused, "refuse", user, "SUCCESS");
+	}
+	
+	public SignBook getSignBookBySignRequestAndUser(SignRequest signRequest, User user) {
+		if (signRequest.getSignBooks().size() > 0) {
+			for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
+				SignBook signBook = SignBook.findSignBook(signBookId.getKey());
+				if(user.getEmail().equals(signBook.getRecipientEmail()) && signRequest.getSignBooks().containsKey(signBookId.getKey())) {
+					return signBook;
+				}
+			}
+		}
+		return null;
+	}
+	
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {
-		if (signRequest.getStatus().equals(SignRequestStatus.pending) && ((signRequest.getCreateBy().equals(user.getEppn()) && signRequest.getRecipientEmail() == null) || (signRequest.getRecipientEmail() != null && signRequest.getRecipientEmail().equals(user.getEmail())))) {
+		SignBook signBook = getSignBookBySignRequestAndUser(signRequest, user);
+		if (signRequest.getStatus().equals(SignRequestStatus.pending) && signBook != null) {
 			return true;
 		} else {
 			return false;
@@ -321,7 +340,8 @@ public class SignRequestService {
 	}
 
 	public boolean checkUserViewRights(User user, SignRequest signRequest) {
-		if (signRequest.getCreateBy().equals(user.getEppn()) || (signRequest.getRecipientEmail() != null && signRequest.getRecipientEmail().equals(user.getEmail()))) {
+		SignBook signBook = getSignBookBySignRequestAndUser(signRequest, user);
+		if (signRequest.getCreateBy().equals(user.getEppn()) || signBook != null) {
 			return true;
 		} else {
 			return false;

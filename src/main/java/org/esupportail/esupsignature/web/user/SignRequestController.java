@@ -172,28 +172,15 @@ public class SignRequestController {
 		addDateTimeFormatPatterns(uiModel);
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
-			/*
-			if (signRequest.getSignedFile() != null) {
-				toDisplayDocument = signRequest.getSignedFile();
-			} else {
-				toDisplayDocument = signRequest.getOriginalFile();
-			}
-			*/
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
-			if (signRequest.getSignBooks() != null) {
-				for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
-					if(!signBookId.getValue()) {
-						SignBook signBook = SignBook.findSignBook(signBookId.getKey());
-						if(signBook.getRecipientEmail().equals(user.getEmail()) && signBook.getSignBookType().equals(SignBookType.model)) {
-							signRequest.getSignRequestParams().setSignPageNumber(signBook.getSignRequestParams().getSignPageNumber());
-							signRequest.getSignRequestParams().setXPos(signBook.getSignRequestParams().getXPos());
-							signRequest.getSignRequestParams().setYPos(signBook.getSignRequestParams().getYPos());
-							signRequest.merge();
-							break;
-						}
-					}
-				}
-			}
+			SignBook signBook = signRequestService.getSignBookBySignRequestAndUser(signRequest, user);
+			uiModel.addAttribute("curentSignBook", signBook);
+			/*
+			signRequest.getSignRequestParams().setSignPageNumber(signBook.getSignRequestParams().getSignPageNumber());
+			signRequest.getSignRequestParams().setXPos(signBook.getSignRequestParams().getXPos());
+			signRequest.getSignRequestParams().setYPos(signBook.getSignRequestParams().getYPos());
+			signRequest.merge();
+			*/
 			uiModel.addAttribute("documents", signRequest.getDocuments());
 			Document toDisplayDocument = signRequestService.getLastDocument(signRequest);
 			File toDisplayFile = toDisplayDocument.getJavaIoFile();
@@ -224,7 +211,7 @@ public class SignRequestController {
 
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(@Valid SignRequest signRequest, @RequestParam("multipartFile") MultipartFile multipartFile,
-			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam("recipientEmail") String recipientEmail, @RequestParam("newPageType") String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
+			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam(value = "recipientEmail", required=false) String recipientEmail, @RequestParam("newPageType") String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
 			HttpServletRequest request) {
 		if (bindingResult.hasErrors()) {
 			uiModel.addAttribute("signRequest", signRequest);
@@ -244,7 +231,7 @@ public class SignRequestController {
 		signRequestParams.persist();
 		try {
 			Document document = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
-			signRequest = signRequestService.createSignRequest(signRequest, user, document, signRequestParams, signRequest.getRecipientEmail(), null);
+			signRequest = signRequestService.createSignRequest(signRequest, user, document, signRequestParams, recipientEmail, null);
 
 		} catch (IOException e) {
 			logger.error("error to add file : " + multipartFile.getOriginalFilename(), e);
@@ -273,7 +260,8 @@ public class SignRequestController {
 	        	setPassword(password);
 			}
 			try {
-				SignRequestParams.SignType signType = signRequest.getSignRequestParams().getSignType();
+				SignBook signBook = signRequestService.getSignBookBySignRequestAndUser(signRequest, user);
+				SignRequestParams.SignType signType = signBook.getSignRequestParams().getSignType();
 				if(signType.equals(SignRequestParams.SignType.validate)) {
 					signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
 				} else 
@@ -360,24 +348,11 @@ public class SignRequestController {
 		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-
-		if ((signRequest.getCreateBy().equals(user.getEppn()) && signRequest.getRecipientEmail() != null)
-				|| (signRequest.getRecipientEmail() != null
-						&& !signRequest.getRecipientEmail().equals(user.getEmail()))) {
+		if (!signRequestService.checkUserSignRights(user, signRequest)) {
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
 			return "redirect:/user/signrequests/" + id;
 		}
-		if (signRequest.getSignBooks().size() > 0) {
-			for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
-				SignBook signBook = SignBook.findSignBook(signBookId.getKey());
-				if(user.getEmail().equals(signBook.getRecipientEmail()) && !signRequest.getSignBooks().get(signBookId.getKey())) {
-					signRequest.getSignBooks().put(signBookId.getKey(), true);
-					signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
-					break;
-				}
-			}
-		}
-		signRequestService.updateInfo(signRequest, SignRequestStatus.refused, "refuse", user, "SUCCESS");
+		signRequestService.refuse(signRequest, user);
 		return "redirect:/user/signrequests/";
 	}
 

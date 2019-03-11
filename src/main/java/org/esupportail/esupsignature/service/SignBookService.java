@@ -129,7 +129,6 @@ public class SignBookService {
 			User testSignBookUser = User.findUsersByEmailEquals(signBook.getRecipientEmail()).getSingleResult();
 			SignBook testSignBook = getSignBookByUser(signRequest, testSignBookUser);
 			if(testSignBook == null) {
-				signRequest.setRecipientEmail(signBook.getRecipientEmail());
 				signRequest.setSignRequestParams(signBook.getSignRequestParams());
 				signRequest.getSignBooks().put(signBook.getId(), false);
 				signRequest.merge();

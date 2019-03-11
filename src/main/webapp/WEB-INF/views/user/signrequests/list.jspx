@@ -131,7 +131,11 @@
 								<td class="none">${signRequest.name}</td>
 								<td class="none"><fmt:formatDate value="${signRequest.createDate}" pattern="dd/MM/yyyy HH:mm" /></td>
 								<td class="none">${signRequest.createBy}</td>
-								<td class="none">${signRequest.recipientEmail}</td>
+								<td class="none">
+									<c:forEach items="${signRequest.signBooksLabels}" var="signBooksLabel">
+										<li>${signBooksLabel}</li>
+									</c:forEach>
+								</td>
 								<td class="status"><c:choose>
 										<c:when test="${signRequest.status eq 'pending'}">
 											<button type="button" class="btn btn-outline-primary btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
@@ -369,7 +373,6 @@
 		<table:column render="false" date="true" dateTimePattern="${signRequest_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" property="updateDate" z="user-managed" />
 		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" property="updateBy" z="user-managed" />
 		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" z="user-managed" />
-		<table:column id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" property="recipientEmail" z="user-managed" />
 		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_signType" property="signTypeLabel" z="user-managed" />
 		<table:column cssClass="status" id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed" />
 	</table:table>

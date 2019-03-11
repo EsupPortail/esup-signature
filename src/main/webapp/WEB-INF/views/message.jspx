@@ -82,7 +82,7 @@
 					 	<!-- div class="alert alert-info" data-dismiss="alert"-->
 						<div id="dialog" title="Information" class="text-danger">
 							<div class="alert alert-info">
-								<pre>${messageCustom}</pre>
+								${messageCustom}
 							</div>
 						</div>
 					</c:if>

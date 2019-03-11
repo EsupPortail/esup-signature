@@ -36,14 +36,6 @@ privileged aspect SignRequest_Roo_JavaBean {
         this.createBy = createBy;
     }
     
-    public String SignRequest.getRecipientEmail() {
-        return this.recipientEmail;
-    }
-    
-    public void SignRequest.setRecipientEmail(String recipientEmail) {
-        this.recipientEmail = recipientEmail;
-    }
-    
     public String SignRequest.getDescription() {
         return this.description;
     }

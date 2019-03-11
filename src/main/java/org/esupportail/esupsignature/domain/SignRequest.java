@@ -46,8 +46,6 @@ public class SignRequest {
     private Date createDate;
 
     private String createBy;
-
-    private String recipientEmail;
     
     @Size(max = 500)
     private String description;
@@ -153,10 +151,6 @@ public class SignRequest {
 
         if(!createBy.isEmpty()) {
         	predicates.add(criteriaBuilder.equal(signRequestRoot.get("createBy"), createBy));
-        }
-    	
-        if(!recipientEmail.isEmpty()) {
-        	predicates.add(criteriaBuilder.equal(signRequestRoot.get("recipientEmail"), recipientEmail));
         }
     	
         if(searchString != null && searchString != ""){
