@@ -114,7 +114,7 @@ public class SignRequestController {
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
 			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
 		SignRequestStatus statusFilterEnum = null;
-		if(statusFilter != null) {
+		if(statusFilter != null && !statusFilter.isEmpty()) {
 			statusFilterEnum = SignRequestStatus.valueOf(statusFilter);
 		}
 		//TODO repair filtre a signer/en cours 

@@ -19,8 +19,6 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
@@ -80,6 +78,14 @@ public class SignRequest {
 		}
 		return signBookNames;
 		
+    }
+    
+    public List<String> getSignBooksJson() {
+    	List<String> result = new ArrayList<>();
+    	for(Map.Entry<Long, Boolean> signBookId : signBooks.entrySet()) {
+			result.add(signBookId.getKey().toString());
+		}
+    	return result;
     }
     
 	public static TypedQuery<SignRequest> findSignRequests(String createBy, String recipientEmail, SignRequestStatus status, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {

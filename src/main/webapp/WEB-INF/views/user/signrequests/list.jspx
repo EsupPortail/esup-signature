@@ -118,7 +118,8 @@
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_name" /></th>
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createdate" /></th>
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createby" /></th>
-							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" /></th>
+							<th class="signbook" style="display: none;"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" /></th>
+							<th class="type"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" /></th>
 							<th class="status"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_status" /></th>
 							<th><spring:message code="button_view" /></th>
 							<th><spring:message code="button_delete" /></th>
@@ -131,7 +132,7 @@
 								<td class="none">${signRequest.name}</td>
 								<td class="none"><fmt:formatDate value="${signRequest.createDate}" pattern="dd/MM/yyyy HH:mm" /></td>
 								<td class="none">${signRequest.createBy}</td>
-								<td class="none">
+								<td class="signbook" style="display: none;">
 									<table class="table table-sm">
 									  	<tbody>
 											<c:forEach items="${signRequest.signBooksLabels}" var="signBooksLabel">
@@ -152,6 +153,11 @@
 										</tbody>
 									</table>
 								</td>
+								<spring:url htmlEscape="true" var="json" value="${signRequest.signBooksJson}" />
+								<td class="type"><input type="hidden" id="signbook_${signRequest.id}" value="${json}" />
+									<button type="button" class="btn btn-outline-dark btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" />
+									</button></td>
 								<td class="status"><c:choose>
 										<c:when test="${signRequest.status eq 'pending'}">
 											<button type="button" class="btn btn-outline-primary btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
@@ -267,6 +273,7 @@
 			passwordField.style.display = "none";
 			alertSignDocsButton.style.display = "none";
 			var oldSignBook = "";
+			var oldType = "";
 			for (i = 0; i &lt; checkBoxes.length; i++) {
 				if(checkBoxes[i].checked) {
 					var status = document.getElementById("status_" + checkBoxes[i].value).value;
@@ -277,13 +284,15 @@
 					} else {
 						passwordField.style.display = "none";
 					}
-					if(status != "pending" || (oldSignBook != "" &amp;&amp; oldSignBook != signBook)) {
+					var signBookId=signBook.split(',');
+					if(status != "pending" || (oldType != "" &amp;&amp; oldType != type )) {
 						signDocsButton.disabled = true;
 						alertSignDocsButton.style.display = "block";
 						passwordField.style.display = "none";
 						break;
 					} else {
 						oldSignBook = signBook;
+						oldType = type;
 						alertSignDocsButton.style.display = "none";
 						signDocsButton.disabled = false;
 					}
