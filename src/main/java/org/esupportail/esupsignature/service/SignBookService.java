@@ -81,7 +81,7 @@ public class SignBookService {
 							user = User.findUsersByEppnEquals(fsFile.getCreateBy()).getSingleResult();
 							user.setIp("127.0.0.1");
 						}
-						SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmail(), signBook.getId());
+						SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBook.getId());
 						signRequest.merge();
 						signBook.getSignRequests().add(signRequest);
 						signBook.merge();

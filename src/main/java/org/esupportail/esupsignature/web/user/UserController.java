@@ -76,11 +76,10 @@ public class UserController {
 	
     @RequestMapping(produces = "text/html")
     public String show(Model uiModel) throws Exception {
-		String eppn = userService.getEppnFromAuthentication();
-		if(User.countFindUsersByEppnEquals(eppn) == 0) {
+		User user = userService.getEppnFromAuthentication();
+		if(user == null) {
 			return "redirect:/user/users/?form";
 		}
-    	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	if(user.getSignImage().getBigFile().getBinaryFile() == null) {
 			return "redirect:/user/users/?form";
 		}    	
@@ -98,17 +97,16 @@ public class UserController {
     
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(Model uiModel) throws IOException, SQLException {
-		String eppn = userService.getEppnFromAuthentication();
-		User user;
-		if(User.countFindUsersByEppnEquals(eppn) > 0) {
-			user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User user = userService.getEppnFromAuthentication();;
+		if(user != null) {
 	        uiModel.addAttribute("user", user);	        
-			if(user.getSignImage().getBigFile().getBinaryFile() != null) {
+        	SignBook signBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
+        	uiModel.addAttribute("signBook", signBook);
+        	uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
+        	uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
+
+	        if(user.getSignImage().getBigFile().getBinaryFile() != null) {
 	        	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-	        	SignBook signBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
-	        	uiModel.addAttribute("signBook", signBook);
-	        	uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
-	        	uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
 	        	return "user/users/update";
 	        } else {
 				return "user/users/create";
@@ -127,9 +125,7 @@ public class UserController {
             return "user/users/update";
         }
         uiModel.asMap().clear();
-		String eppn = userService.getEppnFromAuthentication();
-		User userToUpdate = null;
-		userToUpdate = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User userToUpdate = userService.getEppnFromAuthentication();
         if(!multipartKeystore.isEmpty()) {
             if(userToUpdate.getKeystore().getBigFile().getBinaryFile() != null) {
             	userToUpdate.getKeystore().remove();
@@ -157,8 +153,7 @@ public class UserController {
     
     @RequestMapping(value = "/viewCert", method = RequestMethod.GET, produces = "text/html")
     public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttrs) throws Exception {
-		String eppn = userService.getEppnFromAuthentication();
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User user = userService.getEppnFromAuthentication();
 		if (password != null && !"".equals(password)) {
         	setPassword(password);
         }
@@ -173,8 +168,7 @@ public class UserController {
     
 	@RequestMapping(value = "/get-keystore-file", method = RequestMethod.GET)
 	public void getSignedFile(HttpServletResponse response, Model model) {
-		String eppn = userService.getEppnFromAuthentication();
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User user = userService.getEppnFromAuthentication();
 		Document file = user.getKeystore();
 		try {
 			response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");

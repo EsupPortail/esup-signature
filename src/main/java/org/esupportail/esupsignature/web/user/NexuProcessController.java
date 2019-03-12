@@ -72,8 +72,7 @@ public class NexuProcessController {
 
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String showSignatureParameters(@PathVariable("id") Long id, Model model, HttpServletRequest request, RedirectAttributes redirectAttrs) {
-		String eppn = userService.getEppnFromAuthentication();
-    	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+    	User user = userService.getEppnFromAuthentication();
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
     		SignatureDocumentForm signatureDocumentForm = signingService.getXadesSignatureDocumentForm();
@@ -123,8 +122,7 @@ public class NexuProcessController {
 			@ModelAttribute("signaturePdfForm") @Valid SignatureDocumentForm signaturePdfForm, @ModelAttribute("signRequest") SignRequest signRequest, BindingResult result) throws EsupSignatureKeystoreException {
 		SignDocumentResponse signedDocumentResponse;
 		signaturePdfForm.setBase64SignatureValue(signatureValue.getSignatureValue());
-		String eppn = userService.getEppnFromAuthentication();
-    	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+    	User user = userService.getEppnFromAuthentication();
         try {
         	signRequestService.nexuSign(signRequest, user, signaturePdfForm);
 		} catch (EsupSignatureIOException e) {

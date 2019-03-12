@@ -98,10 +98,11 @@ public class SignRequestController {
 	private UserService userService;
 
 	@RequestMapping(params = "form", produces = "text/html")
-	public String createForm(Model uiModel,
-			@RequestParam(value = "recipientEmail", required = false) boolean recipientEmail) {
+	public String createForm(Model uiModel) {
 		populateEditForm(uiModel, new SignRequest());
-		uiModel.addAttribute("recipientEmail", recipientEmail);
+		User user = userService.getEppnFromAuthentication();
+		uiModel.addAttribute("mySignBook", SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult());
+		uiModel.addAttribute("allSignBooks", SignBook.findAllSignBooks());
 		return "user/signrequests/create";
 	}
 
@@ -117,19 +118,15 @@ public class SignRequestController {
 		if(statusFilter != null && !statusFilter.isEmpty()) {
 			statusFilterEnum = SignRequestStatus.valueOf(statusFilter);
 		}
-		//TODO repair filtre a signer/en cours 
-		String eppn = userService.getEppnFromAuthentication();
-		if (User.countFindUsersByEppnEquals(eppn) == 0) {
+		User user = userService.getEppnFromAuthentication();
+		if (user == null) {
 			return "redirect:/user/users/?form";
 		}
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
 		if (user.getSignImage().getBigFile().getBinaryFile() == null) {
 			return "redirect:/user/users/?form";
 		}
 		populateEditForm(uiModel, new SignRequest());
-		if (User.countFindUsersByEppnEquals(eppn) == 0) {
-			return "redirect:/user/users";
-		}
+
 		if (sortOrder == null) {
 			sortOrder = "desc";
 			sortFieldName = "createDate";
@@ -141,11 +138,11 @@ public class SignRequestController {
 		if(findBy != null && findBy.equals("recipientEmail")) {
 		signRequests = SignRequest.findSignRequests("", user.getEmail(), statusFilterEnum, "", page, size, sortFieldName, sortOrder)
 				.getResultList();
-		nrOfPages = (float) SignRequest.countFindSignRequests(eppn, statusFilterEnum, "") / sizeNo;
+		nrOfPages = (float) SignRequest.countFindSignRequests(user.getEppn(), statusFilterEnum, "") / sizeNo;
 		} else {
-			signRequests = SignRequest.findSignRequests(eppn, user.getEmail(), statusFilterEnum, "", page, size, sortFieldName, sortOrder)
+			signRequests = SignRequest.findSignRequests(user.getEppn(), user.getEmail(), statusFilterEnum, "", page, size, sortFieldName, sortOrder)
 					.getResultList();
-			nrOfPages = (float) SignRequest.countFindSignRequests(eppn, statusFilterEnum, "") / sizeNo;
+			nrOfPages = (float) SignRequest.countFindSignRequests(user.getEppn(), statusFilterEnum, "") / sizeNo;
 			
 		}
 		uiModel.addAttribute("mydocs", "active");
@@ -156,8 +153,8 @@ public class SignRequestController {
 		uiModel.addAttribute("findBy", findBy);
 		uiModel.addAttribute("signBookId", signBookId);
 		//TODO repair dectect nb to sign
-		uiModel.addAttribute("nbToSignRequests",SignRequest.countFindSignRequests(eppn, SignRequestStatus.pending, ""));
-		uiModel.addAttribute("nbPedingSignRequests",SignRequest.countFindSignRequests(eppn, SignRequestStatus.pending, ""));
+		uiModel.addAttribute("nbToSignRequests",SignRequest.countFindSignRequests(user.getEppn(), SignRequestStatus.pending, ""));
+		uiModel.addAttribute("nbPedingSignRequests",SignRequest.countFindSignRequests(user.getEppn(), SignRequestStatus.pending, ""));
 		uiModel.addAttribute("signRequests", signRequests);
 		uiModel.addAttribute("signBooks", SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList());
 		uiModel.addAttribute("statusFilter", statusFilter);
@@ -168,8 +165,7 @@ public class SignRequestController {
 
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
-		String eppn = userService.getEppnFromAuthentication();
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User user = userService.getEppnFromAuthentication();
 		addDateTimeFormatPatterns(uiModel);
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
@@ -190,7 +186,6 @@ public class SignRequestController {
 				uiModel.addAttribute("pdfWidth", pdfParameters.getWidth());
 				uiModel.addAttribute("pdfHeight", pdfParameters.getHeight());
 				uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-
 			}
 			uiModel.addAttribute("logs", Log.findLogsBySignRequestIdEquals(signRequest.getId()).getResultList());
 			uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
@@ -204,7 +199,7 @@ public class SignRequestController {
 			}
 			return "user/signrequests/show";
 		} else {
-			logger.warn(eppn + " attempted to access signRequest " + id + " without write access");
+			logger.warn(user.getEppn() + " attempted to access signRequest " + id + " without write access");
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
 			return "redirect:/user/signrequests/";
 		}
@@ -212,7 +207,7 @@ public class SignRequestController {
 
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(@Valid SignRequest signRequest, @RequestParam("multipartFile") MultipartFile multipartFile,
-			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam(value = "recipientEmail", required=false) String recipientEmail, @RequestParam("newPageType") String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
+			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam(value = "signBookId", required=false) long signBookId, @RequestParam("newPageType") String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
 			HttpServletRequest request) {
 		if (bindingResult.hasErrors()) {
 			uiModel.addAttribute("signRequest", signRequest);
@@ -220,8 +215,7 @@ public class SignRequestController {
 			return "user/signrequests/create";
 		}
 		uiModel.asMap().clear();
-		String eppn = userService.getEppnFromAuthentication();
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User user = userService.getEppnFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequestParams signRequestParams = new SignRequestParams();
 		signRequestParams.setSignType(SignType.valueOf(signType));
@@ -232,7 +226,7 @@ public class SignRequestController {
 		signRequestParams.persist();
 		try {
 			Document document = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
-			signRequest = signRequestService.createSignRequest(signRequest, user, document, signRequestParams, recipientEmail, null);
+			signRequest = signRequestService.createSignRequest(signRequest, user, document, signRequestParams, signBookId);
 
 		} catch (IOException e) {
 			logger.error("error to add file : " + multipartFile.getOriginalFilename(), e);
@@ -248,8 +242,7 @@ public class SignRequestController {
 			@RequestParam(value = "signPageNumber", required = true) int signPageNumber,
 			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
 			HttpServletResponse response, Model model, HttpServletRequest request) {
-		String eppn = userService.getEppnFromAuthentication();
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User user = userService.getEppnFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
@@ -292,8 +285,7 @@ public class SignRequestController {
 			@RequestParam(value = "ids", required = true) Long[] ids,
 			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
 			HttpServletResponse response, Model model, HttpServletRequest request) throws JsonParseException, JsonMappingException, IOException {
-		String eppn = userService.getEppnFromAuthentication();
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User user = userService.getEppnFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		float totalToSign = ids.length;
 		float nbSigned = 0;
@@ -346,8 +338,7 @@ public class SignRequestController {
 	@RequestMapping(value = "/refuse/{id}")
 	public String refuse(@PathVariable("id") Long id, RedirectAttributes redirectAttrs, HttpServletResponse response,
 			Model model, HttpServletRequest request) throws SQLException {
-		String eppn = userService.getEppnFromAuthentication();
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User user = userService.getEppnFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (!signRequestService.checkUserSignRights(user, signRequest)) {
@@ -415,8 +406,7 @@ public class SignRequestController {
 	public String sendToSignBook(@PathVariable("id") Long id,
 			@RequestParam(value = "signBookId", required = false) long signBookId, HttpServletResponse response,
 			RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
-		String eppn = userService.getEppnFromAuthentication();
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User user = userService.getEppnFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		SignBook signBook = SignBook.findSignBook(signBookId);

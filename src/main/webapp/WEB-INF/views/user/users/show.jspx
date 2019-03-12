@@ -13,7 +13,7 @@
 		<field:display field="keystore" id="s_org_esupportail_esupsignature_domain_User_keystore" object="${user}" render="false" z="user-managed" />
 		<field:display render="false" field="password" id="s_org_esupportail_esupsignature_domain_User_password" object="${user}" z="user-managed" />
 		<dl class="display-group border-bottom m-0">
-			<dt class="col-lg-4">
+			<dt class="col-lg-5">
 				<spring:message code="label_org_esupportail_esupsignature_domain_user_signimage" />
 			</dt>
 			<dd>
@@ -21,7 +21,7 @@
 			</dd>
 		</dl>
 		<dl class="display-group border-bottom m-0">
-			<dt class="col-lg-4">
+			<dt class="col-lg-5">
 				<spring:message code="label_org_esupportail_esupsignature_domain_user_keystore" />
 			</dt>
 			<dd>
@@ -51,7 +51,7 @@
 		</dl>
 		
 		<dl class="display-group border-bottom m-0">
-			<dt class="col-lg-4">
+			<dt class="col-lg-5">
 				<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_params" />
 			</dt>
 			<dd>

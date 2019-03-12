@@ -39,13 +39,13 @@
 											<div class="form-group">
 												<small>
 													<div class="row">
-														<div class="col-lg-5">
+														<div class="col-lg-4">
 															Page : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.signPageNumber}" id="signPageNumber" type="text" name="signPageNumber" />
 														</div>
-														<div class="col-lg-5">
+														<div class="col-lg-4">
 															X position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.XPos}" id="xPos" type="text" name="xPos" />
 														</div>
-														<div class="col-lg-5">
+														<div class="col-lg-4">
 															Y position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.YPos}" id="yPos" type="text" name="yPos" />
 														</div>
 													</div>

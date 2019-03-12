@@ -72,11 +72,11 @@ public class UserSignBookController {
     
     @RequestMapping(value = "/{id}", produces = "text/html")
     public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
-		String eppn = userService.getEppnFromAuthentication();
+		User user = userService.getEppnFromAuthentication();
     	addDateTimeFormatPatterns(uiModel);
         SignBook signBook = SignBook.findSignBook(id);
         uiModel.addAttribute("signbook", signBook);
-        List<SignRequest> signRequests = signBook.getSignRequests().stream().filter(signRequest -> eppn.equals(signRequest.getCreateBy())).collect(Collectors.toList());
+        List<SignRequest> signRequests = signBook.getSignRequests().stream().filter(signRequest -> user.getEppn().equals(signRequest.getCreateBy())).collect(Collectors.toList());
         uiModel.addAttribute("signRequests", signRequests);
         uiModel.addAttribute("itemId", id);
         uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());
@@ -88,11 +88,10 @@ public class UserSignBookController {
     		@RequestParam("multipartFile") MultipartFile multipartFile, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) throws IOException {
 		Document documentToAdd = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
     	if(documentToAdd != null) {
-	    	String eppn = userService.getEppnFromAuthentication();
-	    	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+	    	User user = userService.getEppnFromAuthentication();
 	    	user.setIp(request.getRemoteAddr());
 			SignBook signBook = SignBook.findSignBook(id);
-			SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmail(), signBook.getId());
+			SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBook.getId());
 			signBook.getSignRequests().add(signRequest);
 		} else {
 			redirectAttrs.addFlashAttribute("messageCustom", "file is required");

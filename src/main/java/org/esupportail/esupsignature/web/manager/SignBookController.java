@@ -89,7 +89,7 @@ public class SignBookController {
 			populateEditForm(uiModel, signBook);
 			return "manager/signbooks/create";
 		}
-		String eppn = userService.getEppnFromAuthentication();
+		User user = userService.getEppnFromAuthentication();
 		SignBook signBookToUpdate = null;
 		signBookToUpdate = SignBook.findSignBook(signBook.getId());
 		signBook.setName(signBook.getName().trim());
@@ -114,7 +114,7 @@ public class SignBookController {
 			signBookToUpdate.merge();
 		} else {
 			if(SignBook.countFindSignBooksByNameEquals(signBook.getName()) == 0) {
-			signBook.setCreateBy(eppn);
+			signBook.setCreateBy(user.getEppn());
 			signBook.setCreateDate(new Date());
 			signBook.setModelFile(documentService.addFile(multipartFile, multipartFile.getOriginalFilename()));
 			SignRequestParams signRequestParams = new SignRequestParams();
@@ -162,8 +162,7 @@ public class SignBookController {
 			@RequestParam(value = "yPos", required = true) int yPos,
 			@RequestParam(value = "signPageNumber", required = true) int signPageNumber,
 			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
-		String eppn = userService.getEppnFromAuthentication();
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User user = userService.getEppnFromAuthentication();
 		SignBook signBook = SignBook.findSignBook(id);
 
 		if (!signBook.getCreateBy().equals(user.getEppn())) {
@@ -173,7 +172,7 @@ public class SignBookController {
 		signBook.getSignRequestParams().setSignPageNumber(signPageNumber);
 		signBook.getSignRequestParams().setXPos(xPos);
 		signBook.getSignRequestParams().setYPos(yPos);
-		signBook.setUpdateBy(eppn);
+		signBook.setUpdateBy(user.getEppn());
 		signBook.setUpdateDate(new Date());
 
 		return "redirect:/manager/signbooks/" + id;
@@ -184,18 +183,18 @@ public class SignBookController {
 			@RequestParam(value = "size", required = false) Integer size,
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
 			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
-		String eppn = userService.getEppnFromAuthentication();
+		User user = userService.getEppnFromAuthentication();
 		if (page != null || size != null) {
 			int sizeNo = size == null ? 10 : size.intValue();
 			//final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
 			uiModel.addAttribute("signbooks",
-					SignBook.findSignBooksByCreateByEquals(eppn, sortFieldName, sortOrder).getResultList());
+					SignBook.findSignBooksByCreateByEquals(user.getEppn(), sortFieldName, sortOrder).getResultList());
 			float nrOfPages = (float) SignBook.countSignBooks() / sizeNo;
 			uiModel.addAttribute("maxPages",
 					(int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
 		} else {
 			uiModel.addAttribute("signbooks",
-					SignBook.findSignBooksByCreateByEquals(eppn, sortFieldName, sortOrder).getResultList());
+					SignBook.findSignBooksByCreateByEquals(user.getEppn(), sortFieldName, sortOrder).getResultList());
 		}
 		addDateTimeFormatPatterns(uiModel);
 		return "manager/signbooks/list";
@@ -203,8 +202,7 @@ public class SignBookController {
 
 	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
 	public String getFileFromSource(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws IOException {
-		String eppn = userService.getEppnFromAuthentication();
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User user = userService.getEppnFromAuthentication();
 		SignBook signBook = SignBook.findSignBook(id);
 
 		if (!signBook.getCreateBy().equals(user.getEppn())) {
@@ -219,10 +217,8 @@ public class SignBookController {
 
 	@RequestMapping(value = "/send-files-to-target/{id}", produces = "text/html")
 	public String sendFileToTarget(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureException {
-		String eppn = userService.getEppnFromAuthentication();
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User user = userService.getEppnFromAuthentication();
 		SignBook signBook = SignBook.findSignBook(id);
-
 		if (!signBook.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/signbooks/" + id;

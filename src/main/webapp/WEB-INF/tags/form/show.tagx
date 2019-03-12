@@ -40,7 +40,10 @@
 
     <spring:message arguments="${label}" code="entity_show" var="title_msg" htmlEscape="false" />
   	<div class="card">
-  	<div class="card-header"><h5>${title_msg} : ${object.id}</h5></div>
+  	<div class="card-header"><h5>
+  	${title_msg}
+	</h5>
+	</div>
     <util:panel id="${id}" title="${title_msg}" openPane="${openPane}">
       <c:choose>
         <c:when test="${not empty object}">

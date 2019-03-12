@@ -9,7 +9,7 @@
 	</div>
 	<div class="card">
 		<div class="card-header">
-			<form action="" method="get">
+			<form class="" action="" method="get">
 				<div class="input-group">
 					<div class="input-group-prepend">
 						<div class="input-group-text">Filtres</div>
@@ -74,8 +74,8 @@
 				</div>
 
 			</form>
-
-			<div class="input-group">
+			<div class="form-inline">
+				<div class="input-group">
 				<div class="input-group-prepend">
 					<div class="input-group-text">Actions :</div>
 				</div>
@@ -92,19 +92,17 @@
 						<span class="fa fa-pencil-alt"><!--  --></span>&amp;nbsp;<spring:message code="menu_item_sign_docs" />
 					</button>
 				</div>
-				<div class="input-group-text">
-					<!--  -->
 				</div>
+				<div class="mx-auto"><!--  --></div>
+				<div class="input-group">
 				<div class="input-group-prepend">
 					<div class="input-group-text">Nouveau :</div>
 				</div>
 				<div class="input-group-append">
-					<a alt="Signer un nouveau document" class="btn btn-primary" href="/user/signrequests?form" title="Signer un nouveau Document"> <span class="fas fa-pencil-alt"><!--  --></span>&amp;nbsp;<spring:message code="menu_item_signrequest_new" />
+					<a alt="Signer un nouveau document" class="btn btn-success" href="/user/signrequests?form" title="Signer un nouveau Document">
+						<i class="fas fa-plus"><!--  --></i>&amp;nbsp;<spring:message code="menu_item_signrequest_new" />
 					</a>
 				</div>
-				<div class="input-group-append">
-					<a alt="Envoyer un nouveau document" class="btn btn-warning" href="/user/signrequests?form&amp;recipientEmail=true" title="Signer un nouveau Document"><span class="fa fa-paper-plane"><!--  --></span>&amp;nbsp;<spring:message code="menu_item_signrequest_send" />
-					</a>
 				</div>
 			</div>
 		</div>

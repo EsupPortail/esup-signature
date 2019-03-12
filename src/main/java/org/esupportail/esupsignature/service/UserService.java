@@ -74,7 +74,7 @@ public class UserService {
 
 	}
 	
-    public String getEppnFromAuthentication() {
+    public User getEppnFromAuthentication() {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     	String eppn = auth.getName();
     	if(personDao != null) {
@@ -83,7 +83,12 @@ public class UserService {
     			eppn = persons.get(0).getEduPersonPrincipalName();
     		}
     	}
-    	return eppn;
+		if (User.countFindUsersByEppnEquals(eppn) > 0) {
+			return User.findUsersByEppnEquals(eppn).getSingleResult();
+		} else {
+			return null;
+		}
+    	
     }
 	
     public User addSignImage(User user, String signImageBase64) throws IOException {
