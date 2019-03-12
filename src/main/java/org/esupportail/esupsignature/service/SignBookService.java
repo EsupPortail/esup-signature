@@ -102,20 +102,22 @@ public class SignBookService {
 	public void exportFilesToTarget(SignBook signBook, User user) throws EsupSignatureException {
 		for (SignRequest signRequest : signBook.getSignRequests()) {
 			if (signRequest.getStatus().equals(SignRequestStatus.signed) && signRequestService.isSignRequestCompleted(signRequest)) {
-				exportFileToTarget(signBook, signRequestService.getLastDocument(signRequest).getJavaIoFile());
-				signRequestService.updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
-				removeSignRequestFromSignBook(signRequest, signBook, user);
+				exportFileToTarget(signBook, signRequest, user);
+				//signRequestService.updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
+				removeSignRequestFromAllSignBooks(signRequest, signBook, user);
 			}
 		}
 	}
 
-	public void exportFileToTarget(SignBook signBook, File signedFile) throws EsupSignatureException {
+	public void exportFileToTarget(SignBook signBook, SignRequest signRequest, User user) throws EsupSignatureException {
 		if (signBook.getTargetType() != null && !signBook.getTargetType().equals(DocumentIOType.none)) {
 			logger.info("send to " + signBook.getTargetType() + " in " + signBook.getDocumentsTargetUri());
 			FsAccessService fsAccessService = getFsAccessService(signBook.getSourceType());
 			try {
+				File signedFile = signRequestService.getLastDocument(signRequest).getJavaIoFile();
 				InputStream inputStream = new FileInputStream(signedFile);
 				fsAccessService.putFile(signBook.getDocumentsTargetUri(), signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
+				signRequestService.updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
 			} catch (Exception e) {
 				throw new EsupSignatureException("write fsaccess error : ", e);
 			}
@@ -144,9 +146,9 @@ public class SignBookService {
 		}
 	}
 
-	public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook, User user) {
+	public void removeSignRequestFromAllSignBooks(SignRequest signRequest, SignBook signBook, User user) {
 		if (signBook.getSignRequests().contains(signRequest)) {
-			signRequestService.updateInfo(signRequest, SignRequestStatus.completed, "remove from signbook" + signBook.getId(), user, "SUCCESS");
+			//signRequestService.updateInfo(signRequest, SignRequestStatus.completed, "remove from signbook" + signBook.getId(), user, "SUCCESS");
 			signRequest.getSignBooks().clear();
 			signRequest.merge();
 			signBook.getSignRequests().remove(signRequest);

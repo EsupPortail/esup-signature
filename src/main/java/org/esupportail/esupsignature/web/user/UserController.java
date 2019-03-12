@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.user;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -12,6 +13,8 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.SignBookType;
+import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
+import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
@@ -102,7 +105,11 @@ public class UserController {
 	        uiModel.addAttribute("user", user);	        
 			if(user.getSignImage().getBigFile().getBinaryFile() != null) {
 	        	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-	    		return "user/users/update";
+	        	SignBook signBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
+	        	uiModel.addAttribute("signBook", signBook);
+	        	uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
+	        	uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
+	        	return "user/users/update";
 	        } else {
 				return "user/users/create";
 	        }
@@ -114,7 +121,7 @@ public class UserController {
     }
     
     @RequestMapping(method = RequestMethod.POST, produces = "text/html")
-    public String create(@Valid User user, @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttrs) throws Exception {
+    public String create(@Valid User user, @RequestParam(value = "newPageType", required=false) String newPageType, @RequestParam(value = "signType", required=false) String signType, @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttrs) throws Exception {
     	if (bindingResult.hasErrors()) {
         	populateEditForm(uiModel, user);
             return "user/users/update";
@@ -141,7 +148,11 @@ public class UserController {
     		oldSignImage.getBigFile().remove();
     		oldSignImage.remove();
     	}
-        return "redirect:/user/users/";
+    	SignBook signBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
+    	if(signType != null) {
+    		signBook.getSignRequestParams().setSignType(SignType.valueOf(signType));
+    	}
+    	return "redirect:/user/users/";
     }
     
     @RequestMapping(value = "/viewCert", method = RequestMethod.GET, produces = "text/html")

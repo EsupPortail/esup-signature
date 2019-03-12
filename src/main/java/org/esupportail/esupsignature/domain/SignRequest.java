@@ -20,6 +20,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
@@ -81,29 +82,21 @@ public class SignRequest {
 		
     }
     
-	public static TypedQuery<SignRequest> findSignRequests(String createBy, SignRequestStatus status, Long signBookId, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
+	public static TypedQuery<SignRequest> findSignRequests(String createBy, String recipientEmail, SignRequestStatus status, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
     	EntityManager em = SignRequest.entityManager();
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
-        CriteriaQuery<SignRequest> query = criteriaBuilder.createQuery(SignRequest.class);
+        CriteriaQuery<SignRequest> query = criteriaBuilder.createQuery(SignRequest.class).distinct(true);
+        Root<SignBook> signBookRoot = query.from(SignBook.class);        
         Root<SignRequest> signRequestRoot = query.from(SignRequest.class);
-        
+//    	Join signBookJoin = signBookRoot.join("signRequests");
     	List<Predicate> predicates = new ArrayList<Predicate>();
-    	Predicate predicatesOwner = null;
-    	Predicate createByPredicates = null;
+    	
         if(!createBy.isEmpty()) {
-        	createByPredicates = criteriaBuilder.equal(signRequestRoot.get("createBy"), createBy);
+        	predicates.add(criteriaBuilder.equal(signRequestRoot.get("createBy"), createBy));
+        } else {
+        	predicates.add(criteriaBuilder.equal(signBookRoot.get("recipientEmail"), recipientEmail));        	
         }
-       	 predicatesOwner = criteriaBuilder.and(createByPredicates);
 
-       	 if(predicatesOwner != null) {
-        	predicates.add(predicatesOwner);
-        }
-        
-        if(signBookId != null) {
-        	Join<SignBook, SignRequest> signBookJoin = signRequestRoot.join("signBooks");        	
-        	predicates.add(criteriaBuilder.equal(signBookJoin.get("id"), signBookId));
-        }
-        
         if(status != null) {
         	predicates.add(criteriaBuilder.equal(signRequestRoot.get("status"), status));
         }
@@ -122,9 +115,9 @@ public class SignRequest {
         	orders.add(criteriaBuilder.desc(signRequestRoot.get(sortFieldName)));
         }
         orders.add(criteriaBuilder.asc(signRequestRoot.get("status")));
-        query.orderBy(orders);
-        query.where(criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()])));
         query.select(signRequestRoot);
+        query.where(criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()])));
+        query.orderBy(orders);
 
         int sizeNo = size == null ? 10 : size.intValue();
         final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;

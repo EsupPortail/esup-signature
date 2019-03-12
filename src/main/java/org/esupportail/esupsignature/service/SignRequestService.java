@@ -96,6 +96,11 @@ public class SignRequestService {
 		updateInfo(signRequest, SignRequestStatus.pending, "create", user, "SUCCESS");
 		return signRequest;
 	}
+	
+	public void validate(SignRequest signRequest, User user) throws EsupSignatureIOException, EsupSignatureException {
+		updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
+		applySignBookRules(signRequest, user);
+	}
 
 	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureIOException, EsupSignatureException {
 		File toSignFile = getLastDocument(signRequest).getJavaIoFile();
@@ -121,6 +126,7 @@ public class SignRequestService {
 		}
 		if (signedFile != null) {
 			addSignedFile(signRequest, signedFile, user);
+			applySignBookRules(signRequest, user);
 		} else {
 			throw new EsupSignatureException("enable to sign document");
 		}
@@ -135,6 +141,7 @@ public class SignRequestService {
 			File signedFile = fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName());
 			if (signedFile != null) {
 				addSignedFile(signRequest, signedFile, user);
+				applySignBookRules(signRequest, user);
 			}
 		} catch (IOException e) {
 			logger.error("error to read signed file", e);
@@ -237,33 +244,39 @@ public class SignRequestService {
 		try {
 			Document toaddDocument = documentService.addFile(signedFile, "signed_" + signRequest.getSignRequestParams().getSignType().toString() + "_" + user.getEppn() + "_" + signedFile.getName(), fileService.getContentType(signedFile));
 			signRequest.getDocuments().add(toaddDocument);
-			SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
-			if (signBook != null) {
-				signRequest.getSignBooks().put(signBook.getId(), true);
-				//TODO remove from parapheur
-			} else {
-				updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
-			}
 			signRequest.merge();
-			if (isSignRequestCompleted(signRequest)) {
-				updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
-				if (signBook != null) {
-					if (!signBook.getTargetType().equals(DocumentIOType.none)) {
-						try {
-							signBookService.exportFileToTarget(signBook, signedFile);
-							updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
-							signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
-						} catch (EsupSignatureException e) {
-							logger.error("error on export file to fs", e);
-						}
-					}
-				}
-			}
 		} catch (IOException e) {
 			throw new EsupSignatureIOException("error on save signed file", e);
 		}
 	}
 
+	public void applySignBookRules(SignRequest signRequest, User user) {
+		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
+		if (signBook != null) {
+			signRequest.getSignBooks().put(signBook.getId(), true);
+		} else {
+			updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
+		}
+		signRequest.merge();
+		if (isSignRequestCompleted(signRequest)) {
+			updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
+			if (signBook != null) {
+				if (!signBook.getTargetType().equals(DocumentIOType.none)) {
+					try {
+						//TODO a retester
+						signBookService.exportFileToTarget(signBook, signRequest, user);
+						//updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
+						signBookService.removeSignRequestFromAllSignBooks(signRequest, signBook, user);
+					} catch (EsupSignatureException e) {
+						logger.error("error on export file to fs", e);
+					}
+				} else {
+					signBookService.removeSignRequestFromAllSignBooks(signRequest, signBook, user);
+				}
+			}
+		}	
+	}
+	
 	public Document getLastDocument(SignRequest signRequest) {
 		List<Document> documents = signRequest.getDocuments();
 		return documents.get(documents.size() - 1);
@@ -316,8 +329,17 @@ public class SignRequestService {
 	public void refuse(SignRequest signRequest, User user) {
 		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		signRequest.getSignBooks().put(signBook.getId(), true);
-		signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
+		signBookService.removeSignRequestFromAllSignBooks(signRequest, signBook, user);
 		updateInfo(signRequest, SignRequestStatus.refused, "refuse", user, "SUCCESS");
+	}
+	
+	public void toggleNeedAllSign(SignRequest signRequest) {
+		if(signRequest.isAllSignToComplete()) {
+			signRequest.setAllSignToComplete(false);
+		} else {
+			signRequest.setAllSignToComplete(true);
+		}
+		signRequest.merge();
 	}
 	
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {

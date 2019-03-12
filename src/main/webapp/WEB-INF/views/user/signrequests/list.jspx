@@ -118,7 +118,7 @@
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_name" /></th>
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createdate" /></th>
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createby" /></th>
-							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_recipientemail" /></th>
+							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" /></th>
 							<th class="status"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_status" /></th>
 							<th><spring:message code="button_view" /></th>
 							<th><spring:message code="button_delete" /></th>

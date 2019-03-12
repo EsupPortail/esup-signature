@@ -117,7 +117,7 @@ public class SignRequestController {
 		if(statusFilter != null) {
 			statusFilterEnum = SignRequestStatus.valueOf(statusFilter);
 		}
-		
+		//TODO repair filtre a signer/en cours 
 		String eppn = userService.getEppnFromAuthentication();
 		if (User.countFindUsersByEppnEquals(eppn) == 0) {
 			return "redirect:/user/users/?form";
@@ -138,9 +138,16 @@ public class SignRequestController {
 		float nrOfPages = 1;
 		int sizeNo = size == null ? 10 : size.intValue();
 		signBookId = null;
-		signRequests = SignRequest.findSignRequests(eppn, statusFilterEnum, null, "", page, size, sortFieldName, sortOrder)
+		if(findBy != null && findBy.equals("recipientEmail")) {
+		signRequests = SignRequest.findSignRequests("", user.getEmail(), statusFilterEnum, "", page, size, sortFieldName, sortOrder)
 				.getResultList();
 		nrOfPages = (float) SignRequest.countFindSignRequests(eppn, statusFilterEnum, "") / sizeNo;
+		} else {
+			signRequests = SignRequest.findSignRequests(eppn, user.getEmail(), statusFilterEnum, "", page, size, sortFieldName, sortOrder)
+					.getResultList();
+			nrOfPages = (float) SignRequest.countFindSignRequests(eppn, statusFilterEnum, "") / sizeNo;
+			
+		}
 		uiModel.addAttribute("mydocs", "active");
 
 		uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
@@ -169,7 +176,7 @@ public class SignRequestController {
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
 			SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 			uiModel.addAttribute("curentSignBook", signBook);
-			if(signBook.getSignBookType().equals(SignBookType.model)) {
+			if(signBook!=null && signBook.getSignBookType().equals(SignBookType.model)) {
 				signRequest.getSignRequestParams().setSignPageNumber(signBook.getSignRequestParams().getSignPageNumber());
 				signRequest.getSignRequestParams().setXPos(signBook.getSignRequestParams().getXPos());
 				signRequest.getSignRequestParams().setYPos(signBook.getSignRequestParams().getYPos());
@@ -258,7 +265,7 @@ public class SignRequestController {
 				
 				SignType signType = signRequest.getSignRequestParams().getSignType();
 				if(signType.equals(SignType.validate)) {
-					signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
+					signRequestService.validate(signRequest, user);
 				} else 
 				if(signType.equals(SignType.nexuSign)) {
 					return "redirect:/user/nexu-sign/" + id;
@@ -397,6 +404,13 @@ public class SignRequestController {
 		}
 	}
 
+	@RequestMapping(value = "/toggle-need-all-sign/{id}", method = RequestMethod.GET)
+	public String toggleNeedAllSign(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
+		SignRequest signRequest = SignRequest.findSignRequest(id);
+		signRequestService.toggleNeedAllSign(signRequest);
+		return "redirect:/user/signrequests/" + id;
+	}
+	
 	@RequestMapping(value = "/send-to-signbook/{id}", method = RequestMethod.GET)
 	public String sendToSignBook(@PathVariable("id") Long id,
 			@RequestParam(value = "signBookId", required = false) long signBookId, HttpServletResponse response,
