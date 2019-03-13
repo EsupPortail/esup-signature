@@ -90,30 +90,19 @@ public class SignRequest {
     	return result;
     }
     
-	public static TypedQuery<SignRequest> findSignRequests(String createBy, String recipientEmail, SignRequestStatus status, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
+	public static TypedQuery<SignRequest> findSignRequests(String createBy, SignRequestStatus status, String searchString, Integer page, Integer size, String sortFieldName, String sortOrder) {
     	EntityManager em = SignRequest.entityManager();
         CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
-        CriteriaQuery<SignRequest> query = criteriaBuilder.createQuery(SignRequest.class).distinct(true);
-        Root<SignBook> signBookRoot = query.from(SignBook.class);        
+        CriteriaQuery<SignRequest> query = criteriaBuilder.createQuery(SignRequest.class);
         Root<SignRequest> signRequestRoot = query.from(SignRequest.class);
-//    	Join signBookJoin = signBookRoot.join("signRequests");
-    	List<Predicate> predicates = new ArrayList<Predicate>();
-    	
+
+        List<Predicate> predicates = new ArrayList<Predicate>();
         if(!createBy.isEmpty()) {
         	predicates.add(criteriaBuilder.equal(signRequestRoot.get("createBy"), createBy));
-        } else {
-        	predicates.add(criteriaBuilder.equal(signBookRoot.get("recipientEmail"), recipientEmail));        	
         }
 
         if(status != null) {
         	predicates.add(criteriaBuilder.equal(signRequestRoot.get("status"), status));
-        }
-        
-        if(searchString != null && searchString != ""){
-	        Expression<Boolean> fullTestSearchExpression = criteriaBuilder.function("fts", Boolean.class, criteriaBuilder.literal(searchString));
-	        predicates.add(criteriaBuilder.isTrue(fullTestSearchExpression));
-        }else{
-        	searchString = "";
         }
         
         List<Order> orders = new ArrayList<Order>();
@@ -126,7 +115,6 @@ public class SignRequest {
         query.select(signRequestRoot);
         query.where(criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()])));
         query.orderBy(orders);
-
         int sizeNo = size == null ? 10 : size.intValue();
         final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
         

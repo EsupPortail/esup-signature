@@ -11,16 +11,21 @@
     <div class="row">
     <div class="col-lg-6">
         <div class="card bg-light">
-					<div class="card-header">
-						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseTools" aria-expanded="true" aria-controls="collapseTools">
-							<spring:message code="menu_item_signbook_infos" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
-							</i>
-						</button>
-					</div>
-					<div id="collapseTools" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
-						<div class="card-body">
-        
-        <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignBook_name" object="${signbook}" z="user-managed"/>
+		<div class="card-header">
+			<spring:message code="menu_item_signbook_infos" />
+		</div>
+		<div id="collapseInfos" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+		<div class="card-body">
+        <field:display render="false" field="name" id="s_org_esupportail_esupsignature_domain_SignBook_name" object="${signbook}" z="user-managed"/>
+		<dl class="display-group border-bottom m-0">
+			<dt class="col-lg-5">
+				<spring:message code="label_org_esupportail_esupsignature_domain_signbook_name" />
+			</dt>
+			<dd>
+				<h5>${signbook.name}</h5>
+			</dd>
+		</dl>
+
 		<dl class="display-group border-bottom m-0">
 			<dt class="col-lg-5">
 				<spring:message code="label_org_esupportail_esupsignature_domain_signbook_recipientemail" />
@@ -64,12 +69,12 @@
 			<div class="form-group">
 				<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" />
 				:
-				<button type="button" class="btn btn-light active btn-sm col-12">
+				<button type="button" class="btn btn-outline-dark btn-sm col-12">
 					<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signbook.signRequestParams.signType}" />
 				</button>
 				<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype" />
 				:
-				<button type="button" class="btn btn-light active btn-sm col-12">
+				<button type="button" class="btn btn-outline-dark btn-sm col-12">
 					<spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signbook.signRequestParams.newPageType}" />
 				</button>
 				</div>
@@ -99,10 +104,7 @@
 		<div class="col-lg-6">
         <div class="card bg-light">
 					<div class="card-header">
-						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseTools" aria-expanded="true" aria-controls="collapseTools">
-							<spring:message code="menu_item_tools" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
-							</i>
-						</button>
+							<spring:message code="menu_item_tools" />
 					</div>
 					<div id="collapseTools" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
 						<div class="card-body">

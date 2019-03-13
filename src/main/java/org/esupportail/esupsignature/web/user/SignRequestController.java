@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.user;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -122,16 +123,19 @@ public class SignRequestController {
 			sortOrder = "desc";
 			sortFieldName = "createDate";
 		}
-		List<SignRequest> signRequests = null;
+		List<SignRequest> signRequests = new ArrayList<>();
 		float nrOfPages = 1;
 		int sizeNo = size == null ? 10 : size.intValue();
 		signBookId = null;
 		if(findBy != null && findBy.equals("recipientEmail")) {
-		signRequests = SignRequest.findSignRequests("", user.getEmail(), statusFilterEnum, "", page, size, sortFieldName, sortOrder)
-				.getResultList();
+			List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList();
+			for(SignBook signBook : signBooks) {
+				signRequests.addAll(signBook.getSignRequests());
+			}
+			
 		nrOfPages = (float) SignRequest.countFindSignRequests(user.getEppn(), statusFilterEnum, "") / sizeNo;
 		} else {
-			signRequests = SignRequest.findSignRequests(user.getEppn(), user.getEmail(), statusFilterEnum, "", page, size, sortFieldName, sortOrder)
+			signRequests = SignRequest.findSignRequests(user.getEppn(), statusFilterEnum, "", page, size, sortFieldName, sortOrder)
 					.getResultList();
 			nrOfPages = (float) SignRequest.countFindSignRequests(user.getEppn(), statusFilterEnum, "") / sizeNo;
 			
