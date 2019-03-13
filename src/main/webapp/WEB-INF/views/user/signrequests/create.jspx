@@ -46,7 +46,50 @@
         <field:select field="signedFile" id="c_org_esupportail_esupsignature_domain_SignRequest_signedFile" itemValue="id" items="${files}" path="/files" render="false" z="user-managed"/>
         <field:select render="false" field="signType" id="c_org_esupportail_esupsignature_domain_SignRequest_signType" cssClass="form-control" path="/" multiple="false" size="1" checkboxes="false" items="${signTypes}" z="user-managed"/>
         <field:checkbox render="false" field="allSignToComplete" id="c_org_esupportail_esupsignature_domain_SignRequest_allSignToComplete" z="user-managed"/>
-		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signType_id">
+		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
+			<label class="col-lg-3  col-form-label" for="newPageType">
+				<strong>
+					<spring:message code="label_org_esupportail_esupsignature_domain_signbook" />
+				</strong>
+			</label>
+			<div class="col-lg-9">
+				<select class="form-control" name="signBookIds" size="5" multiple="multiple">
+					<c:forEach items="${allSignBooks}" var="signBook">
+						<c:choose>
+							<c:when test="${mySignBook.id eq signBook.id}">
+								<option value="${signBook.id}" selected="selected">${signBook.name}</option>
+							</c:when>
+							<c:otherwise>
+								<option value="${signBook.id}">${signBook.name}</option>
+							</c:otherwise>
+						</c:choose>
+					</c:forEach>
+				</select>
+			</div>
+		</div>
+		<input type="hidden" id="_overloadSignParams" name="overloadSignParams" value="false" />
+				<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
+			<label class="col-lg-3  col-form-label" for="newPageType">
+				<strong>
+					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_overloadparams" />
+				</strong>
+			</label>
+			<div class="col-lg-9">
+				<div class="input-group">
+					<div class="input-group-prepend">
+						<button id="overload_no" type="button" class="btn btn-light btn-sm col-12" onclick="toggleOverload();">
+						<spring:message code="global_no" />
+						</button>
+					</div>
+					<div class="input-group-append">
+						<button id="overload_yes" type="button" class="btn btn-light btn-sm col-12" onclick="toggleOverload();">
+						<spring:message code="global_yes" />
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="form-group" id="_signType_div_id">
 			<label class="col-lg-3  col-form-label" for="signType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype" /></strong></label>
 			<div class="col-lg-9">
 				<select id="_signType_id" name="signType" class="form-control" size="1">
@@ -58,7 +101,7 @@
 			</div>
 		</div>        
 		<field:select render="false" field="newPageType" id="c_org_esupportail_esupsignature_domain_SignRequest_newPageType" cssClass="form-control" path="/" multiple="false" size="1" checkboxes="false" items="${newPageTypes}" z="user-managed"/>        
-		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
+		<div class="form-group" id="_newPageType_div_id">
 			<label class="col-lg-3  col-form-label" for="newPageType">
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype" />
@@ -77,28 +120,48 @@
 		<field:input render="false" cssClass="form-control" field="xPos" id="c_org_esupportail_esupsignature_domain_SignRequest_xPos" z="user-managed"/>
 		<field:input render="false" cssClass="form-control" field="yPos" id="c_org_esupportail_esupsignature_domain_SignRequest_yPos" z="user-managed"/>
 		<field:input render="false" cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" z="user-managed"/>
-		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
-			<label class="col-lg-3  col-form-label" for="newPageType">
-				<strong>
-					<spring:message code="label_org_esupportail_esupsignature_domain_signbook" />
-				</strong>
-			</label>
-			<div class="col-lg-9">
-				<select class="form-control" name="signBookId">
-					<option value="" disabled="disabled" selected="selected"><spring:message code="menu_item_choose_signbook" /></option>
-					<c:forEach items="${allSignBooks}" var="signBook">
-						<c:choose>
-							<c:when test="${mySignBook.id eq signBook.id}">
-								<option value="${signBook.id}" selected="selected">${signBook.name}</option>
-							</c:when>
-							<c:otherwise>
-								<option value="${signBook.id}">${signBook.name}</option>
-							</c:otherwise>
-						</c:choose>
-					</c:forEach>
-				</select>
-			</div>
-		</div>
 	</form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_SignRequest" render="${not empty dependencies}" z="user-managed"/>
+    <script type="text/javascript">
+    //var checkBoxes = document.querySelectorAll(".check");
+    	var overloadSignParams = document.getElementById("_overloadSignParams");
+		var signTypeSelector = document.getElementById("_signType_id");
+		var signTypeDiv = document.getElementById("_signType_div_id");
+		var newPageTypeSelector = document.getElementById("_newPageType_id");
+		var newPageTypeDiv = document.getElementById("_newPageType_div_id");
+		var overloadYes = document.getElementById("overload_yes");
+		var overloadNo = document.getElementById("overload_no");
+		overloadNo.classList.remove("btn-light");
+		overloadNo.classList.add("btn-danger");
+		signTypeSelector.disabled = true;
+		newPageTypeSelector.disabled = true;
+		signTypeDiv.classList.add("div-disable");
+		newPageTypeDiv.classList.add("div-disable");
+		
+		function toggleOverload() {
+
+			if(overloadSignParams.value == "true") {
+				overloadNo.classList.remove("btn-light");
+				overloadNo.classList.add("btn-danger");
+				overloadYes.classList.remove("btn-success");
+				overloadYes.classList.add("btn-light");
+				signTypeDiv.classList.add("div-disable");
+				newPageTypeDiv.classList.add("div-disable");
+				signTypeSelector.disabled = true;
+				newPageTypeSelector.disabled = true;
+				overloadSignParams.value = "false";
+			} else {
+				overloadYes.classList.remove("btn-light");
+				overloadYes.classList.add("btn-success");
+				overloadNo.classList.remove("btn-danger");
+				overloadNo.classList.add("btn-light");
+				signTypeDiv.classList.remove("div-disable");
+				newPageTypeDiv.classList.remove("div-disable");
+				signTypeSelector.disabled = false;
+				newPageTypeSelector.disabled = false;
+				overloadSignParams.value = "true";
+			}
+		}
+    
+    </script>
 </div>

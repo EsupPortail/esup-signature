@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +12,7 @@ import javax.annotation.Resource;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
+import org.esupportail.esupsignature.domain.SignBook.SignBookType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.User;
@@ -66,6 +68,22 @@ public class SignBookService {
 		return fsAccessService;
 	}
 
+	public SignBook createUserSignBook(User user) {
+		SignBook signbook = new SignBook();
+		signbook.setName(user.getFirstname() + " " + user.getName());
+		signbook.setDescription(signbook.getName() + " personnal signbook");
+		signbook.setCreateBy(user.getEppn());
+		signbook.setCreateDate(new Date());
+		signbook.setRecipientEmail(user.getEmail());
+		signbook.setSignRequestParams(null);
+		signbook.setSignBookType(SignBookType.user);
+		signbook.setSourceType(DocumentIOType.none);
+		signbook.setTargetType(DocumentIOType.none);
+		signbook.setSignRequestParams(signRequestService.getEmptySignRequestParams());
+		signbook.persist();
+		return signbook;
+	}
+	
 	public void importFilesFromSource(SignBook signBook, User user) {
 		if (signBook.getSourceType() != null && !signBook.getSourceType().equals(DocumentIOType.none)) {
 			logger.info("retrieve from " + signBook.getSourceType() + " in " + signBook.getDocumentsSourceUri());
@@ -81,7 +99,8 @@ public class SignBookService {
 							user = User.findUsersByEppnEquals(fsFile.getCreateBy()).getSingleResult();
 							user.setIp("127.0.0.1");
 						}
-						SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBook.getId());
+						long[] signBookIds = {signBook.getId()};
+						SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBookIds);
 						signRequest.merge();
 						signBook.getSignRequests().add(signRequest);
 						signBook.merge();
@@ -127,6 +146,7 @@ public class SignBookService {
 	}
 
 	public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
+		//TODO: la question de l'heritage des parametres
 		if (!signBook.getSignRequests().contains(signRequest)) {
 			User testSignBookUser = User.findUsersByEmailEquals(signBook.getRecipientEmail()).getSingleResult();
 			SignBook testSignBook = getSignBookBySignRequestAndUser(signRequest, testSignBookUser);

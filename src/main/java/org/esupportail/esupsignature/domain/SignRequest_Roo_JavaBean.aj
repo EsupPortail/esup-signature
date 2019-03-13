@@ -52,6 +52,14 @@ privileged aspect SignRequest_Roo_JavaBean {
         this.documents = documents;
     }
     
+    public boolean SignRequest.isOverloadSignParams() {
+        return this.overloadSignParams;
+    }
+    
+    public void SignRequest.setOverloadSignParams(boolean overloadSignParams) {
+        this.overloadSignParams = overloadSignParams;
+    }
+    
     public SignRequestParams SignRequest.getSignRequestParams() {
         return this.signRequestParams;
     }

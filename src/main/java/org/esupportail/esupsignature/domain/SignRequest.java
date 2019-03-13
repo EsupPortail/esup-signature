@@ -52,6 +52,8 @@ public class SignRequest {
     @OneToMany
     private List<Document> documents = new ArrayList<Document>();
     
+    private boolean overloadSignParams = false;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     private SignRequestParams signRequestParams = new SignRequestParams();
     

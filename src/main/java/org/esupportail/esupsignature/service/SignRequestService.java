@@ -16,6 +16,8 @@ import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
+import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
+import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.SignRequestParams;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
@@ -69,17 +71,19 @@ public class SignRequestService {
 	@Resource
 	private FileService fileService;
 
-	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document, SignRequestParams signRequestParams, long signBookId) {
+	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document, SignRequestParams signRequestParams, long[] signBookIds) {
 		document.setCreateDate(new Date());
 		signRequest.setName(document.getFileName());
 		signRequest.setCreateBy(user.getEppn());
 		signRequest.setCreateDate(new Date());
 		signRequest.getDocuments().add(document);
-		SignBook signBook = SignBook.findSignBook(signBookId);
-		signRequest.getSignBooks().put(signBook.getId(), false);
-		signBook.getSignRequests().add(signRequest);
 		signRequest.setStatus(SignRequestStatus.uploaded);
 		signRequest.setSignRequestParams(signRequestParams);
+		for(long signBookId : signBookIds) {
+			SignBook signBook = SignBook.findSignBook(signBookId);
+			signRequest.getSignBooks().put(signBook.getId(), false);
+			signBook.getSignRequests().add(signRequest);
+		}
 		signRequest.persist();
 		updateInfo(signRequest, SignRequestStatus.pending, "create", user, "SUCCESS");
 		return signRequest;
@@ -92,6 +96,7 @@ public class SignRequestService {
 
 	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureIOException, EsupSignatureException {
 		File toSignFile = getLastDocument(signRequest).getJavaIoFile();
+		//TODO getparams from signBook si non surchargés
 		SignRequestParams.SignType signType = signRequest.getSignRequestParams().getSignType();
 		File signedFile = null;
 		if (fileService.getContentType(toSignFile).equals("application/pdf")) {
@@ -181,7 +186,7 @@ public class SignRequestService {
 		parameters.setSigningCertificate(certificateToken);
 		parameters.setCertificateChain(certificateTokenChain);
 		parameters.setSignatureImageParameters(imageParameters);
-		// TODO ajuster signatue size
+		// TODO ajuster signature size
 		parameters.setSignatureSize(100000);
 
 		DSSDocument dssDocument = signingService.certSignDocument(signatureDocumentForm, parameters, signatureTokenConnection);
@@ -249,7 +254,7 @@ public class SignRequestService {
 					try {
 						//TODO a retester
 						signBookService.exportFileToTarget(signBook, signRequest, user);
-						//updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
+						updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
 						signBookService.removeSignRequestFromAllSignBooks(signRequest, signBook, user);
 					} catch (EsupSignatureException e) {
 						logger.error("error on export file to fs", e);
@@ -347,5 +352,17 @@ public class SignRequestService {
 			return false;
 		}
 	}
+	
+	public SignRequestParams getEmptySignRequestParams() {
+		SignRequestParams signRequestParams = new SignRequestParams();
+		signRequestParams.setSignPageNumber(1);
+		signRequestParams.setXPos(0);
+		signRequestParams.setYPos(0);
+		signRequestParams.setNewPageType(NewPageType.none);
+		signRequestParams.setSignType(SignType.validate);
+		signRequestParams.persist();
+		return signRequestParams;
+	}
 
 }
+

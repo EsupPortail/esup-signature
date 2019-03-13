@@ -29,7 +29,7 @@ public class CasAuthenticationSuccessHandler implements AuthenticationSuccessHan
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 		
-        userService.updateUser(authentication);
+        userService.createUser(authentication);
 
 		redirectStrategy.sendRedirect(request, response, "/");
 	}

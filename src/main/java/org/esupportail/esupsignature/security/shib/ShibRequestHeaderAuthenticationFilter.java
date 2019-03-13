@@ -27,7 +27,7 @@ public class ShibRequestHeaderAuthenticationFilter extends RequestHeaderAuthenti
         String email = request.getHeader("mail");
         String name = request.getHeader("sn");
         String firstName = request.getHeader("givenName");
-        userService.updateUser(eppn, name, firstName, email);
+        userService.createUser(eppn, name, firstName, email);
         log.info("User " + eppn + " authenticated");
     }
 	

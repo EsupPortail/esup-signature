@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:spring="http://www.springframework.org/tags" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
+<div xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:spring="http://www.springframework.org/tags" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
 	<jsp:directive.page contentType="text/html;charset=UTF-8" />
 	<jsp:output omit-xml-declaration="yes" />
 	<div aria-expanded="true" class="collapse" id="collapseHelp" style="">
@@ -63,12 +63,9 @@
 														: event.pageY
 																- document
 																		.getElementById("pointer_div").offsetTop;
-												document
-														.getElementById("cross").style.left = (pos_x);
-												document
-														.getElementById("cross").style.top = (pos_y);
-												document
-														.getElementById("cross").style.visibility = "visible";
+												document.getElementById("cross").style.left = (pos_x);
+												document.getElementById("cross").style.top = (pos_y);
+												document.getElementById("cross").style.visibility = "visible";
 												document.getElementById("xPos").value = pos_x;
 												document.getElementById("yPos").value = pos_y;
 											}
@@ -98,54 +95,56 @@
 									</c:when>
 									<c:otherwise>
 										<c:if test="${signable eq 'ok'}">
-						<field:display render="false" field="allSignToComplete" id="s_org_esupportail_esupsignature_domain_SignRequest_allSignToComplete" object="${signRequest}" z="user-managed" />
-							<dl class="display-group border-bottom m-0">
-								<dt class="col-lg-5">
-									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
-								</dt>
-								<dd>
-								<div class="input-group">
-									<spring:url value="/user/signrequests/toggle-need-all-sign/${id}" var="toggleNeedAllSignUrl" />
-									<c:choose>
-										<c:when test="${signRequest.allSignToComplete eq true}">
-										<div class="input-group-prepend">
-											<button type="button" class="btn btn-light active btn-sm col-12" onclick="document.location='${toggleNeedAllSignUrl}'">
-											<spring:message code="global_no" />
-											</button>
-											</div>
-										<div class="input-group-append">	
-											<button type="button" class="btn btn-success btn-sm col-12" style="pointer-events: none;">
-											<spring:message code="global_yes" />
-											</button>
-											</div>
-										</c:when>
-										<c:otherwise>
-										<div class="input-group-prepend">
-											<button type="button" class="btn btn-danger active btn-sm col-12" style="pointer-events: none;">
-											<spring:message code="global_no" />
-											</button>
-											</div>
-											<div class="input-group-append">
-											<button type="button" class="btn btn-light active btn-sm col-12" onclick="document.location='${toggleNeedAllSignUrl}'">
-											<spring:message code="global_yes" />
-											</button>
-											</div>
-										</c:otherwise>
-									</c:choose>
-								</div>
-								</dd>
-							</dl>
-										
-										<dl class="display-group border-bottom m-0">
-											<dt class="col-lg-5">
-												<spring:message code="label_org_esupportail_esupsignature_domain_currentsignbook" />
-											</dt>
-											<dd>
-												<button class="btn btn-outline-dark col-12" type="button">
-												<i class="fas fa-book"><!--  --></i>&amp;nbsp;${curentSignBook.name}
-												</button>
-											</dd>
-										</dl>
+											<field:display render="false" field="allSignToComplete" id="s_org_esupportail_esupsignature_domain_SignRequest_allSignToComplete" object="${signRequest}" z="user-managed" />
+											<c:if test="${fn:length(signRequest.signBooks) > 1}">
+												<dl class="display-group border-bottom m-0">
+													<dt class="col-lg-5">
+														<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
+													</dt>
+													<dd>
+													<div class="input-group">
+														<spring:url value="/user/signrequests/toggle-need-all-sign/${id}" var="toggleNeedAllSignUrl" />
+														<c:choose>
+															<c:when test="${signRequest.allSignToComplete eq true}">
+																<div class="input-group-prepend">
+																	<button type="button" class="btn btn-light active btn-sm col-12" onclick="document.location='${toggleNeedAllSignUrl}'">
+																	<spring:message code="global_no" />
+																	</button>
+																</div>
+																<div class="input-group-append">	
+																	<button type="button" class="btn btn-success btn-sm col-12" style="pointer-events: none;">
+																	<spring:message code="global_yes" />
+																	</button>
+																</div>
+															</c:when>
+															<c:otherwise>
+																<div class="input-group-prepend">
+																	<button type="button" class="btn btn-danger active btn-sm col-12" style="pointer-events: none;">
+																	<spring:message code="global_no" />
+																	</button>
+																</div>
+																<div class="input-group-append">
+																	<button type="button" class="btn btn-light active btn-sm col-12" onclick="document.location='${toggleNeedAllSignUrl}'">
+																	<spring:message code="global_yes" />
+																	</button>
+																</div>
+															</c:otherwise>
+														</c:choose>
+													</div>
+													</dd>
+												</dl>
+											</c:if>
+											
+											<dl class="display-group border-bottom m-0">
+												<dt class="col-lg-5">
+													<spring:message code="label_org_esupportail_esupsignature_domain_currentsignbook" />
+												</dt>
+												<dd>
+													<button class="btn btn-outline-dark col-12" type="button">
+													<i class="fas fa-book"><!--  --></i>&amp;nbsp;${curentSignBook.name}
+													</button>
+												</dd>
+											</dl>
 											<dl class="display-group border-bottom m-0">
 												<dt class="col-lg-5">
 													<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signAction" />
@@ -257,7 +256,7 @@
 				<div class="card bg-light">
 					<div class="card-header">
 						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseInfos" aria-expanded="true" aria-controls="collapseInfos">
-							<spring:message code="menu_item_infos" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
+							<spring:message code="menu_item_signrequest_infos" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
 							</i>
 						</button>
 					</div>
@@ -314,25 +313,6 @@
 							</dl>
 							<dl class="display-group border-bottom m-0">
 								<dt class="col-lg-5">
-									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_params" />
-								</dt>
-								<dd class="col-lg-7">
-								<div class="form-group">
-									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" />
-									:
-									<button type="button" class="btn btn-light active btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
-										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" />
-									</button>
-									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype" />
-									:
-									<button type="button" class="btn btn-light active btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
-										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signRequest.signRequestParams.newPageType}" />
-									</button>
-									</div>
-								</dd>
-							</dl>
-							<dl class="display-group border-bottom m-0">
-								<dt class="col-lg-5">
 									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" />
 								</dt>
 								<dd class="col-lg-7">
@@ -365,8 +345,26 @@
 									</div>
 								</dd>
 
+							</dl>							
+							<dl class="display-group border-bottom m-0">
+								<dt class="col-lg-5">
+									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_params" />
+								</dt>
+								<dd class="col-lg-7">
+								<div class="form-group">
+									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" />
+									:
+									<button type="button" class="btn btn-light active btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" />
+									</button>
+									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype" />
+									:
+									<button type="button" class="btn btn-light active btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signRequest.signRequestParams.newPageType}" />
+									</button>
+									</div>
+								</dd>
 							</dl>
-														<field:display pre="true" field="description" id="s_org_esupportail_esupsignature_domain_SignRequest_description" object="${signRequest}" z="user-managed" />
 							<field:display render="false" field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" object="${signRequest}" z="user-managed" />
 							<field:display render="false" field="status" id="s_org_esupportail_esupsignature_domain_SignRequest_status" object="${signRequest}" z="user-managed" />
 							<field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_SignRequest_originalFile" object="${signRequest}" render="false" z="user-managed" />

@@ -97,15 +97,6 @@ public class SignRequestController {
 	@Resource
 	private UserService userService;
 
-	@RequestMapping(params = "form", produces = "text/html")
-	public String createForm(Model uiModel) {
-		populateEditForm(uiModel, new SignRequest());
-		User user = userService.getEppnFromAuthentication();
-		uiModel.addAttribute("mySignBook", SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult());
-		uiModel.addAttribute("allSignBooks", SignBook.findAllSignBooks());
-		return "user/signrequests/create";
-	}
-
 	@RequestMapping(produces = "text/html")
 	public String list(@RequestParam(value = "page", required = false) Integer page,
 			@RequestParam(value = "findBy", required = false) String findBy,
@@ -172,11 +163,11 @@ public class SignRequestController {
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
 			SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 			uiModel.addAttribute("curentSignBook", signBook);
-			if(signBook!=null && signBook.getSignBookType().equals(SignBookType.model)) {
-				signRequest.getSignRequestParams().setSignPageNumber(signBook.getSignRequestParams().getSignPageNumber());
-				signRequest.getSignRequestParams().setXPos(signBook.getSignRequestParams().getXPos());
-				signRequest.getSignRequestParams().setYPos(signBook.getSignRequestParams().getYPos());
-				signRequest.merge();
+			if(signBook == null) {
+				signBook = SignBook.findSignBook(signRequest.getSignBooks().keySet().iterator().next());
+			}
+			if(!signRequest.isOverloadSignParams()) {
+				signRequest.setSignRequestParams(signBook.getSignRequestParams());
 			}
 			uiModel.addAttribute("documents", signRequest.getDocuments());
 			Document toDisplayDocument = signRequestService.getLastDocument(signRequest);
@@ -204,10 +195,20 @@ public class SignRequestController {
 			return "redirect:/user/signrequests/";
 		}
 	}
+	
+	@RequestMapping(params = "form", produces = "text/html")
+	public String createForm(Model uiModel) {
+		populateEditForm(uiModel, new SignRequest());
+		User user = userService.getEppnFromAuthentication();
+		uiModel.addAttribute("mySignBook", SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult());
+		uiModel.addAttribute("allSignBooks", SignBook.findAllSignBooks("name", "ASC"));
+		//TODO autocompletion signbooks
+		return "user/signrequests/create";
+	}
 
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(@Valid SignRequest signRequest, @RequestParam("multipartFile") MultipartFile multipartFile,
-			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam(value = "signBookId", required=false) long signBookId, @RequestParam("newPageType") String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
+			BindingResult bindingResult, @RequestParam(value = "signType", required = false) String signType, @RequestParam(value = "signBookIds", required = true) long[] signBookIds, @RequestParam(value="newPageType", required = false) String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
 			HttpServletRequest request) {
 		if (bindingResult.hasErrors()) {
 			uiModel.addAttribute("signRequest", signRequest);
@@ -218,15 +219,17 @@ public class SignRequestController {
 		User user = userService.getEppnFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequestParams signRequestParams = new SignRequestParams();
-		signRequestParams.setSignType(SignType.valueOf(signType));
-		signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
+		if(signRequest.isOverloadSignParams()) {
+			signRequestParams.setSignType(SignType.valueOf(signType));
+			signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
+		}
 		signRequestParams.setSignPageNumber(1);
 		signRequestParams.setXPos(0);
 		signRequestParams.setYPos(0);
 		signRequestParams.persist();
 		try {
 			Document document = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
-			signRequest = signRequestService.createSignRequest(signRequest, user, document, signRequestParams, signBookId);
+			signRequest = signRequestService.createSignRequest(signRequest, user, document, signRequestParams, signBookIds);
 
 		} catch (IOException e) {
 			logger.error("error to add file : " + multipartFile.getOriginalFilename(), e);
@@ -254,8 +257,6 @@ public class SignRequestController {
 	        	setPassword(password);
 			}
 			try {
-				//SignBook signBook = signRequestService.getSignBookBySignRequestAndUser(signRequest, user);
-				
 				SignType signType = signRequest.getSignRequestParams().getSignType();
 				if(signType.equals(SignType.validate)) {
 					signRequestService.validate(signRequest, user);
