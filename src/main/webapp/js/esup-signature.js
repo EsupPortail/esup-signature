@@ -44,11 +44,87 @@ document.addEventListener('DOMContentLoaded', function() {
 		myModalInstance.show();
 	}
 	
-	//TODO a virer ?
-	if(document.querySelector('#cancelFilters') != null) {
-		document.querySelector('#cancelFilters').onclick = function() {
-		   window.location.href='';
-		}
-	}
-	
 });
+
+var pointerDiv;
+var startPosX;
+var startPosY;
+
+document.addEventListener('DOMContentLoaded', function() {
+	pointerDiv = document.getElementById("pointer_div");
+	startPosX = document.getElementById("xPos").value;
+	startPosY = document.getElementById("yPos").value;
+});
+
+var pointItEnable = true;
+
+function pointIt(event) {
+	posX = event.offsetX ? (event.offsetX)
+			: event.pageX
+					- document
+							.getElementById("pointer_div").offsetLeft;
+	posY = event.offsetY ? (event.offsetY)
+			: event.pageY
+					- document
+							.getElementById("pointer_div").offsetTop;
+	if(posX > 0 && posY > 0 && pointItEnable) {
+		document.getElementById("cross").style.left = (posX);
+		document.getElementById("cross").style.top = (posY);
+		document.getElementById("xPos").value = posX;
+		document.getElementById("yPos").value = posY;
+		document.getElementById("borders").classList.add("anim-border");
+	}
+}
+
+function resetPosition() {
+	document.getElementById("xPos").value = startPosX;
+	document.getElementById("yPos").value = startPosY;
+	document.getElementById("cross").style.left = (startPosX);
+	document.getElementById("cross").style.top = (startPosY);
+	document.getElementById("borders").classList.remove("anim-border");
+}
+
+function savePosition() {
+	if(pointItEnable) {
+		startPosX = posX;
+		startPosY = posY;
+		pointItEnable = false;
+		document.getElementById("borders").classList.remove("anim-border");
+	} else {
+		pointItEnable = true;
+		document.getElementById("borders").classList.add("anim-border");
+	}
+}
+
+// Paging
+document.addEventListener('DOMContentLoaded', function() {
+	if (currentImagePage == 0) {
+		document.getElementById("previous").disabled = true;
+	}
+	if (currentImagePage == nbImagePage - 1) {
+		document.getElementById("next").disabled = true;
+	}
+});
+function nextImage() {
+	currentImagePage++;
+	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "/" + currentImagePage + "')";
+	if (currentImagePage == nbImagePage - 1) {
+		document.getElementById("next").disabled = true;
+	}
+	if (currentImagePage > 0) {
+		document.getElementById("previous").disabled = false;
+	}
+	document.getElementById("signPageNumber").value = currentImagePage + 1;
+}
+
+function previousImage() {
+	currentImagePage--;
+	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "/" + currentImagePage + "')";
+	if (currentImagePage == 0) {
+		document.getElementById("previous").disabled = true;
+	}
+	if (nbImagePage - 1 > currentImagePage) {
+		document.getElementById("next").disabled = false;
+	}
+	document.getElementById("signPageNumber").value = currentImagePage + 1;
+}

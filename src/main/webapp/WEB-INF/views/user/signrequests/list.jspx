@@ -14,21 +14,21 @@
 					<div class="input-group-prepend">
 						<div class="input-group-text">Filtres</div>
 					</div>
-					<select class="form-control" name="findBy" onchange="submit();">
+					<select class="form-control" name="toSign" onchange="submit();">
 						<c:choose>
-							<c:when test="${findBy eq 'recipientEmail'}">
-								<option value="">
+							<c:when test="${toSign eq true}">
+								<option value="false">
 									<spring:message code="menu_item_user_my_documents" />
 								</option>
-								<option value="recipientEmail" selected="selected">
+								<option value="true" selected="selected">
 									<spring:message code="menu_item_user_to_sign_documents" />
 								</option>
 							</c:when>
 							<c:otherwise>
-								<option value="" selected="selected">
+								<option value="false" selected="selected">
 									<spring:message code="menu_item_user_my_documents" />
 								</option>
-								<option value="recipientEmail">
+								<option value="true">
 									<spring:message code="menu_item_user_to_sign_documents" />
 								</option>
 							</c:otherwise>
@@ -152,10 +152,14 @@
 									</table>
 								</td>
 								<spring:url htmlEscape="true" var="json" value="${signRequest.signBooksJson}" />
-								<td class="type"><input type="hidden" id="signbook_${signRequest.id}" value="${json}" />
+								<td class="type">
+								<input type="hidden" id="signbook_${signRequest.id}" value="${json}" />
+								<c:if test="${not empty signRequest.signRequestParams.signType}">
 									<button type="button" class="btn btn-outline-dark btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
 										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" />
-									</button></td>
+									</button>
+								</c:if>	
+								</td>
 								<td class="status"><c:choose>
 										<c:when test="${signRequest.status eq 'pending'}">
 											<button type="button" class="btn btn-outline-primary btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">

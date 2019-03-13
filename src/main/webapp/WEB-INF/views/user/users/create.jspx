@@ -4,10 +4,10 @@
 	<jsp:output omit-xml-declaration="yes" />
 	<div class="card card-body bg-info">
 		Merci de compléter vos information pour pouvoir commencer à signer :
-		<br/>
+		<ul></ul>
 		- Un keystore au format PKCS12 (Obligatoire pour la signature au format PAdES/XAdES)
 		<br/>
-		- Un fichier image pour la signature  (Obligatoire)
+		- Un fichier image pour la signature  (Obligatoire pour toutes signatures de PDF)
 	</div>
 	<form:create id="fc_org_esupportail_esupsignature_domain_User" modelAttribute="user" multipart="true" path="/user/users/" render="${empty dependencies}" z="user-managed">
 		<field:input readonly="true" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_User_name" z="user-managed" />
@@ -19,7 +19,10 @@
 			<div class="col-lg-9">
 				<div class="input-group">
 					<div class="custom-file">
-						<input type="file" accept="application/x-pkcs12" class="custom-file-input" name="multipartKeystore" id="inputGroupFile02" value="Choose a file" aria-describedby="inputGroupFileAddon02" /> <label class="custom-file-label" id="inputGroupLabel02" for="upload">Choose PKCS12 file</label>
+						<input type="file" accept="application/x-pkcs12" class="custom-file-input" name="multipartKeystore" id="inputGroupFile02" value="Choose a file" aria-describedby="inputGroupFileAddon02" />
+						<label class="custom-file-label" id="inputGroupLabel02" for="upload">
+							<spring:message code="field_file_keystore" />
+						</label>
 					</div>	
 				</div>
 			</div>
@@ -29,7 +32,10 @@
 			<div class="col-lg-9">
 				<div class="input-group">
 					<div class="custom-file">
-						<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" /> <label class="custom-file-label" id="inputGroupLabel01" for="upload">Choose image file</label>
+						<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" />
+						<label class="custom-file-label" id="inputGroupLabel01" for="upload">
+							<spring:message code="field_file_image" />
+						</label>
 					</div>
 				</div>
 				<div id="vanilla-demo">

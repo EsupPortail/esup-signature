@@ -109,10 +109,10 @@
 					<div id="collapseTools" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
 						<div class="card-body">
         <dl class="display-group border-bottom m-0">
-            <dt class="col-lg-5">
+            <dt class="col-lg-12">
                 <spring:message code="menu_item_signrequest_send"/>
             </dt>
-            <dd class="col-lg-7">
+            <dd class="col-lg-12">
                 <form action="/user/signbooks/addDoc/${id}" enctype="multipart/form-data" method="post">
                     <div class="form-group">
                         <div class="input-group">

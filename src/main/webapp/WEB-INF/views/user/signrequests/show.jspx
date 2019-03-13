@@ -31,7 +31,7 @@
 							<form autocomplete="off" action="/user/signrequests/sign/${id}" method="post">
 								<c:choose>
 									<c:when test="${documentType eq 'pdf' and signable eq 'ok' and (signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'validate'}">
-										<dl class="display-group border-bottom m-0">
+										<dl class="display-group border-bottom m-0" style="display: block;">
 											<dt class="col-lg-5">
 												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signposition" />
 											</dt>
@@ -53,23 +53,6 @@
 												</div>
 											</dd>
 										</dl>
-										<script type="text/javascript">
-											function point_it(event) {
-												pos_x = event.offsetX ? (event.offsetX)
-														: event.pageX
-																- document
-																		.getElementById("pointer_div").offsetLeft;
-												pos_y = event.offsetY ? (event.offsetY)
-														: event.pageY
-																- document
-																		.getElementById("pointer_div").offsetTop;
-												document.getElementById("cross").style.left = (pos_x);
-												document.getElementById("cross").style.top = (pos_y);
-												document.getElementById("cross").style.visibility = "visible";
-												document.getElementById("xPos").value = pos_x;
-												document.getElementById("yPos").value = pos_y;
-											}
-										</script>
 									</c:when>
 									<c:otherwise>
 										<input value="${signRequest.signRequestParams.signPageNumber}" type="hidden" id="signPageNumber" name="signPageNumber" />
@@ -150,65 +133,63 @@
 													<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signAction" />
 												</dt>
 												<dd>
-													
-														<c:choose>
-															<c:when test="${signRequest.signRequestParams.signType eq 'certSign'}">
-																<c:choose>
-																	<c:when test="${not empty keystore}">
-																		<div class="input-group">
-																			<spring:message code="label_org_esupportail_esupsignature_domain_user_password" var="passwordLabel" />
-																			<input class="form-control" placeholder="${passwordLabel}" id="password" name="password" type="password" />
-																			<div class="input-group-append">
-																				<spring:message code="button_sign" var="signLabel" />
-																				<input alt="${signLabel}" class="btn btn-primary" id="signe" title="Signe" type="submit" value="${signLabel}" />
-																			</div>
+													<c:choose>
+														<c:when test="${signRequest.signRequestParams.signType eq 'certSign'}">
+															<c:choose>
+																<c:when test="${not empty keystore}">
+																	<div class="input-group">
+																		<spring:message code="label_org_esupportail_esupsignature_domain_user_password" var="passwordLabel" />
+																		<input class="form-control" placeholder="${passwordLabel}" id="password" name="password" type="password" />
+																		<div class="input-group-append">
+																			<spring:message code="button_sign" var="signLabel" />
+																			<input alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${signLabel}" />
 																		</div>
-																	</c:when>
-																	<c:otherwise>
-																		<div class="card card-body bg-info text-white"><spring:message code="help_user_nokeystore" /></div>
-																	</c:otherwise>
-																</c:choose>
-															</c:when>
-															<c:when test="${signRequest.signRequestParams.signType eq 'nexuSign'}">
-																<spring:url value="/resources/js/jsSignatureLevel.js" var="jsSignatureLevel_js_url" />
-																<script type="text/javascript" src="${jsSignatureLevel_js_url}">
-																<!-- -->
-																	
-																</script>
-																<script type="text/javascript" src="/js/nexu-deploy.js">
-																<!-- -->
-																	
-																</script>
-																<div class="form-group">
-																	<div id="nexu_missing_alert" style="display: none;" class="alert alert-warning">
-																		<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexucheck" />
-																		<a href="https://github.com/nowina-solutions/nexu/releases/">NexU</a> <br /> <a onclick="location.reload();" class="btn btn-warning btnSeccion" id="btnSeccion3" value="Refresh"> <i class="fas fa-sync-alt"> <!--  -->
-																		</i> <spring:message code="button_refresh" />
-																		</a>
 																	</div>
-																	<div id="nexu_ready_alert" style="display: none;" class="alert alert-info">
-																		<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexuready" />
-																		<br /> <small><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexumsg" /></small> <br />
-																		<spring:message code="button_sign" var="signLabel" />
-																		<input alt="${signLabel}" class="btn btn-primary" id="signe" title="Signe" type="submit" value="${signLabel}" />
-																	</div>
+																</c:when>
+																<c:otherwise>
+																	<div class="card card-body bg-info text-white"><spring:message code="help_user_nokeystore" /></div>
+																</c:otherwise>
+															</c:choose>
+														</c:when>
+														<c:when test="${signRequest.signRequestParams.signType eq 'nexuSign'}">
+															<spring:url value="/resources/js/jsSignatureLevel.js" var="jsSignatureLevel_js_url" />
+															<script type="text/javascript" src="${jsSignatureLevel_js_url}">
+															<!-- -->
+																
+															</script>
+															<script type="text/javascript" src="/js/nexu-deploy.js">
+															<!-- -->
+																
+															</script>
+															<div class="form-group">
+																<div id="nexu_missing_alert" style="display: none;" class="alert alert-warning">
+																	<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexucheck" />
+																	<a href="https://github.com/nowina-solutions/nexu/releases/">NexU</a> <br /> <a onclick="location.reload();" class="btn btn-warning btnSeccion" id="btnSeccion3" value="Refresh"> <i class="fas fa-sync-alt"> <!--  -->
+																	</i> <spring:message code="button_refresh" />
+																	</a>
 																</div>
+																<div id="nexu_ready_alert" style="display: none;" class="alert alert-info">
+																	<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexuready" />
+																	<br /> <small><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexumsg" /></small> <br />
+																	<spring:message code="button_sign" var="signLabel" />
+																	<input alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${signLabel}" />
+																</div>
+															</div>
 
-															</c:when>
-															<c:otherwise>
-																<c:choose>
-																	<c:when test="${signRequest.signRequestParams.signType eq 'validate'}">
-																		<spring:message code="button_validate" var="validateLabel" />
-																		<input alt="${validateLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${validateLabel}" />
-																	</c:when>
-																	<c:otherwise>
-																		<spring:message code="button_sign" var="signLabel" />
-																		<input alt="${signLabel}" class="btn btn-primary" id="signe" title="Signe" type="submit" value="${signLabel}" />
-																	</c:otherwise>
-																</c:choose>
-															</c:otherwise>
-														</c:choose>
-													
+														</c:when>
+														<c:otherwise>
+															<c:choose>
+																<c:when test="${signRequest.signRequestParams.signType eq 'validate'}">
+																	<spring:message code="button_validate" var="validateLabel" />
+																	<input alt="${validateLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${validateLabel}" />
+																</c:when>
+																<c:otherwise>
+																	<spring:message code="button_sign" var="signLabel" />
+																	<input alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${signLabel}" />
+																</c:otherwise>
+															</c:choose>
+														</c:otherwise>
+													</c:choose>
 												</dd>
 											</dl>
 											<dl class="display-group border-bottom m-0">
@@ -433,54 +414,23 @@
 							</div>
 							<div class="d-flex justify-content-center">
 								<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
-								<div id="pointer_div" onclick="point_it(event)" style="background-size: ${pdfWidth}px;background-image:url('${documentUrl}/${signRequest.signRequestParams.signPageNumber -1}');width:${pdfWidth}px;height:${pdfHeight}px;border:1px solid #CCC;">
+								<div id="pointer_div" onclick="savePosition();" onmouseout="resetPosition();" onmousemove="pointIt(event);" style="background-size: ${pdfWidth}px;background-image:url('${documentUrl}/${signRequest.signRequestParams.signPageNumber -1}');width:${pdfWidth}px;height:${pdfHeight}px;border:1px solid #CCC;">
 									<c:if test="${signable eq 'ok' and (signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'validate'}">
-										<span id="cross" style="left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;z-index:2;">
-											<div style="background-size: 100px;background-image: url('data:image/png;base64,${signFile}'); width: 100px; height: 75px; line-height: 75px; text-align: center;">
-												<span style="opacity: 0.6; vertical-align: middle; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;"> <strong>Preview</strong>
+										<div id="cross" style="background-size: 100px;background-image: url('data:image/png;base64,${signFile}'); width: 100px; height: 75px; line-height: 75px; text-align: center;width:100px; left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;pointer-events: none;">
+											<div id="borders" style="width: 100px; height: 75px;">
+												<span style="opacity: 0.6; vertical-align: middle; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+													<strong>Preview</strong>
 												</span>
 											</div>
-										</span>
+										</div>
 									</c:if>
 								</div>
 							</div>
 						</div>
 						<script type="text/javascript">
 							var nbImagePage = ${imagePagesSize};
-							var currentImagePage = ${signRequest.signRequestParams.signPageNumber}-1;
-							if (currentImagePage == 0) {
-								document.getElementById("previous").disabled = true;
-							}
-							if (currentImagePage == nbImagePage - 1) {
-								document.getElementById("next").disabled = true;
-							}
-							document.getElementById("signPageNumber").value = currentImagePage + 1;
-
-							function nextImage() {
-								currentImagePage++;
-								document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/"
-										+ currentImagePage + "')";
-								if (currentImagePage == nbImagePage - 1) {
-									document.getElementById("next").disabled = true;
-								}
-								if (currentImagePage > 0) {
-									document.getElementById("previous").disabled = false;
-								}
-								document.getElementById("signPageNumber").value = currentImagePage + 1;
-							}
-
-							function previousImage() {
-								currentImagePage--;
-								document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/"
-										+ currentImagePage + "')";
-								if (currentImagePage == 0) {
-									document.getElementById("previous").disabled = true;
-								}
-								if (nbImagePage - 1 > currentImagePage) {
-									document.getElementById("next").disabled = false;
-								}
-								document.getElementById("signPageNumber").value = currentImagePage + 1;
-							}
+							var currentImagePage = ${signRequest.signRequestParams.signPageNumber} - 1;
+							var documentUrl = "${documentUrl}";
 						</script>
 					</div>
 				</div>

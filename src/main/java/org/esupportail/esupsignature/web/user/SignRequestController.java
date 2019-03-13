@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -100,7 +102,7 @@ public class SignRequestController {
 
 	@RequestMapping(produces = "text/html")
 	public String list(@RequestParam(value = "page", required = false) Integer page,
-			@RequestParam(value = "findBy", required = false) String findBy,
+			@RequestParam(value = "toSign", required = false) boolean toSign,
 			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "signBookId", required = false) Long signBookId,
 			@RequestParam(value = "size", required = false) Integer size,
@@ -126,14 +128,31 @@ public class SignRequestController {
 		List<SignRequest> signRequests = new ArrayList<>();
 		float nrOfPages = 1;
 		int sizeNo = size == null ? 10 : size.intValue();
-		signBookId = null;
-		if(findBy != null && findBy.equals("recipientEmail")) {
-			List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList();
-			for(SignBook signBook : signBooks) {
-				signRequests.addAll(signBook.getSignRequests());
+    	 List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList();
+		if(toSign) {
+			if(statusFilterEnum == null) {
+				statusFilterEnum = SignRequestStatus.pending;
 			}
-			
-		nrOfPages = (float) SignRequest.countFindSignRequests(user.getEppn(), statusFilterEnum, "") / sizeNo;
+			if(signBookId != null) {	
+				signRequests.addAll(SignBook.findSignBook(signBookId).getSignRequests());
+			} else {
+				for(SignBook signBook : signBooks) {
+					for(SignRequest signRequest : signBook.getSignRequests()) {
+						if(signRequest.getStatus().equals(statusFilterEnum)) {
+							signRequests.add(signRequest);							
+						}
+					}
+				}
+				List<Log> logs = Log.findLogsByEppnAndActionEquals(user.getEppn(), "sign").getResultList();
+				for(Log log : logs) {
+					SignRequest signRequest = SignRequest.findSignRequest(log.getSignRequestId());
+					if(!signRequests.contains(signRequest)) {
+						signRequests.add(signRequest);
+					}
+				}
+			}
+			signRequests = signRequests.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
+			nrOfPages = (float) signRequests.size() / sizeNo;
 		} else {
 			signRequests = SignRequest.findSignRequests(user.getEppn(), statusFilterEnum, "", page, size, sortFieldName, sortOrder)
 					.getResultList();
@@ -145,16 +164,16 @@ public class SignRequestController {
 		uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
 		uiModel.addAttribute("page", page);
 		uiModel.addAttribute("size", size);
-		uiModel.addAttribute("findBy", findBy);
+		uiModel.addAttribute("toSign", toSign);
 		uiModel.addAttribute("signBookId", signBookId);
 		//TODO repair dectect nb to sign
 		uiModel.addAttribute("nbToSignRequests",SignRequest.countFindSignRequests(user.getEppn(), SignRequestStatus.pending, ""));
 		uiModel.addAttribute("nbPedingSignRequests",SignRequest.countFindSignRequests(user.getEppn(), SignRequestStatus.pending, ""));
 		uiModel.addAttribute("signRequests", signRequests);
-		uiModel.addAttribute("signBooks", SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList());
+		uiModel.addAttribute("signBooks", signBooks);
 		uiModel.addAttribute("statusFilter", statusFilter);
 		uiModel.addAttribute("statuses", SignRequest.SignRequestStatus.values());
-		uiModel.addAttribute("queryUrl", "?findBy="+findBy);
+		uiModel.addAttribute("queryUrl", "?toSign=" + toSign);
 		return "user/signrequests/list";
 	}
 
@@ -167,10 +186,10 @@ public class SignRequestController {
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
 			SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 			uiModel.addAttribute("curentSignBook", signBook);
-			if(signBook == null) {
+			if(signBook == null && signRequest.getSignBooks().size() > 0) {
 				signBook = SignBook.findSignBook(signRequest.getSignBooks().keySet().iterator().next());
 			}
-			if(!signRequest.isOverloadSignParams()) {
+			if(!signRequest.isOverloadSignParams() && signBook != null) {
 				signRequest.setSignRequestParams(signBook.getSignRequestParams());
 			}
 			uiModel.addAttribute("documents", signRequest.getDocuments());

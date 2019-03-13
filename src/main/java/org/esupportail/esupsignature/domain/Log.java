@@ -12,7 +12,7 @@ import org.springframework.roo.addon.tostring.RooToString;
 
 @RooJavaBean
 @RooToString
-@RooJpaActiveRecord(finders={"findLogsBySignRequestIdEquals"})
+@RooJpaActiveRecord(finders={"findLogsBySignRequestIdEquals", "findLogsByEppnEquals", "findLogsByEppnAndActionEquals"})
 public class Log {
 
 	@Temporal(TemporalType.TIMESTAMP)

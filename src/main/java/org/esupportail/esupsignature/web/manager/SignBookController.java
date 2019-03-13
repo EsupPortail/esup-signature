@@ -152,7 +152,7 @@ public class SignBookController {
 		}
 		uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());
 		uiModel.addAttribute("signRequests", signBook.getSignRequests());
-		uiModel.addAttribute("signbook", signBook);
+		uiModel.addAttribute("signBook", signBook);
 		uiModel.addAttribute("itemId", id);
 		return "manager/signbooks/show";
 	}
@@ -187,13 +187,13 @@ public class SignBookController {
 		if (page != null || size != null) {
 			int sizeNo = size == null ? 10 : size.intValue();
 			//final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
-			uiModel.addAttribute("signbooks",
+			uiModel.addAttribute("signBooks",
 					SignBook.findSignBooksByCreateByEquals(user.getEppn(), sortFieldName, sortOrder).getResultList());
 			float nrOfPages = (float) SignBook.countSignBooks() / sizeNo;
 			uiModel.addAttribute("maxPages",
 					(int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
 		} else {
-			uiModel.addAttribute("signbooks",
+			uiModel.addAttribute("signBooks",
 					SignBook.findSignBooksByCreateByEquals(user.getEppn(), sortFieldName, sortOrder).getResultList());
 		}
 		addDateTimeFormatPatterns(uiModel);
