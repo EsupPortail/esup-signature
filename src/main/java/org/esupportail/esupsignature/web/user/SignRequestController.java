@@ -130,15 +130,12 @@ public class SignRequestController {
 		int sizeNo = size == null ? 10 : size.intValue();
     	 List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList();
 		if(toSign) {
-			if(statusFilterEnum == null) {
-				statusFilterEnum = SignRequestStatus.pending;
-			}
 			if(signBookId != null) {	
 				signRequests.addAll(SignBook.findSignBook(signBookId).getSignRequests());
 			} else {
 				for(SignBook signBook : signBooks) {
 					for(SignRequest signRequest : signBook.getSignRequests()) {
-						if(signRequest.getStatus().equals(statusFilterEnum)) {
+						if(statusFilterEnum == null || signRequest.getStatus().equals(statusFilterEnum)) {
 							signRequests.add(signRequest);							
 						}
 					}
@@ -146,7 +143,7 @@ public class SignRequestController {
 				List<Log> logs = Log.findLogsByEppnAndActionEquals(user.getEppn(), "sign").getResultList();
 				for(Log log : logs) {
 					SignRequest signRequest = SignRequest.findSignRequest(log.getSignRequestId());
-					if(!signRequests.contains(signRequest)) {
+					if(!signRequests.contains(signRequest) && (statusFilterEnum == null || signRequest.getStatus().equals(statusFilterEnum))) {
 						signRequests.add(signRequest);
 					}
 				}

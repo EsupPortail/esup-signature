@@ -52,8 +52,10 @@ var startPosY;
 
 document.addEventListener('DOMContentLoaded', function() {
 	pointerDiv = document.getElementById("pointer_div");
-	startPosX = document.getElementById("xPos").value;
-	startPosY = document.getElementById("yPos").value;
+	if(pointerDiv != null) {
+		startPosX = document.getElementById("xPos").value;
+		startPosY = document.getElementById("yPos").value;
+	}
 });
 
 var pointItEnable = true;
@@ -67,9 +69,10 @@ function pointIt(event) {
 			: event.pageY
 					- document
 							.getElementById("pointer_div").offsetTop;
-	if(posX > 0 && posY > 0 && pointItEnable) {
-		document.getElementById("cross").style.left = (posX);
-		document.getElementById("cross").style.top = (posY);
+	var cross = document.getElementById("cross");
+	if(cross != null && posX > 0 && posY > 0 && pointItEnable) {
+		cross.style.left = (posX);
+		cross.style.top = (posY);
 		document.getElementById("xPos").value = posX;
 		document.getElementById("yPos").value = posY;
 		document.getElementById("borders").classList.add("anim-border");
@@ -77,32 +80,40 @@ function pointIt(event) {
 }
 
 function resetPosition() {
-	document.getElementById("xPos").value = startPosX;
-	document.getElementById("yPos").value = startPosY;
-	document.getElementById("cross").style.left = (startPosX);
-	document.getElementById("cross").style.top = (startPosY);
-	document.getElementById("borders").classList.remove("anim-border");
+	var cross = document.getElementById("cross");
+	if(cross != null) {
+		cross.style.left = (startPosX);
+		cross.style.top = (startPosY);
+		document.getElementById("xPos").value = startPosX;
+		document.getElementById("yPos").value = startPosY;
+		document.getElementById("borders").classList.remove("anim-border");
+	}
 }
 
 function savePosition() {
-	if(pointItEnable) {
-		startPosX = posX;
-		startPosY = posY;
-		pointItEnable = false;
-		document.getElementById("borders").classList.remove("anim-border");
-	} else {
-		pointItEnable = true;
-		document.getElementById("borders").classList.add("anim-border");
+	var borders = document.getElementById("borders");
+	if(borders != null) {
+		if(pointItEnable) {
+			startPosX = posX;
+			startPosY = posY;
+			pointItEnable = false;
+			borders .classList.remove("anim-border");
+		} else {
+			pointItEnable = true;
+			borders .classList.add("anim-border");
+		}
 	}
 }
 
 // Paging
 document.addEventListener('DOMContentLoaded', function() {
-	if (currentImagePage == 0) {
-		document.getElementById("previous").disabled = true;
-	}
-	if (currentImagePage == nbImagePage - 1) {
-		document.getElementById("next").disabled = true;
+	if(typeof currentImagePage !== 'undefined') {
+		if (currentImagePage == 0) {
+			document.getElementById("previous").disabled = true;
+		}
+		if (currentImagePage == nbImagePage - 1) {
+			document.getElementById("next").disabled = true;
+		}
 	}
 });
 function nextImage() {
