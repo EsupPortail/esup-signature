@@ -4,23 +4,30 @@
     <jsp:output omit-xml-declaration="yes"/>
    	<div class="card">
 		<div class="card-header">
-	    	<div class="form-inline">
-				<div class="mx-auto"><!--  --></div>
-				<div class="input-group">
-				<div class="input-group-prepend">
-					<div class="input-group-text">Nouveau :</div>
+			<div class="row">
+				<div class="col-lg-6">
+					<h5><spring:message code="menu_item_mysignbook_list_label" /></h5>
 				</div>
-				<div class="input-group-append">
-			    	<a alt="Créer un SignBook" class="btn btn-success" href="/manager/signbooks?form" title="Créer un SignBook">
-	            		<i class="fas fa-book"><!--  --></i>&amp;nbsp;<spring:message code="menu_item_signbook_new_label" />
-					</a>
+				<div class="col-lg-6">
+			    	<div class="form-inline">
+						<div class="mx-auto"><!--  --></div>
+						<div class="input-group">
+							<div class="input-group-prepend">
+								<div class="input-group-text">Nouveau :</div>
+							</div>
+							<div class="input-group-append">
+						    	<a alt="Créer un SignBook" class="btn btn-success" href="/manager/signbooks?form" title="Créer un SignBook">
+				            		<i class="fas fa-book"><!--  --></i>&amp;nbsp;<spring:message code="menu_item_signbook_new_label" />
+								</a>
+							</div>
+						</div>
+					</div>
 				</div>
-			</div>
 			</div>
     	</div>
 		<div class="card-body">
-		    <page:list id="pl_org_esupportail_esupsignature_domain_SignBook" items="${signbooks}" z="user-managed">
-		        <table:table data="${signbooks}" id="l_org_esupportail_esupsignature_domain_SignBook" path="/manager/signbooks" z="user-managed">
+		    <page:list id="pl_org_esupportail_esupsignature_domain_SignBook" items="${signBooks}" z="user-managed">
+		        <table:table data="${signBooks}" id="l_org_esupportail_esupsignature_domain_SignBook" path="/manager/signbooks" z="user-managed">
 		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_name" property="name" z="user-managed"/>
 		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_description" property="description" z="user-managed"/>
 		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" property="recipientEmail" z="user-managed"/>

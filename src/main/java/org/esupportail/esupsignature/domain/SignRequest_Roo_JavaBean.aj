@@ -52,12 +52,12 @@ privileged aspect SignRequest_Roo_JavaBean {
         this.documents = documents;
     }
     
-    public boolean SignRequest.isOverloadSignParams() {
-        return this.overloadSignParams;
+    public boolean SignRequest.isOverloadSignBookParams() {
+        return this.overloadSignBookParams;
     }
     
-    public void SignRequest.setOverloadSignParams(boolean overloadSignParams) {
-        this.overloadSignParams = overloadSignParams;
+    public void SignRequest.setOverloadSignBookParams(boolean overloadSignBookParams) {
+        this.overloadSignBookParams = overloadSignBookParams;
     }
     
     public SignRequestParams SignRequest.getSignRequestParams() {

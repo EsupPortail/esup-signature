@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
+import org.esupportail.esupsignature.domain.SignBook.SignBookType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
@@ -71,6 +72,26 @@ public class SignRequestService {
 	@Resource
 	private FileService fileService;
 
+	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status) {
+		List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList();
+		List<SignRequest> signRequests = new ArrayList<>();
+		for(SignBook signBook : signBooks) {
+			for(SignRequest signRequest : signBook.getSignRequests()) {
+				if(status == null || signRequest.getStatus().equals(status)) {
+					signRequests.add(signRequest);							
+				}
+			}
+		}
+		List<Log> logs = Log.findLogsByEppnAndActionEquals(user.getEppn(), "sign").getResultList();
+		for(Log log : logs) {
+			SignRequest signRequest = SignRequest.findSignRequest(log.getSignRequestId());
+			if(!signRequests.contains(signRequest) && (status == null || signRequest.getStatus().equals(status))) {
+				signRequests.add(signRequest);
+			}
+		}
+		return signRequests;
+	}
+	
 	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document, SignRequestParams signRequestParams, long[] signBookIds) {
 		document.setCreateDate(new Date());
 		signRequest.setName(document.getFileName());
@@ -248,6 +269,9 @@ public class SignRequestService {
 		signRequest.getSignBooks().put(signBook.getId(), true);
 		signRequest.merge();
 		if (isSignRequestCompleted(signRequest)) {
+			if(signBook.getSignBookType().equals(SignBookType.user)) {
+				signBookService.resetSignBookParams(signBook);
+			}
 			updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
 			if (signBook != null) {
 				if (!signBook.getTargetType().equals(DocumentIOType.none)) {

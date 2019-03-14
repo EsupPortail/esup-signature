@@ -58,7 +58,7 @@ public class UserService {
 
 	}
 	
-    public User getEppnFromAuthentication() {
+    public User getUserFromAuthentication() {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     	String eppn = auth.getName();
     	if(personDao != null) {

@@ -112,7 +112,7 @@ public class SignRequestController {
 		if(statusFilter != null && !statusFilter.isEmpty()) {
 			statusFilterEnum = SignRequestStatus.valueOf(statusFilter);
 		}
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		if (user == null) {
 			return "redirect:/user/users/?form";
 		}
@@ -126,6 +126,7 @@ public class SignRequestController {
 			sortFieldName = "createDate";
 		}
 		List<SignRequest> signRequests = new ArrayList<>();
+		//TODO test pagination
 		float nrOfPages = 1;
 		int sizeNo = size == null ? 10 : size.intValue();
     	 List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList();
@@ -133,20 +134,7 @@ public class SignRequestController {
 			if(signBookId != null) {	
 				signRequests.addAll(SignBook.findSignBook(signBookId).getSignRequests());
 			} else {
-				for(SignBook signBook : signBooks) {
-					for(SignRequest signRequest : signBook.getSignRequests()) {
-						if(statusFilterEnum == null || signRequest.getStatus().equals(statusFilterEnum)) {
-							signRequests.add(signRequest);							
-						}
-					}
-				}
-				List<Log> logs = Log.findLogsByEppnAndActionEquals(user.getEppn(), "sign").getResultList();
-				for(Log log : logs) {
-					SignRequest signRequest = SignRequest.findSignRequest(log.getSignRequestId());
-					if(!signRequests.contains(signRequest) && (statusFilterEnum == null || signRequest.getStatus().equals(statusFilterEnum))) {
-						signRequests.add(signRequest);
-					}
-				}
+				signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, statusFilterEnum);
 			}
 			signRequests = signRequests.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 			nrOfPages = (float) signRequests.size() / sizeNo;
@@ -164,8 +152,8 @@ public class SignRequestController {
 		uiModel.addAttribute("toSign", toSign);
 		uiModel.addAttribute("signBookId", signBookId);
 		//TODO repair dectect nb to sign
-		uiModel.addAttribute("nbToSignRequests",SignRequest.countFindSignRequests(user.getEppn(), SignRequestStatus.pending, ""));
-		uiModel.addAttribute("nbPedingSignRequests",SignRequest.countFindSignRequests(user.getEppn(), SignRequestStatus.pending, ""));
+		uiModel.addAttribute("nbToSignRequests",signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending).size());
+		uiModel.addAttribute("nbPedingSignRequests", SignRequest.countFindSignRequestsByCreateByAndStatusEquals(user.getEppn(), SignRequestStatus.pending));
 		uiModel.addAttribute("signRequests", signRequests);
 		uiModel.addAttribute("signBooks", signBooks);
 		uiModel.addAttribute("statusFilter", statusFilter);
@@ -176,7 +164,7 @@ public class SignRequestController {
 
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		addDateTimeFormatPatterns(uiModel);
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
@@ -186,7 +174,7 @@ public class SignRequestController {
 			if(signBook == null && signRequest.getSignBooks().size() > 0) {
 				signBook = SignBook.findSignBook(signRequest.getSignBooks().keySet().iterator().next());
 			}
-			if(!signRequest.isOverloadSignParams() && signBook != null) {
+			if(!signRequest.isOverloadSignBookParams() && signBook != null) {
 				signRequest.setSignRequestParams(signBook.getSignRequestParams());
 			}
 			uiModel.addAttribute("documents", signRequest.getDocuments());
@@ -219,7 +207,7 @@ public class SignRequestController {
 	@RequestMapping(params = "form", produces = "text/html")
 	public String createForm(Model uiModel) {
 		populateEditForm(uiModel, new SignRequest());
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		uiModel.addAttribute("mySignBook", SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult());
 		uiModel.addAttribute("allSignBooks", SignBook.findAllSignBooks("name", "ASC"));
 		//TODO autocompletion signbooks
@@ -227,8 +215,10 @@ public class SignRequestController {
 	}
 
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
-	public String create(@Valid SignRequest signRequest, @RequestParam("multipartFile") MultipartFile multipartFile,
-			BindingResult bindingResult, @RequestParam(value = "signType", required = false) String signType, @RequestParam(value = "signBookIds", required = true) long[] signBookIds, @RequestParam(value="newPageType", required = false) String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
+	public String create(@Valid SignRequest signRequest, @RequestParam("multipartFile") MultipartFile multipartFile, BindingResult bindingResult, 
+			@RequestParam(value = "signType", required = false) String signType, 
+			@RequestParam(value = "signBookIds", required = true) long[] signBookIds,
+			@RequestParam(value="newPageType", required = false) String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
 			HttpServletRequest request) {
 		if (bindingResult.hasErrors()) {
 			uiModel.addAttribute("signRequest", signRequest);
@@ -236,17 +226,18 @@ public class SignRequestController {
 			return "user/signrequests/create";
 		}
 		uiModel.asMap().clear();
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
-		SignRequestParams signRequestParams = new SignRequestParams();
-		if(signRequest.isOverloadSignParams()) {
+		SignRequestParams signRequestParams = null;
+		if(signRequest.isOverloadSignBookParams()) {
+			signRequestParams = new SignRequestParams();
 			signRequestParams.setSignType(SignType.valueOf(signType));
 			signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
+			signRequestParams.setSignPageNumber(1);
+			signRequestParams.setXPos(0);
+			signRequestParams.setYPos(0);
+			signRequestParams.persist();
 		}
-		signRequestParams.setSignPageNumber(1);
-		signRequestParams.setXPos(0);
-		signRequestParams.setYPos(0);
-		signRequestParams.persist();
 		try {
 			Document document = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
 			signRequest = signRequestService.createSignRequest(signRequest, user, document, signRequestParams, signBookIds);
@@ -265,9 +256,10 @@ public class SignRequestController {
 			@RequestParam(value = "signPageNumber", required = true) int signPageNumber,
 			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
 			HttpServletResponse response, Model model, HttpServletRequest request) {
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
+		SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			signRequest.getSignRequestParams().setSignPageNumber(signPageNumber);
 			signRequest.getSignRequestParams().setXPos(xPos);
@@ -277,11 +269,13 @@ public class SignRequestController {
 	        	setPassword(password);
 			}
 			try {
-				SignType signType = signRequest.getSignRequestParams().getSignType();
-				if(signType.equals(SignType.validate)) {
+				if(!signRequest.isOverloadSignBookParams()) {
+					signRequest.getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().getSignType());
+				}
+				if(signRequest.getSignRequestParams().getSignType().equals(SignType.validate)) {
 					signRequestService.validate(signRequest, user);
 				} else 
-				if(signType.equals(SignType.nexuSign)) {
+				if(signRequest.getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
 					return "redirect:/user/nexu-sign/" + id;
 				} else {
 					signRequestService.sign(signRequest, user, this.password);
@@ -306,7 +300,7 @@ public class SignRequestController {
 			@RequestParam(value = "ids", required = true) Long[] ids,
 			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
 			HttpServletResponse response, Model model, HttpServletRequest request) throws JsonParseException, JsonMappingException, IOException {
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		float totalToSign = ids.length;
 		float nbSigned = 0;
@@ -359,7 +353,7 @@ public class SignRequestController {
 	@RequestMapping(value = "/refuse/{id}")
 	public String refuse(@PathVariable("id") Long id, RedirectAttributes redirectAttrs, HttpServletResponse response,
 			Model model, HttpServletRequest request) throws SQLException {
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (!signRequestService.checkUserSignRights(user, signRequest)) {
@@ -427,7 +421,7 @@ public class SignRequestController {
 	public String sendToSignBook(@PathVariable("id") Long id,
 			@RequestParam(value = "signBookId", required = false) long signBookId, HttpServletResponse response,
 			RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		SignBook signBook = SignBook.findSignBook(signBookId);

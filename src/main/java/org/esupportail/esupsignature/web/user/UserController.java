@@ -76,7 +76,7 @@ public class UserController {
 	
     @RequestMapping(produces = "text/html")
     public String show(Model uiModel) throws Exception {
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		if(user == null) {
 			return "redirect:/user/users/?form";
 		}
@@ -97,7 +97,7 @@ public class UserController {
     
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(Model uiModel) throws IOException, SQLException {
-		User user = userService.getEppnFromAuthentication();;
+		User user = userService.getUserFromAuthentication();;
 		if(user != null) {
 	        uiModel.addAttribute("user", user);	        
         	SignBook signBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
@@ -125,7 +125,7 @@ public class UserController {
             return "user/users/update";
         }
         uiModel.asMap().clear();
-		User userToUpdate = userService.getEppnFromAuthentication();
+		User userToUpdate = userService.getUserFromAuthentication();
         if(!multipartKeystore.isEmpty()) {
             if(userToUpdate.getKeystore().getBigFile().getBinaryFile() != null) {
             	userToUpdate.getKeystore().remove();
@@ -153,7 +153,7 @@ public class UserController {
     
     @RequestMapping(value = "/viewCert", method = RequestMethod.GET, produces = "text/html")
     public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttrs) throws Exception {
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		if (password != null && !"".equals(password)) {
         	setPassword(password);
         }
@@ -168,7 +168,7 @@ public class UserController {
     
 	@RequestMapping(value = "/get-keystore-file", method = RequestMethod.GET)
 	public void getSignedFile(HttpServletResponse response, Model model) {
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		Document file = user.getKeystore();
 		try {
 			response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");

@@ -84,6 +84,13 @@ public class SignBookService {
 		return signbook;
 	}
 	
+	public void resetSignBookParams(SignBook signBook) {
+		signBook.getSignRequestParams().setSignPageNumber(1);
+		signBook.getSignRequestParams().setXPos(0);
+		signBook.getSignRequestParams().setYPos(0);
+		signBook.merge();
+	}
+	
 	public void importFilesFromSource(SignBook signBook, User user) {
 		if (signBook.getSourceType() != null && !signBook.getSourceType().equals(DocumentIOType.none)) {
 			logger.info("retrieve from " + signBook.getSourceType() + " in " + signBook.getDocumentsSourceUri());

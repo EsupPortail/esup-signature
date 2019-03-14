@@ -124,7 +124,8 @@
 						</tr>
 					</thead>
 					<tbody>
-						<c:forEach items="${signRequests}" var="signRequest">
+						<c:forEach items="${signRequests}" var="signRequestItem" >
+							<c:set var="signRequest" value="${signRequestItem}" scope="request" />
 							<tr class="roocol">
 								<td class="none"><input value="${signRequest.id}" name="check" type="checkbox" class="check" /></td>
 								<td class="none">${signRequest.name}</td>
@@ -160,47 +161,9 @@
 									</button>
 								</c:if>	
 								</td>
-								<td class="status"><c:choose>
-										<c:when test="${signRequest.status eq 'pending'}">
-											<button type="button" class="btn btn-outline-primary btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
-												<i class="fas fa-clock"> <!--  -->
-												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'signed'}">
-											<button type="button" class="btn btn-outline-success btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
-												<i class="fas fa-file-signature"> <!--  -->
-												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'refused'}">
-											<button type="button" class="btn btn-outline-danger btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
-												<i class="fas fa-ban"> <!--  -->
-												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'checked'}">
-											<button type="button" class="btn btn-outline-success btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
-												<i class="far fa-check-circle"> <!--  -->
-												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'exported'}">
-											<button type="button" class="btn btn-outline-info btn-sm">
-												<i class="fas fa-file-export"> <!--  -->
-												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
-											</button>
-										</c:when>										
-										<c:when test="${signRequest.status eq 'completed'}">
-											<button type="button" class="btn btn-outline-warning btn-sm  col-12" id="status_${signRequest.id}" value="${signRequest.status}">
-												<i class="fas fa-flag-checkered"> <!--  -->
-												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
-											</button>
-										</c:when>
-										<c:otherwise>
-									Unknow
-								</c:otherwise>
-									</c:choose></td>
+								<td class="status">
+									<jsp:include page="includes/status.jspx" />
+								</td>
 								<td class="utilbox"><a class="btn btn-info far fa-eye" title="Sign Request" alt="Sign Request" href="/user/signrequests/${signRequest.id}"> <!--  -->
 								</a></td>
 								<td class="utilbox"><form class="delete" action="/user/signrequests/${signRequest.id}" method="post">

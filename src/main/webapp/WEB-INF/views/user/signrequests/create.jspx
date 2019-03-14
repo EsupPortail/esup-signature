@@ -50,10 +50,20 @@
 			<label class="col-lg-3  col-form-label" for="newPageType">
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signbook" />
+					<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+					<div class="collapse" id="collapseHelp1">
+						<div class="card card-body bg-info text-white">
+							<small>
+								Vous pouvez selectionner plusieurs parapheurs. Dans ce cas il faudra preciser si toutes les signatures sont requises
+								<br/>
+								Par défaut c'est votre parapheur personnel qui est sélectionné
+							</small>
+						</div>
+					</div>
 				</strong>
 			</label>
 			<div class="col-lg-9">
-				<select class="form-control" name="signBookIds" size="5" multiple="multiple">
+				<select onclick="togglehideAllSign();" class="form-control" name="signBookIds" id="signBookIds" size="5" multiple="multiple">
 					<c:forEach items="${allSignBooks}" var="signBook">
 						<c:choose>
 							<c:when test="${mySignBook.id eq signBook.id}">
@@ -67,6 +77,30 @@
 				</select>
 			</div>
 		</div>
+		
+		<input type="hidden" id="allSignToComplete" name="allSignToComplete" value="false" />
+			<div class="form-group div-disable" id="_signBookIds_div_id">
+			<label class="col-lg-3  col-form-label" for="newPageType">
+				<strong>
+					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
+				</strong>
+			</label>
+			<div class="col-lg-9">
+				<div class="input-group">
+					<div class="input-group-prepend">
+						<button id="allsign_no" type="button" class="btn btn-light btn-sm col-12" onclick="toggleAllSign();">
+						<spring:message code="global_no" />
+						</button>
+					</div>
+					<div class="input-group-append">
+						<button id="allsign_yes" type="button" class="btn btn-light btn-sm col-12" onclick="toggleAllSign();">
+						<spring:message code="global_yes" />
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		
 		<input type="hidden" id="_overloadSignParams" name="overloadSignParams" value="false" />
 				<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
 			<label class="col-lg-3  col-form-label" for="newPageType">
@@ -123,45 +157,6 @@
 	</form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_SignRequest" render="${not empty dependencies}" z="user-managed"/>
     <script type="text/javascript">
-    //var checkBoxes = document.querySelectorAll(".check");
-    	var overloadSignParams = document.getElementById("_overloadSignParams");
-		var signTypeSelector = document.getElementById("_signType_id");
-		var signTypeDiv = document.getElementById("_signType_div_id");
-		var newPageTypeSelector = document.getElementById("_newPageType_id");
-		var newPageTypeDiv = document.getElementById("_newPageType_div_id");
-		var overloadYes = document.getElementById("overload_yes");
-		var overloadNo = document.getElementById("overload_no");
-		overloadNo.classList.remove("btn-light");
-		overloadNo.classList.add("btn-danger");
-		signTypeSelector.disabled = true;
-		newPageTypeSelector.disabled = true;
-		signTypeDiv.classList.add("div-disable");
-		newPageTypeDiv.classList.add("div-disable");
-		
-		function toggleOverload() {
 
-			if(overloadSignParams.value == "true") {
-				overloadNo.classList.remove("btn-light");
-				overloadNo.classList.add("btn-danger");
-				overloadYes.classList.remove("btn-success");
-				overloadYes.classList.add("btn-light");
-				signTypeDiv.classList.add("div-disable");
-				newPageTypeDiv.classList.add("div-disable");
-				signTypeSelector.disabled = true;
-				newPageTypeSelector.disabled = true;
-				overloadSignParams.value = "false";
-			} else {
-				overloadYes.classList.remove("btn-light");
-				overloadYes.classList.add("btn-success");
-				overloadNo.classList.remove("btn-danger");
-				overloadNo.classList.add("btn-light");
-				signTypeDiv.classList.remove("div-disable");
-				newPageTypeDiv.classList.remove("div-disable");
-				signTypeSelector.disabled = false;
-				newPageTypeSelector.disabled = false;
-				overloadSignParams.value = "true";
-			}
-		}
-    
     </script>
 </div>

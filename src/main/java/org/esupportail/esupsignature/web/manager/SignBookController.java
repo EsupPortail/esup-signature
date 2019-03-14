@@ -89,7 +89,7 @@ public class SignBookController {
 			populateEditForm(uiModel, signBook);
 			return "manager/signbooks/create";
 		}
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		SignBook signBookToUpdate = null;
 		signBookToUpdate = SignBook.findSignBook(signBook.getId());
 		signBook.setName(signBook.getName().trim());
@@ -162,7 +162,7 @@ public class SignBookController {
 			@RequestParam(value = "yPos", required = true) int yPos,
 			@RequestParam(value = "signPageNumber", required = true) int signPageNumber,
 			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		SignBook signBook = SignBook.findSignBook(id);
 
 		if (!signBook.getCreateBy().equals(user.getEppn())) {
@@ -183,7 +183,7 @@ public class SignBookController {
 			@RequestParam(value = "size", required = false) Integer size,
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
 			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		if (page != null || size != null) {
 			int sizeNo = size == null ? 10 : size.intValue();
 			//final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
@@ -202,7 +202,7 @@ public class SignBookController {
 
 	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
 	public String getFileFromSource(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws IOException {
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		SignBook signBook = SignBook.findSignBook(id);
 
 		if (!signBook.getCreateBy().equals(user.getEppn())) {
@@ -217,7 +217,7 @@ public class SignBookController {
 
 	@RequestMapping(value = "/send-files-to-target/{id}", produces = "text/html")
 	public String sendFileToTarget(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureException {
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
 		SignBook signBook = SignBook.findSignBook(id);
 		if (!signBook.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");

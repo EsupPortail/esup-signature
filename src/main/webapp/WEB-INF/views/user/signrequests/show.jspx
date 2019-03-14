@@ -7,6 +7,16 @@
 			<spring:message code="help_user_signrequest_show" />
 		</div>
 	</div>
+	<div class="card card-header">
+		<div class="row">
+			<div class="col-lg-5">
+				<h5><spring:message code="label_org_esupportail_esupsignature_domain_signrequest" /> : ${signRequest.name}</h5>
+			</div>
+			<div>
+				<jsp:include page="includes/status.jspx" />
+			</div>
+		</div>
+	</div>
 	<page:show update="false" id="ps_org_esupportail_esupsignature_domain_SignRequest" object="${signRequest}" path="/user/signrequests" z="user-managed">
 		<div class="row">
 			<c:choose>
@@ -213,11 +223,11 @@
 									<spring:message code="menu_item_sendtosignbook" />&amp;nbsp;
 					           			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 										<div class="collapse" id="collapseHelp1">
-											<div class="card card-body bg-info text-white">
+											<div class="card card-body border-info text-info">
 												<small>
 													A tous moments vous pouvez envoyer la demande dans un autre parapheur.
 													Si la demande se trouve dans plusieurs parapheur vous pouvez choisir si toutes les signatures sont exigées pour passer au status 
-													<button type="button" class="btn btn-outline-success btn-xs active">
+													<button type="button" class="btn btn-outline-success btn-sm">
 														<i class="fas fa-file-signature"> <!--  -->
 														</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
 													</button>
@@ -262,47 +272,7 @@
 									<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status" />
 								</dt>
 								<dd>
-									<c:choose>
-										<c:when test="${signRequest.status eq 'pending'}">
-											<button type="button" class="btn btn-outline-primary">
-												<i class="fas fa-clock"> <!--  -->
-												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'signed'}">
-											<button type="button" class="btn btn-outline-success btn-sm">
-												<i class="fas fa-file-signature"> <!--  -->
-												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'refused'}">
-											<button type="button" class="btn btn-outline-danger btn-sm">
-												<i class="fas fa-ban"> <!--  -->
-												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'checked'}">
-											<button type="button" class="btn btn-outline-success btn-sm">
-												<i class="far fa-check-circle"> <!--  -->
-												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'exported'}">
-											<button type="button" class="btn btn-outline-info btn-sm">
-												<i class="fas fa-file-export"> <!--  -->
-												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'completed'}">
-											<button type="button" class="btn btn-outline-warning btn-sm">
-												<i class="fas fa-flag-checkered"> <!--  -->
-												</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
-											</button>
-										</c:when>
-										<c:otherwise>
-											Unknow
-										</c:otherwise>
-									</c:choose>
+									<jsp:include page="includes/status.jspx" />
 								</dd>
 							</dl>
 							<dl class="display-group border-bottom m-0">

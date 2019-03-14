@@ -72,10 +72,10 @@ public class UserSignBookController {
     
     @RequestMapping(value = "/{id}", produces = "text/html")
     public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
-		User user = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
     	addDateTimeFormatPatterns(uiModel);
         SignBook signBook = SignBook.findSignBook(id);
-        uiModel.addAttribute("signbook", signBook);
+        populateEditForm(uiModel, signBook);
         List<SignRequest> signRequests = signBook.getSignRequests().stream().filter(signRequest -> user.getEppn().equals(signRequest.getCreateBy())).collect(Collectors.toList());
         uiModel.addAttribute("signRequests", signRequests);
         uiModel.addAttribute("itemId", id);
@@ -88,7 +88,7 @@ public class UserSignBookController {
     		@RequestParam("multipartFile") MultipartFile multipartFile, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) throws IOException {
 		Document documentToAdd = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
     	if(documentToAdd != null) {
-	    	User user = userService.getEppnFromAuthentication();
+	    	User user = userService.getUserFromAuthentication();
 	    	user.setIp(request.getRemoteAddr());
 			SignBook signBook = SignBook.findSignBook(id);
 			long[] signBookIds = {signBook.getId()};
