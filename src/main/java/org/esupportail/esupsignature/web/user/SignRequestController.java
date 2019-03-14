@@ -29,6 +29,8 @@ import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
+import org.esupportail.esupsignature.exception.EsupSignatureNexuException;
+import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -151,7 +153,6 @@ public class SignRequestController {
 		uiModel.addAttribute("size", size);
 		uiModel.addAttribute("toSign", toSign);
 		uiModel.addAttribute("signBookId", signBookId);
-		//TODO repair dectect nb to sign
 		uiModel.addAttribute("nbToSignRequests",signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending).size());
 		uiModel.addAttribute("nbPedingSignRequests", SignRequest.countFindSignRequestsByCreateByAndStatusEquals(user.getEppn(), SignRequestStatus.pending));
 		uiModel.addAttribute("signRequests", signRequests);
@@ -259,7 +260,6 @@ public class SignRequestController {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-		SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			signRequest.getSignRequestParams().setSignPageNumber(signPageNumber);
 			signRequest.getSignRequestParams().setXPos(xPos);
@@ -269,24 +269,18 @@ public class SignRequestController {
 	        	setPassword(password);
 			}
 			try {
-				if(!signRequest.isOverloadSignBookParams()) {
-					signRequest.getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().getSignType());
-				}
-				if(signRequest.getSignRequestParams().getSignType().equals(SignType.validate)) {
-					signRequestService.validate(signRequest, user);
-				} else 
-				if(signRequest.getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
-					return "redirect:/user/nexu-sign/" + id;
-				} else {
-					signRequestService.sign(signRequest, user, this.password);
-				}
+				signRequestService.sign(signRequest, user, this.password);
+				signRequest.merge();
 			} catch (EsupSignatureKeystoreException e) {
 				logger.error("keystore error", e);
 				redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
 			} catch (EsupSignatureIOException e) {
 				logger.error(e.getMessage(), e);
-			} catch (EsupSignatureException e) {
+			} catch (EsupSignatureSignException e) {
 				logger.error(e.getMessage(), e);
+			} catch (EsupSignatureNexuException e) {
+				logger.info(e.getMessage());
+				return "redirect:/user/nexu-sign/" + id;
 			}
 			return "redirect:/user/signrequests/" + id;
 		} else {
@@ -307,16 +301,19 @@ public class SignRequestController {
 		progress = "0";
 		for(Long id : ids){
 			SignRequest signRequest = SignRequest.findSignRequest(id);
+			SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 			if (signRequestService.checkUserSignRights(user, signRequest)) {
 				if (!"".equals(password)) {
 		        	setPassword(password);
 				}
 				try {
-					SignRequestParams.SignType signType = signRequest.getSignRequestParams().getSignType();
-					if(signType.equals(SignRequestParams.SignType.validate)) {
+					if(!signRequest.isOverloadSignBookParams()) {
+						signRequest.getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().getSignType());
+					}
+					if(signRequest.getSignRequestParams().getSignType().equals(SignRequestParams.SignType.validate)) {
 						signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
 					} else 
-					if(signType.equals(SignRequestParams.SignType.nexuSign)) {
+					if(signRequest.getSignRequestParams().getSignType().equals(SignRequestParams.SignType.nexuSign)) {
 						logger.error("no multiple nexu sign");
 						progress = "not_autorized";
 					} else {
@@ -338,7 +335,6 @@ public class SignRequestController {
 			nbSigned++;
 			float percent = (nbSigned / totalToSign) * 100;
 			progress = String.valueOf((int) percent);
-			System.err.println(progress);
 		}
 	}
 	

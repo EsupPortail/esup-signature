@@ -153,7 +153,6 @@ public class SignBookService {
 	}
 
 	public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
-		//TODO: la question de l'heritage des parametres
 		if (!signBook.getSignRequests().contains(signRequest)) {
 			User testSignBookUser = User.findUsersByEmailEquals(signBook.getRecipientEmail()).getSingleResult();
 			SignBook testSignBook = getSignBookBySignRequestAndUser(signRequest, testSignBookUser);

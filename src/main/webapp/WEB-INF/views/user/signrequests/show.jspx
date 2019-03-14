@@ -130,7 +130,14 @@
 											
 											<dl class="display-group border-bottom m-0">
 												<dt class="col-lg-5">
-													<spring:message code="label_org_esupportail_esupsignature_domain_currentsignbook" />
+													<spring:message code="label_org_esupportail_esupsignature_domain_currentsignbook" /><button data-target="#collapseHelpCurrent" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+													<div class="collapse" id="collapseHelpCurrent">
+														<div class="card card-body border-info text-info">
+															<small>
+															Les paramètres du parapheur courant sont appliqués par défaut. Vous pouvez modifier la position manuellement à l'aide de la prévisualisation.
+															</small>
+														</div>
+													</div>
 												</dt>
 												<dd>
 													<button class="btn btn-outline-dark col-12" type="button">
@@ -178,7 +185,7 @@
 																	</i> <spring:message code="button_refresh" />
 																	</a>
 																</div>
-																<div id="nexu_ready_alert" style="display: none;" class="alert alert-info">
+																<div id="nexu_ready_alert" style="display: none;" class="alert alert-success">
 																	<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexuready" />
 																	<br /> <small><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexumsg" /></small> <br />
 																	<spring:message code="button_sign" var="signLabel" />
@@ -221,19 +228,19 @@
 							<dl class="display-group border-bottom m-0">
 								<dt class="col-lg-5">
 									<spring:message code="menu_item_sendtosignbook" />&amp;nbsp;
-					           			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
-										<div class="collapse" id="collapseHelp1">
-											<div class="card card-body border-info text-info">
-												<small>
-													A tous moments vous pouvez envoyer la demande dans un autre parapheur.
-													Si la demande se trouve dans plusieurs parapheur vous pouvez choisir si toutes les signatures sont exigées pour passer au status 
-													<button type="button" class="btn btn-outline-success btn-sm">
-														<i class="fas fa-file-signature"> <!--  -->
-														</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
-													</button>
-												</small>
-											</div>
+				           			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+									<div class="collapse" id="collapseHelp1">
+										<div class="card card-body border-info text-info">
+											<small>
+												A tous moments vous pouvez envoyer la demande dans un autre parapheur.
+												Si la demande se trouve dans plusieurs parapheur vous pouvez choisir si toutes les signatures sont exigées pour passer au status 
+												<button type="button" class="btn btn-outline-success btn-sm">
+													<i class="fas fa-file-signature"> <!--  -->
+													</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
+												</button>
+											</small>
 										</div>
+									</div>
 								</dt>
 							<dd class="col-lg-7">
 							<spring:url value="/user/signrequests/send-to-signbook/${id}" var="sendToSignBookUrl" />

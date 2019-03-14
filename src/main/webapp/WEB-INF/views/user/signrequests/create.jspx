@@ -101,7 +101,7 @@
 			</div>
 		</div>
 		
-		<input type="hidden" id="_overloadSignParams" name="overloadSignParams" value="false" />
+		<input type="hidden" id="_overloadSignParams" name="overloadSignBookParams" value="false" />
 				<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
 			<label class="col-lg-3  col-form-label" for="newPageType">
 				<strong>

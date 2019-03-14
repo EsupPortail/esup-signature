@@ -128,6 +128,7 @@ public class NexuProcessController {
 		} catch (EsupSignatureIOException e) {
 			logger.error(e.getMessage(), e);
 		}
+        signRequest.merge();
         signedDocumentResponse = new SignDocumentResponse();
         signedDocumentResponse.setUrlToDownload("download");
         return signedDocumentResponse;
