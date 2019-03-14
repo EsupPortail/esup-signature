@@ -111,6 +111,12 @@ public class SignRequestController {
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
 			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
 		SignRequestStatus statusFilterEnum = null;
+		if(page == null) {
+			page = 1;
+		}
+		if(size == null) {
+			size = 10;
+		}
 		if(statusFilter != null && !statusFilter.isEmpty()) {
 			statusFilterEnum = SignRequestStatus.valueOf(statusFilter);
 		}
@@ -136,18 +142,18 @@ public class SignRequestController {
 			if(signBookId != null) {	
 				signRequests.addAll(SignBook.findSignBook(signBookId).getSignRequests());
 			} else {
-				signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, statusFilterEnum);
+				signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, statusFilterEnum, page, size);
 			}
 			signRequests = signRequests.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
-			nrOfPages = (float) signRequests.size() / sizeNo;
+			nrOfPages = (float) signRequestService.findSignRequestByUserAndStatusEquals(user, statusFilterEnum).size() / sizeNo;
 		} else {
 			signRequests = SignRequest.findSignRequests(user.getEppn(), statusFilterEnum, "", page, size, sortFieldName, sortOrder)
 					.getResultList();
 			nrOfPages = (float) SignRequest.countFindSignRequests(user.getEppn(), statusFilterEnum, "") / sizeNo;
 			
 		}
+		
 		uiModel.addAttribute("mydocs", "active");
-
 		uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
 		uiModel.addAttribute("page", page);
 		uiModel.addAttribute("size", size);
@@ -371,6 +377,10 @@ public class SignRequestController {
 				signBook.merge();
 			}
 		}
+		List<Log> logs = Log.findLogsBySignRequestIdEquals(id).getResultList();
+		for(Log log : logs) {
+			log.remove();
+		}
 		signRequest.remove();
 		uiModel.asMap().clear();
 		uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
@@ -440,8 +450,8 @@ public class SignRequestController {
 	}
 
 	void addDateTimeFormatPatterns(Model uiModel) {
-		uiModel.addAttribute("signRequest_createdate_date_format", "dd/MM/yyyy");
-		uiModel.addAttribute("signRequest_updatedate_date_format", "dd/MM/yyyy");
+		uiModel.addAttribute("signRequest_createdate_date_format", "dd/MM/yyyy HH:mm");
+		uiModel.addAttribute("signRequest_updatedate_date_format", "dd/MM/yyyy HH:mm");
 	}
 
 	@Scheduled(fixedDelay = 5000)

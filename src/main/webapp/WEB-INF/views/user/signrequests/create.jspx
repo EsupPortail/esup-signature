@@ -3,18 +3,8 @@
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
 	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
-		<div class="card card-body bg-info text-white">
+		<div class="card card-body border-info text-info">
 			<p>Ce formulaire permet de soumettre à signature un document en selectionnant le parapheur qui convient (par défaut c'est votre parapheur qui est selectionné)</p>
-			<p>
-			Types de signatures :
-			<ul>
-			<li>PAdES/XAdES : s'appuie sur le certificat P12 uploader au niveau de vos paramètres</li>
-			<li>Apposition de la signature : ajoute simplement l'image de votre signature sur un PDF à l'endroit voulu</li>
-			<li>PAdES/XAdES avec NexU : s'appuie l'application NexU qui permet l'utilisation d'un certificat matériel</li>
-			<li>Confirmation de lecture : permet de valider la lecture d'un document</li>
-			</ul>
-			</p>
-			 
 		</div>
 	</div>
     <form:create id="fc_org_esupportail_esupsignature_domain_SignRequest" modelAttribute="signRequest" multipart="true" path="/user/signrequests" render="${empty dependencies}" z="user-managed">
@@ -40,7 +30,7 @@
         <field:input field="createBy" id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" render="false" z="user-managed"/>
         <field:datetime dateTimePattern="${signRequest_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" render="false" z="user-managed"/>
         <field:input field="updateBy" id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" render="false" z="user-managed"/>
-        <field:textarea cssClass="form-control" field="description" id="c_org_esupportail_esupsignature_domain_SignRequest_description" z="user-managed"/>
+        <field:textarea row="4" cssClass="form-control" field="description" id="c_org_esupportail_esupsignature_domain_SignRequest_description" z="user-managed"/>
         <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignRequest_status" render="false" z="user-managed"/>
         <field:select field="originalFile" id="c_org_esupportail_esupsignature_domain_SignRequest_originalFile" itemValue="id" items="${files}" path="/files" render="false" z="user-managed"/>
         <field:select field="signedFile" id="c_org_esupportail_esupsignature_domain_SignRequest_signedFile" itemValue="id" items="${files}" path="/files" render="false" z="user-managed"/>
@@ -52,7 +42,7 @@
 					<spring:message code="label_org_esupportail_esupsignature_domain_signbook" />
 					<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 					<div class="collapse" id="collapseHelp1">
-						<div class="card card-body bg-info text-white">
+						<div class="card card-body border-info text-info">
 							<small>
 								Vous pouvez selectionner plusieurs parapheurs. Dans ce cas il faudra preciser si toutes les signatures sont requises
 								<br/>
@@ -82,7 +72,17 @@
 			<div class="form-group div-disable" id="_signBookIds_div_id">
 			<label class="col-lg-3  col-form-label" for="newPageType">
 				<strong>
-					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
+					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" /><button data-target="#collapseHelpAllSign" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+					<div class="collapse" id="collapseHelpAllSign">
+						<div class="card card-body border-info text-info">
+							<small>
+								<ul>
+								<li>Oui : Tous les participants doivent signer pour que la demande passe au status "Signé"</li>
+								<li>Non : Une seule signature suffit</li>
+								</ul>
+							</small>
+						</div>
+					</div>
 				</strong>
 			</label>
 			<div class="col-lg-9">
@@ -105,7 +105,17 @@
 				<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
 			<label class="col-lg-3  col-form-label" for="newPageType">
 				<strong>
-					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_overloadparams" />
+					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_overloadparams" /><button data-target="#collapseHelpOverLoad" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+					<div class="collapse" id="collapseHelpOverLoad">
+						<div class="card card-body border-info text-info">
+							<small>
+								<ul>
+								<li>Oui : Vous pouvez modifier le paramètres de signature manuellement.</li> 
+								<li>Non : Les paramètres de signature du parapheur séléctionné seront appliqués.</li>
+								</ul>
+							</small>
+						</div>
+					</div>
 				</strong>
 			</label>
 			<div class="col-lg-9">
@@ -124,7 +134,23 @@
 			</div>
 		</div>
 		<div class="form-group" id="_signType_div_id">
-			<label class="col-lg-3  col-form-label" for="signType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype" /></strong></label>
+			<label class="col-lg-3  col-form-label" for="signType">
+			<strong>
+				<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype" /><button data-target="#collapseHelpSignType" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+					<div class="collapse" id="collapseHelpSignType">
+						<div class="card card-body border-info text-info">
+							<small>
+								<ul>
+								<li>PAdES/XAdES : s'appuie sur le certificat P12 uploader au niveau de vos paramètres</li>
+								<li>Apposition de la signature : ajoute simplement l'image de votre signature sur un PDF à l'endroit voulu</li>
+								<li>PAdES/XAdES avec NexU : s'appuie l'application NexU qui permet l'utilisation d'un certificat matériel</li>
+								<li>Confirmation de lecture : permet de valider la lecture d'un document</li>
+								</ul>
+							</small>
+						</div>
+					</div>
+			</strong>
+			</label>
 			<div class="col-lg-9">
 				<select id="_signType_id" name="signType" class="form-control" size="1">
 					<c:forEach items="${signTypes}" var="signType">

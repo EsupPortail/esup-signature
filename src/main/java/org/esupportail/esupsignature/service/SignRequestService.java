@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -17,9 +18,9 @@ import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.domain.SignBook.SignBookType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
+import org.esupportail.esupsignature.domain.SignRequestParams;
 import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
-import org.esupportail.esupsignature.domain.SignRequestParams;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -75,6 +76,9 @@ public class SignRequestService {
 	private FileService fileService;
 
 	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status) {
+		return findSignRequestByUserAndStatusEquals(user, status, null, null);
+	}
+	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status, Integer page, Integer size) {
 		List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList();
 		List<SignRequest> signRequests = new ArrayList<>();
 		for(SignBook signBook : signBooks) {
@@ -87,11 +91,15 @@ public class SignRequestService {
 		List<Log> logs = Log.findLogsByEppnAndActionEquals(user.getEppn(), "sign").getResultList();
 		for(Log log : logs) {
 			SignRequest signRequest = SignRequest.findSignRequest(log.getSignRequestId());
-			if(!signRequests.contains(signRequest) && (status == null || signRequest.getStatus().equals(status))) {
+			if(signRequest != null && !signRequests.contains(signRequest) && (status == null || signRequest.getStatus().equals(status))) {
 				signRequests.add(signRequest);
 			}
 		}
-		return signRequests;
+		if(page != null) {
+			return signRequests.stream().skip((page - 1) * size).limit(size).collect(Collectors.toList());
+		} else {
+			return signRequests;
+		}
 	}
 	
 	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document, SignRequestParams signRequestParams, long[] signBookIds) {
@@ -270,7 +278,6 @@ public class SignRequestService {
 		try {
 			Document toaddDocument = documentService.addFile(signedFile, "signed_" + signRequest.getSignRequestParams().getSignType().toString() + "_" + user.getEppn() + "_" + signedFile.getName(), fileService.getContentType(signedFile));
 			signRequest.getDocuments().add(toaddDocument);
-			//signRequest.merge();
 		} catch (IOException e) {
 			throw new EsupSignatureIOException("error on save signed file", e);
 		}
@@ -279,26 +286,21 @@ public class SignRequestService {
 	public void applySignBookRules(SignRequest signRequest, User user) {
 		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		signRequest.getSignBooks().put(signBook.getId(), true);
-		//signRequest.merge();
 		if (isSignRequestCompleted(signRequest)) {
 			if(signBook.getSignBookType().equals(SignBookType.user)) {
 				signBookService.resetSignBookParams(signBook);
 			}
 			updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
-			if (signBook != null) {
-				if (!signBook.getTargetType().equals(DocumentIOType.none)) {
-					try {
-						//TODO a retester
-						signBookService.exportFileToTarget(signBook, signRequest, user);
-						updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
-						signBookService.removeSignRequestFromAllSignBooks(signRequest, signBook, user);
-					} catch (EsupSignatureException e) {
-						logger.error("error on export file to fs", e);
-					}
-				} else {
-					signBookService.removeSignRequestFromAllSignBooks(signRequest, signBook, user);
+			if (!signBook.getTargetType().equals(DocumentIOType.none)) {
+				try {
+					//TODO a retester
+					signBookService.exportFileToTarget(signBook, signRequest, user);
+					updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
+				} catch (EsupSignatureException e) {
+					logger.error("error on export file to fs", e);
 				}
 			}
+			signBookService.removeSignRequestFromAllSignBooks(signRequest, signBook, user);
 		} else {
 			updateInfo(signRequest, SignRequestStatus.pending, "sign", user, "SUCCESS");
 		}

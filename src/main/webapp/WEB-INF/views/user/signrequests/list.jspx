@@ -88,10 +88,15 @@
 					<input class="form-control" id="passwordField" placeholder="Keystore password" name="password" type="password" />
 				</div>
 				<div class="input-group-append">
-					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Sign docs" class="btn btn-primary" onclick="submitSignDocs()" title="Sign docs" disabled="disabled">
+					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Sign docs" class="btn btn-primary" onclick="submitSignRequests()" title="Sign docs" disabled="disabled">
 						<span class="fa fa-pencil-alt"><!--  --></span>&amp;nbsp;<spring:message code="menu_item_sign_docs" />
 					</button>
 				</div>
+				<div class="input-group-append">
+					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Passer au statut terminé" class="btn btn-warning" onclick="terminateSignRequests()" title="Passer au statut terminé" disabled="disabled">
+						<span class="fas fa-flag-checkered"><!--  --></span>&amp;nbsp;Passer au statut terminé
+					</button>
+				</div>				
 				</div>
 				<div class="mx-auto"><!--  --></div>
 				<div class="input-group">
@@ -278,7 +283,7 @@
 		}
 	
 	
-		function submitSignDocs() {
+		function submitSignRequests() {
 			var toSignResquest = new Array();
 			[].forEach.call(checkBoxes, function(checkBox) {
 				if (checkBox.checked) {

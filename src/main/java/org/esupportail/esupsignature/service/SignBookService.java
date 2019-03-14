@@ -173,15 +173,11 @@ public class SignBookService {
 	}
 
 	public void removeSignRequestFromAllSignBooks(SignRequest signRequest, SignBook signBook, User user) {
-		if (signBook.getSignRequests().contains(signRequest)) {
+		System.err.println("test");
 			//signRequestService.updateInfo(signRequest, SignRequestStatus.completed, "remove from signbook" + signBook.getId(), user, "SUCCESS");
 			signRequest.getSignBooks().clear();
-			signRequest.merge();
 			signBook.getSignRequests().remove(signRequest);
 			signBook.merge();
-		} else {
-			logger.error(signRequest.getId() + " not in this signbook : " + signBook.getName() + " " + signBook.getId());
-		}
 	}
 
 	public SignBook getSignBookBySignRequestAndUser(SignRequest signRequest, User user) {
