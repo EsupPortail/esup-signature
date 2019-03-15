@@ -72,12 +72,12 @@
 								</c:choose>
 								<c:choose>
 									<c:when test="${signRequest.status eq 'signed' or signRequest.status eq 'completed'}">
-											<dl class="display-group border-bottom m-0">
+										<dl class="display-group border-bottom m-0">
 											<dt class="col-lg-5">
 												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signedfile" />
 											</dt>
 											<dd>
-												<spring:url value="/user/signrequests/get-signed-file/${id}" var="signedFileUrl" />
+												<spring:url value="/user/signrequests/get-last-file/${id}" var="signedFileUrl" />
 												<button type="button" class="btn btn-success" onclick="window.open('${signedFileUrl}', '_blank')">
 													<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" />
 												</button>
@@ -145,6 +145,17 @@
 													</button>
 												</dd>
 											</dl>
+											<dl class="display-group border-bottom m-0">
+												<dt class="col-lg-5">
+													<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_originalfile" />
+												</dt>
+												<dd>
+													<spring:url value="/user/signrequests/get-last-file/${id}" var="signedFileUrl" />
+													<button type="button" class="btn btn-info" onclick="window.open('${signedFileUrl}', '_blank')">
+														<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" />
+													</button>
+												</dd>
+											</dl>											
 											<dl class="display-group border-bottom m-0">
 												<dt class="col-lg-5">
 													<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signAction" />

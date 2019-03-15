@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
@@ -17,6 +18,8 @@ import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
@@ -91,7 +94,7 @@ public class SignBookService {
 		signBook.merge();
 	}
 	
-	public void importFilesFromSource(SignBook signBook, User user) {
+	public void importFilesFromSource(SignBook signBook, User user) throws EsupSignatureIOException, EsupStockException {
 		if (signBook.getSourceType() != null && !signBook.getSourceType().equals(DocumentIOType.none)) {
 			logger.info("retrieve from " + signBook.getSourceType() + " in " + signBook.getDocumentsSourceUri());
 			FsAccessService fsAccessService = getFsAccessService(signBook.getSourceType());
@@ -109,15 +112,13 @@ public class SignBookService {
 						long[] signBookIds = {signBook.getId()};
 						SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBookIds);
 						signRequest.merge();
-						signBook.getSignRequests().add(signRequest);
-						signBook.merge();
 						fsAccessService.remove(fsFile);
-
 					}
 				} else {
 					logger.info("no file to import in this folder : " + signBook.getDocumentsSourceUri());
+					throw new EsupSignatureIOException("alert_no_file_to_import");
 				}
-			} catch (Exception e) {
+			} catch (IOException e) {
 				logger.error("read fsaccess error : ", e);
 			}
 		} else {
@@ -173,11 +174,10 @@ public class SignBookService {
 	}
 
 	public void removeSignRequestFromAllSignBooks(SignRequest signRequest, SignBook signBook, User user) {
-		System.err.println("test");
-			//signRequestService.updateInfo(signRequest, SignRequestStatus.completed, "remove from signbook" + signBook.getId(), user, "SUCCESS");
-			signRequest.getSignBooks().clear();
-			signBook.getSignRequests().remove(signRequest);
-			signBook.merge();
+		//signRequestService.updateInfo(signRequest, SignRequestStatus.completed, "remove from signbook" + signBook.getId(), user, "SUCCESS");
+		signRequest.getSignBooks().clear();
+		signBook.getSignRequests().remove(signRequest);
+		signBook.merge();
 	}
 
 	public SignBook getSignBookBySignRequestAndUser(SignRequest signRequest, User user) {

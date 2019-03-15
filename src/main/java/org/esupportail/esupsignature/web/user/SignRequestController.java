@@ -104,22 +104,27 @@ public class SignRequestController {
 
 	@RequestMapping(produces = "text/html")
 	public String list(@RequestParam(value = "page", required = false) Integer page,
-			@RequestParam(value = "toSign", required = false) boolean toSign,
+			@RequestParam(value = "toSign", required = false) Boolean toSign,
 			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "signBookId", required = false) Long signBookId,
 			@RequestParam(value = "size", required = false) Integer size,
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
 			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
 		SignRequestStatus statusFilterEnum = null;
+		if(toSign == null) {
+			toSign = true;
+		}
 		if(page == null) {
 			page = 1;
 		}
 		if(size == null) {
 			size = 10;
 		}
-		if(statusFilter != null && !statusFilter.isEmpty()) {
-			statusFilterEnum = SignRequestStatus.valueOf(statusFilter);
-		}
+		if(statusFilter != null) {
+			if(!statusFilter.isEmpty()) {
+				statusFilterEnum = SignRequestStatus.valueOf(statusFilter);
+			}
+		} 
 		User user = userService.getUserFromAuthentication();
 		if (user == null) {
 			return "redirect:/user/users/?form";
@@ -163,7 +168,7 @@ public class SignRequestController {
 		uiModel.addAttribute("nbPedingSignRequests", SignRequest.countFindSignRequestsByCreateByAndStatusEquals(user.getEppn(), SignRequestStatus.pending));
 		uiModel.addAttribute("signRequests", signRequests);
 		uiModel.addAttribute("signBooks", signBooks);
-		uiModel.addAttribute("statusFilter", statusFilter);
+		uiModel.addAttribute("statusFilter", statusFilterEnum);
 		uiModel.addAttribute("statuses", SignRequest.SignRequestStatus.values());
 		uiModel.addAttribute("queryUrl", "?toSign=" + toSign);
 		return "user/signrequests/list";
@@ -388,31 +393,21 @@ public class SignRequestController {
 		return "redirect:/user/signrequests/";
 	}
 
-	@RequestMapping(value = "/get-original-file/{id}", method = RequestMethod.GET)
+	@RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
 	public void getOriginalFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-		Document document = signRequestService.getPreviousDocument(signRequest);
-		try {
-			response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
-			response.setContentType(document.getContentType());
-			IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
-		} catch (Exception e) {
-			logger.error("get file error", e);
-		}
-	}
-
-	@RequestMapping(value = "/get-signed-file/{id}", method = RequestMethod.GET)
-	public void getSignedFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
-		SignRequest signRequest = SignRequest.findSignRequest(id);
-		if(signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.completed)) {
+		User user = userService.getUserFromAuthentication();
+		if(signRequestService.checkUserViewRights(user, signRequest)) {
 			Document document = signRequestService.getLastDocument(signRequest);
 			try {
 				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
-				response.setContentType(document.getContentType());				
+				response.setContentType(document.getContentType());
 				IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
 			} catch (Exception e) {
 				logger.error("get file error", e);
 			}
+		} else {
+			logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
 		}
 	}
 

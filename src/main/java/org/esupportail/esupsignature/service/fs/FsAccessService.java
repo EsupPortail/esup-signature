@@ -17,6 +17,7 @@
  */
 package org.esupportail.esupsignature.service.fs;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -73,7 +74,7 @@ public abstract class FsAccessService {
 		}
 	}
 
-	protected void open() throws Exception {
+	protected void open() throws EsupStockException {
 		if(!this.isOpened()) {
 			manipulateUri();
 		}
@@ -94,19 +95,19 @@ public abstract class FsAccessService {
 
 	protected abstract boolean isOpened();
 
-	public abstract boolean remove(FsFile fsFile) throws Exception;
+	public abstract boolean remove(FsFile fsFile) throws EsupStockException;
 	
-	public abstract List<FsFile> listFiles(String path) throws Exception;
+	public abstract List<FsFile> listFiles(String path) throws EsupStockException;
 
-	public abstract String createFile(String parentPath, String title, String type) throws Exception;
+	public abstract String createFile(String parentPath, String title, String type) throws EsupStockException;
 
-	public abstract boolean renameFile(String path, String title) throws Exception;
+	public abstract boolean renameFile(String path, String title) throws EsupStockException;
 
-	public abstract boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws Exception;
+	public abstract boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws EsupStockException, IOException;
 
 	public abstract FsFile getFile(String dir) throws Exception;
 
-	public abstract boolean putFile(String dir, String filename,InputStream inputStream, UploadActionType uploadOption) throws Exception;
+	public abstract boolean putFile(String dir, String filename,InputStream inputStream, UploadActionType uploadOption) throws EsupStockException;
 
 	public boolean supportIntraCopyPast() {
 		return true;

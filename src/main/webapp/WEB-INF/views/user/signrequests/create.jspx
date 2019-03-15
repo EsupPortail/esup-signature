@@ -141,10 +141,10 @@
 						<div class="card card-body border-info text-info">
 							<small>
 								<ul>
-								<li>PAdES/XAdES : s'appuie sur le certificat P12 uploader au niveau de vos paramètres</li>
-								<li>Apposition de la signature : ajoute simplement l'image de votre signature sur un PDF à l'endroit voulu</li>
-								<li>PAdES/XAdES avec NexU : s'appuie l'application NexU qui permet l'utilisation d'un certificat matériel</li>
-								<li>Confirmation de lecture : permet de valider la lecture d'un document</li>
+									<li>PAdES/XAdES : s'appuie sur le certificat P12 uploader au niveau de vos paramètres</li>
+									<li>Apposition de la signature : ajoute simplement l'image de votre signature sur un PDF à l'endroit voulu</li>
+									<li>PAdES/XAdES avec NexU : s'appuie l'application NexU qui permet l'utilisation d'un certificat matériel</li>
+									<li>Confirmation de lecture : permet de valider la lecture d'un document</li>
 								</ul>
 							</small>
 						</div>

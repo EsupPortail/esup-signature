@@ -10,6 +10,8 @@ import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.dss.web.service.OJService;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +25,7 @@ public class ScheduledTaskService {
 	private OJService oJService;
 
 	@Transactional
-	public void scanAllSignbooksSources() {
+	public void scanAllSignbooksSources() throws EsupSignatureIOException, EsupStockException {
 		List<SignBook> signBooks = SignBook.findAllSignBooks();
 		for(SignBook signBook : signBooks) {
 			User user = new User();

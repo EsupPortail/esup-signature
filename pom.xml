@@ -6,7 +6,7 @@
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
 	<packaging>war</packaging>
-	<version>0.4.0.BUILD-SNAPSHOT</version>
+	<version>0.5.0.BUILD-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<bouncycastle.version>1.60</bouncycastle.version>
@@ -24,7 +24,7 @@
 		<jackson-jaxrs-json-provider.version>2.9.7</jackson-jaxrs-json-provider.version>
 		<hsqldb.version>2.4.1</hsqldb.version>
 		<nexu.version>1.22</nexu.version>
-		<pdfbox.version>2.0.12</pdfbox.version>
+		<pdfbox.version>2.0.14</pdfbox.version>
 	</properties>
 	<repositories>
 		<repository>

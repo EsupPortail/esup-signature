@@ -19,9 +19,11 @@ import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.springframework.roo.addon.web.mvc.controller.scaffold.RooWebScaffold;
@@ -201,7 +203,7 @@ public class SignBookController {
 	}
 
 	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
-	public String getFileFromSource(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws IOException {
+	public String getFileFromSource(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
 		SignBook signBook = SignBook.findSignBook(id);
 
@@ -209,8 +211,14 @@ public class SignBookController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/signbooks/" + id;
 		}
+		try {
+			signBookService.importFilesFromSource(signBook, user);
+		} catch (EsupSignatureIOException e) {
+			redirectAttrs.addFlashAttribute("messageWarning", e.getMessage());
+		} catch (EsupStockException e) {
+			redirectAttrs.addFlashAttribute("messageError", e.getMessage());
+		}
 		
-		signBookService.importFilesFromSource(signBook, user);
 		return "redirect:/manager/signbooks/" + id;
 
 	}

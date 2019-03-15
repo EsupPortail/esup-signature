@@ -2,20 +2,58 @@
 <div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:form="urn:jsptagdir:/WEB-INF/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:spring="http://www.springframework.org/tags" version="2.0">
 	<jsp:directive.page contentType="text/html;charset=UTF-8" />
 	<jsp:output omit-xml-declaration="yes" />
-	<div class="card card-body bg-info">
-		Merci de compléter vos information pour pouvoir commencer à signer :
-		<ul></ul>
-		- Un keystore au format PKCS12 (Obligatoire pour la signature au format PAdES/XAdES)
-		<br/>
-		- Un fichier image pour la signature  (Obligatoire pour toutes signatures de PDF)
+	<div id="collapseHelp" class="collapse show" aria-expanded="true" style="">
+		<div class="card card-body border-info text-info">
+			<p>Bienvenue sur l'application Esup-Signature. Merci de compléter vos informations pour pouvoir commencer à signer.</p>
+			<ul>
+			<li>
+			Pour la signature au format PAdES ou par apposition d'une image sur un PDF il faut selectionner un fichier image de la signature.
+			</li>
+			<li>
+			Pour la signature au format PAdES/XAdES il faut en plus selectionner un keystore au format PKCS12 (il est possible d'en générer un sur la plateforme <a href="https://www.digicert.com/sso">https://www.digicert.com/sso</a>)
+			</li>
+			<li>
+			Enfin vous pouvez choisir vos paramètres de signature par défaut
+			</li>
+			</ul>
+			<p>Dès que vous apercevez ce symbole <span class="fas fa-info-circle text-info"><!-- --></span>, cliquez dessus pour obtenir de l'aide</p>
+		</div>
 	</div>
 	<form:create id="fc_org_esupportail_esupsignature_domain_User" modelAttribute="user" multipart="true" path="/user/users/" render="${empty dependencies}" z="user-managed">
 		<field:input readonly="true" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_User_name" z="user-managed" />
 		<field:input readonly="true" cssClass="form-control" field="firstname" id="c_org_esupportail_esupsignature_domain_User_firstname" z="user-managed" />
 		<field:input readonly="true" cssClass="form-control" field="eppn" id="c_org_esupportail_esupsignature_domain_User_eppn" z="user-managed" />
 		<field:input readonly="true" cssClass="form-control" field="email" id="c_org_esupportail_esupsignature_domain_User_email" z="user-managed" />
+
 		<div class="form-group">
-			<label class="col-lg-3  col-form-label" for="newPageType"><strong>PKSC12 keystore</strong></label>
+			<label class="col-lg-3  col-form-label" for="newPageType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_signimage" /></strong>
+			&amp;nbsp;<button data-target="#collapseHelpSignImage" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"><!-- --></span></button>
+					<div class="collapse show" id="collapseHelpSignImage">
+						<div class="card card-body border-info text-info">
+							<small>
+								Après avoir selectionné une image, vous devez ajuster sa taille pour que la signature entre dans le carré blanc
+							</small>
+						</div>
+					</div>
+			</label>
+			<div class="col-lg-9">
+				<div class="input-group">
+					<div class="custom-file">
+						<input required="required" type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" />
+						<label class="custom-file-label" id="inputGroupLabel01" for="upload">
+							<spring:message code="field_file_image" />
+						</label>
+					</div>
+				</div>
+				<br/>
+				<div id="vanilla-demo">
+					<!--  -->
+				</div>
+			</div>
+		</div>
+		<input type="hidden" name="signImageBase64" id="signImageBase64" />
+		<div class="form-group">
+			<label class="col-lg-3  col-form-label" for="newPageType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_keystore" /></strong></label>
 			<div class="col-lg-9">
 				<div class="input-group">
 					<div class="custom-file">
@@ -26,28 +64,25 @@
 					</div>	
 				</div>
 			</div>
-		</div>
-		<div class="form-group">
-			<label class="col-lg-3  col-form-label" for="newPageType"><strong>Sign image</strong></label>
-			<div class="col-lg-9">
-				<div class="input-group">
-					<div class="custom-file">
-						<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" />
-						<label class="custom-file-label" id="inputGroupLabel01" for="upload">
-							<spring:message code="field_file_image" />
-						</label>
-					</div>
-				</div>
-				<div id="vanilla-demo">
-					<!--  -->
-				</div>
-			</div>
-		</div>
-		<input type="hidden" name="signImageBase64" id="signImageBase64" />
+		</div>		
 		<field:select render="false" field="signImage" id="c_org_esupportail_esupsignature_domain_User_signImage" itemValue="id" items="${files}" path="/files" z="user-managed" />
 		<field:select render="false" field="keystore" id="c_org_esupportail_esupsignature_domain_User_keystore" itemValue="id" items="${files}" path="/files" z="user-managed" />
 		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signType_id">
-			<label class="col-lg-3  col-form-label" for="signType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype" /></strong></label>
+			<label class="col-lg-3  col-form-label" for="signType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype" /></strong>
+			&amp;nbsp;<button data-target="#collapseHelpSignType" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+					<div class="collapse" id="collapseHelpSignType">
+						<div class="card card-body border-info text-info">
+							<small>
+								<ul>
+									<li>PAdES/XAdES : s'appuie sur le certificat P12 uploader au niveau de vos paramètres</li>
+									<li>Apposition de la signature : ajoute simplement l'image de votre signature sur un PDF à l'endroit voulu</li>
+									<li>PAdES/XAdES avec NexU : s'appuie l'application NexU qui permet l'utilisation d'un certificat matériel</li>
+									<li>Confirmation de lecture : permet de valider la lecture d'un document</li>
+								</ul>
+							</small>
+						</div>
+					</div>
+			</label>
 			<div class="col-lg-9">
                         <select class="form-control" id="_signType_id" name="signType" size="1">
                             <c:forEach items="${signTypes}" var="signType">
@@ -72,90 +107,26 @@
 				</strong>
 			</label>
 			<div class="col-lg-9">
-                        <select class="form-control" id="_newPageType_id" name="newPageType" size="1">
-                            <c:forEach items="${newPageTypes}" var="newPageType">
-                                <spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${newPageType}" var="newpagetypeLabel"/>
-                                <c:choose>
-                                    <c:when test="${newPageType eq signBook.signRequestParams.newPageType}">
-                                        <option selected="selected" value="${newPageType}">${newpagetypeLabel}</option>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <option value="${newPageType}">${newpagetypeLabel}</option>
-                                    </c:otherwise>
-                                </c:choose>
-                            </c:forEach>
-                        </select>
+	            <select class="form-control" id="_newPageType_id" name="newPageType" size="1">
+	                <c:forEach items="${newPageTypes}" var="newPageType">
+	                    <spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${newPageType}" var="newpagetypeLabel"/>
+	                    <c:choose>
+	                        <c:when test="${newPageType eq signBook.signRequestParams.newPageType}">
+	                            <option selected="selected" value="${newPageType}">${newpagetypeLabel}</option>
+	                        </c:when>
+	                        <c:otherwise>
+	                            <option value="${newPageType}">${newpagetypeLabel}</option>
+	                        </c:otherwise>
+	                    </c:choose>
+	                </c:forEach>
+	            </select>
 			</div>
 		</div>
 	</form:create>
 	<form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_User" render="${not empty dependencies}" z="user-managed" />
 
 	<script type="text/javascript">
-		document
-				.addEventListener(
-						'DOMContentLoaded',
-						function() {
 
-							var vanillaResult = document
-									.querySelector('.vanilla-result'), vanillaUpload = document
-									.querySelector('.vanilla-upload');
-							var vanilla = new Croppie(document
-									.getElementById('vanilla-demo'), {
-								viewport : {
-									width : 200,
-									height : 150
-								},
-								boundary : {
-									width : 400,
-									height : 300
-								},
-								enableExif : true,
-								enableOrientation : true,
-								enforceBoundary : false
-
-							});
-
-							document.getElementById('vanilla-demo')
-									.addEventListener(
-											'update',
-											function(ev) {
-												vanilla.result('canvas').then(
-														saveVanilla);
-											});
-
-							vanillaUpload.addEventListener('change',
-									function() {
-										readFile(this);
-									});
-
-							function resultVanilla(result) {
-								alert(result);
-							}
-
-							function saveVanilla(result) {
-								document.getElementById('signImageBase64').value = result;
-							}
-
-							function readFile(input) {
-								if (input.files) {
-									if (input.files[0]) {
-										var reader = new FileReader();
-
-										reader.onload = function(e) {
-											document
-													.getElementById('vanilla-demo').classList
-													.add('good');
-											vanilla.bind({
-												url : e.target.result,
-												orientation : 1
-											});
-										}
-										reader.readAsDataURL(input.files[0]);
-									}
-								}
-							}
-
-						});
 	</script>
 
 </div>

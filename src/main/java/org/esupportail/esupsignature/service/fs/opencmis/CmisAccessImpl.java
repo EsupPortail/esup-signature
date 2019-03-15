@@ -31,6 +31,7 @@ import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
@@ -124,14 +125,14 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 		return path;
 	}
 	
-	private CmisObject getCmisObject(String path) throws Exception {
+	private CmisObject getCmisObject(String path) throws EsupStockException {
 		this.open();
 		CmisObject cmisObject = cmisSession.getObjectByPath(constructPath(path));
 		return cmisObject;
 	}
 
 	@Override
-	public void open() throws Exception {
+	public void open() throws EsupStockException {
 	
 		super.open();
 		
@@ -168,14 +169,18 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 
 
 	@Override
-	public List<FsFile> listFiles(String path) throws Exception {
+	public List<FsFile> listFiles(String path) throws EsupStockException {
 		Folder folder =  (Folder)  getCmisObject(path);
 		logger.info("get file list from : " + folder.getPath());
 		ItemIterable<CmisObject> pl = folder.getChildren();
 		List<FsFile> fsFiles = new ArrayList<FsFile>();
 		for (CmisObject cmisObject : pl) {
 			if(cmisObject.getBaseType().getBaseTypeId().equals(BaseTypeId.CMIS_DOCUMENT)) {
-				fsFiles.add(toFsFile(cmisObject));
+				try {
+					fsFiles.add(toFsFile(cmisObject));
+				} catch (IOException e) {
+					throw new EsupStockException(e);
+				}
 			}
 		}
 		return fsFiles;
@@ -201,7 +206,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public String createFile(String parentPath, String title, String type) throws Exception {
+	public String createFile(String parentPath, String title, String type) throws EsupStockException {
 		Folder parent = (Folder)getCmisObject(parentPath);
 		CmisObject createdObject = null; 
 		if("folder".equals(type)) {
@@ -219,7 +224,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 	@Override
-	public boolean moveCopyFilesIntoDirectory(String path, List<String> filesToCopy, boolean copy) throws Exception {
+	public boolean moveCopyFilesIntoDirectory(String path, List<String> filesToCopy, boolean copy) throws EsupStockException {
 		try {
 			Folder targetFolder = (Folder)getCmisObject(path);
 			if(copy) {
@@ -258,7 +263,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws Exception {
+	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws EsupStockException {
 		//must manage the upload option.
 		Folder targetFolder = (Folder)getCmisObject(dir);
 		Map<String, String> prop = new HashMap<String, String>();
@@ -275,14 +280,14 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean remove(FsFile fsFile) throws Exception {
+	public boolean remove(FsFile fsFile) throws EsupStockException {
 		CmisObject cmisObject = getCmisObject(fsFile.getPath() + "/" + fsFile.getId());
 		cmisObject.delete(true);
 		return true;
 	}
 
 	@Override
-	public boolean renameFile(String path, String title) throws Exception {
+	public boolean renameFile(String path, String title) throws EsupStockException {
 		CmisObject cmisObject = getCmisObject(path);
 		HashMap<String, String> m = new HashMap<String, String>();
         m.put("cmis:name",title);

@@ -84,7 +84,7 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public void open() throws Exception {
+	public void open() throws EsupStockException {
 		super.open();
 
 		if(!this.isOpened()) {
@@ -140,7 +140,7 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 		return (this.root != null) ;
 	}
 
-	private SmbFile cd(String path) throws Exception {
+	private SmbFile cd(String path) throws EsupStockException {
 		try {
 			this.open();
 			if (path == null || path.length() == 0)
@@ -153,7 +153,7 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean remove(FsFile fsFile) throws Exception {
+	public boolean remove(FsFile fsFile) throws EsupStockException {
 		boolean success = false;
 		SmbFile file;
 		try {
@@ -199,7 +199,7 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean renameFile(String path, String title) throws Exception {
+	public boolean renameFile(String path, String title) throws EsupStockException {
 		try {
 			SmbFile file = cd(path);
 			if (file.exists()) {
@@ -219,7 +219,7 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws Exception {
+	public boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws EsupStockException {
 		try {
 			SmbFile folder = cd(dir);
 			for (String fileToCopyPath : filesToCopy) {
@@ -238,10 +238,13 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 			return true;
 		} catch (SmbException e) {
 			logger.warn("can't move/copy file because of SmbException : "	+ e.getMessage(), e);
+			throw new EsupStockException(e);
 		} catch (MalformedURLException e) {
 			logger.error("problem in creation file that must not occur." +  e.getMessage(), e);
+			throw new EsupStockException(e);
+		} catch (IOException e) {
+			throw new EsupStockException(e);
 		}
-		return false;
 	}
 
 	@Override
@@ -319,21 +322,25 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 
-	public List<FsFile> listFiles(String url) throws Exception {
+	public List<FsFile> listFiles(String url) throws EsupStockException {
 		List<FsFile> fsFiles = new ArrayList<>();
-		SmbFile resource = cd(url);		
-		if(jcifsSynchronizeRootListing && this.root.equals(resource)) {
-			synchronized (this.root.getCanonicalPath()) {
+		try {
+			SmbFile resource = cd(url);		
+			if(jcifsSynchronizeRootListing && this.root.equals(resource)) {
+				synchronized (this.root.getCanonicalPath()) {
+					for(SmbFile smbFile : resource.listFiles()) {
+						fsFiles.add(toFsFile(smbFile));
+					}
+				}
+			} else {
 				for(SmbFile smbFile : resource.listFiles()) {
-					fsFiles.add(toFsFile(smbFile));
+					FsFile fsFile = new FsFile();
+					fsFile.setFile(fileService.inputStreamToFile(smbFile.getInputStream(), smbFile.getName()));
+					fsFiles.add(fsFile);
 				}
 			}
-		} else {
-			for(SmbFile smbFile : resource.listFiles()) {
-				FsFile fsFile = new FsFile();
-				fsFile.setFile(fileService.inputStreamToFile(smbFile.getInputStream(), smbFile.getName()));
-				fsFiles.add(fsFile);
-			}
+		} catch (Exception e) {
+			throw new EsupStockException(e);
 		}
 		return fsFiles;
 	}

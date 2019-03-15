@@ -86,7 +86,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	protected void open() throws Exception {
+	protected void open() throws EsupStockException {
 		super.open();
 		try {
 			if(!isOpened()) {
@@ -136,7 +136,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		return (root != null);
 	}
 
-	private FileObject cd(String path) throws Exception {
+	private FileObject cd(String path) throws EsupStockException {
 		try {
 			// assure that it'as already opened
 			this.open();
@@ -158,21 +158,27 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 	@Override
-	public List<FsFile> listFiles(String url) throws Exception {
+	public List<FsFile> listFiles(String url) throws EsupStockException {
 		List<FsFile> fsFiles = new ArrayList<>();
 		FileObject resource = cd(url);
-		if(resource.isFolder()){ 
-			for(FileObject fileObject : resource.getChildren()) {
-				if(fileObject.isFile()) {
-					fsFiles.add(toFsFile(fileObject));
+		try {
+			if(resource.isFolder()){ 
+				for(FileObject fileObject : resource.getChildren()) {
+					if(fileObject.isFile()) {
+						fsFiles.add(toFsFile(fileObject));
+					}
 				}
 			}
+		} catch (FileSystemException e) {
+			throw new EsupStockException(e);
+		} catch (IOException e) {
+			throw new EsupStockException(e);
 		}
 		return fsFiles;
 	}
 	
 	@Override
-	public boolean remove(FsFile fsFile) throws Exception {
+	public boolean remove(FsFile fsFile) throws EsupStockException {
 		boolean success = false;
 		FileObject file;
 		try {
@@ -187,7 +193,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public String createFile(String parentPath, String title, String type) throws Exception {
+	public String createFile(String parentPath, String title, String type) throws EsupStockException {
 		try {
 			FileObject parent = cd(parentPath);
 			FileObject child = parent.resolveFile(title);
@@ -211,7 +217,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean renameFile(String path, String title) throws Exception {
+	public boolean renameFile(String path, String title) throws EsupStockException {
 		try {
 			FileObject file = cd(path);
 			FileObject newFile = file.getParent().resolveFile(title);
@@ -229,7 +235,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws Exception {
+	public boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws EsupStockException {
 		try {
 			FileObject folder = cd(dir);
 			for (String fileToCopyPath : filesToCopy) {
@@ -275,7 +281,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 	@Override
-	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws Exception {
+	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws EsupStockException {
 
 		boolean success = false;
 		FileObject newFile = null;

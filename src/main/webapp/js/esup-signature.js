@@ -322,5 +322,62 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 					
 	});
+});
+
+//image picker
+document.addEventListener('DOMContentLoaded', function() {
 	
+	var vanillaResult = document.querySelector('.vanilla-result'), vanillaUpload = document.querySelector('.vanilla-upload');
+	if(document.getElementById('vanilla-demo') != null) {
+		var vanilla = new Croppie(document.getElementById('vanilla-demo'), {
+			viewport : {
+				width : 200,
+				height : 150
+			},
+			boundary : {
+				width : 400,
+				height : 300
+			},
+			enableExif : true,
+			enableOrientation : true,
+			enforceBoundary : false
+	
+		});
+	
+		document.getElementById('vanilla-demo').addEventListener('update', function(ev) {
+			vanilla.result('canvas').then(saveVanilla);
+		});
+	
+		vanillaUpload.addEventListener('change', function() {
+			readFile(this);
+		});
+	}
+	
+	function resultVanilla(result) {
+		alert(result);
+	}
+
+	function saveVanilla(result) {
+		document.getElementById('signImageBase64').value = result;
+	}
+
+	function readFile(input) {
+		if (input.files) {
+			if (input.files[0]) {
+				var reader = new FileReader();
+
+				reader.onload = function(e) {
+					document
+							.getElementById('vanilla-demo').classList
+							.add('good');
+					vanilla.bind({
+						url : e.target.result,
+						orientation : 1
+					});
+				}
+				reader.readAsDataURL(input.files[0]);
+			}
+		}
+	}
+
 });

@@ -137,7 +137,7 @@ public class UserController {
         	userToUpdate.setSignImage(documentService.addFile(user.getSignImageBase64(), userToUpdate.getEppn() + "_sign", "application/png"));
         } else
         	if(userToUpdate.getSignImage().getBigFile().getBinaryFile() == null) {
-            	redirectAttrs.addFlashAttribute("messageCustom", "image is required");
+        	redirectAttrs.addFlashAttribute("messageCustom", "Image is required");
         }
         if(oldSignImage.getBigFile().getBinaryFile() != null) {
         	oldSignImage.getBigFile().getBinaryFile().free();

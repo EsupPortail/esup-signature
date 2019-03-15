@@ -290,7 +290,9 @@ public class SignRequestService {
 			if(signBook.getSignBookType().equals(SignBookType.user)) {
 				signBookService.resetSignBookParams(signBook);
 			}
-			updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
+			if(!signRequest.getStatus().equals(SignRequestStatus.checked)) {
+				updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
+			}
 			if (!signBook.getTargetType().equals(DocumentIOType.none)) {
 				try {
 					//TODO a retester
