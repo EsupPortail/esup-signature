@@ -23,7 +23,7 @@ import eu.europa.esig.dss.x509.KeyStoreCertificateSource;
 @Service
 public class UserKeystoreService {
 	
-	private static final Logger log = LoggerFactory.getLogger(UserKeystoreService.class);
+	private static final Logger logger = LoggerFactory.getLogger(UserKeystoreService.class);
 
 	private static String keystoreType = "PKCS12";
 
@@ -36,7 +36,7 @@ public class UserKeystoreService {
 			String encoded = Base64.getEncoder().encodeToString(prvkey);
 			return "-----BEGIN PRIVATE KEY-----" + encoded + "-----END PRIVATE KEY-----";
 		} catch (CertificateException | EsupSignatureException e) {
-			log.error("error en get pem cert from keystore", e);
+			logger.error("error en get pem cert from keystore", e);
 		}
 		return null;
 	}
@@ -46,7 +46,7 @@ public class UserKeystoreService {
 			Pkcs12SignatureToken token = new Pkcs12SignatureToken(keyStoreFile, new PasswordProtection(password.toCharArray()));
 			return token;
 		} catch (Exception e) {
-			log.error("open keystore fail", e);
+			logger.error("open keystore fail", e);
 			throw new EsupSignatureKeystoreException("open keystore fail", e);
 		}
 	}
@@ -58,7 +58,7 @@ public class UserKeystoreService {
 			token.close();
 			return ksPrivateKeyEntry.getCertificate();
 		} catch (Exception e) {
-			log.error("open keystore fail", e);
+			logger.error("open keystore fail", e);
 			throw new EsupSignatureKeystoreException("get certificat token fail", e);
 		}
 	}
@@ -71,7 +71,7 @@ public class UserKeystoreService {
 			token.close();
 			return certificateTokens;
 		} catch (IOException e) {
-			log.error("open keystore fail", e);
+			logger.error("open keystore fail", e);
 			throw new EsupSignatureKeystoreException("get certificat chain fail", e);
 		}
 		

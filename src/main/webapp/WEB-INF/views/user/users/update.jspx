@@ -8,17 +8,7 @@
 		<field:input readonly="true" cssClass="form-control" field="eppn" id="c_org_esupportail_esupsignature_domain_User_eppn" z="user-managed" />
 		<field:input readonly="true" cssClass="form-control" field="email" id="c_org_esupportail_esupsignature_domain_User_email" z="user-managed" />
 		<div class="form-group">
-			<label class="col-lg-3  col-form-label" for="newPageType"><strong>PKSC12 keystore</strong></label>
-			<div class="col-lg-9">
-				<div class="input-group">
-					<div class="custom-file">
-						<input type="file" accept="application/x-pkcs12" class="custom-file-input" name="multipartKeystore" id="inputGroupFile02" value="Choose a file" aria-describedby="inputGroupFileAddon02" /> <label class="custom-file-label" id="inputGroupLabel02" for="upload">Choose PKCS12 file</label>
-					</div>	
-				</div>
-			</div>
-		</div>
-		<div class="form-group">
-			<label class="col-lg-3  col-form-label" for="newPageType"><strong>Sign image</strong></label>
+			<label class="col-lg-3  col-form-label" for="newPageType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_signimage" /></strong></label>
 			<div class="col-lg-9">
 				<c:if test="${not empty signFile}">
 					<div class="col-lg-3 text-center">
@@ -27,86 +17,75 @@
 				</c:if>
 				<div class="input-group">
 					<div class="custom-file">
-						<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" /> <label class="custom-file-label" id="inputGroupLabel01" for="upload">Choose image file</label>
+						<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" />
+						<label class="custom-file-label" id="inputGroupLabel01" for="upload">
+							<spring:message code="field_file_image" />
+						</label>
 					</div>
 				</div>
+				<br/>
 				<div id="vanilla-demo">
 					<!--  -->
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-lg-3  col-form-label" for="newPageType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_keystore" /></strong></label>
+			<div class="col-lg-9">
+				<div class="input-group">
+					<div class="custom-file">
+						<input type="file" accept="application/x-pkcs12" class="custom-file-input" name="multipartKeystore" id="inputGroupFile02" value="Choose a file" aria-describedby="inputGroupFileAddon02" />
+						<label class="custom-file-label" id="inputGroupLabel02" for="upload">
+							<spring:message code="field_file_keystore" />
+						</label>
+					</div>	
 				</div>
 			</div>
 		</div>
 		<input type="hidden" name="signImageBase64" id="signImageBase64" />
 		<field:select render="false" field="signImage" id="c_org_esupportail_esupsignature_domain_User_signImage" itemValue="id" items="${files}" path="/files" z="user-managed" />
 		<field:select render="false" field="keystore" id="c_org_esupportail_esupsignature_domain_User_keystore" itemValue="id" items="${files}" path="/files" z="user-managed" />
+		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signType_id">
+			<label class="col-lg-3  col-form-label" for="signType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype" /></strong></label>
+			<div class="col-lg-9">
+	            <select class="form-control" id="_signType_id" name="signType" size="1">
+	                <c:forEach items="${signTypes}" var="signType">
+	                    <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signType}" var="signTypeLabel"/>
+	                    <c:choose>
+	                        <c:when test="${signType eq signBook.signRequestParams.signType}">
+	                            <option selected="selected" value="${signType}">${signTypeLabel}</option>
+	                        </c:when>
+	                        <c:otherwise>
+	                            <option value="${signType}">${signTypeLabel}</option>
+	                        </c:otherwise>
+	                    </c:choose>
+	                </c:forEach>
+	            </select>
+			</div>
+		</div>        
+		<field:select render="false" field="newPageType" id="c_org_esupportail_esupsignature_domain_SignRequest_newPageType" cssClass="form-control" path="/" multiple="false" size="1" checkboxes="false" items="${newPageTypes}" z="user-managed"/>        
+		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
+			<label class="col-lg-3  col-form-label" for="newPageType">
+				<strong>
+					<spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype" />
+				</strong>
+			</label>
+			<div class="col-lg-9">
+                        <select class="form-control" id="_newPageType_id" name="newPageType" size="1">
+                            <c:forEach items="${newPageTypes}" var="newPageType">
+                                <spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${newPageType}" var="newpagetypeLabel"/>
+                                <c:choose>
+                                    <c:when test="${newPageType eq signBook.signRequestParams.newPageType}">
+                                        <option selected="selected" value="${newPageType}">${newpagetypeLabel}</option>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <option value="${newPageType}">${newpagetypeLabel}</option>
+                                    </c:otherwise>
+                                </c:choose>
+                            </c:forEach>
+                        </select>
+			</div>
+		</div>
 	</form:update>
 	<form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_User" render="${not empty dependencies}" z="user-managed" />
-
-	<script type="text/javascript">
-		document
-				.addEventListener(
-						'DOMContentLoaded',
-						function() {
-
-							var vanillaResult = document
-									.querySelector('.vanilla-result'), vanillaUpload = document
-									.querySelector('.vanilla-upload');
-							var vanilla = new Croppie(document
-									.getElementById('vanilla-demo'), {
-								viewport : {
-									width : 200,
-									height : 150
-								},
-								boundary : {
-									width : 400,
-									height : 300
-								},
-								enableExif : true,
-								enableOrientation : true,
-								enforceBoundary : false
-
-							});
-
-							document.getElementById('vanilla-demo')
-									.addEventListener(
-											'update',
-											function(ev) {
-												vanilla.result('canvas').then(
-														saveVanilla);
-											});
-
-							vanillaUpload.addEventListener('change',
-									function() {
-										readFile(this);
-									});
-
-							function resultVanilla(result) {
-								alert(result);
-							}
-
-							function saveVanilla(result) {
-								document.getElementById('signImageBase64').value = result;
-							}
-
-							function readFile(input) {
-								if (input.files) {
-									if (input.files[0]) {
-										var reader = new FileReader();
-
-										reader.onload = function(e) {
-											document
-													.getElementById('vanilla-demo').classList
-													.add('good');
-											vanilla.bind({
-												url : e.target.result,
-												orientation : 1
-											});
-										}
-										reader.readAsDataURL(input.files[0]);
-									}
-								}
-							}
-
-						});
-	</script>
-
 </div>

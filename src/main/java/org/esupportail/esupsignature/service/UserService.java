@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.esupportail.esupsignature.domain.SignBook;
+import org.esupportail.esupsignature.domain.SignBook.SignBookType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
@@ -21,8 +23,48 @@ public class UserService {
     
 	@Resource
 	private DocumentService documentService;
+
+	@Resource
+	private SignBookService signBookService;
 	
-    public String getEppnFromAuthentication() {
+	public boolean isUserReady(User user) {
+		return user.isReady();
+	}
+	
+	public void createUser(Authentication authentication) {
+		List<PersonLdap> persons =  personDao.getPersonNamesByUid(authentication.getName());
+		String eppn = persons.get(0).getEduPersonPrincipalName();
+        String email = persons.get(0).getMail();
+        String name = persons.get(0).getSn();
+        String firstName = persons.get(0).getGivenName();
+        createUser(eppn, name, firstName, email);
+	}
+	
+	public void createUser(String eppn, String name, String firstName, String email) {
+		User user;
+		if(User.countFindUsersByEppnEquals(eppn) > 0) {
+    		user = User.findUsersByEppnEquals(eppn).getSingleResult();
+    	} else {
+	    	user = new User();
+			user.setSignImage(null);
+			user.setKeystore(null);
+    	}
+		user.setName(name);
+		user.setFirstname(firstName);
+		user.setEppn(eppn);
+		user.setEmail(email);
+		if(user.getId() == null) {
+			user.persist();
+		} else {
+			user.merge();
+		}
+		if(SignBook.countFindSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user) == 0) {
+			signBookService.createUserSignBook(user);
+		}
+
+	}
+	
+    public User getUserFromAuthentication() {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     	String eppn = auth.getName();
     	if(personDao != null) {
@@ -31,7 +73,12 @@ public class UserService {
     			eppn = persons.get(0).getEduPersonPrincipalName();
     		}
     	}
-    	return eppn;
+		if (User.countFindUsersByEppnEquals(eppn) > 0) {
+			return User.findUsersByEppnEquals(eppn).getSingleResult();
+		} else {
+			return null;
+		}
+    	
     }
 	
     public User addSignImage(User user, String signImageBase64) throws IOException {

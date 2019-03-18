@@ -30,21 +30,22 @@ import org.apache.chemistry.opencmis.commons.enums.Updatability;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.util.ResourceUtils;
 
 public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 
-	protected static final Log log = LogFactory.getLog(CmisAccessImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(CmisAccessImpl.class);
 	
 	@Resource
-	FileService fileService;
+	private FileService fileService;
 	
 	protected ResourceUtils resourceUtils;
 	
@@ -124,14 +125,14 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 		return path;
 	}
 	
-	private CmisObject getCmisObject(String path) throws Exception {
+	private CmisObject getCmisObject(String path) throws EsupStockException {
 		this.open();
 		CmisObject cmisObject = cmisSession.getObjectByPath(constructPath(path));
 		return cmisObject;
 	}
 
 	@Override
-	public void open() throws Exception {
+	public void open() throws EsupStockException {
 	
 		super.open();
 		
@@ -147,7 +148,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 			try {
 				cmisSession = SessionFactoryImpl.newInstance().createSession(parameters);	
 			} catch(Exception e) {
-				log.warn("failed to retrieve cmisSession : " + uri + " , repository is not accessible or simply not started ?", e);
+				logger.warn("failed to retrieve cmisSession : " + uri + " , repository is not accessible or simply not started ?", e);
 			}
 		}
 	}
@@ -168,13 +169,18 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 
 
 	@Override
-	public List<FsFile> listFiles(String path) throws Exception {	
+	public List<FsFile> listFiles(String path) throws EsupStockException {
 		Folder folder =  (Folder)  getCmisObject(path);
+		logger.info("get file list from : " + folder.getPath());
 		ItemIterable<CmisObject> pl = folder.getChildren();
 		List<FsFile> fsFiles = new ArrayList<FsFile>();
 		for (CmisObject cmisObject : pl) {
 			if(cmisObject.getBaseType().getBaseTypeId().equals(BaseTypeId.CMIS_DOCUMENT)) {
-				fsFiles.add(toFsFile(cmisObject));
+				try {
+					fsFiles.add(toFsFile(cmisObject));
+				} catch (IOException e) {
+					throw new EsupStockException(e);
+				}
 			}
 		}
 		return fsFiles;
@@ -200,7 +206,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public String createFile(String parentPath, String title, String type) throws Exception {
+	public String createFile(String parentPath, String title, String type) throws EsupStockException {
 		Folder parent = (Folder)getCmisObject(parentPath);
 		CmisObject createdObject = null; 
 		if("folder".equals(type)) {
@@ -218,7 +224,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 	@Override
-	public boolean moveCopyFilesIntoDirectory(String path, List<String> filesToCopy, boolean copy) throws Exception {
+	public boolean moveCopyFilesIntoDirectory(String path, List<String> filesToCopy, boolean copy) throws EsupStockException {
 		try {
 			Folder targetFolder = (Folder)getCmisObject(path);
 			if(copy) {
@@ -251,15 +257,14 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 			}
 			return true;
 		} catch(CmisBaseException e) {
-			log.warn("error when copy/cust/past files : maybe that's because this operation is not allowed for the user ?", e);
+			logger.warn("error when copy/cust/past files : maybe that's because this operation is not allowed for the user ?", e);
 		}
 		return false;
 	}
 
 	@Override
-	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws Exception {
+	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws EsupStockException {
 		//must manage the upload option.
-		log.error("You need to implements feature about upload options!");
 		Folder targetFolder = (Folder)getCmisObject(dir);
 		Map<String, String> prop = new HashMap<String, String>();
 		prop.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_DOCUMENT.value());
@@ -269,19 +274,20 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 		Document document = targetFolder.createDocument(prop, stream, VersioningState.NONE, null, null, null, cmisSession.getDefaultContext());
 		HashMap<String, String> m = new HashMap<String, String>();
         m.put("cmis:name",filename);
-        document.updateProperties(m); 
+        //m.put("cmis:createdBy","toto");
+        document.updateProperties(m);
 		return true;
 	}
 
 	@Override
-	public boolean remove(FsFile fsFile) throws Exception {
+	public boolean remove(FsFile fsFile) throws EsupStockException {
 		CmisObject cmisObject = getCmisObject(fsFile.getPath() + "/" + fsFile.getId());
 		cmisObject.delete(true);
 		return true;
 	}
 
 	@Override
-	public boolean renameFile(String path, String title) throws Exception {
+	public boolean renameFile(String path, String title) throws EsupStockException {
 		CmisObject cmisObject = getCmisObject(path);
 		HashMap<String, String> m = new HashMap<String, String>();
         m.put("cmis:name",title);

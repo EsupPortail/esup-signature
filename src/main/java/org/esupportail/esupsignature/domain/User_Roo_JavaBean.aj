@@ -72,4 +72,12 @@ privileged aspect User_Roo_JavaBean {
         this.keystore = keystore;
     }
     
+    public boolean User.isReady() {
+        return this.ready;
+    }
+    
+    public void User.setReady(boolean ready) {
+        this.ready = ready;
+    }
+    
 }

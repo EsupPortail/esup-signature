@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.esupportail.esupsignature.security.AuthorizeRequestsHelper;
+import org.esupportail.esupsignature.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,7 +35,10 @@ public class ShibWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapt
 	private ShibAuthenticatedUserDetailsService shibAuthUserDetailsService;
 	
 	@Autowired
-	SwitchUserFilter switchUserFilter;
+	private SwitchUserFilter switchUserFilter;
+	
+	@Autowired
+	private UserService userService;
 	
 	@Autowired
 	private ConcurrentSessionFilter concurrencyFilter;
@@ -60,6 +64,7 @@ public class ShibWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapt
 	
 	public RequestHeaderAuthenticationFilter authenticationFilter() throws Exception {
 		ShibRequestHeaderAuthenticationFilter authenticationFilter = new ShibRequestHeaderAuthenticationFilter();
+		authenticationFilter.setUserService(userService);
 		authenticationFilter.setPrincipalRequestHeader(principalRequestHeader);
 		authenticationFilter.setCredentialsRequestHeader(credentialsRequestHeader);
 		authenticationFilter.setAuthenticationManager(shibAuthenticationManager());

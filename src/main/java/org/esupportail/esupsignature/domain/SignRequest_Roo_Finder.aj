@@ -17,12 +17,31 @@ privileged aspect SignRequest_Roo_Finder {
         return ((Long) q.getSingleResult());
     }
     
-    public static Long SignRequest.countFindSignRequestsByRecipientEmailEquals(String recipientEmail) {
-        if (recipientEmail == null || recipientEmail.length() == 0) throw new IllegalArgumentException("The recipientEmail argument is required");
+    public static TypedQuery<SignRequest> SignRequest.findSignRequestsByCreateByAndStatusEquals(String createBy, SignRequestStatus status) {
+        if (createBy == null || createBy.length() == 0) throw new IllegalArgumentException("The createBy argument is required");
+        if (status == null) throw new IllegalArgumentException("The status argument is required");
         EntityManager em = SignRequest.entityManager();
-        TypedQuery q = em.createQuery("SELECT COUNT(o) FROM SignRequest AS o WHERE o.recipientEmail = :recipientEmail", Long.class);
-        q.setParameter("recipientEmail", recipientEmail);
-        return ((Long) q.getSingleResult());
+        TypedQuery<SignRequest> q = em.createQuery("SELECT o FROM SignRequest AS o WHERE o.createBy = :createBy AND o.status = :status", SignRequest.class);
+        q.setParameter("createBy", createBy);
+        q.setParameter("status", status);
+        return q;
+    }
+    
+    public static TypedQuery<SignRequest> SignRequest.findSignRequestsByCreateByAndStatusEquals(String createBy, SignRequestStatus status, String sortFieldName, String sortOrder) {
+        if (createBy == null || createBy.length() == 0) throw new IllegalArgumentException("The createBy argument is required");
+        if (status == null) throw new IllegalArgumentException("The status argument is required");
+        EntityManager em = SignRequest.entityManager();
+        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM SignRequest AS o WHERE o.createBy = :createBy AND o.status = :status");
+        if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
+            queryBuilder.append(" ORDER BY ").append(sortFieldName);
+            if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
+                queryBuilder.append(" ").append(sortOrder);
+            }
+        }
+        TypedQuery<SignRequest> q = em.createQuery(queryBuilder.toString(), SignRequest.class);
+        q.setParameter("createBy", createBy);
+        q.setParameter("status", status);
+        return q;
     }
     
     public static TypedQuery<SignRequest> SignRequest.findSignRequestsByCreateByEquals(String createBy) {
@@ -45,29 +64,6 @@ privileged aspect SignRequest_Roo_Finder {
         }
         TypedQuery<SignRequest> q = em.createQuery(queryBuilder.toString(), SignRequest.class);
         q.setParameter("createBy", createBy);
-        return q;
-    }
-    
-    public static TypedQuery<SignRequest> SignRequest.findSignRequestsByRecipientEmailEquals(String recipientEmail) {
-        if (recipientEmail == null || recipientEmail.length() == 0) throw new IllegalArgumentException("The recipientEmail argument is required");
-        EntityManager em = SignRequest.entityManager();
-        TypedQuery<SignRequest> q = em.createQuery("SELECT o FROM SignRequest AS o WHERE o.recipientEmail = :recipientEmail", SignRequest.class);
-        q.setParameter("recipientEmail", recipientEmail);
-        return q;
-    }
-    
-    public static TypedQuery<SignRequest> SignRequest.findSignRequestsByRecipientEmailEquals(String recipientEmail, String sortFieldName, String sortOrder) {
-        if (recipientEmail == null || recipientEmail.length() == 0) throw new IllegalArgumentException("The recipientEmail argument is required");
-        EntityManager em = SignRequest.entityManager();
-        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM SignRequest AS o WHERE o.recipientEmail = :recipientEmail");
-        if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
-            queryBuilder.append(" ORDER BY ").append(sortFieldName);
-            if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
-                queryBuilder.append(" ").append(sortOrder);
-            }
-        }
-        TypedQuery<SignRequest> q = em.createQuery(queryBuilder.toString(), SignRequest.class);
-        q.setParameter("recipientEmail", recipientEmail);
         return q;
     }
     

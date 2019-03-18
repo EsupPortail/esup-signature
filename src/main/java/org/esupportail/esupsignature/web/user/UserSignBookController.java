@@ -16,9 +16,9 @@ import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequestParams;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.DocumentService;
-import org.esupportail.esupsignature.service.PdfService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.roo.addon.web.mvc.controller.scaffold.RooWebScaffold;
@@ -32,6 +32,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriUtils;
+import org.springframework.web.util.WebUtils;
 
 @RequestMapping("/user/signbooks")
 @Controller
@@ -39,7 +41,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Transactional
 public class UserSignBookController {
 
-	private static final Logger log = LoggerFactory.getLogger(UserSignBookController.class);
+	private static final Logger logger = LoggerFactory.getLogger(UserSignBookController.class);
 
 	@ModelAttribute("active")
 	public String getActiveMenu() {
@@ -47,16 +49,21 @@ public class UserSignBookController {
 	}
 	
 	@Resource
+	private UserService userService;
+	
+	@ModelAttribute("user")
+	public User getUser() {
+		return userService.getUserFromAuthentication();
+	}
+	
+	@Resource
 	private SignRequestService signRequestService;
 	
 	@Resource
-	UserService userService;
+	private DocumentService documentService;
 	
 	@Resource
-	DocumentService documentService;
-	
-	@Resource
-	PdfService pdfService;
+	private PdfService pdfService;
 	
     void populateEditForm(Model uiModel, SignBook signBook) {
         uiModel.addAttribute("signBook", signBook);
@@ -70,11 +77,11 @@ public class UserSignBookController {
     
     @RequestMapping(value = "/{id}", produces = "text/html")
     public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
-		String eppn = userService.getEppnFromAuthentication();
+		User user = userService.getUserFromAuthentication();
     	addDateTimeFormatPatterns(uiModel);
         SignBook signBook = SignBook.findSignBook(id);
-        uiModel.addAttribute("signbook", signBook);
-        List<SignRequest> signRequests = signBook.getSignRequests().stream().filter(signRequest -> eppn.equals(signRequest.getCreateBy())).collect(Collectors.toList());
+        populateEditForm(uiModel, signBook);
+        List<SignRequest> signRequests = signBook.getSignRequests().stream().filter(signRequest -> user.getEppn().equals(signRequest.getCreateBy())).collect(Collectors.toList());
         uiModel.addAttribute("signRequests", signRequests);
         uiModel.addAttribute("itemId", id);
         uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());
@@ -86,13 +93,11 @@ public class UserSignBookController {
     		@RequestParam("multipartFile") MultipartFile multipartFile, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) throws IOException {
 		Document documentToAdd = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
     	if(documentToAdd != null) {
-	    	String eppn = userService.getEppnFromAuthentication();
-	    	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+	    	User user = userService.getUserFromAuthentication();
 	    	user.setIp(request.getRemoteAddr());
 			SignBook signBook = SignBook.findSignBook(id);
-			SignRequest signRequest = signRequestService.createSignRequest(user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmail());
-	        signRequest.setSignBookId(signBook.getId());
-			signBook.getSignRequests().add(signRequest);
+			long[] signBookIds = {signBook.getId()};
+			signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBookIds);
 		} else {
 			redirectAttrs.addFlashAttribute("messageCustom", "file is required");
 		}
@@ -109,7 +114,16 @@ public class UserSignBookController {
             response.setContentType(file.getContentType());
             IOUtils.copy(file.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
         } catch (Exception e) {
-            log.error("get file error", e);
+            logger.error("get file error", e);
         }
+    }
+    
+    String encodeUrlPathSegment(String pathSegment, HttpServletRequest httpServletRequest) {
+        String enc = httpServletRequest.getCharacterEncoding();
+        if (enc == null) {
+            enc = WebUtils.DEFAULT_CHARACTER_ENCODING;
+        }
+        pathSegment = UriUtils.encodePathSegment(pathSegment, enc);
+        return pathSegment;
     }
 }

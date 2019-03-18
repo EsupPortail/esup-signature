@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 
 import javax.annotation.Resource;
 
@@ -44,6 +45,7 @@ public class DocumentService {
 	
 	public Document persistDocument(InputStream inputStream, String name, long size, String contentType) throws IOException {
 		Document document = new Document();
+		document.setCreateDate(new Date());
         document.setFileName(name);
         BigFile bigFile = new BigFile();
         bigFile.setBinaryFileStream(inputStream, size);

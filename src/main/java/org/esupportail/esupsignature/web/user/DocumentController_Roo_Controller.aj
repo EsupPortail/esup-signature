@@ -3,7 +3,6 @@
 
 package org.esupportail.esupsignature.web.user;
 
-import java.io.UnsupportedEncodingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.esupportail.esupsignature.domain.BigFile;
@@ -15,8 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.util.UriUtils;
-import org.springframework.web.util.WebUtils;
 
 privileged aspect DocumentController_Roo_Controller {
     
@@ -39,6 +36,7 @@ privileged aspect DocumentController_Roo_Controller {
     
     @RequestMapping(value = "/{id}", produces = "text/html")
     public String DocumentController.show(@PathVariable("id") Long id, Model uiModel) {
+        addDateTimeFormatPatterns(uiModel);
         uiModel.addAttribute("document", Document.findDocument(id));
         uiModel.addAttribute("itemId", id);
         return "user/documents/show";
@@ -55,6 +53,7 @@ privileged aspect DocumentController_Roo_Controller {
         } else {
             uiModel.addAttribute("documents", Document.findAllDocuments(sortFieldName, sortOrder));
         }
+        addDateTimeFormatPatterns(uiModel);
         return "user/documents/list";
     }
     
@@ -85,18 +84,14 @@ privileged aspect DocumentController_Roo_Controller {
         return "redirect:/user/documents";
     }
     
-    void DocumentController.populateEditForm(Model uiModel, Document document) {
-        uiModel.addAttribute("document", document);
-        uiModel.addAttribute("bigfiles", BigFile.findAllBigFiles());
+    void DocumentController.addDateTimeFormatPatterns(Model uiModel) {
+        uiModel.addAttribute("document_createdate_date_format", "dd/MM/yyyy HH:mm");
     }
     
-    String DocumentController.encodeUrlPathSegment(String pathSegment, HttpServletRequest httpServletRequest) {
-        String enc = httpServletRequest.getCharacterEncoding();
-        if (enc == null) {
-            enc = WebUtils.DEFAULT_CHARACTER_ENCODING;
-        }
-        pathSegment = UriUtils.encodePathSegment(pathSegment, enc);
-        return pathSegment;
+    void DocumentController.populateEditForm(Model uiModel, Document document) {
+        uiModel.addAttribute("document", document);
+        addDateTimeFormatPatterns(uiModel);
+        uiModel.addAttribute("bigfiles", BigFile.findAllBigFiles());
     }
     
 }

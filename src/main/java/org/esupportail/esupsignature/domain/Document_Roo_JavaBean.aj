@@ -3,6 +3,7 @@
 
 package org.esupportail.esupsignature.domain;
 
+import java.util.Date;
 import org.esupportail.esupsignature.domain.BigFile;
 import org.esupportail.esupsignature.domain.Document;
 
@@ -30,6 +31,14 @@ privileged aspect Document_Roo_JavaBean {
     
     public void Document.setContentType(String contentType) {
         this.contentType = contentType;
+    }
+    
+    public Date Document.getCreateDate() {
+        return this.createDate;
+    }
+    
+    public void Document.setCreateDate(Date createDate) {
+        this.createDate = createDate;
     }
     
     public BigFile Document.getBigFile() {

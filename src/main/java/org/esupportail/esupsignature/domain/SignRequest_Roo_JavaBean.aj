@@ -4,6 +4,8 @@
 package org.esupportail.esupsignature.domain;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequestParams;
@@ -34,14 +36,6 @@ privileged aspect SignRequest_Roo_JavaBean {
         this.createBy = createBy;
     }
     
-    public String SignRequest.getRecipientEmail() {
-        return this.recipientEmail;
-    }
-    
-    public void SignRequest.setRecipientEmail(String recipientEmail) {
-        this.recipientEmail = recipientEmail;
-    }
-    
     public String SignRequest.getDescription() {
         return this.description;
     }
@@ -50,20 +44,20 @@ privileged aspect SignRequest_Roo_JavaBean {
         this.description = description;
     }
     
-    public Document SignRequest.getOriginalFile() {
-        return this.originalFile;
+    public List<Document> SignRequest.getDocuments() {
+        return this.documents;
     }
     
-    public void SignRequest.setOriginalFile(Document originalFile) {
-        this.originalFile = originalFile;
+    public void SignRequest.setDocuments(List<Document> documents) {
+        this.documents = documents;
     }
     
-    public Document SignRequest.getSignedFile() {
-        return this.signedFile;
+    public boolean SignRequest.isOverloadSignBookParams() {
+        return this.overloadSignBookParams;
     }
     
-    public void SignRequest.setSignedFile(Document signedFile) {
-        this.signedFile = signedFile;
+    public void SignRequest.setOverloadSignBookParams(boolean overloadSignBookParams) {
+        this.overloadSignBookParams = overloadSignBookParams;
     }
     
     public SignRequestParams SignRequest.getSignRequestParams() {
@@ -78,12 +72,20 @@ privileged aspect SignRequest_Roo_JavaBean {
         return this.status;
     }
     
-    public long SignRequest.getSignBookId() {
-        return this.signBookId;
+    public Map<Long, Boolean> SignRequest.getSignBooks() {
+        return this.signBooks;
     }
     
-    public void SignRequest.setSignBookId(long signBookId) {
-        this.signBookId = signBookId;
+    public void SignRequest.setSignBooks(Map<Long, Boolean> signBooks) {
+        this.signBooks = signBooks;
+    }
+    
+    public boolean SignRequest.isAllSignToComplete() {
+        return this.allSignToComplete;
+    }
+    
+    public void SignRequest.setAllSignToComplete(boolean allSignToComplete) {
+        this.allSignToComplete = allSignToComplete;
     }
     
 }

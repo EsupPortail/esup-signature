@@ -116,4 +116,8 @@ privileged aspect SignBook_Roo_JavaBean {
         this.signRequestParams = signRequestParams;
     }
     
+    public SignBookType SignBook.getSignBookType() {
+        return this.signBookType;
+    }
+    
 }

@@ -17,14 +17,15 @@
  */
 package org.esupportail.esupsignature.service.fs.uri;
 
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RegUriManipulateService implements UriManipulateService {
-	protected static final Log log = LogFactory.getLog(RegUriManipulateService.class);
+	
+	private static final Logger logger = LoggerFactory.getLogger(RegUriManipulateService.class);
 
 	protected String regexp = "";
 	protected String replacement = "";
@@ -46,8 +47,8 @@ public class RegUriManipulateService implements UriManipulateService {
 			Matcher m = p.matcher(outUri);
 			outUri = m.replaceAll(replacement);			
 		}
-		if(log.isDebugEnabled())
-			log.debug("RegUriManipulateService:: input uri :"+uri+" -- output uri : "+outUri);
+		if(logger.isDebugEnabled())
+			logger.debug("RegUriManipulateService:: input uri :"+uri+" -- output uri : "+outUri);
 		
 		return outUri;
 	}	

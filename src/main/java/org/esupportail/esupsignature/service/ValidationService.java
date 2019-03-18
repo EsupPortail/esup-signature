@@ -20,7 +20,7 @@ import eu.europa.esig.dss.validation.reports.Reports;
 @Service
 public class ValidationService {
 	
-	private static final Logger log = LoggerFactory.getLogger(ValidationService.class);
+	private static final Logger logger = LoggerFactory.getLogger(ValidationService.class);
 	
 	@Autowired
 	private CertificateVerifier certificateVerifier;
@@ -34,14 +34,14 @@ public class ValidationService {
 	public Reports validate(MultipartFile multipartFile) {
 		
 		SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(WebAppUtils.toDSSDocument(multipartFile));
-		log.info("validate with : " + documentValidator.getClass());
+		logger.info("validate with : " + documentValidator.getClass());
 		documentValidator.setCertificateVerifier(certificateVerifier);
 		documentValidator.setValidationLevel(ValidationLevel.valueOf(validationLevel));
 		Reports reports = null;
 		try (InputStream is = defaultPolicy.getInputStream()) {
 			reports = documentValidator.validateDocument(is);
 		} catch (IOException e) {
-			log.error("Unable to parse policy : " + e.getMessage(), e);
+			logger.error("Unable to parse policy : " + e.getMessage(), e);
 		}
 		return reports;
 	}

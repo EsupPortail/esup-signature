@@ -11,7 +11,7 @@ import org.springframework.roo.addon.tostring.RooToString;
 
 @RooJavaBean
 @RooToString
-@RooJpaActiveRecord(versionField = "", table = "UserAccount", finders={"findUsersByEppnEquals" })
+@RooJpaActiveRecord(versionField = "", table = "UserAccount", finders={"findUsersByEppnEquals", "findUsersByEmailEquals"})
 public class User {
 	
 	private String name;
@@ -35,4 +35,6 @@ public class User {
     @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     private Document keystore = new Document();
 	
+    private boolean ready;
+    
 }

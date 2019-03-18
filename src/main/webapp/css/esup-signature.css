@@ -65,6 +65,14 @@ thead, tfoot {
 	background: rgba(255,255,255);
 }
 
+dd {
+    margin-bottom: .5rem;
+	margin-top: .5rem;
+}
+
+dt {
+	margin-top: .5rem;
+}
 .card {
 	margin-top: 5px;
 	margin-left: 5px;
@@ -135,6 +143,11 @@ form.delete {
     height: 50px;
 }
 
+.div-disable {
+    pointer-events: none;
+    opacity: 0.4;
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -142,4 +155,8 @@ form.delete {
 
 .custom-file-input:lang(fr) ~ .custom-file-label::after {
   content: "Parcourir" !important;
+}
+
+.anim-border {
+	border: 2px dotted red; 
 }

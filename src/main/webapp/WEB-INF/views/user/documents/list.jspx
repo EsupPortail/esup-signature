@@ -8,6 +8,7 @@
             <table:column id="c_org_esupportail_esupsignature_domain_Document_size" property="size" z="8Qxdyk2zvZP119tZ+4HvWKM4gUY="/>
             <table:column id="c_org_esupportail_esupsignature_domain_Document_contentType" property="contentType" z="xhNc0VV30YkosB+XmBNNiBBGZYM="/>
             <table:column id="c_org_esupportail_esupsignature_domain_Document_bigFile" property="bigFile" render="false" z="user-managed"/>
+            <table:column date="true" dateTimePattern="${document_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_Document_createDate" property="createDate" z="j59k34hemtKcSKVTK7L2Rvizlto="/>
         </table:table>
     </page:list>
 </div>

@@ -25,8 +25,6 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs2.FileContent;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystem;
@@ -44,15 +42,17 @@ import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.ResourceUtils;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.util.FileCopyUtils;
 
 public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 
-	protected static final Log log = LogFactory.getLog(VfsAccessImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(VfsAccessImpl.class);
 
 	@Resource
-	FileService fileService;
+	private FileService fileService;
 	
 	protected FileSystemManager fsManager;
 
@@ -86,7 +86,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	protected void open() throws Exception {
+	protected void open() throws EsupStockException {
 		super.open();
 		try {
 			if(!isOpened()) {
@@ -136,7 +136,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		return (root != null);
 	}
 
-	private FileObject cd(String path) throws Exception {
+	private FileObject cd(String path) throws EsupStockException {
 		try {
 			// assure that it'as already opened
 			this.open();
@@ -158,60 +158,66 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 	@Override
-	public List<FsFile> listFiles(String url) throws Exception {
+	public List<FsFile> listFiles(String url) throws EsupStockException {
 		List<FsFile> fsFiles = new ArrayList<>();
 		FileObject resource = cd(url);
-		if(resource.isFolder()){ 
-			for(FileObject fileObject : resource.getChildren()) {
-				if(fileObject.isFile()) {
-					fsFiles.add(toFsFile(fileObject));
+		try {
+			if(resource.isFolder()){ 
+				for(FileObject fileObject : resource.getChildren()) {
+					if(fileObject.isFile()) {
+						fsFiles.add(toFsFile(fileObject));
+					}
 				}
 			}
+		} catch (FileSystemException e) {
+			throw new EsupStockException(e);
+		} catch (IOException e) {
+			throw new EsupStockException(e);
 		}
 		return fsFiles;
 	}
 	
 	@Override
-	public boolean remove(FsFile fsFile) throws Exception {
+	public boolean remove(FsFile fsFile) throws EsupStockException {
 		boolean success = false;
 		FileObject file;
 		try {
 			file = cd(fsFile.getPath() + "/" + fsFile.getFile().getName());
 			success = file.delete();
 		} catch (FileSystemException e) {
-			log.info("can't delete file because of FileSystemException : "
+			logger.info("can't delete file because of FileSystemException : "
 					+ e.getMessage(), e);
 		}
-		log.debug("remove file " + fsFile.getPath() + fsFile.getFile().getName() + ": " + success);
+		logger.debug("remove file " + fsFile.getPath() + fsFile.getFile().getName() + ": " + success);
 		return success;
 	}
 
 	@Override
-	public String createFile(String parentPath, String title, String type) throws Exception {
+	public String createFile(String parentPath, String title, String type) throws EsupStockException {
 		try {
 			FileObject parent = cd(parentPath);
 			FileObject child = parent.resolveFile(title);
 			if (!child.exists()) {
 				if ("folder".equals(type)) {
 					child.createFolder();
-					log.info("folder " + title + " created");
+					logger.info("folder " + title + " created");
 				} else {
 					child.createFile();
-					log.info("file " + title + " created");
+					logger.info("file " + title + " created");
 				}
 				return child.getName().getPath();
 			} else {
-				log.info("file " + title + " already exists !");
+				logger.info("file " + title + " already exists !");
 			}
 		} catch (FileSystemException e) {
-			log.info("can't create file because of FileSystemException : "
+			logger.info("can't create file because of FileSystemException : "
 					+ e.getMessage(), e);
 		}
 		return null;
 	}
 
 	@Override
-	public boolean renameFile(String path, String title) throws Exception {
+	public boolean renameFile(String path, String title) throws EsupStockException {
 		try {
 			FileObject file = cd(path);
 			FileObject newFile = file.getParent().resolveFile(title);
@@ -219,17 +225,17 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 				file.moveTo(newFile);
 				return true;
 			} else {
-				log.info("file " + title + " already exists !");
+				logger.info("file " + title + " already exists !");
 			}
 		} catch (FileSystemException e) {
-			log.info("can't rename file because of FileSystemException : "
+			logger.info("can't rename file because of FileSystemException : "
 					+ e.getMessage(), e);
 		}
 		return false;
 	}
 
 	@Override
-	public boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws Exception {
+	public boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws EsupStockException {
 		try {
 			FileObject folder = cd(dir);
 			for (String fileToCopyPath : filesToCopy) {
@@ -245,7 +251,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			}
 			return true;
 		} catch (FileSystemException e) {
-			log.warn("can't move/copy file because of FileSystemException : "
+			logger.warn("can't move/copy file because of FileSystemException : "
 					+ e.getMessage(), e);
 		}
 		return false;
@@ -257,7 +263,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			FileObject fileObject = cd(dir);
 			return toFsFile(fileObject);
 		} catch (FileSystemException e) {
-			log.warn("can't download file : " + e.getMessage(), e);
+			logger.warn("can't download file : " + e.getMessage(), e);
 		}
 		return null;
 	}
@@ -275,7 +281,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 	@Override
-	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws Exception {
+	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws EsupStockException {
 
 		boolean success = false;
 		FileObject newFile = null;
@@ -306,9 +312,9 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 
 			success = true;
 		} catch (FileSystemException e) {
-			log.info("can't upload file : " + e.getMessage(), e);
+			logger.info("can't upload file : " + e.getMessage(), e);
 		} catch (IOException e) {
-			log.warn("can't upload file : " + e.getMessage(), e);
+			logger.warn("can't upload file : " + e.getMessage(), e);
 		}
 		
 		if(!success && newFile != null) {
@@ -316,9 +322,9 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			// best is to delete it
 			try {
 				newFile.delete();
-				log.debug("delete corrupted file after bad upload ok ...");
+				logger.debug("delete corrupted file after bad upload ok ...");
 			} catch(Exception e) {
-				log.debug("can't delete corrupted file after bad upload " + e.getMessage());
+				logger.debug("can't delete corrupted file after bad upload " + e.getMessage());
 			}
 		}
 		

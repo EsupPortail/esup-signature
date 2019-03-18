@@ -1,130 +1,38 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:spring="http://www.springframework.org/tags" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
+<div xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:spring="http://www.springframework.org/tags" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
 	<jsp:directive.page contentType="text/html;charset=UTF-8" />
 	<jsp:output omit-xml-declaration="yes" />
+	<div aria-expanded="true" class="collapse" id="collapseHelp">
+		<div class="card card-body bg-info text-white">
+			<spring:message code="help_user_signrequest_show" />
+		</div>
+	</div>
+	<div class="card card-header">
+		<div class="row">
+			<div class="col-lg-5">
+				<h5><spring:message code="label_org_esupportail_esupsignature_domain_signrequest" /> : ${signRequest.name}</h5>
+			</div>
+			<div>
+				<jsp:include page="includes/status.jspx" />
+			</div>
+		</div>
+	</div>
 	<page:show update="false" id="ps_org_esupportail_esupsignature_domain_SignRequest" object="${signRequest}" path="/user/signrequests" z="user-managed">
 		<div class="row">
-		<c:choose>
-		<c:when test="${documentType eq 'pdf'}">
-			<c:set var="col" value="col-lg-5" />
-		</c:when>
-		<c:otherwise>
-			<c:set var="col" value="col-lg-12" />
-		</c:otherwise>
-		</c:choose>
+			<c:choose>
+				<c:when test="${documentType eq 'pdf'}">
+					<c:set var="col" value="col-lg-5" />
+				</c:when>
+				<c:otherwise>
+					<c:set var="col" value="col-lg-12" />
+					<c:set var="show" value="show" />
+				</c:otherwise>
+			</c:choose>
 			<div class="${col}">
 				<div class="card bg-light">
 					<div class="card-header">
-						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseInfos" aria-expanded="true" aria-controls="collapseInfos">
-							Infos&amp;nbsp;<i class="fas fa-caret-down">
-								<!--  -->
-							</i>
-						</button>
-					</div>
-					<c:if test="${documentType ne 'pdf'}">
-						<c:set var="show" value="show" /> 
-					</c:if>
-					<div id="collapseInfos" class="collapse ${show}" aria-labelledby="headingOne" data-parent="#accordion">
-						<div class="card-body">
-							<field:display field="name" id="s_org_esupportail_esupsignature_domain_SignRequest_name" object="${signRequest}" z="user-managed" />
-							<dl class="display-group border-bottom m-0">
-								<dt class="col-lg-7">
-									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_originalfile" />
-								</dt>
-								<dd>
-									<spring:url value="/user/signrequests/get-original-file/${id}" var="originalFileUrl" />
-									<button type="button" class="btn btn-warning" onclick="window.open('${originalFileUrl}', '_blank')">
-										<i class="fas fa-download">
-											<!--  -->
-										</i>&amp;nbsp;
-										<spring:message code="button_download" />
-									</button>
-								</dd>
-							</dl>
-							<field:display pre="true" field="description" id="s_org_esupportail_esupsignature_domain_SignRequest_description" object="${signRequest}" z="user-managed" />
-							<dl class="display-group border-bottom m-0">
-								<dt class="col-lg-5">
-									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" />
-								</dt>
-								<dd>${inSignBookName}</dd>
-							</dl>
-							<field:display field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" object="${signRequest}" z="user-managed" />
-							<field:display render="false" field="status" id="s_org_esupportail_esupsignature_domain_SignRequest_status" object="${signRequest}" z="user-managed" />
-							<field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_SignRequest_originalFile" object="${signRequest}" render="false" z="user-managed" />
-							<field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_SignRequest_signedFile" object="${signRequest}" render="false" z="user-managed" />
-							<field:display render="false" field="signType" id="s_org_esupportail_esupsignature_domain_SignRequest_signType" object="${signRequest}" z="user-managed" />
-							<dl class="display-group border-bottom m-0">
-								<dt class="col-lg-7">Status</dt>
-								<dd>
-									<c:choose>
-										<c:when test="${signRequest.status eq 'pending'}">
-											<button type="button" class="btn btn-outline-primary btn-sm">
-												<i class="fas fa-clock"> <!--  -->
-												</i>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'signed'}">
-											<button type="button" class="btn btn-outline-success btn-sm">
-												<i class="fas fa-file-signature"> <!--  -->
-												</i>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'refused'}">
-											<button type="button" class="btn btn-outline-danger btn-sm">
-												<i class="fas fa-ban"> <!--  -->
-												</i>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'checked'}">
-											<button type="button" class="btn btn-outline-success btn-sm">
-												<i class="far fa-check-circle"> <!--  -->
-												</i>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'completed'}">
-											<button type="button" class="btn btn-outline-warning btn-sm">
-												<i class="fas fa-flag-checkered"> <!--  -->
-												</i>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
-											</button>
-										</c:when>
-										<c:otherwise>
-								Unknow
-							</c:otherwise>
-									</c:choose>
-								</dd>
-							</dl>
-							<field:display date="true" dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignRequest_createDate" object="${signRequest}" z="user-managed" />
-							<field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignRequest_createBy" object="${signRequest}" z="user-managed" />
-							<dl class="display-group border-bottom m-0">
-							<dt class="col-lg-5">
-							<b>Logs</b>
-							</dt>
-							<dd> 
-							<small>
-								<table:table cssClass="table-xs" create="false" view="false" data="${logs}" delete="false" id="l_org_esupportail_esupsignature_domain_Log" path="/manager/logs" update="false" z="user-manager">
-									<table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Log_logDate" property="logDate" z="user-manager" />
-									<table:column id="c_org_esupportail_esupsignature_domain_Log_eppn" property="eppn" z="user-manager" />
-									<table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_action" property="action" z="user-manager" />
-									<table:column id="c_org_esupportail_esupsignature_domain_Log_initialStatus" property="initialStatus" z="user-manager" />
-									<table:column id="c_org_esupportail_esupsignature_domain_Log_finalStatus" property="finalStatus" z="user-manager" />
-									<table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_returnCode" property="returnCode" z="user-manager" />
-								</table:table>
-							</small>
-							</dd>
-							</dl>
-						</div>
-					</div>
-				</div>
-				<div class="card bg-light">
-					<div class="card-header">
 						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseTools" aria-expanded="true" aria-controls="collapseTools">
-							Tools&amp;nbsp;<i class="fas fa-caret-down">
-								<!--  -->
+							<spring:message code="menu_item_tools" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
 							</i>
 						</button>
 					</div>
@@ -132,47 +40,29 @@
 						<div class="card-body">
 							<form autocomplete="off" action="/user/signrequests/sign/${id}" method="post">
 								<c:choose>
-									<c:when test="${documentType eq 'pdf' and signable eq 'ok' and empty signRequest.signedFile and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'validate'}">
-										<dl class="display-group border-bottom m-0">
-											<dt class="col-lg-12">
+									<c:when test="${documentType eq 'pdf' and signable eq 'ok' and (signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'validate'}">
+										<dl class="display-group border-bottom m-0" style="display: none;">
+											<dt class="col-lg-5">
 												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signposition" />
 											</dt>
-											<small>
-												<dd>
+											<dd class="col-lg-7">
+											<div class="form-group">
+												<small>
 													<div class="row">
 														<div class="col-lg-4">
-															Page : <input autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.signPageNumber}" id="signPageNumber" type="text" name="signPageNumber" />
+															Page : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.signPageNumber}" id="signPageNumber" type="text" name="signPageNumber" />
 														</div>
 														<div class="col-lg-4">
-															X position : <input autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.XPos}" id="xPos" type="text" name="xPos" />
+															X position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.XPos}" id="xPos" type="text" name="xPos" />
 														</div>
 														<div class="col-lg-4">
-															Y position : <input autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.YPos}" id="yPos" type="text" name="yPos" />
+															Y position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.YPos}" id="yPos" type="text" name="yPos" />
 														</div>
 													</div>
-												</dd>
-											</small>
+												</small>
+												</div>
+											</dd>
 										</dl>
-										<script type="text/javascript">
-											function point_it(event) {
-												pos_x = event.offsetX ? (event.offsetX)
-														: event.pageX
-																- document
-																		.getElementById("pointer_div").offsetLeft;
-												pos_y = event.offsetY ? (event.offsetY)
-														: event.pageY
-																- document
-																		.getElementById("pointer_div").offsetTop;
-												document
-														.getElementById("cross").style.left = (pos_x);
-												document
-														.getElementById("cross").style.top = (pos_y);
-												document
-														.getElementById("cross").style.visibility = "visible";
-												document.getElementById("xPos").value = pos_x;
-												document.getElementById("yPos").value = pos_y;
-											}
-										</script>
 									</c:when>
 									<c:otherwise>
 										<input value="${signRequest.signRequestParams.signPageNumber}" type="hidden" id="signPageNumber" name="signPageNumber" />
@@ -181,103 +71,172 @@
 									</c:otherwise>
 								</c:choose>
 								<c:choose>
-									<c:when test="${not empty signRequest.signedFile}">
+									<c:when test="${signRequest.status eq 'signed' or signRequest.status eq 'completed'}">
 										<dl class="display-group border-bottom m-0">
-											<dt class="col-lg-6">
+											<dt class="col-lg-5">
 												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signedfile" />
 											</dt>
 											<dd>
-												<spring:url value="/user/signrequests/get-signed-file/${id}" var="signedFileUrl" />
+												<spring:url value="/user/signrequests/get-last-file/${id}" var="signedFileUrl" />
 												<button type="button" class="btn btn-success" onclick="window.open('${signedFileUrl}', '_blank')">
-													<i class="fas fa-download">
-														<!--  -->
-													</i>&amp;nbsp;
-													<spring:message code="button_download" />
+													<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" />
 												</button>
-												<br /> <a href="/user/validation/document/${id}">Validate</a>
+												<br />
+												<a href="/user/validation/document/${id}"><spring:message code="menu_item_validate" /></a>
 											</dd>
 										</dl>
 									</c:when>
 									<c:otherwise>
 										<c:if test="${signable eq 'ok'}">
-											<dl class="display-group border-bottom m-0">
-												<dt class="col-lg-4">
-													<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signAction" />
-												</dt>
-												<dd>
-													<div class="form-group">
+											<field:display render="false" field="allSignToComplete" id="s_org_esupportail_esupsignature_domain_SignRequest_allSignToComplete" object="${signRequest}" z="user-managed" />
+											<c:if test="${fn:length(signRequest.signBooks) > 1}">
+												<dl class="display-group border-bottom m-0">
+													<dt class="col-lg-5">
+														<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
+													</dt>
+													<dd>
+													<div class="input-group">
+														<spring:url value="/user/signrequests/toggle-need-all-sign/${id}" var="toggleNeedAllSignUrl" />
 														<c:choose>
-															<c:when test="${signRequest.signRequestParams.signType eq 'certSign'}">
-																<c:choose>
-																	<c:when test="${not empty keystore}">
-																		<label class="col-lg-4 col-form-label" for="password"><spring:message code="label_org_esupportail_esupsignature_domain_user_password" /></label>
-																		<div class="col-lg-8">
-																			<div class="input-group">
-																				<input class="form-control" id="password" name="password" type="password" />
-																				<div class="input-group-append">
-																					<spring:message code="button_sign" var="signLabel" />
-																					<input alt="${signLabel}" class="btn btn-primary" id="signe" title="Signe" type="submit" value="${signLabel}" />
-																				</div>
-																			</div>
-																		</div>
-																	</c:when>
-																	<c:otherwise>
-																		<div class="card card-body bg-info">No keystore found in your settings</div>
-																	</c:otherwise>
-																</c:choose>
-															</c:when>
-															<c:when test="${signRequest.signRequestParams.signType eq 'nexuSign'}">
-																<spring:url value="/resources/js/jsSignatureLevel.js" var="jsSignatureLevel_js_url" />
-																<script type="text/javascript" src="${jsSignatureLevel_js_url}">
-																<!-- -->
-																	
-																</script>
-																<script type="text/javascript" src="/js/nexu-deploy.js">
-																<!-- -->
-																	
-																</script>
-																<div class="form-group">
-																	<div id="nexu_missing_alert" style="display: none;" class="alert alert-warning">
-																		<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexucheck" />
-																		<a href="https://github.com/nowina-solutions/nexu/releases/">NexU</a> <br /> <a onclick="location.reload();" class="btn btn-warning btnSeccion" id="btnSeccion3" value="Refresh"> <i class="fas fa-sync-alt">
-																				<!--  -->
-																		</i> <spring:message code="button_refresh" />
-																		</a>
-																	</div>
-																	<div id="nexu_ready_alert" style="display: none;" class="alert alert-info">
-																		<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexuready" />
-																		<br /> <small><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexumsg" /></small> <br />
-																		<spring:message code="button_sign" var="signLabel" />
-																		<input alt="${signLabel}" class="btn btn-primary" id="signe" title="Signe" type="submit" value="${signLabel}" />
-																	</div>
+															<c:when test="${signRequest.allSignToComplete eq true}">
+																<div class="input-group-prepend">
+																	<button type="button" class="btn btn-light active btn-sm col-12" onclick="document.location='${toggleNeedAllSignUrl}'">
+																	<spring:message code="global_no" />
+																	</button>
 																</div>
-
+																<div class="input-group-append">	
+																	<button type="button" class="btn btn-success btn-sm col-12" style="pointer-events: none;">
+																	<spring:message code="global_yes" />
+																	</button>
+																</div>
 															</c:when>
 															<c:otherwise>
-																<c:choose>
-																	<c:when test="${signRequest.signRequestParams.signType eq 'validate'}">
-																		<spring:message code="button_validate" var="validateLabel" />
-																		<input alt="${validateLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${validateLabel}" />
-																	</c:when>
-																	<c:otherwise>
-																		<spring:message code="button_sign" var="signLabel" />
-																		<input alt="${signLabel}" class="btn btn-primary" id="signe" title="Signe" type="submit" value="${signLabel}" />
-																	</c:otherwise>
-																</c:choose>
+																<div class="input-group-prepend">
+																	<button type="button" class="btn btn-danger active btn-sm col-12" style="pointer-events: none;">
+																	<spring:message code="global_no" />
+																	</button>
+																</div>
+																<div class="input-group-append">
+																	<button type="button" class="btn btn-light active btn-sm col-12" onclick="document.location='${toggleNeedAllSignUrl}'">
+																	<spring:message code="global_yes" />
+																	</button>
+																</div>
 															</c:otherwise>
 														</c:choose>
 													</div>
+													</dd>
+												</dl>
+											</c:if>
+											
+											<dl class="display-group border-bottom m-0">
+												<dt class="col-lg-5">
+													<spring:message code="label_org_esupportail_esupsignature_domain_currentsignbook" /><button data-target="#collapseHelpCurrent" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+													<div class="collapse" id="collapseHelpCurrent">
+														<div class="card card-body border-info text-info">
+															<small>
+															Les paramètres du parapheur courant sont appliqués par défaut. Vous pouvez modifier la position manuellement à l'aide de la prévisualisation.
+															</small>
+														</div>
+													</div>
+												</dt>
+												<dd>
+													<button class="btn btn-outline-dark col-12" type="button">
+													<i class="fas fa-book"><!--  --></i>&amp;nbsp;${curentSignBook.name}
+													</button>
 												</dd>
 											</dl>
 											<dl class="display-group border-bottom m-0">
-												<dt class="col-lg-4">
+												<dt class="col-lg-5">
+													<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_originalfile" />
+												</dt>
+												<dd>
+													<spring:url value="/user/signrequests/get-last-file/${id}" var="signedFileUrl" />
+													<button type="button" class="btn btn-info" onclick="window.open('${signedFileUrl}', '_blank')">
+														<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" />
+													</button>
+												</dd>
+											</dl>											
+											<dl class="display-group border-bottom m-0">
+												<dt class="col-lg-5">
+													<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signAction" />
+												</dt>
+												<dd>
+												<c:if test="${empty user.signImage and documentType eq 'pdf'}">
+													<div class="card card-body bg-danger text-white">
+													<a href="/user/users/" class="text-white"><u><spring:message code="help_user_nosignimage" /></u></a>
+													</div>
+												</c:if>
+													<c:choose>
+														<c:when test="${signRequest.signRequestParams.signType eq 'certSign'}">
+															<c:choose>
+																<c:when test="${not empty keystore}">
+																	<div class="input-group">
+																		<spring:message code="label_org_esupportail_esupsignature_domain_user_password" var="passwordLabel" />
+																		<input class="form-control" placeholder="${passwordLabel}" id="password" name="password" type="password" />
+																		<div class="input-group-append">
+																			<spring:message code="button_sign" var="signLabel" />
+																			<input alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${signLabel}" />
+																		</div>
+																	</div>
+																</c:when>
+																<c:otherwise>
+																	<div class="card card-body bg-danger text-white">
+																		<a href="/user/users/" class="text-white"><u><spring:message code="help_user_nokeystore" /></u></a>
+																	</div>
+																</c:otherwise>
+															</c:choose>
+														</c:when>
+														<c:when test="${signRequest.signRequestParams.signType eq 'nexuSign'}">
+															<spring:url value="/resources/js/jsSignatureLevel.js" var="jsSignatureLevel_js_url" />
+															<script type="text/javascript" src="${jsSignatureLevel_js_url}">
+															<!-- -->
+																
+															</script>
+															<script type="text/javascript" src="/js/nexu-deploy.js">
+															<!-- -->
+																
+															</script>
+															<div class="form-group">
+																<div id="nexu_missing_alert" style="display: none;" class="alert alert-warning">
+																	<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexucheck" />
+																	<a href="https://github.com/nowina-solutions/nexu/releases/">NexU</a> <br /> <a onclick="location.reload();" class="btn btn-warning btnSeccion" id="btnSeccion3" value="Refresh"> <i class="fas fa-sync-alt"> <!--  -->
+																	</i> <spring:message code="button_refresh" />
+																	</a>
+																</div>
+																<div id="nexu_ready_alert" style="display: none;" class="alert alert-success">
+																	<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexuready" />
+																	<br /> <small><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexumsg" /></small> <br />
+																	<spring:message code="button_sign" var="signLabel" />
+																	<input alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${signLabel}" />
+																</div>
+															</div>
+
+														</c:when>
+														<c:otherwise>
+															<c:choose>
+																<c:when test="${signRequest.signRequestParams.signType eq 'validate'}">
+																	<spring:message code="button_validate" var="validateLabel" />
+																	<input alt="${validateLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${validateLabel}" />
+																</c:when>
+																<c:otherwise>
+																	<c:if test="${not empty user.signImage}"> 
+																		<spring:message code="button_sign" var="signLabel" />
+																		<input alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${signLabel}" />
+																	</c:if>
+																</c:otherwise>
+															</c:choose>
+														</c:otherwise>
+													</c:choose>
+												</dd>
+											</dl>
+											<dl class="display-group border-bottom m-0">
+												<dt class="col-lg-5">
 													<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_refuseAction" />
 												</dt>
 												<dd>
 													<spring:url value="/user/signrequests/refuse/${id}" var="refuseUrl" />
 													<button type="button" onclick="location.href='${refuseUrl}'" class="btn btn-danger">
-														<i class="fas fa-ban"> <!--  -->
-														</i>
+														<i class="fas fa-ban"> <!--  --></i>&amp;nbsp;
 														<spring:message code="button_refuse" />
 													</button>
 												</dd>
@@ -287,43 +246,161 @@
 								</c:choose>
 							</form>
 							<dl class="display-group border-bottom m-0">
-								<dt class="col-lg-12">
-									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_params" />
+								<dt class="col-lg-5">
+									<spring:message code="menu_item_sendtosignbook" />&amp;nbsp;
+				           			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+									<div class="collapse" id="collapseHelp1">
+										<div class="card card-body border-info text-info">
+											<small>
+												A tous moments vous pouvez envoyer la demande dans un autre parapheur.
+												Si la demande se trouve dans plusieurs parapheur vous pouvez choisir si toutes les signatures sont exigées pour passer au status 
+												<button type="button" class="btn btn-outline-success btn-sm">
+													<i class="fas fa-file-signature"> <!--  -->
+													</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
+												</button>
+											</small>
+										</div>
+									</div>
+								</dt>
+							<dd class="col-lg-7">
+							<spring:url value="/user/signrequests/send-to-signbook/${id}" var="sendToSignBookUrl" />
+							<form class="form-group" action="${sendToSignBookUrl}" method="get">
+								<div class="input-group">
+									<select class="form-control" id="signBookId" name="signBookId">
+										<c:forEach items="${signBooks}" var="signBook">
+											<option value="${signBook.id}">${signBook.name}</option>
+										</c:forEach>
+									</select>
+									<div class="input-group-append">
+										<button type="submit" class="btn btn-primary">
+											<i class="fas fa-share-square"> <!--  -->
+											</i>&amp;nbsp;<spring:message code="button_send" />
+										</button>
+									</div>
+								</div>
+							</form>
+							</dd>
+							</dl>
+						</div>
+					</div>
+				</div>
+				<div class="card bg-light">
+					<div class="card-header">
+						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseInfos" aria-expanded="true" aria-controls="collapseInfos">
+							<spring:message code="menu_item_signrequest_infos" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
+							</i>
+						</button>
+					</div>
+					<div id="collapseInfos" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+						<div class="card-body">
+							<field:display field="name" id="s_org_esupportail_esupsignature_domain_SignRequest_name" object="${signRequest}" z="user-managed" />
+							<dl class="display-group border-bottom m-0">
+								<dt class="col-lg-5">
+									<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status" />
 								</dt>
 								<dd>
+									<jsp:include page="includes/status.jspx" />
+								</dd>
+							</dl>
+							<dl class="display-group border-bottom m-0">
+								<dt class="col-lg-5">
+									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" />
+								</dt>
+								<dd class="col-lg-7">
+								<div class="form-group">
+									<table class="table table-sm">
+										<thead>
+									    	<tr>
+									      		<th scope="col"><spring:message code="label_org_esupportail_esupsignature_domain_signbook_plural" /></th>
+									      		<th scope="col"><spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" /></th>
+										    </tr>
+									  	</thead>
+									  	<tbody>
+											<c:forEach items="${signRequest.signBooksLabels}" var="signBooksLabel">
+										  		<tr>
+													<td><i class="fas fa-book"><!--  --></i>&amp;nbsp;${signBooksLabel.key}</td>
+													<td align="center">
+														<c:choose>
+															<c:when test="${signBooksLabel.value eq true}">
+																<i class="far fa-check-circle text-success"><!--  --></i>
+															</c:when>
+															<c:otherwise>
+																<i class="far fa-times-circle text-danger"><!--  --></i>
+															</c:otherwise>
+														</c:choose>
+													</td>
+												</tr>
+											</c:forEach>
+										</tbody>
+									</table>
+									</div>
+								</dd>
+
+							</dl>							
+							<dl class="display-group border-bottom m-0">
+								<dt class="col-lg-5">
+									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_params" />
+								</dt>
+								<dd class="col-lg-7">
+								<div class="form-group">
 									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" />
 									:
-									<button type="button" class="btn btn-outline-dark btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+									<button type="button" class="btn btn-light active btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
 										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" />
 									</button>
 									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype" />
 									:
-									<button type="button" class="btn btn-outline-dark btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+									<button type="button" class="btn btn-light active btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
 										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signRequest.signRequestParams.newPageType}" />
 									</button>
+									</div>
 								</dd>
 							</dl>
-							<c:if test="${signRequest.status eq 'signed' and not empty signBooks}">
-								<spring:url value="/user/signrequests/send-to-signbook/${id}" var="sendToSignBookUrl" />
-								<form action="${sendToSignBookUrl}" method="get">
-									<label for="signBookId" class="col-form-label"><spring:message code="menu_item_sendtosignbook" /></label>
-									<div class="input-group">
-										<select class="form-control" id="signBookId" name="signBookId">
-											<c:forEach items="${signBooks}" var="signBook">
-												<option value="${signBook.id}">${signBook.name}</option>
-											</c:forEach>
-										</select>
-										<div class="input-group-append">
-											<button type="submit" class="btn btn-primary">
-												<i class="fas fa-share-square">
-													<!--  -->
-												</i>&amp;nbsp;
-												<spring:message code="button_send" />
-											</button>
-										</div>
-									</div>
-								</form>
-							</c:if>
+							<field:display render="false" field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" object="${signRequest}" z="user-managed" />
+							<field:display render="false" field="status" id="s_org_esupportail_esupsignature_domain_SignRequest_status" object="${signRequest}" z="user-managed" />
+							<field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_SignRequest_originalFile" object="${signRequest}" render="false" z="user-managed" />
+							<field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_SignRequest_signedFile" object="${signRequest}" render="false" z="user-managed" />
+							<field:display render="false" field="signType" id="s_org_esupportail_esupsignature_domain_SignRequest_signType" object="${signRequest}" z="user-managed" />
+							<field:display date="true" dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignRequest_createDate" object="${signRequest}" z="user-managed" />
+							<field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignRequest_createBy" object="${signRequest}" z="user-managed" />
+						</div>
+					</div>
+				</div>
+				<div class="card bg-light">
+					<div class="card-header">
+						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseLogs" aria-expanded="true" aria-controls="collapseTools">
+							<spring:message code="menu_item_logs" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
+							</i>
+						</button>
+					</div>
+					<div id="collapseLogs" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+						<div class="card-body">
+							<dl class="display-group border-bottom m-0">
+								<dt class="col-lg-12">
+									<b>Logs</b>
+								</dt>
+								<dd class="col-lg-12">
+									<small> <table:table cssClass="table" create="false" view="false" data="${logs}" delete="false" id="l_org_esupportail_esupsignature_domain_Log" path="/manager/logs" update="false" z="user-manager">
+											<table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Log_logDate" property="logDate" z="user-manager" />
+											<table:column id="c_org_esupportail_esupsignature_domain_Log_eppn" property="eppn" z="user-manager" />
+											<table:column id="c_org_esupportail_esupsignature_domain_Log_action" property="action" z="user-manager" />
+											<table:column id="c_org_esupportail_esupsignature_domain_Log_initialStatus" property="initialStatus" z="user-manager" />
+											<table:column id="c_org_esupportail_esupsignature_domain_Log_finalStatus" property="finalStatus" z="user-manager" />
+											<table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_returnCode" property="returnCode" z="user-manager" />
+										</table:table>
+									</small>
+								</dd>
+							</dl>
+							<dl class="display-group border-bottom m-0">
+								<dt class="col-lg-12">Historique des versions</dt>
+								<dd class="col-lg-12">
+									<table:table cssClass="table" delete="false" update="false" data="${documents}" id="l_org_esupportail_esupsignature_domain_Document" path="/user/documents" z="user-managed">
+										<table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Document_createDate" property="createDate" z="j59k34hemtKcSKVTK7L2Rvizlto=" />
+										<table:column id="c_org_esupportail_esupsignature_domain_Document_fileName" property="fileName" z="user-managed" />
+									</table:table>
+								</dd>
+							</dl>
+
 						</div>
 					</div>
 				</div>
@@ -338,16 +415,7 @@
 									<input type="button" class="btn btn-outline-dark" id="previous" onclick="previousImage()" value="${previousLabel}" />
 								</div>
 								<div class="col-lg-4 text-center">
-									<h5>
-										<c:choose>
-											<c:when test="${signRequest.status eq 'signed'}">
-												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signedfile" />
-											</c:when>
-											<c:otherwise>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_originalfile" />
-											</c:otherwise>
-										</c:choose>
-									</h5>
+									<h5><spring:message code="menu_item_preview" /></h5>
 								</div>
 								<div class="col-lg-4">
 									<spring:message code="button_next" var="nextLabel" />
@@ -356,57 +424,23 @@
 							</div>
 							<div class="d-flex justify-content-center">
 								<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
-								<div id="pointer_div" onclick="point_it(event)" style="background-size: ${pdfWidth}px;background-image:url('${documentUrl}/${signRequest.signRequestParams.signPageNumber -1}');width:${pdfWidth}px;height:${pdfHeight}px;border:1px solid #CCC;">
-									<c:if test="${signable eq 'ok' and empty signRequest.signedFile and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'validate'}">
-										<i id="cross" style="left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;z-index:2;"> <img alt="signature" src="data:image/jpg;base64, ${signFile}" width="100" height="75" />
-										</i>
+								<div id="pointer_div" onclick="savePosition();" onmouseout="resetPosition();" onmousemove="pointIt(event);" style="background-size: ${pdfWidth}px;background-image:url('${documentUrl}/${signRequest.signRequestParams.signPageNumber -1}');width:${pdfWidth}px;height:${pdfHeight}px;border:1px solid #CCC;">
+									<c:if test="${signable eq 'ok' and (signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'validate'}">
+										<div id="cross" style="background-size: 100px;background-image: url('data:image/png;base64,${signFile}'); width: 100px; height: 75px; line-height: 75px; text-align: center;width:100px; left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;pointer-events: none;">
+											<div id="borders" style="width: 100px; height: 75px;">
+												<span style="opacity: 0.6; vertical-align: middle; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+													<strong>Preview</strong>
+												</span>
+											</div>
+										</div>
 									</c:if>
 								</div>
 							</div>
 						</div>
 						<script type="text/javascript">
-							var nbImagePage = $
-							{
-								imagePagesSize
-							};
-							var currentImagePage = $
-							{
-								signRequest.signRequestParams.signPageNumber
-							}
-							-1;
-							if (currentImagePage == 0) {
-								document.getElementById("previous").disabled = true;
-							}
-							if (currentImagePage == nbImagePage - 1) {
-								document.getElementById("next").disabled = true;
-							}
-							document.getElementById("signPageNumber").value = currentImagePage + 1;
-
-							function nextImage() {
-								currentImagePage++;
-								document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/"
-										+ currentImagePage + "')";
-								if (currentImagePage == nbImagePage - 1) {
-									document.getElementById("next").disabled = true;
-								}
-								if (currentImagePage > 0) {
-									document.getElementById("previous").disabled = false;
-								}
-								document.getElementById("signPageNumber").value = currentImagePage + 1;
-							}
-
-							function previousImage() {
-								currentImagePage--;
-								document.getElementById("pointer_div").style.backgroundImage = "url('${documentUrl}/"
-										+ currentImagePage + "')";
-								if (currentImagePage == 0) {
-									document.getElementById("previous").disabled = true;
-								}
-								if (nbImagePage - 1 > currentImagePage) {
-									document.getElementById("next").disabled = false;
-								}
-								document.getElementById("signPageNumber").value = currentImagePage + 1;
-							}
+							var nbImagePage = ${imagePagesSize};
+							var currentImagePage = ${signRequest.signRequestParams.signPageNumber} - 1;
+							var documentUrl = "${documentUrl}";
 						</script>
 					</div>
 				</div>

@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.user;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -10,15 +11,18 @@ import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
+import org.esupportail.esupsignature.domain.SignBook;
+import org.esupportail.esupsignature.domain.SignBook.SignBookType;
+import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
+import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
-import org.esupportail.esupsignature.ldap.PersonLdapDao;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -40,15 +44,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @EnableScheduling
 public class UserController {
 
-	private static final Logger log = LoggerFactory.getLogger(UserController.class);
+	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 	
 	@ModelAttribute("active")
 	public String getActiveMenu() {
 		return "user/users";
 	}
-	
-	@Autowired(required = false)
-	PersonLdapDao personDao;
+	@ModelAttribute("user")
+	public User getUser() {
+		return userService.getUserFromAuthentication();
+	}
 	
 	@Resource
 	private DocumentService documentService;
@@ -61,6 +66,9 @@ public class UserController {
 	
 	@Resource
 	private UserService userService;
+
+	@Resource
+	private SignBookService signBookService;
 	
 	private String password = "";
 	long startTime;
@@ -72,33 +80,38 @@ public class UserController {
 	
     @RequestMapping(produces = "text/html")
     public String show(Model uiModel) throws Exception {
-		String eppn = userService.getEppnFromAuthentication();
-		if(User.countFindUsersByEppnEquals(eppn) == 0) {
-			return "redirect:/user/users/?form";
-		}
-    	User user = User.findUsersByEppnEquals(eppn).getSingleResult();
-    	if(user.getSignImage().getBigFile().getBinaryFile() == null) {
+		User user = userService.getUserFromAuthentication();
+    	if(!user.isReady()) {
 			return "redirect:/user/users/?form";
 		}    	
     	populateEditForm(uiModel, user);
-        if(user.getSignImage().getBigFile().getBinaryFile() != null) {
+    	if(user.getSignImage() != null) {
         	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
         }
+        if(user.getKeystore() != null) {
+        	uiModel.addAttribute("keystore", user.getKeystore().getFileName());
+        }        
+        SignBook defaultSignBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
+        uiModel.addAttribute("defaultSignBook", defaultSignBook);
         uiModel.addAttribute("isPasswordSet", password != "");
-        uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         return "user/users/show";
     }
     
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(Model uiModel) throws IOException, SQLException {
-		String eppn = userService.getEppnFromAuthentication();
-		User user;
-		if(User.countFindUsersByEppnEquals(eppn) > 0) {
-			user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User user = userService.getUserFromAuthentication();;
+		if(user != null) {
 	        uiModel.addAttribute("user", user);	        
-			if(user.getSignImage().getBigFile().getBinaryFile() != null) {
-	        	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-	    		return "user/users/update";
+        	SignBook signBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
+        	uiModel.addAttribute("signBook", signBook);
+        	uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
+        	uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
+
+        	if(user.isReady()) {
+        		if(user.getSignImage() != null) {
+        			uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+        		}
+	        	return "user/users/update";
 	        } else {
 				return "user/users/create";
 	        }
@@ -110,17 +123,15 @@ public class UserController {
     }
     
     @RequestMapping(method = RequestMethod.POST, produces = "text/html")
-    public String create(@Valid User user, @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttrs) throws Exception {
+    public String create(@Valid User user, @RequestParam(value = "newPageType", required=false) String newPageType, @RequestParam(value = "signType", required=false) String signType, @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttrs) throws Exception {
     	if (bindingResult.hasErrors()) {
         	populateEditForm(uiModel, user);
             return "user/users/update";
         }
         uiModel.asMap().clear();
-		String eppn = userService.getEppnFromAuthentication();
-		User userToUpdate = null;
-		userToUpdate = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User userToUpdate = userService.getUserFromAuthentication();
         if(!multipartKeystore.isEmpty()) {
-            if(userToUpdate.getKeystore().getBigFile().getBinaryFile() != null) {
+            if(userToUpdate.getKeystore() != null) {
             	userToUpdate.getKeystore().remove();
             }
             userToUpdate.setKeystore(documentService.addFile(multipartKeystore, multipartKeystore.getOriginalFilename()));
@@ -128,29 +139,30 @@ public class UserController {
         Document oldSignImage = userToUpdate.getSignImage();
         if(!user.getSignImageBase64().isEmpty()) {
         	userToUpdate.setSignImage(documentService.addFile(user.getSignImageBase64(), userToUpdate.getEppn() + "_sign", "application/png"));
-        } else
-        	if(userToUpdate.getSignImage().getBigFile().getBinaryFile() == null) {
-            	redirectAttrs.addFlashAttribute("messageCustom", "image is required");
         }
-        if(oldSignImage.getBigFile().getBinaryFile() != null) {
+        if(oldSignImage != null) {
         	oldSignImage.getBigFile().getBinaryFile().free();
     		oldSignImage.getBigFile().remove();
     		oldSignImage.remove();
     	}
-        return "redirect:/user/users/";
+    	SignBook signBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
+    	if(signType != null) {
+    		signBook.getSignRequestParams().setSignType(SignType.valueOf(signType));
+    	}
+    	userToUpdate.setReady(true);
+    	return "redirect:/user/users/";
     }
     
     @RequestMapping(value = "/viewCert", method = RequestMethod.GET, produces = "text/html")
     public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttrs) throws Exception {
-		String eppn = userService.getEppnFromAuthentication();
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User user = userService.getUserFromAuthentication();
 		if (password != null && !"".equals(password)) {
         	setPassword(password);
         }
         try {
         	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getJavaIoFile(), this.password));
         } catch (Exception e) {
-        	log.error("open keystore fail", e);
+        	logger.error("open keystore fail", e);
         	redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
 		}
         return "redirect:/user/users/";
@@ -158,15 +170,14 @@ public class UserController {
     
 	@RequestMapping(value = "/get-keystore-file", method = RequestMethod.GET)
 	public void getSignedFile(HttpServletResponse response, Model model) {
-		String eppn = userService.getEppnFromAuthentication();
-		User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		User user = userService.getUserFromAuthentication();
 		Document file = user.getKeystore();
 		try {
 			response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
 			response.setContentType(file.getContentType());
 			IOUtils.copy(file.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
 		} catch (Exception e) {
-			log.error("get file error", e);
+			logger.error("get file error", e);
 		}
 	}
     

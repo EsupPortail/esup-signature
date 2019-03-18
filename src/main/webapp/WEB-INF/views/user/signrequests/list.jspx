@@ -2,28 +2,73 @@
 <div xmlns:fmt="http://java.sun.com/jsp/jstl/fmt" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:spring="http://www.springframework.org/tags" xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:util="urn:jsptagdir:/WEB-INF/tags/util" version="2.0">
 	<jsp:directive.page contentType="text/html;charset=UTF-8" />
 	<jsp:output omit-xml-declaration="yes" />
+	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
+		<div class="card card-body border-info text-info">
+			<p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
+			<p>
+			Statut des demandes de signatures :
+			<ul>
+			<li>
+			<button type="button" class="btn btn-outline-primary btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+				<i class="fas fa-clock"> <!--  -->
+				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
+			</button>
+			La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures 
+			</li>
+			<li>
+			<button type="button" class="btn btn-outline-success btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+				<i class="fas fa-file-signature"> <!--  -->
+				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
+			</button>
+			Tous les critères de signatures sont remplis, la demande à été retirée des parapheurs
+			</li>
+			<li>
+			<button type="button" class="btn btn-outline-success btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+				<i class="far fa-check-circle"> <!--  -->
+				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
+			</button>
+			Le document à été validé par tous les participants
+			</li>
+			<li>
+			<button type="button" class="btn btn-outline-danger btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+				<i class="fas fa-ban"> <!--  -->
+				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
+			</button>
+			La demande à été refusée et retirée des parapheurs
+			</li>
+			<li>
+			<button type="button" class="btn btn-outline-warning btn-sm  col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+				<i class="fas fa-flag-checkered"> <!--  -->
+				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
+			</button>
+			La demande à été déclarée comme terminée, elle va être supprimée de l'application automatiquement
+			</li>
+			</ul>
+			</p>
+		</div>
+	</div>
 	<div class="card">
 		<div class="card-header">
-			<form action="" method="get">
+			<form class="" action="" method="get">
 				<div class="input-group">
 					<div class="input-group-prepend">
 						<div class="input-group-text">Filtres</div>
 					</div>
-					<select class="form-control" name="findBy" onchange="submit();">
+					<select class="form-control" name="toSign" onchange="submit();">
 						<c:choose>
-							<c:when test="${findBy eq 'recipientEmail'}">
-								<option value="">
+							<c:when test="${toSign eq true}">
+								<option value="false">
 									<spring:message code="menu_item_user_my_documents" />
 								</option>
-								<option value="recipientEmail" selected="selected">
+								<option value="true" selected="selected">
 									<spring:message code="menu_item_user_to_sign_documents" />
 								</option>
 							</c:when>
 							<c:otherwise>
-								<option value="" selected="selected">
+								<option value="false" selected="selected">
 									<spring:message code="menu_item_user_my_documents" />
 								</option>
-								<option value="recipientEmail">
+								<option value="true">
 									<spring:message code="menu_item_user_to_sign_documents" />
 								</option>
 							</c:otherwise>
@@ -34,7 +79,7 @@
 							<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_status" />
 						</div>
 					</div>
-					<select class="form-control" name="statusFilter" onchange="submit();">
+					<select class="form-control" name="statusFilter" id="statusFilter" onchange="submit();">
 						<option value="" disabled="disabled" selected="selected"><spring:message code="menu_item_choose_status" /></option>
 						<option value=""><spring:message code="menu_item_all" /></option>
 						<c:forEach items="${statuses}" var="status">
@@ -69,8 +114,8 @@
 				</div>
 
 			</form>
-
-			<div class="input-group">
+			<div class="form-inline">
+				<div class="input-group">
 				<div class="input-group-prepend">
 					<div class="input-group-text">Actions :</div>
 				</div>
@@ -83,23 +128,26 @@
 					<input class="form-control" id="passwordField" placeholder="Keystore password" name="password" type="password" />
 				</div>
 				<div class="input-group-append">
-					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Sign docs" class="btn btn-primary" onclick="submitSignDocs()" title="Sign docs" disabled="disabled">
+					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Sign docs" class="btn btn-primary" onclick="submitSignRequests()" title="Sign docs" disabled="disabled">
 						<span class="fa fa-pencil-alt"><!--  --></span>&amp;nbsp;<spring:message code="menu_item_sign_docs" />
 					</button>
 				</div>
-				<div class="input-group-text">
-					<!--  -->
+				<div class="input-group-append">
+					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Passer au statut terminé" class="btn btn-warning" onclick="terminateSignRequests()" title="Passer au statut terminé" disabled="disabled">
+						<span class="fas fa-flag-checkered"><!--  --></span>&amp;nbsp;Passer au statut terminé
+					</button>
+				</div>				
 				</div>
+				<div class="mx-auto"><!--  --></div>
+				<div class="input-group">
 				<div class="input-group-prepend">
 					<div class="input-group-text">Nouveau :</div>
 				</div>
 				<div class="input-group-append">
-					<a alt="Signer un nouveau document" class="btn btn-primary" href="/user/signrequests?form" title="Signer un nouveau Document"> <span class="fas fa-pencil-alt"><!--  --></span>&amp;nbsp;<spring:message code="menu_item_signrequest_new" />
+					<a alt="Signer un nouveau document" class="btn btn-success" href="/user/signrequests?form" title="Signer un nouveau Document">
+						<i class="fas fa-plus"><!--  --></i>&amp;nbsp;<spring:message code="menu_item_signrequest_new" />
 					</a>
 				</div>
-				<div class="input-group-append">
-					<a alt="Envoyer un nouveau document" class="btn btn-warning" href="/user/signrequests?form&amp;recipientEmail=true" title="Signer un nouveau Document"><span class="fa fa-paper-plane"><!--  --></span>&amp;nbsp;<spring:message code="menu_item_signrequest_send" />
-					</a>
 				</div>
 			</div>
 		</div>
@@ -113,7 +161,7 @@
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_name" /></th>
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createdate" /></th>
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createby" /></th>
-							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_recipientemail" /></th>
+							<th class="signbook" style="display: block;"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" /></th>
 							<th class="type"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" /></th>
 							<th class="status"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_status" /></th>
 							<th><spring:message code="button_view" /></th>
@@ -121,57 +169,46 @@
 						</tr>
 					</thead>
 					<tbody>
-						<c:forEach items="${signRequests}" var="signRequest">
+						<c:forEach items="${signRequests}" var="signRequestItem" >
+							<c:set var="signRequest" value="${signRequestItem}" scope="request" />
 							<tr class="roocol">
 								<td class="none"><input value="${signRequest.id}" name="check" type="checkbox" class="check" /></td>
 								<td class="none">${signRequest.name}</td>
 								<td class="none"><fmt:formatDate value="${signRequest.createDate}" pattern="dd/MM/yyyy HH:mm" /></td>
 								<td class="none">${signRequest.createBy}</td>
-								<td class="none">${signRequest.recipientEmail}</td>
-								<td class="type"><input type="hidden" id="signbook_${signRequest.id}" value="${signRequest.signBookId}" />
+								<td class="signbook" style="display: block;">
+									<table class="table table-sm">
+									  	<tbody>
+											<c:forEach items="${signRequest.signBooksLabels}" var="signBooksLabel">
+									  			<tr>
+													<td width="100%">${signBooksLabel.key}</td>
+													<td align="center">
+														<c:choose>
+															<c:when test="${signBooksLabel.value eq true}">
+																<i class="far fa-check-circle text-success"><!--  --></i>
+															</c:when>
+															<c:otherwise>
+																<i class="far fa-times-circle text-danger"><!--  --></i>
+															</c:otherwise>
+														</c:choose>
+													</td>
+												</tr>
+											</c:forEach>
+										</tbody>
+									</table>
+								</td>
+								<spring:url htmlEscape="true" var="json" value="${signRequest.signBooksJson}" />
+								<td class="type">
+								<input type="hidden" id="signbook_${signRequest.id}" value="${json}" />
+								<c:if test="${not empty signRequest.signRequestParams.signType}">
 									<button type="button" class="btn btn-outline-dark btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
 										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" />
-									</button></td>
-								<td class="status"><c:choose>
-										<c:when test="${signRequest.status eq 'pending'}">
-											<button type="button" class="btn btn-outline-primary btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
-												<i class="fas fa-clock"> <!--  -->
-												</i>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'signed'}">
-											<button type="button" class="btn btn-outline-success btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
-												<i class="fas fa-file-signature"> <!--  -->
-												</i>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'refused'}">
-											<button type="button" class="btn btn-outline-danger btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
-												<i class="fas fa-ban"> <!--  -->
-												</i>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'checked'}">
-											<button type="button" class="btn btn-outline-success btn-sm col-12" id="status_${signRequest.id}" value="${signRequest.status}">
-												<i class="far fa-check-circle"> <!--  -->
-												</i>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
-											</button>
-										</c:when>
-										<c:when test="${signRequest.status eq 'completed'}">
-											<button type="button" class="btn btn-outline-warning btn-sm  col-12" id="status_${signRequest.id}" value="${signRequest.status}">
-												<i class="fas fa-flag-checkered"> <!--  -->
-												</i>
-												<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
-											</button>
-										</c:when>
-										<c:otherwise>
-									Unknow
-								</c:otherwise>
-									</c:choose></td>
+									</button>
+								</c:if>	
+								</td>
+								<td class="status">
+									<jsp:include page="includes/status.jspx" />
+								</td>
 								<td class="utilbox"><a class="btn btn-info far fa-eye" title="Sign Request" alt="Sign Request" href="/user/signrequests/${signRequest.id}"> <!--  -->
 								</a></td>
 								<td class="utilbox"><form class="delete" action="/user/signrequests/${signRequest.id}" method="post">
@@ -183,13 +220,15 @@
 					</tbody>
 					<tfoot>
 						<tr>
-							<td colspan="100%"><c:if test="${not empty maxPages}">
+							<td colspan="100%">
+								<c:if test="${not empty maxPages}">
 									<util:pagination numberOfResult="false" maxPages="${maxPages}" page="${param.page}" size="${param.size}" />
 								</c:if> <c:if test="${not empty param.page}">
 									<input name="page" type="hidden" value="1" />
 								</c:if> <c:if test="${not empty param.size}">
 									<input name="size" type="hidden" value="${fn:escapeXml(param.size)}" />
-								</c:if></td>
+								</c:if>
+							</td>
 						</tr>
 					</tfoot>
 				</table>
@@ -244,6 +283,7 @@
 			passwordField.style.display = "none";
 			alertSignDocsButton.style.display = "none";
 			var oldSignBook = "";
+			var oldType = "";
 			for (i = 0; i &lt; checkBoxes.length; i++) {
 				if(checkBoxes[i].checked) {
 					var status = document.getElementById("status_" + checkBoxes[i].value).value;
@@ -254,13 +294,15 @@
 					} else {
 						passwordField.style.display = "none";
 					}
-					if(status != "pending" || (oldSignBook != "" &amp;&amp; oldSignBook != signBook)) {
+					var signBookId=signBook.split(',');
+					if(status != "pending" || (oldType != "" &amp;&amp; oldType != type )) {
 						signDocsButton.disabled = true;
 						alertSignDocsButton.style.display = "block";
 						passwordField.style.display = "none";
 						break;
 					} else {
 						oldSignBook = signBook;
+						oldType = type;
 						alertSignDocsButton.style.display = "none";
 						signDocsButton.disabled = false;
 					}
@@ -274,14 +316,14 @@
 		function openCheckedDocs() {
 			[].forEach.call(checkBoxes, function(checkBox) {
 				if (checkBox.checked) {
-					window.open('/user/signrequests/get-original-file/'
+					window.open('/user/signrequests/get-last-file/'
 							+ checkBox.value, '_blank');
 				}
 			});
 		}
 	
 	
-		function submitSignDocs() {
+		function submitSignRequests() {
 			var toSignResquest = new Array();
 			[].forEach.call(checkBoxes, function(checkBox) {
 				if (checkBox.checked) {
@@ -368,7 +410,6 @@
 		<table:column render="false" date="true" dateTimePattern="${signRequest_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" property="updateDate" z="user-managed" />
 		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" property="updateBy" z="user-managed" />
 		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" z="user-managed" />
-		<table:column id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" property="recipientEmail" z="user-managed" />
 		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_signType" property="signTypeLabel" z="user-managed" />
 		<table:column cssClass="status" id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed" />
 	</table:table>
