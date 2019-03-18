@@ -7,6 +7,7 @@
         <menu:menu id="_menu" z="user-managed">
             <menu:item id="c_accueil" label="Accueil" menuClass="nav-link" render="false" url="/" z="user-managed"/>
             <c:if test="${role=='user'}">
+            	
             	<c:if test="${not empty signFile or active ne 'user/users'}">
 				<div class="navbar-nav">
 						<c:if test="${nbToSignRequests > 0 or nbPedingSignRequests > 0}">

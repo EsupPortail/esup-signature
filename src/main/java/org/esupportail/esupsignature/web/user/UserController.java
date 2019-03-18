@@ -77,14 +77,11 @@ public class UserController {
     @RequestMapping(produces = "text/html")
     public String show(Model uiModel) throws Exception {
 		User user = userService.getUserFromAuthentication();
-		if(user == null) {
-			return "redirect:/user/users/?form";
-		}
-    	if(user.getSignImage().getBigFile().getBinaryFile() == null) {
+    	if(!userService.isUserReady(user)) {
 			return "redirect:/user/users/?form";
 		}    	
     	populateEditForm(uiModel, user);
-        if(user.getSignImage().getBigFile().getBinaryFile() != null) {
+    	if(!userService.isUserReady(user)) {
         	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
         }
         
@@ -105,7 +102,7 @@ public class UserController {
         	uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
         	uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
 
-	        if(user.getSignImage().getBigFile().getBinaryFile() != null) {
+        	if(userService.isUserReady(user)) {
 	        	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 	        	return "user/users/update";
 	        } else {

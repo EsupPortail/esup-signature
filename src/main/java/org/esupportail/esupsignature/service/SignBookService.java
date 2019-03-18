@@ -79,6 +79,7 @@ public class SignBookService {
 		signbook.setCreateDate(new Date());
 		signbook.setRecipientEmail(user.getEmail());
 		signbook.setSignRequestParams(null);
+		signbook.setModelFile(null);
 		signbook.setSignBookType(SignBookType.user);
 		signbook.setSourceType(DocumentIOType.none);
 		signbook.setTargetType(DocumentIOType.none);

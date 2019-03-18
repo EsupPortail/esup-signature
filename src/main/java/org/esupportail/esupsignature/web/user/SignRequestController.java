@@ -129,7 +129,7 @@ public class SignRequestController {
 		if (user == null) {
 			return "redirect:/user/users/?form";
 		}
-		if (user.getSignImage().getBigFile().getBinaryFile() == null) {
+		if(!userService.isUserReady(user)) {
 			return "redirect:/user/users/?form";
 		}
 		populateEditForm(uiModel, new SignRequest());

@@ -27,6 +27,10 @@ public class UserService {
 	@Resource
 	private SignBookService signBookService;
 	
+	public boolean isUserReady(User user) {
+		return (user.getSignImage() != null);
+	}
+	
 	public void createUser(Authentication authentication) {
 		List<PersonLdap> persons =  personDao.getPersonNamesByUid(authentication.getName());
 		String eppn = persons.get(0).getEduPersonPrincipalName();
@@ -47,6 +51,8 @@ public class UserService {
 		user.setFirstname(firstName);
 		user.setEppn(eppn);
 		user.setEmail(email);
+		user.setSignImage(null);
+		user.setKeystore(null);
 		if(user.getId() == null) {
 			user.persist();
 		} else {

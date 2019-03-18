@@ -17,8 +17,11 @@
  */
 package org.esupportail.esupsignature.web.manager;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,9 +35,17 @@ public class IndexManagerController {
 		return "manager";
 	}
 	
+	@Resource
+	private UserService userService;
+	
 	@RequestMapping
 	public String index(HttpServletRequest request) {
-			return "redirect:/manager/signbooks";
+		User user = userService.getUserFromAuthentication();
+    	if(!userService.isUserReady(user)) {
+			return "redirect:/user/users/?form";
+		}    	
+
+		return "redirect:/manager/signbooks";
 	}
 
 }
