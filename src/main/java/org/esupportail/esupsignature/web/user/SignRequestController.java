@@ -71,6 +71,12 @@ public class SignRequestController {
 	public String getActiveMenu() {
 		return "user/signrequests";
 	}
+
+	@ModelAttribute("user")
+	public User getUser() {
+		user = userService.getUserFromAuthentication();
+		return user;
+	}
 	
 	@Value("${sign.passwordTimeout}")
 	private long passwordTimeout;
@@ -83,6 +89,8 @@ public class SignRequestController {
 		startTime = System.currentTimeMillis();
 		this.password = password;
 	}
+	
+	User user;
 	
 	@Resource
 	private SignRequestService signRequestService;
@@ -129,7 +137,7 @@ public class SignRequestController {
 		if (user == null) {
 			return "redirect:/user/users/?form";
 		}
-		if(!userService.isUserReady(user)) {
+		if(!user.isReady()) {
 			return "redirect:/user/users/?form";
 		}
 		populateEditForm(uiModel, new SignRequest());
@@ -176,7 +184,6 @@ public class SignRequestController {
 
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
-		User user = userService.getUserFromAuthentication();
 		addDateTimeFormatPatterns(uiModel);
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
@@ -199,8 +206,12 @@ public class SignRequestController {
 				uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
 			}
 			uiModel.addAttribute("logs", Log.findLogsBySignRequestIdEquals(signRequest.getId()).getResultList());
-			uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-			uiModel.addAttribute("keystore", user.getKeystore().getFileName());
+			if(user.getSignImage() != null) {
+				uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+			}
+			if(user.getKeystore() != null) {
+				uiModel.addAttribute("keystore", user.getKeystore().getFileName());
+			}
 			uiModel.addAttribute("signRequest", signRequest);
 			uiModel.addAttribute("documentType", fileService.getExtension(toDisplayFile));
 			uiModel.addAttribute("itemId", id);

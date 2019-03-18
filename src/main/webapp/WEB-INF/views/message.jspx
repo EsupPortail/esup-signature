@@ -9,7 +9,7 @@
 
 	<div id="messageModal" class="modal fade" tabindex="-1"
 		role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-		<div class="modal-dialog">
+		<div class="modal-dialog modal-lg">
 			<div class="modal-content">
      			 <div class="modal-header">
      			 <h3>Message</h3>
@@ -82,7 +82,7 @@
 					 	<!-- div class="alert alert-info" data-dismiss="alert"-->
 						<div id="dialog" title="Information" class="text-danger">
 							<div class="alert alert-info">
-								${messageCustom}
+								<pre>${messageCustom}</pre>
 							</div>
 						</div>
 					</c:if>

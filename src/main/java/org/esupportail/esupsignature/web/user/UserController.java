@@ -77,18 +77,19 @@ public class UserController {
     @RequestMapping(produces = "text/html")
     public String show(Model uiModel) throws Exception {
 		User user = userService.getUserFromAuthentication();
-    	if(!userService.isUserReady(user)) {
+    	if(!user.isReady()) {
 			return "redirect:/user/users/?form";
 		}    	
     	populateEditForm(uiModel, user);
-    	if(!userService.isUserReady(user)) {
+    	if(user.getSignImage() != null) {
         	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
         }
-        
+        if(user.getKeystore() != null) {
+        	uiModel.addAttribute("keystore", user.getKeystore().getFileName());
+        }        
         SignBook defaultSignBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
         uiModel.addAttribute("defaultSignBook", defaultSignBook);
         uiModel.addAttribute("isPasswordSet", password != "");
-        uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         return "user/users/show";
     }
     
@@ -102,8 +103,10 @@ public class UserController {
         	uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
         	uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
 
-        	if(userService.isUserReady(user)) {
-	        	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+        	if(user.isReady()) {
+        		if(user.getSignImage() != null) {
+        			uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+        		}
 	        	return "user/users/update";
 	        } else {
 				return "user/users/create";
@@ -124,7 +127,7 @@ public class UserController {
         uiModel.asMap().clear();
 		User userToUpdate = userService.getUserFromAuthentication();
         if(!multipartKeystore.isEmpty()) {
-            if(userToUpdate.getKeystore().getBigFile().getBinaryFile() != null) {
+            if(userToUpdate.getKeystore() != null) {
             	userToUpdate.getKeystore().remove();
             }
             userToUpdate.setKeystore(documentService.addFile(multipartKeystore, multipartKeystore.getOriginalFilename()));
@@ -132,11 +135,8 @@ public class UserController {
         Document oldSignImage = userToUpdate.getSignImage();
         if(!user.getSignImageBase64().isEmpty()) {
         	userToUpdate.setSignImage(documentService.addFile(user.getSignImageBase64(), userToUpdate.getEppn() + "_sign", "application/png"));
-        } else
-        	if(userToUpdate.getSignImage().getBigFile().getBinaryFile() == null) {
-        	redirectAttrs.addFlashAttribute("messageCustom", "Image is required");
         }
-        if(oldSignImage.getBigFile().getBinaryFile() != null) {
+        if(oldSignImage != null) {
         	oldSignImage.getBigFile().getBinaryFile().free();
     		oldSignImage.getBigFile().remove();
     		oldSignImage.remove();
@@ -145,6 +145,7 @@ public class UserController {
     	if(signType != null) {
     		signBook.getSignRequestParams().setSignType(SignType.valueOf(signType));
     	}
+    	userToUpdate.setReady(true);
     	return "redirect:/user/users/";
     }
     

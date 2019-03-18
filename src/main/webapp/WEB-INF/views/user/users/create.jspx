@@ -16,6 +16,7 @@
 			Enfin vous pouvez choisir vos paramètres de signature par défaut
 			</li>
 			</ul>
+			<p>Vous pouvez modifier/compléter vos paramètres à tous moments en utilisant l'onglet <span class="fa fa-cog"><!-- --></span></p>
 			<p>Dès que vous apercevez ce symbole <span class="fas fa-info-circle text-info"><!-- --></span>, cliquez dessus pour obtenir de l'aide</p>
 		</div>
 	</div>
@@ -39,7 +40,7 @@
 			<div class="col-lg-9">
 				<div class="input-group">
 					<div class="custom-file">
-						<input required="required" type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" />
+						<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" />
 						<label class="custom-file-label" id="inputGroupLabel01" for="upload">
 							<spring:message code="field_file_image" />
 						</label>

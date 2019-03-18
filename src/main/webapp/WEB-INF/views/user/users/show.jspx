@@ -17,7 +17,9 @@
 				<spring:message code="label_org_esupportail_esupsignature_domain_user_signimage" />
 			</dt>
 			<dd>
-				<img alt="signature" src="data:image/jpg;base64, ${signFile}" />
+				<c:if test="${not empty signFile}">
+					<img alt="signature" src="data:image/jpg;base64, ${signFile}" />
+				</c:if>
 			</dd>
 		</dl>
 		<dl class="display-group border-bottom m-0">

@@ -41,7 +41,7 @@ public class IndexManagerController {
 	@RequestMapping
 	public String index(HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
-    	if(!userService.isUserReady(user)) {
+    	if(!user.isReady()) {
 			return "redirect:/user/users/?form";
 		}    	
 

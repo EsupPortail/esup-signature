@@ -28,7 +28,7 @@ public class UserService {
 	private SignBookService signBookService;
 	
 	public boolean isUserReady(User user) {
-		return (user.getSignImage() != null);
+		return user.isReady();
 	}
 	
 	public void createUser(Authentication authentication) {
@@ -46,13 +46,13 @@ public class UserService {
     		user = User.findUsersByEppnEquals(eppn).getSingleResult();
     	} else {
 	    	user = new User();
+			user.setSignImage(null);
+			user.setKeystore(null);
     	}
 		user.setName(name);
 		user.setFirstname(firstName);
 		user.setEppn(eppn);
 		user.setEmail(email);
-		user.setSignImage(null);
-		user.setKeystore(null);
 		if(user.getId() == null) {
 			user.persist();
 		} else {

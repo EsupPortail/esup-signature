@@ -35,4 +35,6 @@ public class User {
     @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     private Document keystore = new Document();
 	
+    private boolean ready;
+    
 }

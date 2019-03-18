@@ -161,6 +161,11 @@
 													<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signAction" />
 												</dt>
 												<dd>
+												<c:if test="${empty user.signImage and documentType eq 'pdf'}">
+													<div class="card card-body bg-danger text-white">
+													<a href="/user/users/" class="text-white"><u><spring:message code="help_user_nosignimage" /></u></a>
+													</div>
+												</c:if>
 													<c:choose>
 														<c:when test="${signRequest.signRequestParams.signType eq 'certSign'}">
 															<c:choose>
@@ -175,7 +180,9 @@
 																	</div>
 																</c:when>
 																<c:otherwise>
-																	<div class="card card-body bg-info text-white"><spring:message code="help_user_nokeystore" /></div>
+																	<div class="card card-body bg-danger text-white">
+																		<a href="/user/users/" class="text-white"><u><spring:message code="help_user_nokeystore" /></u></a>
+																	</div>
 																</c:otherwise>
 															</c:choose>
 														</c:when>
@@ -212,8 +219,10 @@
 																	<input alt="${validateLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${validateLabel}" />
 																</c:when>
 																<c:otherwise>
-																	<spring:message code="button_sign" var="signLabel" />
-																	<input alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${signLabel}" />
+																	<c:if test="${not empty user.signImage}"> 
+																		<spring:message code="button_sign" var="signLabel" />
+																		<input alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${signLabel}" />
+																	</c:if>
 																</c:otherwise>
 															</c:choose>
 														</c:otherwise>
