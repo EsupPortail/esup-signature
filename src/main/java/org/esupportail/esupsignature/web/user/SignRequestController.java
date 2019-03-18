@@ -72,10 +72,12 @@ public class SignRequestController {
 		return "user/signrequests";
 	}
 
+	@Resource
+	private UserService userService;
+	
 	@ModelAttribute("user")
 	public User getUser() {
-		user = userService.getUserFromAuthentication();
-		return user;
+		return userService.getUserFromAuthentication();
 	}
 	
 	@Value("${sign.passwordTimeout}")
@@ -106,9 +108,6 @@ public class SignRequestController {
 	
 	@Resource
 	private FileService fileService;
-
-	@Resource
-	private UserService userService;
 
 	@RequestMapping(produces = "text/html")
 	public String list(@RequestParam(value = "page", required = false) Integer page,

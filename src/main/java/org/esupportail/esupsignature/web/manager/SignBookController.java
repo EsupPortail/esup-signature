@@ -53,10 +53,15 @@ public class SignBookController {
 	}
 
 	@Resource
-	private SignBookService signBookService;
-	
-	@Resource
 	private UserService userService;
+	
+	@ModelAttribute("user")
+	public User getUser() {
+		return userService.getUserFromAuthentication();
+	}
+
+	@Resource
+	private SignBookService signBookService;
 
 	@Resource
 	private DocumentService documentService;

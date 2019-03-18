@@ -50,7 +50,11 @@ public class UserController {
 	public String getActiveMenu() {
 		return "user/users";
 	}
-
+	@ModelAttribute("user")
+	public User getUser() {
+		return userService.getUserFromAuthentication();
+	}
+	
 	@Resource
 	private DocumentService documentService;
 	

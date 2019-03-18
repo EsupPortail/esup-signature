@@ -35,6 +35,11 @@ public class IndexManagerController {
 		return "manager";
 	}
 	
+	@ModelAttribute("user")
+	public User getUser() {
+		return userService.getUserFromAuthentication();
+	}
+
 	@Resource
 	private UserService userService;
 	

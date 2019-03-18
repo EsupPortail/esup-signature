@@ -17,9 +17,11 @@
  */
 package org.esupportail.esupsignature.web;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -34,6 +36,14 @@ public class IndexController {
 	@ModelAttribute("active")
 	public String getActiveMenu() {
 		return "index";
+	}
+	
+	@Resource
+	private UserService userService;
+	
+	@ModelAttribute("user")
+	public User getUser() {
+		return userService.getUserFromAuthentication();
 	}
 	
 	@RequestMapping
