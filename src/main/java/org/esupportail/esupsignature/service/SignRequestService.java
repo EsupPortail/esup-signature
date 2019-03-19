@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -295,14 +296,16 @@ public class SignRequestService {
 			}
 			if (!signBook.getTargetType().equals(DocumentIOType.none)) {
 				try {
-					//TODO a retester
 					signBookService.exportFileToTarget(signBook, signRequest, user);
 					updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
 				} catch (EsupSignatureException e) {
 					logger.error("error on export file to fs", e);
 				}
 			}
-			signBookService.removeSignRequestFromAllSignBooks(signRequest, signBook, user);
+			if(signBook.isAutoRemove()) {
+				signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
+				updateInfo(signRequest, SignRequestStatus.completed, "auto remove", user, "SUCCESS");
+			}
 		} else {
 			updateInfo(signRequest, SignRequestStatus.pending, "sign", user, "SUCCESS");
 		}
@@ -360,7 +363,7 @@ public class SignRequestService {
 	public void refuse(SignRequest signRequest, User user) {
 		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		signRequest.getSignBooks().put(signBook.getId(), true);
-		signBookService.removeSignRequestFromAllSignBooks(signRequest, signBook, user);
+		signBookService.removeSignRequestFromAllSignBooks(signRequest, user);
 		updateInfo(signRequest, SignRequestStatus.refused, "refuse", user, "SUCCESS");
 	}
 	
@@ -405,5 +408,13 @@ public class SignRequestService {
 		return signRequestParams;
 	}
 
+	public List<SignBook> getSignBooksList(SignRequest signRequest) {
+		List<SignBook> signBooks = new ArrayList<>();
+		Set<Long> signBookIds = signRequest.getSignBooks().keySet();
+		for(long signBookId : signBookIds) {
+			signBooks.add(SignBook.findSignBook(signBookId));
+		}
+		return signBooks;
+	}
 }
 

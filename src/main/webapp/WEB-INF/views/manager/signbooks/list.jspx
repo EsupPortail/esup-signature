@@ -6,7 +6,7 @@
 		<div class="card-header">
 			<div class="row">
 				<div class="col-lg-6">
-					<h5><spring:message code="menu_item_mysignbook_list_label" /></h5>
+					<h5><spring:message code="menu_item_signbook_list_label" /></h5>
 				</div>
 				<div class="col-lg-6">
 			    	<div class="form-inline">

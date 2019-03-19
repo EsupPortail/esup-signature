@@ -154,7 +154,7 @@ public class SignRequest {
         if (createBy == null || createBy.length() == 0) throw new IllegalArgumentException("The createBy argument is required");
         if (status == null) throw new IllegalArgumentException("The status argument is required");
         EntityManager em = SignRequest.entityManager();
-        TypedQuery q = em.createQuery("SELECT COUNT(o) FROM SignRequest AS o WHERE o.createBy = :createBy AND o.status = :status", Long.class);
+        TypedQuery<Long> q = em.createQuery("SELECT COUNT(o) FROM SignRequest AS o WHERE o.createBy = :createBy AND o.status = :status", Long.class);
         q.setParameter("createBy", createBy);
         q.setParameter("status", status);
         return ((Long) q.getSingleResult());

@@ -37,4 +37,17 @@ public class User {
 	
     private boolean ready;
     
+    private EmailAlertFrequency emailAlertFrequency;
+
+    public enum EmailAlertFrequency {
+		never, immediately, daily, weekly;
+	}
+    
+    private String emailAlertHour;
+    
+    private String emailAlertDay;
+    
+    public void setEmailAlertFrequency(EmailAlertFrequency emailAlertFrequency) {
+        this.emailAlertFrequency = emailAlertFrequency;
+    }
 }

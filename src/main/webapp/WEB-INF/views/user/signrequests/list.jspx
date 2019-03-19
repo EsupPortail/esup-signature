@@ -20,7 +20,7 @@
 				<i class="fas fa-file-signature"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
 			</button>
-			Tous les critères de signatures sont remplis, la demande à été retirée des parapheurs
+			Tous les critères de signatures sont remplis
 			</li>
 			<li>
 			<button type="button" class="btn btn-outline-success btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
@@ -41,7 +41,7 @@
 				<i class="fas fa-flag-checkered"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
 			</button>
-			La demande à été déclarée comme terminée, elle va être supprimée de l'application automatiquement
+			La demande la demande à été retirée des parapheurs, elle va être supprimée de l'application automatiquement
 			</li>
 			</ul>
 			</p>
@@ -133,7 +133,7 @@
 					</button>
 				</div>
 				<div class="input-group-append">
-					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Passer au statut terminé" class="btn btn-warning" onclick="terminateSignRequests()" title="Passer au statut terminé" disabled="disabled">
+					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Passer au statut terminé" class="btn btn-warning" onclick="completeSignRequests()" title="Passer au statut terminé" disabled="disabled">
 						<span class="fas fa-flag-checkered"><!--  --></span>&amp;nbsp;Passer au statut terminé
 					</button>
 				</div>				

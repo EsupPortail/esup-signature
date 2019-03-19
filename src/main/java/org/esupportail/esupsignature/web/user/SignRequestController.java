@@ -91,9 +91,7 @@ public class SignRequestController {
 		startTime = System.currentTimeMillis();
 		this.password = password;
 	}
-	
-	User user;
-	
+
 	@Resource
 	private SignRequestService signRequestService;
 
@@ -436,13 +434,33 @@ public class SignRequestController {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-		SignBook signBook = SignBook.findSignBook(signBookId);
-		try {
-			signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-		} catch (EsupSignatureException e) {
-			logger.warn(e.getMessage());
-			redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
+		if(signRequestService.checkUserViewRights(user, signRequest)) {
+			SignBook signBook = SignBook.findSignBook(signBookId);
+			try {
+				signBookService.importSignRequestInSignBook(signRequest, signBook, user);
+			} catch (EsupSignatureException e) {
+				logger.warn(e.getMessage());
+				redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
+	
+			}
+		} else {
+			logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
+		}
+		return "redirect:/user/signrequests/" + id;
+	}
+	
 
+	@RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
+	public String complete(@PathVariable("id") Long id, HttpServletResponse response,
+			RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
+		User user = userService.getUserFromAuthentication();
+		user.setIp(request.getRemoteAddr());
+		SignRequest signRequest = SignRequest.findSignRequest(id);
+		if(signRequestService.checkUserViewRights(user, signRequest)) {
+			signBookService.removeSignRequestFromAllSignBooks(signRequest, user);
+			signRequestService.updateInfo(signRequest, SignRequestStatus.completed, "manual complete", user, "SUCCESS");
+		} else {
+			logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
 		}
 		return "redirect:/user/signrequests/" + id;
 	}

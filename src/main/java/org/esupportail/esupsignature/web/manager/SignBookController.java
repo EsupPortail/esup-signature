@@ -149,7 +149,7 @@ public class SignBookController {
 		SignBook signBook = SignBook.findSignBook(id);
 		if(signBook.getSignBookType().equals(SignBookType.model)) {
 			Document modelFile = signBook.getModelFile();
-			if (modelFile.getSize() > 0) {
+			if (modelFile != null && modelFile.getSize() > 0) {
 				uiModel.addAttribute("documentId", modelFile.getId());
 				if(modelFile.getContentType().equals("application/pdf")) {
 					PdfParameters pdfParameters = pdfService.getPdfParameters(modelFile.getJavaIoFile());

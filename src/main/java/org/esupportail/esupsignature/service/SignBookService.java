@@ -132,7 +132,7 @@ public class SignBookService {
 			if (signRequest.getStatus().equals(SignRequestStatus.signed) && signRequestService.isSignRequestCompleted(signRequest)) {
 				exportFileToTarget(signBook, signRequest, user);
 				//signRequestService.updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
-				removeSignRequestFromAllSignBooks(signRequest, signBook, user);
+				removeSignRequestFromAllSignBooks(signRequest, user);
 			}
 		}
 	}
@@ -174,13 +174,22 @@ public class SignBookService {
 		}
 	}
 
-	public void removeSignRequestFromAllSignBooks(SignRequest signRequest, SignBook signBook, User user) {
-		//signRequestService.updateInfo(signRequest, SignRequestStatus.completed, "remove from signbook" + signBook.getId(), user, "SUCCESS");
+	public void removeSignRequestFromAllSignBooks(SignRequest signRequest, User user) {
 		signRequest.getSignBooks().clear();
+		List<SignBook> signBooks = signRequestService.getSignBooksList(signRequest);
+		for(SignBook signBook : signBooks) {
+			signBook.getSignRequests().remove(signRequest);
+			signBook.merge();
+
+		}
+	}
+
+	public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook, User user) {
+		signRequest.getSignBooks().remove(signBook.getId());
 		signBook.getSignRequests().remove(signRequest);
 		signBook.merge();
 	}
-
+	
 	public SignBook getSignBookBySignRequestAndUser(SignRequest signRequest, User user) {
 		if (signRequest.getSignBooks().size() > 0) {
 			for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {

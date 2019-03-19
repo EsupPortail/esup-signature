@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature.service;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -8,6 +10,7 @@ import javax.annotation.Resource;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.SignBookType;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.domain.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +51,7 @@ public class UserService {
 	    	user = new User();
 			user.setSignImage(null);
 			user.setKeystore(null);
+			user.setEmailAlertFrequency(EmailAlertFrequency.never);
     	}
 		user.setName(name);
 		user.setFirstname(firstName);
@@ -62,6 +66,16 @@ public class UserService {
 			signBookService.createUserSignBook(user);
 		}
 
+	}
+	
+	public void sendEmailAlert(User user) {
+		Date date = new Date();
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		System.err.println(calendar.get(Calendar.DAY_OF_MONTH));
+		if(!user.getEmailAlertFrequency().equals(EmailAlertFrequency.never)) {
+			//TODO alerts
+		}
 	}
 	
     public User getUserFromAuthentication() {

@@ -281,6 +281,32 @@
 							</form>
 							</dd>
 							</dl>
+							<c:if test="${signRequest.status eq 'signed' or signRequest.status eq 'checked'}">
+							<dl class="display-group border-bottom m-0">
+								<dt class="col-lg-5">
+									<spring:message code="menu_item_complete" />&amp;nbsp;
+				           			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+									<div class="collapse" id="collapseHelp1">
+										<div class="card card-body border-info text-info">
+											<small>
+												La cloture de la demande permet de liberer le parapheur. La demande sera supprimée dans un délai défini par l'administrateur.
+											</small>
+										</div>
+									</div>
+								</dt>
+							<dd class="col-lg-7">
+							<spring:url value="/user/signrequests/complete/${id}" var="completeUrl" />
+							<form class="form-group" action="${completeUrl}" method="get">
+								<div class="input-group">
+									<button type="submit" class="btn btn-warning">
+										<i class="fas fa-flag-checkered"> <!--  -->
+										</i>&amp;nbsp;<spring:message code="button_complete" />
+									</button>
+								</div>
+							</form>
+							</dd>
+							</dl>
+							</c:if>
 						</div>
 					</div>
 				</div>

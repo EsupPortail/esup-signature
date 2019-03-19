@@ -80,6 +80,14 @@ privileged aspect SignBook_Roo_JavaBean {
         this.recipientEmail = recipientEmail;
     }
     
+    public boolean SignBook.isAutoRemove() {
+        return this.autoRemove;
+    }
+    
+    public void SignBook.setAutoRemove(boolean autoRemove) {
+        this.autoRemove = autoRemove;
+    }
+    
     public DocumentIOType SignBook.getTargetType() {
         return this.targetType;
     }

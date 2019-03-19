@@ -143,6 +143,9 @@ public class OJService {
 				CertificateToken certificateToken = DSSUtils.loadCertificate(in);
 				if(!trustedListSource.getCertificates().contains(certificateToken)) {
 					trustedListSource.addCertificate(certificateToken, serviceInfos);
+					log.info(trustedCertificatUrl + " added to truststore");
+				} else {
+					log.info(trustedCertificatUrl + " already in truststore");
 				}
 			}
 			keyStoreCertificateSource.addAllCertificatesToKeyStore(trustedListSource.getCertificates());
