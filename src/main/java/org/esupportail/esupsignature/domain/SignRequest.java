@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.EntityManager;
 import javax.persistence.EnumType;
@@ -33,11 +34,12 @@ import org.springframework.roo.addon.tostring.RooToString;
 
 @RooJavaBean
 @RooToString
-@RooJpaActiveRecord(finders={"findSignRequestsByCreateByEquals", "findSignRequestsByRecipientEmailEquals", "findSignRequestsByCreateByAndStatusEquals"})
+@RooJpaActiveRecord(finders={"findSignRequestsByNameEquals", "findSignRequestsByCreateByEquals", "findSignRequestsByRecipientEmailEquals", "findSignRequestsByCreateByAndStatusEquals"})
 public class SignRequest {
 
 	protected final static Logger log = LoggerFactory.getLogger(SignRequest.class);
 
+	@Column(unique=true)
 	private String name;
 	
     @Temporal(TemporalType.TIMESTAMP)

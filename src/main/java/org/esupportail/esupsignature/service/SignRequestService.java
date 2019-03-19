@@ -2,11 +2,14 @@ package org.esupportail.esupsignature.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -105,7 +108,7 @@ public class SignRequestService {
 	
 	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document, SignRequestParams signRequestParams, long[] signBookIds) {
 		document.setCreateDate(new Date());
-		signRequest.setName(document.getFileName());
+		signRequest.setName(generateUniqueId() + "_" + fileService.getNameOnly(document.getJavaIoFile()));
 		signRequest.setCreateBy(user.getEppn());
 		signRequest.setCreateDate(new Date());
 		signRequest.getDocuments().add(document);
@@ -416,5 +419,18 @@ public class SignRequestService {
 		}
 		return signBooks;
 	}
+	
+	public long generateUniqueId() {
+        long val = -1;
+        while (val < 0) {
+        	final UUID uid = UUID.randomUUID();
+            final ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
+            buffer.putLong(uid.getLeastSignificantBits());
+            buffer.putLong(uid.getMostSignificantBits());
+            final BigInteger bi = new BigInteger(buffer.array());
+            val = bi.longValue();
+        } 
+        return val;
+    }
 }
 

@@ -5,7 +5,9 @@ import java.text.ParseException;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignRequest;
@@ -16,7 +18,12 @@ import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -39,9 +46,10 @@ public class WsController {
 	DocumentService documentService;
 	
 	//TODO creation / recupération de demandes par WS + declenchement d'evenements
-	
+	@ResponseBody
 	@RequestMapping(value = "/create-sign-request", method = RequestMethod.POST)
-	public void createSignRequest(MultipartFile file, @RequestParam String signBookName, HttpServletRequest httpServletRequest) throws IOException, ParseException {
+	public String createSignRequest(MultipartFile file, @RequestParam String signBookName, HttpServletRequest httpServletRequest) throws IOException, ParseException {
+		SignRequest signRequest= new SignRequest();
 		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
 		long[] signBookIds = {signBook.getId()};
 		User user = getSystemUser();
@@ -52,7 +60,28 @@ public class WsController {
 			logger.info(file.getOriginalFilename() + "was added into signbook" + signBookName);
 			
 		}
-
+		return signRequest.getName();
+	}
+	
+	@Transactional
+	@RequestMapping(value = "/get-signed-file/{name}", method = RequestMethod.GET)
+	public ResponseEntity<Void> getSignedFile(@PathVariable("name") String name, HttpServletResponse response, Model model) {
+		SignRequest signRequest = SignRequest.findSignRequestsByNameEquals(name).getSingleResult();
+		if(signRequest.getStatus().equals(SignRequestStatus.signed)) {
+			Document document = signRequestService.getLastDocument(signRequest);
+			try {
+				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+				response.setContentType(document.getContentType());
+				IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+				return new ResponseEntity<>(HttpStatus.OK);
+			} catch (Exception e) {
+				logger.error("get file error", e);
+			}
+		} else {
+			logger.warn("no signed version of " + name);
+	        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	
 	@ResponseBody
