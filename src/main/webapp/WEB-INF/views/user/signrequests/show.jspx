@@ -253,7 +253,7 @@
 										<div class="card card-body border-info text-info">
 											<small>
 												A tous moments vous pouvez envoyer la demande dans un autre parapheur.
-												Si la demande se trouve dans plusieurs parapheur vous pouvez choisir si toutes les signatures sont exigées pour passer au status 
+												Si la demande se trouve dans plusieurs parapheurs vous pouvez choisir si toutes les signatures sont exigées pour passer au status 
 												<button type="button" class="btn btn-outline-success btn-sm">
 													<i class="fas fa-file-signature"> <!--  -->
 													</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
