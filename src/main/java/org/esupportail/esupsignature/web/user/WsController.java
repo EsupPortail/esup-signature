@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import javax.annotation.Resource;
+import javax.persistence.NoResultException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -23,7 +24,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,9 +46,11 @@ public class WsController {
 	DocumentService documentService;
 	
 	//TODO creation / recupération de demandes par WS + declenchement d'evenements
+	@Transactional
 	@ResponseBody
 	@RequestMapping(value = "/create-sign-request", method = RequestMethod.POST)
-	public String createSignRequest(MultipartFile file, @RequestParam String signBookName, HttpServletRequest httpServletRequest) throws IOException, ParseException {
+	public String createSignRequest(@RequestParam("file") MultipartFile file, @RequestParam String signBookName, HttpServletRequest httpServletRequest) throws IOException, ParseException {
+		System.err.println(signBookName);
 		SignRequest signRequest= new SignRequest();
 		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
 		long[] signBookIds = {signBook.getId()};
@@ -56,18 +58,22 @@ public class WsController {
 		user.setIp(httpServletRequest.getRemoteAddr());
 		if(file != null) {
 			Document document = documentService.addFile(file, file.getOriginalFilename());
-			signRequestService.createSignRequest(new SignRequest(), user, document, signBook.getSignRequestParams(), signBookIds);
+			signRequest = signRequestService.createSignRequest(new SignRequest(), user, document, signBook.getSignRequestParams(), signBookIds);
 			logger.info(file.getOriginalFilename() + "was added into signbook" + signBookName);
-			
+			return signRequest.getName();			
+		} else {
+			logger.warn("no file to import");
 		}
-		return signRequest.getName();
+		return null;
 	}
 	
 	@Transactional
-	@RequestMapping(value = "/get-signed-file/{name}", method = RequestMethod.GET)
-	public ResponseEntity<Void> getSignedFile(@PathVariable("name") String name, HttpServletResponse response, Model model) {
+	@RequestMapping(value = "/get-signed-file", method = RequestMethod.GET)
+	public ResponseEntity<Void> getSignedFile(@RequestParam String signBookName, @RequestParam String name, HttpServletResponse response, Model model) {
+		try {
+		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
 		SignRequest signRequest = SignRequest.findSignRequestsByNameEquals(name).getSingleResult();
-		if(signRequest.getStatus().equals(SignRequestStatus.signed)) {
+		if(signBook.getSignRequests().contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.signed)) {
 			Document document = signRequestService.getLastDocument(signRequest);
 			try {
 				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
@@ -81,7 +87,35 @@ public class WsController {
 			logger.warn("no signed version of " + name);
 	        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (NoResultException e) {
+			logger.error(e.getMessage(), e);
+		}
+		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	@Transactional
+	@RequestMapping(value = "/complete-sign-request", method = RequestMethod.POST)
+	public ResponseEntity<Void> completeSignRequest(@RequestParam String signBookName, @RequestParam String name, HttpServletRequest httpServletRequest, HttpServletResponse response, Model model) {
+		try {
+		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
+		SignRequest signRequest = SignRequest.findSignRequestsByNameEquals(name).getSingleResult();
+		User user = getSystemUser();
+		user.setIp(httpServletRequest.getRemoteAddr());
+		if(signBook.getSignRequests().contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.signed)) {
+			try {
+				signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
+				return new ResponseEntity<>(HttpStatus.OK);
+			} catch (Exception e) {
+				logger.error("get file error", e);
+			}
+		} else {
+			logger.warn("no signed version of " + name);
+	        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		} catch (NoResultException e) {
+			logger.error(e.getMessage(), e);
+		}
+		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	
 	@ResponseBody
