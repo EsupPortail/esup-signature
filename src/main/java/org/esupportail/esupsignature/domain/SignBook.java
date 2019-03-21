@@ -52,6 +52,8 @@ public class SignBook {
     
     private String recipientEmail;
 
+    private boolean autoRemove = false;
+    
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;
     
@@ -93,7 +95,7 @@ public class SignBook {
         if (recipientEmail == null || recipientEmail.length() == 0) throw new IllegalArgumentException("The recipientEmail argument is required");
         if (signBookType == null) throw new IllegalArgumentException("The signBookType argument is required");
         EntityManager em = SignBook.entityManager();
-        TypedQuery q = em.createQuery("SELECT COUNT(o) FROM SignBook AS o WHERE o.recipientEmail = :recipientEmail AND o.signBookType = :signBookType", Long.class);
+        TypedQuery<Long> q = em.createQuery("SELECT COUNT(o) FROM SignBook AS o WHERE o.recipientEmail = :recipientEmail AND o.signBookType = :signBookType", Long.class);
         q.setParameter("recipientEmail", recipientEmail);
         q.setParameter("signBookType", signBookType);
         return ((Long) q.getSingleResult());

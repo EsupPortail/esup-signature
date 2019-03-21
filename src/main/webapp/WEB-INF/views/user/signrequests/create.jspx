@@ -41,12 +41,13 @@
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signbook" />
 					<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
-					<div class="collapse" id="collapseHelp1">
+					<div class="show" id="collapseHelp1">
 						<div class="card card-body border-info text-info">
 							<small>
-								Vous pouvez selectionner plusieurs parapheurs. Dans ce cas il faudra preciser si toutes les signatures sont requises
+								Par défaut c'est votre parapheur personnel qui est sélectionné (c'est donc vous qui signerez le document)
 								<br/>
-								Par défaut c'est votre parapheur personnel qui est sélectionné
+								Vous pouvez selectionner un autre ou même plusieurs parapheurs. Dans ce cas il faudra preciser si toutes les signatures sont requises
+								<br/>
 							</small>
 						</div>
 					</div>
@@ -106,12 +107,12 @@
 			<label class="col-lg-3  col-form-label" for="newPageType">
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_overloadparams" /><button data-target="#collapseHelpOverLoad" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
-					<div class="collapse" id="collapseHelpOverLoad">
+					<div class="show" id="collapseHelpOverLoad">
 						<div class="card card-body border-info text-info">
 							<small>
 								<ul>
-								<li>Oui : Vous pouvez modifier le paramètres de signature manuellement.</li> 
 								<li>Non : Les paramètres de signature du parapheur séléctionné seront appliqués.</li>
+								<li>Oui : Vous pouvez modifier le paramètres de signature manuellement.</li> 
 								</ul>
 							</small>
 						</div>

@@ -20,6 +20,9 @@ public class ScheduledTaskService {
 
 	@Resource
 	private SignBookService signBookService;
+
+	@Resource
+	private UserService userService;
 	
 	@Resource
 	private OJService oJService;
@@ -28,10 +31,7 @@ public class ScheduledTaskService {
 	public void scanAllSignbooksSources() throws EsupSignatureIOException, EsupStockException {
 		List<SignBook> signBooks = SignBook.findAllSignBooks();
 		for(SignBook signBook : signBooks) {
-			User user = new User();
-			user.setEppn("Scheduler");
-			user.setIp("127.0.0.1");
-			signBookService.importFilesFromSource(signBook, user);
+			signBookService.importFilesFromSource(signBook, getSchedulerUser());
 			
 		}
 	}
@@ -40,10 +40,16 @@ public class ScheduledTaskService {
 	public void scanAllSignbooksTargets() throws EsupSignatureException {
 		List<SignBook> signBooks = SignBook.findAllSignBooks();
 		for(SignBook signBook : signBooks) {
-			User user = new User();
-			user.setEppn("Scheduler");
-			user.setIp("127.0.0.1");
-			signBookService.exportFilesToTarget(signBook, user);
+			signBookService.exportFilesToTarget(signBook, getSchedulerUser());
+		}
+	}
+	
+	@Transactional
+	public void sendAllEmailAlerts() throws EsupSignatureException {
+		List<User> users = User.findAllUsers();
+		for(User user : users) {
+			//TODO send email
+			userService.sendEmailAlert(user);
 		}
 	}
 	
@@ -51,4 +57,11 @@ public class ScheduledTaskService {
 		oJService.refresh();
 	}
 	
+	
+	public User getSchedulerUser() {
+		User user = new User();
+		user.setEppn("Scheduler");
+		user.setIp("127.0.0.1");
+		return user;
+	}
 }

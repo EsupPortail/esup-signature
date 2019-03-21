@@ -5,17 +5,10 @@
    	<div class="card">
 		<div class="card-header">
 			<div class="row">
-				<div class="col-lg-6">
-					<h5><spring:message code="menu_item_mysignbook_list_label" /></h5>
-				</div>
-				<div class="col-lg-6">
+				<div class="col-lg-12">
 			    	<div class="form-inline">
-						<div class="mx-auto"><!--  --></div>
 						<div class="input-group">
-							<div class="input-group-prepend">
-								<div class="input-group-text">Nouveau :</div>
-							</div>
-							<div class="input-group-append">
+							<div class="input-group">
 						    	<a alt="Créer un SignBook" class="btn btn-success" href="/manager/signbooks?form" title="Créer un SignBook">
 				            		<i class="fas fa-book"><!--  --></i>&amp;nbsp;<spring:message code="menu_item_signbook_new_label" />
 								</a>

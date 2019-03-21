@@ -7,52 +7,60 @@
 			<p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
 			<p>
 			Statut des demandes de signatures :
-			<ul>
-			<li>
-			<button type="button" class="btn btn-outline-primary btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
-				<i class="fas fa-clock"> <!--  -->
-				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
-			</button>
+			<div class="alert alert-primary btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+				<i class="fas fa-clock"> <!--  --></i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
+			</div>
 			La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures 
-			</li>
-			<li>
-			<button type="button" class="btn btn-outline-success btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+			<div class="alert alert-success btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
 				<i class="fas fa-file-signature"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
-			</button>
-			Tous les critères de signatures sont remplis, la demande à été retirée des parapheurs
-			</li>
-			<li>
-			<button type="button" class="btn btn-outline-success btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+			</div>
+			Tous les critères de signatures sont remplis
+			<div class="alert alert-success btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
 				<i class="far fa-check-circle"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
-			</button>
+			</div>
 			Le document à été validé par tous les participants
-			</li>
-			<li>
-			<button type="button" class="btn btn-outline-danger btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+			<div class="alert alert-danger btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
 				<i class="fas fa-ban"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
-			</button>
+			</div>
 			La demande à été refusée et retirée des parapheurs
-			</li>
-			<li>
-			<button type="button" class="btn btn-outline-warning btn-sm  col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+			<div class="alert alert-warning btn-sm  col-1" id="status_${signRequest.id}" value="${signRequest.status}">
 				<i class="fas fa-flag-checkered"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
-			</button>
-			La demande à été déclarée comme terminée, elle va être supprimée de l'application automatiquement
-			</li>
-			</ul>
+			</div>
+			La demande la demande à été retirée des parapheurs, elle va être supprimée de l'application automatiquement
 			</p>
 		</div>
 	</div>
 	<div class="card">
 		<div class="card-header">
+<div class="row">
+			<div class="col-lg-12">				
+			<div class="card card-body border-info text-info">
+			Cliquez sur "<spring:message code="menu_item_signrequest_new" />" pour signer un document ou envoyer un document pour signature  
+			</div>
+			</div>
+			<div class="col-lg-12 text-center">
+				<a alt="Signer un nouveau document" class="btn btn-success" href="/user/signrequests?form" title="Signer un nouveau Document">
+					<i class="fas fa-plus"><!--  --></i>&amp;nbsp;<spring:message code="menu_item_signrequest_new" />
+				</a>
+				</div>
+			<div class="col-lg-12">
 			<form class="" action="" method="get">
-				<div class="input-group">
-					<div class="input-group-prepend">
-						<div class="input-group-text">Filtres</div>
+			<div class="card">
+				<div class="card-header">
+                    <div class="accordion-heading">
+                        <a class="accordion-toggle" data-parent="#accordionfilter" data-toggle="collapse" href="#collapseFilter"> Filtres </a>
+                    </div>
+                    <div class="accordion-body collapse ${finderview ? 'in' : ''}" id="collapseFilter">
+                        <div class="accordion-inner">
+                        <div class="input-group">
+   					<div class="input-group-prepend">
+						<div class="input-group-text">
+							Type
+						</div>
 					</div>
 					<select class="form-control" name="toSign" onchange="submit();">
 						<c:choose>
@@ -112,46 +120,35 @@
 						</c:forEach>
 					</select>
 				</div>
-
+</div></div></div></div>
 			</form>
+			</div>
+			<div class="col-lg-12">
 			<div class="form-inline">
 				<div class="input-group">
-				<div class="input-group-prepend">
-					<div class="input-group-text">Actions :</div>
-				</div>
-				<div class="input-group-append">
-					<button id="opendocs" alt="Open docs" class="btn btn-info" onclick="openCheckedDocs()" title="open docs">
+					<button id="opendocs" alt="Open docs" class="btn btn-info" onclick="openCheckedDocs()" title="open docs" style="display: none;">
 						<span class="far fa-eye"><!--  --></span>&amp;nbsp;<spring:message code="menu_item_open_docs" />
 					</button>
 				</div>
-				<div class="input-group-append">
-					<input class="form-control" id="passwordField" placeholder="Keystore password" name="password" type="password" />
+				<div class="input-group">
+					<input class="form-control" id="passwordField" placeholder="Keystore password" name="password" type="password" style="display: none;" />
 				</div>
-				<div class="input-group-append">
-					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Sign docs" class="btn btn-primary" onclick="submitSignRequests()" title="Sign docs" disabled="disabled">
+				<div class="input-group">
+					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Sign docs" class="btn btn-primary" onclick="submitSignRequests()" title="Sign docs" style="display: none;">
 						<span class="fa fa-pencil-alt"><!--  --></span>&amp;nbsp;<spring:message code="menu_item_sign_docs" />
 					</button>
 				</div>
-				<div class="input-group-append">
-					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Passer au statut terminé" class="btn btn-warning" onclick="terminateSignRequests()" title="Passer au statut terminé" disabled="disabled">
+				<div class="input-group">
+					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Passer au statut terminé" class="btn btn-warning" onclick="completeSignRequests()" title="Passer au statut terminé" style="display: none;">
 						<span class="fas fa-flag-checkered"><!--  --></span>&amp;nbsp;Passer au statut terminé
 					</button>
 				</div>				
-				</div>
 				<div class="mx-auto"><!--  --></div>
-				<div class="input-group">
-				<div class="input-group-prepend">
-					<div class="input-group-text">Nouveau :</div>
-				</div>
-				<div class="input-group-append">
-					<a alt="Signer un nouveau document" class="btn btn-success" href="/user/signrequests?form" title="Signer un nouveau Document">
-						<i class="fas fa-plus"><!--  --></i>&amp;nbsp;<spring:message code="menu_item_signrequest_new" />
-					</a>
-				</div>
-				</div>
+
+			</div>
 			</div>
 		</div>
-		<button style="display: none;" id="alertsigndocs" alt="Sign docs" class="btn btn-outline-danger" title="" disabled="disabled">Impossible de signer en masse la selection actuelle</button>
+		<div style="display: none;" id="alertsigndocs" alt="Sign docs" class="alert alert-danger" role="alert" >Impossible de signer en masse la selection actuelle</div>
 		<div class="card-body">
 			<div class="table-responsive">
 				<table class="table table-sm table-striped table-hover">
@@ -201,9 +198,11 @@
 								<td class="type">
 								<input type="hidden" id="signbook_${signRequest.id}" value="${json}" />
 								<c:if test="${not empty signRequest.signRequestParams.signType}">
-									<button type="button" class="btn btn-outline-dark btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+									<small>									
+									<div class="alert alert-dark" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
 										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" />
-									</button>
+									</div>
+									</small>
 								</c:if>	
 								</td>
 								<td class="status">
@@ -235,6 +234,7 @@
 			</div>
 			<page:list id="pl_org_esupportail_esupsignature_domain_SignRequest" items="${signRequests}" z="user-managed" />
 		</div>
+		</div>
 	</div>
 	<script type="text/javascript">
 		var selectAll = document.getElementById("selectall");
@@ -246,7 +246,7 @@
 		
 		if (selectAll != null) {
 			passwordField.style.display = "none";	
-			openDocsButton.disabled = true;
+			openDocsButton.style.display = "none";
 			selectAll.onchange = function() {
 				[].forEach.call(checkBoxes, function(checkBox) {
 					if (selectAll.checked) {
@@ -270,16 +270,16 @@
 		function checkOpenDocButtonEnable() {
 			for (i = 0; i &lt; checkBoxes.length; i++) {
 				if(checkBoxes[i].checked) {
-					openDocsButton.disabled = false;
+					openDocsButton.style.display = "block";
 					break;
 				} else {
-					openDocsButton.disabled = true;
+					openDocsButton.style.display = "none";
 				}
 			}
 		}
 		
 		function checkSignDocButtonEnable() {
-			signDocsButton.disabled = true;
+			signDocsButton.style.display = "none";
 			passwordField.style.display = "none";
 			alertSignDocsButton.style.display = "none";
 			var oldSignBook = "";
@@ -296,7 +296,7 @@
 					}
 					var signBookId=signBook.split(',');
 					if(status != "pending" || (oldType != "" &amp;&amp; oldType != type )) {
-						signDocsButton.disabled = true;
+						signDocsButton.style.display = "none";
 						alertSignDocsButton.style.display = "block";
 						passwordField.style.display = "none";
 						break;
@@ -304,7 +304,7 @@
 						oldSignBook = signBook;
 						oldType = type;
 						alertSignDocsButton.style.display = "none";
-						signDocsButton.disabled = false;
+						signDocsButton.style.display = "block";
 					}
 				}
 				

@@ -18,5 +18,6 @@
         <field:select field="signRequests" id="c_org_esupportail_esupsignature_domain_SignBook_signRequests" itemValue="id" items="${signrequests}" multiple="true" path="/signrequests" z="4hgGFnbI24zcaV+G2hZsqBsoGQY="/>
         <field:select field="signRequestParams" id="c_org_esupportail_esupsignature_domain_SignBook_signRequestParams" itemValue="id" items="${signrequestparamses}" path="/signrequestparamses" z="ILeGzNZRgDtb8BigixiIGZLza6Y="/>
         <field:input field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" z="user-managed"/>
+        <field:checkbox field="autoRemove" id="c_org_esupportail_esupsignature_domain_SignBook_autoRemove" z="TVrlRLnHE5anFlxcA1Oo/sREYAA="/>
     </form:update>
 </div>

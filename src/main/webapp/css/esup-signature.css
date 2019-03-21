@@ -34,10 +34,6 @@ body {
 	text-decoration: underline;
 }
 
-a {
-	color: rgb(97, 97, 99);
-}
-
 main {
     -webkit-background-size: cover;
     -moz-background-size: cover;
@@ -123,14 +119,26 @@ form.delete {
     background-color: #787674 !important;
 }
 
-.nav-tabs .navbar-nav > li a { 
-    border: 1px solid #CCCCCC; 
+.nav-tabs .navbar-nav > li > a { 
+    border: 1px solid #AAAAAA;
+	background-color: #CCCCCC;
 }
-    
+
+.nav-tabs {
+	border-bottom: 1px solid #787674;
+	
+}
+
 .nav-tabs .navbar-nav > li > a.active,
-.nav-tabs .navbar-nav > li a:focus,
+.nav-tabs .navbar-nav > li a:focus {
+    border: 1px solid #AAAAAA;
+	background-color: #FFFFFF;
+	border-bottom-color: transparent !important;
+}
+
 .nav-tabs .navbar-nav > li a:hover {
-    border-bottom-color: transparent !important;
+    border: 1px solid #AAAAAA;
+	background-color: #EEEEEE;
 }
 
 .loader {
@@ -154,9 +162,13 @@ form.delete {
 }
 
 .custom-file-input:lang(fr) ~ .custom-file-label::after {
-  content: "Parcourir" !important;
+	content: "Parcourir" !important;
 }
 
 .anim-border {
 	border: 2px dotted red; 
 }
+
+.alert {
+    margin-bottom: 0rem;
+ }

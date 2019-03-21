@@ -80,4 +80,24 @@ privileged aspect User_Roo_JavaBean {
         this.ready = ready;
     }
     
+    public EmailAlertFrequency User.getEmailAlertFrequency() {
+        return this.emailAlertFrequency;
+    }
+    
+    public String User.getEmailAlertHour() {
+        return this.emailAlertHour;
+    }
+    
+    public void User.setEmailAlertHour(String emailAlertHour) {
+        this.emailAlertHour = emailAlertHour;
+    }
+    
+    public String User.getEmailAlertDay() {
+        return this.emailAlertDay;
+    }
+    
+    public void User.setEmailAlertDay(String emailAlertDay) {
+        this.emailAlertDay = emailAlertDay;
+    }
+    
 }

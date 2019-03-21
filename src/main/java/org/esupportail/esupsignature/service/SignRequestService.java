@@ -2,10 +2,14 @@ package org.esupportail.esupsignature.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -104,7 +108,7 @@ public class SignRequestService {
 	
 	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document, SignRequestParams signRequestParams, long[] signBookIds) {
 		document.setCreateDate(new Date());
-		signRequest.setName(document.getFileName());
+		signRequest.setName(generateUniqueId() + "_" + fileService.getNameOnly(document.getJavaIoFile()));
 		signRequest.setCreateBy(user.getEppn());
 		signRequest.setCreateDate(new Date());
 		signRequest.getDocuments().add(document);
@@ -295,14 +299,16 @@ public class SignRequestService {
 			}
 			if (!signBook.getTargetType().equals(DocumentIOType.none)) {
 				try {
-					//TODO a retester
 					signBookService.exportFileToTarget(signBook, signRequest, user);
 					updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
 				} catch (EsupSignatureException e) {
 					logger.error("error on export file to fs", e);
 				}
 			}
-			signBookService.removeSignRequestFromAllSignBooks(signRequest, signBook, user);
+			if(signBook.isAutoRemove()) {
+				signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
+				updateInfo(signRequest, SignRequestStatus.completed, "auto remove", user, "SUCCESS");
+			}
 		} else {
 			updateInfo(signRequest, SignRequestStatus.pending, "sign", user, "SUCCESS");
 		}
@@ -360,7 +366,7 @@ public class SignRequestService {
 	public void refuse(SignRequest signRequest, User user) {
 		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		signRequest.getSignBooks().put(signBook.getId(), true);
-		signBookService.removeSignRequestFromAllSignBooks(signRequest, signBook, user);
+		signBookService.removeSignRequestFromAllSignBooks(signRequest, user);
 		updateInfo(signRequest, SignRequestStatus.refused, "refuse", user, "SUCCESS");
 	}
 	
@@ -405,5 +411,26 @@ public class SignRequestService {
 		return signRequestParams;
 	}
 
+	public List<SignBook> getSignBooksList(SignRequest signRequest) {
+		List<SignBook> signBooks = new ArrayList<>();
+		Set<Long> signBookIds = signRequest.getSignBooks().keySet();
+		for(long signBookId : signBookIds) {
+			signBooks.add(SignBook.findSignBook(signBookId));
+		}
+		return signBooks;
+	}
+	
+	public long generateUniqueId() {
+        long val = -1;
+        while (val < 0) {
+        	final UUID uid = UUID.randomUUID();
+            final ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
+            buffer.putLong(uid.getLeastSignificantBits());
+            buffer.putLong(uid.getMostSignificantBits());
+            final BigInteger bi = new BigInteger(buffer.array());
+            val = bi.longValue();
+        } 
+        return val;
+    }
 }
 
