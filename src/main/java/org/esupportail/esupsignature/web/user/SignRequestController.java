@@ -187,7 +187,7 @@ public class SignRequestController {
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
 			SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
-			uiModel.addAttribute("curentSignBook", signBook);
+			uiModel.addAttribute("currentSignBook", signBook);
 			if(signBook == null && signRequest.getSignBooks().size() > 0) {
 				signBook = SignBook.findSignBook(signRequest.getSignBooks().keySet().iterator().next());
 			}

@@ -1,17 +1,29 @@
 <div xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:spring="http://www.springframework.org/tags" xmlns:util="urn:jsptagdir:/WEB-INF/tags/util" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:sec="http://www.springframework.org/security/tags" xmlns:form="http://www.springframework.org/tags/form">
 	<jsp:directive.page contentType="text/html;charset=UTF-8" />
 	<jsp:output omit-xml-declaration="yes" />
+	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
+		<div class="card card-body border-info text-info">
+	        Le service de validation est fourni par l'outil DSS.
+	        <br/>
+   			Légende :
+   			<ul>
+	   			<li><button class="btn btn-success">&amp;nbsp;</button> : Succès</li>
+   				<li><button class="btn btn-warning">&amp;nbsp;</button> : Alerte</li>
+   				<li><button class="btn btn-danger">&amp;nbsp;</button> : Erreur</li>
+   			</ul>
+		</div>
+	</div>
 		<div class="card">
 		<div class="card-header">
 			<div class="row">
-				<div class="col-lg-6">
+				<div class="col-lg-12">
 					<h5><spring:message code="menu_item_user_validation_service" /></h5>
 				</div>
 			</div>
     	</div>
 		<div class="card-body">
 			<div class="row">
-				<div class="col-lg-8">
+				<div class="col-lg-12">
 					<ul class="nav nav-tabs" id="myTab" role="tablist">
 					  <li class="nav-item">
 					    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#simple" role="tab" aria-controls="simple" aria-selected="true">Simple report</a>
@@ -28,20 +40,7 @@
 			  			<div class="tab-pane fade" id="detailed" role="tabpanel" aria-labelledby="profile-tab">${detailedReport}</div>
 					</div>
 				</div>
-				<div class="col-lg-4">
-					<div class="card border-info">
-						<div class="card-body text-info">
-							<dl>
-								<dt><button class="btn btn-danger col-4">&amp;nbsp;</button></dt>
-								<dd>TOTAL_FAILED : indicates that either the signature format is incorrect or that the digital signature value fails verification</dd>
-								<dt><button class="btn btn-warning col-4">&amp;nbsp;</button></dt>
-								<dd>INDETERMINATE : indicates that the format and digital signature verifications have not failed but there is insufficient information to determine if the electronic signature is valid</dd>
-								<dt><button class="btn btn-success col-4">&amp;nbsp;</button></dt>
-								<dd>TOTAL-PASSED : indicates that the signature has passed verification and it complies with the signature validation policy</dd>
-							</dl>
-						</div>
-					</div>
-				</div>
+
 			</div>
 		</div>
 	</div>

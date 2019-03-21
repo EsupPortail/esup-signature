@@ -3,8 +3,17 @@
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
 	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
-		<div class="card card-body bg-info text-white">
-	        <spring:message code="help_user_signbook_list"/>
+		<div class="card card-body border-info text-info">
+	        Les parapheurs sont des dossiers appartenants à un seul destinataire.
+	        Les paramètres de signature y sont figés. 
+	        <br/>
+	        Il existe deux types de parapheur : 
+	        <br/>
+	        <ul>
+	        <li>le parapheur par défaut qui est créé lors de l'inscription (il est unique pour chaque personne et permet de signer en dehors d'un circuit récurent)</li>
+	        <li>le parapheur "modèle" : il est créé manuellement pour gérer des demandes récurentes (ordres de mission par exemple)</li>
+	        </ul>
+	        Consultez un parapheur pour y ajouter des documents a signer.
 		</div>
 	</div>
 	<div class="card">

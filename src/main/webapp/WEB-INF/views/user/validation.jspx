@@ -1,6 +1,18 @@
 <div xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:spring="http://www.springframework.org/tags" xmlns:util="urn:jsptagdir:/WEB-INF/tags/util" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:sec="http://www.springframework.org/security/tags" xmlns:form="http://www.springframework.org/tags/form">
 	<jsp:directive.page contentType="text/html;charset=UTF-8" />
 	<jsp:output omit-xml-declaration="yes" />
+	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
+		<div class="card card-body border-info text-info">
+	        Le service de validation est fourni par l'outil DSS.
+	        <br/>
+   			Légende :
+   			<ul>
+	   			<li><button class="btn btn-success">&amp;nbsp;</button> : Succès</li>
+   				<li><button class="btn btn-warning">&amp;nbsp;</button> : Alerte</li>
+   				<li><button class="btn btn-danger">&amp;nbsp;</button> : Erreur</li>
+   			</ul>
+		</div>
+	</div>
 	<div class="card">
 		<div class="card-header">
 			<div class="row">
@@ -10,22 +22,17 @@
 			</div>
     	</div>
 		<div class="card-body">
-			<form method="post" class="form-horizontal" enctype="multipart/form-data" action="/user/validation">
-				<div class="form-group col-lg-6">
-					<div class="input-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text" id="inputGroupFileAddon01"> <spring:message code="label_org_esupportail_esupsignature_domain_signrequest_add_file" />
-							</span>
-						</div>
-						<div class="custom-file">
-							<input required="required" class="custom-file-input" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01" /> <label class="custom-file-label" id="inputGroupLabel01" for="upload"><spring:message code="button_choose_file" /></label>
-						</div>
-						<div class="input-group-append">
-							<spring:message code="menu_item_upload" var="uploadLabel" />
-							<input alt="Upload" class="btn btn-success" id="Upload" title="Upload" type="submit" value="${uploadLabel}" />
-						</div>
+			<form method="post" class="form-inline" enctype="multipart/form-data" action="/user/validation">
+				<div class="form-group col-4">
+					<div class="custom-file">
+						<input required="required" class="custom-file-input" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01" />
+						<label class="custom-file-label" id="inputGroupLabel01" for="upload">
+							<spring:message code="button_choose_file" />
+						</label>
 					</div>
 				</div>
+				<spring:message code="menu_item_upload" var="uploadLabel" />
+				<input alt="Upload" class="btn btn-success" id="Upload" title="Upload" type="submit" value="${uploadLabel}" />
 			</form>
 		</div>
 	</div>

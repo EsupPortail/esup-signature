@@ -15,7 +15,7 @@
             </div>
         </div>
     </div>
-    <page:show delete="false" id="ps_org_esupportail_esupsignature_domain_SignBook" object="${signBook}" path="/user/signbooks" update="false" z="user-managed">
+    <page:show list="false" delete="false" id="ps_org_esupportail_esupsignature_domain_SignBook" object="${signBook}" path="/user/signbooks" update="false" z="user-managed">
         <div class="row">
             <div class="col-lg-6">
                 <div class="card bg-light">
@@ -38,11 +38,11 @@
                                     <spring:message code="label_org_esupportail_esupsignature_domain_signbook_recipientemail"/>
                                 </dt>
                                 <dd>
-                                    <button class="btn btn-light col-12 active" type="button">
+                                    <div class="alert alert-dark col-12">
                                         <i class="far fa-envelope">
                                             <!--  -->
                                         </i> ${signBook.recipientEmail}
-				</button>
+				</div>
                                 </dd>
                             </dl>
                             <field:display field="signBookType" id="s_org_esupportail_esupsignature_domain_SignBook_signBookType" object="${signBook}" render="false" z="user-managed"/>
@@ -67,6 +67,7 @@
                             <field:display field="XPos" id="s_org_esupportail_esupsignature_domain_SignBook_xPos" object="${signBook}" render="false" z="user-managed"/>
                             <field:display field="YPos" id="s_org_esupportail_esupsignature_domain_SignBook_yPos" object="${signBook}" render="false" z="user-managed"/>
                             <field:display field="signRequestParams" id="s_org_esupportail_esupsignature_domain_SignBook_signRequestParams" object="${signBook}" render="false" z="user-managed"/>
+					        <field:display field="autoRemove" id="s_org_esupportail_esupsignature_domain_SignBook_autoRemove" object="${signBook}" z="user-managed"/>
                             <dl class="display-group border-bottom m-0">
                                 <dt class="col-lg-5">
                                     <spring:message code="label_org_esupportail_esupsignature_domain_signrequest_params"/>
@@ -75,14 +76,18 @@
                                     <div class="form-group">
                                         <spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype"/>
 				:
-				<button class="btn btn-outline-dark btn-sm col-12" type="button">
+				<div class="alert alert-dark col-12">
+				<small>
                                             <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signBook.signRequestParams.signType}"/>
-                                        </button>
+                                            </small>
+                                        </div>
                                         <spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype"/>
 				:
-				<button class="btn btn-outline-dark btn-sm col-12" type="button">
+				<div class="alert alert-dark col-12">
+				<small>
                                             <spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signBook.signRequestParams.newPageType}"/>
-                                        </button>
+                       	</small>
+                                        </div>
                                     </div>
                                 </dd>
                             </dl>
@@ -121,11 +126,6 @@
                                     <form action="/user/signbooks/addDoc/${id}" enctype="multipart/form-data" method="post">
                                         <div class="form-group">
                                             <div class="input-group">
-                                                <div class="input-group-prepend">
-                                                    <span class="input-group-text" id="inputGroupFileAddon01">
-                                                        <spring:message code="label_org_esupportail_esupsignature_domain_signrequest_add_file"/>
-                                                    </span>
-                                                </div>
                                                 <div class="custom-file">
                                                     <input aria-describedby="inputGroupFileAddon01" class="custom-file-input" id="inputGroupFile01" name="multipartFile" type="file"/>
                                                     <label class="custom-file-label" for="upload" id="inputGroupLabel01">
@@ -155,6 +155,5 @@
                 </div>
             </div>
         </div>
-        <field:display field="autoRemove" id="s_org_esupportail_esupsignature_domain_SignBook_autoRemove" object="${signbook}" z="A3guqwVLZZKGSYqKwZHTTAhNA7E="/>
     </page:show>
 </div>

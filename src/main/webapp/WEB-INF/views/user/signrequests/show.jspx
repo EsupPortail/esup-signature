@@ -2,22 +2,23 @@
 <div xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:spring="http://www.springframework.org/tags" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
 	<jsp:directive.page contentType="text/html;charset=UTF-8" />
 	<jsp:output omit-xml-declaration="yes" />
-	<div aria-expanded="true" class="collapse" id="collapseHelp">
-		<div class="card card-body bg-info text-white">
-			<spring:message code="help_user_signrequest_show" />
-		</div>
-	</div>
 	<div class="card card-header">
 		<div class="row">
-			<div class="col-lg-5">
-				<h5><spring:message code="label_org_esupportail_esupsignature_domain_signrequest" /> : ${signRequest.name}</h5>
+			<div class="col-lg-11">
+				<a href="/">Liste des demandes</a> 	&gt; <a href="/user/signrequests/?toSign=true&amp;signBookId=${currentSignBook.id}">${currentSignBook.name}</a> &gt; 
+				<spring:message code="menu_item_signrequest" /> : ${signRequest.name} 							
 			</div>
-			<div>
+			<div class="col-lg-1">
 				<jsp:include page="includes/status.jspx" />
 			</div>
 		</div>
 	</div>
-	<page:show update="false" id="ps_org_esupportail_esupsignature_domain_SignRequest" object="${signRequest}" path="/user/signrequests" z="user-managed">
+		<div aria-expanded="true" class="show" id="collapseHelp">
+		<div class="card card-body border-info text-info">
+			<spring:message code="help_user_signrequest_show" />
+		</div>
+	</div>
+	<page:show list="false" update="false" delete="false" id="ps_org_esupportail_esupsignature_domain_SignRequest" object="${signRequest}" path="/user/signrequests" z="user-managed">
 		<div class="row">
 			<c:choose>
 				<c:when test="${documentType eq 'pdf'}">
@@ -29,10 +30,36 @@
 				</c:otherwise>
 			</c:choose>
 			<div class="${col}">
+				<div class="card bg-light collapse">
+					<div class="card-body">	
+					<field:display field="name" label="Nom unique de la demande" id="s_org_esupportail_esupsignature_domain_SignRequest_name" object="${signRequest}" z="user-managed" />
+					<dl class="display-group border-bottom m-0">
+						<dt class="col-lg-5">
+							<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status" />
+						</dt>
+						<dd>
+							<jsp:include page="includes/status.jspx" />
+						</dd>
+					</dl>
+					<c:if test="${documentType ne 'pdf'}">
+					<dl class="display-group border-bottom m-0">
+						<dt class="col-lg-5">
+							<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_originalfile" />
+						</dt>
+						<dd class="col-lg-7">
+							<spring:url value="/user/signrequests/get-last-file/${id}" var="signedFileUrl" />
+							<button type="button" class="btn btn-info" onclick="window.open('${signedFileUrl}', '_blank')">
+								<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" />
+							</button>
+						</dd>
+					</dl>
+					</c:if>	
+				</div>
+				</div>
 				<div class="card bg-light">
 					<div class="card-header">
 						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseTools" aria-expanded="true" aria-controls="collapseTools">
-							<spring:message code="menu_item_tools" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
+							<spring:message code="label_org_esupportail_esupsignature_domain_user_signimage" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
 							</i>
 						</button>
 					</div>
@@ -78,11 +105,17 @@
 											</dt>
 											<dd>
 												<spring:url value="/user/signrequests/get-last-file/${id}" var="signedFileUrl" />
+												<div class="input-group">
 												<button type="button" class="btn btn-success" onclick="window.open('${signedFileUrl}', '_blank')">
-													<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" />
+													<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" /> le document signé
 												</button>
-												<br />
-												<a href="/user/validation/document/${id}"><spring:message code="menu_item_validate" /></a>
+												</div>
+												<br/>
+												<div class="input-group">
+												<button type="button" class="btn btn-success" onclick="window.open('/user/validation/document/${id}')">
+													<i class="fas fa-shield-alt"><!--  --></i>&amp;nbsp;<spring:message code="menu_item_validate" />
+												</button>
+												</div>
 											</dd>
 										</dl>
 									</c:when>
@@ -127,35 +160,6 @@
 													</dd>
 												</dl>
 											</c:if>
-											
-											<dl class="display-group border-bottom m-0">
-												<dt class="col-lg-5">
-													<spring:message code="label_org_esupportail_esupsignature_domain_currentsignbook" /><button data-target="#collapseHelpCurrent" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
-													<div class="collapse" id="collapseHelpCurrent">
-														<div class="card card-body border-info text-info">
-															<small>
-															Les paramètres du parapheur courant sont appliqués par défaut. Vous pouvez modifier la position manuellement à l'aide de la prévisualisation.
-															</small>
-														</div>
-													</div>
-												</dt>
-												<dd>
-													<button class="btn btn-outline-dark col-12" type="button">
-													<i class="fas fa-book"><!--  --></i>&amp;nbsp;${curentSignBook.name}
-													</button>
-												</dd>
-											</dl>
-											<dl class="display-group border-bottom m-0">
-												<dt class="col-lg-5">
-													<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_originalfile" />
-												</dt>
-												<dd>
-													<spring:url value="/user/signrequests/get-last-file/${id}" var="signedFileUrl" />
-													<button type="button" class="btn btn-info" onclick="window.open('${signedFileUrl}', '_blank')">
-														<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" />
-													</button>
-												</dd>
-											</dl>											
 											<dl class="display-group border-bottom m-0">
 												<dt class="col-lg-5">
 													<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signAction" />
@@ -245,42 +249,7 @@
 									</c:otherwise>
 								</c:choose>
 							</form>
-							<dl class="display-group border-bottom m-0">
-								<dt class="col-lg-5">
-									<spring:message code="menu_item_sendtosignbook" />&amp;nbsp;
-				           			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
-									<div class="collapse" id="collapseHelp1">
-										<div class="card card-body border-info text-info">
-											<small>
-												A tous moments vous pouvez envoyer la demande dans un autre parapheur.
-												Si la demande se trouve dans plusieurs parapheurs vous pouvez choisir si toutes les signatures sont exigées pour passer au status 
-												<button type="button" class="btn btn-outline-success btn-sm">
-													<i class="fas fa-file-signature"> <!--  -->
-													</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
-												</button>
-											</small>
-										</div>
-									</div>
-								</dt>
-							<dd class="col-lg-7">
-							<spring:url value="/user/signrequests/send-to-signbook/${id}" var="sendToSignBookUrl" />
-							<form class="form-group" action="${sendToSignBookUrl}" method="get">
-								<div class="input-group">
-									<select class="form-control" id="signBookId" name="signBookId">
-										<c:forEach items="${signBooks}" var="signBook">
-											<option value="${signBook.id}">${signBook.name}</option>
-										</c:forEach>
-									</select>
-									<div class="input-group-append">
-										<button type="submit" class="btn btn-primary">
-											<i class="fas fa-share-square"> <!--  -->
-											</i>&amp;nbsp;<spring:message code="button_send" />
-										</button>
-									</div>
-								</div>
-							</form>
-							</dd>
-							</dl>
+
 							<c:if test="${signRequest.status eq 'signed' or signRequest.status eq 'checked'}">
 							<dl class="display-group border-bottom m-0">
 								<dt class="col-lg-5">
@@ -310,22 +279,31 @@
 						</div>
 					</div>
 				</div>
+				
 				<div class="card bg-light">
 					<div class="card-header">
-						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseInfos" aria-expanded="true" aria-controls="collapseInfos">
-							<spring:message code="menu_item_signrequest_infos" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
+						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseSignBook" aria-expanded="true" aria-controls="collapseTools">
+							<spring:message code="label_org_esupportail_esupsignature_domain_signbook" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
 							</i>
 						</button>
 					</div>
-					<div id="collapseInfos" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+					<div id="collapseSignBook" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
 						<div class="card-body">
-							<field:display field="name" id="s_org_esupportail_esupsignature_domain_SignRequest_name" object="${signRequest}" z="user-managed" />
 							<dl class="display-group border-bottom m-0">
 								<dt class="col-lg-5">
-									<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status" />
+									<spring:message code="label_org_esupportail_esupsignature_domain_currentsignbook" /><button data-target="#collapseHelpCurrent" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+									<div class="collapse" id="collapseHelpCurrent">
+										<div class="card card-body border-info text-info">
+											<small>
+											Les paramètres du parapheur courant sont appliqués par défaut. Vous pouvez modifier la position manuellement à l'aide de la prévisualisation.
+											</small>
+										</div>
+									</div>
 								</dt>
 								<dd>
-									<jsp:include page="includes/status.jspx" />
+									<div class="alert alert-dark">
+										<i class="fas fa-book"><!--  --></i>&amp;nbsp;${currentSignBook.name}
+									</div>
 								</dd>
 							</dl>
 							<dl class="display-group border-bottom m-0">
@@ -362,7 +340,58 @@
 									</div>
 								</dd>
 
-							</dl>							
+							</dl>	
+							<dl class="display-group border-bottom m-0">
+								<dt class="col-lg-5">
+									<spring:message code="menu_item_sendtosignbook" />&amp;nbsp;
+				           			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+									<div class="collapse" id="collapseHelp1">
+										<div class="card card-body border-info text-info">
+											<small>
+												A tous moments vous pouvez envoyer la demande dans un autre parapheur.
+												Si la demande se trouve dans plusieurs parapheurs vous pouvez choisir si toutes les signatures sont exigées pour passer au status 
+												<button type="button" class="btn btn-outline-success btn-sm">
+													<i class="fas fa-file-signature"> <!--  -->
+													</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
+												</button>
+											</small>
+										</div>
+									</div>
+								</dt>
+							<dd class="col-lg-7">
+							<spring:url value="/user/signrequests/send-to-signbook/${id}" var="sendToSignBookUrl" />
+							<form class="form-group" action="${sendToSignBookUrl}" method="get">
+								<div class="input-group">
+									<select class="form-control" id="signBookId" name="signBookId">
+										<c:forEach items="${signBooks}" var="signBook">
+											<option value="${signBook.id}">${signBook.name}</option>
+										</c:forEach>
+									</select>
+									<div class="input-group-append">
+										<button type="submit" class="btn btn-primary">
+											<i class="fas fa-share-square"> <!--  -->
+											</i>&amp;nbsp;<spring:message code="button_send" />
+										</button>
+									</div>
+								</div>
+							</form>
+							</dd>
+							</dl>
+
+						</div>
+					</div>
+				</div>
+				
+				<div class="card bg-light">
+					<div class="card-header">
+						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseInfos" aria-expanded="true" aria-controls="collapseInfos">
+							<spring:message code="menu_item_signrequest_infos" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
+							</i>
+						</button>
+					</div>
+					<div id="collapseInfos" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+						<div class="card-body">
+		
 							<dl class="display-group border-bottom m-0">
 								<dt class="col-lg-5">
 									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_params" />
@@ -371,14 +400,14 @@
 								<div class="form-group">
 									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" />
 									:
-									<button type="button" class="btn btn-light active btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+									<div class="alert alert-dark col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
 										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" />
-									</button>
+									</div>
 									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype" />
 									:
-									<button type="button" class="btn btn-light active btn-sm col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+									<div class="alert alert-dark col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
 										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signRequest.signRequestParams.newPageType}" />
-									</button>
+									</div>
 									</div>
 								</dd>
 							</dl>
