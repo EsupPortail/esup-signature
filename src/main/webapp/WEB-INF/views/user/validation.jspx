@@ -27,7 +27,7 @@
 					<div class="custom-file">
 						<input required="required" class="custom-file-input" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01" />
 						<label class="custom-file-label" id="inputGroupLabel01" for="upload">
-							<spring:message code="button_choose_file" />
+							Choisir un fichier signé
 						</label>
 					</div>
 				</div>

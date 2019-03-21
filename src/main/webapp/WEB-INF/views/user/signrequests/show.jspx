@@ -15,7 +15,16 @@
 	</div>
 		<div aria-expanded="true" class="show" id="collapseHelp">
 		<div class="card card-body border-info text-info">
-			<spring:message code="help_user_signrequest_show" />
+		<c:choose>
+			<c:when test="${documentType eq 'pdf'}">
+			Pour signer un document, il faut positionner la signature sur le document à l'aide de la souris puis cliquer sur "Signer".
+			</c:when>
+			<c:otherwise>
+			Pour signer un document cliquer sur "Signer".
+			</c:otherwise>
+			</c:choose>
+			<br/>
+			Selon le type de signature, le lancement de l'application NexU ou un mot de passe peut être demandé.
 		</div>
 	</div>
 	<page:show list="false" update="false" delete="false" id="ps_org_esupportail_esupsignature_domain_SignRequest" object="${signRequest}" path="/user/signrequests" z="user-managed">
@@ -400,13 +409,13 @@
 								<div class="form-group">
 									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" />
 									:
-									<div class="alert alert-dark col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
-										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" />
+									<div class="alert alert-dark text-center" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+										<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" /></small>
 									</div>
 									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype" />
 									:
-									<div class="alert alert-dark col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
-										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signRequest.signRequestParams.newPageType}" />
+									<div class="alert alert-dark text-center" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+										<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signRequest.signRequestParams.newPageType}" /></small>
 									</div>
 									</div>
 								</dd>

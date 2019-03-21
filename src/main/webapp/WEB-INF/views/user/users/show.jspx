@@ -59,14 +59,14 @@
 			<dd>
 				<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" />
 				:
-				<button type="button" class="btn btn-light active btn-sm col-12" id="type_${defaultSignBook.id}" value="${defaultSignBook.signRequestParams.signType}">
-					<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${defaultSignBook.signRequestParams.signType}" />
-				</button>
+				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" value="${defaultSignBook.signRequestParams.signType}">
+					<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${defaultSignBook.signRequestParams.signType}" /></small>
+				</div>
 				<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype" />
 				:
-				<button type="button" class="btn btn-light active btn-sm col-12" id="type_${defaultSignBook.id}" value="${defaultSignBook.signRequestParams.signType}">
-					<spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${defaultSignBook.signRequestParams.newPageType}" />
-				</button>
+				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" value="${defaultSignBook.signRequestParams.signType}">
+					<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${defaultSignBook.signRequestParams.newPageType}" /></small>
+				</div>
 			</dd>
 		</dl>
 	</page:show>

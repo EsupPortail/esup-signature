@@ -4,19 +4,21 @@
 	<jsp:output omit-xml-declaration="yes" />
 	<div id="collapseHelp" class="collapse show" aria-expanded="true" style="">
 		<div class="card card-body border-info text-info">
-			<p>Bienvenue sur l'application Esup-Signature. Merci de compléter vos informations pour pouvoir commencer à signer.</p>
+			<p style="font-weight: bold;">Bienvenue sur l'application Esup-Signature. Merci de compléter vos informations pour pouvoir commencer à signer.</p>
 			<ul>
 			<li>
-			Pour la signature au format PAdES ou par apposition d'une image sur un PDF il faut selectionner un fichier image de la signature.
+			Pour la signature au format PAdES ou par apposition d'une image sur un PDF il faut sélectionner un fichier image de la signature.
 			</li>
 			<li>
-			Pour la signature au format PAdES/XAdES il faut en plus selectionner un keystore au format PKCS12 (il est possible d'en générer un sur la plateforme <a href="https://www.digicert.com/sso">https://www.digicert.com/sso</a>)
+			Pour la signature au format PAdES/XAdES il faut en plus sélectionner un keystore au format PKCS12.
+			<br/>
+			Il est possible d'en générer un sur la plateforme <a href="https://www.digicert.com/sso">https://www.digicert.com/sso</a> (voir <a href="https://services.renater.fr/tcs/certcentral/orders/request-certificate">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a> pour plus de détails)
 			</li>
 			<li>
 			Enfin vous pouvez choisir vos paramètres de signature par défaut
 			</li>
 			</ul>
-			<p>Vous pouvez modifier/compléter vos paramètres à tous moments en utilisant l'onglet <span class="fa fa-cog"><!-- --></span></p>
+			<p>Vous pouvez modifier / compléter vos paramètres à tous moments en utilisant l'onglet <span class="fa fa-cog"><!-- --></span></p>
 			<p>Dès que vous apercevez ce symbole <span class="fas fa-info-circle text-info"><!-- --></span>, cliquez dessus pour obtenir de l'aide</p>
 		</div>
 	</div>
@@ -32,7 +34,9 @@
 					<div class="collapse show" id="collapseHelpSignImage">
 						<div class="card card-body border-info text-info">
 							<small>
-								Après avoir selectionné une image, vous devez ajuster sa taille pour que la signature entre dans le carré blanc
+								Après avoir sélectionné une image, vous devez ajuster sa taille pour que la signature entre dans le carré blanc.
+								<br/>
+								Une image de la signature sera toujours nécessaire pour signer un PDF
 							</small>
 						</div>
 					</div>
@@ -71,7 +75,7 @@
 		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signType_id">
 			<label class="col-lg-3  col-form-label" for="signType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype" /></strong>
 			&amp;nbsp;<button data-target="#collapseHelpSignType" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
-					<div class="collapse" id="collapseHelpSignType">
+					<div class="show" id="collapseHelpSignType">
 						<div class="card card-body border-info text-info">
 							<small>
 								<ul>

@@ -7,43 +7,30 @@
 			<p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
 			<p>
 			Statut des demandes de signatures :
-			<ul>
-			<li>
-			<button type="button" class="btn btn-outline-primary btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
-				<i class="fas fa-clock"> <!--  -->
-				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
-			</button>
+			<div class="alert alert-primary btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+				<i class="fas fa-clock"> <!--  --></i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
+			</div>
 			La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures 
-			</li>
-			<li>
-			<button type="button" class="btn btn-outline-success btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+			<div class="alert alert-success btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
 				<i class="fas fa-file-signature"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
-			</button>
+			</div>
 			Tous les critères de signatures sont remplis
-			</li>
-			<li>
-			<button type="button" class="btn btn-outline-success btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+			<div class="alert alert-success btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
 				<i class="far fa-check-circle"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
-			</button>
+			</div>
 			Le document à été validé par tous les participants
-			</li>
-			<li>
-			<button type="button" class="btn btn-outline-danger btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+			<div class="alert alert-danger btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
 				<i class="fas fa-ban"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
-			</button>
+			</div>
 			La demande à été refusée et retirée des parapheurs
-			</li>
-			<li>
-			<button type="button" class="btn btn-outline-warning btn-sm  col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+			<div class="alert alert-warning btn-sm  col-1" id="status_${signRequest.id}" value="${signRequest.status}">
 				<i class="fas fa-flag-checkered"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
-			</button>
+			</div>
 			La demande la demande à été retirée des parapheurs, elle va être supprimée de l'application automatiquement
-			</li>
-			</ul>
 			</p>
 		</div>
 	</div>

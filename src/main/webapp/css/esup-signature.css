@@ -130,11 +130,15 @@ form.delete {
 }
 
 .nav-tabs .navbar-nav > li > a.active,
-.nav-tabs .navbar-nav > li a:focus,
-.nav-tabs .navbar-nav > li a:hover {
+.nav-tabs .navbar-nav > li a:focus {
     border: 1px solid #AAAAAA;
 	background-color: #FFFFFF;
 	border-bottom-color: transparent !important;
+}
+
+.nav-tabs .navbar-nav > li a:hover {
+    border: 1px solid #AAAAAA;
+	background-color: #EEEEEE;
 }
 
 .loader {
