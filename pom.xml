@@ -6,7 +6,7 @@
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
 	<packaging>war</packaging>
-	<version>0.6.BUILD-SNAPSHOT</version>
+	<version>0.6.0.BUILD-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<bouncycastle.version>1.60</bouncycastle.version>
