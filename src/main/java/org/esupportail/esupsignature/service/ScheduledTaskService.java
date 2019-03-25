@@ -48,7 +48,6 @@ public class ScheduledTaskService {
 	public void sendAllEmailAlerts() throws EsupSignatureException {
 		List<User> users = User.findAllUsers();
 		for(User user : users) {
-			//TODO send email
 			userService.sendEmailAlert(user);
 		}
 	}

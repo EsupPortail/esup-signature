@@ -476,14 +476,14 @@
 							<div class="row">
 								<div class="col-lg-4">
 									<spring:message code="button_previous" var="previousLabel" />
-									<input type="button" class="btn btn-outline-dark" id="previous" onclick="previousImage()" value="${previousLabel}" />
+									<input type="button" class="btn btn-dark" id="previous" onclick="previousImage()" value="${previousLabel}" />
 								</div>
 								<div class="col-lg-4 text-center">
 									<h5><spring:message code="menu_item_preview" /></h5>
 								</div>
 								<div class="col-lg-4">
 									<spring:message code="button_next" var="nextLabel" />
-									<input type="button" class="btn btn-outline-dark float-right" id="next" onclick="nextImage()" value="${nextLabel}" />
+									<input type="button" class="btn btn-dark float-right" id="next" onclick="nextImage()" value="${nextLabel}" />
 								</div>
 							</div>
 							<div class="d-flex justify-content-center">

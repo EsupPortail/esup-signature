@@ -136,7 +136,8 @@
         <field:input field="xPos" id="c_org_esupportail_esupsignature_domain_SignBook_xPos" render="false" z="user-managed"/>
         <field:input field="yPos" id="c_org_esupportail_esupsignature_domain_SignBook_yPos" render="false" z="user-managed"/>
         <field:select field="modelFile" id="c_org_esupportail_esupsignature_domain_SignBook_modelFile" itemValue="id" items="${documents}" path="/user/documents" render="false" z="user-managed"/>
-        <field:select render="false" field="signRequestParams" id="c_org_esupportail_esupsignature_domain_SignBook_signRequestParams" itemValue="id" items="${signrequestsignRequestParamses}" path="/signrequestsignRequestParamses" z="user-managed"/>
+        <field:select field="signRequestParams" id="c_org_esupportail_esupsignature_domain_SignBook_signRequestParams" itemValue="id" items="${signrequestsignRequestParamses}" path="/signrequestsignRequestParamses" render="false" z="user-managed"/>
+        <field:checkbox field="autoRemove" id="c_org_esupportail_esupsignature_domain_SignBook_autoRemove" z="TVrlRLnHE5anFlxcA1Oo/sREYAA="/>
     </form:update>
     <script type="text/javascript">
 		var sourceSelector = document.getElementById("_sourceType_id");

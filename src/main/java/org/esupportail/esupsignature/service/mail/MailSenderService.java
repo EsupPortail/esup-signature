@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.mail;
+package org.esupportail.esupsignature.service.mail;
 
 import java.io.File;
 
@@ -10,7 +10,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
-public class SimpleMailSender {
+public class MailSenderService {
 
 	private final Logger log = Logger.getLogger(getClass());
 
@@ -21,8 +21,7 @@ public class SimpleMailSender {
 
 	
 	
-	public SimpleMailSender(String senderHost, String senderFrom) {
-		super();
+	public MailSenderService(String senderHost, String senderFrom) {
 		this.senderHost = senderHost;
 		this.senderFrom = senderFrom;
 	}

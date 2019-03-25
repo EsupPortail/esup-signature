@@ -172,3 +172,14 @@ form.delete {
 .alert {
     margin-bottom: 0rem;
  }
+
+.btn-default,.btn-primary,.btn-success,.btn-info,.btn-warning,.btn-danger,.btn-dark,.btn-light {
+    -webkit-box-shadow: 0px 3px 0px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow:    0px 3px 0px rgba(0, 0, 0, 0.3);
+    box-shadow:         0px 3px 0px rgba(0, 0, 0, 0.3);
+}
+
+.btn-default:active,.btn-primary:active,.btn-success:active,.btn-info:active,.btn-warning:active,.btn-dark:active.btn-light:active {
+    margin-top: 3px;
+    margin-bottom: -3px;
+}

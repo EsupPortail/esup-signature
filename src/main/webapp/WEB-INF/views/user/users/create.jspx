@@ -89,19 +89,19 @@
 					</div>
 			</label>
 			<div class="col-lg-9">
-                        <select class="form-control" id="_signType_id" name="signType" size="1">
-                            <c:forEach items="${signTypes}" var="signType">
-                                <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signType}" var="signTypeLabel"/>
-                                <c:choose>
-                                    <c:when test="${signType eq signBook.signRequestParams.signType}">
-                                        <option selected="selected" value="${signType}">${signTypeLabel}</option>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <option value="${signType}">${signTypeLabel}</option>
-                                    </c:otherwise>
-                                </c:choose>
-                            </c:forEach>
-                        </select>
+               <select class="form-control" id="_signType_id" name="signType" size="1">
+                   <c:forEach items="${signTypes}" var="signType">
+                       <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signType}" var="signTypeLabel"/>
+                       <c:choose>
+                           <c:when test="${signType eq signBook.signRequestParams.signType}">
+                               <option selected="selected" value="${signType}">${signTypeLabel}</option>
+                           </c:when>
+                           <c:otherwise>
+                               <option value="${signType}">${signTypeLabel}</option>
+                           </c:otherwise>
+                       </c:choose>
+                   </c:forEach>
+               </select>
 			</div>
 		</div>        
 		<field:select render="false" field="newPageType" id="c_org_esupportail_esupsignature_domain_SignRequest_newPageType" cssClass="form-control" path="/" multiple="false" size="1" checkboxes="false" items="${newPageTypes}" z="user-managed"/>        
@@ -127,6 +127,72 @@
 	            </select>
 			</div>
 		</div>
+		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertFrequency">
+			<label class="col-lg-3  col-form-label" for="signType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency" /></strong>
+			&amp;nbsp;<button data-target="#collapseHelpEmailAlertFrequency" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+					<div class="collapse" id="collapseHelpEmailAlertFrequency">
+						<div class="card card-body border-info text-info">
+							<small><!--  --></small>
+						</div>
+					</div>
+			</label>
+			<div class="col-lg-9">
+               <select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency" size="1">
+                   <c:forEach items="${emailAlertFrequencies}" var="emailAlertFrequency">
+                       <spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency_${emailAlertFrequency}" var="emailAlertFrequencyLabel"/>
+                       <c:choose>
+                           <c:when test="${emailAlertFrequency eq user.emailAlertFrequency}">
+                               <option selected="selected" value="${emailAlertFrequency}">${emailAlertFrequencyLabel}</option>
+                           </c:when>
+                           <c:otherwise>
+                               <option value="${emailAlertFrequency}">${emailAlertFrequencyLabel}</option>
+                           </c:otherwise>
+                       </c:choose>
+                   </c:forEach>
+               </select>
+			</div>
+		</div>
+		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertFrequency">
+			<label class="col-lg-3  col-form-label" for="signType">
+			<strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailalerthour" /></strong>
+			&amp;nbsp;<button data-target="#collapseHelpEmailAlertHour" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+					<div class="collapse" id="collapseHelpEmailAlertHour">
+						<div class="card card-body border-info text-info">
+							<small><!--  --></small>
+						</div>
+					</div>
+			</label>
+			<div class="col-lg-9">
+				<input id="emailAlertHour" name="emailAlertHour" class="form-control" type="time" value="" autocomplete="off" />
+			</div>
+		</div> 
+		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertDay">
+			<label class="col-lg-3  col-form-label" for="signType">
+			<strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailalertday" /></strong>
+			&amp;nbsp;<button data-target="#collapseHelpEmailAlertDay" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+					<div class="collapse" id="collapseHelpEmailAlertDay">
+						<div class="card card-body border-info text-info">
+							<small><!--  --></small>
+						</div>
+					</div>
+			</label>
+			<div class="col-lg-9">
+				<select class="form-control" id="_emailAlertDay_id" name="emailAlertDay" size="1">
+                   <c:forEach items="${daysOfWeek}" var="emailAlertDay">
+                       <spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertDay_${emailAlertDay}" var="emailAlertDayLabel"/>
+                       <c:choose>
+                           <c:when test="${emailAlertDay eq user.emailAlertDay}">
+                               <option selected="selected" value="${emailAlertDay}">${emailAlertDayLabel}</option>
+                           </c:when>
+                           <c:otherwise>
+                               <option value="${emailAlertDay}">${emailAlertDayLabel}</option>
+                           </c:otherwise>
+                       </c:choose>
+                   </c:forEach>
+               </select>
+			</div>
+		</div> 
+
 	</form:create>
 	<form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_User" render="${not empty dependencies}" z="user-managed" />
 

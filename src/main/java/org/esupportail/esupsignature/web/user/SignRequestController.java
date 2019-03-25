@@ -84,7 +84,9 @@ public class SignRequestController {
 	private long passwordTimeout;
 	
 	private String progress = "0";
-	private String password = "";
+	
+	private String password;
+	
 	long startTime;
 
 	public void setPassword(String password) {
@@ -181,6 +183,7 @@ public class SignRequestController {
 
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
+		//TODO : modal password + loading avec les etapes PDF/A + SIGN...
 		User user = userService.getUserFromAuthentication();
 		addDateTimeFormatPatterns(uiModel);
 		SignRequest signRequest = SignRequest.findSignRequest(id);
