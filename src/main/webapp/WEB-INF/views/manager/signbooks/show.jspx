@@ -71,6 +71,7 @@
                         <field:display field="XPos" id="s_org_esupportail_esupsignature_domain_SignBook_XPos" object="${signBook}" render="false" z="user-managed"/>
                         <field:display field="YPos" id="s_org_esupportail_esupsignature_domain_SignBook_YPos" object="${signBook}" render="false" z="user-managed"/>
                         <field:display field="modelFile" id="s_org_esupportail_esupsignature_domain_SignBook_modelFile" object="${signBook}" render="false" z="user-managed"/>
+                                <field:display field="autoRemove" id="s_org_esupportail_esupsignature_domain_SignBook_autoRemove" object="${signBook}" z="user-managed"/>
                         <field:display date="true" dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignBook_createDate" object="${signBook}" z="user-managed"/>
                         <field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignBook_createBy" object="${signBook}" z="user-managed"/>
                         <field:display date="true" dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_SignBook_updateDate" object="${signBook}" render="false" z="user-managed"/>
@@ -155,6 +156,5 @@
                 </div>
             </c:if>
         </div>
-        <field:display field="autoRemove" id="s_org_esupportail_esupsignature_domain_SignBook_autoRemove" object="${signbook}" z="A3guqwVLZZKGSYqKwZHTTAhNA7E="/>
     </page:show>
 </div>

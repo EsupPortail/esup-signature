@@ -333,7 +333,7 @@ public class SignRequestController {
 					if(!signRequest.isOverloadSignBookParams()) {
 						signRequest.getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().getSignType());
 					}
-					if(signRequest.getSignRequestParams().getSignType().equals(SignRequestParams.SignType.validate)) {
+					if(signRequest.getSignRequestParams().getSignType().equals(SignRequestParams.SignType.visa)) {
 						signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
 					} else 
 					if(signRequest.getSignRequestParams().getSignType().equals(SignRequestParams.SignType.nexuSign)) {

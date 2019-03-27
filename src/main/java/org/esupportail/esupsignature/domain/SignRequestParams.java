@@ -13,7 +13,7 @@ import org.springframework.roo.addon.tostring.RooToString;
 public class SignRequestParams {
 	
 	public enum SignType {
-		certSign, pdfImageStamp, nexuSign, validate;
+		certSign, pdfImageStamp, nexuSign, visa;
 	}
 
 	public enum NewPageType {

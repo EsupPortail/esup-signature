@@ -88,7 +88,7 @@ public class UserController {
 	
     @RequestMapping(produces = "text/html")
     public String show(Model uiModel) throws Exception {
-		User user = userService.getUserFromAuthentication();
+    	User user = userService.getUserFromAuthentication();
     	if(!user.isReady()) {
 			return "redirect:/user/users/?form";
 		}    	
@@ -101,12 +101,13 @@ public class UserController {
         }        
         SignBook defaultSignBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
         uiModel.addAttribute("defaultSignBook", defaultSignBook);
-        uiModel.addAttribute("isPasswordSet", password != "");
+        uiModel.addAttribute("isPasswordSet", (password != null && password != ""));
         return "user/users/show";
     }
     
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(Model uiModel) throws IOException, SQLException {
+    	//TODO : caroussel
 		User user = userService.getUserFromAuthentication();;
 		if(user != null) {
 	        uiModel.addAttribute("user", user);	        

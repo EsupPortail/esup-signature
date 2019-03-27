@@ -23,12 +23,36 @@
 		</div>
 	</div>
 	<form:create id="fc_org_esupportail_esupsignature_domain_User" modelAttribute="user" multipart="true" path="/user/users/" render="${empty dependencies}" z="user-managed">
-		<field:input readonly="true" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_User_name" z="user-managed" />
+		<div id="accordion" role="tablist" aria-multiselectable="true">
+  <div class="card">
+    <div class="card-header" role="tab" id="headingOne">
+      <h5 class="mb-0">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+			Identité&amp;nbsp;<i class="fas fa-caret-down"><!--  --></i>
+		</a>
+      </h5>
+    </div>
+
+    <div id="collapseOne" class="collapse show" role="tabpanel" aria-labelledby="headingOne">
+      <div class="card-body">
+        		<field:input readonly="true" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_User_name" z="user-managed" />
 		<field:input readonly="true" cssClass="form-control" field="firstname" id="c_org_esupportail_esupsignature_domain_User_firstname" z="user-managed" />
 		<field:input readonly="true" cssClass="form-control" field="eppn" id="c_org_esupportail_esupsignature_domain_User_eppn" z="user-managed" />
 		<field:input readonly="true" cssClass="form-control" field="email" id="c_org_esupportail_esupsignature_domain_User_email" z="user-managed" />
-
-		<div class="form-group">
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header" role="tab" id="headingTwo">
+      <h5 class="mb-0">
+        <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+          Signature&amp;nbsp;<i class="fas fa-caret-down"><!--  --></i>
+        </a>
+      </h5>
+    </div>
+    <div id="collapseTwo" class="show" role="tabpanel" aria-labelledby="headingTwo">
+      <div class="card-body">
+        		<div class="form-group">
 			<label class="col-lg-3  col-form-label" for="newPageType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_signimage" /></strong>
 			&amp;nbsp;<button data-target="#collapseHelpSignImage" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"><!-- --></span></button>
 					<div class="collapse show" id="collapseHelpSignImage">
@@ -89,7 +113,7 @@
 					</div>
 			</label>
 			<div class="col-lg-9">
-               <select class="form-control" id="_signType_id" name="signType" size="1">
+               <select class="form-control" id="_signType_id" name="signType" onchange="checkRequirement();" size="1">
                    <c:forEach items="${signTypes}" var="signType">
                        <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signType}" var="signTypeLabel"/>
                        <c:choose>
@@ -127,7 +151,20 @@
 	            </select>
 			</div>
 		</div>
-		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertFrequency">
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header" role="tab" id="headingThree">
+      <h5 class="mb-0">
+        <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+          Alertes&amp;nbsp;<i class="fas fa-caret-down"><!--  --></i>
+        </a>
+      </h5>
+    </div>
+    <div id="collapseThree" class="collapse" role="tabpanel" aria-labelledby="headingThree">
+      <div class="card-body">
+        		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertFrequency">
 			<label class="col-lg-3  col-form-label" for="signType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency" /></strong>
 			&amp;nbsp;<button data-target="#collapseHelpEmailAlertFrequency" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 					<div class="collapse" id="collapseHelpEmailAlertFrequency">
@@ -137,7 +174,7 @@
 					</div>
 			</label>
 			<div class="col-lg-9">
-               <select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency" size="1">
+               <select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency" size="1" onchange="checkAlertFrequency();">
                    <c:forEach items="${emailAlertFrequencies}" var="emailAlertFrequency">
                        <spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency_${emailAlertFrequency}" var="emailAlertFrequencyLabel"/>
                        <c:choose>
@@ -152,7 +189,7 @@
                </select>
 			</div>
 		</div>
-		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertFrequency">
+		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertHour" style="display: none;">
 			<label class="col-lg-3  col-form-label" for="signType">
 			<strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailalerthour" /></strong>
 			&amp;nbsp;<button data-target="#collapseHelpEmailAlertHour" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
@@ -166,7 +203,7 @@
 				<input id="emailAlertHour" name="emailAlertHour" class="form-control" type="time" value="" autocomplete="off" />
 			</div>
 		</div> 
-		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertDay">
+		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertDay" style="display: none;">
 			<label class="col-lg-3  col-form-label" for="signType">
 			<strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailalertday" /></strong>
 			&amp;nbsp;<button data-target="#collapseHelpEmailAlertDay" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
@@ -192,12 +229,15 @@
                </select>
 			</div>
 		</div> 
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
 
 	</form:create>
 	<form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_User" render="${not empty dependencies}" z="user-managed" />
-
-	<script type="text/javascript">
-
-	</script>
 
 </div>

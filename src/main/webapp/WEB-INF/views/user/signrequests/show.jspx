@@ -68,7 +68,7 @@
 				<div class="card bg-light">
 					<div class="card-header">
 						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseTools" aria-expanded="true" aria-controls="collapseTools">
-							<spring:message code="label_org_esupportail_esupsignature_domain_user_signimage" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
+							<spring:message code="menu_item_signRequest_sign_label" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
 							</i>
 						</button>
 					</div>
@@ -76,7 +76,7 @@
 						<div class="card-body">
 							<form autocomplete="off" action="/user/signrequests/sign/${id}" method="post">
 								<c:choose>
-									<c:when test="${documentType eq 'pdf' and signable eq 'ok' and (signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'validate'}">
+									<c:when test="${documentType eq 'pdf' and signable eq 'ok' and (signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'visa'}">
 										<dl class="display-group border-bottom m-0" style="display: none;">
 											<dt class="col-lg-5">
 												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signposition" />
@@ -139,32 +139,17 @@
 													<dd>
 													<div class="input-group">
 														<spring:url value="/user/signrequests/toggle-need-all-sign/${id}" var="toggleNeedAllSignUrl" />
-														<c:choose>
-															<c:when test="${signRequest.allSignToComplete eq true}">
-																<div class="input-group-prepend">
-																	<button type="button" class="btn btn-light active btn-sm col-12" onclick="document.location='${toggleNeedAllSignUrl}'">
-																	<spring:message code="global_no" />
-																	</button>
-																</div>
-																<div class="input-group-append">	
-																	<button type="button" class="btn btn-success btn-sm col-12" style="pointer-events: none;">
-																	<spring:message code="global_yes" />
-																	</button>
-																</div>
-															</c:when>
-															<c:otherwise>
-																<div class="input-group-prepend">
-																	<button type="button" class="btn btn-danger active btn-sm col-12" style="pointer-events: none;">
-																	<spring:message code="global_no" />
-																	</button>
-																</div>
-																<div class="input-group-append">
-																	<button type="button" class="btn btn-light active btn-sm col-12" onclick="document.location='${toggleNeedAllSignUrl}'">
-																	<spring:message code="global_yes" />
-																	</button>
-																</div>
-															</c:otherwise>
-														</c:choose>
+														<label class="switch">
+															<c:choose>
+																<c:when test="${signRequest.allSignToComplete eq true}">
+																  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete" checked="checked"/>
+																</c:when>
+																<c:otherwise>
+																  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
+																</c:otherwise>
+															</c:choose>
+														  	<span class="slider round"><!--  --></span>
+														</label>
 													</div>
 													</dd>
 												</dl>
@@ -227,9 +212,9 @@
 														</c:when>
 														<c:otherwise>
 															<c:choose>
-																<c:when test="${signRequest.signRequestParams.signType eq 'validate'}">
-																	<spring:message code="button_validate" var="validateLabel" />
-																	<input alt="${validateLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${validateLabel}" />
+																<c:when test="${signRequest.signRequestParams.signType eq 'visa'}">
+																	<spring:message code="button_visa" var="visaLabel" />
+																	<input alt="${visaLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${visaLabel}" />
 																</c:when>
 																<c:otherwise>
 																	<c:if test="${not empty user.signImage}"> 
@@ -489,7 +474,7 @@
 							<div class="d-flex justify-content-center">
 								<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
 								<div id="pointer_div" onclick="savePosition();" onmouseout="resetPosition();" onmousemove="pointIt(event);" style="background-size: ${pdfWidth}px;background-image:url('${documentUrl}/${signRequest.signRequestParams.signPageNumber -1}');width:${pdfWidth}px;height:${pdfHeight}px;border:1px solid #CCC;">
-									<c:if test="${signable eq 'ok' and (signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'validate'}">
+									<c:if test="${signable eq 'ok' and (signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'visa'}">
 										<div id="cross" style="background-size: 100px;background-image: url('data:image/png;base64,${signFile}'); width: 100px; height: 75px; line-height: 75px; text-align: center;width:100px; left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;pointer-events: none;">
 											<div id="borders" style="width: 100px; height: 75px;">
 												<span style="opacity: 0.6; vertical-align: middle; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">

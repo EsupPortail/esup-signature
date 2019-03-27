@@ -52,7 +52,7 @@
 			<div class="card">
 				<div class="card-header">
                     <div class="accordion-heading">
-                        <a class="accordion-toggle" data-parent="#accordionfilter" data-toggle="collapse" href="#collapseFilter"> Filtres </a>
+                        <a class="accordion-toggle" data-parent="#accordionfilter" data-toggle="collapse" href="#collapseFilter">Filtres&amp;nbsp;<i class="fas fa-caret-down"><!--  --></i></a>
                     </div>
                     <div class="accordion-body collapse ${finderview ? 'in' : ''}" id="collapseFilter">
                         <div class="accordion-inner">

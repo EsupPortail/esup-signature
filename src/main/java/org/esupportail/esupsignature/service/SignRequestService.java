@@ -125,7 +125,7 @@ public class SignRequestService {
 	}
 	
 	public void validate(SignRequest signRequest, User user) throws EsupSignatureIOException {
-		updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
+		updateInfo(signRequest, SignRequestStatus.checked, "visa", user, "SUCCESS");		
 		applySignBookRules(signRequest, user);
 	}
 
@@ -137,7 +137,7 @@ public class SignRequestService {
 		if(signRequest.getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
 			throw new EsupSignatureNexuException("redirect to nexuSign");
 		}
-		if(signRequest.getSignRequestParams().getSignType().equals(SignType.validate)) {
+		if(signRequest.getSignRequestParams().getSignType().equals(SignType.visa)) {
 			validate(signRequest, user);
 		} else {
 			File toSignFile = getLastDocument(signRequest).getJavaIoFile();
@@ -406,7 +406,7 @@ public class SignRequestService {
 		signRequestParams.setXPos(0);
 		signRequestParams.setYPos(0);
 		signRequestParams.setNewPageType(NewPageType.none);
-		signRequestParams.setSignType(SignType.validate);
+		signRequestParams.setSignType(SignType.visa);
 		signRequestParams.persist();
 		return signRequestParams;
 	}

@@ -68,9 +68,7 @@
 				</select>
 			</div>
 		</div>
-		
-		<input type="hidden" id="allSignToComplete" name="allSignToComplete" value="false" />
-			<div class="form-group div-disable" id="_signBookIds_div_id">
+		<div class="form-group div-disable" id="_signBookIds_div_id">
 			<label class="col-lg-3  col-form-label" for="newPageType">
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" /><button data-target="#collapseHelpAllSign" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
@@ -87,23 +85,13 @@
 				</strong>
 			</label>
 			<div class="col-lg-9">
-				<div class="input-group">
-					<div class="input-group-prepend">
-						<button id="allsign_no" type="button" class="btn btn-light btn-sm col-12" onclick="toggleAllSign();">
-						<spring:message code="global_no" />
-						</button>
-					</div>
-					<div class="input-group-append">
-						<button id="allsign_yes" type="button" class="btn btn-light btn-sm col-12" onclick="toggleAllSign();">
-						<spring:message code="global_yes" />
-						</button>
-					</div>
-				</div>
+				<label class="switch">
+				  <input type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
+				  <span class="slider round"><!--  --></span>
+				</label>
 			</div>
 		</div>
-		
-		<input type="hidden" id="_overloadSignParams" name="overloadSignBookParams" value="false" />
-				<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
+			<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
 			<label class="col-lg-3  col-form-label" for="newPageType">
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_overloadparams" /><button data-target="#collapseHelpOverLoad" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
@@ -120,18 +108,10 @@
 				</strong>
 			</label>
 			<div class="col-lg-9">
-				<div class="input-group">
-					<div class="input-group-prepend">
-						<button id="overload_no" type="button" class="btn btn-light btn-sm col-12" onclick="toggleOverload();">
-						<spring:message code="global_no" />
-						</button>
-					</div>
-					<div class="input-group-append">
-						<button id="overload_yes" type="button" class="btn btn-light btn-sm col-12" onclick="toggleOverload();">
-						<spring:message code="global_yes" />
-						</button>
-					</div>
-				</div>
+				<label class="switch">
+				  <input id="_overloadSignParams" type="checkbox" name="overloadSignBookParams" onclick="toggleOverload();" />
+				  <span class="slider round"><!--  --></span>
+				</label>
 			</div>
 		</div>
 		<div class="form-group" id="_signType_div_id">
