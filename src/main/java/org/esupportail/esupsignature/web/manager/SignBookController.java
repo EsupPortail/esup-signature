@@ -112,7 +112,7 @@ public class SignBookController {
 			signBookToUpdate.setTargetType(signBook.getTargetType());
 			signBookToUpdate.getSignRequestParams().setSignType(SignType.valueOf(signType));
 			signBookToUpdate.getSignRequestParams().setNewPageType(NewPageType.valueOf(newPageType));
-			Document newModel = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
+			Document newModel = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
 			if(newModel != null) {
 				Document oldModel = signBookToUpdate.getModelFile();
 				signBookToUpdate.setModelFile(newModel);
@@ -123,7 +123,7 @@ public class SignBookController {
 			if(SignBook.countFindSignBooksByNameEquals(signBook.getName()) == 0) {
 			signBook.setCreateBy(user.getEppn());
 			signBook.setCreateDate(new Date());
-			signBook.setModelFile(documentService.addFile(multipartFile, multipartFile.getOriginalFilename()));
+			signBook.setModelFile(documentService.createDocument(multipartFile, multipartFile.getOriginalFilename()));
 			SignRequestParams signRequestParams = new SignRequestParams();
 			signRequestParams.setSignType(SignType.valueOf(signType));
 			signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));

@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.user;
+	package org.esupportail.esupsignature.web.user;
 
 import java.io.File;
 import java.io.IOException;
@@ -263,7 +263,7 @@ public class SignRequestController {
 			signRequestParams.persist();
 		}
 		try {
-			Document document = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
+			Document document = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
 			signRequest = signRequestService.createSignRequest(signRequest, user, document, signRequestParams, signBookIds);
 
 		} catch (IOException e) {
@@ -406,7 +406,7 @@ public class SignRequestController {
 	}
 
 	@RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
-	public void getOriginalFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
+	public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		User user = userService.getUserFromAuthentication();
 		if(signRequestService.checkUserViewRights(user, signRequest)) {

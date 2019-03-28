@@ -121,7 +121,7 @@
 												</div>
 												<br/>
 												<div class="input-group">
-												<button type="button" class="btn btn-success" onclick="window.open('/user/validation/document/${id}')">
+												<button type="button" class="btn btn-success" onclick="location.href='/user/validation/document/${id}'">
 													<i class="fas fa-shield-alt"><!--  --></i>&amp;nbsp;<spring:message code="menu_item_validate" />
 												</button>
 												</div>
@@ -320,10 +320,10 @@
 													<td align="center">
 														<c:choose>
 															<c:when test="${signBooksLabel.value eq true}">
-																<i class="far fa-check-circle text-success"><!--  --></i>
+																<i class="fas fa-check text-success"><!--  --></i>
 															</c:when>
 															<c:otherwise>
-																<i class="far fa-times-circle text-danger"><!--  --></i>
+																<i class="fas fa-times text-danger"><!--  --></i>
 															</c:otherwise>
 														</c:choose>
 													</td>
@@ -394,12 +394,12 @@
 								<div class="form-group">
 									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" />
 									:
-									<div class="alert alert-dark text-center" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+									<div class="alert alert-dark text-center col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
 										<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" /></small>
 									</div>
 									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype" />
 									:
-									<div class="alert alert-dark text-center" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+									<div class="alert alert-dark text-center col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
 										<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signRequest.signRequestParams.newPageType}" /></small>
 									</div>
 									</div>
@@ -429,23 +429,22 @@
 									<b>Logs</b>
 								</dt>
 								<dd class="col-lg-12">
-									<small> <table:table cssClass="table" create="false" view="false" data="${logs}" delete="false" id="l_org_esupportail_esupsignature_domain_Log" path="/manager/logs" update="false" z="user-manager">
-											<table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Log_logDate" property="logDate" z="user-manager" />
-											<table:column id="c_org_esupportail_esupsignature_domain_Log_eppn" property="eppn" z="user-manager" />
-											<table:column id="c_org_esupportail_esupsignature_domain_Log_action" property="action" z="user-manager" />
-											<table:column id="c_org_esupportail_esupsignature_domain_Log_initialStatus" property="initialStatus" z="user-manager" />
-											<table:column id="c_org_esupportail_esupsignature_domain_Log_finalStatus" property="finalStatus" z="user-manager" />
-											<table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_returnCode" property="returnCode" z="user-manager" />
-										</table:table>
-									</small>
+									<table:table cssClass="table-sm" create="false" view="false" data="${logs}" delete="false" id="l_org_esupportail_esupsignature_domain_Log" path="/manager/logs" update="false" z="user-manager">
+										<table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Log_logDate" property="logDate" z="user-manager" />
+										<table:column id="c_org_esupportail_esupsignature_domain_Log_eppn" property="eppn" z="user-manager" />
+										<table:column id="c_org_esupportail_esupsignature_domain_Log_action" property="action" z="user-manager" />
+										<table:column id="c_org_esupportail_esupsignature_domain_Log_initialStatus" property="initialStatus" z="user-manager" />
+										<table:column id="c_org_esupportail_esupsignature_domain_Log_finalStatus" property="finalStatus" z="user-manager" />
+										<table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_returnCode" property="returnCode" z="user-manager" />
+									</table:table>
 								</dd>
 							</dl>
 							<dl class="display-group border-bottom m-0">
 								<dt class="col-lg-12">Historique des versions</dt>
 								<dd class="col-lg-12">
-									<table:table cssClass="table" delete="false" update="false" data="${documents}" id="l_org_esupportail_esupsignature_domain_Document" path="/user/documents" z="user-managed">
-										<table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Document_createDate" property="createDate" z="j59k34hemtKcSKVTK7L2Rvizlto=" />
-										<table:column id="c_org_esupportail_esupsignature_domain_Document_fileName" property="fileName" z="user-managed" />
+									<table:table view="false" create="false" cssClass="table-sm" delete="false" update="false" data="${documents}" id="l_org_esupportail_esupsignature_domain_Document" path="/user/documents" z="user-managed">
+										<table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Document_createDate" property="createDate" z="user-managed" />
+										<table:column link="true" id="c_org_esupportail_esupsignature_domain_Document_fileName" property="url" z="user-managed"  />
 									</table:table>
 								</dd>
 							</dl>

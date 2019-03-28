@@ -33,6 +33,8 @@ public class Document {
 	private String fileName;
 
     private Long size;
+    
+    private Long signRequestId;
 
     private String contentType;
 
@@ -41,7 +43,7 @@ public class Document {
     private Date createDate;
     
     public String getUrl() {
-        return "/manager/documents/getfile/" + getId();
+        return "/user/documents/getfile/" + getId();
     }
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST}, orphanRemoval = true)

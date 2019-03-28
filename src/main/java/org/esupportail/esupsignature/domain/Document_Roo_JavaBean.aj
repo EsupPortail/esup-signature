@@ -25,6 +25,14 @@ privileged aspect Document_Roo_JavaBean {
         this.size = size;
     }
     
+    public Long Document.getSignRequestId() {
+        return this.signRequestId;
+    }
+    
+    public void Document.setSignRequestId(Long signRequestId) {
+        this.signRequestId = signRequestId;
+    }
+    
     public String Document.getContentType() {
         return this.contentType;
     }

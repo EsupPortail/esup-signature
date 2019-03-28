@@ -22,23 +22,23 @@ public class DocumentService {
 	@Resource
 	private FileService fileService;
 
-	public Document addFile(String base64File, String name, String contentType) throws IOException {
-		return addFile(fileService.fromBase64Image(base64File, name), name, contentType);
+	public Document createDocument(String base64File, String name, String contentType) throws IOException {
+		return createDocument(fileService.fromBase64Image(base64File, name), name, contentType);
     }
 
 	
-	public Document addFile(File file, String name, String contentType) throws FileNotFoundException, IOException {
-		return addFile(new FileInputStream(file), name, file.length(), contentType);
+	public Document createDocument(File file, String name, String contentType) throws FileNotFoundException, IOException {
+		return createDocument(new FileInputStream(file), name, file.length(), contentType);
     }
 	
-	public Document addFile(MultipartFile multipartFile, String name) throws IOException {
+	public Document createDocument(MultipartFile multipartFile, String name) throws IOException {
 		if ((multipartFile != null) && !multipartFile.isEmpty()) {
-			return addFile(multipartFile.getInputStream(), name, multipartFile.getSize(), multipartFile.getContentType());
+			return createDocument(multipartFile.getInputStream(), name, multipartFile.getSize(), multipartFile.getContentType());
 		}
 		return null;
     }
 	
-	public Document addFile(InputStream inputStream, String name, long size, String contentType) throws IOException {
+	public Document createDocument(InputStream inputStream, String name, long size, String contentType) throws IOException {
         return persistDocument(inputStream, name, size, contentType);
     }
 

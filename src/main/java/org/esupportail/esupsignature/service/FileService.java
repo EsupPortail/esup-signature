@@ -1,5 +1,10 @@
 package org.esupportail.esupsignature.service;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -9,12 +14,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.Base64;
 
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.io.FilenameUtils;
@@ -108,12 +111,26 @@ public class FileService {
 		return new ByteArrayInputStream(os.toByteArray());
 	}
 
-	public InputStream notFoundImageToInputStream(String type) throws IOException {
+	public File notFoundImageToInputStream(String type) throws IOException {
+		return stringToImageFile("PAGE NOT FOUND", type);
+	}
+	
+	public File stringToImageFile(String text, String type) throws IOException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		InputStream is = new ByteArrayInputStream("PAGE NOT FOUND".getBytes(StandardCharsets.UTF_8));
-	    ImageInputStream iis = ImageIO.createImageInputStream(is);
-		ImageIO.write(ImageIO.read(iis), type, os);
-		return new ByteArrayInputStream(os.toByteArray());
+        BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = (Graphics2D) image.getGraphics();
+        FontRenderContext fc = g2d.getFontRenderContext();
+        Font font = new Font("Courier", Font.PLAIN, 14);
+        Rectangle2D bounds = font.getStringBounds(text, fc);
+        image = new BufferedImage(100, 75, BufferedImage.TYPE_INT_RGB);
+        g2d = (Graphics2D) image.getGraphics();
+        g2d.setColor(Color.white);
+	    g2d.fillRect(0, 0, 100, 75);
+	    g2d.setColor(Color.black);
+		g2d.drawString(text, 0, (int)-bounds.getY());
+	    g2d.dispose();
+	    ImageIO.write(image, type, os);
+		return inputStreamToFile(new ByteArrayInputStream(os.toByteArray()), "paraphe." + type);
 	}
 	
 	public File renameFile(File file, String name) {

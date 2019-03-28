@@ -105,7 +105,7 @@ public class SignBookService {
 					for (FsFile fsFile : fsFiles) {
 						logger.info("adding file : " + fsFile.getFile().getName());
 						fsFile.setPath(signBook.getDocumentsSourceUri());
-						Document documentToAdd = documentService.addFile(fsFile.getFile(), fsFile.getName(), fsFile.getContentType());
+						Document documentToAdd = documentService.createDocument(fsFile.getFile(), fsFile.getName(), fsFile.getContentType());
 						if (fsFile.getCreateBy() != null && User.countFindUsersByEppnEquals(fsFile.getCreateBy()) > 0) {
 							user = User.findUsersByEppnEquals(fsFile.getCreateBy()).getSingleResult();
 							user.setIp("127.0.0.1");

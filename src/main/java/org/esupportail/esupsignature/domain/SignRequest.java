@@ -51,6 +51,8 @@ public class SignRequest {
     @Size(max = 500)
     private String description;
     
+    //TODO multiple documents ici ou dans le parapheur
+    
     @OneToMany
     private List<Document> documents = new ArrayList<Document>();
     
@@ -82,6 +84,16 @@ public class SignRequest {
 		}
 		return signBookNames;
 		
+    }
+    
+    public int countSign() {
+    	int nbSign = 0;
+		for(Map.Entry<Long, Boolean> signBookId : signBooks.entrySet()) {
+			if(signBookId.getValue()) {
+				nbSign++;
+			}
+		}
+		return nbSign;
     }
     
     public List<String> getSignBooksJson() {

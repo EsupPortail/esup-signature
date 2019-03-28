@@ -129,7 +129,7 @@ public class UserService {
     }
 	
     public User addSignImage(User user, String signImageBase64) throws IOException {
-    	user.setSignImage(documentService.addFile(user.getSignImageBase64(), user.getEppn() + "_sign", "application/png"));
+    	user.setSignImage(documentService.createDocument(user.getSignImageBase64(), user.getEppn() + "_sign", "application/png"));
     	user.merge();
     	return user;
     	

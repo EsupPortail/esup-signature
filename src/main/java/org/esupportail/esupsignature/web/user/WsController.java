@@ -57,7 +57,7 @@ public class WsController {
 		User user = getSystemUser();
 		user.setIp(httpServletRequest.getRemoteAddr());
 		if(file != null) {
-			Document document = documentService.addFile(file, file.getOriginalFilename());
+			Document document = documentService.createDocument(file, file.getOriginalFilename());
 			signRequest = signRequestService.createSignRequest(new SignRequest(), user, document, signBook.getSignRequestParams(), signBookIds);
 			logger.info(file.getOriginalFilename() + "was added into signbook" + signBookName);
 			return signRequest.getName();			

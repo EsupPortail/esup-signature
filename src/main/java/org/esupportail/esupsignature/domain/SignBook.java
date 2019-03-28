@@ -72,7 +72,7 @@ public class SignBook {
 	private SignBookType signBookType;
 	
 	public enum SignBookType {
-		user, model;
+		user, model, group;
 	}
 	
     public enum DocumentIOType {

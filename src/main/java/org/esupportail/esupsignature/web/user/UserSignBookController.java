@@ -91,7 +91,7 @@ public class UserSignBookController {
     @RequestMapping(value = "/addDoc/{id}", method = RequestMethod.POST)
     public String addDoc(@PathVariable("id") Long id,
     		@RequestParam("multipartFile") MultipartFile multipartFile, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) throws IOException {
-		Document documentToAdd = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
+		Document documentToAdd = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
     	if(documentToAdd != null) {
 	    	User user = userService.getUserFromAuthentication();
 	    	user.setIp(request.getRemoteAddr());

@@ -107,7 +107,6 @@ public class UserController {
     
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(Model uiModel) throws IOException, SQLException {
-    	//TODO : caroussel
 		User user = userService.getUserFromAuthentication();;
 		if(user != null) {
 	        uiModel.addAttribute("user", user);	        
@@ -145,11 +144,11 @@ public class UserController {
             if(userToUpdate.getKeystore() != null) {
             	userToUpdate.getKeystore().remove();
             }
-            userToUpdate.setKeystore(documentService.addFile(multipartKeystore, multipartKeystore.getOriginalFilename()));
+            userToUpdate.setKeystore(documentService.createDocument(multipartKeystore, multipartKeystore.getOriginalFilename()));
         }
         Document oldSignImage = userToUpdate.getSignImage();
         if(!user.getSignImageBase64().isEmpty()) {
-        	userToUpdate.setSignImage(documentService.addFile(user.getSignImageBase64(), userToUpdate.getEppn() + "_sign", "application/png"));
+        	userToUpdate.setSignImage(documentService.createDocument(user.getSignImageBase64(), userToUpdate.getEppn() + "_sign", "application/png"));
         }
         if(oldSignImage != null) {
         	oldSignImage.getBigFile().getBinaryFile().free();
