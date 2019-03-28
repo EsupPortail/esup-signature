@@ -182,7 +182,7 @@
               <td class="utilbox">
               	<spring:url value="${path}/${itemId}" var="show_form_url" />
               	<spring:message arguments="${typeName}" code="entity_show" var="show_label" htmlEscape="false" />
-              		<a href="${show_form_url}" alt="${fn:escapeXml(show_label)}" title="${fn:escapeXml(show_label)}" class="btn btn-info far fa-eye"><!--  --></a>
+              		<button type="button" onclick="location.href='${show_form_url}';" alt="${fn:escapeXml(show_label)}" title="${fn:escapeXml(show_label)}" class="btn btn-info far fa-eye"><!--  --></button>
             	</td>
             </c:if>
             <c:if test="${update}">

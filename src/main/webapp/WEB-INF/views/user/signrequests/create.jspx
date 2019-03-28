@@ -8,13 +8,15 @@
 		</div>
 	</div>
     <form:create id="fc_org_esupportail_esupsignature_domain_SignRequest" modelAttribute="signRequest" multipart="true" path="/user/signrequests" render="${empty dependencies}" z="user-managed">
-  		<div class="form-group">
-			<label class="col-lg-3  col-form-label" for="newPageType">
+    <div class="row">
+    <div class="col-lg-6">
+   		<div class="form-group">
+			<label class="col-lg-4 col-form-label" for="newPageType">
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_add_file" />
 				</strong>
 			</label>
-			<div class="col-lg-9">
+			<div class="col-lg-8">
 				<div class="input-group">
 					<div class="custom-file">
 						<input class="custom-file-input" required="required" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01" />
@@ -25,19 +27,20 @@
 				</div>
 			</div>
 		</div>
+   		<field:input colLabel="col-lg-4" colInput="col-lg-8" cssClass="form-control" field="title" id="c_org_esupportail_esupsignature_domain_SignRequest_title" z="user-managed"/>
         <field:input render="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignRequest_name" z="user-managed"/>
         <field:datetime dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" render="false" z="user-managed"/>
         <field:input field="createBy" id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" render="false" z="user-managed"/>
         <field:datetime dateTimePattern="${signRequest_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" render="false" z="user-managed"/>
         <field:input field="updateBy" id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" render="false" z="user-managed"/>
-        <field:textarea row="4" cssClass="form-control" field="description" id="c_org_esupportail_esupsignature_domain_SignRequest_description" z="user-managed"/>
+        <field:textarea  colLabel="col-lg-4" colInput="col-lg-8" row="4" cssClass="form-control" field="description" id="c_org_esupportail_esupsignature_domain_SignRequest_description" z="user-managed"/>
         <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignRequest_status" render="false" z="user-managed"/>
         <field:select field="originalFile" id="c_org_esupportail_esupsignature_domain_SignRequest_originalFile" itemValue="id" items="${files}" path="/files" render="false" z="user-managed"/>
         <field:select field="signedFile" id="c_org_esupportail_esupsignature_domain_SignRequest_signedFile" itemValue="id" items="${files}" path="/files" render="false" z="user-managed"/>
         <field:select render="false" field="signType" id="c_org_esupportail_esupsignature_domain_SignRequest_signType" cssClass="form-control" path="/" multiple="false" size="1" checkboxes="false" items="${signTypes}" z="user-managed"/>
         <field:checkbox render="false" field="allSignToComplete" id="c_org_esupportail_esupsignature_domain_SignRequest_allSignToComplete" z="user-managed"/>
 		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
-			<label class="col-lg-3  col-form-label" for="newPageType">
+			<label class="col-lg-4  col-form-label" for="newPageType">
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signbook" />
 					<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
@@ -53,8 +56,8 @@
 					</div>
 				</strong>
 			</label>
-			<div class="col-lg-9">
-				<select onclick="togglehideAllSign();" class="form-control" name="signBookIds" id="signBookIds" size="5" multiple="multiple">
+			<div class="col-lg-8">
+				<select onchange="togglehideAllSign();" name="signBookIds" id="signBookIds" size="5" multiple="multiple">
 					<c:forEach items="${allSignBooks}" var="signBook">
 						<c:choose>
 							<c:when test="${mySignBook.id eq signBook.id}">
@@ -69,7 +72,7 @@
 			</div>
 		</div>
 		<div class="form-group div-disable" id="_signBookIds_div_id">
-			<label class="col-lg-3  col-form-label" for="newPageType">
+			<label class="col-lg-4  col-form-label" for="newPageType">
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" /><button data-target="#collapseHelpAllSign" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 					<div class="collapse" id="collapseHelpAllSign">
@@ -84,15 +87,17 @@
 					</div>
 				</strong>
 			</label>
-			<div class="col-lg-9">
+			<div class="col-lg-8">
 				<label class="switch">
 				  <input type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
 				  <span class="slider round"><!--  --></span>
 				</label>
 			</div>
 		</div>
-			<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
-			<label class="col-lg-3  col-form-label" for="newPageType">
+		</div>
+		<div class="col-lg-6">
+		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
+			<label class="col-lg-4  col-form-label" for="newPageType">
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_overloadparams" /><button data-target="#collapseHelpOverLoad" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 					<div class="show" id="collapseHelpOverLoad">
@@ -107,7 +112,7 @@
 					</div>
 				</strong>
 			</label>
-			<div class="col-lg-9">
+			<div class="col-lg-8">
 				<label class="switch">
 				  <input id="_overloadSignParams" type="checkbox" name="overloadSignBookParams" onclick="toggleOverload();" />
 				  <span class="slider round"><!--  --></span>
@@ -115,7 +120,7 @@
 			</div>
 		</div>
 		<div class="form-group" id="_signType_div_id">
-			<label class="col-lg-3  col-form-label" for="signType">
+			<label class="col-lg-4  col-form-label" for="signType">
 			<strong>
 				<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype" /><button data-target="#collapseHelpSignType" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 					<div class="collapse" id="collapseHelpSignType">
@@ -132,7 +137,7 @@
 					</div>
 			</strong>
 			</label>
-			<div class="col-lg-9">
+			<div class="col-lg-8">
 				<select id="_signType_id" name="signType" class="form-control" size="1">
 					<c:forEach items="${signTypes}" var="signType">
 						<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signType}" var="signTypeLabel" />
@@ -143,12 +148,12 @@
 		</div>        
 		<field:select render="false" field="newPageType" id="c_org_esupportail_esupsignature_domain_SignRequest_newPageType" cssClass="form-control" path="/" multiple="false" size="1" checkboxes="false" items="${newPageTypes}" z="user-managed"/>        
 		<div class="form-group" id="_newPageType_div_id">
-			<label class="col-lg-3  col-form-label" for="newPageType">
+			<label class="col-lg-4  col-form-label" for="newPageType">
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype" />
 				</strong>
 			</label>
-			<div class="col-lg-9">
+			<div class="col-lg-8">
 				<select id="_newPageType_id" name="newPageType" class="form-control" size="1">
 					<c:forEach items="${newPageTypes}" var="newPageType">
 						<spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${newPageType}" var="newpagetypeLabel" />
@@ -161,9 +166,17 @@
 		<field:input render="false" cssClass="form-control" field="xPos" id="c_org_esupportail_esupsignature_domain_SignRequest_xPos" z="user-managed"/>
 		<field:input render="false" cssClass="form-control" field="yPos" id="c_org_esupportail_esupsignature_domain_SignRequest_yPos" z="user-managed"/>
 		<field:input render="false" cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" z="user-managed"/>
+		</div></div>
 	</form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_SignRequest" render="${not empty dependencies}" z="user-managed"/>
     <script type="text/javascript">
-
+		new SlimSelect({
+	  	  select: '#signBookIds',
+	  	  allowDeselect: true,
+	  	  placeholder: 'Choisir un parapheur',
+	  	  searchText: 'Aucun résultat',
+	  	  searchPlaceholder: 'Rechercher',
+	  	  searchHighlight: true
+	  	})
     </script>
 </div>

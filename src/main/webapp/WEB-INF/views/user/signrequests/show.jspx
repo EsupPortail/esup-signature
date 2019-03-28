@@ -357,6 +357,7 @@
 							<form class="form-group" action="${sendToSignBookUrl}" method="get">
 								<div class="input-group">
 									<select class="form-control" id="signBookId" name="signBookId">
+									    <option value="" disabled="disabled" selected="selected">Choisir un parapheur</option>
 										<c:forEach items="${signBooks}" var="signBook">
 											<option value="${signBook.id}">${signBook.name}</option>
 										</c:forEach>

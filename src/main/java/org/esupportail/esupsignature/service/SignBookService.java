@@ -88,6 +88,24 @@ public class SignBookService {
 		return signbook;
 	}
 	
+	public SignBook createGroupSignBook(String name, List<SignBook> signBooks, User user) {
+		SignBook signbook = new SignBook();
+		signbook.setName(name);
+		signbook.setDescription(signbook.getName() + " personnal signbook");
+		signbook.setCreateBy(user.getEppn());
+		signbook.setCreateDate(new Date());
+		signbook.setRecipientEmail(null);
+		signbook.setSignRequestParams(null);
+		//TODO add list signbooks
+		signbook.setModelFile(null);
+		signbook.setSignBookType(SignBookType.group);
+		signbook.setSourceType(DocumentIOType.none);
+		signbook.setTargetType(DocumentIOType.none);
+		signbook.setSignRequestParams(signRequestService.getEmptySignRequestParams());
+		signbook.persist();
+		return signbook;
+	}
+	
 	public void resetSignBookParams(SignBook signBook) {
 		signBook.getSignRequestParams().setSignPageNumber(1);
 		signBook.getSignRequestParams().setXPos(0);

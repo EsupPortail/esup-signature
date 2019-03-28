@@ -126,8 +126,17 @@ public class SignRequestService {
 		signRequest.setSignRequestParams(signRequestParams);
 		for(long signBookId : signBookIds) {
 			SignBook signBook = SignBook.findSignBook(signBookId);
-			signRequest.getSignBooks().put(signBook.getId(), false);
-			signBook.getSignRequests().add(signRequest);
+			if(signBook.getSignBookType().equals(SignBookType.group)) {
+				List<SignBook> signBooksFromGroup = signBook.getSignBooksGroup();
+				for(SignBook signBookFromGroup : signBooksFromGroup) {
+					signRequest.getSignBooks().put(signBookFromGroup.getId(), false);
+					signBookFromGroup.getSignRequests().add(signRequest);
+
+				}
+			} else {
+				signRequest.getSignBooks().put(signBook.getId(), false);
+				signBook.getSignRequests().add(signRequest);
+			}
 		}
 		signRequest.persist();
 		document.setSignRequestId(signRequest.getId());

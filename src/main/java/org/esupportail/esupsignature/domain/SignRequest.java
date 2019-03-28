@@ -42,6 +42,8 @@ public class SignRequest {
 	@Column(unique=true)
 	private String name;
 	
+	private String title;
+	
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
@@ -51,8 +53,10 @@ public class SignRequest {
     @Size(max = 500)
     private String description;
     
-    //TODO multiple documents ici ou dans le parapheur
+    @OneToMany
+    private List<Document> originalDocuments = new ArrayList<Document>();
     
+    //TODO multiple documents ici ou dans le parapheur
     @OneToMany
     private List<Document> documents = new ArrayList<Document>();
     

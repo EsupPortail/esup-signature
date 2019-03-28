@@ -9,9 +9,9 @@
 			    	<div class="form-inline">
 						<div class="input-group">
 							<div class="input-group">
-						    	<a alt="Créer un SignBook" class="btn btn-success" href="/manager/signbooks?form" title="Créer un SignBook">
+						    	<button alt="Créer un SignBook" class="btn btn-success" onclick="location.href='/manager/signbooks?form'" title="Créer un SignBook">
 				            		<i class="fas fa-book"><!--  --></i>&amp;nbsp;<spring:message code="menu_item_signbook_new_label" />
-								</a>
+								</button>
 							</div>
 						</div>
 					</div>

@@ -43,9 +43,9 @@
 			</div>
 			</div>
 			<div class="col-lg-12 text-center">
-				<a alt="Signer un nouveau document" class="btn btn-success" href="/user/signrequests?form" title="Signer un nouveau Document">
+				<button type="button" alt="Signer un nouveau document" class="btn btn-success" onclick="location.href='/user/signrequests?form'" title="Signer un nouveau Document">
 					<i class="fas fa-plus"><!--  --></i>&amp;nbsp;<spring:message code="menu_item_signrequest_new" />
-				</a>
+				</button>
 				</div>
 			<div class="col-lg-12">
 			<form class="" action="" method="get">

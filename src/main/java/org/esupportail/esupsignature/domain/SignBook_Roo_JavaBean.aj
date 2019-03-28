@@ -80,6 +80,14 @@ privileged aspect SignBook_Roo_JavaBean {
         this.recipientEmail = recipientEmail;
     }
     
+    public List<SignBook> SignBook.getSignBooksGroup() {
+        return this.signBooksGroup;
+    }
+    
+    public void SignBook.setSignBooksGroup(List<SignBook> signBooksGroup) {
+        this.signBooksGroup = signBooksGroup;
+    }
+    
     public boolean SignBook.isAutoRemove() {
         return this.autoRemove;
     }

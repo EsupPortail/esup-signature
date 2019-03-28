@@ -3,35 +3,15 @@
 
 package org.esupportail.esupsignature.web.manager;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.web.manager.SignBookController;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 privileged aspect SignBookController_Roo_Controller {
-    
-    @RequestMapping(params = "form", produces = "text/html")
-    public String SignBookController.createForm(Model uiModel) {
-        populateEditForm(uiModel, new SignBook());
-        return "manager/signbooks/create";
-    }
-    
-    @RequestMapping(method = RequestMethod.PUT, produces = "text/html")
-    public String SignBookController.update(@Valid SignBook signBook, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
-        if (bindingResult.hasErrors()) {
-            populateEditForm(uiModel, signBook);
-            return "manager/signbooks/update";
-        }
-        uiModel.asMap().clear();
-        signBook.merge();
-        return "redirect:/manager/signbooks/" + encodeUrlPathSegment(signBook.getId().toString(), httpServletRequest);
-    }
     
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
     public String SignBookController.delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, Model uiModel) {

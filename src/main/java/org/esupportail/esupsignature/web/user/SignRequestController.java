@@ -234,7 +234,6 @@ public class SignRequestController {
 		User user = userService.getUserFromAuthentication();
 		uiModel.addAttribute("mySignBook", SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult());
 		uiModel.addAttribute("allSignBooks", SignBook.findAllSignBooks("name", "ASC"));
-		//TODO autocompletion signbooks
 		return "user/signrequests/create";
 	}
 
@@ -263,6 +262,7 @@ public class SignRequestController {
 			signRequestParams.persist();
 		}
 		try {
+			//TODO : accept n documents
 			Document document = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
 			signRequest = signRequestService.createSignRequest(signRequest, user, document, signRequestParams, signBookIds);
 

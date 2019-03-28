@@ -20,6 +20,14 @@ privileged aspect SignRequest_Roo_JavaBean {
         this.name = name;
     }
     
+    public String SignRequest.getTitle() {
+        return this.title;
+    }
+    
+    public void SignRequest.setTitle(String title) {
+        this.title = title;
+    }
+    
     public Date SignRequest.getCreateDate() {
         return this.createDate;
     }
@@ -42,6 +50,14 @@ privileged aspect SignRequest_Roo_JavaBean {
     
     public void SignRequest.setDescription(String description) {
         this.description = description;
+    }
+    
+    public List<Document> SignRequest.getOriginalDocuments() {
+        return this.originalDocuments;
+    }
+    
+    public void SignRequest.setOriginalDocuments(List<Document> originalDocuments) {
+        this.originalDocuments = originalDocuments;
     }
     
     public List<Document> SignRequest.getDocuments() {

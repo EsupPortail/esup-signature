@@ -193,6 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function togglehideAllSign() {
 	var selectedValues = getSelectValues(signBookIds);
+	//alert(signBookIds);
 	if(selectedValues.length > 1) {
 		allSignToComplete = signBookIdsDiv.classList.remove("div-disable");
 	} else {
@@ -334,6 +335,23 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 });
+
+//create signBook
+var	signBookTypeSelect;
+
+document.addEventListener('DOMContentLoaded', function() {
+	signBookTypeSelect = document.getElementById("_signBookType_id");
+});
+
+function changeSignBookForm() {
+	var selectedValue = signBookTypeSelect.options[signBookTypeSelect.selectedIndex].value; 
+	if(selectedValue == "group") {
+		var recipientEmailInput = document.getElementById("_c_org_esupportail_esupsignature_domain_SignBook_recipientEmail");
+		recipientEmailInput.style.display = "none";
+	} else {
+		recipientEmailInput.style.display = "block";
+	}
+}
 
 //create user
 var signImageInput;

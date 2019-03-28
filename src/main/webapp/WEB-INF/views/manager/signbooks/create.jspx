@@ -5,14 +5,51 @@
     <form:create id="fc_org_esupportail_esupsignature_domain_SignBook" modelAttribute="signBook" multipart="true" path="/manager/signbooks" render="${empty dependencies}" z="user-managed">
         <div class="row">
             <div class="col-lg-6">
+                <field:select render="false" checkboxes="false" cssClass="form-control" field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" items="${signBookTypes}" multiple="false" path="/signrequests" size="1" z="user-managed"/>
+				<!-- 
+				<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_signBookType_id">
+					<label class="col-lg-3  col-form-label" for="signBookType">
+						<strong>Type de parapheur</strong>
+					</label>
+					<div class="col-lg-9">
+						<select onchange="changeSignBookForm();" id="_signBookType_id" name="signBookType" class="form-control" size="1">
+							<c:forEach items="${signBookTypes}" var="signBookType">
+	               	         	<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signbooktype_${signBookType}" var="signBookTypeLabel"/>
+	         					<option value="${signBookType}">${signBookTypeLabel}</option>
+	                        </c:forEach>
+						</select>
+					</div>
+				</div>
+				 -->                
                 <field:input autocomplete="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignBook_name" required="true" z="user-managed"/>
-                <field:input cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" required="true" z="user-managed"/>
-                <field:select checkboxes="false" cssClass="form-control" field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" items="${signBookTypes}" multiple="false" path="/signrequests" render="false" size="1" z="user-managed"/>
-                <field:datetime dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="c_org_esupportail_esupsignature_domain_SignBook_createDate" render="false" z="user-managed"/>
+                
+                <field:input render="false" cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" required="true" z="user-managed"/>
+                
+        <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBooksGroup">
+			<label class="col-lg-3  col-form-label" for="newPageType">
+				<strong>
+					<spring:message code="label_org_esupportail_esupsignature_domain_signbook_recipientemail" />
+					<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+					<div class="collapse" id="collapseHelp1">
+						<div class="card card-body border-info text-info">
+						<!--  -->
+						</div>
+					</div>
+				</strong>
+			</label>
+			<div class="col-lg-9">
+				<select required="required" onchange="toggleSignBookType();" name="recipientEmails" id="signBookIds" size="5" multiple="multiple">
+					<c:forEach items="${signBooks}" var="signBook">
+						<option value="${signBook.recipientEmail}">${signBook.name}</option>
+					</c:forEach>
+				</select>
+			</div>
+		</div>
+                
                 <field:input field="createBy" id="c_org_esupportail_esupsignature_domain_SignBook_createBy" render="false" z="user-managed"/>
-                <field:datetime dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_SignBook_updateDate" render="false" z="user-managed"/>
+                <field:datetime dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="c_org_esupportail_esupsignature_domain_SignBook_createDate" render="false" z="user-managed"/>
                 <field:input field="updateBy" id="c_org_esupportail_esupsignature_domain_SignBook_updateBy" render="false" z="user-managed"/>
-                <field:textarea cssClass="form-control" field="description" id="c_org_esupportail_esupsignature_domain_SignBook_description" z="user-managed"/>
+                <field:datetime dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_SignBook_updateDate" render="false" z="user-managed"/>
                 <field:input field="sourceType" id="c_org_esupportail_esupsignature_domain_SignBook_sourceType" render="false" z="user-managed"/>
                 <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
                     <label class="col-lg-3  col-form-label" for="newPageType">
@@ -94,7 +131,7 @@
                     <div class="col-lg-9">
                         <div class="input-group">
                             <div class="custom-file">
-                                <input aria-describedby="inputGroupFileAddon01" class="custom-file-input" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" required="required" type="file"/>
+                                <input aria-describedby="inputGroupFileAddon01" class="custom-file-input" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file"/>
                                 <label class="custom-file-label" for="upload" id="inputGroupLabel01">
                                     <spring:message code="button_choose_file"/>
                                 </label>
@@ -102,6 +139,7 @@
                         </div>
                     </div>
                 </div>
+                <field:textarea cssClass="form-control" field="description" id="c_org_esupportail_esupsignature_domain_SignBook_description" z="user-managed"/>
             </div>
         </div>
         <field:input field="signPageNumber" id="c_org_esupportail_esupsignature_domain_SignBook_signPageNumber" render="false" z="user-managed"/>
@@ -110,6 +148,7 @@
         <field:select field="modelFile" id="c_org_esupportail_esupsignature_domain_SignBook_modelFile" itemValue="id" items="${documents}" path="/user/documents" render="false" z="user-managed"/>
         <field:select field="signRequestParams" id="c_org_esupportail_esupsignature_domain_SignBook_signRequestParams" itemValue="id" items="${signrequestparamses}" path="/signrequestparamses" render="false" z="user-managed"/>
         <field:checkbox field="autoRemove" id="c_org_esupportail_esupsignature_domain_SignBook_autoRemove" z="TVrlRLnHE5anFlxcA1Oo/sREYAA="/>
+        <field:select render="false" field="signBooksGroup" id="c_org_esupportail_esupsignature_domain_SignBook_signBooksGroup" itemValue="id" items="${signbooks}" multiple="true" path="/manager/signbooks" z="E9r506SL2ArRReGFzXCdJo2STX0="/>
     </form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_SignBook" render="${not empty dependencies}" z="user-managed"/>
     <script type="text/javascript">
@@ -133,5 +172,14 @@
 				targetUri.style.display = "none";
 			}
 		};
+		
+    	new SlimSelect({
+    	  select: '#signBookIds',
+    	  placeholder: 'Choisir un utilisateur',
+    	  searchText: 'Aucun résultat',
+    	  searchPlaceholder: 'Rechercher',
+    	  searchHighlight: true
+    	})
+    	
 	</script>
 </div>
