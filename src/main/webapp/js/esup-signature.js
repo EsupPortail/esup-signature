@@ -178,29 +178,6 @@ function toggleOverload() {
 	}
 }
 
-//toggle needAllSign
-var allSignToComplete;
-var allsignYes;
-var allsignNo;
-var signBookIds;
-var signBookIdsDiv;
-
-document.addEventListener('DOMContentLoaded', function() {
-	signBookIdsDiv = document.getElementById("_signBookIds_div_id");
-	signBookIds = document.getElementById("signBookIds");
-	
-});
-
-function togglehideAllSign() {
-	var selectedValues = getSelectValues(signBookIds);
-	//alert(signBookIds);
-	if(selectedValues.length > 1) {
-		allSignToComplete = signBookIdsDiv.classList.remove("div-disable");
-	} else {
-		allSignToComplete = signBookIdsDiv.classList.add("div-disable");
-	}
-}
-
 function getSelectValues(select) {
 	  var result = [];
 	  var options = select && select.options;

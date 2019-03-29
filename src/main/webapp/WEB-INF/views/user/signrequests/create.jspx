@@ -27,7 +27,7 @@
 				</div>
 			</div>
 		</div>
-   		<field:input colLabel="col-lg-4" colInput="col-lg-8" cssClass="form-control" field="title" id="c_org_esupportail_esupsignature_domain_SignRequest_title" z="user-managed"/>
+   		<field:input required="true" colLabel="col-lg-4" colInput="col-lg-8" cssClass="form-control" field="title" id="c_org_esupportail_esupsignature_domain_SignRequest_title" z="user-managed"/>
         <field:input render="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignRequest_name" z="user-managed"/>
         <field:datetime dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" render="false" z="user-managed"/>
         <field:input field="createBy" id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" render="false" z="user-managed"/>
@@ -42,9 +42,9 @@
 		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
 			<label class="col-lg-4  col-form-label" for="newPageType">
 				<strong>
-					<spring:message code="label_org_esupportail_esupsignature_domain_signbook" />
+					<spring:message code="menu_item_sendtosignbook" />
 					<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
-					<div class="show" id="collapseHelp1">
+					<div class="collapse" id="collapseHelp1">
 						<div class="card card-body border-info text-info">
 							<small>
 								Par défaut c'est votre parapheur personnel qui est sélectionné (c'est donc vous qui signerez le document)
@@ -71,7 +71,7 @@
 				</select>
 			</div>
 		</div>
-		<div class="form-group div-disable" id="_signBookIds_div_id">
+		<div class="form-group" id="_signBookIds_div_id">
 			<label class="col-lg-4  col-form-label" for="newPageType">
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" /><button data-target="#collapseHelpAllSign" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
@@ -105,7 +105,7 @@
 							<small>
 								<ul>
 								<li>Non : Les paramètres de signature du parapheur séléctionné seront appliqués.</li>
-								<li>Oui : Vous pouvez modifier le paramètres de signature manuellement.</li> 
+								<li>Oui : Vous pouvez modifier les	 paramètres de signature manuellement. Cela imposse le type de signature aux signataires</li> 
 								</ul>
 							</small>
 						</div>
@@ -173,7 +173,7 @@
 		new SlimSelect({
 	  	  select: '#signBookIds',
 	  	  allowDeselect: true,
-	  	  placeholder: 'Choisir un parapheur',
+	  	  placeholder: 'Choisir un/des parapheurs',
 	  	  searchText: 'Aucun résultat',
 	  	  searchPlaceholder: 'Rechercher',
 	  	  searchHighlight: true

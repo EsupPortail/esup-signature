@@ -85,6 +85,18 @@ public class SignBook {
 		none, cifs, vfs, cmis, mail;
 	}
     
+    public String getRecipientsEmails() {
+    	if(signBooksGroup.size() > 0) {
+        	String recipientsEmails = "";
+    		for(SignBook signBook : signBooksGroup) {
+    			recipientsEmails += "<li>" + signBook.getRecipientEmail() + "</li>";
+    		}
+    		return recipientsEmails;
+    	} else {
+    		return "<li>" + recipientEmail + "</li>";
+    	}
+    }
+    
     public void setSourceType(DocumentIOType sourceType) {
         this.sourceType = sourceType;
     }

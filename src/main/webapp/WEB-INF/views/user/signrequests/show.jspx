@@ -4,17 +4,22 @@
 	<jsp:output omit-xml-declaration="yes" />
 	<div class="card card-header">
 		<div class="row">
-			<div class="col-lg-11">
-				<a href="/">Liste des demandes</a> 	&gt; <a href="/user/signrequests/?toSign=true&amp;signBookId=${currentSignBook.id}">${currentSignBook.name}</a> &gt; 
-				<spring:message code="menu_item_signrequest" /> : ${signRequest.name} 							
+			<div class="col-lg-10">
+			<nav aria-label="breadcrumb">
+			  <ol class="breadcrumb">
+	    		<li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
+	    		<li class="breadcrumb-item"><a href="/user/signrequests/?toSign=true&amp;signBookId=${currentSignBook.id}">${currentSignBook.name}</a></li>
+			    <li class="breadcrumb-item active" aria-current="page"><spring:message code="menu_item_signrequest" /> : ${signRequest.name}</li>
+			  </ol>
+			</nav>
 			</div>
-			<div class="col-lg-1">
+			<div class="col-lg-2 text-right">
 				<jsp:include page="includes/status.jspx" />
 			</div>
 		</div>
 	</div>
-		<div aria-expanded="true" class="show" id="collapseHelp">
-		<div class="card card-body border-info text-info">
+	<div aria-expanded="true" class="show" id="collapseHelp">
+	<div class="card card-body border-info text-info">
 		<c:choose>
 			<c:when test="${documentType eq 'pdf'}">
 			Pour signer un document, il faut positionner la signature sur le document à l'aide de la souris puis cliquer sur "Signer".
@@ -25,8 +30,9 @@
 			</c:choose>
 			<br/>
 			Selon le type de signature, le lancement de l'application NexU ou un mot de passe peut être demandé.
-		</div>
+			</div>
 	</div>
+	<div class="card card-body">
 	<page:show list="false" update="false" delete="false" id="ps_org_esupportail_esupsignature_domain_SignRequest" object="${signRequest}" path="/user/signrequests" z="user-managed">
 		<div class="row">
 			<c:choose>
@@ -295,9 +301,9 @@
 									</div>
 								</dt>
 								<dd>
-									<div class="alert alert-dark">
+									<span class="alert alert-secondary">
 										<i class="fas fa-book"><!--  --></i>&amp;nbsp;${currentSignBook.name}
-									</div>
+									</span>
 								</dd>
 							</dl>
 							<dl class="display-group border-bottom m-0">
@@ -395,12 +401,12 @@
 								<div class="form-group">
 									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" />
 									:
-									<div class="alert alert-dark text-center col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+									<div class="alert alert-secondary text-center col-12 font-weight-light" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
 										<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" /></small>
 									</div>
 									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype" />
 									:
-									<div class="alert alert-dark text-center col-12" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+									<div class="alert alert-secondary text-center col-12 font-weight-light" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
 										<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signRequest.signRequestParams.newPageType}" /></small>
 									</div>
 									</div>
@@ -443,7 +449,7 @@
 							<dl class="display-group border-bottom m-0">
 								<dt class="col-lg-12">Historique des versions</dt>
 								<dd class="col-lg-12">
-									<table:table view="false" create="false" cssClass="table-sm" delete="false" update="false" data="${documents}" id="l_org_esupportail_esupsignature_domain_Document" path="/user/documents" z="user-managed">
+									<table:table view="false" create="false" cssClass="table" delete="false" update="false" data="${documents}" id="l_org_esupportail_esupsignature_domain_Document" path="/user/documents" z="user-managed">
 										<table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Document_createDate" property="createDate" z="user-managed" />
 										<table:column link="true" id="c_org_esupportail_esupsignature_domain_Document_fileName" property="url" z="user-managed"  />
 									</table:table>
@@ -496,4 +502,5 @@
 			</c:if>
 		</div>
 	</page:show>
+	</div>
 </div>
