@@ -186,7 +186,6 @@ public class SignRequestController {
 
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
-		//TODO : modal password + loading avec les etapes PDF/A + SIGN...
 		User user = userService.getUserFromAuthentication();
 		addDateTimeFormatPatterns(uiModel);
 		SignRequest signRequest = SignRequest.findSignRequest(id);
@@ -200,12 +199,11 @@ public class SignRequestController {
 			if(!signRequest.isOverloadSignBookParams() && signBook != null) {
 				signRequest.setSignRequestParams(signBook.getSignRequestParams());
 			}
-			uiModel.addAttribute("documents", signRequest.getSignedDocuments());
 			Document toDisplayDocument = null;
 			File toDisplayFile = null;
-			uiModel.addAttribute("originalDocuments", signRequest.getOriginalDocuments());
 			
-			if(signRequest.getSignedDocuments().size() == 1) {
+			if(signRequest.getOriginalDocuments().size() == 1) {
+				toDisplayDocument = signRequestService.getLastOriginalsDocument(signRequest);
 				toDisplayFile = toDisplayDocument.getJavaIoFile();
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
 					PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayFile);
@@ -226,7 +224,7 @@ public class SignRequestController {
 			}
 			uiModel.addAttribute("signRequest", signRequest);
 			uiModel.addAttribute("itemId", id);
-			if (signRequestService.checkUserSignRights(user, signRequest)) {
+			if (signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
 				uiModel.addAttribute("signable", "ok");
 			}
 			return "user/signrequests/show";
@@ -270,15 +268,15 @@ public class SignRequestController {
 			signRequestParams.setYPos(0);
 			signRequestParams.persist();
 		}
-		try {
-			//TODO : accept n documents
-			List<Document> documents =  documentService.createDocuments(multipartFiles);
-			signRequest = signRequestService.createSignRequest(signRequest, user, documents, signRequestParams, signBookIds);
-			//signRequestService.addOriginalDocuments(signRequest, documents);
-			
-		} catch (IOException e) {
-			logger.error("error to add file : " + multipartFiles[0].getOriginalFilename(), e);
+		List<Document> documents = new ArrayList<>();
+		if(multipartFiles.length > 0) {
+			try {
+				documents =  documentService.createDocuments(multipartFiles);
+			} catch (IOException e) {
+				logger.error("error to add files : " + multipartFiles, e);
+			}
 		}
+		signRequest = signRequestService.createSignRequest(signRequest, user, documents, signRequestParams, signBookIds);
 		return "redirect:/user/signrequests/" + signRequest.getId();
 	}
 
@@ -317,19 +315,21 @@ public class SignRequestController {
 	
 	@RequestMapping(value = "/sign/{id}", method = RequestMethod.POST)
 	public String sign(@PathVariable("id") Long id, 
-			@RequestParam(value = "xPos", required = true) int xPos,
-			@RequestParam(value = "yPos", required = true) int yPos,
-			@RequestParam(value = "signPageNumber", required = true) int signPageNumber,
+			@RequestParam(value = "xPos", required = false) Integer xPos,
+			@RequestParam(value = "yPos", required = false) Integer yPos,
+			@RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
 			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
 			HttpServletResponse response, Model model, HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
-			signRequest.getSignRequestParams().setSignPageNumber(signPageNumber);
-			signRequest.getSignRequestParams().setXPos(xPos);
-			signRequest.getSignRequestParams().setYPos(yPos);
-			signRequest.merge();
+			if(signPageNumber != null) {
+				signRequest.getSignRequestParams().setSignPageNumber(signPageNumber);
+				signRequest.getSignRequestParams().setXPos(xPos);
+				signRequest.getSignRequestParams().setYPos(yPos);
+				signRequest.merge();
+			}
 			if (!"".equals(password)) {
 	        	setPassword(password);
 			}
@@ -452,7 +452,7 @@ public class SignRequestController {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		User user = userService.getUserFromAuthentication();
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
-			Document document = signRequestService.getLastDocument(signRequest);
+			Document document = signRequestService.getLastSignedDocument(signRequest);
 			try {
 				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
 				response.setContentType(document.getContentType());

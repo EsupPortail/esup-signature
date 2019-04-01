@@ -76,7 +76,7 @@ public class NexuProcessController {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
     		SignatureDocumentForm signatureDocumentForm = signingService.getXadesSignatureDocumentForm();
-    		File toSignFile = signRequestService.getLastDocument(signRequest).getJavaIoFile();
+    		File toSignFile = signRequestService.getLastSignedDocument(signRequest).getJavaIoFile();
     		if(fileService.getContentType(toSignFile).equals("application/pdf")) {
     			signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
     			toSignFile = pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams());

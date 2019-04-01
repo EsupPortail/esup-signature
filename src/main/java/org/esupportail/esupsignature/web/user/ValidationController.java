@@ -96,7 +96,7 @@ public class ValidationController {
 	@RequestMapping(value = "/document/{id}")
 	public String validateDocument(@PathVariable(name="id") long id, Model model) {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-		Document toValideDocument = signRequestService.getLastDocument(signRequest);
+		Document toValideDocument = signRequestService.getLastSignedDocument(signRequest);
 		Reports reports = validationService.validate(fileService.toMultipartFile(toValideDocument.getJavaIoFile(), toValideDocument.getContentType()));
 		
 		String xmlSimpleReport = reports.getXmlSimpleReport();

@@ -74,7 +74,7 @@ public class WsController {
 		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
 		SignRequest signRequest = SignRequest.findSignRequestsByNameEquals(name).getSingleResult();
 		if(signBook.getSignRequests().contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.signed)) {
-			Document document = signRequestService.getLastDocument(signRequest);
+			Document document = signRequestService.getLastSignedDocument(signRequest);
 			try {
 				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
 				response.setContentType(document.getContentType());

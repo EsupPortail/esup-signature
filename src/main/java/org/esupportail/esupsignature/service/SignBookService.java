@@ -160,7 +160,7 @@ public class SignBookService {
 			logger.info("send to " + signBook.getTargetType() + " in " + signBook.getDocumentsTargetUri());
 			FsAccessService fsAccessService = getFsAccessService(signBook.getSourceType());
 			try {
-				File signedFile = signRequestService.getLastDocument(signRequest).getJavaIoFile();
+				File signedFile = signRequestService.getLastSignedDocument(signRequest).getJavaIoFile();
 				InputStream inputStream = new FileInputStream(signedFile);
 				fsAccessService.putFile(signBook.getDocumentsTargetUri(), signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
 				signRequestService.updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");

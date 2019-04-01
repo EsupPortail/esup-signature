@@ -127,7 +127,7 @@ public class SignRequestService {
 	}
 	
 	public SignRequest createSignRequest(SignRequest signRequest, User user, List<Document> documents, SignRequestParams signRequestParams, long[] signBookIds) {
-		signRequest.setName(generateUniqueId() + "_" + fileService.getNameOnly(documents.get(0).getJavaIoFile()));
+		signRequest.setName(String.valueOf(generateUniqueId()));
 		signRequest.setCreateBy(user.getEppn());
 		signRequest.setCreateDate(new Date());
 
@@ -194,7 +194,7 @@ public class SignRequestService {
 		SignRequestParams.SignType signType = signRequest.getSignRequestParams().getSignType();
 		File toSignFile = null;
 		if(signRequest.getSignedDocuments().size() > 0) {
-			toSignFile = getLastDocument(signRequest).getJavaIoFile();
+			toSignFile = getLastSignedDocument(signRequest).getJavaIoFile();
 		}else {
 			if(signRequest.getOriginalDocuments().size() == 1) {
 				toSignFile = signRequest.getOriginalDocuments().get(0).getJavaIoFile();
@@ -255,7 +255,7 @@ public class SignRequestService {
 		SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
 		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
 		CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
-		File toSignFile = getLastDocument(signRequest).getJavaIoFile();
+		File toSignFile = getLastSignedDocument(signRequest).getJavaIoFile();
 		
 		File toSignFormatedFile = pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams());
 		
@@ -310,7 +310,7 @@ public class SignRequestService {
 	}
 
 	public File xadesSign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException {
-		File toSignFile = getLastDocument(signRequest).getJavaIoFile();
+		File toSignFile = getLastSignedDocument(signRequest).getJavaIoFile();
 
 		SignatureDocumentForm signatureDocumentForm = signingService.getXadesSignatureDocumentForm();
 		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
@@ -422,12 +422,12 @@ public class SignRequestService {
 		}
 	}
 	
-	public Document getLastDocument(SignRequest signRequest) {
+	public Document getLastSignedDocument(SignRequest signRequest) {
 		List<Document> documents = signRequest.getSignedDocuments();
 		return documents.get(documents.size() - 1);
 	}
 
-	public Document getOriginalsDocument(SignRequest signRequest) {
+	public Document getLastOriginalsDocument(SignRequest signRequest) {
 		List<Document> documents = signRequest.getOriginalDocuments();
 		if (documents.size() > 1) {
 			return null;

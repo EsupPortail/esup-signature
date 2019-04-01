@@ -39,9 +39,15 @@ document.addEventListener('DOMContentLoaded', function() {
 	//Messages modal
 	var dialogMsg = document.querySelector('#messageModal #dialog');
 	if(dialogMsg != null){
-		var messageModal = document.getElementById('messageModal');
-		var myModalInstance = new Modal(messageModal);
-		myModalInstance.show();
+		$('#messageModal').modal({
+	        resizable: false,
+	        modal: true,
+	        buttons: {
+	                Fermer: function() {
+	                       $( this ).dialog( "close" );
+	               }
+	        }
+	       });
 	}
 	
 });
