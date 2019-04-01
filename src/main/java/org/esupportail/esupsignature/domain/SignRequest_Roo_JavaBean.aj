@@ -60,12 +60,12 @@ privileged aspect SignRequest_Roo_JavaBean {
         this.originalDocuments = originalDocuments;
     }
     
-    public List<Document> SignRequest.getDocuments() {
-        return this.documents;
+    public List<Document> SignRequest.getSignedDocuments() {
+        return this.signedDocuments;
     }
     
-    public void SignRequest.setDocuments(List<Document> documents) {
-        this.documents = documents;
+    public void SignRequest.setSignedDocuments(List<Document> signedDocuments) {
+        this.signedDocuments = signedDocuments;
     }
     
     public boolean SignRequest.isOverloadSignBookParams() {

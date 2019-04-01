@@ -35,18 +35,9 @@
 	<div class="card card-body">
 	<page:show list="false" update="false" delete="false" id="ps_org_esupportail_esupsignature_domain_SignRequest" object="${signRequest}" path="/user/signrequests" z="user-managed">
 		<div class="row">
-			<c:choose>
-				<c:when test="${documentType eq 'pdf'}">
-					<c:set var="col" value="col-lg-5" />
-				</c:when>
-				<c:otherwise>
-					<c:set var="col" value="col-lg-12" />
-					<c:set var="show" value="show" />
-				</c:otherwise>
-			</c:choose>
-			<div class="${col}">
+			<div class="col-lg-5">
 				<div class="card bg-light collapse">
-					<div class="card-body">	
+					<div class="card-body">
 					<field:display field="name" label="Nom unique de la demande" id="s_org_esupportail_esupsignature_domain_SignRequest_name" object="${signRequest}" z="user-managed" />
 					<dl class="display-group border-bottom m-0">
 						<dt class="col-lg-5">
@@ -56,19 +47,6 @@
 							<jsp:include page="includes/status.jspx" />
 						</dd>
 					</dl>
-					<c:if test="${documentType ne 'pdf'}">
-					<dl class="display-group border-bottom m-0">
-						<dt class="col-lg-5">
-							<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_originalfile" />
-						</dt>
-						<dd class="col-lg-7">
-							<spring:url value="/user/signrequests/get-last-file/${id}" var="signedFileUrl" />
-							<button type="button" class="btn btn-info" onclick="window.open('${signedFileUrl}', '_blank')">
-								<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" />
-							</button>
-						</dd>
-					</dl>
-					</c:if>	
 				</div>
 				</div>
 				<div class="card bg-light">
@@ -80,38 +58,22 @@
 					</div>
 					<div id="collapseTools" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
 						<div class="card-body">
+							<c:if test="${documentType ne 'pdf' and empty originalDocuments}">
+								<dl class="display-group border-bottom m-0">
+									<dt class="col-lg-5">
+										<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_originalfile" />
+									</dt>
+									<dd class="col-lg-7">
+										<div class="form-group input-group">
+										<spring:url value="/user/signrequests/get-last-file/${id}" var="signedFileUrl" />
+											<button type="button" class="btn btn-info" onclick="window.open('${signedFileUrl}', '_blank')">
+												<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" />
+											</button>
+										</div>
+									</dd>
+								</dl>
+							</c:if>	
 							<form autocomplete="off" action="/user/signrequests/sign/${id}" method="post">
-								<c:choose>
-									<c:when test="${documentType eq 'pdf' and signable eq 'ok' and (signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'visa'}">
-										<dl class="display-group border-bottom m-0" style="display: none;">
-											<dt class="col-lg-5">
-												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signposition" />
-											</dt>
-											<dd class="col-lg-7">
-											<div class="form-group">
-												<small>
-													<div class="row">
-														<div class="col-lg-4">
-															Page : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.signPageNumber}" id="signPageNumber" type="text" name="signPageNumber" />
-														</div>
-														<div class="col-lg-4">
-															X position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.XPos}" id="xPos" type="text" name="xPos" />
-														</div>
-														<div class="col-lg-4">
-															Y position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.YPos}" id="yPos" type="text" name="yPos" />
-														</div>
-													</div>
-												</small>
-												</div>
-											</dd>
-										</dl>
-									</c:when>
-									<c:otherwise>
-										<input value="${signRequest.signRequestParams.signPageNumber}" type="hidden" id="signPageNumber" name="signPageNumber" />
-										<input value="${signRequest.signRequestParams.XPos}" type="hidden" id="xPos" name="xPos" />
-										<input value="${signRequest.signRequestParams.YPos}" type="hidden" id="yPos" name="yPos" />
-									</c:otherwise>
-								</c:choose>
 								<c:choose>
 									<c:when test="${signRequest.status eq 'signed' or signRequest.status eq 'completed'}">
 										<dl class="display-group border-bottom m-0">
@@ -460,47 +422,112 @@
 					</div>
 				</div>
 			</div>
-			<c:if test="${documentType eq 'pdf'}">
+			<c:if test="${not empty originalDocuments}">
 				<div class="col-lg-7">
-					<div class="row">
-						<div class="col-lg-12">
-							<div class="row">
-								<div class="col-lg-4">
-									<spring:message code="button_previous" var="previousLabel" />
-									<input type="button" class="btn btn-dark" id="previous" onclick="previousImage()" value="${previousLabel}" />
-								</div>
-								<div class="col-lg-4 text-center">
-									<h5><spring:message code="menu_item_preview" /></h5>
-								</div>
-								<div class="col-lg-4">
-									<spring:message code="button_next" var="nextLabel" />
-									<input type="button" class="btn btn-dark float-right" id="next" onclick="nextImage()" value="${nextLabel}" />
-								</div>
-							</div>
-							<div class="d-flex justify-content-center">
-								<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
-								<div id="pointer_div" onclick="savePosition();" onmouseout="resetPosition();" onmousemove="pointIt(event);" style="background-size: ${pdfWidth}px;background-image:url('${documentUrl}/${signRequest.signRequestParams.signPageNumber -1}');width:${pdfWidth}px;height:${pdfHeight}px;border:1px solid #CCC;">
-									<c:if test="${signable eq 'ok' and (signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'visa'}">
-										<div id="cross" style="background-size: 100px;background-image: url('data:image/png;base64,${signFile}'); width: 100px; height: 75px; line-height: 75px; text-align: center;width:100px; left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;pointer-events: none;">
-											<div id="borders" style="width: 100px; height: 75px;">
-												<span style="opacity: 0.6; vertical-align: middle; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
-													<strong>Preview</strong>
-												</span>
-											</div>
-										</div>
-									</c:if>
-								</div>
-							</div>
-						</div>
-						<script type="text/javascript">
-							var nbImagePage = ${imagePagesSize};
-							var currentImagePage = ${signRequest.signRequestParams.signPageNumber} - 1;
-							var documentUrl = "${documentUrl}";
-						</script>
-					</div>
+				<h5>Liste des documents</h5>
+				    <div class="file-loading">
+				    	<input id="multipartFile" name="multipartFiles" type="file" multiple="multiple" />
+				    </div>
 				</div>
 			</c:if>
 		</div>
 	</page:show>
 	</div>
+	<script>
+	
+	$("#multipartFile").fileinput({
+    	language: "fr",
+        showCaption: false,
+        showUpload: true,
+    	uploadUrl: "/user/signrequests/add-doc/${id}",
+    	uploadAsync: false,
+        maxFileCount: 100,
+        theme: 'explorer-fas',
+        pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
+        overwriteInitial: false,
+    	initialPreview: [
+    		<c:forEach items="${originalDocuments}" var="originalDocument">
+    		<spring:url value="${originalDocument.url}" var="originalDocumentUrl" />
+    		"http://dsi-7.univ-rouen.fr${originalDocumentUrl}",
+    		</c:forEach>    		],
+   	    initialPreviewConfig: [
+    		<c:forEach items="${originalDocuments}" var="originalDocument">
+    		<c:set value="${fn:split(originalDocument.contentType, '/')[1]}" var="originalDocumentType" />
+    		<spring:url value="/user/signrequests/remove-doc/${originalDocument.id}" var="originalDocumentRemoveUrl" />
+    		<c:choose>
+    			<c:when test="${originalDocumentType eq 'gif'}">
+	      	        {type: "image", size: ${originalDocument.size}, caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "http://dsi-7.univ-rouen.fr${originalDocumentRemoveUrl}", key: ${originalDocument.id}},    				
+    			</c:when>
+      	      	<c:when test="${originalDocumentType eq 'pdf'}">
+      	    	  	{type: "pdf", size: ${originalDocument.size}, caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "http://dsi-7.univ-rouen.fr${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
+      	    	</c:when>
+    			<c:when test="${originalDocumentType eq 'doc'}">
+    				{type: "office", size: ${originalDocument.size}, caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "http://dsi-7.univ-rouen.fr${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
+    			</c:when>
+    			<c:when test="${originalDocumentType eq 'avi'}">
+    				{type: "video", size: ${originalDocument.size}, caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "http://dsi-7.univ-rouen.fr${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
+    			</c:when>
+	    		<c:otherwise>
+		    		{type: "other", size: ${originalDocument.size}, caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "http://dsi-7.univ-rouen.fr${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
+	    		</c:otherwise>
+    		</c:choose>
+    		</c:forEach>
+   	    ],
+   		initialPreviewAsData: true,
+   		initialPreviewFileType: 'image',
+        preferIconicPreview: true,
+        previewFileIconSettings: { // configure your icon file extensions
+            'doc': '<i class="fas fa-file-word text-primary"></i>',
+            'xls': '<i class="fas fa-file-excel text-success"></i>',
+            'ppt': '<i class="fas fa-file-powerpoint text-danger"></i>',
+            'pdf': '<i class="fas fa-file-pdf text-danger"></i>',
+            'zip': '<i class="fas fa-file-archive text-muted"></i>',
+            'htm': '<i class="fas fa-file-code text-info"></i>',
+            'txt': '<i class="fas fa-file-alt text-info"></i>',
+            'mov': '<i class="fas fa-file-video text-warning"></i>',
+            'mp3': '<i class="fas fa-file-audio text-warning"></i>',
+            // note for these file types below no extension determination logic 
+            // has been configured (the keys itself will be used as extensions)
+            'jpg': '<i class="fas fa-file-image text-danger"></i>', 
+            'gif': '<i class="fas fa-file-image text-muted"></i>', 
+            'png': '<i class="fas fa-file-image text-primary"></i>'    
+        },
+        previewFileExtSettings: { // configure the logic for determining icon file extensions
+            'doc': function(ext) {
+                return ext.match(/(doc|docx)$/i);
+            },
+            'xls': function(ext) {
+                return ext.match(/(xls|xlsx)$/i);
+            },
+            'ppt': function(ext) {
+                return ext.match(/(ppt|pptx)$/i);
+            },
+            'zip': function(ext) {
+                return ext.match(/(zip|rar|tar|gzip|gz|7z)$/i);
+            },
+            'htm': function(ext) {
+                return ext.match(/(htm|html)$/i);
+            },
+            'txt': function(ext) {
+                return ext.match(/(txt|ini|csv|java|php|js|css)$/i);
+            },
+            'mov': function(ext) {
+                return ext.match(/(avi|mpg|mkv|mov|mp4|3gp|webm|wmv)$/i);
+            },
+            'mp3': function(ext) {
+                return ext.match(/(mp3|wav)$/i);
+            }
+        },
+        fileActionSettings: {
+            showZoom: function(config) {
+                if (config.type === 'pdf' || config.type === 'image') {
+                    return true;
+                }
+                return false;
+            }
+        }
+		
+    });
+			
+	</script>
 </div>

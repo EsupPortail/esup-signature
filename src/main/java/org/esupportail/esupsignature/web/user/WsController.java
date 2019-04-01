@@ -45,7 +45,7 @@ public class WsController {
 	@Resource
 	DocumentService documentService;
 	
-	//TODO creation / recupération de demandes par WS + declenchement d'evenements
+	//TODO creation / recupération de demandes par WS + declenchement d'evenements + multidocs
 	@Transactional
 	@ResponseBody
 	@RequestMapping(value = "/create-sign-request", method = RequestMethod.POST)
@@ -58,7 +58,7 @@ public class WsController {
 		user.setIp(httpServletRequest.getRemoteAddr());
 		if(file != null) {
 			Document document = documentService.createDocument(file, file.getOriginalFilename());
-			signRequest = signRequestService.createSignRequest(new SignRequest(), user, document, signBook.getSignRequestParams(), signBookIds);
+			//signRequest = signRequestService.createSignRequest(new SignRequest(), user, document, signBook.getSignRequestParams(), signBookIds);
 			logger.info(file.getOriginalFilename() + "was added into signbook" + signBookName);
 			return signRequest.getName();			
 		} else {

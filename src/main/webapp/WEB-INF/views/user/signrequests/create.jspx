@@ -9,7 +9,9 @@
 	</div>
     <form:create id="fc_org_esupportail_esupsignature_domain_SignRequest" modelAttribute="signRequest" multipart="true" path="/user/signrequests" render="${empty dependencies}" z="user-managed">
     <div class="row">
+    
     <div class="col-lg-6">
+   	<!-- 
    		<div class="form-group">
 			<label class="col-lg-4 col-form-label" for="newPageType">
 				<strong>
@@ -19,7 +21,7 @@
 			<div class="col-lg-8">
 				<div class="input-group">
 					<div class="custom-file">
-						<input class="custom-file-input" required="required" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01" />
+						<input class="custom-file-input" multiple="multiple" required="required" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01" />
 						<label class="custom-file-label" id="inputGroupLabel01" for="upload">
 						<spring:message code="button_choose_file" />
 						</label>
@@ -27,6 +29,23 @@
 				</div>
 			</div>
 		</div>
+		 -->
+
+   		<div class="form-group">
+			<label class="col-lg-4 col-form-label" for="newPageType">
+				<strong>
+					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_add_file" />
+				</strong>
+			</label>
+			<div class="col-lg-8">
+				<div class="input-group">
+				    <div class="file-loading">
+				    	<input id="multipartFile" name="multipartFiles" type="file" multiple="multiple" />
+				    </div>
+   				</div>
+			</div>
+		</div>
+    
    		<field:input required="true" colLabel="col-lg-4" colInput="col-lg-8" cssClass="form-control" field="title" id="c_org_esupportail_esupsignature_domain_SignRequest_title" z="user-managed"/>
         <field:input render="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignRequest_name" z="user-managed"/>
         <field:datetime dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" render="false" z="user-managed"/>
@@ -178,5 +197,61 @@
 	  	  searchPlaceholder: 'Rechercher',
 	  	  searchHighlight: true
 	  	})
+		
+	    $("#multipartFile").fileinput({
+	    	language: "fr",
+	        showCaption: false,
+	        showUpload: false,
+//	    	uploadUrl: "/site/upload-file-chunks",
+	        maxFileCount: 100,
+	        theme: 'fas',
+	        pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
+	        overwriteInitial: false,
+	        preferIconicPreview: true,
+	        previewFileIconSettings: { // configure your icon file extensions
+	            'doc': '<i class="fas fa-file-word text-primary"></i>',
+	            'xls': '<i class="fas fa-file-excel text-success"></i>',
+	            'ppt': '<i class="fas fa-file-powerpoint text-danger"></i>',
+	            'pdf': '<i class="fas fa-file-pdf text-danger"></i>',
+	            'zip': '<i class="fas fa-file-archive text-muted"></i>',
+	            'htm': '<i class="fas fa-file-code text-info"></i>',
+	            'txt': '<i class="fas fa-file-alt text-info"></i>',
+	            'mov': '<i class="fas fa-file-video text-warning"></i>',
+	            'mp3': '<i class="fas fa-file-audio text-warning"></i>',
+	            // note for these file types below no extension determination logic 
+	            // has been configured (the keys itself will be used as extensions)
+	            'jpg': '<i class="fas fa-file-image text-danger"></i>', 
+	            'gif': '<i class="fas fa-file-image text-muted"></i>', 
+	            'png': '<i class="fas fa-file-image text-primary"></i>'    
+	        },
+	        previewFileExtSettings: { // configure the logic for determining icon file extensions
+	            'doc': function(ext) {
+	                return ext.match(/(doc|docx)$/i);
+	            },
+	            'xls': function(ext) {
+	                return ext.match(/(xls|xlsx)$/i);
+	            },
+	            'ppt': function(ext) {
+	                return ext.match(/(ppt|pptx)$/i);
+	            },
+	            'zip': function(ext) {
+	                return ext.match(/(zip|rar|tar|gzip|gz|7z)$/i);
+	            },
+	            'htm': function(ext) {
+	                return ext.match(/(htm|html)$/i);
+	            },
+	            'txt': function(ext) {
+	                return ext.match(/(txt|ini|csv|java|php|js|css)$/i);
+	            },
+	            'mov': function(ext) {
+	                return ext.match(/(avi|mpg|mkv|mov|mp4|3gp|webm|wmv)$/i);
+	            },
+	            'mp3': function(ext) {
+	                return ext.match(/(mp3|wav)$/i);
+	            }
+	        }
+			
+	    });
+
     </script>
 </div>

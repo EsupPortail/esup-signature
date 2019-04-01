@@ -7,7 +7,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.annotation.Resource;
 
@@ -26,9 +28,16 @@ public class DocumentService {
 		return createDocument(fileService.fromBase64Image(base64File, name), name, contentType);
     }
 
-	
 	public Document createDocument(File file, String name, String contentType) throws FileNotFoundException, IOException {
 		return createDocument(new FileInputStream(file), name, file.length(), contentType);
+    }
+	
+	public List<Document> createDocuments(MultipartFile[] multipartFiles) throws IOException {
+		List<Document> documents = new ArrayList<>();
+		for(MultipartFile multipartFile : multipartFiles) {
+			documents.add(createDocument(multipartFile, multipartFile.getOriginalFilename()));
+		}
+		return documents;
     }
 	
 	public Document createDocument(MultipartFile multipartFile, String name) throws IOException {
@@ -41,7 +50,6 @@ public class DocumentService {
 	public Document createDocument(InputStream inputStream, String name, long size, String contentType) throws IOException {
         return persistDocument(inputStream, name, size, contentType);
     }
-
 	
 	public Document persistDocument(InputStream inputStream, String name, long size, String contentType) throws IOException {
 		Document document = new Document();

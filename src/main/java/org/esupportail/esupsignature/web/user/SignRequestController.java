@@ -42,6 +42,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -197,15 +200,23 @@ public class SignRequestController {
 			if(!signRequest.isOverloadSignBookParams() && signBook != null) {
 				signRequest.setSignRequestParams(signBook.getSignRequestParams());
 			}
-			uiModel.addAttribute("documents", signRequest.getDocuments());
-			Document toDisplayDocument = signRequestService.getLastDocument(signRequest);
-			File toDisplayFile = toDisplayDocument.getJavaIoFile();
-			if(toDisplayDocument.getContentType().equals("application/pdf")) {
-				PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayFile);
-				uiModel.addAttribute("pdfWidth", pdfParameters.getWidth());
-				uiModel.addAttribute("pdfHeight", pdfParameters.getHeight());
-				uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+			uiModel.addAttribute("documents", signRequest.getSignedDocuments());
+			Document toDisplayDocument = null;
+			File toDisplayFile = null;
+			uiModel.addAttribute("originalDocuments", signRequest.getOriginalDocuments());
+			
+			if(signRequest.getSignedDocuments().size() == 1) {
+				toDisplayFile = toDisplayDocument.getJavaIoFile();
+				if(toDisplayDocument.getContentType().equals("application/pdf")) {
+					PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayFile);
+					uiModel.addAttribute("pdfWidth", pdfParameters.getWidth());
+					uiModel.addAttribute("pdfHeight", pdfParameters.getHeight());
+					uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+				}
+				uiModel.addAttribute("documentType", fileService.getExtension(toDisplayFile));		
+				uiModel.addAttribute("documentId", toDisplayDocument.getId());
 			}
+			
 			uiModel.addAttribute("logs", Log.findLogsBySignRequestIdEquals(signRequest.getId()).getResultList());
 			if(user.getSignImage() != null) {
 				uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
@@ -214,9 +225,7 @@ public class SignRequestController {
 				uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 			}
 			uiModel.addAttribute("signRequest", signRequest);
-			uiModel.addAttribute("documentType", fileService.getExtension(toDisplayFile));
 			uiModel.addAttribute("itemId", id);
-			uiModel.addAttribute("documentId", toDisplayDocument.getId());
 			if (signRequestService.checkUserSignRights(user, signRequest)) {
 				uiModel.addAttribute("signable", "ok");
 			}
@@ -238,7 +247,7 @@ public class SignRequestController {
 	}
 
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
-	public String create(@Valid SignRequest signRequest, @RequestParam("multipartFile") MultipartFile multipartFile, BindingResult bindingResult, 
+	public String create(@Valid SignRequest signRequest, @RequestParam("multipartFiles") MultipartFile[] multipartFiles, BindingResult bindingResult, 
 			@RequestParam(value = "signType", required = false) String signType, 
 			@RequestParam(value = "signBookIds", required = true) long[] signBookIds,
 			@RequestParam(value="newPageType", required = false) String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
@@ -263,16 +272,49 @@ public class SignRequestController {
 		}
 		try {
 			//TODO : accept n documents
-			Document document = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-			signRequest = signRequestService.createSignRequest(signRequest, user, document, signRequestParams, signBookIds);
-
+			List<Document> documents =  documentService.createDocuments(multipartFiles);
+			signRequest = signRequestService.createSignRequest(signRequest, user, documents, signRequestParams, signBookIds);
+			//signRequestService.addOriginalDocuments(signRequest, documents);
+			
 		} catch (IOException e) {
-			logger.error("error to add file : " + multipartFile.getOriginalFilename(), e);
+			logger.error("error to add file : " + multipartFiles[0].getOriginalFilename(), e);
 		}
-
 		return "redirect:/user/signrequests/" + signRequest.getId();
 	}
 
+	@RequestMapping(value = "/add-doc/{id}", method = RequestMethod.POST, produces = "text/html")
+	@ResponseBody
+	public String addDocument(@PathVariable("id") Long id,
+			@RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest request) {
+		System.err.println("test : " + multipartFiles);
+		User user = userService.getUserFromAuthentication();
+		user.setIp(request.getRemoteAddr());
+		SignRequest signRequest = SignRequest.findSignRequest(id);
+		if (signRequestService.checkUserSignRights(user, signRequest)) {
+			try {
+				List<Document> documents =  documentService.createDocuments(multipartFiles);
+				signRequestService.addOriginalDocuments(signRequest, documents);
+			} catch (IOException e) {
+				logger.error("error to add file : " + multipartFiles[0].getOriginalFilename(), e);
+			}
+		}
+        return "{}";
+
+	}
+
+	@RequestMapping(value = "/remove-doc/{id}", method = RequestMethod.POST, produces = "text/html")
+	@ResponseBody
+	public String removeDocument(@PathVariable("id") Long id, HttpServletRequest request) {
+		User user = userService.getUserFromAuthentication();
+		user.setIp(request.getRemoteAddr());
+		Document document = Document.findDocument(id);
+		SignRequest signRequest = SignRequest.findSignRequest(document.getSignRequestId());
+		if (signRequestService.checkUserSignRights(user, signRequest)) {
+			signRequest.getOriginalDocuments().remove(document);
+		}
+		return "{}";
+	}
+	
 	@RequestMapping(value = "/sign/{id}", method = RequestMethod.POST)
 	public String sign(@PathVariable("id") Long id, 
 			@RequestParam(value = "xPos", required = true) int xPos,

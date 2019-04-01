@@ -50,6 +50,7 @@ public class SignBook {
     
     private String documentsSourceUri;
     
+    //TODO recipient list
     private String recipientEmail;
 
     //TODO secretaire (createby)= droits de modif + droit en consultation

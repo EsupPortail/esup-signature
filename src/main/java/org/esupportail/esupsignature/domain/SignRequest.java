@@ -57,8 +57,9 @@ public class SignRequest {
     private List<Document> originalDocuments = new ArrayList<Document>();
     
     //TODO multiple documents ici ou dans le parapheur
+    
     @OneToMany
-    private List<Document> documents = new ArrayList<Document>();
+    private List<Document> signedDocuments = new ArrayList<Document>();
     
     private boolean overloadSignBookParams = false;
     
