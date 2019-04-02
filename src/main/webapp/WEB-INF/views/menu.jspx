@@ -2,7 +2,7 @@
 <div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:menu="urn:jsptagdir:/WEB-INF/tags/menu" xmlns:sec="http://www.springframework.org/security/tags" id="menu" version="2.0">
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
-    <nav class="nav nav-tabs navbar-expand-sm navbar-light bg-light">
+    <nav class="nav nav-tabs navbar-expand-sm navbar-light bg-light d-none">
     	<div class="collapse navbar-collapse justify-content-between" id="${fn:escapeXml(id)}">
         <menu:menu id="_menu" z="user-managed">
             <menu:item id="c_accueil" label="Accueil" menuClass="nav-link" render="false" url="/" z="user-managed"/>

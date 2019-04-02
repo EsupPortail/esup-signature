@@ -33,7 +33,6 @@
     <div class="card">
       	<spring:url value="${path}" var="form_url"/>
       	<form:form action="${form_url}" method="POST" modelAttribute="${modelAttribute}" enctype="${enctype}" onsubmit="${jsCall}" class="${cssClass}">
-    		<div class="card-header">${title_msg}</div>
         	<form:errors cssClass="alert alert-danger" delimiter="&lt;p/&gt;"/>
         	<div class="card-body">
         		<jsp:doBody />

@@ -30,6 +30,7 @@ public class MailConfig {
 		VelocityEngine velocityEngine = new VelocityEngine();
 		velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
 		velocityEngine.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
+		velocityEngine.setProperty("runtime.log", "/tmp/velocity.log");
 		velocityEngine.init();
         return velocityEngine.getTemplate("templates/emailTemplate.vm", "UTF-8");
     }

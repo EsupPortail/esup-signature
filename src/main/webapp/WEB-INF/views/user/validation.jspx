@@ -1,6 +1,23 @@
 <div xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:spring="http://www.springframework.org/tags" xmlns:util="urn:jsptagdir:/WEB-INF/tags/util" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:sec="http://www.springframework.org/security/tags" xmlns:form="http://www.springframework.org/tags/form">
 	<jsp:directive.page contentType="text/html;charset=UTF-8" />
 	<jsp:output omit-xml-declaration="yes" />
+	
+	<div class="card card-header">
+		<nav class="nav justify-content-between" aria-label="breadcrumb">
+			<div class="navbar-nav">
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
+					<li class="breadcrumb-item active">Outil de validation</li>
+				</ol>
+			</div>
+			<div class="navbar-nav align-self-center">
+				<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+					<span class="fas fa-info-circle"><!--  --></span>
+				</button>
+			</div>
+		</nav>
+	</div>
+	
 	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
 		<div class="card card-body border-info text-info">
 	        Le service de validation est fourni par l'outil DSS.
@@ -14,13 +31,6 @@
 		</div>
 	</div>
 	<div class="card">
-		<div class="card-header">
-			<div class="row">
-				<div class="col-lg-6">
-					<h5><spring:message code="menu_item_user_validation_service" /></h5>
-				</div>
-			</div>
-    	</div>
 		<div class="card-body">
 			<form method="post" class="form-inline" enctype="multipart/form-data" action="/user/validation">
 				<div class="form-group col-4">

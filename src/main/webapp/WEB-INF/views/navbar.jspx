@@ -10,6 +10,9 @@
 		<c:when test="${active == 'sessions' || active =='su'}">
 			<c:set scope="session" var="role" value="admin" />
 		</c:when>
+		<c:when test="${active == 'user/users'}">
+			<c:set scope="session" var="role" value="settings" />
+		</c:when>
 		<c:otherwise>
 			<c:set scope="session" var="role" value="user" />
 		</c:otherwise>
@@ -54,7 +57,7 @@
 			<div class="navbar-nav">
 				<sec:authorize access="isAuthenticated()">
 					<sec:authentication property="principal.username" var="eppn" />
-					<menu:item activeMenu="${active=='user/users'}" id="i_user_new" bootstrapIcon="fa fa-cog" label="${eppn}" menuClass="nav-link" url="/user/users/"/>
+					<menu:item activeMenu="${role=='settings'}" id="i_user_new" bootstrapIcon="fa fa-cog" label="${eppn}" menuClass="nav-link" url="/user/users/"/>
 				</sec:authorize>
 				<sec:authorize access="hasRole('ROLE_PREVIOUS_ADMINISTRATOR')">
 					<spring:url value="/logout" var="su_exit_url" />

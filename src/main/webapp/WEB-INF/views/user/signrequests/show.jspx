@@ -4,11 +4,10 @@
 	<jsp:output omit-xml-declaration="yes" />
 	<div class="card card-header">
 		<div class="row">
-			<div class="col-lg-10">
+			<div class="col-lg-9">
 			<nav aria-label="breadcrumb">
 			  <ol class="breadcrumb">
 	    		<li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
-	    		<li class="breadcrumb-item"><a href="/user/signrequests/?toSign=true&amp;signBookId=${currentSignBook.id}">${currentSignBook.name}</a></li>
 			    <li class="breadcrumb-item active" aria-current="page"><spring:message code="menu_item_signrequest" /> : ${signRequest.name}</li>
 			  </ol>
 			</nav>
@@ -16,21 +15,32 @@
 			<div class="col-lg-2 text-right">
 				<jsp:include page="includes/status.jspx" />
 			</div>
+			<div class="col-lg-1 text-right align-self-center">
+				<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+					<span class="fas fa-info-circle"><!--  --></span>
+				</button>
+			</div>
 		</div>
 	</div>
-	<div aria-expanded="true" class="show" id="collapseHelp">
-	<div class="card card-body border-info text-info">
-		<c:choose>
-			<c:when test="${documentType eq 'pdf'}">
-			Pour signer un document, il faut positionner la signature sur le document à l'aide de la souris puis cliquer sur "Signer".
-			</c:when>
-			<c:otherwise>
-			Pour signer un document cliquer sur "Signer".
-			</c:otherwise>
-			</c:choose>
-			<br/>
-			Selon le type de signature, le lancement de l'application NexU ou un mot de passe peut être demandé.
-			</div>
+	<div aria-expanded="true" class="collapse" id="collapseHelp">
+		<div class="card card-body border-info text-info">
+			Cet écran permet d'effectuer plusieurs types d'actions sur votre demande :
+			<ul>
+			<li>
+				Ajouter des documents à votre demande et l'envoyer
+			</li>
+			<li>
+				Consulter les documents à signer
+			</li>
+			<li>
+				Signer une demande
+			</li>
+			<li>
+				Consulter / télécharger les documents signés
+			</li>
+			</ul>
+			Les actions possibles apparaisent dans l'espace "Signature"
+		</div>
 	</div>
 	<div class="card card-body">
 	<page:show list="false" update="false" delete="false" id="ps_org_esupportail_esupsignature_domain_SignRequest" object="${signRequest}" path="/user/signrequests" z="user-managed">
@@ -86,28 +96,32 @@
 										</dd>
 									</dl>
 									</c:if>
-									<dl class="display-group border-bottom m-0">
-										<dt class="col-lg-5">
-											<!--  -->
-										</dt>
-										<dd>
-											<div class="input-group">
-												<button type="button" class="btn btn-success" data-toggle="modal" data-target="#signatureModal">
-					  								<spring:message code="button_sign"/>
-												</button>
-											</div>
-										</dd>
-									</dl>
+									<button type="button" class="btn btn-success" data-toggle="modal" data-target="#signatureModal">
+		  								<spring:message code="button_sign"/>
+									</button>
 								</c:when>
-								<c:otherwise>	
-									<c:if test="${fn:length(signRequest.originalDocuments) > 0 and signRequest.status eq 'draft'}">
+								<c:otherwise>
+									<c:choose>
+									<c:when test="${fn:length(signRequest.originalDocuments) > 0}">
+									<c:choose>
+									<c:when test="${signRequest.status eq 'draft'}">
 									<spring:url value="/user/signrequests/pending/${id}" var="pendingUrl" />
 										<form action="${pendingUrl}">
-											<button type="submit" class="btn btn-success	">
-				  								<i class="fa fa-paper-plane" aria-hidden="true"><!--  --></i>&amp;nbsp;<spring:message code="button_send"/> pour signature
+											<button type="submit" class="btn btn-primary">
+				  								<i class="fa fa-paper-plane" aria-hidden="true"><!--  --></i>&amp;nbsp;Envoyer pour signature
 											</button>
 										</form>
-									</c:if>
+									</c:when>
+									<c:otherwise>
+										<div class="alert alert-info" >La demande est en cours de signature par le(s) destinataire(s)</div>
+									</c:otherwise>
+									</c:choose>
+									</c:when>
+									<c:otherwise>
+										<div class="alert alert-info" >Vous devez ajouter des documents</div>
+									</c:otherwise>
+
+									</c:choose>
 								</c:otherwise>
 							</c:choose>
 							<c:if test="${signRequest.status eq 'signed' or signRequest.status eq 'checked'}">
@@ -314,31 +328,14 @@
 					</div>
 					<div id="collapseLogs" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
 						<div class="card-body">
-							<dl class="display-group border-bottom m-0">
-								<dt class="col-lg-12">
-									<b>Logs</b>
-								</dt>
-								<dd class="col-lg-12">
-									<table:table cssClass="table-sm" create="false" view="false" data="${logs}" delete="false" id="l_org_esupportail_esupsignature_domain_Log" path="/manager/logs" update="false" z="user-manager">
-										<table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Log_logDate" property="logDate" z="user-manager" />
-										<table:column id="c_org_esupportail_esupsignature_domain_Log_eppn" property="eppn" z="user-manager" />
-										<table:column id="c_org_esupportail_esupsignature_domain_Log_action" property="action" z="user-manager" />
-										<table:column id="c_org_esupportail_esupsignature_domain_Log_initialStatus" property="initialStatus" z="user-manager" />
-										<table:column id="c_org_esupportail_esupsignature_domain_Log_finalStatus" property="finalStatus" z="user-manager" />
-										<table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_returnCode" property="returnCode" z="user-manager" />
-									</table:table>
-								</dd>
-							</dl>
-							<dl class="display-group border-bottom m-0">
-								<dt class="col-lg-12">Historique des versions</dt>
-								<dd class="col-lg-12">
-									<table:table view="false" create="false" cssClass="table" delete="false" update="false" data="${signRequest.signedDocuments}" id="l_org_esupportail_esupsignature_domain_Document" path="/user/documents" z="user-managed">
-										<table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Document_createDate" property="createDate" z="user-managed" />
-										<table:column link="true" id="c_org_esupportail_esupsignature_domain_Document_fileName" property="url" z="user-managed"  />
-									</table:table>
-								</dd>
-							</dl>
-
+							<table:table cssClass="table-sm" create="false" view="false" data="${logs}" delete="false" id="l_org_esupportail_esupsignature_domain_Log" path="/manager/logs" update="false" z="user-manager">
+								<table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Log_logDate" property="logDate" z="user-manager" />
+								<table:column id="c_org_esupportail_esupsignature_domain_Log_eppn" property="eppn" z="user-manager" />
+								<table:column id="c_org_esupportail_esupsignature_domain_Log_action" property="action" z="user-manager" />
+								<table:column id="c_org_esupportail_esupsignature_domain_Log_initialStatus" property="initialStatus" z="user-manager" />
+								<table:column id="c_org_esupportail_esupsignature_domain_Log_finalStatus" property="finalStatus" z="user-manager" />
+								<table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_returnCode" property="returnCode" z="user-manager" />
+							</table:table>
 						</div>
 					</div>
 				</div>
@@ -389,6 +386,11 @@
 	});
 	$('#multipartFile').on('fileuploaded', function(event, file, previewId, index, reader) {
 		location.reload();
+	});
+	$('#multipartFile').on('fileloaded', function(event, file, previewId, index, reader) {
+	//TODO : attention envoi
+	var files = $('#multipartFile').fileinput('getFileStack');
+	alert('test');
 	});
 	$('#multipartFile').on('filedeleted', function(event, id, index) {
 		location.reload();
@@ -577,7 +579,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <jsp:include page="includes/pdfsign.jspx" />
+        <jsp:include page="includes/signmodal.jspx" />
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
