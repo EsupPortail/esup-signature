@@ -203,7 +203,7 @@ public class SignRequestController {
 			File toDisplayFile = null;
 			
 			if(signRequest.getOriginalDocuments().size() == 1) {
-				toDisplayDocument = signRequestService.getLastOriginalsDocument(signRequest);
+				toDisplayDocument = signRequestService.getToSignDocument(signRequest);
 				toDisplayFile = toDisplayDocument.getJavaIoFile();
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
 					PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayFile);
@@ -224,7 +224,7 @@ public class SignRequestController {
 			}
 			uiModel.addAttribute("signRequest", signRequest);
 			uiModel.addAttribute("itemId", id);
-			if (signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
+			if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
 				uiModel.addAttribute("signable", "ok");
 			}
 			return "user/signrequests/show";
@@ -284,7 +284,7 @@ public class SignRequestController {
 	@ResponseBody
 	public String addDocument(@PathVariable("id") Long id,
 			@RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest request) {
-		System.err.println("test : " + multipartFiles);
+		logger.info("start add documents");
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
@@ -292,6 +292,7 @@ public class SignRequestController {
 			try {
 				List<Document> documents =  documentService.createDocuments(multipartFiles);
 				signRequestService.addOriginalDocuments(signRequest, documents);
+				signRequest.merge();
 			} catch (IOException e) {
 				logger.error("error to add file : " + multipartFiles[0].getOriginalFilename(), e);
 			}
@@ -501,8 +502,8 @@ public class SignRequestController {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-		if(signRequestService.checkUserViewRights(user, signRequest)) {
-			signBookService.removeSignRequestFromAllSignBooks(signRequest, user);
+		if(signRequestService.checkUserViewRights(user, signRequest) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
+			signBookService.removeSignRequestFromAllSignBooks(signRequest);
 			signRequestService.updateInfo(signRequest, SignRequestStatus.completed, "manual complete", user, "SUCCESS");
 		} else {
 			logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
@@ -510,6 +511,20 @@ public class SignRequestController {
 		return "redirect:/user/signrequests/" + id;
 	}
 
+	@RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
+	public String pending(@PathVariable("id") Long id, HttpServletResponse response,
+			RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
+		User user = userService.getUserFromAuthentication();
+		user.setIp(request.getRemoteAddr());
+		SignRequest signRequest = SignRequest.findSignRequest(id);
+		if(signRequestService.checkUserViewRights(user, signRequest) && signRequest.getStatus().equals(SignRequestStatus.draft)) {
+			signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "send for sign", user, "SUCCESS");
+		} else {
+			logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");
+		}
+		return "redirect:/user/signrequests/" + id;
+	}
+	
 	void populateEditForm(Model uiModel, SignRequest signRequest) {
 		uiModel.addAttribute("signRequest", signRequest);
 		addDateTimeFormatPatterns(uiModel);

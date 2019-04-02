@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -150,7 +151,7 @@ public class SignBookService {
 			if (signRequest.getStatus().equals(SignRequestStatus.signed) && signRequestService.isSignRequestCompleted(signRequest)) {
 				exportFileToTarget(signBook, signRequest, user);
 				//signRequestService.updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
-				removeSignRequestFromAllSignBooks(signRequest, user);
+				removeSignRequestFromAllSignBooks(signRequest);
 			}
 		}
 	}
@@ -192,14 +193,18 @@ public class SignBookService {
 		}
 	}
 
-	public void removeSignRequestFromAllSignBooks(SignRequest signRequest, User user) {
-		signRequest.getSignBooks().clear();
+	public void removeSignRequestFromAllSignBooks(SignRequest signRequest) {
 		List<SignBook> signBooks = signRequestService.getSignBooksList(signRequest);
 		for(SignBook signBook : signBooks) {
-			signBook.getSignRequests().remove(signRequest);
+			List<SignRequest> signRequests = new ArrayList<>();
+			signRequests.addAll(signBook.getSignRequests());
+			System.err.println(signRequests);
+			signRequests.remove(signRequest);
+			System.err.println(signRequests);
+			signBook.setSignRequests(signRequests);
 			signBook.merge();
-
 		}
+		signRequest.getSignBooks().clear();
 	}
 
 	public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook, User user) {

@@ -57,6 +57,7 @@
 				</div>
 			<div class="col-lg-12">
 			<form class="" action="" method="get">
+			<div id="accordionfilter">
 			<div class="card">
 				<div class="card-header">
                     <div class="accordion-heading">
@@ -128,7 +129,8 @@
 						</c:forEach>
 					</select>
 				</div>
-</div></div></div></div>
+</div></div></div></div></div>
+
 			</form>
 			</div>
 			<div class="col-lg-12">

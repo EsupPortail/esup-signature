@@ -130,8 +130,7 @@ public class SignRequestService {
 		signRequest.setName(String.valueOf(generateUniqueId()));
 		signRequest.setCreateBy(user.getEppn());
 		signRequest.setCreateDate(new Date());
-
-		signRequest.setStatus(SignRequestStatus.uploaded);
+		signRequest.setStatus(SignRequestStatus.draft);
 		signRequest.setSignRequestParams(signRequestParams);
 		for(long signBookId : signBookIds) {
 			SignBook signBook = SignBook.findSignBook(signBookId);
@@ -153,7 +152,6 @@ public class SignRequestService {
 			signRequest.getOriginalDocuments().add(document);
 			document.setSignRequestId(signRequest.getId());
 		}
-		updateInfo(signRequest, SignRequestStatus.pending, "create", user, "SUCCESS");
 		return signRequest;
 	}
 	
@@ -255,7 +253,7 @@ public class SignRequestService {
 		SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
 		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
 		CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
-		File toSignFile = getLastSignedDocument(signRequest).getJavaIoFile();
+		File toSignFile = getToSignDocument(signRequest).getJavaIoFile();
 		
 		File toSignFormatedFile = pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams());
 		
@@ -422,6 +420,15 @@ public class SignRequestService {
 		}
 	}
 	
+	public Document getToSignDocument(SignRequest signRequest) {
+		List<Document> documents = signRequest.getSignedDocuments();
+		if(documents.size() >0 ) {
+			return documents.get(documents.size() - 1);
+		} else {
+			return getLastOriginalsDocument(signRequest);
+		}
+	}
+	
 	public Document getLastSignedDocument(SignRequest signRequest) {
 		List<Document> documents = signRequest.getSignedDocuments();
 		return documents.get(documents.size() - 1);
@@ -472,9 +479,7 @@ public class SignRequestService {
 	}
 
 	public void refuse(SignRequest signRequest, User user) {
-		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
-		signRequest.getSignBooks().put(signBook.getId(), true);
-		signBookService.removeSignRequestFromAllSignBooks(signRequest, user);
+		signBookService.removeSignRequestFromAllSignBooks(signRequest);
 		updateInfo(signRequest, SignRequestStatus.refused, "refuse", user, "SUCCESS");
 	}
 	
@@ -489,7 +494,7 @@ public class SignRequestService {
 	
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {
 		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
-		if (signRequest.getStatus().equals(SignRequestStatus.pending) 
+		if ((signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft)) 
 				&& signBook != null
 				&& !signRequest.getSignBooks().get(signBook.getId())) {
 			return true;

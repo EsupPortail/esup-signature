@@ -5,7 +5,7 @@
 	<div id="collapseHelp" class="show" aria-expanded="true" style="">
 		<div class="card card-body border-info text-info">
 			<p>Ce formulaire permet de soumettre à signature un ou plusieurs documents en selectionnant le parapheur qui convient</p>
-			<p>Après avoir saisie les paramètres de la demande, vous pourrez ajouter des documents</p>
+			<p>Après avoir saisi les paramètres de la demande, vous pourrez ajouter des documents</p>
 		</div>
 	</div>
     <form:create id="fc_org_esupportail_esupsignature_domain_SignRequest" modelAttribute="signRequest" multipart="true" path="/user/signrequests" render="${empty dependencies}" z="user-managed">
@@ -77,16 +77,9 @@
 				</strong>
 			</label>
 			<div class="col-lg-8">
-				<select onchange="togglehideAllSign();" name="signBookIds" id="signBookIds" size="5" multiple="multiple">
+				<select onchange="togglehideAllSign();" name="signBookIds" id="signBookIds" size="5" multiple="multiple" required="required">
 					<c:forEach items="${allSignBooks}" var="signBook">
-						<c:choose>
-							<c:when test="${mySignBook.id eq signBook.id}">
-								<option value="${signBook.id}" selected="selected">${signBook.name}</option>
-							</c:when>
-							<c:otherwise>
-								<option value="${signBook.id}">${signBook.name}</option>
-							</c:otherwise>
-						</c:choose>
+						<option value="${signBook.id}">${signBook.name}</option>
 					</c:forEach>
 				</select>
 			</div>

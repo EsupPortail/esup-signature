@@ -20,27 +20,24 @@
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_recipientemail"/>
                             </dt>
                             <dd>
-                            <c:choose>
-                            <c:when test="${not empty signBook.recipientEmail}">
-                                <div class="alert alert-dark col-12">
-                                    <i class="far fa-envelope">
-                                        <!--  -->
-                                    </i> ${signBook.recipientEmail}
+                                <c:choose>
+                                    <c:when test="${not empty signBook.recipientEmail}">
+                                        <div class="alert alert-dark col-12">
+                                            <i class="far fa-envelope">
+                                                <!--  -->
+                                            </i> ${signBook.recipientEmail}
 								</div>
-                            </c:when>
-                            <c:otherwise>
-                            	<c:forEach items="${signBook.signBooksGroup}" var="userSignBook">
-	                            	 <div class="alert alert-dark col-12">
-	                                    <i class="far fa-envelope">
-	                                        <!--  -->
-	                                    </i> ${userSignBook.recipientEmail}
-									</div>	
-                            	</c:forEach>
-                            </c:otherwise>
-                            </c:choose>
-								
-					        	
-								
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:forEach items="${signBook.signBooksGroup}" var="userSignBook">
+                                            <div class="alert alert-dark col-12">
+                                                <i class="far fa-envelope">
+                                                    <!--  -->
+                                                </i> ${userSignBook.recipientEmail}
+									</div>
+                                        </c:forEach>
+                                    </c:otherwise>
+                                </c:choose>
                             </dd>
                         </dl>
                         <field:display field="description" id="s_org_esupportail_esupsignature_domain_SignBook_description" object="${signBook}" z="user-managed"/>
@@ -92,9 +89,9 @@
                         <field:display date="true" dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignBook_createDate" object="${signBook}" z="user-managed"/>
                         <field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_SignBook_updateBy" object="${signBook}" render="false" z="user-managed"/>
                         <field:display date="true" dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_SignBook_updateDate" object="${signBook}" render="false" z="user-managed"/>
-			        	<field:display render="false" field="signBooksGroup" id="s_org_esupportail_esupsignature_domain_SignBook_signBooksGroup" object="${signBook}" z="user-managed"/>
+                        <field:display field="signBooksGroup" id="s_org_esupportail_esupsignature_domain_SignBook_signBooksGroup" object="${signBook}" render="false" z="user-managed"/>
                         <table:table data="${signRequests}" delete="false" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">
-                            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_name" property="name" z="user-managed"/>
+                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_name" property="name" render="false" z="user-managed"/>
                             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_title" property="title" z="user-managed"/>
                             <table:column date="true" dateTimePattern="${signRequest_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" property="createDate" z="user-managed"/>
                             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" property="createBy" z="user-managed"/>
@@ -174,5 +171,6 @@
                 </div>
             </c:if>
         </div>
+        <field:display field="moderatorEmails" id="s_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" object="${signbook}" z="BEsExaLRgotHJH79VJUpEJ8KndY="/>
     </page:show>
 </div>

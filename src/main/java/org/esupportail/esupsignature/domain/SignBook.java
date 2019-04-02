@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.EntityManager;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -52,6 +53,10 @@ public class SignBook {
     
     //TODO recipient list
     private String recipientEmail;
+    
+    //TODO moderateur list
+    @ElementCollection(targetClass=String.class)
+    private List<String> moderatorEmails = new ArrayList<String>();
 
     //TODO secretaire (createby)= droits de modif + droit en consultation
     //TODO group list<signbook>

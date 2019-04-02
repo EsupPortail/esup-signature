@@ -60,37 +60,56 @@
 						</button>
 					</div>
 					<div id="collapseTools" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
-						<div class="card-body">
-							<c:if test="${signable eq 'ok'}">
-
-							<c:if test="${fn:length(signRequest.signBooks) > 1}">
-								<dl class="display-group border-bottom m-0">
-									<dt class="col-lg-5">
-										<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
-									</dt>
-									<dd>
-									<div class="input-group">
-										<spring:url value="/user/signrequests/toggle-need-all-sign/${id}" var="toggleNeedAllSignUrl" />
-										<label class="switch">
-											<c:choose>
-												<c:when test="${signRequest.allSignToComplete eq true}">
-												  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete" checked="checked"/>
-												</c:when>
-												<c:otherwise>
-												  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
-												</c:otherwise>
-											</c:choose>
-										  	<span class="slider round"><!--  --></span>
-										</label>
-									</div>
-									</dd>
-								</dl>
-							</c:if>
-							
-							<button type="button" class="btn btn-success" data-toggle="modal" data-target="#signatureModal">
-  								<spring:message code="button_sign"/>
-							</button>
-							</c:if>
+						<div class="card-body text-center">
+							<c:choose>
+								<c:when test="${signable eq 'ok'}">
+									<c:if test="${fn:length(signRequest.signBooks) > 1}">
+									<dl class="display-group border-bottom m-0">
+										<dt class="col-lg-5">
+											<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
+										</dt>
+										<dd>
+										<div class="input-group">
+											<spring:url value="/user/signrequests/toggle-need-all-sign/${id}" var="toggleNeedAllSignUrl" />
+											<label class="switch">
+												<c:choose>
+													<c:when test="${signRequest.allSignToComplete eq true}">
+													  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete" checked="checked"/>
+													</c:when>
+													<c:otherwise>
+													  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
+													</c:otherwise>
+												</c:choose>
+											  	<span class="slider round"><!--  --></span>
+											</label>
+										</div>
+										</dd>
+									</dl>
+									</c:if>
+									<dl class="display-group border-bottom m-0">
+										<dt class="col-lg-5">
+											<!--  -->
+										</dt>
+										<dd>
+											<div class="input-group">
+												<button type="button" class="btn btn-success" data-toggle="modal" data-target="#signatureModal">
+					  								<spring:message code="button_sign"/>
+												</button>
+											</div>
+										</dd>
+									</dl>
+								</c:when>
+								<c:otherwise>	
+									<c:if test="${fn:length(signRequest.originalDocuments) > 0 and signRequest.status eq 'draft'}">
+									<spring:url value="/user/signrequests/pending/${id}" var="pendingUrl" />
+										<form action="${pendingUrl}">
+											<button type="submit" class="btn btn-success	">
+				  								<i class="fa fa-paper-plane" aria-hidden="true"><!--  --></i>&amp;nbsp;<spring:message code="button_send"/> pour signature
+											</button>
+										</form>
+									</c:if>
+								</c:otherwise>
+							</c:choose>
 							<c:if test="${signRequest.status eq 'signed' or signRequest.status eq 'checked'}">
 								<dl class="display-group border-bottom m-0">
 									<dt class="col-lg-5">
@@ -118,7 +137,7 @@
 								</dl>
 							</c:if>
 							
-							<c:if test="${signRequest.status eq 'signed' or signRequest.status eq 'completed'}">
+							<c:if test="${signRequest.status eq 'signed' or signRequest.status eq 'completed' or signRequest.status eq 'checked'}">
 								<dl class="display-group border-bottom m-0">
 									<dt class="col-lg-5">
 										<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signedfile" />
@@ -379,13 +398,15 @@
     	language: "fr",
         showCaption: false,
         showClose: false,
-        <c:if test="${signRequest.status eq 'signed' or signRequest.status eq 'checked' or signRequest.status eq 'completed'}">
+        <c:if test="${signRequest.status ne 'draft'}">
         	showUpload: false,
         	showBrowse: false,
         	showRemove: false,
         	dropZoneEnabled: false,
         </c:if>
-        browseOnZoneClick: true,
+        <c:if test="${signRequest.status eq 'draft'}">
+        	browseOnZoneClick: true,        
+        </c:if>
     	uploadUrl: "/user/signrequests/add-doc/${id}",
     	uploadAsync: false,
         maxFileCount: 100,
@@ -400,7 +421,7 @@
    	    initialPreviewConfig: [
     		<c:forEach items="${signRequest.originalDocuments}" var="originalDocument">
     		<c:set value="${fn:split(originalDocument.contentType, '/')[1]}" var="originalDocumentType" />
-   			<c:if test="${signRequest.status ne 'signed' and signRequest.status ne 'checked'}">
+   			<c:if test="${signRequest.status ne 'draft'}">
        			<spring:url value="/user/signrequests/remove-doc/${originalDocument.id}" var="originalDocumentRemoveUrl" />
        		</c:if>
     		<c:choose>
@@ -476,7 +497,7 @@
                 }
                 return false;
             },
-            <c:if test="${signRequest.status eq 'signed' or signRequest.status eq 'checked'}">
+            <c:if test="${signRequest.status ne 'draft'}">
 	        	showRemove: false
         	</c:if>
 

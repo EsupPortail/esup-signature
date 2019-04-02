@@ -75,7 +75,7 @@ public class SignRequest {
     private boolean allSignToComplete = false;
     
     public enum SignRequestStatus {
-		uploaded, pending, canceled, checked, signed, refused, deleted, exported, completed;
+		draft, pending, canceled, checked, signed, refused, deleted, exported, completed;
 	}
 	
     public void setStatus(SignRequestStatus status) {

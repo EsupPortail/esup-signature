@@ -10,7 +10,7 @@
 			Pour la signature au format PAdES ou par apposition d'une image sur un PDF il faut sélectionner un fichier image de la signature.
 			</li>
 			<li>
-			Pour la signature au format PAdES/XAdES il faut en plus sélectionner un keystore au format PKCS12.
+			Pour la signature au format PAdES, CAdES ou XAdES il faut en plus sélectionner un keystore au format PKCS12.
 			<br/>
 			Il est possible d'en générer un sur la plateforme <a href="https://www.digicert.com/sso">https://www.digicert.com/sso</a> (voir <a href="https://services.renater.fr/tcs/certcentral/orders/request-certificate">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a> pour plus de détails)
 			</li>
@@ -114,7 +114,16 @@
 		</div>
 		<input type="hidden" name="signImageBase64" id="signImageBase64" />
 		<div class="form-group">
-			<label class="col-lg-3  col-form-label" for="newPageType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_keystore" /></strong></label>
+			<label class="col-lg-3  col-form-label" for="newPageType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_keystore" /></strong>
+			&amp;nbsp;<button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"><!-- --></span></button>
+					<div class="collapse show" id="collapseHelpKeyStore">
+						<div class="card card-body border-info text-info">
+							<small>
+								Il est possible de générer un keystore en suivant cette procédure <a href="https://services.renater.fr/tcs/certcentral/orders/request-certificate" target="_blank">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a>
+							</small>
+						</div>
+					</div>
+			</label>
 			<div class="col-lg-9">
 				<div class="input-group">
 					<div class="custom-file">

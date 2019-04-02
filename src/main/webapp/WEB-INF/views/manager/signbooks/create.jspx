@@ -5,8 +5,8 @@
     <form:create id="fc_org_esupportail_esupsignature_domain_SignBook" modelAttribute="signBook" multipart="true" path="/manager/signbooks" render="${empty dependencies}" z="user-managed">
         <div class="row">
             <div class="col-lg-6">
-                <field:select render="false" checkboxes="false" cssClass="form-control" field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" items="${signBookTypes}" multiple="false" path="/signrequests" size="1" z="user-managed"/>
-				<!-- 
+                <field:select checkboxes="false" cssClass="form-control" field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" items="${signBookTypes}" multiple="false" path="/signrequests" render="false" size="1" z="user-managed"/>
+                <!-- 
 				<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_signBookType_id">
 					<label class="col-lg-3  col-form-label" for="signBookType">
 						<strong>Type de parapheur</strong>
@@ -20,32 +20,31 @@
 						</select>
 					</div>
 				</div>
-				 -->                
+				 -->
                 <field:input autocomplete="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignBook_name" required="true" z="user-managed"/>
-                
-                <field:input render="false" cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" required="true" z="user-managed"/>
-                
-        <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBooksGroup">
-			<label class="col-lg-3  col-form-label" for="newPageType">
-				<strong>
-					<spring:message code="label_org_esupportail_esupsignature_domain_signbook_recipientemail" />
-					<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
-					<div class="collapse" id="collapseHelp1">
-						<div class="card card-body border-info text-info">
-						<!--  -->
-						</div>
-					</div>
-				</strong>
-			</label>
-			<div class="col-lg-9">
-				<select required="required" onchange="toggleSignBookType();" name="recipientEmails" id="signBookIds" size="5" multiple="multiple">
-					<c:forEach items="${signBooks}" var="signBook">
-						<option value="${signBook.recipientEmail}">${signBook.name}</option>
-					</c:forEach>
-				</select>
-			</div>
-		</div>
-                
+                <field:input cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" render="false" required="true" z="user-managed"/>
+                <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBooksGroup">
+                    <label class="col-lg-3  col-form-label" for="newPageType">
+                        <strong>
+                            <spring:message code="label_org_esupportail_esupsignature_domain_signbook_recipientemail"/>
+                            <button class="btn btn-sm btn-light" data-target="#collapseHelp1" data-toggle="collapse" type="button">
+                                <span class="fas fa-info-circle text-info"/>
+                            </button>
+                            <div class="collapse" id="collapseHelp1">
+                                <div class="card card-body border-info text-info">
+                                    <!--  -->
+                                </div>
+                            </div>
+                        </strong>
+                    </label>
+                    <div class="col-lg-9">
+                        <select id="signBookIds" multiple="multiple" name="recipientEmails" onchange="toggleSignBookType();" required="required" size="5">
+                            <c:forEach items="${signBooks}" var="signBook">
+                                <option value="${signBook.recipientEmail}">${signBook.name}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </div>
                 <field:input field="createBy" id="c_org_esupportail_esupsignature_domain_SignBook_createBy" render="false" z="user-managed"/>
                 <field:datetime dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="c_org_esupportail_esupsignature_domain_SignBook_createDate" render="false" z="user-managed"/>
                 <field:input field="updateBy" id="c_org_esupportail_esupsignature_domain_SignBook_updateBy" render="false" z="user-managed"/>
@@ -88,20 +87,22 @@
                 <field:input field="params" id="c_org_esupportail_esupsignature_domain_SignBook_params" render="false" z="user-managed"/>
                 <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignBook_status" render="false" z="user-managed"/>
                 <field:input field="sourceUserEmail" id="c_org_esupportail_esupsignature_domain_SignBook_sourceUserEmail" render="false" z="user-managed"/>
-                <field:checkbox render="false" field="autoRemove" id="c_org_esupportail_esupsignature_domain_SignBook_autoRemove" z="user-managed"/>
-				<div class="form-group" id="__id">
-					<label class="col-lg-3  col-form-label" for="_autoRemove_id">
-						<strong>                            
-							<spring:message code="label_org_esupportail_esupsignature_domain_signbook_autoremove"/>
-						</strong>
-					</label>
-					<div class="col-lg-6">
-						<label class="switch">
-						  <input id="_autoRemove_id" type="checkbox" name="autoRemove" />
-						  <span class="slider round"><!--  --></span>
-						</label>
-					</div>
-				</div>
+                <field:checkbox field="autoRemove" id="c_org_esupportail_esupsignature_domain_SignBook_autoRemove" render="false" z="user-managed"/>
+                <div class="form-group" id="__id">
+                    <label class="col-lg-3  col-form-label" for="_autoRemove_id">
+                        <strong>
+                            <spring:message code="label_org_esupportail_esupsignature_domain_signbook_autoremove"/>
+                        </strong>
+                    </label>
+                    <div class="col-lg-6">
+                        <label class="switch">
+                            <input id="_autoRemove_id" name="autoRemove" type="checkbox"/>
+                            <span class="slider round">
+                                <!--  -->
+                            </span>
+                        </label>
+                    </div>
+                </div>
             </div>
             <div class="col-lg-6">
                 <field:select checkboxes="false" cssClass="form-control" field="signType" id="c_org_esupportail_esupsignature_domain_SignBook_signType" items="${signTypes}" multiple="false" path="/" render="false" size="1" z="user-managed"/>
@@ -161,7 +162,8 @@
         <field:input field="yPos" id="c_org_esupportail_esupsignature_domain_SignBook_yPos" render="false" z="user-managed"/>
         <field:select field="modelFile" id="c_org_esupportail_esupsignature_domain_SignBook_modelFile" itemValue="id" items="${documents}" path="/user/documents" render="false" z="user-managed"/>
         <field:select field="signRequestParams" id="c_org_esupportail_esupsignature_domain_SignBook_signRequestParams" itemValue="id" items="${signrequestparamses}" path="/signrequestparamses" render="false" z="user-managed"/>
-        <field:select render="false" field="signBooksGroup" id="c_org_esupportail_esupsignature_domain_SignBook_signBooksGroup" itemValue="id" items="${signbooks}" multiple="true" path="/manager/signbooks" z="E9r506SL2ArRReGFzXCdJo2STX0="/>
+        <field:select field="signBooksGroup" id="c_org_esupportail_esupsignature_domain_SignBook_signBooksGroup" itemValue="id" items="${signbooks}" multiple="true" path="/manager/signbooks" render="false" z="user-managed"/>
+        <field:input field="moderatorEmails" id="c_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" z="loNK4lIczG8u26p3Luqh3y2Hmuk="/>
     </form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_SignBook" render="${not empty dependencies}" z="user-managed"/>
     <script type="text/javascript">
