@@ -506,7 +506,7 @@ public class SignRequestService {
 	public boolean checkUserViewRights(User user, SignRequest signRequest) {
 		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		List<Log> log = Log.findLogsByEppnAndSignRequestIdEquals(user.getEppn(), signRequest.getId()).getResultList();
-		if (signRequest.getCreateBy().equals(user.getEppn()) || signBook != null || log.size() > 0) {
+		if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0) {
 			return true;
 		} else {
 			return false;

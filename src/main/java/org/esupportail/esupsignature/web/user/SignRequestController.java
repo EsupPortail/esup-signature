@@ -157,7 +157,7 @@ public class SignRequestController {
 			if(signBookId != null) {	
 				signRequests.addAll(SignBook.findSignBook(signBookId).getSignRequests());
 			} else {
-				signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, statusFilterEnum, page, size);
+				signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending, page, size);
 			}
 			signRequests = signRequests.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 			nrOfPages = (float) signRequestService.findSignRequestByUserAndStatusEquals(user, statusFilterEnum).size() / sizeNo;
@@ -189,7 +189,7 @@ public class SignRequestController {
 		User user = userService.getUserFromAuthentication();
 		addDateTimeFormatPatterns(uiModel);
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-		if (signRequestService.checkUserViewRights(user, signRequest)) {
+		if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
 			SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 			uiModel.addAttribute("currentSignBook", signBook);
@@ -288,7 +288,7 @@ public class SignRequestController {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-		if (signRequestService.checkUserSignRights(user, signRequest)) {
+		if (signRequestService.checkUserViewRights(user, signRequest)) {
 			try {
 				List<Document> documents =  documentService.createDocuments(multipartFiles);
 				signRequestService.addOriginalDocuments(signRequest, documents);

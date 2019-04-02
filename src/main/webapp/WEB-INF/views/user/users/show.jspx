@@ -3,6 +3,20 @@
 	<jsp:directive.page contentType="text/html;charset=UTF-8" />
 	<jsp:output omit-xml-declaration="yes" />
 	<spring:message code="label_org_esupportail_esupsignature_domain_user_settings" var="title" />
+	<div class="card card-header">
+		<nav class="nav justify-content-between" aria-label="breadcrumb">
+			<div class="navbar-nav">
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item active">Paramètres utilisateur</li>
+				</ol>
+			</div>
+			<div class="navbar-nav align-self-center">
+				<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+					<span class="fas fa-info-circle"><!--  --></span>
+				</button>
+			</div>
+		</nav>
+		</div>
 	<page:show create="false" delete="false" update="true" label="${title}" list="false" id="ps_org_esupportail_esupsignature_domain_User" object="${user}" path="/user/users" z="user-managed">
 		<field:display field="name" id="s_org_esupportail_esupsignature_domain_User_name" object="${user}" z="user-managed" />
 		<field:display field="firstname" id="s_org_esupportail_esupsignature_domain_User_firstname" object="${user}" z="user-managed" />

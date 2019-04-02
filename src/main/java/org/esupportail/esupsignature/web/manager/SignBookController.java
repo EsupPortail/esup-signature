@@ -176,6 +176,7 @@ public class SignBookController {
             populateEditForm(uiModel, signBook);
             return "manager/signbooks/update";
         }
+        //TODO ajout suppression d'utilisateur
         uiModel.asMap().clear();
         signBook.merge();
         return "redirect:/manager/signbooks/" + encodeUrlPathSegment(signBook.getId().toString(), httpServletRequest);
