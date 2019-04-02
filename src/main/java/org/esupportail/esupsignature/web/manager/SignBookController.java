@@ -3,6 +3,8 @@ package org.esupportail.esupsignature.web.manager;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -71,13 +73,23 @@ public class SignBookController {
 
 	void populateEditForm(Model uiModel, SignBook signBook) {
 		uiModel.addAttribute("signBook", signBook);
+		uiModel.addAttribute("signBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.user).getResultList());
 		uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
 		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
+		List<SignBookType> signBookTypes = new LinkedList<SignBookType>(Arrays.asList(SignBookType.values()));
+		signBookTypes.remove(SignBookType.user);
+		uiModel.addAttribute("signBookTypes", signBookTypes);
 		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
 		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
 		addDateTimeFormatPatterns(uiModel);
 		uiModel.addAttribute("signrequests", SignRequest.findAllSignRequests());
 	}
+	
+    @RequestMapping(params = "form", produces = "text/html")
+    public String createForm(Model uiModel) {
+        populateEditForm(uiModel, new SignBook());
+        return "manager/signbooks/create";
+    }
 	
     @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
     public String updateForm(@PathVariable("id") Long id, Model uiModel) {
@@ -91,6 +103,7 @@ public class SignBookController {
 	
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(@Valid SignBook signBook, @RequestParam("multipartFile") MultipartFile multipartFile,
+			@RequestParam("recipientEmails") String[] recipientEmails,
 			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, RedirectAttributes redirectAttrs, HttpServletRequest httpServletRequest) throws IOException {
 		if (bindingResult.hasErrors()) {
 			populateEditForm(uiModel, signBook);
@@ -105,14 +118,16 @@ public class SignBookController {
 				return "redirect:/manager/signbooks/" + signBook.getId();
 			}
 			signBookToUpdate.setName(signBook.getName());
-			signBookToUpdate.setRecipientEmail(signBook.getRecipientEmail());
+			if(recipientEmails.length == 1) {
+				signBookToUpdate.setRecipientEmail(recipientEmails[0]);
+			}
 			signBookToUpdate.setDocumentsSourceUri(signBook.getDocumentsSourceUri());
 			signBookToUpdate.setSourceType(signBook.getSourceType());
 			signBookToUpdate.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
 			signBookToUpdate.setTargetType(signBook.getTargetType());
 			signBookToUpdate.getSignRequestParams().setSignType(SignType.valueOf(signType));
 			signBookToUpdate.getSignRequestParams().setNewPageType(NewPageType.valueOf(newPageType));
-			Document newModel = documentService.addFile(multipartFile, multipartFile.getOriginalFilename());
+			Document newModel = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
 			if(newModel != null) {
 				Document oldModel = signBookToUpdate.getModelFile();
 				signBookToUpdate.setModelFile(newModel);
@@ -123,7 +138,7 @@ public class SignBookController {
 			if(SignBook.countFindSignBooksByNameEquals(signBook.getName()) == 0) {
 			signBook.setCreateBy(user.getEppn());
 			signBook.setCreateDate(new Date());
-			signBook.setModelFile(documentService.addFile(multipartFile, multipartFile.getOriginalFilename()));
+			signBook.setModelFile(documentService.createDocument(multipartFile, multipartFile.getOriginalFilename()));
 			SignRequestParams signRequestParams = new SignRequestParams();
 			signRequestParams.setSignType(SignType.valueOf(signType));
 			signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
@@ -131,8 +146,20 @@ public class SignBookController {
 			signRequestParams.setXPos(0);
 			signRequestParams.setYPos(0);
 			signRequestParams.persist();
+			if(recipientEmails.length == 1) {
+				signBook.setRecipientEmail(recipientEmails[0]);
+				signBook.setSignBooksGroup(null);
+				signBook.setSignBookType(SignBookType.model);
+			} else if(recipientEmails.length > 1) {
+				signBook.setSignBookType(SignBookType.group);
+				for(String recipientEmail : recipientEmails) {
+					SignBook signBook2 = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(recipientEmail, SignBookType.user).getSingleResult();
+					signBook.getSignBooksGroup().add(signBook2);
+				}
+				signBook.setRecipientEmail(null);
+			}
 			signBook.setSignRequestParams(signRequestParams);
-			signBook.setSignBookType(SignBookType.model);
+			
 			signBook.persist();
 			} else {
 				redirectAttrs.addFlashAttribute("messageCustom", signBook.getName() + " already exist");
@@ -143,6 +170,17 @@ public class SignBookController {
 		return "redirect:/manager/signbooks/" + encodeUrlPathSegment(signBook.getId().toString(), httpServletRequest);
 	}
 
+    @RequestMapping(method = RequestMethod.PUT, produces = "text/html")
+    public String update(@Valid SignBook signBook, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
+        if (bindingResult.hasErrors()) {
+            populateEditForm(uiModel, signBook);
+            return "manager/signbooks/update";
+        }
+        uiModel.asMap().clear();
+        signBook.merge();
+        return "redirect:/manager/signbooks/" + encodeUrlPathSegment(signBook.getId().toString(), httpServletRequest);
+    }
+	
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
 		addDateTimeFormatPatterns(uiModel);

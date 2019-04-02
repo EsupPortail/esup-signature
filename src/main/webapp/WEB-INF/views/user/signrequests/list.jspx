@@ -7,52 +7,61 @@
 			<p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
 			<p>
 			Statut des demandes de signatures :
-			<div class="alert alert-primary btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+			</p>
+			<p>
+			<span class="alert alert-primary" id="status_${signRequest.id}" value="${signRequest.status}">
 				<i class="fas fa-clock"> <!--  --></i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
-			</div>
+			</span>
 			La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures 
-			<div class="alert alert-success btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+			</p>
+			<p>
+			<span class="alert alert-success" id="status_${signRequest.id}" value="${signRequest.status}">
 				<i class="fas fa-file-signature"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
-			</div>
+			</span>
 			Tous les critères de signatures sont remplis
-			<div class="alert alert-success btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+			</p>
+			<p>
+			<span class="alert alert-success" id="status_${signRequest.id}" value="${signRequest.status}">
 				<i class="far fa-check-circle"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
-			</div>
+			</span>
 			Le document à été validé par tous les participants
-			<div class="alert alert-danger btn-sm col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+			</p>
+			<p>
+			<span class="alert alert-danger" id="status_${signRequest.id}" value="${signRequest.status}">
 				<i class="fas fa-ban"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
-			</div>
+			</span>
 			La demande à été refusée et retirée des parapheurs
-			<div class="alert alert-warning btn-sm  col-1" id="status_${signRequest.id}" value="${signRequest.status}">
+			</p>
+			<p>
+			<span class="alert alert-warning" id="status_${signRequest.id}" value="${signRequest.status}">
 				<i class="fas fa-flag-checkered"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
-			</div>
+			</span>
 			La demande la demande à été retirée des parapheurs, elle va être supprimée de l'application automatiquement
 			</p>
 		</div>
 	</div>
+	<div class="card card-body border-info text-info">
+		Cliquez sur "<spring:message code="menu_item_signrequest_new" />" pour signer un document ou envoyer un document pour signature  
+	</div>
 	<div class="card">
 		<div class="card-header">
-<div class="row">
-			<div class="col-lg-12">				
-			<div class="card card-body border-info text-info">
-			Cliquez sur "<spring:message code="menu_item_signrequest_new" />" pour signer un document ou envoyer un document pour signature  
-			</div>
-			</div>
+		<div class="row">
 			<div class="col-lg-12 text-center">
-				<a alt="Signer un nouveau document" class="btn btn-success" href="/user/signrequests?form" title="Signer un nouveau Document">
+				<button type="button" alt="Signer un nouveau document" class="btn btn-success" onclick="location.href='/user/signrequests?form'" title="Signer un nouveau Document">
 					<i class="fas fa-plus"><!--  --></i>&amp;nbsp;<spring:message code="menu_item_signrequest_new" />
-				</a>
+				</button>
 				</div>
 			<div class="col-lg-12">
 			<form class="" action="" method="get">
+			<div id="accordionfilter">
 			<div class="card">
 				<div class="card-header">
                     <div class="accordion-heading">
-                        <a class="accordion-toggle" data-parent="#accordionfilter" data-toggle="collapse" href="#collapseFilter"> Filtres </a>
+                        <a class="accordion-toggle" data-parent="#accordionfilter" data-toggle="collapse" href="#collapseFilter">Filtres&amp;nbsp;<i class="fas fa-caret-down"><!--  --></i></a>
                     </div>
                     <div class="accordion-body collapse ${finderview ? 'in' : ''}" id="collapseFilter">
                         <div class="accordion-inner">
@@ -120,7 +129,8 @@
 						</c:forEach>
 					</select>
 				</div>
-</div></div></div></div>
+</div></div></div></div></div>
+
 			</form>
 			</div>
 			<div class="col-lg-12">
@@ -155,7 +165,7 @@
 					<thead>
 						<tr>
 							<th data-type="html"><input id="selectall" type="checkbox" /></th>
-							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_name" /></th>
+							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_title" /></th>
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createdate" /></th>
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createby" /></th>
 							<th class="signbook" style="display: block;"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" /></th>
@@ -170,7 +180,7 @@
 							<c:set var="signRequest" value="${signRequestItem}" scope="request" />
 							<tr class="roocol">
 								<td class="none"><input value="${signRequest.id}" name="check" type="checkbox" class="check" /></td>
-								<td class="none">${signRequest.name}</td>
+								<td class="none" style="width: 240px;">${signRequest.title}</td>
 								<td class="none"><fmt:formatDate value="${signRequest.createDate}" pattern="dd/MM/yyyy HH:mm" /></td>
 								<td class="none">${signRequest.createBy}</td>
 								<td class="signbook" style="display: block;">
@@ -182,10 +192,10 @@
 													<td align="center">
 														<c:choose>
 															<c:when test="${signBooksLabel.value eq true}">
-																<i class="far fa-check-circle text-success"><!--  --></i>
+																<i class="fas fa-check text-success"><!--  --></i>
 															</c:when>
 															<c:otherwise>
-																<i class="far fa-times-circle text-danger"><!--  --></i>
+																<i class="fas fa-times text-danger"><!--  --></i>
 															</c:otherwise>
 														</c:choose>
 													</td>
@@ -198,18 +208,19 @@
 								<td class="type">
 								<input type="hidden" id="signbook_${signRequest.id}" value="${json}" />
 								<c:if test="${not empty signRequest.signRequestParams.signType}">
-									<small>									
-									<div class="alert alert-dark" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
-										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" />
+									<div class="alert alert-secondary text-center" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+										<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" /></small>
 									</div>
-									</small>
 								</c:if>	
 								</td>
-								<td class="status">
+								<td class="status" style="width: 150px;">
 									<jsp:include page="includes/status.jspx" />
 								</td>
-								<td class="utilbox"><a class="btn btn-info far fa-eye" title="Sign Request" alt="Sign Request" href="/user/signrequests/${signRequest.id}"> <!--  -->
-								</a></td>
+								<td class="utilbox">
+									<button class="btn btn-info far fa-eye" title="Sign Request" alt="Sign Request" onclick="location.href='/user/signrequests/${signRequest.id}'">
+										<!--  -->
+									</button>
+								</td>
 								<td class="utilbox"><form class="delete" action="/user/signrequests/${signRequest.id}" method="post">
 										<input type="hidden" name="_method" value="DELETE" />
 										<button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" value="Supprimer Sign Request" type="submit" title="Supprimer Sign Request" class="btn btn-danger far fa-trash-alt" alt="Supprimer Sign Request" />

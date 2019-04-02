@@ -39,9 +39,15 @@ document.addEventListener('DOMContentLoaded', function() {
 	//Messages modal
 	var dialogMsg = document.querySelector('#messageModal #dialog');
 	if(dialogMsg != null){
-		var messageModal = document.getElementById('messageModal');
-		var myModalInstance = new Modal(messageModal);
-		myModalInstance.show();
+		$('#messageModal').modal({
+	        resizable: false,
+	        modal: true,
+	        buttons: {
+	                Fermer: function() {
+	                       $( this ).dialog( "close" );
+	               }
+	        }
+	       });
 	}
 	
 });
@@ -154,12 +160,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	signTypeDiv = document.getElementById("_signType_div_id");
 	newPageTypeSelector = document.getElementById("_newPageType_id");
 	newPageTypeDiv = document.getElementById("_newPageType_div_id");
-	overloadYes = document.getElementById("overload_yes");
-	overloadNo = document.getElementById("overload_no");
 	
-	if(overloadNo != null) {
-		overloadNo.classList.remove("btn-light");
-		overloadNo.classList.add("btn-danger");
+	if(signTypeDiv != null) {
 		signTypeSelector.disabled = true;
 		newPageTypeSelector.disabled = true;
 		signTypeDiv.classList.add("div-disable");
@@ -169,81 +171,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function toggleOverload() {
 	overloadSignParams = document.getElementById("_overloadSignParams");
-
-	if(overloadSignParams.value == "true") {
-		overloadNo.classList.remove("btn-light");
-		overloadNo.classList.add("btn-danger");
-		overloadYes.classList.remove("btn-success");
-		overloadYes.classList.add("btn-light");
+	if(!overloadSignParams.checked) {
 		signTypeDiv.classList.add("div-disable");
 		newPageTypeDiv.classList.add("div-disable");
 		signTypeSelector.disabled = true;
 		newPageTypeSelector.disabled = true;
-		overloadSignParams.value = "false";
 	} else {
-		overloadYes.classList.remove("btn-light");
-		overloadYes.classList.add("btn-success");
-		overloadNo.classList.remove("btn-danger");
-		overloadNo.classList.add("btn-light");
 		signTypeDiv.classList.remove("div-disable");
 		newPageTypeDiv.classList.remove("div-disable");
 		signTypeSelector.disabled = false;
 		newPageTypeSelector.disabled = false;
-		overloadSignParams.value = "true";
-	}
-}
-
-//toggle needAllSign
-var allSignToComplete;
-var allsignYes;
-var allsignNo;
-var signBookIds;
-var signBookIdsDiv;
-
-document.addEventListener('DOMContentLoaded', function() {
-	signBookIdsDiv = document.getElementById("_signBookIds_div_id");
-	allSignToComplete = document.getElementById("allSignToComplete");
-	allsignYes = document.getElementById("allsign_yes");
-	allsignNo = document.getElementById("allsign_no");
-	signBookIds = document.getElementById("signBookIds");
-
-	if(allsignNo != null) {
-		allsignNo.classList.remove("btn-light");
-		allsignNo.classList.add("btn-danger");
-	}
-	
-});
-
-function toggleAllSign() {
-	allSignToComplete = document.getElementById("allSignToComplete");
-
-	if(allSignToComplete.value == "true") {
-		allsignNo.classList.remove("btn-light");
-		allsignNo.classList.add("btn-danger");
-		allsignYes.classList.remove("btn-success");
-		allsignYes.classList.add("btn-light");
-		allSignToComplete.value = "false";
-	} else {
-		allsignYes.classList.remove("btn-light");
-		allsignYes.classList.add("btn-success");
-		allsignNo.classList.remove("btn-danger");
-		allsignNo.classList.add("btn-light");
-		allSignToComplete.value = "true";
-	}
-}
-
-function togglehideAllSign() {
-	allSignToComplete = document.getElementById("allSignToComplete");
-	var selectedValues = getSelectValues(signBookIds);
-	if(selectedValues.length > 1) {
-		allSignToComplete = signBookIdsDiv.classList.remove("div-disable");
-	} else {
-		allsignNo.classList.remove("btn-light");
-		allsignNo.classList.add("btn-danger");
-		allsignYes.classList.remove("btn-success");
-		allsignYes.classList.add("btn-light");
-		allSignToComplete.value = "false";
-		allSignToComplete = signBookIdsDiv.classList.add("div-disable");
 	}
 }
 
@@ -381,3 +318,65 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 });
+
+//create signBook
+var	signBookTypeSelect;
+
+document.addEventListener('DOMContentLoaded', function() {
+	signBookTypeSelect = document.getElementById("_signBookType_id");
+});
+
+function changeSignBookForm() {
+	var selectedValue = signBookTypeSelect.options[signBookTypeSelect.selectedIndex].value; 
+	if(selectedValue == "group") {
+		var recipientEmailInput = document.getElementById("_c_org_esupportail_esupsignature_domain_SignBook_recipientEmail");
+		recipientEmailInput.style.display = "none";
+	} else {
+		recipientEmailInput.style.display = "block";
+	}
+}
+
+//create user
+var signImageInput;
+var keystoreInput;
+var emailAlertFrequencySelect;
+var emailAlertDay;
+var emailAlertHour;
+
+document.addEventListener('DOMContentLoaded', function() {
+	signImageInput = document.getElementById("inputGroupFile01");
+	keystoreInput = document.getElementById("inputGroupFile02");
+	emailAlertFrequencySelect = document.getElementById("_emailAlertFrequency_id");
+	emailAlertDay = document.getElementById("_c_org_esupportail_esupsignature_domain_user_emailAlertDay");
+	emailAlertHour = document.getElementById("_c_org_esupportail_esupsignature_domain_user_emailAlertHour");
+});
+
+function checkRequirement() {
+
+	var signTypeSelect = document.getElementById("_signType_id");
+	var selectedValue = signTypeSelect.options[signTypeSelect.selectedIndex].value; 
+	if(selectedValue == 'certSign') {
+		signImageInput.required = true;
+		keystoreInput.required = true;
+	} else if(selectedValue == 'imageStamp' || selectedValue == 'nexuSign') {
+		signImageInput.required = true;
+		keystoreInput.required = false;
+	} else {
+		signImageInput.required = false;
+		keystoreInput.required = false;
+	}
+}
+
+function checkAlertFrequency() {
+	var selectedValue = emailAlertFrequencySelect.options[emailAlertFrequencySelect.selectedIndex].value;
+	if(selectedValue == 'daily') {
+		emailAlertDay.style.display = "none";
+		emailAlertHour.style.display = "block";
+	} else if(selectedValue == 'weekly') { 
+		emailAlertDay.style.display = "block";
+		emailAlertHour.style.display = "none";
+	} else {
+		emailAlertDay.style.display = "none";
+		emailAlertHour.style.display = "none";
+	}
+}

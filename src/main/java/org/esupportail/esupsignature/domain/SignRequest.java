@@ -42,6 +42,8 @@ public class SignRequest {
 	@Column(unique=true)
 	private String name;
 	
+	private String title;
+	
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
@@ -52,7 +54,12 @@ public class SignRequest {
     private String description;
     
     @OneToMany
-    private List<Document> documents = new ArrayList<Document>();
+    private List<Document> originalDocuments = new ArrayList<Document>();
+    
+    //TODO multiple documents ici ou dans le parapheur
+    
+    @OneToMany
+    private List<Document> signedDocuments = new ArrayList<Document>();
     
     private boolean overloadSignBookParams = false;
     
@@ -68,7 +75,7 @@ public class SignRequest {
     private boolean allSignToComplete = false;
     
     public enum SignRequestStatus {
-		uploaded, pending, canceled, checked, signed, refused, deleted, exported, completed;
+		draft, pending, canceled, checked, signed, refused, deleted, exported, completed;
 	}
 	
     public void setStatus(SignRequestStatus status) {
@@ -82,6 +89,16 @@ public class SignRequest {
 		}
 		return signBookNames;
 		
+    }
+    
+    public int countSign() {
+    	int nbSign = 0;
+		for(Map.Entry<Long, Boolean> signBookId : signBooks.entrySet()) {
+			if(signBookId.getValue()) {
+				nbSign++;
+			}
+		}
+		return nbSign;
     }
     
     public List<String> getSignBooksJson() {

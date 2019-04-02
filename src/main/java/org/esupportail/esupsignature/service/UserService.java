@@ -1,19 +1,27 @@
 package org.esupportail.esupsignature.service;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.SignBookType;
+import org.esupportail.esupsignature.domain.SignRequest;
+import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.domain.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
+import org.esupportail.esupsignature.service.mail.MailSenderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -29,6 +37,18 @@ public class UserService {
 
 	@Resource
 	private SignBookService signBookService;
+
+	@Resource
+	private SignRequestService signRequestService;
+
+	@Resource
+	private MailSenderService mailSenderService;
+	
+	@Resource
+	private Template emailTemplate;
+	
+	@Value("${root.url}")
+	private String rootUrl;
 	
 	public boolean isUserReady(User user) {
 		return user.isReady();
@@ -72,9 +92,22 @@ public class UserService {
 		Date date = new Date();
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
-		System.err.println(calendar.get(Calendar.DAY_OF_MONTH));
-		if(!user.getEmailAlertFrequency().equals(EmailAlertFrequency.never)) {
-			//TODO alerts
+		long diffInMillies = Math.abs(date.getTime() - user.getLastSendAlertDate().getTime());
+		long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+		if((user.getEmailAlertFrequency().equals(EmailAlertFrequency.daily) && diff > 0)
+		||	user.getEmailAlertFrequency().equals(EmailAlertFrequency.weekly) && diff > 7) {
+			String[] to = {user.getEmail()};
+			List<SignRequest> signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending);
+			if(signRequests.size() > 0) {
+				VelocityContext context = new VelocityContext();
+		        StringWriter writer = new StringWriter();
+		        context.put("signRequests", signRequests);
+		        context.put("rootUrl", rootUrl);
+		        emailTemplate.merge(context, writer);
+				mailSenderService.sendMail(to, "Alert esup-signature", writer.toString(), null);
+			}
+			user.setLastSendAlertDate(date);
+			user.merge();
 		}
 	}
 	
@@ -96,7 +129,7 @@ public class UserService {
     }
 	
     public User addSignImage(User user, String signImageBase64) throws IOException {
-    	user.setSignImage(documentService.addFile(user.getSignImageBase64(), user.getEppn() + "_sign", "application/png"));
+    	user.setSignImage(documentService.createDocument(user.getSignImageBase64(), user.getEppn() + "_sign", "application/png"));
     	user.merge();
     	return user;
     	

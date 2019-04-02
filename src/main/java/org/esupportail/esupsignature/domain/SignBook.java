@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.EntityManager;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -24,7 +25,7 @@ import org.springframework.roo.addon.tostring.RooToString;
 
 @RooJavaBean
 @RooToString
-@RooJpaActiveRecord(finders={"findSignBooksByCreateByEquals", "findSignBooksByRecipientEmailEquals", "findSignBooksByNameEquals", "findSignBooksByRecipientEmailAndSignBookTypeEquals"})
+@RooJpaActiveRecord(finders={"findSignBooksByCreateByEquals", "findSignBooksByRecipientEmailEquals", "findSignBooksByNameEquals", "findSignBooksBySignBookTypeEquals", "findSignBooksByRecipientEmailAndSignBookTypeEquals"})
 public class SignBook {
 
 	@Column(unique=true)
@@ -50,8 +51,19 @@ public class SignBook {
     
     private String documentsSourceUri;
     
+    //TODO recipient list
     private String recipientEmail;
+    
+    //TODO moderateur list
+    @ElementCollection(targetClass=String.class)
+    private List<String> moderatorEmails = new ArrayList<String>();
 
+    //TODO secretaire (createby)= droits de modif + droit en consultation
+    //TODO group list<signbook>
+    
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.ALL })
+    private List<SignBook> signBooksGroup = new ArrayList<SignBook>();
+    
     private boolean autoRemove = false;
     
     @Enumerated(EnumType.STRING)
@@ -72,12 +84,24 @@ public class SignBook {
 	private SignBookType signBookType;
 	
 	public enum SignBookType {
-		user, model;
+		user, model, group;
 	}
 	
     public enum DocumentIOType {
 		none, cifs, vfs, cmis, mail;
 	}
+    
+    public String getRecipientsEmails() {
+    	if(signBooksGroup.size() > 0) {
+        	String recipientsEmails = "";
+    		for(SignBook signBook : signBooksGroup) {
+    			recipientsEmails += "<li>" + signBook.getRecipientEmail() + "</li>";
+    		}
+    		return recipientsEmails;
+    	} else {
+    		return "<li>" + recipientEmail + "</li>";
+    	}
+    }
     
     public void setSourceType(DocumentIOType sourceType) {
         this.sourceType = sourceType;
@@ -110,5 +134,14 @@ public class SignBook {
         q.setParameter("signBookType", signBookType);
         return q;
     }
+
+    public static TypedQuery<SignBook> findSignBooksBySignBookTypeEquals(SignBookType signBookType) {
+        if (signBookType == null) throw new IllegalArgumentException("The signBookType argument is required");
+        EntityManager em = SignBook.entityManager();
+        TypedQuery<SignBook> q = em.createQuery("SELECT o FROM SignBook AS o WHERE o.signBookType = :signBookType", SignBook.class);
+        q.setParameter("signBookType", signBookType);
+        return q;
+    }
+    
     
 }

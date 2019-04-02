@@ -11,9 +11,8 @@
             	<c:when test="${not empty user and user.ready}">
 				<div class="navbar-nav">
                 	<menu:item activeMenu="${active=='user/signrequests'}" id="i_signrequest_list" messageCode="menu_item_user_signrequest" menuClass="nav-link" url="/user/signrequests/"/>
-                	<menu:item activeMenu="${active=='user/signbooks'}" id="i_signbook_list" menuClass="nav-link" url="/user/signbooks/"/>
+                	<menu:item render="false" activeMenu="${active=='user/signbooks'}" id="i_signbook_list" menuClass="nav-link" url="/user/signbooks/"/>
                 	<menu:item activeMenu="${active=='user/validation'}" id="i_validation_link" label="Validation" menuClass="nav-link" url="/user/validation/"/>
-	                <menu:item activeMenu="${active=='user/users'}" id="i_user_new" bootstrapIcon="fa fa-cog" label=" " menuClass="nav-link" url="/user/users/"/>
                	</div>
                 </c:when>
                 <c:otherwise>

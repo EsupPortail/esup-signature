@@ -2,22 +2,27 @@
 <div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:form="urn:jsptagdir:/WEB-INF/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:spring="http://www.springframework.org/tags" version="2.0">
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
-	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
+	<div id="collapseHelp" class="show" aria-expanded="true" style="">
 		<div class="card card-body border-info text-info">
-			<p>Ce formulaire permet de soumettre à signature un document en selectionnant le parapheur qui convient (par défaut c'est votre parapheur qui est selectionné)</p>
+			<p>Ce formulaire permet de soumettre à signature un ou plusieurs documents en selectionnant le parapheur qui convient</p>
+			<p>Après avoir saisi les paramètres de la demande, vous pourrez ajouter des documents</p>
 		</div>
 	</div>
     <form:create id="fc_org_esupportail_esupsignature_domain_SignRequest" modelAttribute="signRequest" multipart="true" path="/user/signrequests" render="${empty dependencies}" z="user-managed">
-  		<div class="form-group">
-			<label class="col-lg-3  col-form-label" for="newPageType">
+    <div class="row">
+    
+    <div class="col-lg-6">
+   	<!-- 
+   		<div class="form-group">
+			<label class="col-lg-4 col-form-label" for="newPageType">
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_add_file" />
 				</strong>
 			</label>
-			<div class="col-lg-9">
+			<div class="col-lg-8">
 				<div class="input-group">
 					<div class="custom-file">
-						<input class="custom-file-input" required="required" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01" />
+						<input class="custom-file-input" multiple="multiple" required="required" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01" />
 						<label class="custom-file-label" id="inputGroupLabel01" for="upload">
 						<spring:message code="button_choose_file" />
 						</label>
@@ -25,26 +30,44 @@
 				</div>
 			</div>
 		</div>
+		 -->
+<!-- 
+   		<div class="form-group">
+			<label class="col-lg-4 col-form-label" for="newPageType">
+				<strong>
+					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_add_file" />
+				</strong>
+			</label>
+			<div class="col-lg-8">
+				<div class="input-group">
+				    <div class="file-loading">
+				    	<input id="multipartFile" name="multipartFiles" type="file" multiple="multiple" />
+				    </div>
+   				</div>
+			</div>
+		</div>
+     -->
+   		<field:input required="true" colLabel="col-lg-4" colInput="col-lg-8" cssClass="form-control" field="title" id="c_org_esupportail_esupsignature_domain_SignRequest_title" z="user-managed"/>
         <field:input render="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignRequest_name" z="user-managed"/>
         <field:datetime dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" render="false" z="user-managed"/>
         <field:input field="createBy" id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" render="false" z="user-managed"/>
         <field:datetime dateTimePattern="${signRequest_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" render="false" z="user-managed"/>
         <field:input field="updateBy" id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" render="false" z="user-managed"/>
-        <field:textarea row="4" cssClass="form-control" field="description" id="c_org_esupportail_esupsignature_domain_SignRequest_description" z="user-managed"/>
+        <field:textarea  colLabel="col-lg-4" colInput="col-lg-8" row="4" cssClass="form-control" field="description" id="c_org_esupportail_esupsignature_domain_SignRequest_description" z="user-managed"/>
         <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignRequest_status" render="false" z="user-managed"/>
         <field:select field="originalFile" id="c_org_esupportail_esupsignature_domain_SignRequest_originalFile" itemValue="id" items="${files}" path="/files" render="false" z="user-managed"/>
         <field:select field="signedFile" id="c_org_esupportail_esupsignature_domain_SignRequest_signedFile" itemValue="id" items="${files}" path="/files" render="false" z="user-managed"/>
         <field:select render="false" field="signType" id="c_org_esupportail_esupsignature_domain_SignRequest_signType" cssClass="form-control" path="/" multiple="false" size="1" checkboxes="false" items="${signTypes}" z="user-managed"/>
         <field:checkbox render="false" field="allSignToComplete" id="c_org_esupportail_esupsignature_domain_SignRequest_allSignToComplete" z="user-managed"/>
 		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
-			<label class="col-lg-3  col-form-label" for="newPageType">
+			<label class="col-lg-4  col-form-label" for="newPageType">
 				<strong>
-					<spring:message code="label_org_esupportail_esupsignature_domain_signbook" />
+					<spring:message code="menu_item_sendtosignbook" />
 					<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
-					<div class="show" id="collapseHelp1">
+					<div class="collapse" id="collapseHelp1">
 						<div class="card card-body border-info text-info">
 							<small>
-								Par défaut c'est votre parapheur personnel qui est sélectionné (c'est donc vous qui signerez le document)
+								Si vous sélectionnez votre parapheur personnel c'est vous qui signerez le document.
 								<br/>
 								Vous pouvez selectionner un autre ou même plusieurs parapheurs. Dans ce cas il faudra preciser si toutes les signatures sont requises
 								<br/>
@@ -53,25 +76,16 @@
 					</div>
 				</strong>
 			</label>
-			<div class="col-lg-9">
-				<select onclick="togglehideAllSign();" class="form-control" name="signBookIds" id="signBookIds" size="5" multiple="multiple">
+			<div class="col-lg-8">
+				<select onchange="togglehideAllSign();" name="signBookIds" id="signBookIds" size="5" multiple="multiple" required="required">
 					<c:forEach items="${allSignBooks}" var="signBook">
-						<c:choose>
-							<c:when test="${mySignBook.id eq signBook.id}">
-								<option value="${signBook.id}" selected="selected">${signBook.name}</option>
-							</c:when>
-							<c:otherwise>
-								<option value="${signBook.id}">${signBook.name}</option>
-							</c:otherwise>
-						</c:choose>
+						<option value="${signBook.id}">${signBook.name}</option>
 					</c:forEach>
 				</select>
 			</div>
 		</div>
-		
-		<input type="hidden" id="allSignToComplete" name="allSignToComplete" value="false" />
-			<div class="form-group div-disable" id="_signBookIds_div_id">
-			<label class="col-lg-3  col-form-label" for="newPageType">
+		<div class="form-group" id="_signBookIds_div_id">
+			<label class="col-lg-4  col-form-label" for="newPageType">
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" /><button data-target="#collapseHelpAllSign" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 					<div class="collapse" id="collapseHelpAllSign">
@@ -86,25 +100,17 @@
 					</div>
 				</strong>
 			</label>
-			<div class="col-lg-9">
-				<div class="input-group">
-					<div class="input-group-prepend">
-						<button id="allsign_no" type="button" class="btn btn-light btn-sm col-12" onclick="toggleAllSign();">
-						<spring:message code="global_no" />
-						</button>
-					</div>
-					<div class="input-group-append">
-						<button id="allsign_yes" type="button" class="btn btn-light btn-sm col-12" onclick="toggleAllSign();">
-						<spring:message code="global_yes" />
-						</button>
-					</div>
-				</div>
+			<div class="col-lg-8">
+				<label class="switch">
+				  <input type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
+				  <span class="slider round"><!--  --></span>
+				</label>
 			</div>
 		</div>
-		
-		<input type="hidden" id="_overloadSignParams" name="overloadSignBookParams" value="false" />
-				<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
-			<label class="col-lg-3  col-form-label" for="newPageType">
+		</div>
+		<div class="col-lg-6">
+		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
+			<label class="col-lg-4  col-form-label" for="newPageType">
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_overloadparams" /><button data-target="#collapseHelpOverLoad" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 					<div class="show" id="collapseHelpOverLoad">
@@ -112,30 +118,22 @@
 							<small>
 								<ul>
 								<li>Non : Les paramètres de signature du parapheur séléctionné seront appliqués.</li>
-								<li>Oui : Vous pouvez modifier le paramètres de signature manuellement.</li> 
+								<li>Oui : Vous pouvez modifier les	 paramètres de signature manuellement. Cela imposse le type de signature aux signataires</li> 
 								</ul>
 							</small>
 						</div>
 					</div>
 				</strong>
 			</label>
-			<div class="col-lg-9">
-				<div class="input-group">
-					<div class="input-group-prepend">
-						<button id="overload_no" type="button" class="btn btn-light btn-sm col-12" onclick="toggleOverload();">
-						<spring:message code="global_no" />
-						</button>
-					</div>
-					<div class="input-group-append">
-						<button id="overload_yes" type="button" class="btn btn-light btn-sm col-12" onclick="toggleOverload();">
-						<spring:message code="global_yes" />
-						</button>
-					</div>
-				</div>
+			<div class="col-lg-8">
+				<label class="switch">
+				  <input id="_overloadSignParams" type="checkbox" name="overloadSignBookParams" onclick="toggleOverload();" />
+				  <span class="slider round"><!--  --></span>
+				</label>
 			</div>
 		</div>
 		<div class="form-group" id="_signType_div_id">
-			<label class="col-lg-3  col-form-label" for="signType">
+			<label class="col-lg-4  col-form-label" for="signType">
 			<strong>
 				<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype" /><button data-target="#collapseHelpSignType" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 					<div class="collapse" id="collapseHelpSignType">
@@ -152,7 +150,7 @@
 					</div>
 			</strong>
 			</label>
-			<div class="col-lg-9">
+			<div class="col-lg-8">
 				<select id="_signType_id" name="signType" class="form-control" size="1">
 					<c:forEach items="${signTypes}" var="signType">
 						<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signType}" var="signTypeLabel" />
@@ -163,12 +161,12 @@
 		</div>        
 		<field:select render="false" field="newPageType" id="c_org_esupportail_esupsignature_domain_SignRequest_newPageType" cssClass="form-control" path="/" multiple="false" size="1" checkboxes="false" items="${newPageTypes}" z="user-managed"/>        
 		<div class="form-group" id="_newPageType_div_id">
-			<label class="col-lg-3  col-form-label" for="newPageType">
+			<label class="col-lg-4  col-form-label" for="newPageType">
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype" />
 				</strong>
 			</label>
-			<div class="col-lg-9">
+			<div class="col-lg-8">
 				<select id="_newPageType_id" name="newPageType" class="form-control" size="1">
 					<c:forEach items="${newPageTypes}" var="newPageType">
 						<spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${newPageType}" var="newpagetypeLabel" />
@@ -181,9 +179,74 @@
 		<field:input render="false" cssClass="form-control" field="xPos" id="c_org_esupportail_esupsignature_domain_SignRequest_xPos" z="user-managed"/>
 		<field:input render="false" cssClass="form-control" field="yPos" id="c_org_esupportail_esupsignature_domain_SignRequest_yPos" z="user-managed"/>
 		<field:input render="false" cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" z="user-managed"/>
+		</div></div>
 	</form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_SignRequest" render="${not empty dependencies}" z="user-managed"/>
     <script type="text/javascript">
+		new SlimSelect({
+	  	  select: '#signBookIds',
+	  	  allowDeselect: true,
+	  	  placeholder: 'Choisir un/des parapheurs',
+	  	  searchText: 'Aucun résultat',
+	  	  searchPlaceholder: 'Rechercher',
+	  	  searchHighlight: true
+	  	})
+		
+	    $("#multipartFile").fileinput({
+	    	language: "fr",
+	        showCaption: false,
+	    	showClose: false,
+	        showUpload: false,
+//	    	uploadUrl: "/site/upload-file-chunks",
+	        maxFileCount: 100,
+	        theme: 'fas',
+	        pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
+	        overwriteInitial: false,
+	        preferIconicPreview: true,
+	        previewFileIconSettings: { // configure your icon file extensions
+	            'doc': '<i class="fas fa-file-word text-primary"></i>',
+	            'xls': '<i class="fas fa-file-excel text-success"></i>',
+	            'ppt': '<i class="fas fa-file-powerpoint text-danger"></i>',
+	            'pdf': '<i class="fas fa-file-pdf text-danger"></i>',
+	            'zip': '<i class="fas fa-file-archive text-muted"></i>',
+	            'htm': '<i class="fas fa-file-code text-info"></i>',
+	            'txt': '<i class="fas fa-file-alt text-info"></i>',
+	            'mov': '<i class="fas fa-file-video text-warning"></i>',
+	            'mp3': '<i class="fas fa-file-audio text-warning"></i>',
+	            // note for these file types below no extension determination logic 
+	            // has been configured (the keys itself will be used as extensions)
+	            'jpg': '<i class="fas fa-file-image text-danger"></i>', 
+	            'gif': '<i class="fas fa-file-image text-muted"></i>', 
+	            'png': '<i class="fas fa-file-image text-primary"></i>'    
+	        },
+	        previewFileExtSettings: { // configure the logic for determining icon file extensions
+	            'doc': function(ext) {
+	                return ext.match(/(doc|docx)$/i);
+	            },
+	            'xls': function(ext) {
+	                return ext.match(/(xls|xlsx)$/i);
+	            },
+	            'ppt': function(ext) {
+	                return ext.match(/(ppt|pptx)$/i);
+	            },
+	            'zip': function(ext) {
+	                return ext.match(/(zip|rar|tar|gzip|gz|7z)$/i);
+	            },
+	            'htm': function(ext) {
+	                return ext.match(/(htm|html)$/i);
+	            },
+	            'txt': function(ext) {
+	                return ext.match(/(txt|ini|csv|java|php|js|css)$/i);
+	            },
+	            'mov': function(ext) {
+	                return ext.match(/(avi|mpg|mkv|mov|mp4|3gp|webm|wmv)$/i);
+	            },
+	            'mp3': function(ext) {
+	                return ext.match(/(mp3|wav)$/i);
+	            }
+	        }
+			
+	    });
 
     </script>
 </div>

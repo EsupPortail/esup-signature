@@ -43,11 +43,13 @@ import org.apache.xmpbox.schema.PDFAIdentificationSchema;
 import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.domain.SignRequestParams;
+import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import com.google.common.io.Files;
@@ -62,35 +64,26 @@ public class PdfService {
 	
 	@Value("${pdf.pdfToImageDpi}")
 	private int pdfToImageDpi;
-	@Value("${pdf.xCenter}")
-	private int xCenter;
-	@Value("${pdf.xCenter}")
-	private int yCenter;	
 	
 	public File formatPdf(File toSignFile, SignRequestParams params) {
-    	PdfParameters pdfParameters = getPdfParameters(toSignFile);
-    	if(SignRequestParams.NewPageType.onBegin.equals(params.getNewPageType())) {
-        	logger.info("add page on begin");
-        	toSignFile = addBlankPage(toSignFile, 0);
-        	params.setSignPageNumber(1);
-        	params.setXPos(xCenter);
-        	params.setYPos(yCenter);
-        } else 
-        if(SignRequestParams.NewPageType.onEnd.equals(params.getNewPageType())) {
-        	logger.info("add page on end");
-        	toSignFile = addBlankPage(toSignFile, -1);
-        	params.setSignPageNumber(pdfParameters.getTotalNumberOfPages());
-        	params.setXPos(xCenter);
-        	params.setYPos(yCenter);
-        }
-    	if(!checkPdfA(toSignFile)) {
-			toSignFile = toPdfA(toSignFile);
+    	if(!SignRequestParams.NewPageType.none.equals(params.getNewPageType())) {
+    		if(SignRequestParams.NewPageType.onBegin.equals(params.getNewPageType())) {
+    			toSignFile = addNewPage(toSignFile, null, 0);
+    			params.setSignPageNumber(1);
+    		} else {
+    			toSignFile = addNewPage(toSignFile, null, -1);
+            	params.setSignPageNumber(getPdfParameters(toSignFile).getTotalNumberOfPages());
+    		}
     	}
+    	toSignFile = toPdfA(toSignFile);
     	return toSignFile;
 	}
-		
+	
+	//TODO extraire visa
+	
 	public File stampImage(File toSignFile, SignRequestParams params, User user) {
-    	File signImage = user.getSignImage().getJavaIoFile();
+		SignRequestParams.SignType signType = params.getSignType();
+		
     	PdfParameters pdfParameters = getPdfParameters(toSignFile);
 		toSignFile = formatPdf(toSignFile, params);
 		try {
@@ -104,6 +97,24 @@ public class PdfService {
 			float height = pdPage.getMediaBox().getHeight();
 			float width = pdPage.getMediaBox().getWidth();
 
+			File signImage;
+			int xPos;
+			int yPos;
+			if(signType.equals(SignType.visa)) {
+				try {
+					signImage = fileService.stringToImageFile("Visé par " + getInitials(user.getFirstname() + " " + user.getName()), "png");
+				} catch (IOException e) {
+					logger.error(e.getMessage(), e);
+					signImage = null;
+				}
+				xPos = (int) width - 100;
+				yPos = (int) height - 75;
+			} else {
+				signImage = user.getSignImage().getJavaIoFile();
+				xPos = (int) params.getXPos();
+				yPos = (int) params.getYPos();
+			}
+			
 			if(pdfParameters.getRotation() == 0) {
 				BufferedImage bufferedImage = ImageIO.read(signImage);
 		        AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
@@ -115,13 +126,13 @@ public class PdfService {
 				ImageIO.write(bufferedImage, "png", flipedSignImage);
 				pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
 				contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
-				contentStream.drawImage(pdImage, (int) params.getXPos(), (int) params.getYPos(), 100, 75);
+				contentStream.drawImage(pdImage, xPos, yPos, 100, 75);
 
 			} else {
 				AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
 			    contentStream.transform(new Matrix(at));
 			    pdImage = PDImageXObject.createFromFileByContent(signImage, pdDocument);
-				contentStream.drawImage(pdImage, (int) params.getXPos(), (int) params.getYPos() - 37 , 100, 75);
+				contentStream.drawImage(pdImage, xPos, yPos - 37 , 100, 75);
 
 			}
 			contentStream.close();
@@ -133,6 +144,46 @@ public class PdfService {
 		}
 		return null;
 	}
+	
+	public File addNewPage(File pdfFile, String template, int position) {
+		try {
+			File targetFile = File.createTempFile(pdfFile.getName(), ".pdf");
+			PDDocument pdDocument = PDDocument.load(pdfFile);
+			PDDocument targetPDDocument = new PDDocument();
+			PDPage newPage = null;
+			if(template != null) {
+				PDDocument defaultNewPageTemplate = PDDocument.load(new ClassPathResource(template, PdfService.class).getFile());
+				if(defaultNewPageTemplate != null) {
+					newPage = defaultNewPageTemplate.getPage(0);
+				}
+			} else {
+				PDDocument defaultNewPageTemplate = PDDocument.load(new ClassPathResource("/templates/defaultnewpage.pdf", PdfService.class).getFile());
+				if(defaultNewPageTemplate != null) {
+					newPage = defaultNewPageTemplate.getPage(0);
+				} else {
+					newPage = new PDPage(PDRectangle.A4);
+				}
+			} 			
+			if(position == 0) {
+				targetPDDocument.addPage(newPage);
+			} 
+			
+			for(PDPage page : pdDocument.getPages()) {
+				targetPDDocument.addPage(page);
+			}
+			
+			if(position == -1) {
+				targetPDDocument.addPage(newPage);
+			}
+			targetPDDocument.save(targetFile);
+			targetPDDocument.close();
+		    return targetFile;
+		} catch (IOException e) {
+			logger.error("error to add blank page", e);
+		}
+		return null;
+	}
+	
 	
 	public File addBlankPage(File pdfFile, int position) {
 		try {
@@ -217,65 +268,67 @@ public class PdfService {
 	}
 	
 	public File toPdfA(File pdfFile) {
-        try {
-			File targetFile =  new File(Files.createTempDir(), pdfFile.getName());
-			PDDocument pdDocument = PDDocument.load(pdfFile);
-	        PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
-			PDAcroForm pdAcroForm = cat.getAcroForm();
-			PDDocumentInformation info = pdDocument.getDocumentInformation();
-			if(pdAcroForm != null) {
-				pdAcroForm.setNeedAppearances(false);
-				PDResources pdResources = new PDResources();
-				pdAcroForm.setDefaultResources(pdResources);
-
-			    List<PDField> fields = new ArrayList<>(pdAcroForm.getFields());
-			    processFields(fields, pdResources);
-			    pdAcroForm.flatten();
-			}
+		if(!checkPdfA(pdfFile)) {
 	        try {
-		        XMPMetadata xmpMetadata = XMPMetadata.createXMPMetadata();
-	        
-		        DublinCoreSchema dublinCoreSchema = xmpMetadata.createAndAddDublinCoreSchema();
-		        dublinCoreSchema.setTitle(info.getTitle());
+				File targetFile =  new File(Files.createTempDir(), pdfFile.getName());
+				PDDocument pdDocument = PDDocument.load(pdfFile);
+		        PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
+				PDAcroForm pdAcroForm = cat.getAcroForm();
+				PDDocumentInformation info = pdDocument.getDocumentInformation();
+				if(pdAcroForm != null) {
+					pdAcroForm.setNeedAppearances(false);
+					PDResources pdResources = new PDResources();
+					pdAcroForm.setDefaultResources(pdResources);
+	
+				    List<PDField> fields = new ArrayList<>(pdAcroForm.getFields());
+				    processFields(fields, pdResources);
+				    pdAcroForm.flatten();
+				}
+		        try {
+			        XMPMetadata xmpMetadata = XMPMetadata.createXMPMetadata();
 		        
-		        XMPBasicSchema xmpBasicSchema = xmpMetadata.createAndAddXMPBasicSchema();
-		        xmpBasicSchema.setCreatorTool(info.getCreator());
-		        xmpBasicSchema.setCreateDate(info.getCreationDate());
-		        xmpBasicSchema.setModifyDate(info.getModificationDate());
-
-		        
-		        PDFAIdentificationSchema pdfaid = new PDFAIdentificationSchema(xmpMetadata);
-	        	pdfaid.setConformance("B");
-		        pdfaid.setPart(1);
-		        pdfaid.setAboutAsSimple(null);
-		        xmpMetadata.addSchema(pdfaid);
-		        
-		        XmpSerializer serializer = new XmpSerializer();
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                serializer.serialize(xmpMetadata, baos, false);
-            
-		        PDMetadata metadata = new PDMetadata(pdDocument);
-                metadata.importXMPMetadata(baos.toByteArray());
-		        cat.setMetadata(metadata);
-
-		        InputStream colorProfile = PdfService.class.getResourceAsStream("/sRGB.icc");
-	            PDOutputIntent intent = new PDOutputIntent(pdDocument, colorProfile);
-	            intent.setInfo("sRGB IEC61966-2.1");
-	            intent.setOutputCondition("sRGB IEC61966-2.1");
-	            intent.setOutputConditionIdentifier("sRGB IEC61966-2.1");
-	            intent.setRegistryName("http://www.color.org");
-	            cat.addOutputIntent(intent);
-	            		
-		        pdDocument.save(targetFile);
-				pdDocument.close();
-		        return targetFile;		        
-	        } catch (Exception e) {
-				logger.error("PDF/A convert error", e);
+			        DublinCoreSchema dublinCoreSchema = xmpMetadata.createAndAddDublinCoreSchema();
+			        dublinCoreSchema.setTitle(info.getTitle());
+			        
+			        XMPBasicSchema xmpBasicSchema = xmpMetadata.createAndAddXMPBasicSchema();
+			        xmpBasicSchema.setCreatorTool(info.getCreator());
+			        xmpBasicSchema.setCreateDate(info.getCreationDate());
+			        xmpBasicSchema.setModifyDate(info.getModificationDate());
+	
+			        
+			        PDFAIdentificationSchema pdfaid = new PDFAIdentificationSchema(xmpMetadata);
+		        	pdfaid.setConformance("B");
+			        pdfaid.setPart(1);
+			        pdfaid.setAboutAsSimple(null);
+			        xmpMetadata.addSchema(pdfaid);
+			        
+			        XmpSerializer serializer = new XmpSerializer();
+	                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	                serializer.serialize(xmpMetadata, baos, false);
+	            
+			        PDMetadata metadata = new PDMetadata(pdDocument);
+	                metadata.importXMPMetadata(baos.toByteArray());
+			        cat.setMetadata(metadata);
+	
+			        InputStream colorProfile = PdfService.class.getResourceAsStream("/sRGB.icc");
+		            PDOutputIntent intent = new PDOutputIntent(pdDocument, colorProfile);
+		            intent.setInfo("sRGB IEC61966-2.1");
+		            intent.setOutputCondition("sRGB IEC61966-2.1");
+		            intent.setOutputConditionIdentifier("sRGB IEC61966-2.1");
+		            intent.setRegistryName("http://www.color.org");
+		            cat.addOutputIntent(intent);
+		            		
+			        pdDocument.save(targetFile);
+					pdDocument.close();
+			        return targetFile;		        
+		        } catch (Exception e) {
+					logger.error("PDF/A convert error", e);
+				}
+	        } catch (IOException e) {
+				logger.error("file read error", e);
 			}
-        } catch (IOException e) {
-			logger.error("file read error", e);
 		}
-        return null;
+        return pdfFile;
 	}	
 	
 	private void processFields(List<PDField> fields, PDResources resources) {
@@ -410,9 +463,20 @@ public class PdfService {
 		InputStream inputStream = fileService.bufferedImageToInputStream(bufferedImage, "png");
 		bufferedImage.flush();
 		return inputStream; 
-		
-		
-        
+
 	}
+
+	public String getInitials(String name) { 
+        if (name.length() == 0) { 
+            return null; 
+        }
+        String initial = "" + Character.toUpperCase(name.charAt(0)); 
+        for (int i = 1; i < name.length() - 1; i++) { 
+            if (name.charAt(i) == ' ') {
+                initial += Character.toUpperCase(name.charAt(i + 1));
+            }
+        }
+        return initial;
+    } 
 	
 }

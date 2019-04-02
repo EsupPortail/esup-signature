@@ -24,11 +24,12 @@ public class ShibRequestHeaderAuthenticationFilter extends RequestHeaderAuthenti
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, Authentication authResult) throws IOException, ServletException {
         super.successfulAuthentication(request, response, authResult);
         String eppn = authResult.getName();
+        log.info("User " + eppn + " authenticated");
         String email = request.getHeader("mail");
         String name = request.getHeader("sn");
         String firstName = request.getHeader("givenName");
         userService.createUser(eppn, name, firstName, email);
-        log.info("User " + eppn + " authenticated");
+        log.info("User " + eppn + " created");
     }
 	
 	/* 

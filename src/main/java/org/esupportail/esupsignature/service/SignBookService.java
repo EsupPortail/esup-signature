@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +89,24 @@ public class SignBookService {
 		return signbook;
 	}
 	
+	public SignBook createGroupSignBook(String name, List<SignBook> signBooks, User user) {
+		SignBook signbook = new SignBook();
+		signbook.setName(name);
+		signbook.setDescription(signbook.getName() + " personnal signbook");
+		signbook.setCreateBy(user.getEppn());
+		signbook.setCreateDate(new Date());
+		signbook.setRecipientEmail(null);
+		signbook.setSignRequestParams(null);
+		//TODO add list signbooks
+		signbook.setModelFile(null);
+		signbook.setSignBookType(SignBookType.group);
+		signbook.setSourceType(DocumentIOType.none);
+		signbook.setTargetType(DocumentIOType.none);
+		signbook.setSignRequestParams(signRequestService.getEmptySignRequestParams());
+		signbook.persist();
+		return signbook;
+	}
+	
 	public void resetSignBookParams(SignBook signBook) {
 		signBook.getSignRequestParams().setSignPageNumber(1);
 		signBook.getSignRequestParams().setXPos(0);
@@ -105,7 +124,7 @@ public class SignBookService {
 					for (FsFile fsFile : fsFiles) {
 						logger.info("adding file : " + fsFile.getFile().getName());
 						fsFile.setPath(signBook.getDocumentsSourceUri());
-						Document documentToAdd = documentService.addFile(fsFile.getFile(), fsFile.getName(), fsFile.getContentType());
+						Document documentToAdd = documentService.createDocument(fsFile.getFile(), fsFile.getName(), fsFile.getContentType());
 						if (fsFile.getCreateBy() != null && User.countFindUsersByEppnEquals(fsFile.getCreateBy()) > 0) {
 							user = User.findUsersByEppnEquals(fsFile.getCreateBy()).getSingleResult();
 							user.setIp("127.0.0.1");
@@ -132,7 +151,7 @@ public class SignBookService {
 			if (signRequest.getStatus().equals(SignRequestStatus.signed) && signRequestService.isSignRequestCompleted(signRequest)) {
 				exportFileToTarget(signBook, signRequest, user);
 				//signRequestService.updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
-				removeSignRequestFromAllSignBooks(signRequest, user);
+				removeSignRequestFromAllSignBooks(signRequest);
 			}
 		}
 	}
@@ -142,7 +161,7 @@ public class SignBookService {
 			logger.info("send to " + signBook.getTargetType() + " in " + signBook.getDocumentsTargetUri());
 			FsAccessService fsAccessService = getFsAccessService(signBook.getSourceType());
 			try {
-				File signedFile = signRequestService.getLastDocument(signRequest).getJavaIoFile();
+				File signedFile = signRequestService.getLastSignedDocument(signRequest).getJavaIoFile();
 				InputStream inputStream = new FileInputStream(signedFile);
 				fsAccessService.putFile(signBook.getDocumentsTargetUri(), signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
 				signRequestService.updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
@@ -174,14 +193,18 @@ public class SignBookService {
 		}
 	}
 
-	public void removeSignRequestFromAllSignBooks(SignRequest signRequest, User user) {
-		signRequest.getSignBooks().clear();
+	public void removeSignRequestFromAllSignBooks(SignRequest signRequest) {
 		List<SignBook> signBooks = signRequestService.getSignBooksList(signRequest);
 		for(SignBook signBook : signBooks) {
-			signBook.getSignRequests().remove(signRequest);
+			List<SignRequest> signRequests = new ArrayList<>();
+			signRequests.addAll(signBook.getSignRequests());
+			System.err.println(signRequests);
+			signRequests.remove(signRequest);
+			System.err.println(signRequests);
+			signBook.setSignRequests(signRequests);
 			signBook.merge();
-
 		}
+		signRequest.getSignBooks().clear();
 	}
 
 	public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook, User user) {

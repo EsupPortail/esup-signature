@@ -45,7 +45,7 @@ public class WsController {
 	@Resource
 	DocumentService documentService;
 	
-	//TODO creation / recupération de demandes par WS + declenchement d'evenements
+	//TODO creation / recupération de demandes par WS + declenchement d'evenements + multidocs
 	@Transactional
 	@ResponseBody
 	@RequestMapping(value = "/create-sign-request", method = RequestMethod.POST)
@@ -57,8 +57,8 @@ public class WsController {
 		User user = getSystemUser();
 		user.setIp(httpServletRequest.getRemoteAddr());
 		if(file != null) {
-			Document document = documentService.addFile(file, file.getOriginalFilename());
-			signRequest = signRequestService.createSignRequest(new SignRequest(), user, document, signBook.getSignRequestParams(), signBookIds);
+			Document document = documentService.createDocument(file, file.getOriginalFilename());
+			//signRequest = signRequestService.createSignRequest(new SignRequest(), user, document, signBook.getSignRequestParams(), signBookIds);
 			logger.info(file.getOriginalFilename() + "was added into signbook" + signBookName);
 			return signRequest.getName();			
 		} else {
@@ -74,7 +74,7 @@ public class WsController {
 		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
 		SignRequest signRequest = SignRequest.findSignRequestsByNameEquals(name).getSingleResult();
 		if(signBook.getSignRequests().contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.signed)) {
-			Document document = signRequestService.getLastDocument(signRequest);
+			Document document = signRequestService.getLastSignedDocument(signRequest);
 			try {
 				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
 				response.setContentType(document.getContentType());

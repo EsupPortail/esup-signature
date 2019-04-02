@@ -19,6 +19,15 @@ privileged aspect Log_Roo_Finder {
         return ((Long) q.getSingleResult());
     }
     
+    public static Long Log.countFindLogsByEppnAndSignRequestIdEquals(String eppn, long signRequestId) {
+        if (eppn == null || eppn.length() == 0) throw new IllegalArgumentException("The eppn argument is required");
+        EntityManager em = Log.entityManager();
+        TypedQuery q = em.createQuery("SELECT COUNT(o) FROM Log AS o WHERE o.eppn = :eppn AND o.signRequestId = :signRequestId", Long.class);
+        q.setParameter("eppn", eppn);
+        q.setParameter("signRequestId", signRequestId);
+        return ((Long) q.getSingleResult());
+    }
+    
     public static Long Log.countFindLogsByEppnEquals(String eppn) {
         if (eppn == null || eppn.length() == 0) throw new IllegalArgumentException("The eppn argument is required");
         EntityManager em = Log.entityManager();
@@ -58,6 +67,31 @@ privileged aspect Log_Roo_Finder {
         TypedQuery<Log> q = em.createQuery(queryBuilder.toString(), Log.class);
         q.setParameter("eppn", eppn);
         q.setParameter("action", action);
+        return q;
+    }
+    
+    public static TypedQuery<Log> Log.findLogsByEppnAndSignRequestIdEquals(String eppn, long signRequestId) {
+        if (eppn == null || eppn.length() == 0) throw new IllegalArgumentException("The eppn argument is required");
+        EntityManager em = Log.entityManager();
+        TypedQuery<Log> q = em.createQuery("SELECT o FROM Log AS o WHERE o.eppn = :eppn AND o.signRequestId = :signRequestId", Log.class);
+        q.setParameter("eppn", eppn);
+        q.setParameter("signRequestId", signRequestId);
+        return q;
+    }
+    
+    public static TypedQuery<Log> Log.findLogsByEppnAndSignRequestIdEquals(String eppn, long signRequestId, String sortFieldName, String sortOrder) {
+        if (eppn == null || eppn.length() == 0) throw new IllegalArgumentException("The eppn argument is required");
+        EntityManager em = Log.entityManager();
+        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM Log AS o WHERE o.eppn = :eppn AND o.signRequestId = :signRequestId");
+        if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
+            queryBuilder.append(" ORDER BY ").append(sortFieldName);
+            if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
+                queryBuilder.append(" ").append(sortOrder);
+            }
+        }
+        TypedQuery<Log> q = em.createQuery(queryBuilder.toString(), Log.class);
+        q.setParameter("eppn", eppn);
+        q.setParameter("signRequestId", signRequestId);
         return q;
     }
     

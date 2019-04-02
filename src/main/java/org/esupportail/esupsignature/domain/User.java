@@ -1,8 +1,15 @@
 package org.esupportail.esupsignature.domain;
 
+import java.time.DayOfWeek;
+import java.util.Date;
+
 import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.OneToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 import org.springframework.roo.addon.javabean.RooJavaBean;
@@ -37,6 +44,7 @@ public class User {
 	
     private boolean ready;
     
+    @Enumerated(EnumType.STRING)
     private EmailAlertFrequency emailAlertFrequency;
 
     public enum EmailAlertFrequency {
@@ -45,7 +53,11 @@ public class User {
     
     private String emailAlertHour;
     
-    private String emailAlertDay;
+    @Enumerated(EnumType.STRING)
+    private DayOfWeek emailAlertDay;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastSendAlertDate = new Date(0);
     
     public void setEmailAlertFrequency(EmailAlertFrequency emailAlertFrequency) {
         this.emailAlertFrequency = emailAlertFrequency;

@@ -3,6 +3,8 @@
 
 package org.esupportail.esupsignature.domain;
 
+import java.time.DayOfWeek;
+import java.util.Date;
 import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.User;
 
@@ -92,12 +94,20 @@ privileged aspect User_Roo_JavaBean {
         this.emailAlertHour = emailAlertHour;
     }
     
-    public String User.getEmailAlertDay() {
+    public DayOfWeek User.getEmailAlertDay() {
         return this.emailAlertDay;
     }
     
-    public void User.setEmailAlertDay(String emailAlertDay) {
+    public void User.setEmailAlertDay(DayOfWeek emailAlertDay) {
         this.emailAlertDay = emailAlertDay;
+    }
+    
+    public Date User.getLastSendAlertDate() {
+        return this.lastSendAlertDate;
+    }
+    
+    public void User.setLastSendAlertDate(Date lastSendAlertDate) {
+        this.lastSendAlertDate = lastSendAlertDate;
     }
     
 }

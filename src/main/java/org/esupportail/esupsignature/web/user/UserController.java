@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.user;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.DayOfWeek;
 import java.util.Arrays;
 
 import javax.annotation.Resource;
@@ -16,6 +17,7 @@ import org.esupportail.esupsignature.domain.SignBook.SignBookType;
 import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.domain.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -23,6 +25,7 @@ import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -71,7 +74,11 @@ public class UserController {
 	@Resource
 	private SignBookService signBookService;
 	
-	private String password = "";
+	@Value("${sign.passwordTimeout}")
+	private long passwordTimeout;
+	
+	private String password;
+	
 	long startTime;
 	
 	public void setPassword(String password) {
@@ -81,7 +88,7 @@ public class UserController {
 	
     @RequestMapping(produces = "text/html")
     public String show(Model uiModel) throws Exception {
-		User user = userService.getUserFromAuthentication();
+    	User user = userService.getUserFromAuthentication();
     	if(!user.isReady()) {
 			return "redirect:/user/users/?form";
 		}    	
@@ -94,7 +101,7 @@ public class UserController {
         }        
         SignBook defaultSignBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
         uiModel.addAttribute("defaultSignBook", defaultSignBook);
-        uiModel.addAttribute("isPasswordSet", password != "");
+        uiModel.addAttribute("isPasswordSet", (password != null && password != ""));
         return "user/users/show";
     }
     
@@ -107,6 +114,8 @@ public class UserController {
         	uiModel.addAttribute("signBook", signBook);
         	uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
         	uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
+        	uiModel.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
+        	uiModel.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
 
         	if(user.isReady()) {
         		if(user.getSignImage() != null) {
@@ -135,11 +144,11 @@ public class UserController {
             if(userToUpdate.getKeystore() != null) {
             	userToUpdate.getKeystore().remove();
             }
-            userToUpdate.setKeystore(documentService.addFile(multipartKeystore, multipartKeystore.getOriginalFilename()));
+            userToUpdate.setKeystore(documentService.createDocument(multipartKeystore, multipartKeystore.getOriginalFilename()));
         }
         Document oldSignImage = userToUpdate.getSignImage();
         if(!user.getSignImageBase64().isEmpty()) {
-        	userToUpdate.setSignImage(documentService.addFile(user.getSignImageBase64(), userToUpdate.getEppn() + "_sign", "application/png"));
+        	userToUpdate.setSignImage(documentService.createDocument(user.getSignImageBase64(), userToUpdate.getEppn() + "_sign", "application/png"));
         }
         if(oldSignImage != null) {
         	oldSignImage.getBigFile().getBinaryFile().free();
@@ -160,10 +169,12 @@ public class UserController {
 		if (password != null && !"".equals(password)) {
         	setPassword(password);
         }
-        try {
+		try {
         	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getJavaIoFile(), this.password));
         } catch (Exception e) {
         	logger.error("open keystore fail", e);
+        	this.password = "";
+			startTime = 0;
         	redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
 		}
         return "redirect:/user/users/";
@@ -190,7 +201,7 @@ public class UserController {
 	@Scheduled(fixedDelay = 5000)
 	public void clearPassword () {
 		if(startTime > 0) {
-			if(System.currentTimeMillis() - startTime > 60000) {
+			if(System.currentTimeMillis() - startTime > passwordTimeout) {
 				password = "";
 				startTime = 0;
 			}

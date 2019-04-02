@@ -224,6 +224,16 @@ public class SigningService {
 		return signaturePdfForm;
 	}
 	
+	public SignatureMultipleDocumentsForm getCadesSignatureMultipleDocumentsForm() {
+		SignatureMultipleDocumentsForm signaturePdfForm = new SignatureMultipleDocumentsForm();
+		signaturePdfForm.setContainerType(ASiCContainerType.ASiC_E);
+		signaturePdfForm.setSignatureForm(SignatureForm.CAdES);
+		signaturePdfForm.setSignatureLevel(SignatureLevel.CAdES_BASELINE_T);
+		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.valueOf(xadesDigestAlgorithm));
+		signaturePdfForm.setSigningDate(new Date());
+		return signaturePdfForm;
+	}
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument certSignDocument(SignatureDocumentForm signaturePdfForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
 		logger.info("Start certSignDocument with database keystore");
@@ -237,6 +247,20 @@ public class SigningService {
 		logger.info("End certSignDocument with database keystore");
 		return signedDocument;
 	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public DSSDocument certSignDocument(SignatureMultipleDocumentsForm form, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
+		logger.info("Start signDocument with multiple documents");
+		MultipleDocumentsSignatureService service = getASiCSignatureService(form.getSignatureForm());
+		DSSDocument signedDocument = null;
+		List<DSSDocument> toSignDocuments = WebAppUtils.toDSSDocuments(form.getDocumentsToSign());
+		ToBeSigned dataToSign = service.getDataToSign(toSignDocuments, parameters);
+		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
+		signedDocument = (DSSDocument) service.signDocument(toSignDocuments, parameters, signatureValue);
+		logger.info("End signDocument with multiple documents");
+		return signedDocument;
+	}
+	
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument signDocument(SignatureDocumentForm form) {
@@ -258,6 +282,7 @@ public class SigningService {
 		return signedDocument;
 	}
 
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument signDocument(SignatureMultipleDocumentsForm form) {
 		logger.info("Start signDocument with multiple documents");
