@@ -6,6 +6,7 @@ import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -20,17 +21,23 @@ import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.domain.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -39,6 +46,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -60,6 +68,9 @@ public class UserController {
 	public User getUser() {
 		return userService.getUserFromAuthentication();
 	}
+	
+	@Resource
+	private LdapPersonService ldapPersonService;
 	
 	@Resource
 	private DocumentService documentService;
@@ -201,6 +212,21 @@ public class UserController {
 		}
 	}
     
+	@RequestMapping(value="/searchLdap")
+	@ResponseBody
+	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString, @RequestParam(required=false) String ldapTemplateName) {
+		logger.info("ldap search for : " + searchString);
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Content-Type", "application/json; charset=utf-8");
+		List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
+		if(!searchString.trim().isEmpty()) {
+	    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	    	Set<String> roles = AuthorityUtils.authorityListToSet(auth.getAuthorities());
+			ldapList = ldapPersonService.searchByCommonName(searchString, ldapTemplateName);
+		}
+		return ldapList;
+   }
+	
     void populateEditForm(Model uiModel, User user) {
         uiModel.addAttribute("user", user);
         uiModel.addAttribute("files", Document.findAllDocuments());

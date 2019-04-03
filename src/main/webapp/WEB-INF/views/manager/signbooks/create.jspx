@@ -39,9 +39,7 @@
                     </label>
                     <div class="col-lg-9">
                         <select id="signBookIds" multiple="multiple" name="recipientEmails" onchange="toggleSignBookType();" required="required" size="5">
-                            <c:forEach items="${users}" var="user">
-                                <option value="${user.email}">${user.firstname} ${user.name}</option>
-                            </c:forEach>
+						<!--  -->
                         </select>
                     </div>
                 </div>
@@ -193,7 +191,35 @@
     	  placeholder: 'Choisir un ou plusieurs utiilisateurs',
     	  searchText: 'Aucun résultat',
     	  searchPlaceholder: 'Rechercher',
-    	  searchHighlight: true
+    	  searchHighlight: true,
+    	  
+    	  ajax: function (search, callback) {
+    		    if (search.length &lt; 3) {
+    		      callback('Merci de saisir au moins 3 caractères')
+    		      return
+    		    }
+    		    // Perform your own ajax request here
+    		    fetch('/user/users/searchLdap?searchString=' + search)
+    		    .then(function (response) {
+    		      return response.json()
+    		    })
+    		    .then(function (json) {
+    		      let data = []
+    		      for (let i = 0; i &lt; json.length; i++) {
+    		        data.push({text: json[i].displayName, value: json[i].mail});
+    		      }
+
+    		      // Upon successful fetch send data to callback function.
+    		      // Be sure to send data back in the proper format.
+    		      // Refer to the method setData for examples of proper format.
+    		      callback(data)
+    		    })
+    		    .catch(function(error) {
+    		      // If any erros happened send false back through the callback
+    		      callback(false)
+    		    })
+    		  }
+    	  
     	})
     	
 	</script>

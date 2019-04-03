@@ -32,6 +32,10 @@
         <property name="ldapTemplate" ref="ldapTemplate" />
     </bean> 
 
+	<bean id="ldapPersonService" class="org.esupportail.esupsignature.service.ldap.LdapPersonService">
+           <property name="ldapTemplate" ref="ldapTemplate"/>
+    </bean>
+
     <bean id="ldapContextSource"
           class="org.springframework.ldap.core.support.LdapContextSource">
 		<property name="url" value="ldap://ldap.univ-rouen.fr" />
