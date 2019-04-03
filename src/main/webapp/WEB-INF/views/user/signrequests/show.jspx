@@ -112,9 +112,9 @@
 											</button>
 										</form>
 									</c:when>
-									<c:otherwise>
+									<c:when test="${signRequest.status eq 'draft'}">
 										<div class="alert alert-info" >La demande est en cours de signature par le(s) destinataire(s)</div>
-									</c:otherwise>
+									</c:when>
 									</c:choose>
 									</c:when>
 									<c:otherwise>
