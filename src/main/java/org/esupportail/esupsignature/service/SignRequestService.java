@@ -122,11 +122,14 @@ public class SignRequestService {
 		}
 	}
 	
+	public SignRequest createSignRequest(SignRequest signRequest, User user, SignRequestParams signRequestParams, List<String> recipientEmails) {
+			return createSignRequest(signRequest, user, new ArrayList<>(), signRequestParams, recipientEmails );
+	}
+	
 	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document, SignRequestParams signRequestParams, List<String> recipientEmails) {
 		List<Document> documents = new ArrayList<Document>();
 		documents.add(document);
 		return createSignRequest(signRequest, user, documents, signRequestParams, recipientEmails );
-		
 	}
 	
 	public SignRequest createSignRequest(SignRequest signRequest, User user, List<Document> documents, SignRequestParams signRequestParams, List<String> recipientEmails) {
@@ -155,11 +158,6 @@ public class SignRequestService {
 			}
 		}
 		signRequest.persist();
-		for(Document document : documents) {
-			document.setCreateDate(new Date());
-			signRequest.getOriginalDocuments().add(document);
-			document.setSignRequestId(signRequest.getId());
-		}
 		return signRequest;
 	}
 	

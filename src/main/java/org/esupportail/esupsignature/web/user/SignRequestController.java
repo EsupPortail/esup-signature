@@ -249,14 +249,14 @@ public class SignRequestController {
 	}
 
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
-	public String create(@Valid SignRequest signRequest, @RequestParam("multipartFiles") MultipartFile[] multipartFiles, BindingResult bindingResult, 
+	public String create(@Valid SignRequest signRequest, BindingResult bindingResult, 
 			@RequestParam(value = "signType", required = false) String signType, 
-			@RequestParam(value = "signBookIds", required = true) long[] signBookIds,
+			@RequestParam(value = "signBookIds", required = false) long[] signBookIds,
+			@RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
 			@RequestParam(value="newPageType", required = false) String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
-			HttpServletRequest request) {
+			HttpServletRequest request, RedirectAttributes redirectAttrs) {
 		if (bindingResult.hasErrors()) {
 			uiModel.addAttribute("signRequest", signRequest);
-			uiModel.addAttribute("recipientEmail", false);
 			return "user/signrequests/create";
 		}
 		uiModel.asMap().clear();
@@ -272,22 +272,30 @@ public class SignRequestController {
 			signRequestParams.setYPos(0);
 			signRequestParams.persist();
 		}
-		List<Document> documents = new ArrayList<>();
-		if(multipartFiles.length > 0) {
-			try {
-				documents =  documentService.createDocuments(multipartFiles);
-			} catch (IOException e) {
-				logger.error("error to add files : " + multipartFiles, e);
-			}
-		}
+		
 		List<String> recipientEmails = new ArrayList<>();
 		
-		for(long signBookId : signBookIds) {
-			SignBook signBook = SignBook.findSignBook(signBookId);
-			recipientEmails.addAll(signBook.getRecipientEmails());
+		if(signBookIds != null && signBookIds.length > 0) {
+			for(long signBookId : signBookIds) {
+				SignBook signBook = SignBook.findSignBook(signBookId);
+				recipientEmails.addAll(signBook.getRecipientEmails());
+			}
 		}
-		signRequest = signRequestService.createSignRequest(signRequest, user, documents, signRequestParams, recipientEmails);
-		return "redirect:/user/signrequests/" + signRequest.getId();
+		if(recipientsEmails != null && recipientsEmails.length > 0) {
+			for(String recipientEmail : recipientsEmails) {
+				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(recipientEmail)) == 0) {
+					userService.createUser(recipientEmail);
+					recipientEmails.add(recipientEmail);
+				}
+			}
+		}
+		if(recipientEmails.size() == 0) {
+			redirectAttrs.addFlashAttribute("messageCustom", "no recipient");
+			return "redirect:/user/signrequests/?form";
+		}else {
+			signRequest = signRequestService.createSignRequest(signRequest, user, signRequestParams, recipientEmails);
+			return "redirect:/user/signrequests/" + signRequest.getId();
+		}
 	}
 
 	@RequestMapping(value = "/add-doc/{id}", method = RequestMethod.POST, produces = "text/html")

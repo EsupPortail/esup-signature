@@ -38,7 +38,7 @@
                         </strong>
                     </label>
                     <div class="col-lg-9">
-                        <select id="signBookIds" multiple="multiple" name="recipientEmails" onchange="toggleSignBookType();" required="required" size="5">
+                        <select id="signBookIds" multiple="multiple" name="recipientEmails" required="required" size="5">
 						<!--  -->
                         </select>
                     </div>

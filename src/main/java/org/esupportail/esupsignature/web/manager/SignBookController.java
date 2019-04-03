@@ -141,7 +141,11 @@ public class SignBookController {
 			signRequestParams.setXPos(0);
 			signRequestParams.setYPos(0);
 			signRequestParams.persist();
-			System.err.println(signBook.getRecipientEmails());
+			for(String recipientEmail : signBook.getRecipientEmails()) {
+				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(recipientEmail)) == 0) {
+					userService.createUser(recipientEmail);
+				}
+			}
 			if(signBook.getRecipientEmails().size() == 1) {
 				signBook.setSignBookType(SignBookType.model);
 				if(multipartFile != null) {
@@ -151,7 +155,6 @@ public class SignBookController {
 				signBook.setSignBookType(SignBookType.group);
 			}
 			signBook.setSignRequestParams(signRequestParams);
-			
 			signBook.persist();
 			} else {
 				redirectAttrs.addFlashAttribute("messageCustom", signBook.getName() + " already exist");
