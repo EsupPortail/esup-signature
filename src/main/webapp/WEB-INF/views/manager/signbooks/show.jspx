@@ -14,30 +14,20 @@
                     <div class="card-header">Infos&amp;nbsp;</div>
                     <div class="card-body">
                         <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignBook_name" object="${signBook}" z="user-managed"/>
-                        <field:display field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignBook_recipientEmail" object="${signBook}" render="false" z="user-managed"/>
+                        <field:display render="false" field="moderatorEmails" id="s_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" object="${signbook}" z="user-managed"/>
                         <dl class="display-group border-bottom m-0">
                             <dt class="col-lg-5">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_recipientemail"/>
                             </dt>
                             <dd>
-                                <c:choose>
-                                    <c:when test="${not empty signBook.recipientEmail}">
-                                        <div class="alert alert-dark col-12">
-                                            <i class="far fa-envelope">
-                                                <!--  -->
-                                            </i> ${signBook.recipientEmail}
+	                            <div class="alert alert-dark col-12">
+	                            <c:forEach items="${signBook.recipientEmails}" var="recipientEmail">
+	                                <i class="far fa-envelope">
+	                                    <!--  -->
+	                                </i> ${recipientEmail}
+	                                <br/>
+	                            </c:forEach>
 								</div>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <c:forEach items="${signBook.signBooksGroup}" var="userSignBook">
-                                            <div class="alert alert-dark col-12">
-                                                <i class="far fa-envelope">
-                                                    <!--  -->
-                                                </i> ${userSignBook.recipientEmail}
-									</div>
-                                        </c:forEach>
-                                    </c:otherwise>
-                                </c:choose>
                             </dd>
                         </dl>
                         <field:display field="description" id="s_org_esupportail_esupsignature_domain_SignBook_description" object="${signBook}" z="user-managed"/>
@@ -98,12 +88,11 @@
                             <table:column date="true" dateTimePattern="${signRequest_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" property="updateDate" render="false" z="user-managed"/>
                             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" property="updateBy" render="false" z="user-managed"/>
                             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" render="false" z="user-managed"/>
-                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" property="recipientEmail" render="false" z="user-managed"/>
                             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed"/>
                         </table:table>
                     </div>
                 </div>
-                <c:if test="${signBook.signBookType eq 'model'}">
+                <c:if test="${not empty documentId}">
                     <div class="card bg-light">
                         <div class="card-header">
                             <spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signposition"/>
@@ -132,7 +121,7 @@
                     </div>
                 </c:if>
             </div>
-            <c:if test="${signBook.signBookType eq 'model'}">
+            <c:if test="${not empty documentId}">
                 <div class="col-lg-6">
                     <div class="row">
                         <div class="col-lg-12">
@@ -171,6 +160,5 @@
                 </div>
             </c:if>
         </div>
-        <field:display field="moderatorEmails" id="s_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" object="${signbook}" z="BEsExaLRgotHJH79VJUpEJ8KndY="/>
     </page:show>
 </div>

@@ -95,7 +95,9 @@ public class SignRequestService {
 		return findSignRequestByUserAndStatusEquals(user, status, null, null);
 	}
 	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status, Integer page, Integer size) {
-		List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList();
+		List<String> recipientEmails = new ArrayList<>();
+		recipientEmails.add(user.getEmail());
+		List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailsEquals(recipientEmails).getResultList();
 		List<SignRequest> signRequests = new ArrayList<>();
 		for(SignBook signBook : signBooks) {
 			for(SignRequest signRequest : signBook.getSignRequests()) {
@@ -120,24 +122,29 @@ public class SignRequestService {
 		}
 	}
 	
-	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document, SignRequestParams signRequestParams, long[] signBookIds) {
+	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document, SignRequestParams signRequestParams, List<String> recipientEmails) {
 		List<Document> documents = new ArrayList<Document>();
 		documents.add(document);
-		return createSignRequest(signRequest, user, documents, signRequestParams, signBookIds );
+		return createSignRequest(signRequest, user, documents, signRequestParams, recipientEmails );
 		
 	}
 	
-	public SignRequest createSignRequest(SignRequest signRequest, User user, List<Document> documents, SignRequestParams signRequestParams, long[] signBookIds) {
+	public SignRequest createSignRequest(SignRequest signRequest, User user, List<Document> documents, SignRequestParams signRequestParams, List<String> recipientEmails) {
 		signRequest.setName(String.valueOf(generateUniqueId()));
 		signRequest.setCreateBy(user.getEppn());
 		signRequest.setCreateDate(new Date());
 		signRequest.setStatus(SignRequestStatus.draft);
 		signRequest.setSignRequestParams(signRequestParams);
-		for(long signBookId : signBookIds) {
-			SignBook signBook = SignBook.findSignBook(signBookId);
+		for(String recipientEmail : recipientEmails) {
+			List<String> recipientEmailsList = new ArrayList<>();
+			recipientEmailsList.add(recipientEmail);
+			SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmailsList, SignBookType.user).getSingleResult();
 			if(signBook.getSignBookType().equals(SignBookType.group)) {
-				List<SignBook> signBooksFromGroup = signBook.getSignBooksGroup();
-				for(SignBook signBookFromGroup : signBooksFromGroup) {
+				List<String> recipientsEmailsFromGroup = signBook.getRecipientEmails();
+				for(String recipientEmailFromGroup : recipientsEmailsFromGroup) {
+					List<String> recipientEmailFromGroupList = new ArrayList<>();
+					recipientEmailFromGroupList.add(recipientEmailFromGroup);
+					SignBook signBookFromGroup = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmailFromGroupList, SignBookType.user).getSingleResult();
 					signRequest.getSignBooks().put(signBookFromGroup.getId(), false);
 					signBookFromGroup.getSignRequests().add(signRequest);
 

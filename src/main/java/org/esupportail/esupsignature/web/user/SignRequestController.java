@@ -152,7 +152,9 @@ public class SignRequestController {
 		//TODO test pagination
 		float nrOfPages = 1;
 		int sizeNo = size == null ? 10 : size.intValue();
-    	 List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList();
+		List<String> recipientEmails = new ArrayList<>();
+		recipientEmails.add(user.getEmail());
+		List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailsEquals(recipientEmails).getResultList();
 		if(toSign) {
 			if(signBookId != null) {	
 				signRequests.addAll(SignBook.findSignBook(signBookId).getSignRequests());
@@ -239,7 +241,9 @@ public class SignRequestController {
 	public String createForm(Model uiModel) {
 		populateEditForm(uiModel, new SignRequest());
 		User user = userService.getUserFromAuthentication();
-		uiModel.addAttribute("mySignBook", SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult());
+		List<String> recipientEmails = new ArrayList<>();
+		recipientEmails.add(user.getEmail());
+		uiModel.addAttribute("mySignBook", SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult());
 		uiModel.addAttribute("allSignBooks", SignBook.findAllSignBooks("name", "ASC"));
 		return "user/signrequests/create";
 	}
@@ -276,7 +280,13 @@ public class SignRequestController {
 				logger.error("error to add files : " + multipartFiles, e);
 			}
 		}
-		signRequest = signRequestService.createSignRequest(signRequest, user, documents, signRequestParams, signBookIds);
+		List<String> recipientEmails = new ArrayList<>();
+		
+		for(long signBookId : signBookIds) {
+			SignBook signBook = SignBook.findSignBook(signBookId);
+			recipientEmails.addAll(signBook.getRecipientEmails());
+		}
+		signRequest = signRequestService.createSignRequest(signRequest, user, documents, signRequestParams, recipientEmails);
 		return "redirect:/user/signrequests/" + signRequest.getId();
 	}
 

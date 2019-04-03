@@ -25,7 +25,7 @@ import org.springframework.roo.addon.tostring.RooToString;
 
 @RooJavaBean
 @RooToString
-@RooJpaActiveRecord(finders={"findSignBooksByCreateByEquals", "findSignBooksByRecipientEmailEquals", "findSignBooksByNameEquals", "findSignBooksBySignBookTypeEquals", "findSignBooksByRecipientEmailAndSignBookTypeEquals"})
+@RooJpaActiveRecord(finders={"findSignBooksByRecipientEmailsEquals", "findSignBooksByCreateByEquals", "findSignBooksByNameEquals", "findSignBooksBySignBookTypeEquals", "findSignBooksByRecipientEmailsAndSignBookTypeEquals"})
 public class SignBook {
 
 	@Column(unique=true)
@@ -51,18 +51,13 @@ public class SignBook {
     
     private String documentsSourceUri;
     
-    //TODO recipient list
-    private String recipientEmail;
-    
     //TODO moderateur list
+    //TODO secretaire (createby)= droits de modif + droit en consultation
     @ElementCollection(targetClass=String.class)
     private List<String> moderatorEmails = new ArrayList<String>();
 
-    //TODO secretaire (createby)= droits de modif + droit en consultation
-    //TODO group list<signbook>
-    
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.ALL })
-    private List<SignBook> signBooksGroup = new ArrayList<SignBook>();
+    @ElementCollection(targetClass=String.class)
+    private List<String> recipientEmails = new ArrayList<String>();
     
     private boolean autoRemove = false;
     
@@ -91,16 +86,12 @@ public class SignBook {
 		none, cifs, vfs, cmis, mail;
 	}
     
-    public String getRecipientsEmails() {
-    	if(signBooksGroup.size() > 0) {
-        	String recipientsEmails = "";
-    		for(SignBook signBook : signBooksGroup) {
-    			recipientsEmails += "<li>" + signBook.getRecipientEmail() + "</li>";
-    		}
-    		return recipientsEmails;
-    	} else {
-    		return "<li>" + recipientEmail + "</li>";
-    	}
+    public String getRecipientsEmailsLabels() {
+    	String recipientsEmailsLabels = "";
+		for(String recipientEmail : recipientEmails) {
+			recipientsEmailsLabels += "<li>" + recipientEmail + "</li>";
+		}
+		return recipientsEmailsLabels;
     }
     
     public void setSourceType(DocumentIOType sourceType) {
@@ -115,26 +106,6 @@ public class SignBook {
         this.signBookType = signBookType;
     }
 
-    public static Long countFindSignBooksByRecipientEmailAndSignBookTypeEquals(String recipientEmail, SignBookType signBookType) {
-        if (recipientEmail == null || recipientEmail.length() == 0) throw new IllegalArgumentException("The recipientEmail argument is required");
-        if (signBookType == null) throw new IllegalArgumentException("The signBookType argument is required");
-        EntityManager em = SignBook.entityManager();
-        TypedQuery<Long> q = em.createQuery("SELECT COUNT(o) FROM SignBook AS o WHERE o.recipientEmail = :recipientEmail AND o.signBookType = :signBookType", Long.class);
-        q.setParameter("recipientEmail", recipientEmail);
-        q.setParameter("signBookType", signBookType);
-        return ((Long) q.getSingleResult());
-    }
- 
-    public static TypedQuery<SignBook> findSignBooksByRecipientEmailAndSignBookTypeEquals(String recipientEmail, SignBookType signBookType) {
-        if (recipientEmail == null || recipientEmail.length() == 0) throw new IllegalArgumentException("The recipientEmail argument is required");
-        if (signBookType == null) throw new IllegalArgumentException("The signBookType argument is required");
-        EntityManager em = SignBook.entityManager();
-        TypedQuery<SignBook> q = em.createQuery("SELECT o FROM SignBook AS o WHERE o.recipientEmail = :recipientEmail AND o.signBookType = :signBookType", SignBook.class);
-        q.setParameter("recipientEmail", recipientEmail);
-        q.setParameter("signBookType", signBookType);
-        return q;
-    }
-
     public static TypedQuery<SignBook> findSignBooksBySignBookTypeEquals(SignBookType signBookType) {
         if (signBookType == null) throw new IllegalArgumentException("The signBookType argument is required");
         EntityManager em = SignBook.entityManager();
@@ -143,5 +114,42 @@ public class SignBook {
         return q;
     }
     
+    public static Long countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(List<String> recipientEmails, SignBookType signBookType) {
+        if (recipientEmails == null) throw new IllegalArgumentException("The recipientEmails argument is required");
+        if (signBookType == null) throw new IllegalArgumentException("The signBookType argument is required");
+        EntityManager em = SignBook.entityManager();
+        StringBuilder queryBuilder = new StringBuilder("SELECT COUNT(o) FROM SignBook AS o WHERE o.signBookType = :signBookType");
+        queryBuilder.append(" AND");
+        for (int i = 0; i < recipientEmails.size(); i++) {
+            if (i > 0) queryBuilder.append(" AND");
+            queryBuilder.append(" :recipientEmails_item").append(i).append(" MEMBER OF o.recipientEmails");
+        }
+        TypedQuery q = em.createQuery(queryBuilder.toString(), Long.class);
+        int recipientEmailsIndex = 0;
+        for (String _string: recipientEmails) {
+            q.setParameter("recipientEmails_item" + recipientEmailsIndex++, _string);
+        }
+        q.setParameter("signBookType", signBookType);
+        return ((Long) q.getSingleResult());
+    }
+    
+    public static TypedQuery<SignBook> findSignBooksByRecipientEmailsAndSignBookTypeEquals(List<String> recipientEmails, SignBookType signBookType) {
+        if (recipientEmails == null) throw new IllegalArgumentException("The recipientEmails argument is required");
+        if (signBookType == null) throw new IllegalArgumentException("The signBookType argument is required");
+        EntityManager em = SignBook.entityManager();
+        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM SignBook AS o WHERE o.signBookType = :signBookType");
+        queryBuilder.append(" AND");
+        for (int i = 0; i < recipientEmails.size(); i++) {
+            if (i > 0) queryBuilder.append(" AND");
+            queryBuilder.append(" :recipientEmails_item").append(i).append(" MEMBER OF o.recipientEmails");
+        }
+        TypedQuery<SignBook> q = em.createQuery(queryBuilder.toString(), SignBook.class);
+        int recipientEmailsIndex = 0;
+        for (String _string: recipientEmails) {
+            q.setParameter("recipientEmails_item" + recipientEmailsIndex++, _string);
+        }
+        q.setParameter("signBookType", signBookType);
+        return q;
+    }
     
 }

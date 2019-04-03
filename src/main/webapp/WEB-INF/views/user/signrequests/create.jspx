@@ -19,10 +19,10 @@
 		</nav>
 
 		<div id="collapseHelp" class="show" aria-expanded="true" style="">
-			<div class="card card-body border-info text-info">
-				<p>Ce formulaire permet de soumettre à signature un ou plusieurs documents en selectionnant le parapheur qui convient</p>
-				<p>Après avoir saisi les paramètres de la demande, vous pourrez ajouter des documents</p>
-		    </div>
+		<div class="card card-body border-info text-info">
+			<p>Ce formulaire permet de soumettre à signature un ou plusieurs documents en selectionnant le parapheur qui convient</p>
+			<p>Après avoir saisi les paramètres de la demande, vous pourrez ajouter des documents</p>
+	    </div>
 	    </div>
 	</div>
 

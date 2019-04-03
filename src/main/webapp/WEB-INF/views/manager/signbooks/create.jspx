@@ -22,7 +22,7 @@
 				</div>
 				 -->
                 <field:input autocomplete="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignBook_name" required="true" z="user-managed"/>
-                <field:input cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" render="false" required="true" z="user-managed"/>
+                <field:input render="false" cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" required="true" z="user-managed"/>
                 <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBooksGroup">
                     <label class="col-lg-3  col-form-label" for="newPageType">
                         <strong>
@@ -39,8 +39,8 @@
                     </label>
                     <div class="col-lg-9">
                         <select id="signBookIds" multiple="multiple" name="recipientEmails" onchange="toggleSignBookType();" required="required" size="5">
-                            <c:forEach items="${signBooks}" var="signBook">
-                                <option value="${signBook.recipientEmail}">${signBook.name}</option>
+                            <c:forEach items="${users}" var="user">
+                                <option value="${user.email}">${user.firstname} ${user.name}</option>
                             </c:forEach>
                         </select>
                     </div>

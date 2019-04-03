@@ -3,6 +3,7 @@
 
 package org.esupportail.esupsignature.domain;
 
+import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import org.esupportail.esupsignature.domain.SignBook;
@@ -25,11 +26,19 @@ privileged aspect SignBook_Roo_Finder {
         return ((Long) q.getSingleResult());
     }
     
-    public static Long SignBook.countFindSignBooksByRecipientEmailEquals(String recipientEmail) {
-        if (recipientEmail == null || recipientEmail.length() == 0) throw new IllegalArgumentException("The recipientEmail argument is required");
+    public static Long SignBook.countFindSignBooksByRecipientEmailsEquals(List<String> recipientEmails) {
+        if (recipientEmails == null) throw new IllegalArgumentException("The recipientEmails argument is required");
         EntityManager em = SignBook.entityManager();
-        TypedQuery q = em.createQuery("SELECT COUNT(o) FROM SignBook AS o WHERE o.recipientEmail = :recipientEmail", Long.class);
-        q.setParameter("recipientEmail", recipientEmail);
+        StringBuilder queryBuilder = new StringBuilder("SELECT COUNT(o) FROM SignBook AS o WHERE");
+        for (int i = 0; i < recipientEmails.size(); i++) {
+            if (i > 0) queryBuilder.append(" AND");
+            queryBuilder.append(" :recipientEmails_item").append(i).append(" MEMBER OF o.recipientEmails");
+        }
+        TypedQuery q = em.createQuery(queryBuilder.toString(), Long.class);
+        int recipientEmailsIndex = 0;
+        for (String _string: recipientEmails) {
+            q.setParameter("recipientEmails_item" + recipientEmailsIndex++, _string);
+        }
         return ((Long) q.getSingleResult());
     }
     
@@ -87,43 +96,66 @@ privileged aspect SignBook_Roo_Finder {
         return q;
     }
     
-    public static TypedQuery<SignBook> SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(String recipientEmail, SignBookType signBookType, String sortFieldName, String sortOrder) {
-        if (recipientEmail == null || recipientEmail.length() == 0) throw new IllegalArgumentException("The recipientEmail argument is required");
+    public static TypedQuery<SignBook> SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(List<String> recipientEmails, SignBookType signBookType, String sortFieldName, String sortOrder) {
+        if (recipientEmails == null) throw new IllegalArgumentException("The recipientEmails argument is required");
         if (signBookType == null) throw new IllegalArgumentException("The signBookType argument is required");
         EntityManager em = SignBook.entityManager();
-        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM SignBook AS o WHERE o.recipientEmail = :recipientEmail AND o.signBookType = :signBookType");
+        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM SignBook AS o WHERE o.signBookType = :signBookType");
+        queryBuilder.append(" AND");
+        for (int i = 0; i < recipientEmails.size(); i++) {
+            if (i > 0) queryBuilder.append(" AND");
+            queryBuilder.append(" :recipientEmails_item").append(i).append(" MEMBER OF o.recipientEmails");
+        }
         if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
             queryBuilder.append(" ORDER BY ").append(sortFieldName);
             if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
-                queryBuilder.append(" ").append(sortOrder);
+                queryBuilder.append(" " + sortOrder);
             }
         }
         TypedQuery<SignBook> q = em.createQuery(queryBuilder.toString(), SignBook.class);
-        q.setParameter("recipientEmail", recipientEmail);
+        int recipientEmailsIndex = 0;
+        for (String _string: recipientEmails) {
+            q.setParameter("recipientEmails_item" + recipientEmailsIndex++, _string);
+        }
         q.setParameter("signBookType", signBookType);
         return q;
     }
     
-    public static TypedQuery<SignBook> SignBook.findSignBooksByRecipientEmailEquals(String recipientEmail) {
-        if (recipientEmail == null || recipientEmail.length() == 0) throw new IllegalArgumentException("The recipientEmail argument is required");
+    public static TypedQuery<SignBook> SignBook.findSignBooksByRecipientEmailsEquals(List<String> recipientEmails) {
+        if (recipientEmails == null) throw new IllegalArgumentException("The recipientEmails argument is required");
         EntityManager em = SignBook.entityManager();
-        TypedQuery<SignBook> q = em.createQuery("SELECT o FROM SignBook AS o WHERE o.recipientEmail = :recipientEmail", SignBook.class);
-        q.setParameter("recipientEmail", recipientEmail);
+        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM SignBook AS o WHERE");
+        for (int i = 0; i < recipientEmails.size(); i++) {
+            if (i > 0) queryBuilder.append(" AND");
+            queryBuilder.append(" :recipientEmails_item").append(i).append(" MEMBER OF o.recipientEmails");
+        }
+        TypedQuery<SignBook> q = em.createQuery(queryBuilder.toString(), SignBook.class);
+        int recipientEmailsIndex = 0;
+        for (String _string: recipientEmails) {
+            q.setParameter("recipientEmails_item" + recipientEmailsIndex++, _string);
+        }
         return q;
     }
     
-    public static TypedQuery<SignBook> SignBook.findSignBooksByRecipientEmailEquals(String recipientEmail, String sortFieldName, String sortOrder) {
-        if (recipientEmail == null || recipientEmail.length() == 0) throw new IllegalArgumentException("The recipientEmail argument is required");
+    public static TypedQuery<SignBook> SignBook.findSignBooksByRecipientEmailsEquals(List<String> recipientEmails, String sortFieldName, String sortOrder) {
+        if (recipientEmails == null) throw new IllegalArgumentException("The recipientEmails argument is required");
         EntityManager em = SignBook.entityManager();
-        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM SignBook AS o WHERE o.recipientEmail = :recipientEmail");
+        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM SignBook AS o WHERE");
+        for (int i = 0; i < recipientEmails.size(); i++) {
+            if (i > 0) queryBuilder.append(" AND");
+            queryBuilder.append(" :recipientEmails_item").append(i).append(" MEMBER OF o.recipientEmails");
+        }
         if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
             queryBuilder.append(" ORDER BY ").append(sortFieldName);
             if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
-                queryBuilder.append(" ").append(sortOrder);
+                queryBuilder.append(" " + sortOrder);
             }
         }
         TypedQuery<SignBook> q = em.createQuery(queryBuilder.toString(), SignBook.class);
-        q.setParameter("recipientEmail", recipientEmail);
+        int recipientEmailsIndex = 0;
+        for (String _string: recipientEmails) {
+            q.setParameter("recipientEmails_item" + recipientEmailsIndex++, _string);
+        }
         return q;
     }
     

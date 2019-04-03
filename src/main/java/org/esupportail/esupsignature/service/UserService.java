@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -82,7 +83,9 @@ public class UserService {
 		} else {
 			user.merge();
 		}
-		if(SignBook.countFindSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user) == 0) {
+		List<String> recipientEmails = new ArrayList<>();
+		recipientEmails.add(user.getEmail());
+		if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user) == 0) {
 			signBookService.createUserSignBook(user);
 		}
 

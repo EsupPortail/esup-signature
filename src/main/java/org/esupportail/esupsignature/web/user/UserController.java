@@ -3,7 +3,9 @@ package org.esupportail.esupsignature.web.user;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.DayOfWeek;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -99,7 +101,9 @@ public class UserController {
         if(user.getKeystore() != null) {
         	uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         }        
-        SignBook defaultSignBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
+        List<String> recipientEmails = new ArrayList<>();
+		recipientEmails.add(user.getEmail());
+        SignBook defaultSignBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult();
         uiModel.addAttribute("defaultSignBook", defaultSignBook);
         uiModel.addAttribute("isPasswordSet", (password != null && password != ""));
         return "user/users/show";
@@ -109,8 +113,10 @@ public class UserController {
     public String createForm(Model uiModel) throws IOException, SQLException {
 		User user = userService.getUserFromAuthentication();;
 		if(user != null) {
-	        uiModel.addAttribute("user", user);	        
-        	SignBook signBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
+	        uiModel.addAttribute("user", user);	     
+	        List<String> recipientEmails = new ArrayList<>();
+			recipientEmails.add(user.getEmail());
+        	SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult();
         	uiModel.addAttribute("signBook", signBook);
         	uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
         	uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
@@ -155,7 +161,9 @@ public class UserController {
     		oldSignImage.getBigFile().remove();
     		oldSignImage.remove();
     	}
-    	SignBook signBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
+        List<String> recipientEmails = new ArrayList<>();
+		recipientEmails.add(user.getEmail());
+    	SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult();
     	if(signType != null) {
     		signBook.getSignRequestParams().setSignType(SignType.valueOf(signType));
     	}
