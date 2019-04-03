@@ -214,13 +214,14 @@ public class SignRequestService {
 					logger.warn("stamp image only work on pdf");
 				} else if (signType.equals(SignRequestParams.SignType.certSign)) {
 					logger.info(user.getEppn() + " launch xades signature for signRequest : " + signRequest.getId());
+					//TODO : choose xades cades
 					signedFile = cadesSign(signRequest, user, password);
 					// mime type application/vnd.etsi.asic-e+zip
 					signedFile = fileService.renameFile(signedFile, fileService.getNameOnly(signedFile) + ".ascis");
 				}
 			}
 		} else {
-			//TODO multiple sign
+			//TODO : choose xades cades
 			signedFile = cadesMultipleSign(signRequest, user, password);
 		}
 		if (signedFile != null) {

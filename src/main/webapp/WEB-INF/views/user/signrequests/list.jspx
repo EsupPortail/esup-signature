@@ -40,34 +40,34 @@
 			Statut des demandes de signatures :
 			</p>
 			<p>
-			<span class="alert alert-primary" id="status_${signRequest.id}" value="${signRequest.status}">
+			<span class="alert alert-primary">
 				<i class="fas fa-clock"> <!--  --></i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
 			</span>
 			La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures 
 			</p>
 			<p>
-			<span class="alert alert-success" id="status_${signRequest.id}" value="${signRequest.status}">
+			<span class="alert alert-success">
 				<i class="fas fa-file-signature"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
 			</span>
 			Tous les critères de signatures sont remplis
 			</p>
 			<p>
-			<span class="alert alert-success" id="status_${signRequest.id}" value="${signRequest.status}">
+			<span class="alert alert-success">
 				<i class="far fa-check-circle"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
 			</span>
 			Le document à été validé par tous les participants
 			</p>
 			<p>
-			<span class="alert alert-danger" id="status_${signRequest.id}" value="${signRequest.status}">
+			<span class="alert alert-danger">
 				<i class="fas fa-ban"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
 			</span>
 			La demande à été refusée et retirée des parapheurs
 			</p>
 			<p>
-			<span class="alert alert-warning" id="status_${signRequest.id}" value="${signRequest.status}">
+			<span class="alert alert-warning">
 				<i class="fas fa-flag-checkered"> <!--  -->
 				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
 			</span>
@@ -232,7 +232,7 @@
 								<td class="type">
 								<input type="hidden" id="signbook_${signRequest.id}" value="${json}" />
 								<c:if test="${not empty signRequest.signRequestParams.signType}">
-									<div class="alert alert-secondary text-center" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
+									<div class="alert alert-secondary text-center" id="type_${signRequest.id}" title="${signRequest.signRequestParams.signType}">
 										<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" /></small>
 									</div>
 								</c:if>	
@@ -321,9 +321,9 @@
 			var oldType = "";
 			for (i = 0; i &lt; checkBoxes.length; i++) {
 				if(checkBoxes[i].checked) {
-					var status = document.getElementById("status_" + checkBoxes[i].value).value;
-					var signBook = document.getElementById("signbook_" + checkBoxes[i].value).value;
-					var type = document.getElementById("type_" + checkBoxes[i].value).value;
+					var status = document.getElementById("status_" + checkBoxes[i].value).title;
+					var signBook = document.getElementById("signbook_" + checkBoxes[i].value).title;
+					var type = document.getElementById("type_" + checkBoxes[i].value).title;
 					if(type == 'certSign') {
 						passwordField.style.display = "block";
 					} else {
