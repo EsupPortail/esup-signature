@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.esupportail.esupsignature.domain.SignRequestParams;
 import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -42,15 +44,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import eu.europa.esig.dss.ASiCContainerType;
+import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.EncryptionAlgorithm;
 import eu.europa.esig.dss.FileDocument;
 import eu.europa.esig.dss.InMemoryDocument;
 import eu.europa.esig.dss.MimeType;
+import eu.europa.esig.dss.SignatureForm;
 import eu.europa.esig.dss.asic.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
@@ -86,6 +89,8 @@ public class SignRequestService {
 	private FileService fileService;
 
 	
+	@Value("${sign.defaultSignatureForm}")
+	private SignatureForm defaultSignatureForm;
 	@Value("${sign.pades.xFirstPos}")
 	private int xFirstPos;
 	@Value("${sign.pades.yFirstPos}")
@@ -179,6 +184,7 @@ public class SignRequestService {
 	}
 
 	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureIOException, EsupSignatureSignException, EsupSignatureNexuException, EsupSignatureKeystoreException {
+		//TODO : choose xades cades
 		SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		if(!signRequest.isOverloadSignBookParams()) {
 			signRequest.getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().getSignType());
@@ -186,7 +192,7 @@ public class SignRequestService {
 		if(signRequest.getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
 			throw new EsupSignatureNexuException("redirect to nexuSign");
 		}
-		if(signRequest.countSign() == 0) {
+		if(signRequest.countSignOk() == 0) {
 			if(!SignRequestParams.NewPageType.none.equals(signRequest.getSignRequestParams().getNewPageType())) {
 				signRequest.getSignRequestParams().setXPos(xFirstPos);
 				signRequest.getSignRequestParams().setYPos(yFirstPos);
@@ -194,18 +200,11 @@ public class SignRequestService {
 		} else {
 			signRequest.getSignRequestParams().setNewPageType(NewPageType.none);
 		}
-		
-		SignRequestParams.SignType signType = signRequest.getSignRequestParams().getSignType();
-		File toSignFile = null;
-		if(signRequest.getSignedDocuments().size() > 0) {
-			toSignFile = getLastSignedDocument(signRequest).getJavaIoFile();
-		}else {
-			if(signRequest.getOriginalDocuments().size() == 1) {
-				toSignFile = signRequest.getOriginalDocuments().get(0).getJavaIoFile();
-			}
-		}
 		File signedFile = null;
-		if(toSignFile != null) {
+		List<Document> toSignDocuments = getToSignDocuments(signRequest);
+		if(toSignDocuments.size() == 1) {
+			File toSignFile = toSignDocuments.get(0).getJavaIoFile();
+			SignType signType = signRequest.getSignRequestParams().getSignType();
 			if (fileService.getContentType(toSignFile).equals("application/pdf")) {
 				if (signType.equals(SignRequestParams.SignType.pdfImageStamp) || signType.equals(SignType.visa)) {
 					logger.info(user.getEppn() + " launch add imageStamp for signRequest : " + signRequest.getId());
@@ -219,15 +218,11 @@ public class SignRequestService {
 					logger.warn("stamp image only work on pdf");
 				} else if (signType.equals(SignRequestParams.SignType.certSign)) {
 					logger.info(user.getEppn() + " launch xades signature for signRequest : " + signRequest.getId());
-					//TODO : choose xades cades
-					signedFile = cadesSign(signRequest, user, password);
-					// mime type application/vnd.etsi.asic-e+zip
-					signedFile = fileService.renameFile(signedFile, fileService.getNameOnly(signedFile) + ".ascis");
+					signedFile = certSign(signRequest, user, password, defaultSignatureForm);
 				}
 			}
 		} else {
-			//TODO : choose xades cades
-			signedFile = cadesMultipleSign(signRequest, user, password);
+			signedFile = certSign(signRequest, user, password, defaultSignatureForm);
 		}
 		if (signedFile != null) {
 			addSignedFile(signRequest, signedFile, user);
@@ -237,13 +232,19 @@ public class SignRequestService {
 		}
 	}
 
-	public void nexuSign(SignRequest signRequest, User user, SignatureDocumentForm signatureDocumentForm) throws EsupSignatureKeystoreException, EsupSignatureIOException {
-		logger.info(user.getEppn() + " launch cades nexu signature for signRequest : " + signRequest.getId());
-		DSSDocument dssDocument = signingService.signDocument(signatureDocumentForm);
-		InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
+	public void nexuSign(SignRequest signRequest, User user, AbstractSignatureForm signatureDocumentForm) throws EsupSignatureKeystoreException, EsupSignatureIOException {
+		logger.info(user.getEppn() + " launch nexu signature for signRequest : " + signRequest.getId());
+		DSSDocument dssDocument;
+		if(signatureDocumentForm.getClass().equals(SignatureMultipleDocumentsForm.class)) {
+			dssDocument = signingService.signDocument((SignatureMultipleDocumentsForm) signatureDocumentForm);
+		} else {
+			dssDocument = signingService.signDocument((SignatureDocumentForm) signatureDocumentForm);
+		}
+		
+		InMemoryDocument signedDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 
 		try {
-			File signedFile = fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName());
+			File signedFile = fileService.inputStreamToFile(signedDocument.openStream(), signedDocument.getName());
 			if (signedFile != null) {
 				addSignedFile(signRequest, signedFile, user);
 				applySignBookRules(signRequest, user);
@@ -252,22 +253,20 @@ public class SignRequestService {
 			logger.error("error to read signed file", e);
 		}
 	}
-
+	
 	public File padesSign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException {
-		File signImage = user.getSignImage().getJavaIoFile();
+		File toSignFile = getToSignDocuments(signRequest).get(0).getJavaIoFile();		
+		List<File> toSignFormatedFiles = Arrays.asList(pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams()));
+		
+		SignatureDocumentForm signatureDocumentForm = (SignatureDocumentForm) signingService.getSignatureDocumentForm(toSignFormatedFiles, SignatureForm.PAdES);
+		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
+		signatureDocumentForm.setContainerType(null);
 
 		File keyStoreFile = user.getKeystore().getJavaIoFile();
 		SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
 		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
 		CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
-		File toSignFile = getToSignDocument(signRequest).getJavaIoFile();
 		
-		File toSignFormatedFile = pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams());
-		
-		SignatureDocumentForm signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
-		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
-		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFormatedFile, "application/pdf"));
-
 		signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
 		List<String> base64CertificateChain = new ArrayList<>();
 		for (CertificateToken token : certificateTokenChain) {
@@ -277,13 +276,14 @@ public class SignRequestService {
 
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 
+		File signImage = user.getSignImage().getJavaIoFile();
 		FileDocument fileDocumentImage = new FileDocument(signImage);
 		fileDocumentImage.setMimeType(MimeType.PNG);
 		imageParameters.setImage(fileDocumentImage);
 
 		imageParameters.setPage(signRequest.getSignRequestParams().getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
-		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFormatedFile);
+		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFormatedFiles.get(0));
 		if (pdfParameters.getRotation() == 0) {
 			imageParameters.setWidth(100);
 			imageParameters.setHeight(75);
@@ -314,13 +314,16 @@ public class SignRequestService {
 		return null;
 	}
 
-	public File xadesSign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException {
-		File toSignFile = getLastSignedDocument(signRequest).getJavaIoFile();
+	public File certSign(SignRequest signRequest, User user, String password, SignatureForm signatureForm) throws EsupSignatureKeystoreException {
+		List<File> toSignFiles = new ArrayList<>();
 
-		SignatureDocumentForm signatureDocumentForm = signingService.getXadesSignatureDocumentForm();
+		for(Document document : getToSignDocuments(signRequest)) {
+			toSignFiles.add(document.getJavaIoFile());
+		}
+		
+		AbstractSignatureForm signatureDocumentForm = signingService.getSignatureDocumentForm(toSignFiles, signatureForm);
 		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
-		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, fileService.getContentType(toSignFile)));
-
+		
 		File keyStoreFile = user.getKeystore().getJavaIoFile();
 		SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
 		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
@@ -333,126 +336,26 @@ public class SignRequestService {
 		}
 		signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
 
-		ASiCWithXAdESSignatureParameters parameters = new ASiCWithXAdESSignatureParameters();
-		parameters.setSigningCertificate(certificateToken);
-		parameters.setCertificateChain(certificateTokenChain);
-		parameters.aSiC().setContainerType(signatureDocumentForm.getContainerType());
-		DSSDocument dssDocument = signingService.certSignDocument(signatureDocumentForm, parameters, signatureTokenConnection);
-		InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
-
-		try {
-			return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName());
-		} catch (IOException e) {
-			logger.error("error to read signed file", e);
-		}
-		return null;
-	}
-
-	public File cadesSign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException {
-		File toSignFile = getLastSignedDocument(signRequest).getJavaIoFile();
-
-		SignatureDocumentForm signatureDocumentForm = signingService.getCadesSignatureDocumentForm();
-		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
-		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, fileService.getContentType(toSignFile)));
-
-		File keyStoreFile = user.getKeystore().getJavaIoFile();
-		SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
-		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
-		CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
-
-		signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
-		List<String> base64CertificateChain = new ArrayList<>();
-		for (CertificateToken token : certificateTokenChain) {
-			base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
-		}
-		signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
-
-		ASiCWithCAdESSignatureParameters parameters = new ASiCWithCAdESSignatureParameters();
-		parameters.setSigningCertificate(certificateToken);
-		parameters.setCertificateChain(certificateTokenChain);
-		parameters.aSiC().setContainerType(signatureDocumentForm.getContainerType());
-		DSSDocument dssDocument = signingService.certSignDocument(signatureDocumentForm, parameters, signatureTokenConnection);
-		InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
-
-		try {
-			return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName());
-		} catch (IOException e) {
-			logger.error("error to read signed file", e);
-		}
-		return null;
-	}
-	
-	public File cadesMultipleSign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException {
-
-		SignatureMultipleDocumentsForm signatureDocumentForm = signingService.getCadesSignatureMultipleDocumentsForm();
-		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 		
-		List<MultipartFile> multipartFiles = new ArrayList<>();
-		for(Document document : signRequest.getOriginalDocuments()) {
-			File toSignFile = document.getJavaIoFile();
-			multipartFiles.add(fileService.toMultipartFile(toSignFile, fileService.getContentType(toSignFile)));
+		AbstractSignatureParameters parameters = null;
+		if(signatureForm.equals(SignatureForm.CAdES)) {
+			ASiCWithCAdESSignatureParameters aSiCWithCAdESSignatureParameters = new ASiCWithCAdESSignatureParameters();
+			aSiCWithCAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
+			parameters = aSiCWithCAdESSignatureParameters;
+		} else if(signatureForm.equals(SignatureForm.XAdES)) {
+			ASiCWithXAdESSignatureParameters aSiCWithXAdESSignatureParameters = new ASiCWithXAdESSignatureParameters();
+			aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
+			parameters = aSiCWithXAdESSignatureParameters;
 		}
-		signatureDocumentForm.setDocumentsToSign(multipartFiles);
-		
-		File keyStoreFile = user.getKeystore().getJavaIoFile();
-		
-		SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
-		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
-		CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
-		
-		signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
-		List<String> base64CertificateChain = new ArrayList<>();
-		for (CertificateToken token : certificateTokenChain) {
-			base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
-		}
-		signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
-
-		ASiCWithCAdESSignatureParameters parameters = new ASiCWithCAdESSignatureParameters();
 		parameters.setSigningCertificate(certificateToken);
 		parameters.setCertificateChain(certificateTokenChain);
 		parameters.setSignatureLevel(signatureDocumentForm.getSignatureLevel());
-		parameters.aSiC().setContainerType(signatureDocumentForm.getContainerType());
-		DSSDocument dssDocument = signingService.certSignDocument(signatureDocumentForm, parameters, signatureTokenConnection);
-		InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
-		try {
-			return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName());
-		} catch (IOException e) {
-			logger.error("error to read signed file", e);
+		DSSDocument dssDocument;
+		if(toSignFiles.size() > 0) {
+			dssDocument = signingService.certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, signatureTokenConnection);
+		} else {
+			dssDocument = signingService.certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, signatureTokenConnection);
 		}
-		return null;
-	}
-	
-	public File xadesMultipleSign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException {
-
-		SignatureMultipleDocumentsForm signatureDocumentForm = signingService.getXadesSignatureMultipleDocumentsForm();
-		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
-
-		List<MultipartFile> multipartFiles = new ArrayList<>();
-		for(Document document : signRequest.getOriginalDocuments()) {
-			File toSignFile = document.getJavaIoFile();
-			multipartFiles.add(fileService.toMultipartFile(toSignFile, fileService.getContentType(toSignFile)));
-		}
-		signatureDocumentForm.setDocumentsToSign(multipartFiles);
-		
-		File keyStoreFile = user.getKeystore().getJavaIoFile();
-		
-		SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
-		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
-		CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
-
-		signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
-		List<String> base64CertificateChain = new ArrayList<>();
-		for (CertificateToken token : certificateTokenChain) {
-			base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
-		}
-		signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
-
-		ASiCWithXAdESSignatureParameters parameters = new ASiCWithXAdESSignatureParameters();
-		parameters.setSigningCertificate(certificateToken);
-		parameters.setCertificateChain(certificateTokenChain);
-		parameters.setSignatureLevel(signatureDocumentForm.getSignatureLevel());
-		parameters.aSiC().setContainerType(signatureDocumentForm.getContainerType());
-		DSSDocument dssDocument = signingService.certSignDocument(signatureDocumentForm, parameters, signatureTokenConnection);
 		InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 
 		try {
@@ -503,13 +406,14 @@ public class SignRequestService {
 		}
 	}
 	
-	public Document getToSignDocument(SignRequest signRequest) {
-		List<Document> documents = signRequest.getSignedDocuments();
-		if(documents.size() >0 ) {
-			return documents.get(documents.size() - 1);
+	public List<Document> getToSignDocuments(SignRequest signRequest) {
+		List<Document> documents = new ArrayList<>();
+		if(signRequest.getSignedDocuments() != null && signRequest.getSignedDocuments().size() > 0 ) {
+			documents.add(signRequest.getSignedDocuments().get(signRequest.getSignedDocuments().size() - 1));
 		} else {
-			return getLastOriginalsDocument(signRequest);
+			documents.addAll(signRequest.getOriginalDocuments());
 		}
+		return documents;
 	}
 	
 	public Document getLastSignedDocument(SignRequest signRequest) {
@@ -517,7 +421,7 @@ public class SignRequestService {
 		return documents.get(documents.size() - 1);
 	}
 
-	public Document getLastOriginalsDocument(SignRequest signRequest) {
+	public Document getLastOriginalDocument(SignRequest signRequest) {
 		List<Document> documents = signRequest.getOriginalDocuments();
 		if (documents.size() > 1) {
 			return null;

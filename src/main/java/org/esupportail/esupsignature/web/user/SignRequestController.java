@@ -42,9 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -149,7 +146,6 @@ public class SignRequestController {
 			sortFieldName = "createDate";
 		}
 		List<SignRequest> signRequests = new ArrayList<>();
-		//TODO test pagination
 		float nrOfPages = 1;
 		int sizeNo = size == null ? 10 : size.intValue();
 		List<String> recipientEmails = new ArrayList<>();
@@ -204,8 +200,8 @@ public class SignRequestController {
 			Document toDisplayDocument = null;
 			File toDisplayFile = null;
 			
-			if(signRequest.getOriginalDocuments().size() == 1) {
-				toDisplayDocument = signRequestService.getToSignDocument(signRequest);
+			if(signRequestService.getToSignDocuments(signRequest).size() == 1) {
+				toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
 				toDisplayFile = toDisplayDocument.getJavaIoFile();
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
 					PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayFile);

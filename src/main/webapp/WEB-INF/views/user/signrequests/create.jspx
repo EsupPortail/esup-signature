@@ -19,7 +19,7 @@
 		</nav>
 
 		<div id="collapseHelp" class="show" aria-expanded="true" style="">
-		<div class="card card-body border-info text-info">
+		<div class="alert alert-info">
 			<p>Ce formulaire permet de soumettre à signature un ou plusieurs documents en selectionnant le parapheur qui convient</p>
 			<p>Après avoir saisi les paramètres de la demande, vous pourrez ajouter des documents</p>
 	    </div>
@@ -82,7 +82,7 @@
 					<spring:message code="menu_item_sendtosignbook" />
 					<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 					<div class="collapse" id="collapseHelp1">
-						<div class="card card-body border-info text-info">
+						<div class="alert alert-info">
 							<small>
 								Si vous sélectionnez votre parapheur personnel c'est vous qui signerez le document.
 								<br/>
@@ -110,7 +110,7 @@
                                 <span class="fas fa-info-circle text-info"/>
                             </button>
                             <div class="collapse" id="collapseHelp2">
-                                <div class="card card-body border-info text-info">
+                                <div class="alert alert-info">
                                 	<small>
                                     	Vous pouvez recherche un utilisateur dans l'annuaire si il n'a pas encore de compte dans esup-signature
                                     </small>
@@ -130,7 +130,7 @@
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" /><button data-target="#collapseHelpAllSign" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 					<div class="collapse" id="collapseHelpAllSign">
-						<div class="card card-body border-info text-info">
+						<div class="alert alert-info">
 							<small>
 								<ul>
 								<li>Oui : Tous les participants doivent signer pour que la demande passe au status "Signé"</li>
@@ -155,7 +155,7 @@
 				<strong>
 					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_overloadparams" /><button data-target="#collapseHelpOverLoad" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 					<div class="show" id="collapseHelpOverLoad">
-						<div class="card card-body border-info text-info">
+						<div class="alert alert-info">
 							<small>
 								<ul>
 								<li>Non : Les paramètres de signature du parapheur séléctionné seront appliqués.</li>
@@ -178,7 +178,7 @@
 			<strong>
 				<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype" /><button data-target="#collapseHelpSignType" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 					<div class="collapse" id="collapseHelpSignType">
-						<div class="card card-body border-info text-info">
+						<div class="alert alert-info">
 							<small>
 								<ul>
 									<li>PAdES/XAdES : s'appuie sur le certificat P12 uploader au niveau de vos paramètres</li>

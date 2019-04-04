@@ -1,9 +1,13 @@
 package org.esupportail.esupsignature.service;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.annotation.Resource;
 
 import org.esupportail.esupsignature.dss.web.WebAppUtils;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
@@ -15,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import eu.europa.esig.dss.ASiCContainerType;
 import eu.europa.esig.dss.AbstractSignatureParameters;
@@ -82,6 +87,9 @@ public class SigningService {
 
 	@Autowired
 	private ASiCWithXAdESService asicWithXAdESService;
+	
+	@Resource
+	private FileService fileService;
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument extend(ExtensionForm extensionForm) {
@@ -207,72 +215,50 @@ public class SigningService {
 			parameters.setCertificateChain(certificateChain);
 		}
 	}
-	
-	public SignatureDocumentForm getPadesSignatureDocumentForm() {
-		SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
-		signaturePdfForm.setSignWithExpiredCertificate(false);
-		signaturePdfForm.setContainerType(null);
-		signaturePdfForm.setSignatureForm(SignatureForm.PAdES);
-		signaturePdfForm.setSignatureLevel(SignatureLevel.valueOf(padesSignatureLevel));
-		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.valueOf(padesDigestAlgorithm));
-		signaturePdfForm.setSignaturePackaging(SignaturePackaging.valueOf(padesSignaturePackaging));
-		signaturePdfForm.setSigningDate(new Date());
-		return signaturePdfForm;
-	}
 
-	public SignatureDocumentForm getXadesSignatureDocumentForm() {
-		SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
-		signaturePdfForm.setSignWithExpiredCertificate(false);
-		signaturePdfForm.setContainerType(ASiCContainerType.valueOf(xadesContainerType));
-		signaturePdfForm.setSignatureForm(SignatureForm.XAdES);
-		signaturePdfForm.setSignatureLevel(SignatureLevel.valueOf(xadesSignatureLevel));
-		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.valueOf(xadesDigestAlgorithm));
-		signaturePdfForm.setSignaturePackaging(SignaturePackaging.ENVELOPING);
-		signaturePdfForm.setSigningDate(new Date());
-		return signaturePdfForm;
-	}
-
-	public SignatureDocumentForm getCadesSignatureDocumentForm() {
-		SignatureDocumentForm signaturePdfForm = new SignatureDocumentForm();
-		signaturePdfForm.setSignWithExpiredCertificate(false);
-		signaturePdfForm.setContainerType(ASiCContainerType.valueOf(cadesContainerType));
-		signaturePdfForm.setSignatureForm(SignatureForm.CAdES);
-		signaturePdfForm.setSignatureLevel(SignatureLevel.valueOf(cadesSignatureLevel));
-		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.valueOf(cadesDigestAlgorithm));
-		signaturePdfForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
-		signaturePdfForm.setSigningDate(new Date());
-		return signaturePdfForm;
-	}
-	
-	public SignatureMultipleDocumentsForm getCadesSignatureMultipleDocumentsForm() {
-		SignatureMultipleDocumentsForm signaturePdfForm = new SignatureMultipleDocumentsForm();
-		signaturePdfForm.setSignWithExpiredCertificate(false);
-		signaturePdfForm.setContainerType(ASiCContainerType.valueOf(cadesContainerType));
-		signaturePdfForm.setSignatureForm(SignatureForm.CAdES);
-		signaturePdfForm.setSignatureLevel(SignatureLevel.valueOf(cadesSignatureLevel));
-		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.valueOf(cadesDigestAlgorithm));
-		signaturePdfForm.setSigningDate(new Date());
-		return signaturePdfForm;
-	}
-	
-	public SignatureMultipleDocumentsForm getXadesSignatureMultipleDocumentsForm() {
-		SignatureMultipleDocumentsForm signaturePdfForm = new SignatureMultipleDocumentsForm();
-		signaturePdfForm.setSignWithExpiredCertificate(false);
-		signaturePdfForm.setContainerType(ASiCContainerType.valueOf(xadesContainerType));
-		signaturePdfForm.setSignatureForm(SignatureForm.XAdES);
-		signaturePdfForm.setSignatureLevel(SignatureLevel.valueOf(xadesSignatureLevel));
-		signaturePdfForm.setDigestAlgorithm(DigestAlgorithm.valueOf(xadesDigestAlgorithm));
-		signaturePdfForm.setSigningDate(new Date());
-		return signaturePdfForm;
+	public AbstractSignatureForm getSignatureDocumentForm(List<File> toSignFiles, SignatureForm signatureForm) {
+		AbstractSignatureForm abstractSignatureForm;
+		if(toSignFiles.size() > 1) {
+			SignatureMultipleDocumentsForm signatureMultipleDocumentsForm = new SignatureMultipleDocumentsForm();
+			List<MultipartFile> multipartFiles = new ArrayList<>();
+			for(File toSignFile : toSignFiles) {
+				multipartFiles.add(fileService.toMultipartFile(toSignFile, fileService.getContentType(toSignFile)));
+			}
+			signatureMultipleDocumentsForm.setDocumentsToSign(multipartFiles);
+			signatureMultipleDocumentsForm.setContainerType(ASiCContainerType.ASiC_E);
+			abstractSignatureForm = signatureMultipleDocumentsForm;
+		} else {
+			SignatureDocumentForm signatureDocumentForm = new SignatureDocumentForm();
+			signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFiles.get(0), fileService.getContentType(toSignFiles.get(0))));
+			signatureDocumentForm.setContainerType(ASiCContainerType.ASiC_E);
+			abstractSignatureForm = signatureDocumentForm;
+		}
+		abstractSignatureForm.setSignWithExpiredCertificate(false);
+		abstractSignatureForm.setSignatureForm(signatureForm);
+		if(signatureForm.equals(SignatureForm.PAdES)) {
+			abstractSignatureForm.setSignatureLevel(SignatureLevel.valueOf(padesSignatureLevel));
+			abstractSignatureForm.setDigestAlgorithm(DigestAlgorithm.valueOf(padesDigestAlgorithm));
+			abstractSignatureForm.setSignaturePackaging(SignaturePackaging.valueOf(padesSignaturePackaging));
+		} else if(signatureForm.equals(SignatureForm.CAdES)) {
+			abstractSignatureForm.setSignatureLevel(SignatureLevel.valueOf(cadesSignatureLevel));
+			abstractSignatureForm.setDigestAlgorithm(DigestAlgorithm.valueOf(cadesDigestAlgorithm));
+			abstractSignatureForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
+		} else if(signatureForm.equals(SignatureForm.XAdES)) {
+			abstractSignatureForm.setSignatureLevel(SignatureLevel.valueOf(xadesSignatureLevel));
+			abstractSignatureForm.setDigestAlgorithm(DigestAlgorithm.valueOf(xadesDigestAlgorithm));
+			abstractSignatureForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
+		}
+		abstractSignatureForm.setSigningDate(new Date());
+		return abstractSignatureForm;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DSSDocument certSignDocument(SignatureDocumentForm signaturePdfForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
+	public DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
 		logger.info("Start certSignDocument with database keystore");
-		DocumentSignatureService service = getSignatureService(signaturePdfForm.getContainerType(), signaturePdfForm.getSignatureForm());
+		DocumentSignatureService service = getSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
 		DSSDocument signedDocument = null;
-		fillParameters(parameters, signaturePdfForm);
-		DSSDocument toSignDocument = WebAppUtils.toDSSDocument(signaturePdfForm.getDocumentToSign());
+		fillParameters(parameters, signatureDocumentForm);
+		DSSDocument toSignDocument = WebAppUtils.toDSSDocument(signatureDocumentForm.getDocumentToSign());
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
 		signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);

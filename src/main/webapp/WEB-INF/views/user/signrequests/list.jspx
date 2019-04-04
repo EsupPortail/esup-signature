@@ -34,7 +34,7 @@
 	</div>
 
 	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
-		<div class="card card-body border-info text-info">
+		<div class="alert alert-info">
 			<p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
 			<p>
 			Statut des demandes de signatures :

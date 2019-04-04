@@ -1,18 +1,24 @@
 package org.esupportail.esupsignature.web.user;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.xml.bind.DatatypeConverter;
 
+import org.esupportail.esupsignature.domain.Document;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.DataToSignParams;
 import org.esupportail.esupsignature.dss.web.model.GetDataToSignResponse;
 import org.esupportail.esupsignature.dss.web.model.SignDocumentResponse;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
+import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureValueAsString;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
@@ -39,10 +45,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import eu.europa.esig.dss.SignatureForm;
 import eu.europa.esig.dss.ToBeSigned;
 
 @Controller
-@SessionAttributes(value = { "signaturePdfForm", "signedPdfDocument", "signRequest" })
+@SessionAttributes(value = { "signatureDocumentForm", "signRequestId"})
 @RequestMapping(value = "/user/nexu-sign")
 @Transactional
 public class NexuProcessController {
@@ -70,20 +77,34 @@ public class NexuProcessController {
 	@Resource
 	private SignRequestService signRequestService;
 
+	@Value("${sign.defaultSignatureForm}")
+	private SignatureForm defaultSignatureForm;
+	
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String showSignatureParameters(@PathVariable("id") Long id, Model model, HttpServletRequest request, RedirectAttributes redirectAttrs) {
     	User user = userService.getUserFromAuthentication();
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
-    		SignatureDocumentForm signatureDocumentForm = signingService.getXadesSignatureDocumentForm();
-    		File toSignFile = signRequestService.getLastSignedDocument(signRequest).getJavaIoFile();
-    		if(fileService.getContentType(toSignFile).equals("application/pdf")) {
-    			signatureDocumentForm = signingService.getPadesSignatureDocumentForm();
-    			toSignFile = pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams());
+			AbstractSignatureForm signatureDocumentForm = null;
+    		List<Document> documents = signRequestService.getToSignDocuments(signRequest);
+    		if(documents.size() == 1){
+        		File toSignFile = documents.get(0).getJavaIoFile();
+        		if(fileService.getContentType(toSignFile).equals("application/pdf")) {
+        			toSignFile = pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams());
+        			signatureDocumentForm = signingService.getSignatureDocumentForm(Arrays.asList(toSignFile), SignatureForm.PAdES);
+        			signatureDocumentForm.setContainerType(null);
+        		} else {
+        			signatureDocumentForm = signingService.getSignatureDocumentForm(Arrays.asList(toSignFile), defaultSignatureForm);
+        		}
+    		} else {
+    			List<File> toSignFiles = new ArrayList<>();
+    			for(Document document : signRequestService.getToSignDocuments(signRequest)) {
+    				toSignFiles.add(document.getJavaIoFile());
+    			}
+				signatureDocumentForm = signingService.getSignatureDocumentForm(toSignFiles, defaultSignatureForm);
     		}
-    		signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
-			model.addAttribute("signRequest", signRequest);
-			model.addAttribute("signaturePdfForm", signatureDocumentForm);
+			model.addAttribute("signRequestId", signRequest.getId());
+			model.addAttribute("signatureDocumentForm", signatureDocumentForm);
 			model.addAttribute("digestAlgorithm", signatureDocumentForm.getDigestAlgorithm());
 			model.addAttribute("rootUrl", "nexu-sign");
 			model.addAttribute("nexuUrl", nexuUrl);
@@ -97,41 +118,59 @@ public class NexuProcessController {
 	@RequestMapping(value = "/get-data-to-sign", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public GetDataToSignResponse getDataToSign(Model model, @RequestBody @Valid DataToSignParams params,
-			@ModelAttribute("signaturePdfForm") @Valid SignatureDocumentForm signaturePdfForm, @ModelAttribute("signRequest") SignRequest signRequest, BindingResult result) {
-
-		signaturePdfForm.setBase64Certificate(params.getSigningCertificate());
-		signaturePdfForm.setBase64CertificateChain(params.getCertificateChain());
-		signaturePdfForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
-
-		model.addAttribute("signaturePdfForm", signaturePdfForm);
-		model.addAttribute("signRequest", signRequest);
-
-		ToBeSigned dataToSign = signingService.getDataToSign(signaturePdfForm);
-		if (dataToSign == null) {
-			return null;
+			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm, 
+		@ModelAttribute("signRequestId") Long signRequestId, BindingResult result) {
+		signatureDocumentForm.setBase64Certificate(params.getSigningCertificate());
+		signatureDocumentForm.setBase64CertificateChain(params.getCertificateChain());
+		signatureDocumentForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
+    	User user = userService.getUserFromAuthentication();
+		SignRequest signRequest = SignRequest.findSignRequest(signRequestId);
+		if (signRequestService.checkUserSignRights(user, signRequest)) {
+	
+			model.addAttribute("signatureDocumentForm", signatureDocumentForm);
+			model.addAttribute("signRequestId", signRequest.getId());
+	
+			ToBeSigned dataToSign;
+			if(signatureDocumentForm.getClass().equals(SignatureMultipleDocumentsForm.class)) {
+				dataToSign = signingService.getDataToSign((SignatureMultipleDocumentsForm) signatureDocumentForm);
+			} else {
+				dataToSign = signingService.getDataToSign((SignatureDocumentForm) signatureDocumentForm);
+			}
+				
+			if (dataToSign == null) {
+				return null;
+			}
+	
+			GetDataToSignResponse responseJson = new GetDataToSignResponse();
+			responseJson.setDataToSign(DatatypeConverter.printBase64Binary(dataToSign.getBytes()));
+			return responseJson;
+		} else {
+			return new GetDataToSignResponse();
 		}
-
-		GetDataToSignResponse responseJson = new GetDataToSignResponse();
-		responseJson.setDataToSign(DatatypeConverter.printBase64Binary(dataToSign.getBytes()));
-		return responseJson;
 	}
 
 	@RequestMapping(value = "/sign-document", method = RequestMethod.POST)
 	@ResponseBody
 	public SignDocumentResponse signDocument(Model model, @RequestBody @Valid SignatureValueAsString signatureValue,
-			@ModelAttribute("signaturePdfForm") @Valid SignatureDocumentForm signaturePdfForm, @ModelAttribute("signRequest") SignRequest signRequest, BindingResult result) throws EsupSignatureKeystoreException {
-		SignDocumentResponse signedDocumentResponse;
-		signaturePdfForm.setBase64SignatureValue(signatureValue.getSignatureValue());
-    	User user = userService.getUserFromAuthentication();
-        try {
-        	signRequestService.nexuSign(signRequest, user, signaturePdfForm);
-		} catch (EsupSignatureIOException e) {
-			logger.error(e.getMessage(), e);
+			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm, 
+			@ModelAttribute("signRequestId") Long signRequestId, BindingResult result) throws EsupSignatureKeystoreException {
+		User user = userService.getUserFromAuthentication();
+		SignRequest signRequest = SignRequest.findSignRequest(signRequestId);
+		if (signRequestService.checkUserSignRights(user, signRequest)) {
+			SignDocumentResponse signedDocumentResponse;
+			signatureDocumentForm.setBase64SignatureValue(signatureValue.getSignatureValue());
+	        try {
+	        	signRequestService.nexuSign(signRequest, user, signatureDocumentForm);
+			} catch (EsupSignatureIOException e) {
+				logger.error(e.getMessage(), e);
+			}
+	        signRequest.merge();
+	        signedDocumentResponse = new SignDocumentResponse();
+	        signedDocumentResponse.setUrlToDownload("download");
+	        return signedDocumentResponse;
+		} else {
+			return new SignDocumentResponse();
 		}
-        signRequest.merge();
-        signedDocumentResponse = new SignDocumentResponse();
-        signedDocumentResponse.setUrlToDownload("download");
-        return signedDocumentResponse;
 	}
 
 }

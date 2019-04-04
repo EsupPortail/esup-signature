@@ -23,7 +23,7 @@
 		</div>
 	</div>
 	<div aria-expanded="true" class="collapse" id="collapseHelp">
-		<div class="card card-body border-info text-info">
+		<div class="alert alert-info">
 			Cet écran permet d'effectuer plusieurs types d'actions sur votre demande :
 			<ul>
 			<li>
@@ -96,9 +96,32 @@
 										</dd>
 									</dl>
 									</c:if>
-									<button type="button" class="btn btn-success" data-toggle="modal" data-target="#signatureModal">
-		  								<spring:message code="button_sign"/>
-									</button>
+									<c:choose>
+									<c:when test="${signRequest.signRequestParams.signType eq 'nexuSign'}">
+										<spring:url value="/resources/js/jsSignatureLevel.js" var="jsSignatureLevel_js_url" />
+										<script type="text/javascript" src="${jsSignatureLevel_js_url}"><!-- --></script>
+										<script type="text/javascript" src="/js/nexu-deploy.js"><!-- --></script>
+											<div id="nexu_missing_alert" style="display: none;" class="alert alert-warning">
+												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexucheck" />
+												<a href="https://github.com/nowina-solutions/nexu/releases/">NexU</a> <br /> <a onclick="location.reload();" class="btn btn-warning btnSeccion" id="btnSeccion3" value="Refresh"> <i class="fas fa-sync-alt"> <!--  -->
+												</i> <spring:message code="button_refresh" />
+												</a>
+											</div>
+											<div id="nexu_ready_alert" style="display: none;" class="alert alert-success">
+												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexuready" />
+												<br /> <small><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexumsg" /></small> <br />
+												<spring:message code="button_sign" var="signLabel" />
+												<button type="button" class="btn btn-success" data-toggle="modal" data-target="#signatureModal">
+					  								<spring:message code="button_sign"/>
+												</button>
+											</div>
+									</c:when>
+									<c:otherwise>
+										<button type="button" class="btn btn-success" data-toggle="modal" data-target="#signatureModal">
+			  								<spring:message code="button_sign"/>
+										</button>
+									</c:otherwise>
+									</c:choose>
 								</c:when>
 								<c:otherwise>
 									<c:choose>
@@ -130,7 +153,7 @@
 										<spring:message code="menu_item_complete" />&amp;nbsp;
 						          			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 										<div class="collapse" id="collapseHelp1">
-											<div class="card card-body border-info text-info">
+											<div class="alert alert-info">
 												<small>
 													La cloture de la demande permet de liberer le parapheur. La demande sera supprimée dans un délai défini par l'administrateur.
 												</small>
@@ -190,7 +213,7 @@
 								<dt class="col-lg-5">
 									<spring:message code="label_org_esupportail_esupsignature_domain_currentsignbook" /><button data-target="#collapseHelpCurrent" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 									<div class="collapse" id="collapseHelpCurrent">
-										<div class="card card-body border-info text-info">
+										<div class="alert alert-info">
 											<small>
 											Les paramètres du parapheur courant sont appliqués par défaut. Vous pouvez modifier la position manuellement à l'aide de la prévisualisation.
 											</small>
@@ -243,7 +266,7 @@
 									<spring:message code="menu_item_sendtosignbook" />&amp;nbsp;
 				           			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
 									<div class="collapse" id="collapseHelp1">
-										<div class="card card-body border-info text-info">
+										<div class="alert alert-info">
 											<small>
 												A tous moments vous pouvez envoyer la demande dans un autre parapheur.
 												Si la demande se trouve dans plusieurs parapheurs vous pouvez choisir si toutes les signatures sont exigées pour passer au status 

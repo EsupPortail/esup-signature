@@ -91,7 +91,7 @@ public class SignRequest {
 		
     }
     
-    public int countSign() {
+    public int countSignOk() {
     	int nbSign = 0;
 		for(Map.Entry<Long, Boolean> signBookId : signBooks.entrySet()) {
 			if(signBookId.getValue()) {

@@ -20,7 +20,7 @@
 	</div>
 	
 	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
-		<div class="card card-body border-info text-info">
+		<div class="alert alert-info">
 	        Le service de validation est fourni par l'outil DSS.
 	        <br/>
    			Légende :
