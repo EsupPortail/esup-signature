@@ -17,7 +17,7 @@
     <div class="alert alert-success text-center" role="danger" id="success">
         <strong>Success</strong>
         <br/>
-        <spring:url var="returnUrl" value="/user/signrequests/${signRequest.id}" />
+        <spring:url var="returnUrl" value="/user/signrequests/${signRequestId}" />
 		<button onclick="location.href='${returnUrl}'" class="btn btn-success btnSeccion" id="btnSeccion3" value="Refresh">
 			<i class="fas fa-clipboard-check"><!--  --></i> Finish
 		</button>

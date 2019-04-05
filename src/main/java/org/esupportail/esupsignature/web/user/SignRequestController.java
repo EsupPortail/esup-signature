@@ -354,6 +354,7 @@ public class SignRequestController {
 			} catch (EsupSignatureKeystoreException e) {
 				logger.error("keystore error", e);
 				redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
+				progress = "security_bad_password";
 			} catch (EsupSignatureIOException e) {
 				logger.error(e.getMessage(), e);
 			} catch (EsupSignatureSignException e) {
@@ -365,6 +366,7 @@ public class SignRequestController {
 			return "redirect:/user/signrequests/" + id;
 		} else {
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
+			progress = "not_autorized";
 			return "redirect:/user/signrequests/";
 		}
 	}
@@ -416,6 +418,14 @@ public class SignRequestController {
 			float percent = (nbSigned / totalToSign) * 100;
 			progress = String.valueOf((int) percent);
 		}
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/get-step")
+	public String getStep(RedirectAttributes redirectAttrs, HttpServletResponse response,
+			Model model, HttpServletRequest request) {
+		logger.debug("getStep : " + signRequestService.getStep());
+		return signRequestService.getStep();
 	}
 	
 	@ResponseBody
@@ -554,6 +564,7 @@ public class SignRequestController {
 
 	@Scheduled(fixedDelay = 5000)
 	public void clearPassword() {
+		password = "";
 		if (startTime > 0) {
 			if (System.currentTimeMillis() - startTime > passwordTimeout) {
 				password = "";

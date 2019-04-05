@@ -96,6 +96,8 @@ public class SignRequestService {
 	@Value("${sign.pades.yFirstPos}")
 	private int yFirstPos;	
 	
+	private String step = "";
+	
 	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status) {
 		return findSignRequestByUserAndStatusEquals(user, status, null, null);
 	}
@@ -185,6 +187,7 @@ public class SignRequestService {
 
 	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureIOException, EsupSignatureSignException, EsupSignatureNexuException, EsupSignatureKeystoreException {
 		//TODO : choose xades cades
+		step = "Demarrage de la signature";
 		SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		if(!signRequest.isOverloadSignBookParams()) {
 			signRequest.getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().getSignType());
@@ -227,6 +230,7 @@ public class SignRequestService {
 		if (signedFile != null) {
 			addSignedFile(signRequest, signedFile, user);
 			applySignBookRules(signRequest, user);
+			step = "end";
 		} else {
 			throw new EsupSignatureSignException("enable to sign document");
 		}
@@ -255,61 +259,70 @@ public class SignRequestService {
 	}
 	
 	public File padesSign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException {
-		File toSignFile = getToSignDocuments(signRequest).get(0).getJavaIoFile();		
+		File toSignFile = getToSignDocuments(signRequest).get(0).getJavaIoFile();
+		step = "Formatage du PDF";
 		List<File> toSignFormatedFiles = Arrays.asList(pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams()));
-		
+		step = "Préparation de la signature";
 		SignatureDocumentForm signatureDocumentForm = (SignatureDocumentForm) signingService.getSignatureDocumentForm(toSignFormatedFiles, SignatureForm.PAdES);
 		signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 		signatureDocumentForm.setContainerType(null);
 
 		File keyStoreFile = user.getKeystore().getJavaIoFile();
-		SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
-		CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
-		CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
 		
-		signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
-		List<String> base64CertificateChain = new ArrayList<>();
-		for (CertificateToken token : certificateTokenChain) {
-			base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
-		}
-		signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
-
-		SignatureImageParameters imageParameters = new SignatureImageParameters();
-
-		File signImage = user.getSignImage().getJavaIoFile();
-		FileDocument fileDocumentImage = new FileDocument(signImage);
-		fileDocumentImage.setMimeType(MimeType.PNG);
-		imageParameters.setImage(fileDocumentImage);
-
-		imageParameters.setPage(signRequest.getSignRequestParams().getSignPageNumber());
-		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
-		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFormatedFiles.get(0));
-		if (pdfParameters.getRotation() == 0) {
-			imageParameters.setWidth(100);
-			imageParameters.setHeight(75);
-			imageParameters.setxAxis(signRequest.getSignRequestParams().getXPos());
-			imageParameters.setyAxis(signRequest.getSignRequestParams().getYPos());
-		} else {
-			imageParameters.setWidth(75);
-			imageParameters.setHeight(100);
-			imageParameters.setxAxis(signRequest.getSignRequestParams().getXPos() - 50);
-			imageParameters.setyAxis(signRequest.getSignRequestParams().getYPos());
-		}
-
-		PAdESSignatureParameters parameters = new PAdESSignatureParameters();
-		parameters.setSigningCertificate(certificateToken);
-		parameters.setCertificateChain(certificateTokenChain);
-		parameters.setSignatureImageParameters(imageParameters);
-		// TODO ajuster signature size
-		parameters.setSignatureSize(100000);
-
-		DSSDocument dssDocument = signingService.certSignDocument(signatureDocumentForm, parameters, signatureTokenConnection);
-		InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 
 		try {
-			return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName());
-		} catch (IOException e) {
-			logger.error("error to read signed file", e);
+			SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
+			CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
+			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
+
+			signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
+			List<String> base64CertificateChain = new ArrayList<>();
+			for (CertificateToken token : certificateTokenChain) {
+				base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
+			}
+			signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
+	
+			SignatureImageParameters imageParameters = new SignatureImageParameters();
+	
+			File signImage = user.getSignImage().getJavaIoFile();
+			FileDocument fileDocumentImage = new FileDocument(signImage);
+			fileDocumentImage.setMimeType(MimeType.PNG);
+			imageParameters.setImage(fileDocumentImage);
+	
+			imageParameters.setPage(signRequest.getSignRequestParams().getSignPageNumber());
+			imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
+			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFormatedFiles.get(0));
+			if (pdfParameters.getRotation() == 0) {
+				imageParameters.setWidth(100);
+				imageParameters.setHeight(75);
+				imageParameters.setxAxis(signRequest.getSignRequestParams().getXPos());
+				imageParameters.setyAxis(signRequest.getSignRequestParams().getYPos());
+			} else {
+				imageParameters.setWidth(75);
+				imageParameters.setHeight(100);
+				imageParameters.setxAxis(signRequest.getSignRequestParams().getXPos() - 50);
+				imageParameters.setyAxis(signRequest.getSignRequestParams().getYPos());
+			}
+	
+			PAdESSignatureParameters parameters = new PAdESSignatureParameters();
+			parameters.setSigningCertificate(certificateToken);
+			parameters.setCertificateChain(certificateTokenChain);
+			parameters.setSignatureImageParameters(imageParameters);
+			// TODO ajuster signature size
+			parameters.setSignatureSize(100000);
+			step = "Signature du PDF";
+			DSSDocument dssDocument = signingService.certSignDocument(signatureDocumentForm, parameters, signatureTokenConnection);
+			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
+	
+			try {
+				step = "Enregistrement du PDF signé";
+				return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName());
+			} catch (IOException e) {
+				logger.error("error to read signed file", e);
+			}
+		} catch (EsupSignatureKeystoreException e) {
+			step = "security_bad_password";
+			throw new EsupSignatureKeystoreException(e.getMessage(), e);
 		}
 		return null;
 	}
@@ -491,7 +504,6 @@ public class SignRequestService {
 	}
 
 	public boolean checkUserViewRights(User user, SignRequest signRequest) {
-		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		List<Log> log = Log.findLogsByEppnAndSignRequestIdEquals(user.getEppn(), signRequest.getId()).getResultList();
 		if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0) {
 			return true;
@@ -532,6 +544,9 @@ public class SignRequestService {
         } 
         return val;
     }
-
+	public String getStep() {
+		return step;
+	}
+	
 }
 

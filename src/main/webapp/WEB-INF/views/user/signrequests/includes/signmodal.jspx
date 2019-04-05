@@ -4,8 +4,8 @@
 	<div class="alert alert-info">
 		<c:choose>
 			<c:when test="${documentType eq 'pdf' and signRequest.status eq 'pending'}">
-		Pour signer un document, il faut positionner la signature sur le document à l'aide de la souris puis cliquer sur "Signer".
-		</c:when>
+			Pour signer un document, il faut positionner la signature sur le document à l'aide de la souris puis cliquer sur "Signer".
+			</c:when>
 			<c:otherwise>
 			Ajouter des documents à l'aide du module de droite (ne pas oublié de cliquer sur "Transférer"). Lorsque tous les documents sont transférés cliquer sur "Envoyer pour signature"
 		</c:otherwise>
@@ -14,7 +14,6 @@
 	</div>
 	</div>
 	<c:if test="${signable eq 'ok'}">
-	<form autocomplete="off" action="/user/signrequests/sign/${id}" method="post">
 		<c:if test="${documentType eq 'pdf'}">
 					<div class="row">
 						<div class="col-lg-12">
@@ -84,7 +83,7 @@
 									<input class="form-control" placeholder="${passwordLabel}" id="password" name="password" type="password" />
 									<div class="input-group-append">
 										<spring:message code="button_sign" var="signLabel" />
-										<input alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${signLabel}" />
+										<input data-toggle="modal" data-target="#wait" onclick="submitSignRequest();" alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="button" value="${signLabel}" />
 									</div>
 								</div>
 							</c:when>
@@ -97,7 +96,11 @@
 					</c:when>
 					<c:when test="${signRequest.signRequestParams.signType eq 'nexuSign'}">
 						<spring:message code="button_sign" var="signLabel" />
-						<input alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${signLabel}" />
+						<form action="/user/signrequests/sign/${id}" method="post">
+							<button type="submit" class="btn btn-success" data-target="#signatureModal">
+  								<spring:message code="button_sign"/>
+							</button>
+						</form>
 					</c:when>
 					<c:otherwise>
 						<c:choose>
@@ -128,7 +131,5 @@
 				</button>
 			</dd>
 		</dl>
-				
-	</form>
 	</c:if>
 </div>

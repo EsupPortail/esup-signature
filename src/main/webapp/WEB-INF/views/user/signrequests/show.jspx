@@ -404,6 +404,60 @@
 	</div>
 	<script>
 	
+	function submitSignRequest() {
+		var signRequestParams = "password=" + document.getElementById("password").value +
+								"&amp;xPos=" + document.getElementById("xPos").value +
+								"&amp;yPos=" + document.getElementById("yPos").value +
+								"&amp;signPageNumber=" + document.getElementById("signPageNumber").value
+								;
+		
+		sendData(signRequestParams);
+
+	}
+	
+	function sendData(signRequestParams) {
+		document.getElementById("passwordError").style.display = "none";
+		document.getElementById("closeModal").style.display = "none";
+		document.getElementById("validModal").style.display = "none";
+		document.getElementById("bar").style.display = "none";
+		document.getElementById("bar").classList.add("progress-bar-animated");
+		getProgressTimer = setInterval(function() {
+			getStep();
+		}, 500);
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.open('POST', '/user/signrequests/sign/${id}', true);
+		xmlHttp.setRequestHeader('Content-Type',
+				'application/x-www-form-urlencoded');
+		xmlHttp.send(signRequestParams);
+	}
+
+	function getStep() {
+		console.log("getStep");
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.open("GET", "get-step", false);
+		xmlHttp.onreadystatechange = function() {
+			var result = xmlHttp.responseText;
+			if (result == "security_bad_password") {
+				document.getElementById("passwordError").style.display = "block";
+				document.getElementById("closeModal").style.display = "block";
+				document.getElementById("bar").classList.remove("progress-bar-animated");
+				clearInterval(getProgressTimer);
+			} else if (result == "end") {
+				clearInterval(getProgressTimer);
+				document.getElementById("validModal").style.display = "block";
+				document.getElementById("bar").classList.remove("progress-bar-animated");
+				document.getElementById("bar-text").innerHTML = "Signature terminée";
+				clearInterval(getProgressTimer);
+			} else {
+				document.getElementById("bar").style.display = "block";
+				document.getElementById("bar").style.width = 100 + "%";
+				document.getElementById("bar-text").innerHTML = result;				
+			}
+		}
+		xmlHttp.send(null);
+		return;
+	}
+	
 	$('#multipartFile').on('filebatchuploadcomplete', function(event, file, previewId, index, reader) {
 		location.reload();
 	});
@@ -611,4 +665,29 @@
   </div>
 </div>
 
+<div id="wait" class="modal fade" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-body text-center">
+					<h5>Signature en cours</h5>
+					<div class="progress">
+						<div class="progress-bar progress-bar-striped progress-bar-animated active" style="width: 100%;" id="bar">
+							<strong>
+							<span id="bar-text"> <!--  -->
+							</span>
+							</strong>
+						</div>
+					</div>
+					<div style="display: none;" id="passwordError" class="alert alert-danger" role="alert">
+						<spring:message code="security_bad_password" />
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">Close</button>
+					<button id="validModal" onclick="window.location.reload()" type="button" class="btn btn-success align-self-center" data-dismiss="modal">Terminer</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
 </div>

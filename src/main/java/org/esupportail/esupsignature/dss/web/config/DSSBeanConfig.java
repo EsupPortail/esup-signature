@@ -133,7 +133,6 @@ public class DSSBeanConfig {
 		certificateVerifier.setOcspSource(ocspSource());
 		certificateVerifier.setDataLoader(dataLoader());
 
-		// Default configs
 		certificateVerifier.setExceptionOnMissingRevocationData(true);
 		certificateVerifier.setCheckRevocationForUntrustedChains(true);
 
