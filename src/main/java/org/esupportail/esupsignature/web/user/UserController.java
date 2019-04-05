@@ -5,8 +5,10 @@ import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +32,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpHeaders;
@@ -69,7 +72,8 @@ public class UserController {
 		return userService.getUserFromAuthentication();
 	}
 	
-	@Resource
+	
+	@Autowired(required = false)
 	private LdapPersonService ldapPersonService;
 	
 	@Resource
@@ -219,10 +223,12 @@ public class UserController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Content-Type", "application/json; charset=utf-8");
 		List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
-		if(!searchString.trim().isEmpty()) {
+		if(ldapPersonService != null && !searchString.trim().isEmpty()) {
 	    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 	    	Set<String> roles = AuthorityUtils.authorityListToSet(auth.getAuthorities());
 			ldapList = ldapPersonService.searchByCommonName(searchString, ldapTemplateName);
+			ldapList = ldapList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
+
 		}
 		return ldapList;
    }
