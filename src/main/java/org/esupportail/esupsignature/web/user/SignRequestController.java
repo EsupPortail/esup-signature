@@ -304,6 +304,11 @@ public class SignRequestController {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
 			try {
+				if(signRequest.getOriginalDocuments().size() > 0 && 
+				(signRequest.getSignRequestParams().getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignRequestParams().getSignType().equals(SignType.visa))
+				) {
+					signRequest.getOriginalDocuments().remove(signRequest.getOriginalDocuments().get(0));
+				}
 				List<Document> documents =  documentService.createDocuments(multipartFiles);
 				signRequestService.addOriginalDocuments(signRequest, documents);
 				signRequest.merge();

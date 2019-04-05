@@ -400,6 +400,7 @@
 			    
 			</div>
 		</div>
+		${signRequest.signRequestParams.signTypeLabel}
 	</page:show>
 	</div>
 	<c:set value="${signRequest.signRequestParams.signType}" var="signType"/>
@@ -495,9 +496,15 @@
         </c:if>
     	uploadUrl: "/user/signrequests/add-doc/${id}",
     	uploadAsync: false,
-    	<c:if test="${signTypeLabel eq 'imageStamp' or signTypeLabel eq 'visa'}">
+    	<c:choose>
+    	<c:when test="${signRequest.signRequestParams.signTypeLabel eq 'pdfImageStamp' or signRequest.signRequestParams.signTypeLabel eq 'visa'}">
         maxFileCount: 1,
-        </c:if>
+        validateInitialCount: true,
+        </c:when>
+    	<c:otherwise>
+    	overwriteInitial: false,
+    	</c:otherwise>
+    	</c:choose>
         theme: 'explorer-fas',
         pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
     	initialPreview: [
@@ -534,7 +541,6 @@
    	    ],
    		initialPreviewAsData: true,
    		initialPreviewFileType: 'image',
-   	    overwriteInitial: false,
         preferIconicPreview: true,
         previewFileIconSettings: { // configure your icon file extensions
             'doc': '<i class="fas fa-file-word text-primary  fa-2x"></i>',
