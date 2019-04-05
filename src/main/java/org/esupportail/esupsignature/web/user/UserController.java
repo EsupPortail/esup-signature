@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -38,9 +37,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -224,8 +220,6 @@ public class UserController {
 		headers.add("Content-Type", "application/json; charset=utf-8");
 		List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
 		if(ldapPersonService != null && !searchString.trim().isEmpty()) {
-	    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-	    	Set<String> roles = AuthorityUtils.authorityListToSet(auth.getAuthorities());
 			ldapList = ldapPersonService.searchByCommonName(searchString, ldapTemplateName);
 			ldapList = ldapList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
 

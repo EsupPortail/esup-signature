@@ -96,8 +96,7 @@ public class UserSignBookController {
 	    	User user = userService.getUserFromAuthentication();
 	    	user.setIp(request.getRemoteAddr());
 			SignBook signBook = SignBook.findSignBook(id);
-			long[] signBookIds = {signBook.getId()};
-			//signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBookIds);
+			signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmails());
 		} else {
 			redirectAttrs.addFlashAttribute("messageCustom", "file is required");
 		}

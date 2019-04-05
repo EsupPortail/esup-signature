@@ -406,11 +406,17 @@
 	<script>
 	
 	function submitSignRequest() {
-		var signRequestParams = "password=" + document.getElementById("password").value +
+		var signPageNumber = document.getElementById("signPageNumber");
+		var signRequestParams;
+		if(signPageNumber != null) {
+			signRequestParams = "password=" + document.getElementById("password").value +
 								"&amp;xPos=" + document.getElementById("xPos").value +
 								"&amp;yPos=" + document.getElementById("yPos").value +
 								"&amp;signPageNumber=" + document.getElementById("signPageNumber").value
 								;
+		} else {
+			signRequestParams = "password=" + document.getElementById("password").value;
+		}
 		
 		sendData(signRequestParams);
 
@@ -502,25 +508,26 @@
     		],
    	    initialPreviewConfig: [
     		<c:forEach items="${signRequest.originalDocuments}" var="originalDocument">
+    		<spring:url value="${originalDocument.url}" var="originalDocumentUrl" />
     		<c:set value="${fn:split(originalDocument.contentType, '/')[1]}" var="originalDocumentType" />
-   			<c:if test="${signRequest.status ne 'draft'}">
+   			<c:if test="${signRequest.status eq 'draft'}">
        			<spring:url value="/user/signrequests/remove-doc/${originalDocument.id}" var="originalDocumentRemoveUrl" />
        		</c:if>
     		<c:choose>
     			<c:when test="${originalDocumentType eq 'gif'}">
-	      	        {type: "image", size: ${originalDocument.size}, caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "${originalDocumentRemoveUrl}", key: ${originalDocument.id}},    				
+	      	        {type: "image", size: ${originalDocument.size}, downloadUrl: "${originalDocumentUrl}", caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "${originalDocumentRemoveUrl}", key: ${originalDocument.id}},    				
     			</c:when>
       	      	<c:when test="${originalDocumentType eq 'pdf'}">
-      	    	  	{type: "pdf", size: ${originalDocument.size}, caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
+      	    	  	{type: "pdf", size: ${originalDocument.size}, downloadUrl: "${originalDocumentUrl}",caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
       	    	</c:when>
     			<c:when test="${originalDocumentType eq 'doc'}">
-    				{type: "office", size: ${originalDocument.size}, caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
+    				{type: "office", size: ${originalDocument.size}, downloadUrl: "${originalDocumentUrl}",caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
     			</c:when>
     			<c:when test="${originalDocumentType eq 'avi'}">
-    				{type: "video", size: ${originalDocument.size}, caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
+    				{type: "video", size: ${originalDocument.size}, downloadUrl: "${originalDocumentUrl}",caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
     			</c:when>
 	    		<c:otherwise>
-		    		{type: "other", size: ${originalDocument.size}, caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
+		    		{type: "other", size: ${originalDocument.size}, downloadUrl: "${originalDocumentUrl}",caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
 	    		</c:otherwise>
     		</c:choose>
     		</c:forEach>
@@ -635,7 +642,7 @@
         },
         fileActionSettings: {
         	showDrag: false,
-        	 showZoom: function(config) {
+        	showZoom: function(config) {
                  if (config.type === 'pdf') {
                      return true;
                  }

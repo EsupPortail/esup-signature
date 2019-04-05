@@ -53,12 +53,11 @@ public class WsController {
 		System.err.println(signBookName);
 		SignRequest signRequest= new SignRequest();
 		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
-		long[] signBookIds = {signBook.getId()};
 		User user = getSystemUser();
 		user.setIp(httpServletRequest.getRemoteAddr());
 		if(file != null) {
 			Document document = documentService.createDocument(file, file.getOriginalFilename());
-			//signRequest = signRequestService.createSignRequest(new SignRequest(), user, document, signBook.getSignRequestParams(), signBookIds);
+			signRequest = signRequestService.createSignRequest(new SignRequest(), user, document, signBook.getSignRequestParams(), signBook.getRecipientEmails());
 			logger.info(file.getOriginalFilename() + "was added into signbook" + signBookName);
 			return signRequest.getName();			
 		} else {

@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.user;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
@@ -61,33 +62,48 @@ public class DocumentController {
 	
 	@RequestMapping(value = "/{id}/getimage", method = RequestMethod.GET)
 	public void getImageAsByteArray(@PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException {
-		//TODO : securiser
 		Document document = Document.findDocument(id);
-		InputStream in = document.getBigFile().getBinaryFile().getBinaryStream();
-	    response.setContentType(MediaType.IMAGE_PNG_VALUE);
-	    IOUtils.copy(in, response.getOutputStream());
+		SignRequest signRequest = SignRequest.findSignRequest(document.getSignRequestId());
+		User user = userService.getUserFromAuthentication();
+		InputStream in = null;
+		if(signRequestService.checkUserViewRights(user, signRequest)) {
+			in = document.getBigFile().getBinaryFile().getBinaryStream();
+		    response.setContentType(MediaType.IMAGE_PNG_VALUE);
+		    IOUtils.copy(in, response.getOutputStream());
+		}else {
+			in = new FileInputStream(fileService.notFoundImageToInputStream("png"));
+			IOUtils.copy(in, response.getOutputStream());
+		    in.close();
+		}
 	}
 	
 	@RequestMapping(value = "/{id}/getimagepdfpage/{page}", method = RequestMethod.GET)
 	public void getImagePdfAsByteArray(@PathVariable("id") Long id, @PathVariable("page") int page, HttpServletResponse response) throws IOException {
 		Document document = Document.findDocument(id);
+		SignRequest signRequest = SignRequest.findSignRequest(document.getSignRequestId());
+		User user = userService.getUserFromAuthentication();
 		InputStream in = null;
-		try {
-			in = pdfService.pageAsInputStream(document.getJavaIoFile(), page);
-		} catch (Exception e) {
-			logger.error("page " + page + " not found in this document");
-		}
-		if(in == null) {
+		if(signRequestService.checkUserViewRights(user, signRequest)) {
 			try {
-				in = pdfService.pageAsInputStream(document.getJavaIoFile(), 0);
+				in = pdfService.pageAsInputStream(document.getJavaIoFile(), page);
 			} catch (Exception e) {
 				logger.error("page " + page + " not found in this document");
 			}
+			if(in == null) {
+				try {
+					in = pdfService.pageAsInputStream(document.getJavaIoFile(), 0);
+				} catch (Exception e) {
+					logger.error("page " + page + " not found in this document");
+				}
+			}
+		    response.setContentType(MediaType.IMAGE_PNG_VALUE);
+		    IOUtils.copy(in, response.getOutputStream());
+		    in.close();
+		} else {
+			in = new FileInputStream(fileService.notFoundImageToInputStream("png"));
+			IOUtils.copy(in, response.getOutputStream());
+		    in.close();
 		}
-		//in = fileService.notFoundImageToInputStream("png");
-	    response.setContentType(MediaType.IMAGE_PNG_VALUE);
-	    IOUtils.copy(in, response.getOutputStream());
-	    in.close();
 	}
 	
     String encodeUrlPathSegment(String pathSegment, HttpServletRequest httpServletRequest) {
@@ -104,9 +120,7 @@ public class DocumentController {
 		Document document = Document.findDocument(id);
 		SignRequest signRequest = SignRequest.findSignRequest(document.getSignRequestId());
 		User user = userService.getUserFromAuthentication();
-		//TODO securiser
-		//if(signRequestService.checkUserViewRights(user, signRequest)) {
-		if(true) {
+		if(signRequestService.checkUserViewRights(user, signRequest)) {
 			try {
 				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
 				response.setContentType(document.getContentType());

@@ -124,7 +124,7 @@ public class SignBook {
             if (i > 0) queryBuilder.append(" AND");
             queryBuilder.append(" :recipientEmails_item").append(i).append(" MEMBER OF o.recipientEmails");
         }
-        TypedQuery q = em.createQuery(queryBuilder.toString(), Long.class);
+        TypedQuery<Long> q = em.createQuery(queryBuilder.toString(), Long.class);
         int recipientEmailsIndex = 0;
         for (String _string: recipientEmails) {
             q.setParameter("recipientEmails_item" + recipientEmailsIndex++, _string);
