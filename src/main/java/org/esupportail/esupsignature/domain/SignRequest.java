@@ -50,13 +50,12 @@ public class SignRequest {
 
     private String createBy;
     
+    //TODO gestion des commentaires
     @Size(max = 500)
     private String description;
     
     @OneToMany
     private List<Document> originalDocuments = new ArrayList<Document>();
-    
-    //TODO multiple documents ici ou dans le parapheur
     
     @OneToMany
     private List<Document> signedDocuments = new ArrayList<Document>();
@@ -91,7 +90,7 @@ public class SignRequest {
 		
     }
     
-    public int countSign() {
+    public int countSignOk() {
     	int nbSign = 0;
 		for(Map.Entry<Long, Boolean> signBookId : signBooks.entrySet()) {
 			if(signBookId.getValue()) {

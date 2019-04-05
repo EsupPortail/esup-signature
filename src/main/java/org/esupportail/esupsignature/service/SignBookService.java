@@ -78,28 +78,10 @@ public class SignBookService {
 		signbook.setDescription(signbook.getName() + " personnal signbook");
 		signbook.setCreateBy(user.getEppn());
 		signbook.setCreateDate(new Date());
-		signbook.setRecipientEmail(user.getEmail());
+		signbook.getRecipientEmails().add(user.getEmail());
 		signbook.setSignRequestParams(null);
 		signbook.setModelFile(null);
 		signbook.setSignBookType(SignBookType.user);
-		signbook.setSourceType(DocumentIOType.none);
-		signbook.setTargetType(DocumentIOType.none);
-		signbook.setSignRequestParams(signRequestService.getEmptySignRequestParams());
-		signbook.persist();
-		return signbook;
-	}
-	
-	public SignBook createGroupSignBook(String name, List<SignBook> signBooks, User user) {
-		SignBook signbook = new SignBook();
-		signbook.setName(name);
-		signbook.setDescription(signbook.getName() + " personnal signbook");
-		signbook.setCreateBy(user.getEppn());
-		signbook.setCreateDate(new Date());
-		signbook.setRecipientEmail(null);
-		signbook.setSignRequestParams(null);
-		//TODO add list signbooks
-		signbook.setModelFile(null);
-		signbook.setSignBookType(SignBookType.group);
 		signbook.setSourceType(DocumentIOType.none);
 		signbook.setTargetType(DocumentIOType.none);
 		signbook.setSignRequestParams(signRequestService.getEmptySignRequestParams());
@@ -129,8 +111,9 @@ public class SignBookService {
 							user = User.findUsersByEppnEquals(fsFile.getCreateBy()).getSingleResult();
 							user.setIp("127.0.0.1");
 						}
-						long[] signBookIds = {signBook.getId()};
-						SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBookIds);
+						List<String> signBookRecipientsEmails = new ArrayList<>();
+						signBookRecipientsEmails.add(user.getEmail());
+						SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBookRecipientsEmails);
 						signRequest.merge();
 						fsAccessService.remove(fsFile);
 					}
@@ -175,7 +158,7 @@ public class SignBookService {
 
 	public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
 		if (!signBook.getSignRequests().contains(signRequest)) {
-			User testSignBookUser = User.findUsersByEmailEquals(signBook.getRecipientEmail()).getSingleResult();
+			User testSignBookUser = User.findUsersByEmailEquals(signBook.getRecipientEmails().get(0)).getSingleResult();
 			SignBook testSignBook = getSignBookBySignRequestAndUser(signRequest, testSignBookUser);
 			if(testSignBook == null) {
 				signRequest.setSignRequestParams(signBook.getSignRequestParams());
@@ -217,7 +200,7 @@ public class SignBookService {
 		if (signRequest.getSignBooks().size() > 0) {
 			for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
 				SignBook signBook = SignBook.findSignBook(signBookId.getKey());
-				if(user.getEmail().equals(signBook.getRecipientEmail()) && signRequest.getSignBooks().containsKey(signBookId.getKey())) {
+				if(signBook.getRecipientEmails().contains(user.getEmail()) && signRequest.getSignBooks().containsKey(signBookId.getKey())) {
 					return signBook;
 				}
 			}

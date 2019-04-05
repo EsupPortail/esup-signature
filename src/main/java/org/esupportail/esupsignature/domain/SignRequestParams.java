@@ -35,6 +35,10 @@ public class SignRequestParams {
     public SignType getSignType() {
         return this.signType;
     }
+
+    public String getSignTypeLabel() {
+        return this.signType.toString();
+    }
     
     public void setSignType(SignType signType) {
         this.signType = signType;

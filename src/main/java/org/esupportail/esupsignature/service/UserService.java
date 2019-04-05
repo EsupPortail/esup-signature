@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -54,6 +55,14 @@ public class UserService {
 		return user.isReady();
 	}
 	
+	public void createUser(String email) {
+		List<PersonLdap> persons =  personDao.getPersonLdaps("mail", email);
+		String eppn = persons.get(0).getEduPersonPrincipalName();
+        String name = persons.get(0).getSn();
+        String firstName = persons.get(0).getGivenName();
+        createUser(eppn, name, firstName, email);
+	}
+	
 	public void createUser(Authentication authentication) {
 		List<PersonLdap> persons =  personDao.getPersonNamesByUid(authentication.getName());
 		String eppn = persons.get(0).getEduPersonPrincipalName();
@@ -82,10 +91,11 @@ public class UserService {
 		} else {
 			user.merge();
 		}
-		if(SignBook.countFindSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user) == 0) {
+		List<String> recipientEmails = new ArrayList<>();
+		recipientEmails.add(user.getEmail());
+		if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user) == 0) {
 			signBookService.createUserSignBook(user);
 		}
-
 	}
 	
 	public void sendEmailAlert(User user) {

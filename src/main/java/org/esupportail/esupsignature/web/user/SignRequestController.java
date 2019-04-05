@@ -42,9 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -149,10 +146,11 @@ public class SignRequestController {
 			sortFieldName = "createDate";
 		}
 		List<SignRequest> signRequests = new ArrayList<>();
-		//TODO test pagination
 		float nrOfPages = 1;
 		int sizeNo = size == null ? 10 : size.intValue();
-    	 List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailEquals(user.getEmail()).getResultList();
+		List<String> recipientEmails = new ArrayList<>();
+		recipientEmails.add(user.getEmail());
+		List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailsEquals(recipientEmails).getResultList();
 		if(toSign) {
 			if(signBookId != null) {	
 				signRequests.addAll(SignBook.findSignBook(signBookId).getSignRequests());
@@ -202,8 +200,8 @@ public class SignRequestController {
 			Document toDisplayDocument = null;
 			File toDisplayFile = null;
 			
-			if(signRequest.getOriginalDocuments().size() == 1) {
-				toDisplayDocument = signRequestService.getToSignDocument(signRequest);
+			if(signRequestService.getToSignDocuments(signRequest).size() == 1) {
+				toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
 				toDisplayFile = toDisplayDocument.getJavaIoFile();
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
 					PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayFile);
@@ -239,20 +237,22 @@ public class SignRequestController {
 	public String createForm(Model uiModel) {
 		populateEditForm(uiModel, new SignRequest());
 		User user = userService.getUserFromAuthentication();
-		uiModel.addAttribute("mySignBook", SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult());
+		List<String> recipientEmails = new ArrayList<>();
+		recipientEmails.add(user.getEmail());
+		uiModel.addAttribute("mySignBook", SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult());
 		uiModel.addAttribute("allSignBooks", SignBook.findAllSignBooks("name", "ASC"));
 		return "user/signrequests/create";
 	}
 
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
-	public String create(@Valid SignRequest signRequest, @RequestParam("multipartFiles") MultipartFile[] multipartFiles, BindingResult bindingResult, 
+	public String create(@Valid SignRequest signRequest, BindingResult bindingResult, 
 			@RequestParam(value = "signType", required = false) String signType, 
-			@RequestParam(value = "signBookIds", required = true) long[] signBookIds,
+			@RequestParam(value = "signBookIds", required = false) long[] signBookIds,
+			@RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
 			@RequestParam(value="newPageType", required = false) String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
-			HttpServletRequest request) {
+			HttpServletRequest request, RedirectAttributes redirectAttrs) {
 		if (bindingResult.hasErrors()) {
 			uiModel.addAttribute("signRequest", signRequest);
-			uiModel.addAttribute("recipientEmail", false);
 			return "user/signrequests/create";
 		}
 		uiModel.asMap().clear();
@@ -268,16 +268,30 @@ public class SignRequestController {
 			signRequestParams.setYPos(0);
 			signRequestParams.persist();
 		}
-		List<Document> documents = new ArrayList<>();
-		if(multipartFiles.length > 0) {
-			try {
-				documents =  documentService.createDocuments(multipartFiles);
-			} catch (IOException e) {
-				logger.error("error to add files : " + multipartFiles, e);
+		
+		List<String> recipientEmails = new ArrayList<>();
+		
+		if(signBookIds != null && signBookIds.length > 0) {
+			for(long signBookId : signBookIds) {
+				SignBook signBook = SignBook.findSignBook(signBookId);
+				recipientEmails.addAll(signBook.getRecipientEmails());
 			}
 		}
-		signRequest = signRequestService.createSignRequest(signRequest, user, documents, signRequestParams, signBookIds);
-		return "redirect:/user/signrequests/" + signRequest.getId();
+		if(recipientsEmails != null && recipientsEmails.length > 0) {
+			for(String recipientEmail : recipientsEmails) {
+				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(recipientEmail)) == 0) {
+					userService.createUser(recipientEmail);
+					recipientEmails.add(recipientEmail);
+				}
+			}
+		}
+		if(recipientEmails.size() == 0) {
+			redirectAttrs.addFlashAttribute("messageCustom", "no recipient");
+			return "redirect:/user/signrequests/?form";
+		}else {
+			signRequest = signRequestService.createSignRequest(signRequest, user, signRequestParams, recipientEmails);
+			return "redirect:/user/signrequests/" + signRequest.getId();
+		}
 	}
 
 	@RequestMapping(value = "/add-doc/{id}", method = RequestMethod.POST, produces = "text/html")
@@ -340,6 +354,7 @@ public class SignRequestController {
 			} catch (EsupSignatureKeystoreException e) {
 				logger.error("keystore error", e);
 				redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
+				progress = "security_bad_password";
 			} catch (EsupSignatureIOException e) {
 				logger.error(e.getMessage(), e);
 			} catch (EsupSignatureSignException e) {
@@ -351,6 +366,7 @@ public class SignRequestController {
 			return "redirect:/user/signrequests/" + id;
 		} else {
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
+			progress = "not_autorized";
 			return "redirect:/user/signrequests/";
 		}
 	}
@@ -402,6 +418,14 @@ public class SignRequestController {
 			float percent = (nbSigned / totalToSign) * 100;
 			progress = String.valueOf((int) percent);
 		}
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/get-step")
+	public String getStep(RedirectAttributes redirectAttrs, HttpServletResponse response,
+			Model model, HttpServletRequest request) {
+		logger.debug("getStep : " + signRequestService.getStep());
+		return signRequestService.getStep();
 	}
 	
 	@ResponseBody
@@ -540,6 +564,7 @@ public class SignRequestController {
 
 	@Scheduled(fixedDelay = 5000)
 	public void clearPassword() {
+		password = "";
 		if (startTime > 0) {
 			if (System.currentTimeMillis() - startTime > passwordTimeout) {
 				password = "";

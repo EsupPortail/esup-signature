@@ -30,12 +30,15 @@ public class PersonAttributMapper implements AttributesMapper {
 	public PersonLdap mapFromAttributes(Attributes attrs)
 			throws javax.naming.NamingException {
 		PersonLdap p = new PersonLdap();
-		Attribute attrGivenName = attrs.get("givenName");
-		if(attrGivenName != null)
-			p.setGivenName(attrGivenName.get().toString());
+		p.setGivenName(attrs.get("givenName").get().toString());
 		p.setSn(attrs.get("sn").get().toString());
 		p.setUid(attrs.get("uid").get().toString());
 		p.setCn(attrs.get("cn").get().toString());
+		if (null!=attrs.get("displayName")) {
+			p.setDisplayName(attrs.get("displayName").get().toString());
+		} else {
+			p.setDisplayName(p.getGivenName() + " " + p.getSn());
+		}
 		if (null!=attrs.get("mail"))
 			p.setMail(attrs.get("mail").get().toString());
 		if (null!=attrs.get("telephoneNumber"))

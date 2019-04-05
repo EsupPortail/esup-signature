@@ -72,14 +72,6 @@ privileged aspect SignBook_Roo_JavaBean {
         this.documentsSourceUri = documentsSourceUri;
     }
     
-    public String SignBook.getRecipientEmail() {
-        return this.recipientEmail;
-    }
-    
-    public void SignBook.setRecipientEmail(String recipientEmail) {
-        this.recipientEmail = recipientEmail;
-    }
-    
     public List<String> SignBook.getModeratorEmails() {
         return this.moderatorEmails;
     }
@@ -88,12 +80,12 @@ privileged aspect SignBook_Roo_JavaBean {
         this.moderatorEmails = moderatorEmails;
     }
     
-    public List<SignBook> SignBook.getSignBooksGroup() {
-        return this.signBooksGroup;
+    public List<String> SignBook.getRecipientEmails() {
+        return this.recipientEmails;
     }
     
-    public void SignBook.setSignBooksGroup(List<SignBook> signBooksGroup) {
-        this.signBooksGroup = signBooksGroup;
+    public void SignBook.setRecipientEmails(List<String> recipientEmails) {
+        this.recipientEmails = recipientEmails;
     }
     
     public boolean SignBook.isAutoRemove() {

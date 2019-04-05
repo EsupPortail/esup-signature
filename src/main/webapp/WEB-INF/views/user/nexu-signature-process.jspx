@@ -14,13 +14,13 @@
    <div id="error" style="display: none" class="alert alert-danger" role="danger">
         <strong id="errorText">Oops... an error occurred </strong><span id="errorcontent"></span>
     </div>
-    <div class="alert alert-success" role="danger" id="success">
+    <div class="alert alert-success text-center" role="danger" id="success">
         <strong>Success</strong>
         <br/>
-        <spring:url var="returnUrl" value="/user/signrequests/${signRequest.id}" />
-		<a href="${returnUrl}" class="btn btn-success btnSeccion" id="btnSeccion3" value="Refresh">
+        <spring:url var="returnUrl" value="/user/signrequests/${signRequestId}" />
+		<button onclick="location.href='${returnUrl}'" class="btn btn-success btnSeccion" id="btnSeccion3" value="Refresh">
 			<i class="fas fa-clipboard-check"><!--  --></i> Finish
-		</a>
+		</button>
     </div>
 	</div>
     <script type="text/javascript" src="${nexuUrl}/nexu.js"><!-- --></script>

@@ -5,10 +5,12 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import eu.europa.esig.dss.ASiCContainerType;
 import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.EncryptionAlgorithm;
 import eu.europa.esig.dss.SignatureForm;
 import eu.europa.esig.dss.SignatureLevel;
+import eu.europa.esig.dss.SignaturePackaging;
 
 public abstract class AbstractSignatureForm {
 
@@ -40,6 +42,26 @@ public abstract class AbstractSignatureForm {
 
 	private TimestampDTO contentTimestamp;
 
+	private ASiCContainerType containerType;
+	
+	private SignaturePackaging signaturePackaging;
+	
+	public SignaturePackaging getSignaturePackaging() {
+		return signaturePackaging;
+	}
+
+	public void setSignaturePackaging(SignaturePackaging signaturePackaging) {
+		this.signaturePackaging = signaturePackaging;
+	}
+	
+	public ASiCContainerType getContainerType() {
+		return containerType;
+	}
+
+	public void setContainerType(ASiCContainerType containerType) {
+		this.containerType = containerType;
+	}
+	
 	public boolean isNexuDetected() {
 		return nexuDetected;
 	}

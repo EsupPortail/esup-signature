@@ -155,6 +155,7 @@
                 </div>
             </div>
         </div>
-        <field:display field="signBooksGroup" id="s_org_esupportail_esupsignature_domain_SignBook_signBooksGroup" object="${signbook}" z="Yt86GkhDoN+UNLUjVqicC9H/LUY="/>
+        <field:display field="moderatorEmails" id="s_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" object="${signbook}" z="BEsExaLRgotHJH79VJUpEJ8KndY="/>
+        <field:display field="recipientEmails" id="s_org_esupportail_esupsignature_domain_SignBook_recipientEmails" object="${signbook}" z="NRcHHJqqNK5w3wJpUuWM3SowS8E="/>
     </page:show>
 </div>

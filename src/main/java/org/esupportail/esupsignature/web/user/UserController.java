@@ -3,7 +3,11 @@ package org.esupportail.esupsignature.web.user;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.DayOfWeek;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -18,15 +22,19 @@ import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.domain.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
@@ -37,6 +45,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -58,6 +67,10 @@ public class UserController {
 	public User getUser() {
 		return userService.getUserFromAuthentication();
 	}
+	
+	
+	@Autowired(required = false)
+	private LdapPersonService ldapPersonService;
 	
 	@Resource
 	private DocumentService documentService;
@@ -99,7 +112,9 @@ public class UserController {
         if(user.getKeystore() != null) {
         	uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         }        
-        SignBook defaultSignBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
+        List<String> recipientEmails = new ArrayList<>();
+		recipientEmails.add(user.getEmail());
+        SignBook defaultSignBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult();
         uiModel.addAttribute("defaultSignBook", defaultSignBook);
         uiModel.addAttribute("isPasswordSet", (password != null && password != ""));
         return "user/users/show";
@@ -109,8 +124,10 @@ public class UserController {
     public String createForm(Model uiModel) throws IOException, SQLException {
 		User user = userService.getUserFromAuthentication();;
 		if(user != null) {
-	        uiModel.addAttribute("user", user);	        
-        	SignBook signBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
+	        uiModel.addAttribute("user", user);	     
+	        List<String> recipientEmails = new ArrayList<>();
+			recipientEmails.add(user.getEmail());
+        	SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult();
         	uiModel.addAttribute("signBook", signBook);
         	uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
         	uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
@@ -155,7 +172,9 @@ public class UserController {
     		oldSignImage.getBigFile().remove();
     		oldSignImage.remove();
     	}
-    	SignBook signBook = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(user.getEmail(), SignBookType.user).getSingleResult();
+        List<String> recipientEmails = new ArrayList<>();
+		recipientEmails.add(user.getEmail());
+    	SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult();
     	if(signType != null) {
     		signBook.getSignRequestParams().setSignType(SignType.valueOf(signType));
     	}
@@ -193,6 +212,21 @@ public class UserController {
 		}
 	}
     
+	@RequestMapping(value="/searchLdap")
+	@ResponseBody
+	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString, @RequestParam(required=false) String ldapTemplateName) {
+		logger.info("ldap search for : " + searchString);
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Content-Type", "application/json; charset=utf-8");
+		List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
+		if(ldapPersonService != null && !searchString.trim().isEmpty()) {
+			ldapList = ldapPersonService.searchByCommonName(searchString, ldapTemplateName);
+			ldapList = ldapList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
+
+		}
+		return ldapList;
+   }
+	
     void populateEditForm(Model uiModel, User user) {
         uiModel.addAttribute("user", user);
         uiModel.addAttribute("files", Document.findAllDocuments());

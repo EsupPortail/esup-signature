@@ -73,7 +73,7 @@ public class SignBookController {
 
 	void populateEditForm(Model uiModel, SignBook signBook) {
 		uiModel.addAttribute("signBook", signBook);
-		uiModel.addAttribute("signBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.user).getResultList());
+		uiModel.addAttribute("users", User.findAllUsers());
 		uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
 		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
 		List<SignBookType> signBookTypes = new LinkedList<SignBookType>(Arrays.asList(SignBookType.values()));
@@ -103,7 +103,6 @@ public class SignBookController {
 	
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(@Valid SignBook signBook, @RequestParam("multipartFile") MultipartFile multipartFile,
-			@RequestParam("recipientEmails") String[] recipientEmails,
 			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, RedirectAttributes redirectAttrs, HttpServletRequest httpServletRequest) throws IOException {
 		if (bindingResult.hasErrors()) {
 			populateEditForm(uiModel, signBook);
@@ -118,9 +117,6 @@ public class SignBookController {
 				return "redirect:/manager/signbooks/" + signBook.getId();
 			}
 			signBookToUpdate.setName(signBook.getName());
-			if(recipientEmails.length == 1) {
-				signBookToUpdate.setRecipientEmail(recipientEmails[0]);
-			}
 			signBookToUpdate.setDocumentsSourceUri(signBook.getDocumentsSourceUri());
 			signBookToUpdate.setSourceType(signBook.getSourceType());
 			signBookToUpdate.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
@@ -138,7 +134,6 @@ public class SignBookController {
 			if(SignBook.countFindSignBooksByNameEquals(signBook.getName()) == 0) {
 			signBook.setCreateBy(user.getEppn());
 			signBook.setCreateDate(new Date());
-			signBook.setModelFile(documentService.createDocument(multipartFile, multipartFile.getOriginalFilename()));
 			SignRequestParams signRequestParams = new SignRequestParams();
 			signRequestParams.setSignType(SignType.valueOf(signType));
 			signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
@@ -146,20 +141,20 @@ public class SignBookController {
 			signRequestParams.setXPos(0);
 			signRequestParams.setYPos(0);
 			signRequestParams.persist();
-			if(recipientEmails.length == 1) {
-				signBook.setRecipientEmail(recipientEmails[0]);
-				signBook.setSignBooksGroup(null);
-				signBook.setSignBookType(SignBookType.model);
-			} else if(recipientEmails.length > 1) {
-				signBook.setSignBookType(SignBookType.group);
-				for(String recipientEmail : recipientEmails) {
-					SignBook signBook2 = SignBook.findSignBooksByRecipientEmailAndSignBookTypeEquals(recipientEmail, SignBookType.user).getSingleResult();
-					signBook.getSignBooksGroup().add(signBook2);
+			for(String recipientEmail : signBook.getRecipientEmails()) {
+				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(recipientEmail)) == 0) {
+					userService.createUser(recipientEmail);
 				}
-				signBook.setRecipientEmail(null);
+			}
+			if(signBook.getRecipientEmails().size() == 1) {
+				signBook.setSignBookType(SignBookType.model);
+				if(multipartFile != null) {
+					signBook.setModelFile(documentService.createDocument(multipartFile, multipartFile.getOriginalFilename()));
+				}
+			} else if(signBook.getRecipientEmails().size() > 1) {
+				signBook.setSignBookType(SignBookType.group);
 			}
 			signBook.setSignRequestParams(signRequestParams);
-			
 			signBook.persist();
 			} else {
 				redirectAttrs.addFlashAttribute("messageCustom", signBook.getName() + " already exist");

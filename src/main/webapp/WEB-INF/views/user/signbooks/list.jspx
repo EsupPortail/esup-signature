@@ -3,7 +3,7 @@
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
 	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
-		<div class="card card-body border-info text-info">
+		<div class="alert alert-info">
 	        Les parapheurs sont des dossiers appartenants à un seul destinataire.
 	        Les paramètres de signature y sont figés. 
 	        <br/>
