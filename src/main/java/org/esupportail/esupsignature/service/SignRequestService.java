@@ -236,7 +236,7 @@ public class SignRequestService {
 		} else {
 			AbstractSignatureParameters parameters = null;
 			//TODO visible sign
-/*
+			/*
 			File toSignFile = getToSignDocuments(signRequest).get(0).getJavaIoFile();
 			if(fileService.getContentType(toSignFile).equals("application/pdf")) {
 				parameters = getVisiblePAdESSignatureParameters(signRequest.getSignRequestParams(), toSignFile, user);
