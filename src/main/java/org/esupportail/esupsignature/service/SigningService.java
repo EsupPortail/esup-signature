@@ -185,6 +185,7 @@ public class SigningService {
 	}
 
 	private AbstractSignatureParameters fillParameters(SignatureDocumentForm form) {
+		//TODO if pades visible
 		AbstractSignatureParameters parameters = getSignatureParameters(form.getContainerType(), form.getSignatureForm());
 		parameters.setSignaturePackaging(form.getSignaturePackaging());
 

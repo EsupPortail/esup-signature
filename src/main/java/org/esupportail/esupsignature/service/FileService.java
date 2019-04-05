@@ -55,6 +55,16 @@ public class FileService {
 		return file;
 	}
 
+	public File convert(MultipartFile file) throws IOException
+	{    
+	    File convFile = new File(file.getOriginalFilename());
+	    convFile.createNewFile(); 
+	    FileOutputStream fos = new FileOutputStream(convFile); 
+	    fos.write(file.getBytes());
+	    fos.close(); 
+	    return convFile;
+	}
+	
 	public File fromBase64Image(String base64Image, String name) throws IOException {
 		File fileImage = File.createTempFile(name, ".png");
 		ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(base64Image.substring(base64Image.lastIndexOf(',') + 1).trim()));
