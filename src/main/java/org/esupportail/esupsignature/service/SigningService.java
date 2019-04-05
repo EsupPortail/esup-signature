@@ -230,7 +230,9 @@ public class SigningService {
 		} else {
 			SignatureDocumentForm signatureDocumentForm = new SignatureDocumentForm();
 			signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFiles.get(0), fileService.getContentType(toSignFiles.get(0))));
-			signatureDocumentForm.setContainerType(ASiCContainerType.ASiC_E);
+			if(!signatureForm.equals(SignatureForm.PAdES)) {	
+				signatureDocumentForm.setContainerType(ASiCContainerType.ASiC_E);
+			}
 			abstractSignatureForm = signatureDocumentForm;
 		}
 		abstractSignatureForm.setSignWithExpiredCertificate(false);
@@ -281,11 +283,14 @@ public class SigningService {
 	
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DSSDocument signDocument(SignatureDocumentForm form) {
+	public DSSDocument signDocument(SignatureDocumentForm form, AbstractSignatureParameters parameters) {
 		logger.info("Start signDocument with one document");
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
-
-		AbstractSignatureParameters parameters = fillParameters(form);
+		if(parameters != null) {
+			fillParameters(parameters, form);
+		} else {
+			parameters = fillParameters(form);
+		}
 
 		DSSDocument signedDocument = null;
 		try {

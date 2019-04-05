@@ -402,6 +402,7 @@
 		</div>
 	</page:show>
 	</div>
+	<c:set value="${signRequest.signRequestParams.signType}" var="signType"/>
 	<script>
 	
 	function submitSignRequest() {
@@ -488,7 +489,9 @@
         </c:if>
     	uploadUrl: "/user/signrequests/add-doc/${id}",
     	uploadAsync: false,
-        maxFileCount: 100,
+    	<c:if test="${signTypeLabel eq 'imageStamp' or signTypeLabel eq 'visa'}">
+        maxFileCount: 1,
+        </c:if>
         theme: 'explorer-fas',
         pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
     	initialPreview: [
@@ -594,7 +597,6 @@
        	dropZoneEnabled: false,
         browseOnZoneClick: true,
     	uploadAsync: false,
-        maxFileCount: 0,
         theme: 'explorer-fas',
         pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
     	initialPreview: [

@@ -50,13 +50,12 @@ public class SignRequest {
 
     private String createBy;
     
+    //TODO gestion des commentaires
     @Size(max = 500)
     private String description;
     
     @OneToMany
     private List<Document> originalDocuments = new ArrayList<Document>();
-    
-    //TODO multiple documents ici ou dans le parapheur
     
     @OneToMany
     private List<Document> signedDocuments = new ArrayList<Document>();

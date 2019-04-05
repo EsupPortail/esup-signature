@@ -14,122 +14,122 @@
 	</div>
 	</div>
 	<c:if test="${signable eq 'ok'}">
-		<c:if test="${documentType eq 'pdf'}">
-					<div class="row">
-						<div class="col-lg-12">
-							<div class="row">
-								<div class="col-lg-4">
-									<spring:message code="button_previous" var="previousLabel" />
-									<input type="button" class="btn btn-dark" id="previous" onclick="previousImage()" value="${previousLabel}" />
-								</div>
-								<div class="col-lg-4 text-center">
-									<h5><spring:message code="menu_item_preview" /></h5>
-								</div>
-								<div class="col-lg-4">
-									<spring:message code="button_next" var="nextLabel" />
-									<input type="button" class="btn btn-dark float-right" id="next" onclick="nextImage()" value="${nextLabel}" />
-								</div>
-							</div>
-							<div class="d-flex justify-content-center">
-								<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
-								<div id="pointer_div" onclick="savePosition();" onmouseout="resetPosition();" onmousemove="pointIt(event);" style="background-size: ${pdfWidth}px;background-image:url('${documentUrl}/${signRequest.signRequestParams.signPageNumber -1}');width:${pdfWidth}px;height:${pdfHeight}px;border:1px solid #CCC;">
-									<c:if test="${signable eq 'ok' and (signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'visa'}">
-										<div id="cross" style="background-size: 100px;background-image: url('data:image/png;base64,${signFile}'); width: 100px; height: 75px; line-height: 75px; text-align: center;width:100px; left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;pointer-events: none;">
-											<div id="borders" style="width: 100px; height: 75px;">
-												<span style="opacity: 0.6; vertical-align: middle; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
-													<strong>Preview</strong>
-												</span>
-											</div>
-										</div>
-									</c:if>
-								</div>
-							</div>
-						</div>
-						<script type="text/javascript">
-							var nbImagePage = ${imagePagesSize};
-							var currentImagePage = ${signRequest.signRequestParams.signPageNumber} - 1;
-							var documentUrl = "${documentUrl}";
-						</script>
-					</div>
-		<div class="d-none">
-			<div class="col-lg-4">
-				Page : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.signPageNumber}" id="signPageNumber" type="text" name="signPageNumber" />
-			</div>
-			<div class="col-lg-4">
-				X position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.XPos}" id="xPos" type="text" name="xPos" />
-			</div>
-			<div class="col-lg-4">
-				Y position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.YPos}" id="yPos" type="text" name="yPos" />
-			</div>
-		</div>
-			</c:if>
-		<field:display render="false" field="allSignToComplete" id="s_org_esupportail_esupsignature_domain_SignRequest_allSignToComplete" object="${signRequest}" z="user-managed" />
-		<dl class="display-group border-bottom m-0">
-			<dt class="col-lg-5">
-				<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signAction" />
-			</dt>
-			<dd>
-			<c:if test="${empty user.signImage and documentType eq 'pdf'}">
-				<div class="card card-body bg-danger text-white">
-				<a href="/user/users/" class="text-white"><u><spring:message code="help_user_nosignimage" /></u></a>
-				</div>
-			</c:if>
-				<c:choose>
-					<c:when test="${signRequest.signRequestParams.signType eq 'certSign'}">
-						<c:choose>
-							<c:when test="${not empty keystore}">
-								<div class="input-group">
-									<spring:message code="label_org_esupportail_esupsignature_domain_user_password" var="passwordLabel" />
-									<input class="form-control" placeholder="${passwordLabel}" id="password" name="password" type="password" />
-									<div class="input-group-append">
-										<spring:message code="button_sign" var="signLabel" />
-										<input data-toggle="modal" data-target="#wait" onclick="submitSignRequest();" alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="button" value="${signLabel}" />
+		<form action="/user/signrequests/sign/${id}" method="post">
+			<c:if test="${documentType eq 'pdf'}">
+						<div class="row">
+							<div class="col-lg-12">
+								<div class="row">
+									<div class="col-lg-4">
+										<spring:message code="button_previous" var="previousLabel" />
+										<input type="button" class="btn btn-dark" id="previous" onclick="previousImage()" value="${previousLabel}" />
+									</div>
+									<div class="col-lg-4 text-center">
+										<h5><spring:message code="menu_item_preview" /></h5>
+									</div>
+									<div class="col-lg-4">
+										<spring:message code="button_next" var="nextLabel" />
+										<input type="button" class="btn btn-dark float-right" id="next" onclick="nextImage()" value="${nextLabel}" />
 									</div>
 								</div>
-							</c:when>
-							<c:otherwise>
-								<div class="card card-body bg-danger text-white">
-									<a href="/user/users/" class="text-white"><u><spring:message code="help_user_nokeystore" /></u></a>
+								<div class="d-flex justify-content-center">
+									<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
+									<div id="pointer_div" onclick="savePosition();" onmouseout="resetPosition();" onmousemove="pointIt(event);" style="background-size: ${pdfWidth}px;background-image:url('${documentUrl}/${signRequest.signRequestParams.signPageNumber -1}');width:${pdfWidth}px;height:${pdfHeight}px;border:1px solid #CCC;">
+										<c:if test="${signable eq 'ok' and (signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'visa'}">
+											<div id="cross" style="background-size: 100px;background-image: url('data:image/png;base64,${signFile}'); width: 100px; height: 75px; line-height: 75px; text-align: center;width:100px; left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;pointer-events: none;">
+												<div id="borders" style="width: 100px; height: 75px;">
+													<span style="opacity: 0.6; vertical-align: middle; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+														<strong>Preview</strong>
+													</span>
+												</div>
+											</div>
+										</c:if>
+									</div>
 								</div>
-							</c:otherwise>
-						</c:choose>
-					</c:when>
-					<c:when test="${signRequest.signRequestParams.signType eq 'nexuSign'}">
-						<spring:message code="button_sign" var="signLabel" />
-						<form action="/user/signrequests/sign/${id}" method="post">
-							<button type="submit" class="btn btn-success" data-target="#signatureModal">
-  								<spring:message code="button_sign"/>
-							</button>
-						</form>
-					</c:when>
-					<c:otherwise>
-						<c:choose>
-							<c:when test="${signRequest.signRequestParams.signType eq 'visa'}">
-								<spring:message code="button_visa" var="visaLabel" />
-								<input alt="${visaLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${visaLabel}" />
-							</c:when>
-							<c:otherwise>
-								<c:if test="${not empty user.signImage}"> 
-									<spring:message code="button_sign" var="signLabel" />
-									<input alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${signLabel}" />
-								</c:if>
-							</c:otherwise>
-						</c:choose>
-					</c:otherwise>
-				</c:choose>
-			</dd>
-		</dl>
-		<dl class="display-group border-bottom m-0">
-			<dt class="col-lg-5">
-				<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_refuseAction" />
-			</dt>
-			<dd>
-				<spring:url value="/user/signrequests/refuse/${id}" var="refuseUrl" />
-				<button type="button" onclick="location.href='${refuseUrl}'" class="btn btn-danger">
-					<i class="fas fa-ban"> <!--  --></i>&amp;nbsp;
-					<spring:message code="button_refuse" />
-				</button>
-			</dd>
-		</dl>
+							</div>
+							<script type="text/javascript">
+								var nbImagePage = ${imagePagesSize};
+								var currentImagePage = ${signRequest.signRequestParams.signPageNumber} - 1;
+								var documentUrl = "${documentUrl}";
+							</script>
+						</div>
+			<div class="d-none">
+				<div class="col-lg-4">
+					Page : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.signPageNumber}" id="signPageNumber" type="text" name="signPageNumber" />
+				</div>
+				<div class="col-lg-4">
+					X position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.XPos}" id="xPos" type="text" name="xPos" />
+				</div>
+				<div class="col-lg-4">
+					Y position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" value="${signRequest.signRequestParams.YPos}" id="yPos" type="text" name="yPos" />
+				</div>
+			</div>
+				</c:if>
+			<field:display render="false" field="allSignToComplete" id="s_org_esupportail_esupsignature_domain_SignRequest_allSignToComplete" object="${signRequest}" z="user-managed" />
+			<dl class="display-group border-bottom m-0">
+				<dt class="col-lg-5">
+					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signAction" />
+				</dt>
+				<dd>
+				<c:if test="${empty user.signImage and documentType eq 'pdf'}">
+					<div class="card card-body bg-danger text-white">
+					<a href="/user/users/" class="text-white"><u><spring:message code="help_user_nosignimage" /></u></a>
+					</div>
+				</c:if>
+					<c:choose>
+						<c:when test="${signRequest.signRequestParams.signType eq 'certSign'}">
+							<c:choose>
+								<c:when test="${not empty keystore}">
+									<div class="input-group">
+										<spring:message code="label_org_esupportail_esupsignature_domain_user_password" var="passwordLabel" />
+										<input class="form-control" placeholder="${passwordLabel}" id="password" name="password" type="password" />
+										<div class="input-group-append">
+											<spring:message code="button_sign" var="signLabel" />
+											<input data-toggle="modal" data-target="#wait" onclick="submitSignRequest();" alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="button" value="${signLabel}" />
+										</div>
+									</div>
+								</c:when>
+								<c:otherwise>
+									<div class="card card-body bg-danger text-white">
+										<a href="/user/users/" class="text-white"><u><spring:message code="help_user_nokeystore" /></u></a>
+									</div>
+								</c:otherwise>
+							</c:choose>
+						</c:when>
+						<c:when test="${signRequest.signRequestParams.signType eq 'nexuSign'}">
+							<spring:message code="button_sign" var="signLabel" />
+								<button type="submit" class="btn btn-success" data-target="#signatureModal">
+	  								<spring:message code="button_sign"/>
+								</button>
+						</c:when>
+						<c:otherwise>
+							<c:choose>
+								<c:when test="${signRequest.signRequestParams.signType eq 'visa'}">
+									<spring:message code="button_visa" var="visaLabel" />
+									<input alt="${visaLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${visaLabel}" />
+								</c:when>
+								<c:otherwise>
+									<c:if test="${not empty user.signImage}"> 
+										<spring:message code="button_sign" var="signLabel" />
+										<input alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="${signLabel}" />
+									</c:if>
+								</c:otherwise>
+							</c:choose>
+						</c:otherwise>
+					</c:choose>
+				</dd>
+			</dl>
+			<dl class="display-group border-bottom m-0">
+				<dt class="col-lg-5">
+					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_refuseAction" />
+				</dt>
+				<dd>
+					<spring:url value="/user/signrequests/refuse/${id}" var="refuseUrl" />
+					<button type="button" onclick="location.href='${refuseUrl}'" class="btn btn-danger">
+						<i class="fas fa-ban"> <!--  --></i>&amp;nbsp;
+						<spring:message code="button_refuse" />
+					</button>
+				</dd>
+			</dl>
+		</form>
 	</c:if>
 </div>
