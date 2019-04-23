@@ -212,7 +212,7 @@ public class SigningService {
 
 		imageParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
-		PdfParameters pdfParameters = pdfService.getPdfParameters(fileService.convert(toSignFile));
+		PdfParameters pdfParameters = pdfService.getPdfParameters(fileService.multipartPdfToFile(toSignFile));
 		if (pdfParameters.getRotation() == 0) {
 			imageParameters.setWidth(100);
 			imageParameters.setHeight(75);
