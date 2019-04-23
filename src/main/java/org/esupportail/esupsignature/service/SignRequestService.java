@@ -227,22 +227,14 @@ public class SignRequestService {
 		}
 	}
 
-	public void nexuSign(SignRequest signRequest, User user, AbstractSignatureForm signatureDocumentForm) throws EsupSignatureKeystoreException, EsupSignatureIOException {
+	public void nexuSign(SignRequest signRequest, User user, AbstractSignatureForm signatureDocumentForm, AbstractSignatureParameters parameters) throws EsupSignatureKeystoreException, EsupSignatureIOException {
 		logger.info(user.getEppn() + " launch nexu signature for signRequest : " + signRequest.getId());
 		DSSDocument dssDocument;
 		
 		if(signatureDocumentForm.getClass().equals(SignatureMultipleDocumentsForm.class)) {
 			dssDocument = signingService.signDocument((SignatureMultipleDocumentsForm) signatureDocumentForm);
 		} else {
-			AbstractSignatureParameters parameters = null;
-			//TODO visible sign
-			/*
-			File toSignFile = getToSignDocuments(signRequest).get(0).getJavaIoFile();
-			if(fileService.getContentType(toSignFile).equals("application/pdf")) {
-				parameters = getVisiblePAdESSignatureParameters(signRequest.getSignRequestParams(), toSignFile, user);
-			}
-			*/
-			dssDocument = signingService.signDocument((SignatureDocumentForm) signatureDocumentForm, parameters);
+			dssDocument = signingService.nexuSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters);
 		}
 		
 		InMemoryDocument signedDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());

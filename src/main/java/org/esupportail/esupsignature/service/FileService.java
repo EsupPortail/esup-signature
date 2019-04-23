@@ -55,14 +55,14 @@ public class FileService {
 		return file;
 	}
 
-	public File convert(MultipartFile file) throws IOException
+	public File convert(MultipartFile multiPartFile) throws IOException
 	{    
-	    File convFile = new File(file.getOriginalFilename());
-	    convFile.createNewFile(); 
-	    FileOutputStream fos = new FileOutputStream(convFile); 
-	    fos.write(file.getBytes());
+	    File file = new File(multiPartFile.getOriginalFilename());
+	    file.createNewFile(); 
+	    FileOutputStream fos = new FileOutputStream(file); 
+	    fos.write(multiPartFile.getBytes());
 	    fos.close(); 
-	    return convFile;
+	    return file;
 	}
 	
 	public File fromBase64Image(String base64Image, String name) throws IOException {

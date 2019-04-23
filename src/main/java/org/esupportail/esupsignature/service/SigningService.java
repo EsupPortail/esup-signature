@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -9,11 +10,15 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.esupportail.esupsignature.domain.SignRequestParams;
+import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.dss.web.WebAppUtils;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.ExtensionForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
+import org.esupportail.esupsignature.service.pdf.PdfParameters;
+import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +31,8 @@ import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.DigestAlgorithm;
+import eu.europa.esig.dss.FileDocument;
+import eu.europa.esig.dss.MimeType;
 import eu.europa.esig.dss.SignatureAlgorithm;
 import eu.europa.esig.dss.SignatureForm;
 import eu.europa.esig.dss.SignatureLevel;
@@ -39,6 +46,8 @@ import eu.europa.esig.dss.asic.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
+import eu.europa.esig.dss.pades.SignatureImageParameters;
+import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureRotation;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
@@ -90,6 +99,9 @@ public class SigningService {
 	
 	@Resource
 	private FileService fileService;
+	
+	@Resource
+	private PdfService pdfService;
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument extend(ExtensionForm extensionForm) {
@@ -114,12 +126,9 @@ public class SigningService {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public ToBeSigned getDataToSign(SignatureDocumentForm form) {
+	public ToBeSigned getDataToSign(SignatureDocumentForm form, AbstractSignatureParameters parameters) {
 		logger.info("Start getDataToSign with one document");
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
-
-		AbstractSignatureParameters parameters = fillParameters(form);
-
 		ToBeSigned toBeSigned = null;
 		try {
 			DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());
@@ -176,7 +185,7 @@ public class SigningService {
 		return contentTimestamp;
 	}
 
-	private AbstractSignatureParameters fillParameters(SignatureMultipleDocumentsForm form) {
+	public AbstractSignatureParameters fillParameters(SignatureMultipleDocumentsForm form) {
 		AbstractSignatureParameters finalParameters = getASiCSignatureParameters(form.getContainerType(), form.getSignatureForm());
 
 		fillParameters(finalParameters, form);
@@ -184,7 +193,7 @@ public class SigningService {
 		return finalParameters;
 	}
 
-	private AbstractSignatureParameters fillParameters(SignatureDocumentForm form) {
+	public AbstractSignatureParameters fillParameters(SignatureDocumentForm form) {
 		//TODO if pades visible
 		AbstractSignatureParameters parameters = getSignatureParameters(form.getContainerType(), form.getSignatureForm());
 		parameters.setSignaturePackaging(form.getSignaturePackaging());
@@ -194,6 +203,38 @@ public class SigningService {
 		return parameters;
 	}
 
+	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user) throws IOException {
+		SignatureImageParameters imageParameters = new SignatureImageParameters();
+		File signImage = user.getSignImage().getJavaIoFile();
+		FileDocument fileDocumentImage = new FileDocument(signImage);
+		fileDocumentImage.setMimeType(MimeType.PNG);
+		imageParameters.setImage(fileDocumentImage);
+
+		imageParameters.setPage(signRequestParams.getSignPageNumber());
+		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
+		PdfParameters pdfParameters = pdfService.getPdfParameters(fileService.convert(toSignFile));
+		if (pdfParameters.getRotation() == 0) {
+			imageParameters.setWidth(100);
+			imageParameters.setHeight(75);
+			imageParameters.setxAxis(signRequestParams.getXPos());
+			imageParameters.setyAxis(signRequestParams.getYPos());
+		} else {
+			imageParameters.setWidth(75);
+			imageParameters.setHeight(100);
+			imageParameters.setxAxis(signRequestParams.getXPos() - 50);
+			imageParameters.setyAxis(signRequestParams.getYPos());
+		}
+
+		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
+		pAdESSignatureParameters.setSignatureImageParameters(imageParameters);
+		pAdESSignatureParameters.setSignatureSize(100000);
+		pAdESSignatureParameters.setSignaturePackaging(form.getSignaturePackaging());
+
+		fillParameters(pAdESSignatureParameters, form);
+
+		return pAdESSignatureParameters;
+	}
+	
 	private void fillParameters(AbstractSignatureParameters parameters, AbstractSignatureForm form) {
 		parameters.setSignatureLevel(form.getSignatureLevel());
 		parameters.setDigestAlgorithm(form.getDigestAlgorithm());
@@ -284,15 +325,9 @@ public class SigningService {
 	
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DSSDocument signDocument(SignatureDocumentForm form, AbstractSignatureParameters parameters) {
+	public DSSDocument nexuSignDocument(SignatureDocumentForm form, AbstractSignatureParameters parameters) {
 		logger.info("Start signDocument with one document");
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
-		if(parameters != null) {
-			fillParameters(parameters, form);
-		} else {
-			parameters = fillParameters(form);
-		}
-
 		DSSDocument signedDocument = null;
 		try {
 			DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());

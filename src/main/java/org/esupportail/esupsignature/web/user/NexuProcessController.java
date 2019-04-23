@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.user;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,13 +47,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.SignatureForm;
 import eu.europa.esig.dss.ToBeSigned;
 
 @Controller
-@SessionAttributes(value = { "signatureDocumentForm", "signRequestId"})
+@SessionAttributes(value = { "signatureDocumentForm", "signRequestId", "parameters"})
 @RequestMapping(value = "/user/nexu-sign")
 @Transactional
+@Scope("session")
 public class NexuProcessController {
 
 	private static final Logger logger = LoggerFactory.getLogger(NexuProcessController.class);
@@ -79,6 +83,8 @@ public class NexuProcessController {
 
 	@Value("${sign.defaultSignatureForm}")
 	private SignatureForm defaultSignatureForm;
+	
+	private AbstractSignatureParameters parameters;
 	
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String showSignatureParameters(@PathVariable("id") Long id, Model model, HttpServletRequest request, RedirectAttributes redirectAttrs) {
@@ -118,28 +124,34 @@ public class NexuProcessController {
 	@ResponseBody
 	public GetDataToSignResponse getDataToSign(Model model, @RequestBody @Valid DataToSignParams params,
 			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm, 
-		@ModelAttribute("signRequestId") Long signRequestId, BindingResult result) {
+		@ModelAttribute("signRequestId") Long signRequestId, BindingResult result) throws IOException {
 		signatureDocumentForm.setBase64Certificate(params.getSigningCertificate());
 		signatureDocumentForm.setBase64CertificateChain(params.getCertificateChain());
 		signatureDocumentForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
     	User user = userService.getUserFromAuthentication();
 		SignRequest signRequest = SignRequest.findSignRequest(signRequestId);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
-	
-			model.addAttribute("signatureDocumentForm", signatureDocumentForm);
-			model.addAttribute("signRequestId", signRequest.getId());
-	
 			ToBeSigned dataToSign;
 			if(signatureDocumentForm.getClass().equals(SignatureMultipleDocumentsForm.class)) {
+				parameters = signingService.fillParameters((SignatureMultipleDocumentsForm) signatureDocumentForm);
 				dataToSign = signingService.getDataToSign((SignatureMultipleDocumentsForm) signatureDocumentForm);
 			} else {
-				dataToSign = signingService.getDataToSign((SignatureDocumentForm) signatureDocumentForm);
+				if(signatureDocumentForm.getSignatureForm().equals(SignatureForm.PAdES)) {
+					SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
+					parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), documentForm.getDocumentToSign(), user);
+				} else {
+					parameters = signingService.fillParameters((SignatureDocumentForm) signatureDocumentForm);
+				}
+				dataToSign = signingService.getDataToSign((SignatureDocumentForm) signatureDocumentForm, parameters);
 			}
 				
 			if (dataToSign == null) {
 				return null;
 			}
-	
+			model.addAttribute("parameters", parameters);
+			model.addAttribute("signatureDocumentForm", signatureDocumentForm);
+			model.addAttribute("signRequestId", signRequest.getId());
+			
 			GetDataToSignResponse responseJson = new GetDataToSignResponse();
 			responseJson.setDataToSign(DatatypeConverter.printBase64Binary(dataToSign.getBytes()));
 			return responseJson;
@@ -159,7 +171,7 @@ public class NexuProcessController {
 			SignDocumentResponse signedDocumentResponse;
 			signatureDocumentForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 	        try {
-	        	signRequestService.nexuSign(signRequest, user, signatureDocumentForm);
+	        	signRequestService.nexuSign(signRequest, user, signatureDocumentForm, parameters);
 			} catch (EsupSignatureIOException e) {
 				logger.error(e.getMessage(), e);
 			}
