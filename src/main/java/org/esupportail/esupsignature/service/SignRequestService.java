@@ -185,7 +185,7 @@ public class SignRequestService {
 		applySignBookRules(signRequest, user);
 	}
 
-	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureIOException, EsupSignatureSignException, EsupSignatureNexuException, EsupSignatureKeystoreException {
+	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureIOException, EsupSignatureSignException, EsupSignatureNexuException, EsupSignatureKeystoreException, IOException {
 		//TODO : choose xades cades
 		step = "Demarrage de la signature";
 		SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
@@ -250,7 +250,7 @@ public class SignRequestService {
 		}
 	}
 
-	public File certSign(SignRequest signRequest, User user, String password, SignatureForm signatureForm) throws EsupSignatureKeystoreException {
+	public File certSign(SignRequest signRequest, User user, String password, SignatureForm signatureForm) throws EsupSignatureKeystoreException, IOException {
 		List<File> toSignFiles = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest)) {
 			toSignFiles.add(document.getJavaIoFile());
@@ -284,7 +284,7 @@ public class SignRequestService {
 			} else if(signatureForm.equals(SignatureForm.PAdES)) {
 				step = "Formatage du PDF";
 				File toSignFile = pdfService.formatPdf(toSignFiles.get(0), signRequest.getSignRequestParams());
-				parameters = getVisiblePAdESSignatureParameters(signRequest.getSignRequestParams(), toSignFile, user);
+				parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), fileService.toMultipartFile(toSignFile, "pdf"), user);
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
 				documentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
 				signatureDocumentForm = documentForm;
@@ -313,34 +313,6 @@ public class SignRequestService {
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
 		}
 		return null;
-	}
-	
-	public PAdESSignatureParameters getVisiblePAdESSignatureParameters(SignRequestParams signRequestParams, File toSignFile, User user) {
-		SignatureImageParameters imageParameters = new SignatureImageParameters();
-		File signImage = user.getSignImage().getJavaIoFile();
-		FileDocument fileDocumentImage = new FileDocument(signImage);
-		fileDocumentImage.setMimeType(MimeType.PNG);
-		imageParameters.setImage(fileDocumentImage);
-
-		imageParameters.setPage(signRequestParams.getSignPageNumber());
-		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
-		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile);
-		if (pdfParameters.getRotation() == 0) {
-			imageParameters.setWidth(100);
-			imageParameters.setHeight(75);
-			imageParameters.setxAxis(signRequestParams.getXPos());
-			imageParameters.setyAxis(signRequestParams.getYPos());
-		} else {
-			imageParameters.setWidth(75);
-			imageParameters.setHeight(100);
-			imageParameters.setxAxis(signRequestParams.getXPos() - 50);
-			imageParameters.setyAxis(signRequestParams.getYPos());
-		}
-
-		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
-		pAdESSignatureParameters.setSignatureImageParameters(imageParameters);
-		pAdESSignatureParameters.setSignatureSize(100000);
-		return pAdESSignatureParameters;
 	}
 	
 	public void addSignedFile(SignRequest signRequest, File signedFile, User user) throws EsupSignatureIOException {

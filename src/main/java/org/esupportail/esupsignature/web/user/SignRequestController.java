@@ -367,6 +367,8 @@ public class SignRequestController {
 			} catch (EsupSignatureNexuException e) {
 				logger.info(e.getMessage());
 				return "redirect:/user/nexu-sign/" + id;
+			} catch (IOException e) {
+				logger.error(e.getMessage());
 			}
 			return "redirect:/user/signrequests/" + id;
 		} else {

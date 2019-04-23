@@ -400,7 +400,6 @@
 			    
 			</div>
 		</div>
-		${signRequest.signRequestParams.signTypeLabel}
 	</page:show>
 	</div>
 	<c:set value="${signRequest.signRequestParams.signType}" var="signType"/>
