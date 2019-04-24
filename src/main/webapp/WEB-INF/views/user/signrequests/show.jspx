@@ -71,31 +71,48 @@
 					</div>
 					<div id="collapseTools" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
 						<div class="card-body text-center">
+							<c:if test="${fn:length(signRequest.signBooks) > 1}">
+								<dl class="display-group border-bottom m-0">
+									<dt class="col-lg-6">
+										<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
+									</dt>
+									<dd>
+									<div class="input-group">
+										<spring:url value="/user/signrequests/toggle-need-all-sign/${id}" var="toggleNeedAllSignUrl" />
+										<label class="switch">
+											<c:choose>
+												<c:when test="${signRequest.allSignToComplete eq true}">
+												  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete" checked="checked"/>
+												</c:when>
+												<c:otherwise>
+												  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
+												</c:otherwise>
+											</c:choose>
+										  	<span class="slider round"><!--  --></span>
+										</label>
+									</div>
+									</dd>
+								</dl>
+							</c:if>
 							<c:choose>
 								<c:when test="${signable eq 'ok'}">
-									<c:if test="${fn:length(signRequest.signBooks) > 1}">
 									<dl class="display-group border-bottom m-0">
-										<dt class="col-lg-6">
-											<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
+										<dt class="col-lg-5">
+											<spring:message code="label_org_esupportail_esupsignature_domain_currentsignbook" /><button data-target="#collapseHelpCurrent" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+											<div class="collapse" id="collapseHelpCurrent">
+												<div class="alert alert-info">
+													<small>
+													Les paramètres du parapheur courant sont appliqués par défaut. Vous pouvez modifier la position manuellement à l'aide de la prévisualisation.
+													</small>
+												</div>
+											</div>
 										</dt>
 										<dd>
-										<div class="input-group">
-											<spring:url value="/user/signrequests/toggle-need-all-sign/${id}" var="toggleNeedAllSignUrl" />
-											<label class="switch">
-												<c:choose>
-													<c:when test="${signRequest.allSignToComplete eq true}">
-													  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete" checked="checked"/>
-													</c:when>
-													<c:otherwise>
-													  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
-													</c:otherwise>
-												</c:choose>
-											  	<span class="slider round"><!--  --></span>
-											</label>
-										</div>
+											<span class="alert alert-secondary">
+												<i class="fas fa-book"><!--  --></i>&amp;nbsp;${currentSignBook.name}
+											</span>
 										</dd>
 									</dl>
-									</c:if>
 									<c:choose>
 									<c:when test="${signRequest.signRequestParams.signType eq 'nexuSign'}">
 										<spring:url value="/resources/js/jsSignatureLevel.js" var="jsSignatureLevel_js_url" />
@@ -135,7 +152,7 @@
 											</button>
 										</form>
 									</c:when>
-									<c:when test="${signRequest.status eq 'draft'}">
+									<c:when test="${signRequest.status eq 'pending'}">
 										<div class="alert alert-info" >La demande est en cours de signature par le(s) destinataire(s)</div>
 									</c:when>
 									</c:choose>
@@ -209,23 +226,6 @@
 					</div>
 					<div id="collapseSignBook" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
 						<div class="card-body">
-							<dl class="display-group border-bottom m-0">
-								<dt class="col-lg-5">
-									<spring:message code="label_org_esupportail_esupsignature_domain_currentsignbook" /><button data-target="#collapseHelpCurrent" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
-									<div class="collapse" id="collapseHelpCurrent">
-										<div class="alert alert-info">
-											<small>
-											Les paramètres du parapheur courant sont appliqués par défaut. Vous pouvez modifier la position manuellement à l'aide de la prévisualisation.
-											</small>
-										</div>
-									</div>
-								</dt>
-								<dd>
-									<span class="alert alert-secondary">
-										<i class="fas fa-book"><!--  --></i>&amp;nbsp;${currentSignBook.name}
-									</span>
-								</dd>
-							</dl>
 							<dl class="display-group border-bottom m-0">
 								<dt class="col-lg-5">
 									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" />

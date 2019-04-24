@@ -94,6 +94,7 @@ public class SignRequestService {
 	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status) {
 		return findSignRequestByUserAndStatusEquals(user, status, null, null);
 	}
+	
 	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status, Integer page, Integer size) {
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());

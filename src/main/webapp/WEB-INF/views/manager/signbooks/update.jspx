@@ -22,7 +22,7 @@
 				</div>
 				 -->
                 <field:input autocomplete="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignBook_name" required="true" z="user-managed"/>
-                <field:input render="false" cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" required="true" z="user-managed"/>
+                <field:input cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" render="false" required="true" z="user-managed"/>
                 <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_recipientemails">
                     <label class="col-lg-3  col-form-label" for="recipientemailsSelect">
                         <strong>
@@ -39,13 +39,13 @@
                     </label>
                     <div class="col-lg-9">
                         <select id="recipientemailsSelect" multiple="multiple" name="recipientEmails" required="required">
-							<c:forEach items="${signBook.recipientEmails}" var="recipientEmail">
-								<option selected="selected" value="${recipientEmail}">${recipientEmail}</option>
-							</c:forEach>
+                            <c:forEach items="${signBook.recipientEmails}" var="recipientEmail">
+                                <option selected="selected" value="${recipientEmail}">${recipientEmail}</option>
+                            </c:forEach>
                         </select>
                     </div>
                 </div>
-               	<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_moderatoremails">
+                <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_moderatoremails">
                     <label class="col-lg-3  col-form-label" for="moderatoremailsSelect">
                         <strong>
                             <spring:message code="label_org_esupportail_esupsignature_domain_signbook_moderatoremails"/>
@@ -60,10 +60,10 @@
                         </strong>
                     </label>
                     <div class="col-lg-9">
-                        <select id="moderatoremailsSelect" multiple="multiple" name="moderatorEmails" required="required">
-							<c:forEach items="${signBook.moderatorEmails}" var="moderatorEmail">
-								<option selected="selected" value="${moderatorEmail}">${moderatorEmail}</option>
-							</c:forEach>
+                        <select id="moderatoremailsSelect" multiple="multiple" name="moderatorEmails">
+                            <c:forEach items="${signBook.moderatorEmails}" var="moderatorEmail">
+                                <option selected="selected" value="${moderatorEmail}">${moderatorEmail}</option>
+                            </c:forEach>
                         </select>
                     </div>
                 </div>
@@ -185,7 +185,8 @@
         <field:select field="modelFile" id="c_org_esupportail_esupsignature_domain_SignBook_modelFile" itemValue="id" items="${documents}" path="/user/documents" render="false" z="user-managed"/>
         <field:select field="signRequestParams" id="c_org_esupportail_esupsignature_domain_SignBook_signRequestParams" itemValue="id" items="${signrequestparamses}" path="/signrequestparamses" render="false" z="user-managed"/>
         <field:select field="signBooksGroup" id="c_org_esupportail_esupsignature_domain_SignBook_signBooksGroup" itemValue="id" items="${signbooks}" multiple="true" path="/manager/signbooks" render="false" z="user-managed"/>
-        <field:input render="false" field="moderatorEmails" id="c_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" z="loNK4lIczG8u26p3Luqh3y2Hmuk="/>
+        <field:input field="moderatorEmails" id="c_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" render="false" z="user-managed"/>
+        <field:input field="recipientEmails" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmails" render="false" z="user-managed"/>
     </form:update>
     <script type="text/javascript">
 		var sourceSelector = document.getElementById("_sourceType_id");
@@ -221,7 +222,7 @@
       	  searchText: 'Aucun résultat',
       	  searchPlaceholder: 'Rechercher',
       	  searchHighlight: true,
-      	  searchFilter: (option, search) => {
+      	  searchFilter: (option, search) =&gt; {
 		    return true;
 		  },
       	  ajax: function (search, callback) {
@@ -259,7 +260,7 @@
         	  searchText: 'Aucun résultat',
         	  searchPlaceholder: 'Rechercher',
         	  searchHighlight: true,
-        	  searchFilter: (option, search) => {
+        	  searchFilter: (option, search) =&gt; {
         		    return true;
         		  },
         	  ajax: function (search, callback) {

@@ -14,35 +14,35 @@
                     <div class="card-header">Infos&amp;nbsp;</div>
                     <div class="card-body">
                         <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignBook_name" object="${signBook}" z="user-managed"/>
-                        <field:display render="false" field="moderatorEmails" id="s_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" object="${signbook}" z="user-managed"/>
+                        <field:display field="moderatorEmails" id="s_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" object="${signbook}" render="false" z="user-managed"/>
                         <dl class="display-group border-bottom m-0">
                             <dt class="col-lg-5">
-                                <spring:message code="label_org_esupportail_esupsignature_domain_signbook_recipientemail"/>
+                                <spring:message code="label_org_esupportail_esupsignature_domain_signbook_recipientemails"/>
                             </dt>
                             <dd>
-	                            <div class="alert alert-dark col-12">
-	                            <c:forEach items="${signBook.recipientEmails}" var="recipientEmail">
-	                                <i class="far fa-envelope">
-	                                    <!--  -->
-	                                </i> ${recipientEmail}
+                                <div class="alert alert-dark col-12">
+                                    <c:forEach items="${signBook.recipientEmails}" var="recipientEmail">
+                                        <i class="fas fa-inbox">
+                                            <!--  -->
+                                        </i> ${recipientEmail}
 	                                <br/>
-	                            </c:forEach>
-								</div>
+                                    </c:forEach>
+                                </div>
                             </dd>
-                        </dl>                        
+                        </dl>
                         <dl class="display-group border-bottom m-0">
                             <dt class="col-lg-5">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_moderatoremails"/>
                             </dt>
                             <dd>
-	                            <div class="alert alert-dark col-12">
-	                            <c:forEach items="${signBook.moderatorEmails}" var="moderatorEmail">
-	                                <i class="far fa-envelope">
-	                                    <!--  -->
-	                                </i> ${moderatorEmail}
+                                <div class="alert alert-dark col-12">
+                                    <c:forEach items="${signBook.moderatorEmails}" var="moderatorEmail">
+                                        <i class="fas fa-users-cog">
+                                            <!--  -->
+                                        </i> ${moderatorEmail}
 	                                <br/>
-	                            </c:forEach>
-								</div>
+                                    </c:forEach>
+                                </div>
                             </dd>
                         </dl>
                         <field:display field="description" id="s_org_esupportail_esupsignature_domain_SignBook_description" object="${signBook}" z="user-managed"/>
@@ -175,5 +175,6 @@
                 </div>
             </c:if>
         </div>
+        <field:display render="false" field="recipientEmails" id="s_org_esupportail_esupsignature_domain_SignBook_recipientEmails" object="${signBook}" z="user-managed"/>
     </page:show>
 </div>

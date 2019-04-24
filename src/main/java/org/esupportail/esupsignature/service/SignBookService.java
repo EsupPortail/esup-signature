@@ -12,6 +12,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.esupportail.esupsignature.domain.Document;
+import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.domain.SignBook.SignBookType;
@@ -208,4 +209,12 @@ public class SignBookService {
 		return null;
 	}
 
+	public boolean checkUserManageRights(User user, SignBook signBook) {
+		if (signBook.getCreateBy().equals(user.getEppn()) || signBook.getModeratorEmails().contains(user.getEmail())) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 }

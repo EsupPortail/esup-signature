@@ -18,6 +18,22 @@ privileged aspect SignBook_Roo_Finder {
         return ((Long) q.getSingleResult());
     }
     
+    public static Long SignBook.countFindSignBooksByModeratorEmailsEquals(List<String> moderatorEmails) {
+        if (moderatorEmails == null) throw new IllegalArgumentException("The moderatorEmails argument is required");
+        EntityManager em = SignBook.entityManager();
+        StringBuilder queryBuilder = new StringBuilder("SELECT COUNT(o) FROM SignBook AS o WHERE");
+        for (int i = 0; i < moderatorEmails.size(); i++) {
+            if (i > 0) queryBuilder.append(" AND");
+            queryBuilder.append(" :moderatorEmails_item").append(i).append(" MEMBER OF o.moderatorEmails");
+        }
+        TypedQuery q = em.createQuery(queryBuilder.toString(), Long.class);
+        int moderatorEmailsIndex = 0;
+        for (String _string: moderatorEmails) {
+            q.setParameter("moderatorEmails_item" + moderatorEmailsIndex++, _string);
+        }
+        return ((Long) q.getSingleResult());
+    }
+    
     public static Long SignBook.countFindSignBooksByNameEquals(String name) {
         if (name == null || name.length() == 0) throw new IllegalArgumentException("The name argument is required");
         EntityManager em = SignBook.entityManager();
@@ -70,6 +86,44 @@ privileged aspect SignBook_Roo_Finder {
         }
         TypedQuery<SignBook> q = em.createQuery(queryBuilder.toString(), SignBook.class);
         q.setParameter("createBy", createBy);
+        return q;
+    }
+    
+    public static TypedQuery<SignBook> SignBook.findSignBooksByModeratorEmailsEquals(List<String> moderatorEmails) {
+        if (moderatorEmails == null) throw new IllegalArgumentException("The moderatorEmails argument is required");
+        EntityManager em = SignBook.entityManager();
+        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM SignBook AS o WHERE");
+        for (int i = 0; i < moderatorEmails.size(); i++) {
+            if (i > 0) queryBuilder.append(" AND");
+            queryBuilder.append(" :moderatorEmails_item").append(i).append(" MEMBER OF o.moderatorEmails");
+        }
+        TypedQuery<SignBook> q = em.createQuery(queryBuilder.toString(), SignBook.class);
+        int moderatorEmailsIndex = 0;
+        for (String _string: moderatorEmails) {
+            q.setParameter("moderatorEmails_item" + moderatorEmailsIndex++, _string);
+        }
+        return q;
+    }
+    
+    public static TypedQuery<SignBook> SignBook.findSignBooksByModeratorEmailsEquals(List<String> moderatorEmails, String sortFieldName, String sortOrder) {
+        if (moderatorEmails == null) throw new IllegalArgumentException("The moderatorEmails argument is required");
+        EntityManager em = SignBook.entityManager();
+        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM SignBook AS o WHERE");
+        for (int i = 0; i < moderatorEmails.size(); i++) {
+            if (i > 0) queryBuilder.append(" AND");
+            queryBuilder.append(" :moderatorEmails_item").append(i).append(" MEMBER OF o.moderatorEmails");
+        }
+        if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
+            queryBuilder.append(" ORDER BY ").append(sortFieldName);
+            if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
+                queryBuilder.append(" " + sortOrder);
+            }
+        }
+        TypedQuery<SignBook> q = em.createQuery(queryBuilder.toString(), SignBook.class);
+        int moderatorEmailsIndex = 0;
+        for (String _string: moderatorEmails) {
+            q.setParameter("moderatorEmails_item" + moderatorEmailsIndex++, _string);
+        }
         return q;
     }
     
