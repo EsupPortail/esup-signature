@@ -180,7 +180,6 @@ public class SignRequestService {
 	}
 
 	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureIOException, EsupSignatureSignException, EsupSignatureNexuException, EsupSignatureKeystoreException, IOException {
-		//TODO : choose xades cades
 		step = "Demarrage de la signature";
 		SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		if(!signRequest.isOverloadSignBookParams()) {
@@ -435,7 +434,8 @@ public class SignRequestService {
 
 	public boolean checkUserViewRights(User user, SignRequest signRequest) {
 		List<Log> log = Log.findLogsByEppnAndSignRequestIdEquals(user.getEppn(), signRequest.getId()).getResultList();
-		if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0) {
+		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
+		if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0 || signBook != null) {
 			return true;
 		} else {
 			return false;

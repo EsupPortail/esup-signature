@@ -105,14 +105,14 @@
          <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBooksGroup">
                     <label class="col-lg-4  col-form-label" for="newPageType">
                         <strong>
-                            Recherche LDAP
+                            Rechercher dans l'annuaire
                             <button class="btn btn-sm btn-light" data-target="#collapseHelp2" data-toggle="collapse" type="button">
                                 <span class="fas fa-info-circle text-info"/>
                             </button>
                             <div class="collapse" id="collapseHelp2">
                                 <div class="alert alert-info">
                                 	<small>
-                                    	Vous pouvez recherche un utilisateur dans l'annuaire si il n'a pas encore de compte dans esup-signature
+                                    	Vous pouvez recherche un/des utilisateur(s) dans l'annuaire si aucun parapheur ne convient 
                                     </small>
                                 </div>
                             </div>
@@ -297,7 +297,9 @@
 	    	  searchText: 'Aucun résultat',
 	    	  searchPlaceholder: 'Rechercher',
 	    	  searchHighlight: true,
-	    	  
+	    	  searchFilter: (option, search) =&gt; {
+	  		    return true;
+	  		  },
 	    	  ajax: function (search, callback) {
 	    		    if (search.length &lt; 3) {
 	    		      callback('Merci de saisir au moins 3 caractères')

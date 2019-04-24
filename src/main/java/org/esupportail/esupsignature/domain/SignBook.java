@@ -51,8 +51,6 @@ public class SignBook {
     
     private String documentsSourceUri;
     
-    //TODO moderateur list
-    //TODO secretaire (createby)= droits de modif + droit en consultation
     @ElementCollection(targetClass=String.class)
     private List<String> moderatorEmails = new ArrayList<String>();
 

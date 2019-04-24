@@ -76,7 +76,7 @@ public class SignBookService {
 	public SignBook createUserSignBook(User user) {
 		SignBook signbook = new SignBook();
 		signbook.setName(user.getFirstname() + " " + user.getName());
-		signbook.setDescription(signbook.getName() + " personnal signbook");
+		signbook.setDescription("Parapheur personnel de " + signbook.getName());
 		signbook.setCreateBy(user.getEppn());
 		signbook.setCreateDate(new Date());
 		signbook.getRecipientEmails().add(user.getEmail());

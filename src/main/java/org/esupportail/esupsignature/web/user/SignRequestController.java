@@ -240,7 +240,7 @@ public class SignRequestController {
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
 		uiModel.addAttribute("mySignBook", SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult());
-		uiModel.addAttribute("allSignBooks", SignBook.findAllSignBooks("name", "ASC"));
+		uiModel.addAttribute("allSignBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
 		return "user/signrequests/create";
 	}
 
@@ -281,8 +281,8 @@ public class SignRequestController {
 			for(String recipientEmail : recipientsEmails) {
 				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(recipientEmail)) == 0) {
 					userService.createUser(recipientEmail);
-					recipientEmails.add(recipientEmail);
 				}
+				recipientEmails.add(recipientEmail);
 			}
 		}
 		if(recipientEmails.size() == 0) {
@@ -340,6 +340,9 @@ public class SignRequestController {
 			@RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
 			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
 			HttpServletResponse response, Model model, HttpServletRequest request) {
+		//TODO : choose xades cades
+		//TODO : add comment sign
+		
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
@@ -446,6 +449,7 @@ public class SignRequestController {
 	@RequestMapping(value = "/refuse/{id}")
 	public String refuse(@PathVariable("id") Long id, RedirectAttributes redirectAttrs, HttpServletResponse response,
 			Model model, HttpServletRequest request) throws SQLException {
+		//TODO : add comment refuse
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);

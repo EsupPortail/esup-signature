@@ -96,9 +96,9 @@
 							</c:if>
 							<c:choose>
 								<c:when test="${signable eq 'ok'}">
-									<dl class="display-group border-bottom m-0">
-										<dt class="col-lg-5">
-											<spring:message code="label_org_esupportail_esupsignature_domain_currentsignbook" /><button data-target="#collapseHelpCurrent" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+									<dl class="display-group border-bottom m-0 d-none">
+										<dt class="col-lg-6">
+											<spring:message code="label_org_esupportail_esupsignature_domain_currentsignbook" /><button data-target="#collapseHelpCurrent" data-toggle="collapse" type="button" class="btn btn-sm btn-info"><span class="fas fa-info-circle"></span></button>
 											<div class="collapse" id="collapseHelpCurrent">
 												<div class="alert alert-info">
 													<small>
@@ -264,16 +264,12 @@
 							<dl class="display-group border-bottom m-0">
 								<dt class="col-lg-5">
 									<spring:message code="menu_item_sendtosignbook" />&amp;nbsp;
-				           			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+				           			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-info"><span class="fas fa-info-circle"></span></button>
 									<div class="collapse" id="collapseHelp1">
 										<div class="alert alert-info">
 											<small>
 												A tous moments vous pouvez envoyer la demande dans un autre parapheur.
-												Si la demande se trouve dans plusieurs parapheurs vous pouvez choisir si toutes les signatures sont exigées pour passer au status 
-												<button type="button" class="btn btn-outline-success btn-sm">
-													<i class="fas fa-file-signature"> <!--  -->
-													</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
-												</button>
+												Si la demande se trouve dans plusieurs parapheurs vous pouvez choisir si toutes les signatures sont exigées pour passer au status signé
 											</small>
 										</div>
 									</div>
