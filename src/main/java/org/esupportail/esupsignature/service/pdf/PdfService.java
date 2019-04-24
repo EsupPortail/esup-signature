@@ -79,8 +79,6 @@ public class PdfService {
     	return toSignFile;
 	}
 	
-	//TODO extraire visa
-	
 	public File stampImage(File toSignFile, SignRequestParams params, User user) {
 		SignRequestParams.SignType signType = params.getSignType();
 		

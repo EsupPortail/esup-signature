@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.manager;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -116,6 +117,10 @@ public class SignBookController {
 			if(signBookToUpdate.getSignBookType().equals(SignBookType.user)) {
 				return "redirect:/manager/signbooks/" + signBook.getId();
 			}
+			signBookToUpdate.getRecipientEmails().removeAll(signBook.getRecipientEmails());
+			signBookToUpdate.getRecipientEmails().addAll(signBook.getRecipientEmails());
+			signBookToUpdate.getModeratorEmails().removeAll(signBook.getModeratorEmails());
+			signBookToUpdate.getModeratorEmails().addAll(signBook.getModeratorEmails());
 			signBookToUpdate.setName(signBook.getName());
 			signBookToUpdate.setDocumentsSourceUri(signBook.getDocumentsSourceUri());
 			signBookToUpdate.setSourceType(signBook.getSourceType());
@@ -141,9 +146,16 @@ public class SignBookController {
 			signRequestParams.setXPos(0);
 			signRequestParams.setYPos(0);
 			signRequestParams.persist();
+			signBook.getRecipientEmails().removeAll(Collections.singleton(""));
 			for(String recipientEmail : signBook.getRecipientEmails()) {
 				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(recipientEmail)) == 0) {
 					userService.createUser(recipientEmail);
+				}
+			}
+			signBook.getModeratorEmails().removeAll(Collections.singleton(""));
+			for(String moderatorEmail : signBook.getModeratorEmails()) {
+				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(moderatorEmail)) == 0) {
+					userService.createUser(moderatorEmail);
 				}
 			}
 			if(signBook.getRecipientEmails().size() == 1) {

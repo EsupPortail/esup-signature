@@ -23,10 +23,10 @@
 				 -->
                 <field:input autocomplete="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignBook_name" required="true" z="user-managed"/>
                 <field:input render="false" cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" required="true" z="user-managed"/>
-                <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBooksGroup">
-                    <label class="col-lg-3  col-form-label" for="newPageType">
+                <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_recipientemails">
+                    <label class="col-lg-3  col-form-label" for="recipientemailsSelect">
                         <strong>
-                            <spring:message code="label_org_esupportail_esupsignature_domain_signbook_recipientemail"/>
+                            <spring:message code="label_org_esupportail_esupsignature_domain_signbook_recipientemails"/>
                             <button class="btn btn-sm btn-light" data-target="#collapseHelp1" data-toggle="collapse" type="button">
                                 <span class="fas fa-info-circle text-info"/>
                             </button>
@@ -38,7 +38,27 @@
                         </strong>
                     </label>
                     <div class="col-lg-9">
-                        <select id="signBookIds" multiple="multiple" name="recipientEmails" required="required" size="5">
+                        <select id="recipientemailsSelect" multiple="multiple" name="recipientEmails" required="required">
+						<!--  -->
+                        </select>
+                    </div>
+                </div>
+               	<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_moderatoremails">
+                    <label class="col-lg-3  col-form-label" for="moderatoremailsSelect">
+                        <strong>
+                            <spring:message code="label_org_esupportail_esupsignature_domain_signbook_moderatoremails"/>
+                            <button class="btn btn-sm btn-light" data-target="#collapseHelp1" data-toggle="collapse" type="button">
+                                <span class="fas fa-info-circle text-info"/>
+                            </button>
+                            <div class="collapse" id="collapseHelp1">
+                                <div class="alert alert-info">
+                                    <!--  -->
+                                </div>
+                            </div>
+                        </strong>
+                    </label>
+                    <div class="col-lg-9">
+                        <select id="moderatoremailsSelect" multiple="multiple" name="moderatorEmails" required="required">
 						<!--  -->
                         </select>
                     </div>
@@ -161,7 +181,7 @@
         <field:select field="modelFile" id="c_org_esupportail_esupsignature_domain_SignBook_modelFile" itemValue="id" items="${documents}" path="/user/documents" render="false" z="user-managed"/>
         <field:select field="signRequestParams" id="c_org_esupportail_esupsignature_domain_SignBook_signRequestParams" itemValue="id" items="${signrequestparamses}" path="/signrequestparamses" render="false" z="user-managed"/>
         <field:select field="signBooksGroup" id="c_org_esupportail_esupsignature_domain_SignBook_signBooksGroup" itemValue="id" items="${signbooks}" multiple="true" path="/manager/signbooks" render="false" z="user-managed"/>
-        <field:input field="moderatorEmails" id="c_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" z="loNK4lIczG8u26p3Luqh3y2Hmuk="/>
+        <field:input render="false" field="moderatorEmails" id="c_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" z="loNK4lIczG8u26p3Luqh3y2Hmuk="/>
     </form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_SignBook" render="${not empty dependencies}" z="user-managed"/>
     <script type="text/javascript">
@@ -187,12 +207,14 @@
 		};
 		
     	new SlimSelect({
-    	  select: '#signBookIds',
-    	  placeholder: 'Choisir un ou plusieurs utiilisateurs',
+    	  select: '#recipientemailsSelect',
+    	  placeholder: 'Choisir un ou plusieurs utilisateurs',
     	  searchText: 'Aucun résultat',
     	  searchPlaceholder: 'Rechercher',
     	  searchHighlight: true,
-    	  
+    	  searchFilter: (option, search) => {
+  		    return true;
+  		  },
     	  ajax: function (search, callback) {
     		    if (search.length &lt; 3) {
     		      callback('Merci de saisir au moins 3 caractères')
@@ -220,7 +242,45 @@
     		    })
     		  }
     	  
-    	})
+    	});
+    	
+    	new SlimSelect({
+      	  select: '#moderatoremailsSelect',
+      	  placeholder: 'Choisir un ou plusieurs utilisateurs',
+      	  searchText: 'Aucun résultat',
+      	  searchPlaceholder: 'Rechercher',
+      	  searchHighlight: true,
+      	  searchFilter: (option, search) => {
+		    return true;
+		  },
+      	  ajax: function (search, callback) {
+      		    if (search.length &lt; 3) {
+      		      callback('Merci de saisir au moins 3 caractères')
+      		      return
+      		    }
+      		    // Perform your own ajax request here
+      		    fetch('/user/users/searchLdap?searchString=' + search)
+      		    .then(function (response) {
+      		      return response.json()
+      		    })
+      		    .then(function (json) {
+      		      let data = []
+      		      for (let i = 0; i &lt; json.length; i++) {
+      		        data.push({text: json[i].displayName, value: json[i].mail});
+      		      }
+
+      		      // Upon successful fetch send data to callback function.
+      		      // Be sure to send data back in the proper format.
+      		      // Refer to the method setData for examples of proper format.
+      		      callback(data)
+      		    })
+      		    .catch(function(error) {
+      		      // If any erros happened send false back through the callback
+      		      callback(false)
+      		    })
+      		  }
+      	  
+      	});
     	
 	</script>
 </div>

@@ -29,6 +29,21 @@
 	                            </c:forEach>
 								</div>
                             </dd>
+                        </dl>                        
+                        <dl class="display-group border-bottom m-0">
+                            <dt class="col-lg-5">
+                                <spring:message code="label_org_esupportail_esupsignature_domain_signbook_moderatoremails"/>
+                            </dt>
+                            <dd>
+	                            <div class="alert alert-dark col-12">
+	                            <c:forEach items="${signBook.moderatorEmails}" var="moderatorEmail">
+	                                <i class="far fa-envelope">
+	                                    <!--  -->
+	                                </i> ${moderatorEmail}
+	                                <br/>
+	                            </c:forEach>
+								</div>
+                            </dd>
                         </dl>
                         <field:display field="description" id="s_org_esupportail_esupsignature_domain_SignBook_description" object="${signBook}" z="user-managed"/>
                         <field:display field="sourceType" id="s_org_esupportail_esupsignature_domain_SignBook_sourceType" object="${signBook}" render="false" z="user-managed"/>

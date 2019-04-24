@@ -75,7 +75,7 @@
 								<c:when test="${signable eq 'ok'}">
 									<c:if test="${fn:length(signRequest.signBooks) > 1}">
 									<dl class="display-group border-bottom m-0">
-										<dt class="col-lg-5">
+										<dt class="col-lg-6">
 											<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
 										</dt>
 										<dd>

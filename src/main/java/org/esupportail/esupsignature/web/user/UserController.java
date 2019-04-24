@@ -220,7 +220,7 @@ public class UserController {
 		headers.add("Content-Type", "application/json; charset=utf-8");
 		List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
 		if(ldapPersonService != null && !searchString.trim().isEmpty()) {
-			ldapList = ldapPersonService.searchByCommonName(searchString, ldapTemplateName);
+			ldapList = ldapPersonService.search(searchString, ldapTemplateName);
 			ldapList = ldapList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
 
 		}

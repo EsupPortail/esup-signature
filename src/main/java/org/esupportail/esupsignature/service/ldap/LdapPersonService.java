@@ -13,6 +13,7 @@ import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.filter.LikeFilter;
+import org.springframework.ldap.filter.OrFilter;
 import org.springframework.ldap.support.LdapUtils;
 
 
@@ -36,7 +37,7 @@ public class LdapPersonService {
 		return new ArrayList<String>(ldapTemplates.keySet());
 	}
 
-	public List<PersonLdap> searchByCommonName(String cn, String ldapTemplateName) {
+	public List<PersonLdap> search(String searchString, String ldapTemplateName) {
 		LdapTemplate ldapTemplateSelected = ldapTemplate;
 		if(ldapTemplateName != null && !ldapTemplateName.isEmpty() && ldapTemplates.containsKey(ldapTemplateName)) {
 			ldapTemplateSelected = ldapTemplates.get(ldapTemplateName);
@@ -44,7 +45,11 @@ public class LdapPersonService {
 		if(ldapTemplateSelected != null) {
 	        AndFilter filter = new AndFilter();
 	        filter.and(new EqualsFilter("objectclass", "person"));
-	        filter.and(new LikeFilter("cn", "*" + cn + "*"));
+	        OrFilter orFilter = new OrFilter();
+	        orFilter.or(new LikeFilter("displayName", "*" + searchString + "*"));
+	        orFilter.or(new LikeFilter("cn", "*" + searchString + "*"));
+	        orFilter.or(new LikeFilter("uid", "*" + searchString + "*"));
+	        filter.and(orFilter);
 	        
 	        List<PersonLdap> results = ldapTemplateSelected.search(LdapUtils.emptyLdapName(), filter.encode(), new PersonAttributMapper());       
 	        return results;

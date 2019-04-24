@@ -25,7 +25,7 @@ import org.springframework.roo.addon.tostring.RooToString;
 
 @RooJavaBean
 @RooToString
-@RooJpaActiveRecord(finders={"findSignBooksByRecipientEmailsEquals", "findSignBooksByCreateByEquals", "findSignBooksByNameEquals", "findSignBooksBySignBookTypeEquals", "findSignBooksByRecipientEmailsAndSignBookTypeEquals"})
+@RooJpaActiveRecord(finders={"findSignBooksByRecipientEmailsEquals", "findSignBooksByModeratorEmailsEquals", "findSignBooksByCreateByEquals", "findSignBooksByNameEquals", "findSignBooksBySignBookTypeEquals", "findSignBooksByRecipientEmailsAndSignBookTypeEquals"})
 public class SignBook {
 
 	@Column(unique=true)
@@ -86,12 +86,20 @@ public class SignBook {
 		none, cifs, vfs, cmis, mail;
 	}
     
-    public String getRecipientsEmailsLabels() {
-    	String recipientsEmailsLabels = "";
+    public String getRecipientEmailsLabels() {
+    	String recipientEmailsLabels = "";
 		for(String recipientEmail : recipientEmails) {
-			recipientsEmailsLabels += "<li>" + recipientEmail + "</li>";
+			recipientEmailsLabels += "<li>" + recipientEmail + "</li>";
 		}
-		return recipientsEmailsLabels;
+		return recipientEmailsLabels;
+    }
+    
+    public String getModeratorEmailsLabels() {
+    	String modetatorEmailsLabels = "";
+		for(String modetatorEmail : moderatorEmails) {
+			modetatorEmailsLabels += "<li>" + modetatorEmail + "</li>";
+		}
+		return modetatorEmailsLabels;
     }
     
     public void setSourceType(DocumentIOType sourceType) {
