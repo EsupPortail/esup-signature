@@ -11,5 +11,6 @@
         <field:display field="returnCode" id="s_org_esupportail_esupsignature_domain_Log_returnCode" object="${log}" z="/9Z8tmP/tEjvff+G86q2r8Sh+LM="/>
         <field:display field="ip" id="s_org_esupportail_esupsignature_domain_Log_ip" object="${log}" z="DkJWbRiaNTm9wpwrQo9nyOxwufY="/>
         <field:display field="signRequestId" id="s_org_esupportail_esupsignature_domain_Log_signRequestId" object="${log}" z="vnLqtEUQXOFi7n2vm3sx7gjKpNw="/>
+        <field:display field="comment" id="s_org_esupportail_esupsignature_domain_Log_comment" object="${log}" z="uc2mBNZKIxV0UP6ASV8RfWur044="/>
     </page:show>
 </div>

@@ -134,33 +134,44 @@
 											</div>
 									</c:when>
 									<c:otherwise>
+										<dl>
+										<dd>
 										<button type="button" class="btn btn-success" data-toggle="modal" data-target="#signatureModal">
+			  								<i class="fas fa-file-signature"> <!--  --></i>&amp;nbsp;
 			  								<spring:message code="button_sign"/>
 										</button>
+										</dd>
+										<dd>
+										<button type="button" class="btn btn-danger" data-toggle="modal" data-target="#refuseModal">
+											<i class="fas fa-ban"> <!--  --></i>&amp;nbsp;
+											<spring:message code="button_refuse" />
+										</button>
+										</dd>
+										</dl>
 									</c:otherwise>
 									</c:choose>
 								</c:when>
 								<c:otherwise>
 									<c:choose>
-									<c:when test="${fn:length(signRequest.originalDocuments) > 0}">
-									<c:choose>
-									<c:when test="${signRequest.status eq 'draft'}">
-									<spring:url value="/user/signrequests/pending/${id}" var="pendingUrl" />
-										<form action="${pendingUrl}">
-											<button type="submit" class="btn btn-primary">
-				  								<i class="fa fa-paper-plane" aria-hidden="true"><!--  --></i>&amp;nbsp;Envoyer pour signature
-											</button>
-										</form>
-									</c:when>
-									<c:when test="${signRequest.status eq 'pending'}">
-										<div class="alert alert-info" >La demande est en cours de signature par le(s) destinataire(s)</div>
-									</c:when>
-									</c:choose>
-									</c:when>
-									<c:otherwise>
-										<div class="alert alert-info" >Vous devez ajouter des documents</div>
-									</c:otherwise>
-
+										<c:when test="${fn:length(signRequest.originalDocuments) > 0}">
+										<c:choose>
+											<c:when test="${signRequest.status eq 'draft'}">
+												<spring:url value="/user/signrequests/pending/${id}" var="pendingUrl" />
+												<form action="${pendingUrl}">
+													<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows="" required="required"><!--  --></textarea>
+													<button type="submit" class="btn btn-primary">
+						  								<i class="fa fa-paper-plane" aria-hidden="true"><!--  --></i>&amp;nbsp;Envoyer pour signature
+													</button>
+												</form>
+											</c:when>
+											<c:when test="${signRequest.status eq 'pending'}">
+												<div class="alert alert-info" >La demande est en cours de signature par le(s) destinataire(s)</div>
+											</c:when>
+										</c:choose>
+										</c:when>
+										<c:otherwise>
+											<div class="alert alert-info" >Vous devez ajouter des documents</div>
+										</c:otherwise>
 									</c:choose>
 								</c:otherwise>
 							</c:choose>
@@ -168,7 +179,7 @@
 								<dl class="display-group border-bottom m-0">
 									<dt class="col-lg-5">
 										<spring:message code="menu_item_complete" />&amp;nbsp;
-						          			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+						          			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-info"><span class="fas fa-info-circle"></span></button>
 										<div class="collapse" id="collapseHelp1">
 											<div class="alert alert-info">
 												<small>
@@ -213,6 +224,35 @@
 								</dl>
 							</c:if>
 							
+						</div>
+					</div>
+				</div>
+
+				<div class="card bg-light">
+					<div class="card-header">
+						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseComments" aria-expanded="true" aria-controls="collapseTools">
+							Commentaires (${fn:length(comments)})&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
+							</i>
+						</button>
+					</div>
+					<div id="collapseComments" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+						<div class="card-body">
+							<div class="list-group">
+								<c:forEach items="${comments}" var="comment">
+								  <a href="#" class="list-group-item list-group-item-action">
+								    <div class="d-flex w-100 justify-content-between">
+								      <h5 class="mb-1">${comment.eppn}</h5>
+								      <small><fmt:formatDate pattern = "dd/MM/YYYY HH:mm" value = "${comment.logDate}" /></small>
+								    </div>
+								    <p>
+								     Action efectuée : <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_${comment.finalStatus}" />
+								    </p>
+								    <p class="mb-1">
+								    	${comment.comment}
+								    </p>
+								  </a>
+								</c:forEach>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -656,7 +696,26 @@
 	
 	</script>
 
-<div class="modal fade" id="signatureModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="refuseModal" tabindex="-1" role="dialog" aria-labelledby="Refus" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Refus</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <i class="fas fa-times"><!--  --></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <jsp:include page="includes/refusemodal.jspx" />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="signatureModal" tabindex="-1" role="dialog" aria-labelledby="Signature" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -669,7 +728,7 @@
         <jsp:include page="includes/signmodal.jspx" />
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
       </div>
     </div>
   </div>

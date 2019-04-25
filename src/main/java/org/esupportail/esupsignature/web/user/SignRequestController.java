@@ -212,8 +212,9 @@ public class SignRequestController {
 				uiModel.addAttribute("documentType", fileService.getExtension(toDisplayFile));		
 				uiModel.addAttribute("documentId", toDisplayDocument.getId());
 			}
-			
-			uiModel.addAttribute("logs", Log.findLogsBySignRequestIdEquals(signRequest.getId()).getResultList());
+			List<Log> logs = Log.findLogsBySignRequestIdEquals(signRequest.getId()).getResultList();
+			uiModel.addAttribute("logs", logs);
+			uiModel.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
 			if(user.getSignImage() != null) {
 				uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 			}
@@ -337,6 +338,7 @@ public class SignRequestController {
 	public String sign(@PathVariable("id") Long id, 
 			@RequestParam(value = "xPos", required = false) Integer xPos,
 			@RequestParam(value = "yPos", required = false) Integer yPos,
+			@RequestParam(value = "comment", required = false) String comment,
 			@RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
 			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
 			HttpServletResponse response, Model model, HttpServletRequest request) {
@@ -357,6 +359,7 @@ public class SignRequestController {
 	        	setPassword(password);
 			}
 			try {
+				signRequest.setComment(comment);
 				signRequestService.sign(signRequest, user, this.password);
 				signRequest.merge();
 			} catch (EsupSignatureKeystoreException e) {
@@ -384,6 +387,7 @@ public class SignRequestController {
 	@RequestMapping(value = "/sign-multiple", method = RequestMethod.POST)
 	public void signMultiple(
 			@RequestParam(value = "ids", required = true) Long[] ids,
+			@RequestParam(value = "comment", required = false) String comment,
 			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
 			HttpServletResponse response, Model model, HttpServletRequest request) throws JsonParseException, JsonMappingException, IOException {
 		User user = userService.getUserFromAuthentication();
@@ -403,7 +407,7 @@ public class SignRequestController {
 						signRequest.getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().getSignType());
 					}
 					if(signRequest.getSignRequestParams().getSignType().equals(SignRequestParams.SignType.visa)) {
-						signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS");		
+						signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS", comment);		
 					} else 
 					if(signRequest.getSignRequestParams().getSignType().equals(SignRequestParams.SignType.nexuSign)) {
 						logger.error("no multiple nexu sign");
@@ -447,7 +451,7 @@ public class SignRequestController {
 	}
 	
 	@RequestMapping(value = "/refuse/{id}")
-	public String refuse(@PathVariable("id") Long id, RedirectAttributes redirectAttrs, HttpServletResponse response,
+	public String refuse(@PathVariable("id") Long id, @RequestParam(value = "comment", required = true) String comment, RedirectAttributes redirectAttrs, HttpServletResponse response,
 			Model model, HttpServletRequest request) throws SQLException {
 		//TODO : add comment refuse
 		User user = userService.getUserFromAuthentication();
@@ -457,6 +461,7 @@ public class SignRequestController {
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
 			return "redirect:/user/signrequests/" + id;
 		}
+		signRequest.setComment(comment);
 		signRequestService.refuse(signRequest, user);
 		return "redirect:/user/signrequests/";
 	}
@@ -532,14 +537,15 @@ public class SignRequestController {
 	
 
 	@RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
-	public String complete(@PathVariable("id") Long id, HttpServletResponse response,
-			RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
+	public String complete(@PathVariable("id") Long id, 
+			@RequestParam(value = "comment", required = false) String comment,
+			HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if(signRequestService.checkUserViewRights(user, signRequest) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
 			signBookService.removeSignRequestFromAllSignBooks(signRequest);
-			signRequestService.updateInfo(signRequest, SignRequestStatus.completed, "manual complete", user, "SUCCESS");
+			signRequestService.updateInfo(signRequest, SignRequestStatus.completed, "manual complete", user, "SUCCESS", comment);
 		} else {
 			logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
 		}
@@ -547,15 +553,31 @@ public class SignRequestController {
 	}
 
 	@RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
-	public String pending(@PathVariable("id") Long id, HttpServletResponse response,
-			RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
+	public String pending(@PathVariable("id") Long id, 
+			@RequestParam(value = "comment", required = false) String comment,
+			HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if(signRequestService.checkUserViewRights(user, signRequest) && signRequest.getStatus().equals(SignRequestStatus.draft)) {
-			signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "send for sign", user, "SUCCESS");
+			signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "send for sign", user, "SUCCESS", comment);
 		} else {
 			logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");
+		}
+		return "redirect:/user/signrequests/" + id;
+	}
+	
+	@RequestMapping(value = "/comment/{id}", method = RequestMethod.GET)
+	public String comment(@PathVariable("id") Long id, 
+			@RequestParam(value = "comment", required = false) String comment,
+			HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
+		User user = userService.getUserFromAuthentication();
+		user.setIp(request.getRemoteAddr());
+		SignRequest signRequest = SignRequest.findSignRequest(id);
+		if(signRequestService.checkUserViewRights(user, signRequest) && signRequest.getStatus().equals(SignRequestStatus.draft)) {
+			signRequestService.updateInfo(signRequest, signRequest.getStatus(), "add comment", user, "SUCCESS", comment);
+		} else {
+			logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
 		}
 		return "redirect:/user/signrequests/" + id;
 	}

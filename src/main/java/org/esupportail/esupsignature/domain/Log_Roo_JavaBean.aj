@@ -64,6 +64,14 @@ privileged aspect Log_Roo_JavaBean {
         this.ip = ip;
     }
     
+    public String Log.getComment() {
+        return this.comment;
+    }
+    
+    public void Log.setComment(String comment) {
+        this.comment = comment;
+    }
+    
     public long Log.getSignRequestId() {
         return this.signRequestId;
     }

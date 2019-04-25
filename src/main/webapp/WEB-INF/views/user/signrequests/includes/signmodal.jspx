@@ -65,6 +65,15 @@
 			</div>
 				</c:if>
 			<field:display render="false" field="allSignToComplete" id="s_org_esupportail_esupsignature_domain_SignRequest_allSignToComplete" object="${signRequest}" z="user-managed" />
+				<dl class="display-group border-bottom m-0">
+					<dt class="col-lg-5">
+						Commentaire
+					</dt>
+					<dd>
+						<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows="" required="required"><!--  --></textarea>
+					</dd>
+				</dl>
+
 			<dl class="display-group border-bottom m-0">
 				<dt class="col-lg-5">
 					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signAction" />
@@ -116,18 +125,6 @@
 							</c:choose>
 						</c:otherwise>
 					</c:choose>
-				</dd>
-			</dl>
-			<dl class="display-group border-bottom m-0">
-				<dt class="col-lg-5">
-					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_refuseAction" />
-				</dt>
-				<dd>
-					<spring:url value="/user/signrequests/refuse/${id}" var="refuseUrl" />
-					<button type="button" onclick="location.href='${refuseUrl}'" class="btn btn-danger">
-						<i class="fas fa-ban"> <!--  --></i>&amp;nbsp;
-						<spring:message code="button_refuse" />
-					</button>
 				</dd>
 			</dl>
 		</form>

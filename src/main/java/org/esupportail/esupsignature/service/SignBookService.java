@@ -148,7 +148,7 @@ public class SignBookService {
 				File signedFile = signRequestService.getLastSignedDocument(signRequest).getJavaIoFile();
 				InputStream inputStream = new FileInputStream(signedFile);
 				fsAccessService.putFile(signBook.getDocumentsTargetUri(), signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
-				signRequestService.updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
+				signRequestService.updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", "");
 			} catch (Exception e) {
 				throw new EsupSignatureException("write fsaccess error : ", e);
 			}
@@ -166,7 +166,7 @@ public class SignBookService {
 				signRequest.getSignBooks().put(signBook.getId(), false);
 				signRequest.merge();
 				signBook.getSignRequests().add(signRequest);
-				signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "imported in signbook " + signBook.getId(), user, "SUCCESS");
+				signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "imported in signbook " + signBook.getId(), user, "SUCCESS", "");
 				signBook.merge();
 				logger.info("signRequest " + signRequest.getId() + " added to signBook : " + signBook.getId() + " by " + user.getEppn());
 			} else {

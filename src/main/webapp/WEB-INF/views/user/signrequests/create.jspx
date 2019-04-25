@@ -70,7 +70,6 @@
         <field:input field="createBy" id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" render="false" z="user-managed"/>
         <field:datetime dateTimePattern="${signRequest_updatedate_date_format}" field="updateDate" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" render="false" z="user-managed"/>
         <field:input field="updateBy" id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" render="false" z="user-managed"/>
-        <field:textarea  colLabel="col-lg-4" colInput="col-lg-8" row="4" cssClass="form-control" field="description" id="c_org_esupportail_esupsignature_domain_SignRequest_description" z="user-managed"/>
         <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignRequest_status" render="false" z="user-managed"/>
         <field:select field="originalFile" id="c_org_esupportail_esupsignature_domain_SignRequest_originalFile" itemValue="id" items="${files}" path="/files" render="false" z="user-managed"/>
         <field:select field="signedFile" id="c_org_esupportail_esupsignature_domain_SignRequest_signedFile" itemValue="id" items="${files}" path="/files" render="false" z="user-managed"/>

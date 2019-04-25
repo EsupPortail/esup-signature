@@ -174,11 +174,6 @@ public class SignRequestService {
 		document.setSignRequestId(signRequest.getId());
 	}
 	
-	public void validate(SignRequest signRequest, User user) throws EsupSignatureIOException {
-		updateInfo(signRequest, SignRequestStatus.checked, "visa", user, "SUCCESS");		
-		applySignBookRules(signRequest, user);
-	}
-
 	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureIOException, EsupSignatureSignException, EsupSignatureNexuException, EsupSignatureKeystoreException, IOException {
 		step = "Demarrage de la signature";
 		SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
@@ -327,24 +322,24 @@ public class SignRequestService {
 				signBookService.resetSignBookParams(signBook);
 			}
 			if(signType.equals(SignType.visa)) {
-				updateInfo(signRequest, SignRequestStatus.checked, "visa", user, "SUCCESS");
+				updateInfo(signRequest, SignRequestStatus.checked, "visa", user, "SUCCESS", signRequest.getComment());
 			} else {
-				updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS");
+				updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS", signRequest.getComment());
 			}
 			if (!signBook.getTargetType().equals(DocumentIOType.none)) {
 				try {
 					signBookService.exportFileToTarget(signBook, signRequest, user);
-					updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
+					updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", signRequest.getComment());
 				} catch (EsupSignatureException e) {
 					logger.error("error on export file to fs", e);
 				}
 			}
 			if(signBook.isAutoRemove()) {
 				signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
-				updateInfo(signRequest, SignRequestStatus.completed, "auto remove", user, "SUCCESS");
+				updateInfo(signRequest, SignRequestStatus.completed, "auto remove", user, "SUCCESS", signRequest.getComment());
 			}
 		} else {
-			updateInfo(signRequest, SignRequestStatus.pending, "sign", user, "SUCCESS");
+			updateInfo(signRequest, SignRequestStatus.pending, "sign", user, "SUCCESS", signRequest.getComment());
 		}
 	}
 	
@@ -372,7 +367,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void updateInfo(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, User user, String returnCode) {
+	public void updateInfo(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, User user, String returnCode, String comment) {
 		Log log = new Log();
 		log.setSignRequestId(signRequest.getId());
 		log.setEppn(user.getEppn());
@@ -382,6 +377,7 @@ public class SignRequestService {
 		log.setFinalStatus(signRequestStatus.toString());
 		log.setAction(action);
 		log.setReturnCode(returnCode);
+		log.setComment(comment);
 		log.persist();
 		signRequest.setStatus(signRequestStatus);
 		//signRequest.merge();
@@ -409,7 +405,7 @@ public class SignRequestService {
 
 	public void refuse(SignRequest signRequest, User user) {
 		signBookService.removeSignRequestFromAllSignBooks(signRequest);
-		updateInfo(signRequest, SignRequestStatus.refused, "refuse", user, "SUCCESS");
+		updateInfo(signRequest, SignRequestStatus.refused, "refuse", user, "SUCCESS", signRequest.getComment());
 	}
 	
 	public void toggleNeedAllSign(SignRequest signRequest) {

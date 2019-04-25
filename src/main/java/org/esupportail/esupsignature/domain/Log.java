@@ -31,6 +31,8 @@ public class Log {
 	
 	private String ip;
 	
+	private String comment;
+	
 	private long signRequestId;
 
 }

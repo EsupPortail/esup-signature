@@ -44,12 +44,12 @@ privileged aspect SignRequest_Roo_JavaBean {
         this.createBy = createBy;
     }
     
-    public String SignRequest.getDescription() {
-        return this.description;
+    public String SignRequest.getComment() {
+        return this.comment;
     }
     
-    public void SignRequest.setDescription(String description) {
-        this.description = description;
+    public void SignRequest.setComment(String comment) {
+        this.comment = comment;
     }
     
     public List<Document> SignRequest.getOriginalDocuments() {
