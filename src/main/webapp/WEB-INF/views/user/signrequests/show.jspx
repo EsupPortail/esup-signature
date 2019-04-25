@@ -158,7 +158,7 @@
 											<c:when test="${signRequest.status eq 'draft'}">
 												<spring:url value="/user/signrequests/pending/${id}" var="pendingUrl" />
 												<form action="${pendingUrl}">
-													<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows="" required="required"><!--  --></textarea>
+													<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows="" ><!--  --></textarea>
 													<button type="submit" class="btn btn-primary">
 						  								<i class="fa fa-paper-plane" aria-hidden="true"><!--  --></i>&amp;nbsp;Envoyer pour signature
 													</button>

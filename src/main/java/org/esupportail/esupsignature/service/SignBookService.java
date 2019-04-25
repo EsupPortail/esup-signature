@@ -162,7 +162,9 @@ public class SignBookService {
 			User testSignBookUser = User.findUsersByEmailEquals(signBook.getRecipientEmails().get(0)).getSingleResult();
 			SignBook testSignBook = getSignBookBySignRequestAndUser(signRequest, testSignBookUser);
 			if(testSignBook == null) {
-				signRequest.setSignRequestParams(signBook.getSignRequestParams());
+				if(!signRequest.isOverloadSignBookParams()) {
+					signRequest.setSignRequestParams(signBook.getSignRequestParams());
+				}
 				signRequest.getSignBooks().put(signBook.getId(), false);
 				signRequest.merge();
 				signBook.getSignRequests().add(signRequest);
