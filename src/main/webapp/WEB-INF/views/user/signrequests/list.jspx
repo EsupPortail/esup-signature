@@ -96,6 +96,7 @@
 						</div>
 					</div>
 					<select class="form-control" name="toSign" onchange="submit();">
+						<option value="">Choisir un filtre</option>
 						<c:choose>
 							<c:when test="${toSign eq true}">
 								<option value="false">
@@ -105,8 +106,16 @@
 									<spring:message code="menu_item_user_to_sign_documents" />
 								</option>
 							</c:when>
-							<c:otherwise>
+							<c:when test="${toSign eq false}">
 								<option value="false" selected="selected">
+									<spring:message code="menu_item_user_my_documents" />
+								</option>
+								<option value="true">
+									<spring:message code="menu_item_user_to_sign_documents" />
+								</option>
+							</c:when>
+							<c:otherwise>
+								<option value="false" >
 									<spring:message code="menu_item_user_my_documents" />
 								</option>
 								<option value="true">

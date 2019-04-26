@@ -164,21 +164,21 @@ document.addEventListener('DOMContentLoaded', function() {
 	if(signTypeDiv != null) {
 		signTypeSelector.disabled = true;
 		newPageTypeSelector.disabled = true;
-		signTypeDiv.classList.add("div-disable");
-		newPageTypeDiv.classList.add("div-disable");
+		signTypeDiv.classList.add("d-none");
+		newPageTypeDiv.classList.add("d-none");
 	}
 });
 
 function toggleOverload() {
 	overloadSignParams = document.getElementById("_overloadSignParams");
 	if(!overloadSignParams.checked) {
-		signTypeDiv.classList.add("div-disable");
-		newPageTypeDiv.classList.add("div-disable");
+		signTypeDiv.classList.add("d-none");
+		newPageTypeDiv.classList.add("d-none");
 		signTypeSelector.disabled = true;
 		newPageTypeSelector.disabled = true;
 	} else {
-		signTypeDiv.classList.remove("div-disable");
-		newPageTypeDiv.classList.remove("div-disable");
+		signTypeDiv.classList.remove("d-none");
+		newPageTypeDiv.classList.remove("d-none");
 		signTypeSelector.disabled = false;
 		newPageTypeSelector.disabled = false;
 	}

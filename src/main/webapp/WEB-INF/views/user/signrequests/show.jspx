@@ -47,21 +47,6 @@
 		<div class="row">
 			<div class="col-lg-6">
 			<div id="accordion">
-			<!-- 
-				<div class="card bg-light collapse">
-					<div class="card-body">
-					<field:display field="name" label="Nom unique de la demande" id="s_org_esupportail_esupsignature_domain_SignRequest_name" object="${signRequest}" z="user-managed" />
-					<dl class="display-group border-bottom m-0">
-						<dt class="col-lg-5">
-							<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status" />
-						</dt>
-						<dd>
-							<jsp:include page="includes/status.jspx" />
-						</dd>
-					</dl>
-				</div>
-				</div>
-				 -->
 				<div class="card bg-light">
 					<div class="card-header">
 						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseTools" aria-expanded="true" aria-controls="collapseTools">
@@ -153,7 +138,7 @@
 								</c:when>
 								<c:otherwise>
 									<c:choose>
-										<c:when test="${fn:length(signRequest.originalDocuments) > 0}">
+										<c:when test="${fn:length(signRequest.originalDocuments) > 0 and user.eppn eq signRequest.createBy}">
 										<c:choose>
 											<c:when test="${signRequest.status eq 'draft'}">
 												<spring:url value="/user/signrequests/pending/${id}" var="pendingUrl" />
@@ -520,13 +505,13 @@
     	language: "fr",
         showCaption: false,
         showClose: false,
-        <c:if test="${signRequest.status ne 'draft'}">
+        <c:if test="${signRequest.status ne 'draft' or user.eppn ne signRequest.createBy}">
         	showUpload: false,
         	showBrowse: false,
         	showRemove: false,
         	dropZoneEnabled: false,
         </c:if>
-        <c:if test="${signRequest.status eq 'draft'}">
+        <c:if test="${signRequest.status eq 'draft' and user.eppn eq signRequest.createBy}">
         	browseOnZoneClick: true,        
         </c:if>
     	uploadUrl: "/user/signrequests/add-doc/${id}",
@@ -627,7 +612,7 @@
                 }
                 return false;
             },
-            <c:if test="${signRequest.status ne 'draft'}">
+            <c:if test="${signRequest.status ne 'draft' and user.eppn ne signRequest.createBy}">
 	        	showRemove: false
         	</c:if>
 

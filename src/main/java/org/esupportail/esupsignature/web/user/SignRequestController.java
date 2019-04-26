@@ -118,9 +118,7 @@ public class SignRequestController {
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
 			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
 		SignRequestStatus statusFilterEnum = null;
-		if(toSign == null) {
-			toSign = true;
-		}
+
 		if(page == null) {
 			page = 1;
 		}
@@ -150,20 +148,27 @@ public class SignRequestController {
 		int sizeNo = size == null ? 10 : size.intValue();
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
+		
+		//TODO : par defaut sans filtres
+		
 		List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailsEquals(recipientEmails).getResultList();
-		if(toSign) {
-			if(signBookId != null) {	
-				signRequests.addAll(SignBook.findSignBook(signBookId).getSignRequests());
+		if(toSign != null) {
+			if(toSign) {
+				if(signBookId != null) {	
+					signRequests.addAll(SignBook.findSignBook(signBookId).getSignRequests());
+				} else {
+					signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending, page, size);
+				}
+				signRequests = signRequests.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
+				nrOfPages = (float) signRequestService.findSignRequestByUserAndStatusEquals(user, statusFilterEnum).size() / sizeNo;
 			} else {
-				signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending, page, size);
+				signRequests = SignRequest.findSignRequests(user.getEppn(), statusFilterEnum, "", page, size, sortFieldName, sortOrder)
+						.getResultList();
+				nrOfPages = (float) SignRequest.countFindSignRequests(user.getEppn(), statusFilterEnum, "") / sizeNo;
+				
 			}
-			signRequests = signRequests.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
-			nrOfPages = (float) signRequestService.findSignRequestByUserAndStatusEquals(user, statusFilterEnum).size() / sizeNo;
 		} else {
-			signRequests = SignRequest.findSignRequests(user.getEppn(), statusFilterEnum, "", page, size, sortFieldName, sortOrder)
-					.getResultList();
-			nrOfPages = (float) SignRequest.countFindSignRequests(user.getEppn(), statusFilterEnum, "") / sizeNo;
-			
+			signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, null, page, size);
 		}
 		
 		uiModel.addAttribute("mydocs", "active");
@@ -248,8 +253,7 @@ public class SignRequestController {
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(@Valid SignRequest signRequest, BindingResult bindingResult, 
 			@RequestParam(value = "signType", required = false) String signType, 
-			@RequestParam(value = "signBookIds", required = false) long[] signBookIds,
-			@RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
+			@RequestParam(value = "signBookNames", required = false) String[] signBookNames,
 			@RequestParam(value="newPageType", required = false) String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
 			HttpServletRequest request, RedirectAttributes redirectAttrs) {
 		if (bindingResult.hasErrors()) {
@@ -272,20 +276,20 @@ public class SignRequestController {
 		
 		List<String> recipientEmails = new ArrayList<>();
 		
-		if(signBookIds != null && signBookIds.length > 0) {
-			for(long signBookId : signBookIds) {
-				SignBook signBook = SignBook.findSignBook(signBookId);
-				recipientEmails.addAll(signBook.getRecipientEmails());
-			}
-		}
-		if(recipientsEmails != null && recipientsEmails.length > 0) {
-			for(String recipientEmail : recipientsEmails) {
-				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(recipientEmail)) == 0) {
-					userService.createUser(recipientEmail);
+		if(signBookNames != null && signBookNames.length > 0) {
+			for(String signBookName : signBookNames) {
+				if(SignBook.countFindSignBooksByNameEquals(signBookName) > 0) {
+					SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
+					recipientEmails.addAll(signBook.getRecipientEmails());
+				} else {
+					if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(signBookName)) == 0) {
+						userService.createUser(signBookName);
+					}
+					recipientEmails.add(signBookName);
 				}
-				recipientEmails.add(recipientEmail);
 			}
 		}
+		
 		if(recipientEmails.size() == 0) {
 			redirectAttrs.addFlashAttribute("messageCustom", "no recipient");
 			return "redirect:/user/signrequests/?form";

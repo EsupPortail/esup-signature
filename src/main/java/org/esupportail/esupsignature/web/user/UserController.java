@@ -122,6 +122,7 @@ public class UserController {
     
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(Model uiModel) throws IOException, SQLException {
+    	//TODO : choix automatique du mode de signature
 		User user = userService.getUserFromAuthentication();;
 		if(user != null) {
 	        uiModel.addAttribute("user", user);	     
@@ -215,15 +216,27 @@ public class UserController {
 	@RequestMapping(value="/searchLdap")
 	@ResponseBody
 	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString, @RequestParam(required=false) String ldapTemplateName) {
+		//TODO : return search ldap + signbooks
 		logger.info("ldap search for : " + searchString);
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Content-Type", "application/json; charset=utf-8");
 		List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
-		if(ldapPersonService != null && !searchString.trim().isEmpty()) {
-			ldapList = ldapPersonService.search(searchString, ldapTemplateName);
-			ldapList = ldapList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
+		List<SignBook> signBooks = SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList();
+		for(SignBook signBook : signBooks) {
+			PersonLdap personLdap = new PersonLdap();
+			personLdap.setUid("parapheur");
+			personLdap.setMail(signBook.getName());
+			personLdap.setDisplayName(signBook.getName());
+			ldapList.add(personLdap);
+		}
+		if(ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
+			List<PersonLdap> ldapSearchList = new ArrayList<PersonLdap>();
+			ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
+			ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
 
 		}
+
+
 		return ldapList;
    }
 	
