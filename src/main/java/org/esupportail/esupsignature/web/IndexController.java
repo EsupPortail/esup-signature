@@ -48,12 +48,9 @@ public class IndexController {
 	
 	@RequestMapping
 	public String index(HttpServletRequest request, Model uiModel) {
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String eppn = auth.getName();
-		if(!eppn.equals("anonymousUser")) {
-			if(User.countFindUsersByEppnEquals(eppn) > 0) {
-				return "redirect:/user/signrequests/";
-			}
+		User user = userService.getUserFromAuthentication();
+		if(user != null) {
+			return "redirect:/user/signrequests/";
 		}
 		return "index";
 	}
