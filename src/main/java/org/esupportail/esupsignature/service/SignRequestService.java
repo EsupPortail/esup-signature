@@ -107,7 +107,7 @@ public class SignRequestService {
 				}
 			}
 		}
-		List<Log> logs = Log.findLogsByEppnAndActionEquals(user.getEppn(), "sign").getResultList();
+		List<Log> logs = Log.findLogsByEppnEquals(user.getEppn()).getResultList();
 		for(Log log : logs) {
 			SignRequest signRequest = SignRequest.findSignRequest(log.getSignRequestId());
 			if(signRequest != null && !signRequests.contains(signRequest) && (status == null || signRequest.getStatus().equals(status))) {
