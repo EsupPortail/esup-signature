@@ -157,7 +157,7 @@ public class SignRequestController {
 				if(signBookId != null) {	
 					signRequests.addAll(SignBook.findSignBook(signBookId).getSignRequests());
 				} else {
-					signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending, page, size);
+					signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, toSign, SignRequestStatus.pending, page, size);
 				}
 				signRequests = signRequests.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 				nrOfPages = (float) signRequestService.findSignRequestByUserAndStatusEquals(user, statusFilterEnum).size() / sizeNo;
@@ -168,7 +168,7 @@ public class SignRequestController {
 				
 			}
 		} else {
-			signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, null, page, size);
+			signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, false, null, page, size);
 		}
 		
 		uiModel.addAttribute("mydocs", "active");

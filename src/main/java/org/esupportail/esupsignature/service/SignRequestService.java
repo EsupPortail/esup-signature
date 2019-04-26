@@ -92,10 +92,10 @@ public class SignRequestService {
 	private String step = "";
 	
 	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status) {
-		return findSignRequestByUserAndStatusEquals(user, status, null, null);
+		return findSignRequestByUserAndStatusEquals(user, true, status, null, null);
 	}
 	
-	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status, Integer page, Integer size) {
+	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, Boolean toSign, SignRequestStatus status, Integer page, Integer size) {
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
 		List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailsEquals(recipientEmails).getResultList();
@@ -107,7 +107,12 @@ public class SignRequestService {
 				}
 			}
 		}
-		List<Log> logs = Log.findLogsByEppnEquals(user.getEppn()).getResultList();
+		List<Log> logs;
+		if(toSign) {
+			logs = Log.findLogsByEppnAndActionEquals(user.getEppn(), "sign").getResultList();
+		} else {
+			logs = Log.findLogsByEppnEquals(user.getEppn()).getResultList();
+		}
 		for(Log log : logs) {
 			SignRequest signRequest = SignRequest.findSignRequest(log.getSignRequestId());
 			if(signRequest != null && !signRequests.contains(signRequest) && (status == null || signRequest.getStatus().equals(status))) {
