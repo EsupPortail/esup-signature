@@ -70,7 +70,7 @@
 						Commentaire
 					</dt>
 					<dd>
-						<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows="" required="required"><!--  --></textarea>
+						<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows="" ><!--  --></textarea>
 					</dd>
 				</dl>
 
