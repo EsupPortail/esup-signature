@@ -216,7 +216,7 @@ public class UserController {
 	@RequestMapping(value="/searchLdap")
 	@ResponseBody
 	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString, @RequestParam(required=false) String ldapTemplateName) {
-		//TODO : return search ldap + signbooks
+
 		logger.info("ldap search for : " + searchString);
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Content-Type", "application/json; charset=utf-8");

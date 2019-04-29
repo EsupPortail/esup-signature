@@ -349,6 +349,9 @@ document.addEventListener('DOMContentLoaded', function() {
 	emailAlertFrequencySelect = document.getElementById("_emailAlertFrequency_id");
 	emailAlertDay = document.getElementById("_c_org_esupportail_esupsignature_domain_user_emailAlertDay");
 	emailAlertHour = document.getElementById("_c_org_esupportail_esupsignature_domain_user_emailAlertHour");
+	if(emailAlertFrequencySelect != null) {
+		checkAlertFrequency();
+	}
 });
 
 function checkRequirement() {
@@ -371,9 +374,9 @@ function checkAlertFrequency() {
 	var selectedValue = emailAlertFrequencySelect.options[emailAlertFrequencySelect.selectedIndex].value;
 	if(selectedValue == 'daily') {
 		emailAlertDay.style.display = "none";
-		emailAlertHour.style.display = "block";
+		emailAlertHour.style.display = "flex";
 	} else if(selectedValue == 'weekly') { 
-		emailAlertDay.style.display = "block";
+		emailAlertDay.style.display = "flex";
 		emailAlertHour.style.display = "none";
 	} else {
 		emailAlertDay.style.display = "none";

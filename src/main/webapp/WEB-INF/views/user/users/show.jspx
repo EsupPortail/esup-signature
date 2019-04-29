@@ -29,9 +29,14 @@
 				<spring:message code="label_org_esupportail_esupsignature_domain_user_signimage" />
 			</dt>
 			<dd>
-				<c:if test="${not empty signFile}">
-					<img alt="signature" src="data:image/jpg;base64, ${signFile}" />
-				</c:if>
+				<c:choose>
+					<c:when test="${not empty signFile}">
+						<img alt="signature" src="data:image/jpg;base64, ${signFile}" />
+					</c:when>
+					<c:otherwise>
+						<i class="fas fa-ban"><!--  --></i>
+					</c:otherwise>
+				</c:choose>
 			</dd>
 		</dl>
 		<dl class="display-group border-bottom m-0">
@@ -39,28 +44,33 @@
 				<spring:message code="label_org_esupportail_esupsignature_domain_user_keystore" />
 			</dt>
 			<dd>
-				<c:if test="${not empty keystore}">
-					<spring:url value="/user/users/get-keystore-file/${id}" var="keystoreFileUrl" />
-					<button type="button" class="btn btn-warning" onclick="location.href='${keystoreFileUrl}'">
-						<i class="fas fa-download"> <!--  -->
-						</i>
-						<spring:message code="menu_item_user_download_keystore" />
-					</button>
-					<br />
-					<br />
-					<form action="viewCert" method="get">
-						<div class="input-group mb-2">
-							<c:if test="${not isPasswordSet}">
-								<spring:message code="label_org_esupportail_esupsignature_domain_user_password" var="passwordLabel" />
-								<input class="form-control" placeholder="${passwordLabel}" type="password" name="password" />
-							</c:if>
-							<div class="input-group-append">
-								<spring:message code="menu_item_user_check_certificat" var="checkCertLabel" />
-								<input class="btn btn-primary" type="submit" value="${checkCertLabel}" />
+				<c:choose>
+					<c:when test="${not empty keystore}">
+						<spring:url value="/user/users/get-keystore-file/${id}" var="keystoreFileUrl" />
+						<button type="button" class="btn btn-warning" onclick="location.href='${keystoreFileUrl}'">
+							<i class="fas fa-download"> <!--  -->
+							</i>
+							<spring:message code="menu_item_user_download_keystore" />
+						</button>
+						<br />
+						<br />
+						<form action="viewCert" method="get">
+							<div class="input-group mb-2">
+								<c:if test="${not isPasswordSet}">
+									<spring:message code="label_org_esupportail_esupsignature_domain_user_password" var="passwordLabel" />
+									<input class="form-control" placeholder="${passwordLabel}" type="password" name="password" />
+								</c:if>
+								<div class="input-group-append">
+									<spring:message code="menu_item_user_check_certificat" var="checkCertLabel" />
+									<input class="btn btn-primary" type="submit" value="${checkCertLabel}" />
+								</div>
 							</div>
-						</div>
-					</form>
-				</c:if>
+						</form>
+					</c:when>
+					<c:otherwise>
+						<i class="fas fa-ban"><!--  --></i>
+					</c:otherwise>
+				</c:choose>
 			</dd>
 		</dl>
 		
@@ -81,5 +91,24 @@
 				</div>
 			</dd>
 		</dl>
+		<c:if test="${not empty user.emailAlertFrequency}"> 
+		<dl class="display-group border-bottom m-0">
+			<dt class="col-lg-5">
+				<spring:message code="label_org_esupportail_esupsignature_domain_user_emailalertfrequency" />
+			</dt>
+			<dd>
+				<spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency_${user.emailAlertFrequency}" />
+			</dd>
+		</dl>
+		
+		<c:choose>
+			<c:when test="${user.emailAlertFrequency eq 'daily'}">
+				<field:display field="emailAlertHour" id="s_org_esupportail_esupsignature_domain_User_emailAlertHour" object="${user}" z="user-managed" />			
+			</c:when>
+			<c:when test="${user.emailAlertFrequency eq 'weekly'}">
+				<field:display field="emailAlertDay" id="s_org_esupportail_esupsignature_domain_User_emailAlertDay" object="${user}" z="user-managed" />			
+			</c:when>
+		</c:choose>
+		</c:if>
 	</page:show>
 </div>

@@ -79,7 +79,7 @@
 					<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signAction" />
 				</dt>
 				<dd>
-				<c:if test="${empty user.signImage and documentType eq 'pdf'}">
+				<c:if test="${empty user.signImage and documentType eq 'pdf' and signRequest.signRequestParams.signType ne 'visa'}">
 					<div class="card card-body bg-danger text-white">
 					<a href="/user/users/" class="text-white"><u><spring:message code="help_user_nosignimage" /></u></a>
 					</div>

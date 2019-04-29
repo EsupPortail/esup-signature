@@ -12,12 +12,16 @@ import org.esupportail.esupsignature.dss.web.service.OJService;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.fs.EsupStockException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class ScheduledTaskService {
 
+	private static final Logger logger = LoggerFactory.getLogger(ScheduledTaskService.class);
+	
 	@Resource
 	private SignBookService signBookService;
 
@@ -48,7 +52,10 @@ public class ScheduledTaskService {
 	public void sendAllEmailAlerts() throws EsupSignatureException {
 		List<User> users = User.findAllUsers();
 		for(User user : users) {
-			userService.sendEmailAlert(user);
+			logger.debug("check email alert for " + user.getEppn());
+			if(userService.checkEmailAlert(user)) {
+				userService.sendEmailAlert(user);
+			}
 		}
 	}
 	

@@ -26,6 +26,7 @@ import org.esupportail.esupsignature.domain.SignRequestParams;
 import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.domain.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
@@ -149,8 +150,6 @@ public class SignRequestController {
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
 		
-		//TODO : par defaut sans filtres
-		
 		List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailsEquals(recipientEmails).getResultList();
 		if(toSign != null) {
 			if(toSign) {
@@ -190,6 +189,9 @@ public class SignRequestController {
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
 		User user = userService.getUserFromAuthentication();
+		if(!user.isReady()) {
+			return "redirect:/user/users/?form";
+		}
 		addDateTimeFormatPatterns(uiModel);
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
@@ -347,8 +349,7 @@ public class SignRequestController {
 			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
 			HttpServletResponse response, Model model, HttpServletRequest request) {
 		//TODO : choose xades cades
-		//TODO : add comment sign
-		
+	
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
@@ -457,7 +458,6 @@ public class SignRequestController {
 	@RequestMapping(value = "/refuse/{id}")
 	public String refuse(@PathVariable("id") Long id, @RequestParam(value = "comment", required = true) String comment, RedirectAttributes redirectAttrs, HttpServletResponse response,
 			Model model, HttpServletRequest request) throws SQLException {
-		//TODO : add comment refuse
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
@@ -565,6 +565,15 @@ public class SignRequestController {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if(signRequestService.checkUserViewRights(user, signRequest) && signRequest.getStatus().equals(SignRequestStatus.draft)) {
 			signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "send for sign", user, "SUCCESS", comment);
+			for(Long signBookId : signRequest.getSignBooks().keySet()) {
+				SignBook signBook = SignBook.findSignBook(signBookId);
+				for(String emailRecipient : signBook.getRecipientEmails()) {
+					User recipient = User.findUsersByEmailEquals(emailRecipient).getSingleResult();
+					if(user.getEmailAlertFrequency() == null|| user.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(user)) {
+						userService.sendEmailAlert(recipient);
+					}
+				}
+			}
 		} else {
 			logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");
 		}

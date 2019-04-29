@@ -59,9 +59,9 @@
 						<div class="alert alert-info">
 							<small>
 								<ul>
-									<li>PAdES/XAdES : s'appuie sur le certificat P12 uploader au niveau de vos paramètres</li>
+									<li>La signature electronique s'appuie sur le certificat P12 uploader au niveau de vos paramètres</li>
 									<li>Apposition de la signature : ajoute simplement l'image de votre signature sur un PDF à l'endroit voulu</li>
-									<li>PAdES/XAdES avec NexU : s'appuie l'application NexU qui permet l'utilisation d'un certificat matériel</li>
+									<li>La signature electronique avec NexU s'appuie l'application NexU qui permet l'utilisation d'un certificat matériel</li>
 									<li>Confirmation de lecture : permet de valider la lecture d'un document</li>
 								</ul>
 							</small>
@@ -171,7 +171,7 @@
         </a>
       </h5>
     </div>
-    <div id="collapseThree" class="collapse" role="tabpanel" aria-labelledby="headingThree">
+    <div id="collapseThree" class="show" role="tabpanel" aria-labelledby="headingThree">
       <div class="card-body">
         		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertFrequency">
 			<label class="col-lg-3  col-form-label" for="signType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency" /></strong>
@@ -184,16 +184,10 @@
 			</label>
 			<div class="col-lg-9">
                <select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency" size="1" onchange="checkAlertFrequency();">
+                   <option selected="selected" value="">-- Choisir votre préférence d'alerte --</option>
                    <c:forEach items="${emailAlertFrequencies}" var="emailAlertFrequency">
                        <spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency_${emailAlertFrequency}" var="emailAlertFrequencyLabel"/>
-                       <c:choose>
-                           <c:when test="${emailAlertFrequency eq user.emailAlertFrequency}">
-                               <option selected="selected" value="${emailAlertFrequency}">${emailAlertFrequencyLabel}</option>
-                           </c:when>
-                           <c:otherwise>
-                               <option value="${emailAlertFrequency}">${emailAlertFrequencyLabel}</option>
-                           </c:otherwise>
-                       </c:choose>
+                       <option value="${emailAlertFrequency}">${emailAlertFrequencyLabel}</option>
                    </c:forEach>
                </select>
 			</div>

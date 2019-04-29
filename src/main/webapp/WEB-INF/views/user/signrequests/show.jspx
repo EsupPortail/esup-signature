@@ -137,8 +137,10 @@
 									</c:choose>
 								</c:when>
 								<c:otherwise>
+								<c:choose>
+								<c:when test="${user.eppn eq signRequest.createBy}">
 									<c:choose>
-										<c:when test="${fn:length(signRequest.originalDocuments) > 0 and user.eppn eq signRequest.createBy}">
+										<c:when test="${fn:length(signRequest.originalDocuments) > 0}">
 										<c:choose>
 											<c:when test="${signRequest.status eq 'draft'}">
 												<spring:url value="/user/signrequests/pending/${id}" var="pendingUrl" />
@@ -158,6 +160,11 @@
 											<div class="alert alert-info" >Vous devez ajouter des documents</div>
 										</c:otherwise>
 									</c:choose>
+								</c:when>
+								<c:otherwise>
+									<div class="alert alert-info" >Demande en cours de création</div>
+								</c:otherwise>
+								</c:choose>
 								</c:otherwise>
 							</c:choose>
 							<c:if test="${signRequest.status eq 'signed' or signRequest.status eq 'checked'}">
@@ -492,11 +499,11 @@
 	$('#multipartFile').on('fileuploaded', function(event, file, previewId, index, reader) {
 		location.reload();
 	});
+	
 	$('#multipartFile').on('fileloaded', function(event, file, previewId, index, reader) {
-	//TODO : attention envoi
-	var files = $('#multipartFile').fileinput('getFileStack');
-	alert('test');
+		$('#multipartFile').fileinput('upload');
 	});
+	
 	$('#multipartFile').on('filedeleted', function(event, id, index) {
 		location.reload();
 	});

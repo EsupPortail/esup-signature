@@ -98,27 +98,34 @@ public class UserService {
 		}
 	}
 	
-	public void sendEmailAlert(User user) {
+	public boolean checkEmailAlert(User user) {
 		Date date = new Date();
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		long diffInMillies = Math.abs(date.getTime() - user.getLastSendAlertDate().getTime());
 		long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
-		if((user.getEmailAlertFrequency().equals(EmailAlertFrequency.daily) && diff > 0)
-		||	user.getEmailAlertFrequency().equals(EmailAlertFrequency.weekly) && diff > 7) {
-			String[] to = {user.getEmail()};
-			List<SignRequest> signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending);
-			if(signRequests.size() > 0) {
-				VelocityContext context = new VelocityContext();
-		        StringWriter writer = new StringWriter();
-		        context.put("signRequests", signRequests);
-		        context.put("rootUrl", rootUrl);
-		        emailTemplate.merge(context, writer);
-				mailSenderService.sendMail(to, "Alert esup-signature", writer.toString(), null);
-			}
-			user.setLastSendAlertDate(date);
-			user.merge();
+		if((user.getEmailAlertFrequency() == null && diff > 0)
+		|| (user.getEmailAlertFrequency().equals(EmailAlertFrequency.daily) && diff > 0)
+		|| (user.getEmailAlertFrequency().equals(EmailAlertFrequency.weekly) && diff > 7)) {
+			return true;
 		}
+		return false;
+	}
+
+	public void sendEmailAlert(User user) {
+		Date date = new Date();
+		List<SignRequest> signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending);
+		if(signRequests.size() > 0) {
+			String[] to = {user.getEmail()};
+			VelocityContext context = new VelocityContext();
+	        StringWriter writer = new StringWriter();
+	        context.put("signRequests", signRequests);
+	        context.put("rootUrl", rootUrl);
+	        emailTemplate.merge(context, writer);
+			mailSenderService.sendMail(to, "Alert esup-signature", writer.toString(), null);
+		}
+		user.setLastSendAlertDate(date);
+		user.merge();
 	}
 	
     public User getUserFromAuthentication() {
