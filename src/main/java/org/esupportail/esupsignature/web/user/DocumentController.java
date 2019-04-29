@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.user;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -135,4 +136,19 @@ public class DocumentController {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 	}
+    
+    @RequestMapping(value = "/test", method = RequestMethod.GET)
+	public ResponseEntity<Void> test(HttpServletResponse response, Model model) throws IOException {
+		File file = fileService.stringToImageFile("test\nok", "png");
+		try {
+			response.setHeader("Content-Disposition", "inline;filename=\"test.png\"");
+			response.setContentType("image/png");
+			IOUtils.copy(new FileInputStream(file), response.getOutputStream());
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (Exception e) {
+			logger.error("get file error", e);
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+    
 }

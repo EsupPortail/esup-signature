@@ -4,9 +4,9 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
-import java.awt.font.FontRenderContext;
-import java.awt.geom.Rectangle2D;
+import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.Base64;
+import java.util.Hashtable;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.xml.bind.DatatypeConverter;
@@ -127,27 +129,57 @@ public class FileService {
 	}
 
 	public File notFoundImageToInputStream(String type) throws IOException {
-		return stringToImageFile("PAGE NOT FOUND", type);
+		return stringToImageFile("PAGE NOT\n FOUND", type);
 	}
 	
 	public File stringToImageFile(String text, String type) throws IOException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-        BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = (Graphics2D) image.getGraphics();
-        FontRenderContext fc = g2d.getFontRenderContext();
-        Font font = new Font("Courier", Font.PLAIN, 14);
-        Rectangle2D bounds = font.getStringBounds(text, fc);
-        image = new BufferedImage(100, 75, BufferedImage.TYPE_INT_RGB);
-        g2d = (Graphics2D) image.getGraphics();
-        g2d.setColor(Color.white);
-	    g2d.fillRect(0, 0, 100, 75);
-	    g2d.setColor(Color.black);
-		g2d.drawString(text, 0, (int)-bounds.getY());
-	    g2d.dispose();
+        BufferedImage  image = new BufferedImage(200, 150, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics2D = (Graphics2D) image.getGraphics();
+        Font font = new Font("Helvetica", Font.PLAIN, 40); 
+        graphics2D.setColor(Color.white);
+	    graphics2D.fillRect(0, 0, 200, 150);
+	    graphics2D.setColor(Color.black);
+	    Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
+	    map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+	    font = font.deriveFont(map);
+	    graphics2D.setFont(font);
+	    graphics2D.setRenderingHint(
+	            RenderingHints.KEY_TEXT_ANTIALIASING,
+	            RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+	    int lineWeight = 15;
+	    for (String line : text.split("\n")) {
+	    	graphics2D.drawString(line, 5, lineWeight += graphics2D.getFontMetrics().getHeight());
+	        //graphics2D.drawString(text, 0, 40);
+	    }
+	    graphics2D.dispose();
 	    ImageIO.write(image, type, os);
 		return inputStreamToFile(new ByteArrayInputStream(os.toByteArray()), "paraphe." + type);
 	}
 	
+	/*
+	 * 	public File stringToImageFile(String text, String type) throws IOException {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+        BufferedImage image = new BufferedImage(100, 75, BufferedImage.TYPE_INT_RGB);
+        Font font = new Font("Courier", Font.PLAIN, 14);
+		FontRenderContext frc = new FontRenderContext(null, true, true);
+		GlyphVector gv = font.createGlyphVector(frc, codes);	
+        Graphics2D g2d = (Graphics2D) image.getGraphics();
+        g2d.setColor(Color.white);
+	    g2d.fillRect(0, 0, 100, 75);
+	    g2d.setColor(Color.black);
+	    g2d.drawGlyphVector(gv, 5,200);
+	    g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                            RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+	    g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
+                            RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		g2d.drawString(text, 0, 100);
+	    g2d.dispose();
+	    ImageIO.write(image, type, os);
+		return inputStreamToFile(new ByteArrayInputStream(os.toByteArray()), "paraphe." + type);
+	}
+	*/
+	 
 	public File renameFile(File file, String name) {
 		File newfile = new File(Files.createTempDir(), name);
 		boolean result = file.renameTo(newfile);

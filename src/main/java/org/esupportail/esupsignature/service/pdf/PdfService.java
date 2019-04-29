@@ -100,7 +100,7 @@ public class PdfService {
 			int yPos;
 			if(signType.equals(SignType.visa)) {
 				try {
-					signImage = fileService.stringToImageFile("Visé par " + getInitials(user.getFirstname() + " " + user.getName()), "png");
+					signImage = fileService.stringToImageFile("Visé par\n " + getInitials(user.getFirstname() + " " + user.getName()), "png");
 				} catch (IOException e) {
 					logger.error(e.getMessage(), e);
 					signImage = null;
