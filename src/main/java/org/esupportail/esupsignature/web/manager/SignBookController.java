@@ -178,8 +178,8 @@ public class SignBookController {
 			signRequestParams.setSignType(SignType.valueOf(signType));
 			signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
 			signRequestParams.setSignPageNumber(1);
-			signRequestParams.setXPos(0);
-			signRequestParams.setYPos(0);
+			//signRequestParams.setXPos(0);
+			//signRequestParams.setYPos(0);
 			signRequestParams.persist();
 			signBook.getRecipientEmails().removeAll(Collections.singleton(""));
 			for(String recipientEmail : signBook.getRecipientEmails()) {

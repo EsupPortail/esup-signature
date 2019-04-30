@@ -446,8 +446,8 @@ public class SignRequestService {
 	public SignRequestParams getEmptySignRequestParams() {
 		SignRequestParams signRequestParams = new SignRequestParams();
 		signRequestParams.setSignPageNumber(1);
-		signRequestParams.setXPos(0);
-		signRequestParams.setYPos(0);
+		//signRequestParams.setXPos(0);
+		//signRequestParams.setYPos(0);
 		signRequestParams.setNewPageType(NewPageType.none);
 		signRequestParams.setSignType(SignType.visa);
 		signRequestParams.persist();

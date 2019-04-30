@@ -271,8 +271,8 @@ public class SignRequestController {
 			signRequestParams.setSignType(SignType.valueOf(signType));
 			signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
 			signRequestParams.setSignPageNumber(1);
-			signRequestParams.setXPos(0);
-			signRequestParams.setYPos(0);
+			//signRequestParams.setXPos(0);
+			//signRequestParams.setYPos(0);
 			signRequestParams.persist();
 		}
 		
@@ -349,7 +349,6 @@ public class SignRequestController {
 			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
 			HttpServletResponse response, Model model, HttpServletRequest request) {
 		//TODO : choose xades cades
-	
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);

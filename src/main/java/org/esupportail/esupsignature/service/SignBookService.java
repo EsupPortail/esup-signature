@@ -12,7 +12,6 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.esupportail.esupsignature.domain.Document;
-import org.esupportail.esupsignature.domain.Log;
 import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.domain.SignBook.SignBookType;
@@ -30,6 +29,7 @@ import org.esupportail.esupsignature.service.fs.opencmis.CmisAccessImpl;
 import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -55,6 +55,11 @@ public class SignBookService {
 	@Resource
 	private DocumentService documentService;
 
+	@Value("${sign.defaultPositionX}")
+	private int defaultPositionX;
+	@Value("${sign.defaultPositionY}")
+	private int defaultPositionY;
+	
 	private FsAccessService getFsAccessService(DocumentIOType type) {
 		FsAccessService fsAccessService = null;
 		switch (type) {
@@ -92,8 +97,8 @@ public class SignBookService {
 	
 	public void resetSignBookParams(SignBook signBook) {
 		signBook.getSignRequestParams().setSignPageNumber(1);
-		signBook.getSignRequestParams().setXPos(0);
-		signBook.getSignRequestParams().setYPos(0);
+		signBook.getSignRequestParams().setXPos(defaultPositionX);
+		signBook.getSignRequestParams().setYPos(defaultPositionY);
 		signBook.merge();
 	}
 	

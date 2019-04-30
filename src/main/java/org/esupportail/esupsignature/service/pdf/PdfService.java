@@ -96,8 +96,8 @@ public class PdfService {
 			float width = pdPage.getMediaBox().getWidth();
 
 			File signImage;
-			int xPos;
-			int yPos;
+			int xPos = (int) params.getXPos();
+			int yPos = (int) params.getYPos();
 			if(signType.equals(SignType.visa)) {
 				try {
 					signImage = fileService.stringToImageFile("Visé par\n " + getInitials(user.getFirstname() + " " + user.getName()), "png");
@@ -105,12 +105,9 @@ public class PdfService {
 					logger.error(e.getMessage(), e);
 					signImage = null;
 				}
-				xPos = (int) width - 100;
-				yPos = (int) height - 75;
 			} else {
 				signImage = user.getSignImage().getJavaIoFile();
-				xPos = (int) params.getXPos();
-				yPos = (int) params.getYPos();
+
 			}
 			
 			if(pdfParameters.getRotation() == 0) {
