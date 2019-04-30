@@ -31,7 +31,7 @@
 			<dd>
 				<c:choose>
 					<c:when test="${not empty signFile}">
-						<img alt="signature" src="data:image/jpg;base64, ${signFile}" />
+						<img alt="signature" src="data:image/png;base64, ${signFile}" />
 					</c:when>
 					<c:otherwise>
 						<i class="fas fa-ban"><!--  --></i>

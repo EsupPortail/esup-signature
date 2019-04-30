@@ -59,6 +59,7 @@ public class WsController {
 			Document document = documentService.createDocument(file, file.getOriginalFilename());
 			signRequest = signRequestService.createSignRequest(new SignRequest(), user, document, signBook.getSignRequestParams(), signBook.getRecipientEmails());
 			logger.info(file.getOriginalFilename() + "was added into signbook" + signBookName);
+			signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "ws upload", user, "SUCCESS", "");
 			return signRequest.getName();			
 		} else {
 			logger.warn("no file to import");

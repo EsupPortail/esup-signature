@@ -42,7 +42,7 @@
 									<li>La signature electronique s'appuie sur le certificat P12 uploader au niveau de vos paramètres</li>
 									<li>Apposition de la signature : ajoute simplement l'image de votre signature sur un PDF à l'endroit voulu</li>
 									<li>La signature electronique avec NexU s'appuie l'application NexU qui permet l'utilisation d'un certificat matériel</li>
-									<li>Confirmation de lecture : permet de valider la lecture d'un document</li>
+									<li>Visa : permet de valider la lecture d'un document</li>
 								</ul>
 							</small>
 						</div>
@@ -78,6 +78,9 @@
 					</div>
 			</label>
 			<div class="col-lg-9">
+				<div class="alert alert-secondary col-6">
+					<img alt="signature" src="data:image/png;base64, ${signFile}" />
+				</div>	
 				<div class="input-group">
 					<div class="custom-file">
 						<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" />
@@ -86,8 +89,7 @@
 						</label>
 					</div>
 				</div>
-				<br/>
-				<div id="vanilla-demo">
+				<div id="vanilla-crop">
 					<!--  -->
 				</div>
 			</div>
@@ -105,6 +107,9 @@
 					</div>
 			</label>
 			<div class="col-lg-9">
+				<div class="alert alert-secondary col-6">
+					${user.keystore.fileName}
+				</div>
 				<div class="input-group">
 					<div class="custom-file">
 						<input type="file" accept="application/x-pkcs12" class="custom-file-input" name="multipartKeystore" id="inputGroupFile02" value="Choose a file" aria-describedby="inputGroupFileAddon02" />

@@ -265,8 +265,8 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
 	
 	var vanillaResult = document.querySelector('.vanilla-result'), vanillaUpload = document.querySelector('.vanilla-upload');
-	if(document.getElementById('vanilla-demo') != null) {
-		var vanilla = new Croppie(document.getElementById('vanilla-demo'), {
+	if(document.getElementById('vanilla-crop') != null) {
+		var vanilla = new Croppie(document.getElementById('vanilla-crop'), {
 			viewport : {
 				width : 200,
 				height : 150
@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 		});
 	
-		document.getElementById('vanilla-demo').addEventListener('update', function(ev) {
+		document.getElementById('vanilla-crop').addEventListener('update', function(ev) {
 			vanilla.result('canvas').then(saveVanilla);
 		});
 	

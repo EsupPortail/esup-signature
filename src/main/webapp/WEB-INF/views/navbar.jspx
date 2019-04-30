@@ -57,7 +57,8 @@
 			<div class="navbar-nav">
 				<sec:authorize access="isAuthenticated()">
 					<sec:authentication property="principal.username" var="eppn" />
-					<menu:item activeMenu="${role=='settings'}" id="i_user_new" bootstrapIcon="fa fa-cog" label="${eppn}" menuClass="nav-link" url="/user/users/"/>
+					<menu:item id="i_user_new" label="${user.firstname} ${user.name}" menuClass="nav-link" url="/user/users/"/>
+					<menu:item activeMenu="${role=='settings'}" id="i_user_new" bootstrapIcon="fa fa-cog" label=" " menuClass="nav-link" url="/user/users/"/>
 				</sec:authorize>
 				<sec:authorize access="hasRole('ROLE_PREVIOUS_ADMINISTRATOR')">
 					<spring:url value="/logout" var="su_exit_url" />
