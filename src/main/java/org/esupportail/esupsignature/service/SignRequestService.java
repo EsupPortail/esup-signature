@@ -144,6 +144,7 @@ public class SignRequestService {
 		signRequest.setCreateDate(new Date());
 		signRequest.setStatus(SignRequestStatus.draft);
 		signRequest.setSignRequestParams(signRequestParams);
+		signRequest.setOriginalDocuments(documents);
 		for(String recipientEmail : recipientEmails) {
 			List<String> recipientEmailsList = new ArrayList<>();
 			recipientEmailsList.add(recipientEmail);
