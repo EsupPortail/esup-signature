@@ -65,8 +65,8 @@ public class PdfService {
 	@Value("${pdf.pdfToImageDpi}")
 	private int pdfToImageDpi;
 	
-	public File formatPdf(File toSignFile, SignRequestParams params) {
-    	if(!SignRequestParams.NewPageType.none.equals(params.getNewPageType())) {
+	public File formatPdf(File toSignFile, SignRequestParams params, boolean addPage) {
+    	if(!SignRequestParams.NewPageType.none.equals(params.getNewPageType()) && addPage) {
     		if(SignRequestParams.NewPageType.onBegin.equals(params.getNewPageType())) {
     			toSignFile = addNewPage(toSignFile, null, 0);
     			params.setSignPageNumber(1);
@@ -79,11 +79,11 @@ public class PdfService {
     	return toSignFile;
 	}
 	
-	public File stampImage(File toSignFile, SignRequestParams params, User user) {
+	public File stampImage(File toSignFile, SignRequestParams params, User user, boolean addPage) {
 		SignRequestParams.SignType signType = params.getSignType();
 		
     	PdfParameters pdfParameters = getPdfParameters(toSignFile);
-		toSignFile = formatPdf(toSignFile, params);
+		toSignFile = formatPdf(toSignFile, params, addPage);
 		try {
 			File targetFile =  new File(Files.createTempDir(), toSignFile.getName());
 			PDDocument pdDocument = PDDocument.load(toSignFile);

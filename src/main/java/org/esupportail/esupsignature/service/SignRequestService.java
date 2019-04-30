@@ -188,13 +188,14 @@ public class SignRequestService {
 		if(signRequest.getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
 			throw new EsupSignatureNexuException("redirect to nexuSign");
 		}
-		if(signRequest.countSignOk() == 0) {
-			if(!SignRequestParams.NewPageType.none.equals(signRequest.getSignRequestParams().getNewPageType())) {
-				signRequest.getSignRequestParams().setXPos(xFirstPos);
-				signRequest.getSignRequestParams().setYPos(yFirstPos);
+		boolean addPage = false;
+		if(!SignRequestParams.NewPageType.none.equals(signRequest.getSignRequestParams().getNewPageType())) {
+			int nbSignOk = signRequest.countSignOk();
+			signRequest.getSignRequestParams().setXPos(xFirstPos + ((nbSignOk - (Math.abs(nbSignOk / 3) * 3)) * 150));
+			signRequest.getSignRequestParams().setYPos(yFirstPos +(Math.abs(nbSignOk / 3) * 100));
+			if(nbSignOk == 0) {
+				addPage = true;
 			}
-		} else {
-			signRequest.getSignRequestParams().setNewPageType(NewPageType.none);
 		}
 		File signedFile = null;
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
@@ -202,7 +203,7 @@ public class SignRequestService {
 		SignType signType = signRequest.getSignRequestParams().getSignType();		
 		if (signType.equals(SignRequestParams.SignType.pdfImageStamp) || signType.equals(SignType.visa)) {
 			File toSignFile = toSignDocuments.get(0).getJavaIoFile();
-			signedFile = pdfService.stampImage(toSignFile, signRequest.getSignRequestParams(), user);
+			signedFile = pdfService.stampImage(toSignFile, signRequest.getSignRequestParams(), user, addPage);
 		} else {
 			if (toSignDocuments.size() == 1 && fileService.getContentType(toSignDocuments.get(0).getJavaIoFile()).equals("application/pdf")) {
 				signedFile = certSign(signRequest, user, password, SignatureForm.PAdES);
@@ -276,7 +277,11 @@ public class SignRequestService {
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else if(signatureForm.equals(SignatureForm.PAdES)) {
 				step = "Formatage du PDF";
-				File toSignFile = pdfService.formatPdf(toSignFiles.get(0), signRequest.getSignRequestParams());
+				boolean addPage = false;
+				if(signRequest.countSignOk() == 0) {
+					addPage = true;
+				}
+				File toSignFile = pdfService.formatPdf(toSignFiles.get(0), signRequest.getSignRequestParams(), addPage);
 				parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), fileService.toMultipartFile(toSignFile, "pdf"), user);
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
 				documentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));

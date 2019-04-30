@@ -50,7 +50,6 @@ public class SignRequest {
 
     private String createBy;
     
-    //TODO gestion des commentaires
     @Transient
     private String comment;
     
@@ -97,6 +96,7 @@ public class SignRequest {
 				nbSign++;
 			}
 		}
+		nbSign += signedDocuments.size();
 		return nbSign;
     }
     
