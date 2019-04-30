@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 @Controller
+@Transactional
 @RequestMapping(value = "/ws/")
 public class WsController {
 
@@ -46,21 +47,22 @@ public class WsController {
 	DocumentService documentService;
 	
 	//TODO creation / recupération de demandes par WS + declenchement d'evenements + multidocs
-	@Transactional
 	@ResponseBody
 	@RequestMapping(value = "/create-sign-request", method = RequestMethod.POST)
 	public String createSignRequest(@RequestParam("file") MultipartFile file, @RequestParam String signBookName, HttpServletRequest httpServletRequest) throws IOException, ParseException {
-		System.err.println(signBookName);
+		logger.info("adding new file into signbook" + signBookName + " " + file.getSize());
 		SignRequest signRequest= new SignRequest();
 		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
 		User user = getSystemUser();
 		user.setIp(httpServletRequest.getRemoteAddr());
 		if(file != null) {
-			Document document = documentService.createDocument(file, file.getOriginalFilename());
-			signRequest = signRequestService.createSignRequest(new SignRequest(), user, document, signBook.getSignRequestParams(), signBook.getRecipientEmails());
-			logger.info(file.getOriginalFilename() + "was added into signbook" + signBookName);
+			Document documentToAdd = documentService.createDocument(file, file.getOriginalFilename());
+			signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmails());
+			signRequest.setTitle(signBookName);
+			logger.info(file.getOriginalFilename() + " was added into signbook" + signBookName + " with id " + signRequest.getName());
 			signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "ws upload", user, "SUCCESS", "");
-			return signRequest.getName();			
+			signRequest.merge();
+			return signRequest.getName();
 		} else {
 			logger.warn("no file to import");
 		}
