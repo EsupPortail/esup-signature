@@ -17,7 +17,7 @@ public class SignRequestParams {
 	}
 
 	public enum NewPageType {
-		none, onBegin, onEnd;
+		none, onBegin;
 	}
 	
 	@Enumerated(EnumType.STRING)

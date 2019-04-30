@@ -568,6 +568,7 @@ public class SignRequestController {
 				SignBook signBook = SignBook.findSignBook(signBookId);
 				for(String emailRecipient : signBook.getRecipientEmails()) {
 					User recipient = User.findUsersByEmailEquals(emailRecipient).getSingleResult();
+					//TODO : add force email alert
 					if(user.getEmailAlertFrequency() == null|| user.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(user)) {
 						userService.sendEmailAlert(recipient);
 					}
