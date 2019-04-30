@@ -192,6 +192,7 @@ public class SignRequestController {
 		if(!user.isReady()) {
 			return "redirect:/user/users/?form";
 		}
+		//TODO corriger overload
 		addDateTimeFormatPatterns(uiModel);
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {

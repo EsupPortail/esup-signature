@@ -145,6 +145,7 @@ public class SignRequestService {
 		signRequest.setStatus(SignRequestStatus.draft);
 		signRequest.setSignRequestParams(signRequestParams);
 		signRequest.setOriginalDocuments(documents);
+		signRequest.setOverloadSignBookParams(true);
 		for(String recipientEmail : recipientEmails) {
 			List<String> recipientEmailsList = new ArrayList<>();
 			recipientEmailsList.add(recipientEmail);
@@ -165,6 +166,9 @@ public class SignRequestService {
 			}
 		}
 		signRequest.persist();
+		for(Document document : documents) {
+			document.setSignRequestId(signRequest.getId());
+		}
 		return signRequest;
 	}
 	

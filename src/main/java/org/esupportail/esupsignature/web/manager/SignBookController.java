@@ -169,36 +169,42 @@ public class SignBookController {
 				signBookToUpdate.setModelFile(newModel);
 				oldModel.remove();
 			}
+			newModel.setSignRequestId(signBookToUpdate.getId());
 			signBookToUpdate.merge();
 		} else {
 			if(SignBook.countFindSignBooksByNameEquals(signBook.getName()) == 0) {
-			signBook.setCreateBy(user.getEppn());
-			signBook.setCreateDate(new Date());
-			SignRequestParams signRequestParams = new SignRequestParams();
-			signRequestParams.setSignType(SignType.valueOf(signType));
-			signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
-			signRequestParams.setSignPageNumber(1);
-			//signRequestParams.setXPos(0);
-			//signRequestParams.setYPos(0);
-			signRequestParams.persist();
-			signBook.getRecipientEmails().removeAll(Collections.singleton(""));
-			for(String recipientEmail : signBook.getRecipientEmails()) {
-				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(recipientEmail)) == 0) {
-					userService.createUser(recipientEmail);
+				signBook.setCreateBy(user.getEppn());
+				signBook.setCreateDate(new Date());
+				SignRequestParams signRequestParams = new SignRequestParams();
+				signRequestParams.setSignType(SignType.valueOf(signType));
+				signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
+				signRequestParams.setSignPageNumber(1);
+				//signRequestParams.setXPos(0);
+				//signRequestParams.setYPos(0);
+				signRequestParams.persist();
+				signBook.getRecipientEmails().removeAll(Collections.singleton(""));
+				for(String recipientEmail : signBook.getRecipientEmails()) {
+					if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(recipientEmail)) == 0) {
+						userService.createUser(recipientEmail);
+					}
 				}
-			}
-			signBook.getModeratorEmails().removeAll(Collections.singleton(""));
-			for(String moderatorEmail : signBook.getModeratorEmails()) {
-				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(moderatorEmail)) == 0) {
-					userService.createUser(moderatorEmail);
+				signBook.getModeratorEmails().removeAll(Collections.singleton(""));
+				for(String moderatorEmail : signBook.getModeratorEmails()) {
+					if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(moderatorEmail)) == 0) {
+						userService.createUser(moderatorEmail);
+					}
 				}
-			}
-			signBook.setSignBookType(SignBookType.group);
-			if(multipartFile != null) {
-				signBook.setModelFile(documentService.createDocument(multipartFile, multipartFile.getOriginalFilename()));
-			}
-			signBook.setSignRequestParams(signRequestParams);
-			signBook.persist();
+				signBook.setSignBookType(SignBookType.group);
+				Document model = null;
+				if(multipartFile != null) {
+					model = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
+					signBook.setModelFile(model);
+				}
+				signBook.setSignRequestParams(signRequestParams);
+				signBook.persist();
+				if(model != null) {
+					model.setSignRequestId(signBook.getId());
+				}
 			} else {
 				redirectAttrs.addFlashAttribute("messageCustom", signBook.getName() + " already exist");
 				return "redirect:/manager/signbooks?form";
