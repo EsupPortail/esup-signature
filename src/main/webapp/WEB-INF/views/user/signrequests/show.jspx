@@ -310,10 +310,9 @@
 							<spring:url value="/user/signrequests/send-to-signbook/${id}" var="sendToSignBookUrl" />
 							<form class="form-group" action="${sendToSignBookUrl}" method="get">
 								<div class="input-group">
-									<select class="form-control" id="signBookId" name="signBookId">
-									    <option value="" disabled="disabled" selected="selected">Choisir un parapheur</option>
-										<c:forEach items="${signBooks}" var="signBook">
-											<option value="${signBook.id}">${signBook.name}</option>
+									<select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple" >
+										<c:forEach items="${allSignBooks}" var="signBook">
+											<option value="${signBook.name}">${signBook.name} (parapheur)</option>
 										</c:forEach>
 									</select>
 									<div class="input-group-append">
@@ -438,8 +437,37 @@
 	</page:show>
 	</div>
 	<c:set value="${signRequest.signRequestParams.signType}" var="signType"/>
-	<script>
-	
+	<script type="text/javascript">
+    var signBookNamesSelect = new SlimSelect({
+			select: '#signBookNames',
+			placeholder: 'Choisir un ou plusieurs parapheur(s)',
+	    	  searchText: 'Aucun résultat',
+	    	  searchPlaceholder: 'Rechercher',
+	    	  searchHighlight: true,
+	    	  searchFilter: (option, search) =&gt; {
+	  		    return true;
+	  		  },
+	    	  ajax: function (search, callback) {
+	    		    if (search.length &lt; 3) {
+	    		      callback('Merci de saisir au moins 3 caractères')
+	    		    }
+	    		    fetch('/user/users/searchLdap?searchString=' + search)
+	    		    .then(function (response) {
+	    		      return response.json()
+	    		    })
+	    		    .then(function (json) {
+	    		      let data = []
+	    		      for (let i = 0; i &lt; json.length; i++) {
+	    		        data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
+	    		      }
+	    		      callback(data)
+	    		    })
+	    		    .catch(function(error) {
+	    		      callback(false)
+	    		    })
+	    		  }
+	  	});
+    
 	function submitSignRequest() {
 		var signPageNumber = document.getElementById("signPageNumber");
 		var signRequestParams;

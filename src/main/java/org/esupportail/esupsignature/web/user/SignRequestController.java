@@ -220,11 +220,10 @@ public class SignRequestController {
 					uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
 					if(user.getSignImage() != null) {
 						uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+						int[] size = pdfService.getSignSize(user.getSignImage().getJavaIoFile());
+						uiModel.addAttribute("signWidth", size[0]);
+						uiModel.addAttribute("signHeight", size[1]);
 					}
-					int[] size = pdfService.getSignSize(user.getSignImage().getJavaIoFile());
-					uiModel.addAttribute("signWidth", size[0]);
-					uiModel.addAttribute("signHeight", size[1]);
-
 				}
 				uiModel.addAttribute("documentType", fileService.getExtension(toDisplayFile));		
 				uiModel.addAttribute("documentId", toDisplayDocument.getId());
@@ -243,6 +242,7 @@ public class SignRequestController {
 			if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
 				uiModel.addAttribute("signable", "ok");
 			}
+			uiModel.addAttribute("allSignBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
 			return "user/signrequests/show";
 		} else {
 			logger.warn(user.getEppn() + " attempted to access signRequest " + id + " without write access");
@@ -272,7 +272,7 @@ public class SignRequestController {
 			uiModel.addAttribute("signRequest", signRequest);
 			return "user/signrequests/create";
 		}
-		//TODO corriger overload
+
 		uiModel.asMap().clear();
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
@@ -532,20 +532,40 @@ public class SignRequestController {
 	
 	@RequestMapping(value = "/send-to-signbook/{id}", method = RequestMethod.GET)
 	public String sendToSignBook(@PathVariable("id") Long id,
-			@RequestParam(value = "signBookId", required = false) long signBookId, HttpServletResponse response,
+			@RequestParam(value = "signBookNames", required = true) String[] signBookNames, HttpServletResponse response,
 			RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
-			SignBook signBook = SignBook.findSignBook(signBookId);
-			try {
-				signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-			} catch (EsupSignatureException e) {
-				logger.warn(e.getMessage());
-				redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
-	
+			if(signBookNames != null && signBookNames.length > 0) {
+				for(String signBookName : signBookNames) {
+					SignBook signBook;
+					if(SignBook.countFindSignBooksByNameEquals(signBookName) == 0 && SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(signBookName)) == 0) {
+						signBook = userService.createUser(signBookName);
+						//recipientEmails.add(signBookName);
+					} else {
+						if(SignBook.countFindSignBooksByNameEquals(signBookName) > 0) {
+							signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
+						} else {
+							signBook = SignBook.findSignBooksByRecipientEmailsEquals(Arrays.asList(signBookName)).getSingleResult();
+						}
+					}
+					try {
+						//TODO si déja une signature, force need all sign ?
+						signBookService.importSignRequestInSignBook(signRequest, signBook, user);
+						//TODO add comment
+						signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "sendToSignBook" + signBook.getName(), user, "SUCCESS", "");
+					} catch (EsupSignatureException e) {
+						logger.warn(e.getMessage());
+						redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
+			
+					}
+					
+				}
 			}
+			
+
 		} else {
 			logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
 		}

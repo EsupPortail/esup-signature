@@ -55,24 +55,24 @@ public class UserService {
 		return user.isReady();
 	}
 	
-	public void createUser(String email) {
+	public SignBook createUser(String email) {
 		List<PersonLdap> persons =  personDao.getPersonLdaps("mail", email);
 		String eppn = persons.get(0).getEduPersonPrincipalName();
         String name = persons.get(0).getSn();
         String firstName = persons.get(0).getGivenName();
-        createUser(eppn, name, firstName, email);
+        return createUser(eppn, name, firstName, email);
 	}
 	
-	public void createUser(Authentication authentication) {
+	public SignBook createUser(Authentication authentication) {
 		List<PersonLdap> persons =  personDao.getPersonNamesByUid(authentication.getName());
 		String eppn = persons.get(0).getEduPersonPrincipalName();
         String email = persons.get(0).getMail();
         String name = persons.get(0).getSn();
         String firstName = persons.get(0).getGivenName();
-        createUser(eppn, name, firstName, email);
+        return createUser(eppn, name, firstName, email);
 	}
 	
-	public void createUser(String eppn, String name, String firstName, String email) {
+	public SignBook createUser(String eppn, String name, String firstName, String email) {
 		User user;
 		if(User.countFindUsersByEppnEquals(eppn) > 0) {
     		user = User.findUsersByEppnEquals(eppn).getSingleResult();
@@ -94,7 +94,9 @@ public class UserService {
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
 		if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user) == 0) {
-			signBookService.createUserSignBook(user);
+			return signBookService.createUserSignBook(user);
+		} else {
+			return SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult();
 		}
 	}
 	

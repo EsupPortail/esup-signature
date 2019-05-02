@@ -82,8 +82,10 @@ public class PdfService {
 	}
 	
 	public File stampImage(File toSignFile, SignRequestParams params, User user, boolean addPage) {
-		SignRequestParams.SignType signType = params.getSignType();
+
+		//TODO add ip ? + date
 		
+		SignRequestParams.SignType signType = params.getSignType();
     	PdfParameters pdfParameters = getPdfParameters(toSignFile);
 		toSignFile = formatPdf(toSignFile, params, addPage);
 		try {

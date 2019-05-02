@@ -145,26 +145,7 @@ public class SignRequestService {
 		signRequest.setStatus(SignRequestStatus.draft);
 		signRequest.setSignRequestParams(signRequestParams);
 		signRequest.setOriginalDocuments(documents);
-		//signRequest.setOverloadSignBookParams(true);
-		for(String recipientEmail : recipientEmails) {
-			List<String> recipientEmailsList = new ArrayList<>();
-			recipientEmailsList.add(recipientEmail);
-			SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmailsList, SignBookType.user).getSingleResult();
-			if(signBook.getSignBookType().equals(SignBookType.group)) {
-				List<String> recipientsEmailsFromGroup = signBook.getRecipientEmails();
-				for(String recipientEmailFromGroup : recipientsEmailsFromGroup) {
-					List<String> recipientEmailFromGroupList = new ArrayList<>();
-					recipientEmailFromGroupList.add(recipientEmailFromGroup);
-					SignBook signBookFromGroup = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmailFromGroupList, SignBookType.user).getSingleResult();
-					signRequest.getSignBooks().put(signBookFromGroup.getId(), false);
-					signBookFromGroup.getSignRequests().add(signRequest);
-
-				}
-			} else {
-				signRequest.getSignBooks().put(signBook.getId(), false);
-				signBook.getSignRequests().add(signRequest);
-			}
-		}
+		signBookService.importSignRequestByRecipients(signRequest, recipientEmails, user);
 		signRequest.persist();
 		for(Document document : documents) {
 			document.setSignRequestId(signRequest.getId());

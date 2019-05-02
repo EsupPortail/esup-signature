@@ -163,35 +163,47 @@ public class SignBookService {
 	}
 
 	public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
+
 		if (!signBook.getSignRequests().contains(signRequest)) {
-			User testSignBookUser = User.findUsersByEmailEquals(signBook.getRecipientEmails().get(0)).getSingleResult();
-			SignBook testSignBook = getSignBookBySignRequestAndUser(signRequest, testSignBookUser);
-			if(testSignBook == null) {
-				if(!signRequest.isOverloadSignBookParams()) {
-					signRequest.setSignRequestParams(signBook.getSignRequestParams());
-				}
-				signRequest.getSignBooks().put(signBook.getId(), false);
-				signRequest.merge();
-				signBook.getSignRequests().add(signRequest);
-				signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "imported in signbook " + signBook.getId(), user, "SUCCESS", "");
-				signBook.merge();
-				logger.info("signRequest " + signRequest.getId() + " added to signBook : " + signBook.getId() + " by " + user.getEppn());
-			} else {
-				throw new EsupSignatureException("signRequest " + signRequest.getName() + " is already in signBook : " + testSignBook.getName() + " owned by " + user.getEppn());
-			}
+			importSignRequestByRecipients(signRequest, signBook.getRecipientEmails(), user);
 		} else {
 			throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getId());
 		}
 	}
 
+	public void importSignRequestByRecipients(SignRequest signRequest,  List<String> recipientEmails, User user) {
+		for(String recipientEmail : recipientEmails) {
+			List<String> recipientEmailsList = new ArrayList<>();
+			recipientEmailsList.add(recipientEmail);
+			SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmailsList, SignBookType.user).getSingleResult();
+			if(signBook.getSignBookType().equals(SignBookType.group)) {
+				if(!signRequest.getSignBooks().containsKey(signBook.getId())) {
+					List<String> recipientsEmailsFromGroup = signBook.getRecipientEmails();
+					for(String recipientEmailFromGroup : recipientsEmailsFromGroup) {
+						List<String> recipientEmailFromGroupList = new ArrayList<>();
+						recipientEmailFromGroupList.add(recipientEmailFromGroup);
+						SignBook signBookFromGroup = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmailFromGroupList, SignBookType.user).getSingleResult();
+						signRequest.getSignBooks().put(signBookFromGroup.getId(), false);
+						signBookFromGroup.getSignRequests().add(signRequest);
+						//signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "imported in signbook " + signBook.getName(), user, "SUCCESS", "");
+						logger.info("signRequest " + signRequest.getId() + " added to signBook : " + signBook.getId() + " by " + user.getEppn());
+					}
+				}
+			} else {
+				if(!signRequest.getSignBooks().containsKey(signBook.getId())) {
+					signRequest.getSignBooks().put(signBook.getId(), false);
+					signBook.getSignRequests().add(signRequest);
+				}
+			}
+		}
+	}
+	
 	public void removeSignRequestFromAllSignBooks(SignRequest signRequest) {
 		List<SignBook> signBooks = signRequestService.getSignBooksList(signRequest);
 		for(SignBook signBook : signBooks) {
 			List<SignRequest> signRequests = new ArrayList<>();
 			signRequests.addAll(signBook.getSignRequests());
-			System.err.println(signRequests);
 			signRequests.remove(signRequest);
-			System.err.println(signRequests);
 			signBook.setSignRequests(signRequests);
 			signBook.merge();
 		}
