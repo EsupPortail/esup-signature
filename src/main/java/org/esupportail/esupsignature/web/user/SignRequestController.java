@@ -1,5 +1,6 @@
 	package org.esupportail.esupsignature.web.user;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -73,6 +75,9 @@ public class SignRequestController {
 		return "user/signrequests";
 	}
 
+	@Value("${sign.passwordTimeout}")
+	private long passwordTimeout;
+
 	@Resource
 	private UserService userService;
 	
@@ -80,9 +85,6 @@ public class SignRequestController {
 	public User getUser() {
 		return userService.getUserFromAuthentication();
 	}
-	
-	@Value("${sign.passwordTimeout}")
-	private long passwordTimeout;
 	
 	private String progress = "0";
 	
@@ -216,6 +218,13 @@ public class SignRequestController {
 					uiModel.addAttribute("pdfWidth", pdfParameters.getWidth());
 					uiModel.addAttribute("pdfHeight", pdfParameters.getHeight());
 					uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+					if(user.getSignImage() != null) {
+						uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+					}
+					int[] size = pdfService.getSignSize(user.getSignImage().getJavaIoFile());
+					uiModel.addAttribute("signWidth", size[0]);
+					uiModel.addAttribute("signHeight", size[1]);
+
 				}
 				uiModel.addAttribute("documentType", fileService.getExtension(toDisplayFile));		
 				uiModel.addAttribute("documentId", toDisplayDocument.getId());

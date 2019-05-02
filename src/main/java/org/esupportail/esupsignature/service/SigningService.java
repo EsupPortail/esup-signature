@@ -212,20 +212,22 @@ public class SigningService {
 		imageParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
 		PdfParameters pdfParameters = pdfService.getPdfParameters(fileService.multipartPdfToFile(toSignFile));
+		int[] signSize = pdfService.getSignSize(signImage);
 		if (pdfParameters.getRotation() == 0) {
-			imageParameters.setWidth(100);
-			imageParameters.setHeight(75);
+			imageParameters.setWidth(signSize[0]);
+			imageParameters.setHeight(signSize[1]);
 			imageParameters.setxAxis(signRequestParams.getXPos());
 			imageParameters.setyAxis(signRequestParams.getYPos());
 		} else {
-			imageParameters.setWidth(75);
-			imageParameters.setHeight(100);
+			imageParameters.setWidth(signSize[1]);
+			imageParameters.setHeight(signSize[0]);
 			imageParameters.setxAxis(signRequestParams.getXPos() - 50);
 			imageParameters.setyAxis(signRequestParams.getYPos());
 		}
 
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		pAdESSignatureParameters.setSignatureImageParameters(imageParameters);
+		//TODO : sign size ?
 		pAdESSignatureParameters.setSignatureSize(100000);
 		pAdESSignatureParameters.setSignaturePackaging(form.getSignaturePackaging());
 

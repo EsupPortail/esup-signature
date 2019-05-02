@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	var vanillaResult = document.querySelector('.vanilla-result'), vanillaUpload = document.querySelector('.vanilla-upload');
 	if(document.getElementById('vanilla-crop') != null) {
-		var vanilla = new Croppie(document.getElementById('vanilla-crop'), {
+		var vanillaCrop = new Croppie(document.getElementById('vanilla-crop'), {
 			viewport : {
 				width : 200,
 				height : 150
@@ -277,21 +277,19 @@ document.addEventListener('DOMContentLoaded', function() {
 			},
 			enableExif : true,
 			enableOrientation : true,
+			enableResize : true,
 			enforceBoundary : false
 	
 		});
 	
 		document.getElementById('vanilla-crop').addEventListener('update', function(ev) {
-			vanilla.result('canvas').then(saveVanilla);
+			var result = vanillaCrop.result('base64');
+			result.then(saveVanilla);
 		});
 	
 		vanillaUpload.addEventListener('change', function() {
 			readFile(this);
 		});
-	}
-	
-	function resultVanilla(result) {
-		alert(result);
 	}
 
 	function saveVanilla(result) {
@@ -305,9 +303,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				reader.onload = function(e) {
 					document
-							.getElementById('vanilla-demo').classList
+							.getElementById('vanilla-crop').classList
 							.add('good');
-					vanilla.bind({
+					vanillaCrop.bind({
 						url : e.target.result,
 						orientation : 1
 					});

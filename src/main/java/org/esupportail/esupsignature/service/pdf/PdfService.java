@@ -64,6 +64,8 @@ public class PdfService {
 	
 	@Value("${pdf.pdfToImageDpi}")
 	private int pdfToImageDpi;
+	@Value("${sign.widthThreshold}")
+	private int signWidthThreshold;
 	
 	public File formatPdf(File toSignFile, SignRequestParams params, boolean addPage) {
     	if(!SignRequestParams.NewPageType.none.equals(params.getNewPageType()) && addPage) {
@@ -109,25 +111,24 @@ public class PdfService {
 				signImage = user.getSignImage().getJavaIoFile();
 
 			}
-			
+			int[] size = getSignSize(signImage);
 			if(pdfParameters.getRotation() == 0) {
 				BufferedImage bufferedImage = ImageIO.read(signImage);
-		        AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+				AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
 		        tx.translate(0, -bufferedImage.getHeight(null));
 		        AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 		        bufferedImage = op.filter(bufferedImage, null);
-				
 				File flipedSignImage = File.createTempFile("preview", ".png");
 				ImageIO.write(bufferedImage, "png", flipedSignImage);
 				pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
 				contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
-				contentStream.drawImage(pdImage, xPos, yPos, 100, 75);
+				contentStream.drawImage(pdImage, xPos, yPos, size[0], size[1]);
 
 			} else {
 				AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
 			    contentStream.transform(new Matrix(at));
 			    pdImage = PDImageXObject.createFromFileByContent(signImage, pdDocument);
-				contentStream.drawImage(pdImage, xPos, yPos - 37 , 100, 75);
+			    contentStream.drawImage(pdImage, xPos, yPos - 37 , size[0], size[1]);
 
 			}
 			contentStream.close();
@@ -138,6 +139,21 @@ public class PdfService {
 			logger.error("error to add image", e);
 		}
 		return null;
+	}
+	
+	public int[] getSignSize(File signFile) throws IOException {
+		BufferedImage bimg = ImageIO.read(signFile);
+		int signWidth;
+		int signHeight;
+		if(bimg.getWidth() <= signWidthThreshold * 2) {
+			signWidth = bimg.getWidth() / 2;
+			signHeight = bimg.getHeight() / 2;
+		} else {
+			signWidth =  signWidthThreshold;
+			double percent = ((double)signWidthThreshold / (double)bimg.getWidth());
+			signHeight = (int) (percent * bimg.getHeight());
+		}
+		return new int[]{signWidth, signHeight};
 	}
 	
 	public File addNewPage(File pdfFile, String template, int position) {

@@ -35,8 +35,8 @@
 									<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
 									<div id="pointer_div" onclick="savePosition();" onmouseout="resetPosition();" onmousemove="pointIt(event);" style="background-size: ${pdfWidth}px;background-image:url('${documentUrl}/${signRequest.signRequestParams.signPageNumber -1}');width:${pdfWidth}px;height:${pdfHeight}px;border:1px solid #CCC;">
 										<c:if test="${signable eq 'ok' and (signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'visa'}">
-											<div id="cross" style="background-size: 100px;background-image: url('data:image/png;base64,${signFile}'); width: 100px; height: 75px; line-height: 75px; text-align: center;width:100px; left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;pointer-events: none;">
-												<div id="borders" style="width: 100px; height: 75px;">
+											<div id="cross" style="background-size: ${signWidth}px;background-image: url('data:image/png;base64,${signFile}'); width: ${signWidth}px; height: ${signHeight}px; line-height: ${signHeight}px; text-align: center; left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;pointer-events: none;">
+												<div id="borders" style="width: ${signWidth}px; height: ${signHeight}px;">
 													<span style="opacity: 0.6; vertical-align: middle; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
 														<strong>Preview</strong>
 													</span>

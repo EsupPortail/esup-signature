@@ -84,10 +84,10 @@ public class SignRequestService {
 	
 	@Value("${sign.defaultSignatureForm}")
 	private SignatureForm defaultSignatureForm;
-	@Value("${sign.pades.xFirstPos}")
-	private int xFirstPos;
-	@Value("${sign.pades.yFirstPos}")
-	private int yFirstPos;	
+	@Value("${sign.firstPosX}")
+	private int firstPosX;
+	@Value("${sign.firstPosY}")
+	private int firstPosY;	
 	
 	private String step = "";
 	
@@ -196,8 +196,8 @@ public class SignRequestService {
 		boolean addPage = false;
 		if(!SignRequestParams.NewPageType.none.equals(signRequest.getSignRequestParams().getNewPageType())) {
 			int nbSignOk = signRequest.countSignOk();
-			signRequest.getSignRequestParams().setXPos(xFirstPos + ((nbSignOk - (Math.abs(nbSignOk / 3) * 3)) * 150));
-			signRequest.getSignRequestParams().setYPos(yFirstPos +(Math.abs(nbSignOk / 3) * 100));
+			signRequest.getSignRequestParams().setXPos(firstPosX + ((nbSignOk - (Math.abs(nbSignOk / 3) * 3)) * 150));
+			signRequest.getSignRequestParams().setYPos(firstPosY +(Math.abs(nbSignOk / 3) * 100));
 			if(nbSignOk == 0) {
 				addPage = true;
 			}
