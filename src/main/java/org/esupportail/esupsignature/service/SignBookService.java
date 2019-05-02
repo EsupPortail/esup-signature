@@ -131,7 +131,7 @@ public class SignBookService {
 				logger.error("read fsaccess error : ", e);
 			}
 		} else {
-			logger.debug("no source type for this signbook");
+			logger.debug("no source type for signbook : " + signBook.getName());
 		}
 	}
 

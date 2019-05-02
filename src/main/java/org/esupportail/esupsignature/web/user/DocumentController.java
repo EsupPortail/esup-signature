@@ -12,9 +12,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.domain.Document;
+import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
@@ -60,6 +62,9 @@ public class DocumentController {
 	
 	@Resource
 	private SignRequestService signRequestService;
+
+	@Resource
+	private SignBookService signBookService;
 	
 	@RequestMapping(value = "/{id}/getimage", method = RequestMethod.GET)
 	public void getImageAsByteArray(@PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException {
@@ -82,9 +87,11 @@ public class DocumentController {
 	public void getImagePdfAsByteArray(@PathVariable("id") Long id, @PathVariable("page") int page, HttpServletResponse response) throws IOException {
 		Document document = Document.findDocument(id);
 		SignRequest signRequest = SignRequest.findSignRequest(document.getSignRequestId());
+		SignBook signBook = SignBook.findSignBook(document.getSignRequestId());
 		User user = userService.getUserFromAuthentication();
 		InputStream in = null;
-		if(signRequestService.checkUserViewRights(user, signRequest)) {
+		if((signRequest != null && signRequestService.checkUserViewRights(user, signRequest)) 
+		|| (signBook != null && signBookService.checkUserManageRights(user, signBook))) {
 			try {
 				in = pdfService.pageAsInputStream(document.getJavaIoFile(), page);
 			} catch (Exception e) {
