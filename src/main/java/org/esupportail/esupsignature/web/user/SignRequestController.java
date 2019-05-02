@@ -194,7 +194,7 @@ public class SignRequestController {
 		if(!user.isReady()) {
 			return "redirect:/user/users/?form";
 		}
-		//TODO corriger overload
+		
 		addDateTimeFormatPatterns(uiModel);
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
@@ -272,6 +272,7 @@ public class SignRequestController {
 			uiModel.addAttribute("signRequest", signRequest);
 			return "user/signrequests/create";
 		}
+		//TODO corriger overload
 		uiModel.asMap().clear();
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
@@ -281,8 +282,6 @@ public class SignRequestController {
 			signRequestParams.setSignType(SignType.valueOf(signType));
 			signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
 			signRequestParams.setSignPageNumber(1);
-			//signRequestParams.setXPos(0);
-			//signRequestParams.setYPos(0);
 			signRequestParams.persist();
 		}
 		
@@ -363,6 +362,11 @@ public class SignRequestController {
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
+			if(!signRequest.isOverloadSignBookParams()) {
+				SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(user.getEmail()), SignBookType.user).getSingleResult();
+				signRequest.setSignRequestParams(signBook.getSignRequestParams());
+				signRequest.merge();
+			}
 			if(signPageNumber != null) {
 				signRequest.getSignRequestParams().setSignPageNumber(signPageNumber);
 				signRequest.getSignRequestParams().setXPos(xPos);

@@ -330,7 +330,6 @@
 						</div>
 					</div>
 				</div>
-				
 				<div class="card bg-light">
 					<div class="card-header">
 						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseInfos" aria-expanded="true" aria-controls="collapseInfos">
@@ -340,26 +339,34 @@
 					</div>
 					<div id="collapseInfos" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
 						<div class="card-body">
-		
-							<dl class="display-group border-bottom m-0">
-								<dt class="col-lg-5">
-									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_params" />
-								</dt>
-								<dd class="col-lg-7">
-								<div class="form-group">
-									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" />
-									:
-									<div class="alert alert-secondary text-center col-12 font-weight-light" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
-										<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" /></small>
+							<c:choose>
+								<c:when test="${signRequest.overloadSignBookParams}" >
+								<dl class="display-group border-bottom m-0">
+									<dt class="col-lg-5">
+										<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_params" />
+									</dt>
+									<dd class="col-lg-7">
+									<div class="form-group">
+										<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" />
+										:
+										<div class="alert alert-secondary text-center col-12 font-weight-light">
+											<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" /></small>
+										</div>
+										<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype" />
+										:
+										<div class="alert alert-secondary text-center col-12 font-weight-light">
+											<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signRequest.signRequestParams.newPageType}" /></small>
+										</div>
+										</div>
+									</dd>
+								</dl>
+								</c:when>
+								<c:otherwise>
+									<div class="alert alert-secondary text-center col-12 font-weight-light">
+										Les paramètre de l'utilisateur seront utilisés
 									</div>
-									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype" />
-									:
-									<div class="alert alert-secondary text-center col-12 font-weight-light" id="type_${signRequest.id}" value="${signRequest.signRequestParams.signType}">
-										<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signRequest.signRequestParams.newPageType}" /></small>
-									</div>
-									</div>
-								</dd>
-							</dl>
+								</c:otherwise>
+							</c:choose>
 							<field:display render="false" field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" object="${signRequest}" z="user-managed" />
 							<field:display render="false" field="status" id="s_org_esupportail_esupsignature_domain_SignRequest_status" object="${signRequest}" z="user-managed" />
 							<field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_SignRequest_originalFile" object="${signRequest}" render="false" z="user-managed" />
