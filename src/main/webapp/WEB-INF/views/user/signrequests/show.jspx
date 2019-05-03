@@ -114,104 +114,97 @@
 									</c:choose>
 								</c:when>
 								<c:otherwise>
-								<c:choose>
-								<c:when test="${user.eppn eq signRequest.createBy}">
 									<c:choose>
-										<c:when test="${fn:length(signRequest.originalDocuments) > 0}">
+									<c:when test="${user.eppn eq signRequest.createBy}">
+										<c:choose>
+											<c:when test="${fn:length(signRequest.originalDocuments) > 0}">
+											<c:choose>
+												<c:when test="${signRequest.status eq 'draft'}">
+													<spring:url value="/user/signrequests/pending/${id}" var="pendingUrl" />
+													<form action="${pendingUrl}">
+														<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows="" ><!--  --></textarea>
+														<button type="submit" class="btn btn-primary">
+							  								<i class="fa fa-paper-plane" aria-hidden="true"><!--  --></i>&amp;nbsp;Envoyer pour signature
+														</button>
+													</form>
+												</c:when>
+												<c:when test="${signRequest.status eq 'pending'}">
+													<div class="alert alert-info" >La demande est en cours de signature par le(s) destinataire(s)</div>
+												</c:when>
+											</c:choose>
+											</c:when>
+											<c:otherwise>
+												<div class="alert alert-info" >Vous devez ajouter des documents</div>
+											</c:otherwise>
+										</c:choose>
+									</c:when>
+									<c:otherwise>
 										<c:choose>
 											<c:when test="${signRequest.status eq 'draft'}">
-												<spring:url value="/user/signrequests/pending/${id}" var="pendingUrl" />
-												<form action="${pendingUrl}">
-													<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows="" ><!--  --></textarea>
-													<button type="submit" class="btn btn-primary">
-						  								<i class="fa fa-paper-plane" aria-hidden="true"><!--  --></i>&amp;nbsp;Envoyer pour signature
-													</button>
-												</form>
-											</c:when>
-											<c:when test="${signRequest.status eq 'pending'}">
-												<div class="alert alert-info" >La demande est en cours de signature par le(s) destinataire(s)</div>
+												<div class="alert alert-info" >Demande en cours de création</div>
 											</c:when>
 										</c:choose>
-										</c:when>
-										<c:otherwise>
-											<div class="alert alert-info" >Vous devez ajouter des documents</div>
-										</c:otherwise>
+									</c:otherwise>
 									</c:choose>
+								</c:otherwise>
+							</c:choose>
+							<c:if test="${user.eppn eq signRequest.createBy}">
+							<c:choose>
+								<c:when test="${signRequest.status eq 'signed' or signRequest.status eq 'checked'}">
+									<dl class="display-group border-bottom m-0">
+										<dt class="col-lg-5">
+											<spring:message code="menu_item_complete" />&amp;nbsp;
+							          			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-info"><span class="fas fa-info-circle"></span></button>
+											<div class="collapse" id="collapseHelp1">
+												<div class="alert alert-info">
+													<small>
+														La cloture de la demande permet de liberer le parapheur. La demande sera supprimée dans un délai défini par l'administrateur.
+													</small>
+												</div>
+											</div>
+										</dt>
+									<dd class="col-lg-7">
+									<spring:url value="/user/signrequests/complete/${id}" var="completeUrl" />
+									<form class="form-group" action="${completeUrl}" method="get">
+										<div class="input-group">
+											<button type="submit" class="btn btn-warning">
+												<i class="fas fa-flag-checkered"> <!--  -->
+												</i>&amp;nbsp;<spring:message code="button_complete" />
+											</button>
+										</div>
+									</form>
+									</dd>
+									</dl>
 								</c:when>
 								<c:otherwise>
-									<div class="alert alert-info" >Demande en cours de création</div>
-								</c:otherwise>
-								</c:choose>
-								</c:otherwise>
-							</c:choose>
-							<c:choose>
-							<c:when test="${signRequest.status eq 'signed' or signRequest.status eq 'checked'}">
-								<dl class="display-group border-bottom m-0">
-									<dt class="col-lg-5">
-										<spring:message code="menu_item_complete" />&amp;nbsp;
-						          			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-info"><span class="fas fa-info-circle"></span></button>
-										<div class="collapse" id="collapseHelp1">
-											<div class="alert alert-info">
-												<small>
-													La cloture de la demande permet de liberer le parapheur. La demande sera supprimée dans un délai défini par l'administrateur.
-												</small>
+									<c:if test="${fn:length(signRequest.signBooks) > 1 and nbSignOk == 0}">
+										<dl class="display-group border-bottom m-0">
+											<dt class="col-lg-6">
+										  		<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
+											</dt>
+											<dd>
+											<div class="input-group">
+												<spring:url value="/user/signrequests/toggle-need-all-sign/${id}" var="toggleNeedAllSignUrl" />
+												<label class="switch">
+													<c:choose>
+														<c:when test="${signRequest.allSignToComplete eq true}">
+														  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete" checked="checked"/>
+														</c:when>
+														<c:otherwise>
+														  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
+														</c:otherwise>
+													</c:choose>
+												  	<span class="slider round"><!--  --></span>
+												</label>
 											</div>
-										</div>
-									</dt>
-								<dd class="col-lg-7">
-								<spring:url value="/user/signrequests/complete/${id}" var="completeUrl" />
-								<form class="form-group" action="${completeUrl}" method="get">
-									<div class="input-group">
-										<button type="submit" class="btn btn-warning">
-											<i class="fas fa-flag-checkered"> <!--  -->
-											</i>&amp;nbsp;<spring:message code="button_complete" />
-										</button>
-									</div>
-								</form>
-								</dd>
-								</dl>
-							</c:when>
-							<c:otherwise>
-								<c:if test="${fn:length(signRequest.signBooks) > 1 and nbSignOk == 0}">
-									<dl class="display-group border-bottom m-0">
-										<dt class="col-lg-6">
-									  		<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
-										</dt>
-										<dd>
-										<div class="input-group">
-											<spring:url value="/user/signrequests/toggle-need-all-sign/${id}" var="toggleNeedAllSignUrl" />
-											<label class="switch">
-												<c:choose>
-													<c:when test="${signRequest.allSignToComplete eq true}">
-													  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete" checked="checked"/>
-													</c:when>
-													<c:otherwise>
-													  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
-													</c:otherwise>
-												</c:choose>
-											  	<span class="slider round"><!--  --></span>
-											</label>
-										</div>
-										</dd>
-									</dl>
-								</c:if>
-							</c:otherwise>
+											</dd>
+										</dl>
+									</c:if>
+								</c:otherwise>
 							</c:choose>
-							<c:if test="${fn:length(signRequest.signBooks) > 1}">
-								<div class="alert alert-secondary">
-									<small>
-									<c:choose>
-										<c:when test="${signRequest.allSignToComplete eq true}">
-												  <spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete_on" />
-										</c:when>
-										<c:otherwise>
-											  <spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete_off" />
-										</c:otherwise>
-									</c:choose>
-									</small>
-								</div>
 							</c:if>
-							<c:if test="${signRequest.status eq 'signed' or signRequest.status eq 'completed' or signRequest.status eq 'checked'}">
+							<c:choose>
+							<c:when test="${signRequest.status eq 'signed' or signRequest.status eq 'completed' or signRequest.status eq 'checked'}">
 								<dl class="display-group border-bottom m-0">
 									<dt class="col-lg-5">
 										<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signedfile" />
@@ -231,7 +224,24 @@
 										</div>
 									</dd>
 								</dl>
+							</c:when>
+							<c:otherwise>
+								<c:if test="${fn:length(signRequest.signBooks) > 1}">
+								<div class="alert alert-secondary">
+									<small>
+									<c:choose>
+										<c:when test="${signRequest.allSignToComplete eq true}">
+												  <spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete_on" />
+										</c:when>
+										<c:otherwise>
+											  <spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete_off" />
+										</c:otherwise>
+									</c:choose>
+									</small>
+								</div>
 							</c:if>
+							</c:otherwise>
+							</c:choose>
 							
 						</div>
 					</div>
@@ -317,7 +327,8 @@
 									</div>
 								</dd>
 
-							</dl>	
+							</dl>
+							<c:if test="${user.eppn eq signRequest.createBy}">
 							<dl class="display-group border-bottom m-0">
 								<dt class="col-lg-5">
 									<spring:message code="menu_item_sendtosignbook" />&amp;nbsp;
@@ -353,6 +364,7 @@
 									</form>
 								</dd>
 							</dl>
+							</c:if>
 						</div>
 					</div>
 				</div>
@@ -465,6 +477,10 @@
 	</div>
 	<c:set value="${signRequest.signRequestParams.signType}" var="signType"/>
 	<script type="text/javascript">
+	
+	var testSignBookName = document.getElementById("signBookNames");
+	
+	if(testSignBookName != null) {
     var signBookNamesSelect = new SlimSelect({
 			select: '#signBookNames',
 			placeholder: 'Choisir un ou plusieurs parapheur(s)',
@@ -494,7 +510,7 @@
 	    		    })
 	    		  }
 	  	});
-    
+	}
 	function submitSignRequest() {
 		var signPageNumber = document.getElementById("signPageNumber");
 		var signRequestParams;

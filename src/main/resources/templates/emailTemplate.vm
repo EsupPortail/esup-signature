@@ -17,8 +17,9 @@ table, td, th {
 </style>
 </head>
 <body>
-Liste des demandes de signatures en attente
-<br/>
+<p>Bonjour</p>
+<p>Voici la liste des demandes de signatures en attente : </p>
+
 <table>
 <tr style="font-weight: bold;">
 	<th>Nom</th>
@@ -28,7 +29,7 @@ Liste des demandes de signatures en attente
 </tr>
 #foreach( $signRequest in $signRequests )
 <tr>
-	<td>$signRequest.name</td>
+	<td>$signRequest.title</td>
 	<td>$signRequest.createDate</td>
 	<td>$signRequest.createBy</td>
 	<td><a href="$rootUrl/user/signrequests/$signRequest.id">Voir</a></td>

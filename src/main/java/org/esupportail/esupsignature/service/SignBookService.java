@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -30,6 +31,7 @@ import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -55,6 +57,9 @@ public class SignBookService {
 	@Resource
 	private DocumentService documentService;
 
+	@Resource
+	private ReloadableResourceBundleMessageSource messageSource;
+	
 	@Value("${sign.defaultPositionX}")
 	private int defaultPositionX;
 	@Value("${sign.defaultPositionY}")
@@ -153,7 +158,7 @@ public class SignBookService {
 				File signedFile = signRequestService.getLastSignedDocument(signRequest).getJavaIoFile();
 				InputStream inputStream = new FileInputStream(signedFile);
 				fsAccessService.putFile(signBook.getDocumentsTargetUri(), signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
-				signRequestService.updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", "");
+				signRequestService.updateInfo(signRequest, SignRequestStatus.exported, messageSource.getMessage("updateinfo_exporttotarget", null, Locale.FRENCH) + " " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", "");
 			} catch (Exception e) {
 				throw new EsupSignatureException("write fsaccess error : ", e);
 			}

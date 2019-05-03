@@ -124,7 +124,7 @@ public class UserService {
 	        context.put("signRequests", signRequests);
 	        context.put("rootUrl", rootUrl);
 	        emailTemplate.merge(context, writer);
-			mailSenderService.sendMail(to, "Alert esup-signature", writer.toString(), null);
+			mailSenderService.sendMail(to, "Alerte esup-signature", writer.toString(), null);
 		}
 		user.setLastSendAlertDate(date);
 		user.merge();

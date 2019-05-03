@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -41,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.stereotype.Service;
 
 import eu.europa.esig.dss.ASiCContainerType;
@@ -81,6 +83,8 @@ public class SignRequestService {
 	@Resource
 	private FileService fileService;
 
+	@Resource
+	private ReloadableResourceBundleMessageSource messageSource;
 	
 	@Value("${sign.defaultSignatureForm}")
 	private SignatureForm defaultSignatureForm;
@@ -322,24 +326,28 @@ public class SignRequestService {
 				signBookService.resetSignBookParams(signBook);
 			}
 			if(signType.equals(SignType.visa)) {
-				updateInfo(signRequest, SignRequestStatus.checked, "visa", user, "SUCCESS", signRequest.getComment());
+				updateInfo(signRequest, SignRequestStatus.checked, messageSource.getMessage("updateinfo_visa", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 			} else {
-				updateInfo(signRequest, SignRequestStatus.signed, "sign", user, "SUCCESS", signRequest.getComment());
+				updateInfo(signRequest, SignRequestStatus.signed, messageSource.getMessage("updateinfo_sign", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 			}
 			if (!signBook.getTargetType().equals(DocumentIOType.none)) {
 				try {
 					signBookService.exportFileToTarget(signBook, signRequest, user);
-					updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", signRequest.getComment());
+					updateInfo(signRequest, SignRequestStatus.exported, messageSource.getMessage("updateinfo_exporttotarget", null, Locale.FRENCH) + " " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", signRequest.getComment());
 				} catch (EsupSignatureException e) {
 					logger.error("error on export file to fs", e);
 				}
 			}
 			if(signBook.isAutoRemove()) {
 				signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
-				updateInfo(signRequest, SignRequestStatus.completed, "auto remove", user, "SUCCESS", signRequest.getComment());
+				updateInfo(signRequest, SignRequestStatus.completed, messageSource.getMessage("updateinfo_autoremove", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 			}
 		} else {
-			updateInfo(signRequest, SignRequestStatus.pending, "sign", user, "SUCCESS", signRequest.getComment());
+			if(signType.equals(SignType.visa)) {
+				updateInfo(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_visa", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+			} else {
+				updateInfo(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_sign", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+			}
 		}
 	}
 	
@@ -409,7 +417,7 @@ public class SignRequestService {
 
 	public void refuse(SignRequest signRequest, User user) {
 		signBookService.removeSignRequestFromAllSignBooks(signRequest);
-		updateInfo(signRequest, SignRequestStatus.refused, "refuse", user, "SUCCESS", signRequest.getComment());
+		updateInfo(signRequest, SignRequestStatus.refused, messageSource.getMessage("updateinfo_refuse", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 	}
 	
 	public void toggleNeedAllSign(SignRequest signRequest) {

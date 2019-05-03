@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.user;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Locale;
 
 import javax.annotation.Resource;
 import javax.persistence.NoResultException;
@@ -19,6 +20,7 @@ import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -46,6 +48,9 @@ public class WsController {
 	@Resource
 	DocumentService documentService;
 	
+	@Resource
+	private ReloadableResourceBundleMessageSource messageSource;
+	
 	//TODO creation / recupération de demandes par WS + declenchement d'evenements + multidocs
 	@ResponseBody
 	@RequestMapping(value = "/create-sign-request", method = RequestMethod.POST)
@@ -60,7 +65,7 @@ public class WsController {
 			signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmails());
 			signRequest.setTitle(signBookName);
 			logger.info(file.getOriginalFilename() + " was added into signbook" + signBookName + " with id " + signRequest.getName());
-			signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "ws upload", user, "SUCCESS", "");
+			signRequestService.updateInfo(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_wsupload", null, Locale.FRENCH), user, "SUCCESS", "");
 			signRequest.merge();
 			return signRequest.getName();
 		} else {

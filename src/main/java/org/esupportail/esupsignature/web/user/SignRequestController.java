@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -43,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,6 +80,9 @@ public class SignRequestController {
 
 	@Resource
 	private UserService userService;
+	
+	@Resource
+	private ReloadableResourceBundleMessageSource messageSource;
 	
 	@ModelAttribute("user")
 	public User getUser() {
@@ -424,7 +429,7 @@ public class SignRequestController {
 						signRequest.getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().getSignType());
 					}
 					if(signRequest.getSignRequestParams().getSignType().equals(SignRequestParams.SignType.visa)) {
-						signRequestService.updateInfo(signRequest, SignRequestStatus.checked, "validate", user, "SUCCESS", comment);		
+						signRequestService.updateInfo(signRequest, SignRequestStatus.checked, messageSource.getMessage("updateinfo_visa", null, Locale.FRENCH), user, "SUCCESS", comment);		
 					} else 
 					if(signRequest.getSignRequestParams().getSignType().equals(SignRequestParams.SignType.nexuSign)) {
 						logger.error("no multiple nexu sign");
@@ -538,7 +543,7 @@ public class SignRequestController {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-		if(signRequestService.checkUserViewRights(user, signRequest)) {
+		if(signRequest.getCreateBy().equals(user.getEppn())) {
 			if(signBookNames != null && signBookNames.length > 0) {
 				for(String signBookName : signBookNames) {
 					SignBook signBook;
@@ -553,10 +558,8 @@ public class SignRequestController {
 						}
 					}
 					try {
-						//TODO si déja une signature, force need all sign ?
 						signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-						//TODO add comment
-						signRequestService.updateInfo(signRequest, SignRequestStatus.draft, "sendToSignBook" + signBook.getName(), user, "SUCCESS", comment);
+						signRequestService.updateInfo(signRequest, SignRequestStatus.draft, messageSource.getMessage("updateinfo_sendtosignbook", null, Locale.FRENCH) + " " + signBook.getName(), user, "SUCCESS", comment);
 					} catch (EsupSignatureException e) {
 						logger.warn(e.getMessage());
 						redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
@@ -581,9 +584,9 @@ public class SignRequestController {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-		if(signRequestService.checkUserViewRights(user, signRequest) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
+		if(signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
 			signBookService.removeSignRequestFromAllSignBooks(signRequest);
-			signRequestService.updateInfo(signRequest, SignRequestStatus.completed, "manual complete", user, "SUCCESS", comment);
+			signRequestService.updateInfo(signRequest, SignRequestStatus.completed, messageSource.getMessage("updateinfo_manualcomplete", null, Locale.FRENCH), user, "SUCCESS", comment);
 		} else {
 			logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
 		}
@@ -598,7 +601,7 @@ public class SignRequestController {
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if(signRequestService.checkUserViewRights(user, signRequest) && signRequest.getStatus().equals(SignRequestStatus.draft)) {
-			signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "send for sign", user, "SUCCESS", comment);
+			signRequestService.updateInfo(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_sendforsign", null, Locale.FRENCH), user, "SUCCESS", comment);
 			for(Long signBookId : signRequest.getSignBooks().keySet()) {
 				SignBook signBook = SignBook.findSignBook(signBookId);
 				for(String emailRecipient : signBook.getRecipientEmails()) {
@@ -623,7 +626,7 @@ public class SignRequestController {
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
-			signRequestService.updateInfo(signRequest, null, "add comment", user, "SUCCESS", comment);
+			signRequestService.updateInfo(signRequest, null, messageSource.getMessage("updateinfo_addcomment", null, Locale.FRENCH), user, "SUCCESS", comment);
 		} else {
 			logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
 		}
