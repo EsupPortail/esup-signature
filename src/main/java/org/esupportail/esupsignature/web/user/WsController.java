@@ -50,12 +50,12 @@ public class WsController {
 	@ResponseBody
 	@RequestMapping(value = "/create-sign-request", method = RequestMethod.POST)
 	public String createSignRequest(@RequestParam("file") MultipartFile file, @RequestParam String signBookName, HttpServletRequest httpServletRequest) throws IOException, ParseException {
-		logger.info("adding new file into signbook" + signBookName + " " + file.getSize());
 		SignRequest signRequest= new SignRequest();
 		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
 		User user = getSystemUser();
 		user.setIp(httpServletRequest.getRemoteAddr());
 		if(file != null) {
+			logger.info("adding new file into signbook" + signBookName);
 			Document documentToAdd = documentService.createDocument(file, file.getOriginalFilename());
 			signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmails());
 			signRequest.setTitle(signBookName);
@@ -127,7 +127,22 @@ public class WsController {
 		return String.valueOf(signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.signed)).count());
 	}
 	
-	//TODO : move signRequest to signBook
+	@Transactional
+	@RequestMapping(value = "/move-sign-request", method = RequestMethod.POST)
+	public ResponseEntity<Void> moveSignRequest(@RequestParam String signBookName, @RequestParam String name, HttpServletRequest httpServletRequest, HttpServletResponse response, Model model) {
+		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
+		SignRequest signRequest = SignRequest.findSignRequestsByNameEquals(name).getSingleResult();
+		User user = getSystemUser();
+		user.setIp(httpServletRequest.getRemoteAddr());
+		try {
+			signBookService.removeSignRequestFromAllSignBooks(signRequest);
+			signBookService.importSignRequestInSignBook(signRequest, signBook, user);
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (Exception e) {
+			logger.error("get file error", e);
+		}
+		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
 	
 	public User getSystemUser() {
 		User user = new User();

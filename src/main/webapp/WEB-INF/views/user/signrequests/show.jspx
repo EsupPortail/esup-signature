@@ -56,29 +56,6 @@
 					</div>
 					<div id="collapseTools" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
 						<div class="card-body text-center">
-							<c:if test="${fn:length(signRequest.signBooks) > 1}">
-								<dl class="display-group border-bottom m-0">
-									<dt class="col-lg-6">
-										<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
-									</dt>
-									<dd>
-									<div class="input-group">
-										<spring:url value="/user/signrequests/toggle-need-all-sign/${id}" var="toggleNeedAllSignUrl" />
-										<label class="switch">
-											<c:choose>
-												<c:when test="${signRequest.allSignToComplete eq true}">
-												  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete" checked="checked"/>
-												</c:when>
-												<c:otherwise>
-												  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
-												</c:otherwise>
-											</c:choose>
-										  	<span class="slider round"><!--  --></span>
-										</label>
-									</div>
-									</dd>
-								</dl>
-							</c:if>
 							<c:choose>
 								<c:when test="${signable eq 'ok'}">
 									<dl class="display-group border-bottom m-0 d-none">
@@ -167,7 +144,8 @@
 								</c:choose>
 								</c:otherwise>
 							</c:choose>
-							<c:if test="${signRequest.status eq 'signed' or signRequest.status eq 'checked'}">
+							<c:choose>
+							<c:when test="${signRequest.status eq 'signed' or signRequest.status eq 'checked'}">
 								<dl class="display-group border-bottom m-0">
 									<dt class="col-lg-5">
 										<spring:message code="menu_item_complete" />&amp;nbsp;
@@ -192,8 +170,47 @@
 								</form>
 								</dd>
 								</dl>
+							</c:when>
+							<c:otherwise>
+								<c:if test="${fn:length(signRequest.signBooks) > 1 and nbSignOk == 0}">
+									<dl class="display-group border-bottom m-0">
+										<dt class="col-lg-6">
+									  		<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
+										</dt>
+										<dd>
+										<div class="input-group">
+											<spring:url value="/user/signrequests/toggle-need-all-sign/${id}" var="toggleNeedAllSignUrl" />
+											<label class="switch">
+												<c:choose>
+													<c:when test="${signRequest.allSignToComplete eq true}">
+													  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete" checked="checked"/>
+													</c:when>
+													<c:otherwise>
+													  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
+													</c:otherwise>
+												</c:choose>
+											  	<span class="slider round"><!--  --></span>
+											</label>
+										</div>
+										</dd>
+									</dl>
+								</c:if>
+							</c:otherwise>
+							</c:choose>
+							<c:if test="${fn:length(signRequest.signBooks) > 1}">
+								<div class="alert alert-secondary">
+									<small>
+									<c:choose>
+										<c:when test="${signRequest.allSignToComplete eq true}">
+												  <spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete_on" />
+										</c:when>
+										<c:otherwise>
+											  <spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete_off" />
+										</c:otherwise>
+									</c:choose>
+									</small>
+								</div>
 							</c:if>
-							
 							<c:if test="${signRequest.status eq 'signed' or signRequest.status eq 'completed' or signRequest.status eq 'checked'}">
 								<dl class="display-group border-bottom m-0">
 									<dt class="col-lg-5">
@@ -245,6 +262,14 @@
 								  </a>
 								</c:forEach>
 							</div>
+							<spring:url value="/user/signrequests/comment/${id}" var="commentUrl" />
+							<form action="${commentUrl}">
+								<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows="" ><!--  --></textarea>
+								<button type="submit" class="btn btn-primary">
+	  								<i class="fas fa-comments" aria-hidden="true"><!--  --></i>&amp;nbsp;Envoyer un commentaire
+								</button>
+							</form>
+							
 						</div>
 					</div>
 				</div>
@@ -252,7 +277,7 @@
 				<div class="card bg-light">
 					<div class="card-header">
 						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseSignBook" aria-expanded="true" aria-controls="collapseTools">
-							<spring:message code="label_org_esupportail_esupsignature_domain_signbook" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
+							<spring:message code="label_org_esupportail_esupsignature_domain_signbook" />s (${fn:length(signRequest.signBooks)})&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
 							</i>
 						</button>
 					</div>
@@ -306,26 +331,28 @@
 										</div>
 									</div>
 								</dt>
-							<dd class="col-lg-7">
-							<spring:url value="/user/signrequests/send-to-signbook/${id}" var="sendToSignBookUrl" />
-							<form class="form-group" action="${sendToSignBookUrl}" method="get">
-								<div class="input-group">
-									<select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple" >
-										<c:forEach items="${allSignBooks}" var="signBook">
-											<option value="${signBook.name}">${signBook.name} (parapheur)</option>
-										</c:forEach>
-									</select>
-									<div class="input-group-append">
-										<button type="submit" class="btn btn-primary">
-											<i class="fas fa-share-square"> <!--  -->
-											</i>&amp;nbsp;<spring:message code="button_send" />
-										</button>
-									</div>
-								</div>
-							</form>
-							</dd>
+								<dd class="col-lg-7">
+									<spring:url value="/user/signrequests/send-to-signbook/${id}" var="sendToSignBookUrl" />
+									<form class="form-group" action="${sendToSignBookUrl}" method="get">
+										<div class="input-group">
+										<select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple" >
+											<c:forEach items="${allSignBooks}" var="signBook">
+												<option value="${signBook.name}">${signBook.name} (parapheur)</option>
+											</c:forEach>
+										</select>
+										</div>
+										<div class="input-group">
+											<textarea class="form-control" type="text" name="comment" placeholder="Commentaire"><!--  --></textarea>
+										</div>
+										<div class="input-group">
+											<button type="submit" class="btn btn-primary">
+												<i class="fas fa-share-square"> <!--  -->
+												</i>&amp;nbsp;<spring:message code="button_send" />
+											</button>
+										</div>
+									</form>
+								</dd>
 							</dl>
-
 						</div>
 					</div>
 				</div>
@@ -379,7 +406,7 @@
 				<div class="card bg-light">
 					<div class="card-header">
 						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseLogs" aria-expanded="true" aria-controls="collapseTools">
-							<spring:message code="menu_item_logs" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
+							<spring:message code="menu_item_logs" /> (${fn:length(logs)})&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
 							</i>
 						</button>
 					</div>

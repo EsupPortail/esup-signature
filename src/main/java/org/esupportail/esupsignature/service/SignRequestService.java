@@ -145,7 +145,11 @@ public class SignRequestService {
 		signRequest.setStatus(SignRequestStatus.draft);
 		signRequest.setSignRequestParams(signRequestParams);
 		signRequest.setOriginalDocuments(documents);
-		signBookService.importSignRequestByRecipients(signRequest, recipientEmails, user);
+		try {
+			signBookService.importSignRequestByRecipients(signRequest, recipientEmails, user);
+		} catch (EsupSignatureException e) {
+			logger.warn("import error", e);
+		}
 		signRequest.persist();
 		for(Document document : documents) {
 			document.setSignRequestId(signRequest.getId());
@@ -370,12 +374,16 @@ public class SignRequestService {
 		log.setIp(user.getIp());
 		log.setInitialStatus(signRequest.getStatus().toString());
 		log.setLogDate(new Date());
-		log.setFinalStatus(signRequestStatus.toString());
 		log.setAction(action);
 		log.setReturnCode(returnCode);
 		log.setComment(comment);
+		if(signRequestStatus != null) {
+			log.setFinalStatus(signRequestStatus.toString());		
+			signRequest.setStatus(signRequestStatus);
+		} else {
+			log.setFinalStatus(signRequest.getStatus().toString());
+		}
 		log.persist();
-		signRequest.setStatus(signRequestStatus);
 		//signRequest.merge();
 	}
 

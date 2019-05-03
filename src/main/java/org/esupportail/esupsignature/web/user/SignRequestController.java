@@ -1,6 +1,5 @@
 	package org.esupportail.esupsignature.web.user;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -12,7 +11,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -243,6 +241,7 @@ public class SignRequestController {
 				uiModel.addAttribute("signable", "ok");
 			}
 			uiModel.addAttribute("allSignBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
+			uiModel.addAttribute("nbSignOk", signRequest.countSignOk());
 			return "user/signrequests/show";
 		} else {
 			logger.warn(user.getEppn() + " attempted to access signRequest " + id + " without write access");
@@ -532,7 +531,9 @@ public class SignRequestController {
 	
 	@RequestMapping(value = "/send-to-signbook/{id}", method = RequestMethod.GET)
 	public String sendToSignBook(@PathVariable("id") Long id,
-			@RequestParam(value = "signBookNames", required = true) String[] signBookNames, HttpServletResponse response,
+			@RequestParam(value = "signBookNames", required = true) String[] signBookNames, 
+			@RequestParam(value = "comment", required = false) String comment,
+			HttpServletResponse response,
 			RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
@@ -541,21 +542,21 @@ public class SignRequestController {
 			if(signBookNames != null && signBookNames.length > 0) {
 				for(String signBookName : signBookNames) {
 					SignBook signBook;
-					if(SignBook.countFindSignBooksByNameEquals(signBookName) == 0 && SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(signBookName)) == 0) {
+					if(SignBook.countFindSignBooksByNameEquals(signBookName) == 0 && SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(signBookName), SignBookType.user) == 0) {
 						signBook = userService.createUser(signBookName);
 						//recipientEmails.add(signBookName);
 					} else {
 						if(SignBook.countFindSignBooksByNameEquals(signBookName) > 0) {
 							signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
 						} else {
-							signBook = SignBook.findSignBooksByRecipientEmailsEquals(Arrays.asList(signBookName)).getSingleResult();
+							signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(signBookName), SignBookType.user).getSingleResult();
 						}
 					}
 					try {
 						//TODO si déja une signature, force need all sign ?
 						signBookService.importSignRequestInSignBook(signRequest, signBook, user);
 						//TODO add comment
-						signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "sendToSignBook" + signBook.getName(), user, "SUCCESS", "");
+						signRequestService.updateInfo(signRequest, SignRequestStatus.draft, "sendToSignBook" + signBook.getName(), user, "SUCCESS", comment);
 					} catch (EsupSignatureException e) {
 						logger.warn(e.getMessage());
 						redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
@@ -621,8 +622,8 @@ public class SignRequestController {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-		if(signRequestService.checkUserViewRights(user, signRequest) && signRequest.getStatus().equals(SignRequestStatus.draft)) {
-			signRequestService.updateInfo(signRequest, signRequest.getStatus(), "add comment", user, "SUCCESS", comment);
+		if(signRequestService.checkUserViewRights(user, signRequest)) {
+			signRequestService.updateInfo(signRequest, null, "add comment", user, "SUCCESS", comment);
 		} else {
 			logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
 		}

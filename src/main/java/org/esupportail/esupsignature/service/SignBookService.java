@@ -167,15 +167,16 @@ public class SignBookService {
 		if (!signBook.getSignRequests().contains(signRequest)) {
 			importSignRequestByRecipients(signRequest, signBook.getRecipientEmails(), user);
 		} else {
-			throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getId());
+			throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getName());
 		}
 	}
 
-	public void importSignRequestByRecipients(SignRequest signRequest,  List<String> recipientEmails, User user) {
+	public void importSignRequestByRecipients(SignRequest signRequest,  List<String> recipientEmails, User user) throws EsupSignatureException {
 		for(String recipientEmail : recipientEmails) {
 			List<String> recipientEmailsList = new ArrayList<>();
 			recipientEmailsList.add(recipientEmail);
 			SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmailsList, SignBookType.user).getSingleResult();
+			/*
 			if(signBook.getSignBookType().equals(SignBookType.group)) {
 				if(!signRequest.getSignBooks().containsKey(signBook.getId())) {
 					List<String> recipientsEmailsFromGroup = signBook.getRecipientEmails();
@@ -188,13 +189,18 @@ public class SignBookService {
 						//signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "imported in signbook " + signBook.getName(), user, "SUCCESS", "");
 						logger.info("signRequest " + signRequest.getId() + " added to signBook : " + signBook.getId() + " by " + user.getEppn());
 					}
+				} else {
+					throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getName());
 				}
 			} else {
+				*/
 				if(!signRequest.getSignBooks().containsKey(signBook.getId())) {
 					signRequest.getSignBooks().put(signBook.getId(), false);
 					signBook.getSignRequests().add(signRequest);
+				} else {
+					throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getName());
 				}
-			}
+			//}
 		}
 	}
 	
