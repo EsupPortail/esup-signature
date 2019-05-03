@@ -107,8 +107,8 @@ public class UserService {
 		long diffInMillies = Math.abs(date.getTime() - user.getLastSendAlertDate().getTime());
 		long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
 		if((user.getEmailAlertFrequency() == null && diff > 0)
-		|| (user.getEmailAlertFrequency().equals(EmailAlertFrequency.daily) && diff > 0)
-		|| (user.getEmailAlertFrequency().equals(EmailAlertFrequency.weekly) && diff > 7)) {
+		|| (EmailAlertFrequency.daily.equals(user.getEmailAlertFrequency()) && diff > 0)
+		|| (EmailAlertFrequency.weekly.equals(user.getEmailAlertFrequency()) && diff > 7)) {
 			return true;
 		}
 		return false;

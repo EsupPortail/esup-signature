@@ -568,8 +568,6 @@ public class SignRequestController {
 					
 				}
 			}
-			
-
 		} else {
 			logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
 		}
