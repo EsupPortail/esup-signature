@@ -231,10 +231,10 @@
 									<small>
 									<c:choose>
 										<c:when test="${signRequest.allSignToComplete eq true}">
-												  <spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete_on" />
+											<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete_on" />
 										</c:when>
 										<c:otherwise>
-											  <spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete_off" />
+											<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete_off" />
 										</c:otherwise>
 									</c:choose>
 									</small>
@@ -788,12 +788,6 @@
 <div class="modal fade" id="signatureModal" tabindex="-1" role="dialog" aria-labelledby="Signature" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Signature</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <i class="fas fa-times"><!--  --></i>
-        </button>
-      </div>
       <div class="modal-body">
         <jsp:include page="includes/signmodal.jspx" />
       </div>

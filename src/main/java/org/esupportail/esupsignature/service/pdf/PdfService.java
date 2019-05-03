@@ -7,8 +7,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
@@ -81,7 +85,7 @@ public class PdfService {
     	return toSignFile;
 	}
 	
-	public File stampImage(File toSignFile, SignRequestParams params, User user, boolean addPage) {
+	public File stampImage(File toSignFile, SignRequestParams params, User user, boolean addPage, boolean addDate) {
 
 		//TODO add ip ? + date
 		
@@ -102,37 +106,40 @@ public class PdfService {
 			File signImage;
 			int xPos = (int) params.getXPos();
 			int yPos = (int) params.getYPos();
+			//DateFormat format = new SimpleDateFormat("dd MMM YYYY HH:mm:ss", Locale.FRENCH);
 			if(signType.equals(SignType.visa)) {
 				try {
-					signImage = fileService.stringToImageFile("Visé par\n " + getInitials(user.getFirstname() + " " + user.getName()), "png");
+					//signImage = fileService.stringToImageFile("Visé par\n " + getInitials(user.getFirstname() + " " + user.getName()), "png");
+					addText(contentStream, "Visé par " + getInitials(user.getFirstname() + " " + user.getName()), xPos, yPos);
+					addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos + 20);
 				} catch (IOException e) {
 					logger.error(e.getMessage(), e);
 					signImage = null;
 				}
 			} else {
+				addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos);
 				signImage = user.getSignImage().getJavaIoFile();
+				int[] size = getSignSize(signImage);
+				if(pdfParameters.getRotation() == 0) {
+					BufferedImage bufferedImage = ImageIO.read(signImage);
+					AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+			        tx.translate(0, -bufferedImage.getHeight(null));
+			        AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+			        bufferedImage = op.filter(bufferedImage, null);
+					File flipedSignImage = File.createTempFile("preview", ".png");
+					ImageIO.write(bufferedImage, "png", flipedSignImage);
+					pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
+					contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
+					contentStream.drawImage(pdImage, xPos, yPos + 20, size[0], size[1]);
 
+				} else {
+					AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
+				    contentStream.transform(new Matrix(at));
+				    pdImage = PDImageXObject.createFromFileByContent(signImage, pdDocument);
+				    contentStream.drawImage(pdImage, xPos, yPos + 20 - 37 , size[0], size[1]);
+				}
 			}
-			int[] size = getSignSize(signImage);
-			if(pdfParameters.getRotation() == 0) {
-				BufferedImage bufferedImage = ImageIO.read(signImage);
-				AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
-		        tx.translate(0, -bufferedImage.getHeight(null));
-		        AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-		        bufferedImage = op.filter(bufferedImage, null);
-				File flipedSignImage = File.createTempFile("preview", ".png");
-				ImageIO.write(bufferedImage, "png", flipedSignImage);
-				pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
-				contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
-				contentStream.drawImage(pdImage, xPos, yPos, size[0], size[1]);
 
-			} else {
-				AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
-			    contentStream.transform(new Matrix(at));
-			    pdImage = PDImageXObject.createFromFileByContent(signImage, pdDocument);
-			    contentStream.drawImage(pdImage, xPos, yPos - 37 , size[0], size[1]);
-
-			}
 			contentStream.close();
 			pdDocument.save(targetFile);
 			pdDocument.close();
@@ -141,6 +148,15 @@ public class PdfService {
 			logger.error("error to add image", e);
 		}
 		return null;
+	}
+	
+	public void addText(PDPageContentStream contentStream, String text, int xPos, int yPos) throws IOException {
+		int fontSize = 12;
+		contentStream.beginText();
+		contentStream.newLineAtOffset(xPos, 830 - yPos);
+		contentStream.setFont(PDType1Font.HELVETICA, fontSize);
+		contentStream.showText(text);
+		contentStream.endText();
 	}
 	
 	public int[] getSignSize(File signFile) throws IOException {

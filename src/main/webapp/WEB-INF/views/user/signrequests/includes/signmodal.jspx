@@ -24,7 +24,17 @@
 										<input type="button" class="btn btn-dark" id="previous" onclick="previousImage()" value="${previousLabel}" />
 									</div>
 									<div class="col-lg-4 text-center">
-										<h5><spring:message code="menu_item_preview" /></h5>
+									<dl class="display-group border-bottom m-0">
+										<dt class="col-lg-5">
+											Afficher la date
+										</dt>
+										<dd>
+										<label class="switch">
+											<input onclick="toggleDate();" type="checkbox" name="toggleDate" id="_toggleDate"/>
+										  	<span class="slider round"><!--  --></span>
+										</label>
+										</dd>
+									</dl>
 									</div>
 									<div class="col-lg-4">
 										<spring:message code="button_next" var="nextLabel" />
@@ -35,7 +45,7 @@
 									<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
 									<div id="pointer_div" onclick="savePosition();" onmouseout="resetPosition();" onmousemove="pointIt(event);" style="background-size: ${pdfWidth}px;background-image:url('${documentUrl}/${signRequest.signRequestParams.signPageNumber -1}');width:${pdfWidth}px;height:${pdfHeight}px;border:1px solid #CCC;">
 										<c:if test="${signable eq 'ok' and (signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'visa'}">
-											<div id="cross" style="background-size: ${signWidth}px;background-image: url('data:image/png;base64,${signFile}'); width: ${signWidth}px; height: ${signHeight}px; line-height: ${signHeight}px; text-align: center; left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;pointer-events: none;">
+											<div id="cross" style="background-repeat: no-repeat; background-position: center bottom; background-size: ${signWidth}px;background-image: url('data:image/png;base64,${signFile}'); width: ${signWidth}px; height: ${signHeight}px; line-height: ${signHeight}px; text-align: center; left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;pointer-events: none;">
 												<div id="borders" style="width: ${signWidth}px; height: ${signHeight}px;">
 													<span style="opacity: 0.6; vertical-align: middle; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
 														<strong>Preview</strong>
