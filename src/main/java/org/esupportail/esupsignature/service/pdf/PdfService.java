@@ -117,7 +117,11 @@ public class PdfService {
 					signImage = null;
 				}
 			} else {
-				addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos);
+				int topHeight = 0;
+				if(addDate) {
+					addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos);
+					topHeight = 20;
+				}
 				signImage = user.getSignImage().getJavaIoFile();
 				int[] size = getSignSize(signImage);
 				if(pdfParameters.getRotation() == 0) {
@@ -130,13 +134,13 @@ public class PdfService {
 					ImageIO.write(bufferedImage, "png", flipedSignImage);
 					pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
 					contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
-					contentStream.drawImage(pdImage, xPos, yPos + 20, size[0], size[1]);
+					contentStream.drawImage(pdImage, xPos, yPos + topHeight, size[0], size[1]);
 
 				} else {
 					AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
 				    contentStream.transform(new Matrix(at));
 				    pdImage = PDImageXObject.createFromFileByContent(signImage, pdDocument);
-				    contentStream.drawImage(pdImage, xPos, yPos + 20 - 37 , size[0], size[1]);
+				    contentStream.drawImage(pdImage, xPos, yPos + topHeight - 37 , size[0], size[1]);
 				}
 			}
 

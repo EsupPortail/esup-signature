@@ -173,7 +173,7 @@ public class SignRequestService {
 		document.setSignRequestId(signRequest.getId());
 	}
 	
-	public void sign(SignRequest signRequest, User user, String password) throws EsupSignatureIOException, EsupSignatureSignException, EsupSignatureNexuException, EsupSignatureKeystoreException, IOException {
+	public void sign(SignRequest signRequest, User user, String password, boolean addDate) throws EsupSignatureIOException, EsupSignatureSignException, EsupSignatureNexuException, EsupSignatureKeystoreException, IOException {
 		step = "Demarrage de la signature";
 		SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		if(!signRequest.isOverloadSignBookParams()) {
@@ -197,7 +197,7 @@ public class SignRequestService {
 		SignType signType = signRequest.getSignRequestParams().getSignType();		
 		if (signType.equals(SignRequestParams.SignType.pdfImageStamp) || signType.equals(SignType.visa)) {
 			File toSignFile = toSignDocuments.get(0).getJavaIoFile();
-			signedFile = pdfService.stampImage(toSignFile, signRequest.getSignRequestParams(), user, addPage, true);
+			signedFile = pdfService.stampImage(toSignFile, signRequest.getSignRequestParams(), user, addPage, addDate);
 		} else {
 			if (toSignDocuments.size() == 1 && fileService.getContentType(toSignDocuments.get(0).getJavaIoFile()).equals("application/pdf")) {
 				signedFile = certSign(signRequest, user, password, SignatureForm.PAdES);

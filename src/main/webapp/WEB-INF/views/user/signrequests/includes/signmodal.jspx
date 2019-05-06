@@ -30,7 +30,7 @@
 										</dt>
 										<dd>
 										<label class="switch">
-											<input onclick="toggleDate();" type="checkbox" name="toggleDate" id="_toggleDate"/>
+											<input onclick="activeDate();" type="checkbox" name="addDate" id="_activeDate"/>
 										  	<span class="slider round"><!--  --></span>
 										</label>
 										</dd>
@@ -45,11 +45,9 @@
 									<spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl" />
 									<div id="pointer_div" onclick="savePosition();" onmouseout="resetPosition();" onmousemove="pointIt(event);" style="background-size: ${pdfWidth}px;background-image:url('${documentUrl}/${signRequest.signRequestParams.signPageNumber -1}');width:${pdfWidth}px;height:${pdfHeight}px;border:1px solid #CCC;">
 										<c:if test="${signable eq 'ok' and (signRequest.status ne 'signed') and signRequest.signRequestParams.newPageType eq 'none' and signRequest.signRequestParams.signType ne 'visa'}">
-											<div id="cross" style="background-repeat: no-repeat; background-position: center bottom; background-size: ${signWidth}px;background-image: url('data:image/png;base64,${signFile}'); width: ${signWidth}px; height: ${signHeight}px; line-height: ${signHeight}px; text-align: center; left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;pointer-events: none;">
-												<div id="borders" style="width: ${signWidth}px; height: ${signHeight}px;">
-													<span style="opacity: 0.6; vertical-align: middle; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
-														<strong>Preview</strong>
-													</span>
+											<div id="cross" style="background-repeat: no-repeat; background-position: left bottom; background-size: ${signWidth}px;background-image: url('data:image/png;base64,${signFile}'); width: ${signWidth}px; height: ${signHeight}px; line-height: ${signHeight}px; text-align: center; left:${signRequest.signRequestParams.XPos};top:${signRequest.signRequestParams.YPos};position:relative;pointer-events: none;">
+												<div id="borders" style="text-align:left;line-height:normal;width: ${signWidth}px; height: ${signHeight}px;">
+													<!--  -->												
 												</div>
 											</div>
 										</c:if>

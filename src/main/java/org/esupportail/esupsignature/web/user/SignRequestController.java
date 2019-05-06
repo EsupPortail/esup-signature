@@ -358,10 +358,14 @@ public class SignRequestController {
 			@RequestParam(value = "xPos", required = false) Integer xPos,
 			@RequestParam(value = "yPos", required = false) Integer yPos,
 			@RequestParam(value = "comment", required = false) String comment,
+			@RequestParam(value = "addDate", required = false) Boolean addDate,
 			@RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
 			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
 			HttpServletResponse response, Model model, HttpServletRequest request) {
 		//TODO : choose xades cades
+		if(addDate == null) {
+			addDate = false;
+		}
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
@@ -382,7 +386,7 @@ public class SignRequestController {
 			}
 			try {
 				signRequest.setComment(comment);
-				signRequestService.sign(signRequest, user, this.password);
+				signRequestService.sign(signRequest, user, this.password, addDate);
 				signRequest.merge();
 			} catch (EsupSignatureKeystoreException e) {
 				logger.error("keystore error", e);
@@ -435,7 +439,7 @@ public class SignRequestController {
 						logger.error("no multiple nexu sign");
 						progress = "not_autorized";
 					} else {
-						signRequestService.sign(signRequest, user, this.password);
+						signRequestService.sign(signRequest, user, this.password, false);
 					}
 				} catch (EsupSignatureKeystoreException e) {
 					logger.error("keystore error", e);

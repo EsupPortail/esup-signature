@@ -66,19 +66,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
 var pointItEnable = true;
 
-function toggleDate() {
-
-	var toggleDate = document.getElementById("toggleDate");
-	//if enable
+function activeDate() {
+	
+	var activeDateCheck = document.getElementById("_activeDate");
 	var cross = document.getElementById("cross");
 	var borders = document.getElementById("borders");
-	cross.style.width = 200;
-	cross.style.height = cross.offsetHeight + 20;
-	borders.style.width = 200;
-	borders.style.height = borders.offsetHeight + 20;
-	borders.innerHTML = "<pre>Le XX/XX/XXXX XX:XX</pre>";
-	borders.style.verticalAlign = "bottom";
-	//else disable
+
+	if(activeDateCheck.checked) {
+		cross.style.width = 200;
+		cross.style.height = cross.offsetHeight + 20;
+		borders.style.width = 200;
+		borders.style.height = borders.offsetHeight + 20;
+		borders.innerHTML = "<span class='align-top'>Le XX/XX/XXXX XX:XX</span>";
+	} else {
+		cross.style.width = 100;
+		cross.style.height = cross.offsetHeight - 20;
+		borders.style.width = 100;
+		borders.style.height = borders.offsetHeight - 20;
+		borders.innerHTML = "";
+	}
 }
 
 function pointIt(event) {
