@@ -140,7 +140,8 @@ public class UserService {
     		}
     	}
 		if (User.countFindUsersByEppnEquals(eppn) > 0) {
-			return User.findUsersByEppnEquals(eppn).getSingleResult();
+			User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+			return user;
 		} else {
 			return null;
 		}

@@ -295,14 +295,24 @@
 						<div class="card-body">
 							<dl class="display-group border-bottom m-0">
 								<dt class="col-lg-5">
-									<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" />
+									Parapheur(s) d'origine(s)					
+								</dt>
+								<dd>
+									${signRequest.originalSignBookNames}	
+								</dd>
+							</dl>
+							
+							
+							<dl class="display-group border-bottom m-0">
+								<dt class="col-lg-5">
+									Destinataires								
 								</dt>
 								<dd class="col-lg-7">
 								<div class="form-group">
 									<table class="table table-sm">
 										<thead>
 									    	<tr>
-									      		<th scope="col"><spring:message code="label_org_esupportail_esupsignature_domain_signbook_plural" /></th>
+									      		<th scope="col">Destinataire</th>
 									      		<th scope="col"><spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" /></th>
 										    </tr>
 									  	</thead>

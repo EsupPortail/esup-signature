@@ -88,22 +88,6 @@ public class UserSignBookController {
         return "user/signbooks/show";
     }
 
-    @RequestMapping(value = "/addDoc/{id}", method = RequestMethod.POST)
-    public String addDoc(@PathVariable("id") Long id,
-    		@RequestParam("multipartFile") MultipartFile multipartFile, RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) throws IOException {
-		Document documentToAdd = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-    	if(documentToAdd != null) {
-	    	User user = userService.getUserFromAuthentication();
-	    	user.setIp(request.getRemoteAddr());
-			SignBook signBook = SignBook.findSignBook(id);
-			signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmails());
-		} else {
-			redirectAttrs.addFlashAttribute("messageCustom", "file is required");
-		}
-		
-	    return "redirect:/user/signbooks/" + id;
-    }
-    
     @RequestMapping(value = "/get-model-file/{id}", method = RequestMethod.GET)
     public void getModelFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
     	SignBook signBook = SignBook.findSignBook(id);

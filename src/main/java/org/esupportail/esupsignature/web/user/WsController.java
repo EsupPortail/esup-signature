@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -54,7 +55,7 @@ public class WsController {
 	//TODO creation / recupération de demandes par WS + declenchement d'evenements + multidocs
 	@ResponseBody
 	@RequestMapping(value = "/create-sign-request", method = RequestMethod.POST)
-	public String createSignRequest(@RequestParam("file") MultipartFile file, @RequestParam String signBookName, HttpServletRequest httpServletRequest) throws IOException, ParseException {
+	public String createSignRequest(@RequestParam("file") MultipartFile file, @RequestParam String signBookName, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
 		SignRequest signRequest= new SignRequest();
 		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
 		User user = getSystemUser();
@@ -62,7 +63,8 @@ public class WsController {
 		if(file != null) {
 			logger.info("adding new file into signbook" + signBookName);
 			Document documentToAdd = documentService.createDocument(file, file.getOriginalFilename());
-			signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBook.getRecipientEmails());
+			signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams());
+			signBookService.importSignRequestInSignBook(signRequest, signBook, user);
 			signRequest.setTitle(signBookName);
 			logger.info(file.getOriginalFilename() + " was added into signbook" + signBookName + " with id " + signRequest.getName());
 			signRequestService.updateInfo(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_wsupload", null, Locale.FRENCH), user, "SUCCESS", "");

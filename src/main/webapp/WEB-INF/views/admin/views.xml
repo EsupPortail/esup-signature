@@ -25,7 +25,9 @@
     <definition extends="default" name="admin/currentsessions">
         <put-attribute name="body" value="/WEB-INF/views/admin/currentsessions.jspx"/>
     </definition>
+    <!-- 
     <definition extends="default" name="admin/su">
         <put-attribute name="body" value="/WEB-INF/views/admin/su.jspx"/>
     </definition>
+     -->
 </tiles-definitions>

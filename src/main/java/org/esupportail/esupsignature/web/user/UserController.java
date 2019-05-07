@@ -123,9 +123,10 @@ public class UserController {
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(Model uiModel) throws IOException, SQLException {
     	//TODO : choix automatique du mode de signature
-		User user = userService.getUserFromAuthentication();;
+		User user = userService.getUserFromAuthentication();
 		if(user != null) {
-	        uiModel.addAttribute("user", user);	     
+	        uiModel.addAttribute("user", user);
+	        
 	        List<String> recipientEmails = new ArrayList<>();
 			recipientEmails.add(user.getEmail());
         	SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult();

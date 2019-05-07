@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -124,7 +125,7 @@ public class SignBookService {
 						}
 						List<String> signBookRecipientsEmails = new ArrayList<>();
 						signBookRecipientsEmails.add(user.getEmail());
-						SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams(), signBookRecipientsEmails);
+						SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams());
 						signRequest.merge();
 						fsAccessService.remove(fsFile);
 					}
@@ -170,13 +171,18 @@ public class SignBookService {
 	public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
 
 		if (!signBook.getSignRequests().contains(signRequest)) {
+			signBook.getSignRequests().add(signRequest);
+			//signBook.merge();
 			importSignRequestByRecipients(signRequest, signBook.getRecipientEmails(), user);
+			signRequest.getOriginalSignBookNames().add(signBook.getName());
+			signRequestService.updateInfo(signRequest, SignRequestStatus.draft, messageSource.getMessage("updateinfo_sendtosignbook", null, Locale.FRENCH) + " " + signBook.getName(), user, "SUCCESS", "");
 		} else {
-			throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getName());
+			//throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getName());
+			logger.warn(signRequest.getId() + " is already in signbook" + signBook.getName());
 		}
 	}
 
-	public void importSignRequestByRecipients(SignRequest signRequest,  List<String> recipientEmails, User user) throws EsupSignatureException {
+	public void importSignRequestByRecipients(SignRequest signRequest,  List<String> recipientEmails, User user) {
 		for(String recipientEmail : recipientEmails) {
 			List<String> recipientEmailsList = new ArrayList<>();
 			recipientEmailsList.add(recipientEmail);
@@ -201,9 +207,9 @@ public class SignBookService {
 				*/
 				if(!signRequest.getSignBooks().containsKey(signBook.getId())) {
 					signRequest.getSignBooks().put(signBook.getId(), false);
-					signBook.getSignRequests().add(signRequest);
 				} else {
-					throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getName());
+					//throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getName());
+					logger.warn(signRequest.getId() + " is already in signbook" + signBook.getName());
 				}
 			//}
 		}
@@ -219,6 +225,7 @@ public class SignBookService {
 			signBook.merge();
 		}
 		signRequest.getSignBooks().clear();
+		signRequest.getOriginalSignBookNames().clear();
 	}
 
 	public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook, User user) {
@@ -239,6 +246,12 @@ public class SignBookService {
 		return null;
 	}
 
+	public List<SignBook> getSignBookBySignRequest(SignRequest signRequest) {
+		List<SignRequest> signRequests = Arrays.asList(signRequest);
+		List<SignBook> signBooks = SignBook.findSignBooksBySignRequestsEquals(signRequests).getResultList();
+		return signBooks;
+	}
+	
 	public boolean checkUserManageRights(User user, SignBook signBook) {
 		if (signBook.getCreateBy().equals(user.getEppn()) || signBook.getModeratorEmails().contains(user.getEmail())) {
 			return true;

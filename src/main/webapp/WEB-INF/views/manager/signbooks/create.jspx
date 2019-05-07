@@ -2,9 +2,34 @@
 <div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:form="urn:jsptagdir:/WEB-INF/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:spring="http://www.springframework.org/tags" version="2.0">
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
+    
+    	<div class="card card-header">
+		<nav class="nav justify-content-between" aria-label="breadcrumb">
+			<div class="navbar-nav">
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item"><a href="/manager/">Liste des parapheus</a></li>
+					<li class="breadcrumb-item active">Nouvelle demande de signature</li>
+				</ol>
+			</div>
+			<div class="navbar-nav align-self-center">
+				<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+					<span class="fas fa-info-circle"><!--  --></span>
+				</button>
+			</div>
+		</nav>
+
+		<div id="collapseHelp" class="show" aria-expanded="true" style="">
+		<div class="alert alert-info">
+			<p>Ce formulaire permet la création d'un parapheur</p>
+			<p>Vous pouvez créer des parapheurs "fonctionnels" en selectionant les personnes destinataire</p>
+			<p>Vous pouvez aussi créer des parapheurs "Automates" en précisant, en plus, une source et une destination pour les documents</p>
+	    </div>
+	    </div>
+	</div>
+    
     <form:create id="fc_org_esupportail_esupsignature_domain_SignBook" modelAttribute="signBook" multipart="true" path="/manager/signbooks" render="${empty dependencies}" z="user-managed">
         <div class="row">
-            <div class="col-lg-6">
+            <div class="col-lg-12">
                 <field:select checkboxes="false" cssClass="form-control" field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" items="${signBookTypes}" multiple="false" path="/signrequests" render="false" size="1" z="user-managed"/>
                 <!-- 
 				<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_signBookType_id">
@@ -121,8 +146,6 @@
                         </label>
                     </div>
                 </div>
-            </div>
-            <div class="col-lg-6">
                 <field:select checkboxes="false" cssClass="form-control" field="signType" id="c_org_esupportail_esupsignature_domain_SignBook_signType" items="${signTypes}" multiple="false" path="/" render="false" size="1" z="user-managed"/>
                 <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signType_id">
                     <label class="col-lg-3  col-form-label" for="signType">
@@ -182,7 +205,7 @@
         <field:select field="signRequestParams" id="c_org_esupportail_esupsignature_domain_SignBook_signRequestParams" itemValue="id" items="${signrequestparamses}" path="/signrequestparamses" render="false" z="user-managed"/>
         <field:select field="signBooksGroup" id="c_org_esupportail_esupsignature_domain_SignBook_signBooksGroup" itemValue="id" items="${signbooks}" multiple="true" path="/manager/signbooks" render="false" z="user-managed"/>
         <field:input field="moderatorEmails" id="c_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" render="false" z="user-managed"/>
-        <field:input render="false" field="recipientEmails" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmails" z="F7hERyaIvkGa88jsN90TTjGpn+w="/>
+        <field:input field="recipientEmails" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmails" render="false" z="user-managed"/>
     </form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_SignBook" render="${not empty dependencies}" z="user-managed"/>
     <script type="text/javascript">

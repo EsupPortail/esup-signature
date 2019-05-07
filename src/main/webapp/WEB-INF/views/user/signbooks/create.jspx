@@ -11,15 +11,15 @@
         <field:textarea field="description" id="c_org_esupportail_esupsignature_domain_SignBook_description" z="CdRMWvt2UQYUskHLNd8ll/r37XU="/>
         <field:input field="sourceType" id="c_org_esupportail_esupsignature_domain_SignBook_sourceType" z="Clg+fKjjL9VsRQsx+OGnSb/UJi8="/>
         <field:input field="documentsSourceUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri" z="n6q1jDxO7ZtK6aWswpXX5Q/JTtM="/>
+        <field:input field="moderatorEmails" id="c_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" z="loNK4lIczG8u26p3Luqh3y2Hmuk="/>
+        <field:input field="recipientEmails" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmails" z="F7hERyaIvkGa88jsN90TTjGpn+w="/>
+        <field:checkbox field="autoRemove" id="c_org_esupportail_esupsignature_domain_SignBook_autoRemove" z="TVrlRLnHE5anFlxcA1Oo/sREYAA="/>
         <field:input field="targetType" id="c_org_esupportail_esupsignature_domain_SignBook_targetType" z="BN/Df3qfdCIZ+H3njnn/KaurXJk="/>
         <field:input field="documentsTargetUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" z="+aH48HMjvqLm0h8EYzaTGO4EJRA="/>
         <field:select field="modelFile" id="c_org_esupportail_esupsignature_domain_SignBook_modelFile" itemValue="id" items="${documents}" path="/user/documents" z="PFBXlCsqKcL1WBsnsRAfV/9fypI="/>
         <field:select field="signRequests" id="c_org_esupportail_esupsignature_domain_SignBook_signRequests" itemValue="id" items="${signrequests}" multiple="true" path="/signrequests" z="4hgGFnbI24zcaV+G2hZsqBsoGQY="/>
         <field:select field="signRequestParams" id="c_org_esupportail_esupsignature_domain_SignBook_signRequestParams" itemValue="id" items="${signrequestparamses}" path="/signrequestparamses" z="ILeGzNZRgDtb8BigixiIGZLza6Y="/>
-        <field:input field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" z="user-managed"/>
-        <field:checkbox field="autoRemove" id="c_org_esupportail_esupsignature_domain_SignBook_autoRemove" z="TVrlRLnHE5anFlxcA1Oo/sREYAA="/>
-        <field:input field="moderatorEmails" id="c_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" z="loNK4lIczG8u26p3Luqh3y2Hmuk="/>
-        <field:input field="recipientEmails" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmails" z="F7hERyaIvkGa88jsN90TTjGpn+w="/>
+        <field:input field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" z="f+6cYDSUdD1L18T2XB9zprJD7d8="/>
     </form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_SignBook" render="${not empty dependencies}" z="4Q6Z2m8kaslQ9bFqkQS4LQpBq1E="/>
 </div>

@@ -7,6 +7,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import org.esupportail.esupsignature.domain.SignBook;
+import org.esupportail.esupsignature.domain.SignRequest;
 
 privileged aspect SignBook_Roo_Finder {
     
@@ -63,6 +64,22 @@ privileged aspect SignBook_Roo_Finder {
         EntityManager em = SignBook.entityManager();
         TypedQuery q = em.createQuery("SELECT COUNT(o) FROM SignBook AS o WHERE o.signBookType = :signBookType", Long.class);
         q.setParameter("signBookType", signBookType);
+        return ((Long) q.getSingleResult());
+    }
+    
+    public static Long SignBook.countFindSignBooksBySignRequestsEquals(List<SignRequest> signRequests) {
+        if (signRequests == null) throw new IllegalArgumentException("The signRequests argument is required");
+        EntityManager em = SignBook.entityManager();
+        StringBuilder queryBuilder = new StringBuilder("SELECT COUNT(o) FROM SignBook AS o WHERE");
+        for (int i = 0; i < signRequests.size(); i++) {
+            if (i > 0) queryBuilder.append(" AND");
+            queryBuilder.append(" :signRequests_item").append(i).append(" MEMBER OF o.signRequests");
+        }
+        TypedQuery q = em.createQuery(queryBuilder.toString(), Long.class);
+        int signRequestsIndex = 0;
+        for (SignRequest _signrequest: signRequests) {
+            q.setParameter("signRequests_item" + signRequestsIndex++, _signrequest);
+        }
         return ((Long) q.getSingleResult());
     }
     
@@ -225,6 +242,44 @@ privileged aspect SignBook_Roo_Finder {
         }
         TypedQuery<SignBook> q = em.createQuery(queryBuilder.toString(), SignBook.class);
         q.setParameter("signBookType", signBookType);
+        return q;
+    }
+    
+    public static TypedQuery<SignBook> SignBook.findSignBooksBySignRequestsEquals(List<SignRequest> signRequests) {
+        if (signRequests == null) throw new IllegalArgumentException("The signRequests argument is required");
+        EntityManager em = SignBook.entityManager();
+        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM SignBook AS o WHERE");
+        for (int i = 0; i < signRequests.size(); i++) {
+            if (i > 0) queryBuilder.append(" AND");
+            queryBuilder.append(" :signRequests_item").append(i).append(" MEMBER OF o.signRequests");
+        }
+        TypedQuery<SignBook> q = em.createQuery(queryBuilder.toString(), SignBook.class);
+        int signRequestsIndex = 0;
+        for (SignRequest _signrequest: signRequests) {
+            q.setParameter("signRequests_item" + signRequestsIndex++, _signrequest);
+        }
+        return q;
+    }
+    
+    public static TypedQuery<SignBook> SignBook.findSignBooksBySignRequestsEquals(List<SignRequest> signRequests, String sortFieldName, String sortOrder) {
+        if (signRequests == null) throw new IllegalArgumentException("The signRequests argument is required");
+        EntityManager em = SignBook.entityManager();
+        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM SignBook AS o WHERE");
+        for (int i = 0; i < signRequests.size(); i++) {
+            if (i > 0) queryBuilder.append(" AND");
+            queryBuilder.append(" :signRequests_item").append(i).append(" MEMBER OF o.signRequests");
+        }
+        if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
+            queryBuilder.append(" ORDER BY ").append(sortFieldName);
+            if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
+                queryBuilder.append(" " + sortOrder);
+            }
+        }
+        TypedQuery<SignBook> q = em.createQuery(queryBuilder.toString(), SignBook.class);
+        int signRequestsIndex = 0;
+        for (SignRequest _signrequest: signRequests) {
+            q.setParameter("signRequests_item" + signRequestsIndex++, _signrequest);
+        }
         return q;
     }
     

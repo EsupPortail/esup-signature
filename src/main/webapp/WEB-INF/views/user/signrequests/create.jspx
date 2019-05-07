@@ -28,7 +28,7 @@
 
 	<form:create id="fc_org_esupportail_esupsignature_domain_SignRequest" modelAttribute="signRequest" multipart="true" path="/user/signrequests" render="${empty dependencies}" z="user-managed">
     <div class="row">
-    <div class="col-lg-6">
+    <div class="col-lg-12">
    		<field:input label="Titre de la demande" required="true" colLabel="col-lg-4" colInput="col-lg-8" cssClass="form-control" field="title" id="c_org_esupportail_esupsignature_domain_SignRequest_title" z="user-managed"/>
         <field:input render="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignRequest_name" z="user-managed"/>
         <field:datetime dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" render="false" z="user-managed"/>
@@ -90,8 +90,7 @@
 				</label>
 			</div>
 		</div>
-		</div>
-		<div class="col-lg-6">
+
 		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
 			<label class="col-lg-4  col-form-label" for="newPageType">
 				<strong>

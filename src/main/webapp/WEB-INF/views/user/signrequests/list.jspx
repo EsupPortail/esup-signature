@@ -201,7 +201,8 @@
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_title" /></th>
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createdate" /></th>
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createby" /></th>
-							<th class="signbook" style="display: block;"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" /></th>
+							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" /></th>
+							<th class="none">Destinataires</th>
 							<th class="type"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" /></th>
 							<th class="status"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_status" /></th>
 							<th><spring:message code="button_view" /></th>
@@ -216,6 +217,7 @@
 								<td class="none" style="width: 240px;">${signRequest.title}</td>
 								<td class="none"><fmt:formatDate value="${signRequest.createDate}" pattern="dd/MM/yyyy HH:mm" /></td>
 								<td class="none">${signRequest.createBy}</td>
+								<td class="none">${signRequest.originalSignBookNames}</td>
 								<td class="signbook" style="display: block;">
 									<table class="table table-sm">
 									  	<tbody>

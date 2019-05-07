@@ -7,12 +7,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
@@ -119,6 +116,7 @@ public class PdfService {
 			} else {
 				int topHeight = 0;
 				if(addDate) {
+					//TODO add nom prenom
 					addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos);
 					topHeight = 20;
 				}

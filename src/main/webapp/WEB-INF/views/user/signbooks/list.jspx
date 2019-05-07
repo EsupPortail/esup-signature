@@ -1,42 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<div xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:spring="http://www.springframework.org/tags" version="2.0">
+<div xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
-	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
-		<div class="alert alert-info">
-	        Les parapheurs sont des dossiers appartenants à un seul destinataire.
-	        Les paramètres de signature y sont figés. 
-	        <br/>
-	        Il existe deux types de parapheur : 
-	        <br/>
-	        <ul>
-	        <li>le parapheur par défaut qui est créé lors de l'inscription (il est unique pour chaque personne et permet de signer en dehors d'un circuit récurent)</li>
-	        <li>le parapheur "modèle" : il est créé manuellement pour gérer des demandes récurentes (ordres de mission par exemple)</li>
-	        </ul>
-	        Consultez un parapheur pour y ajouter des documents a signer.
-		</div>
-	</div>
-	<div class="card">
-		<div class="card-header">
-			<div class="row">
-				<div class="col-lg-6">
-					<h5><spring:message code="menu_item_signbook_list_label" /></h5>
-				</div>
-			</div>
-    	</div>
-		<div class="card-body">
-	    	<page:list id="pl_org_esupportail_esupsignature_domain_SignBook" items="${signbooks}" z="user-managed">
-		        <table:table data="${signbooks}" delete="false" id="l_org_esupportail_esupsignature_domain_SignBook" path="/user/signbooks" update="false" z="user-managed">
-		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_name" property="name" z="user-managed"/>
-		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" property="recipientEmail" z="user-managed"/>
-		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" property="signBookType" render="false" z="user-managed"/>
-		            <table:column date="true" dateTimePattern="${signBook_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_SignBook_createDate" property="createDate" render="false" z="user-managed"/>
-		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_createBy" property="createBy" render="false" z="user-managed"/>
-		            <table:column date="true" dateTimePattern="${signBook_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignBook_updateDate" property="updateDate" render="false" z="user-managed"/>
-		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_updateBy" property="updateBy" render="false" z="user-managed"/>
-		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_description" property="description" z="hiIhebu2xLDdhnImSRz8r90W0ms="/>
-		        </table:table>
-	    	</page:list>
-    	</div>
-    </div>
+    <page:list id="pl_org_esupportail_esupsignature_domain_SignBook" items="${signbooks}" z="WcAAbaxz4YzRkW7MLEvAc4DcmMQ=">
+        <table:table data="${signbooks}" id="l_org_esupportail_esupsignature_domain_SignBook" path="/user/signbooks" z="jJiqtewMI4fdpiVrPa7VzbkVrew=">
+            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_name" property="name" z="x+Qr/EqIz7a4AS2fudUAVoT1j/8="/>
+            <table:column date="true" dateTimePattern="${signBook_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_SignBook_createDate" property="createDate" z="sKA7jlgTdH+nEBl8eO8VAGjIrjw="/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_createBy" property="createBy" z="tOVw+XIeC1FkJgUX2fS5FGjeqHQ="/>
+            <table:column date="true" dateTimePattern="${signBook_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignBook_updateDate" property="updateDate" z="/Jhzb2C/mUdJvjDjXhrquWfX9Q4="/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_updateBy" property="updateBy" z="/0g3IUndYHvtuIVDsbe3gKgL8ww="/>
+            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_description" property="description" z="hiIhebu2xLDdhnImSRz8r90W0ms="/>
+        </table:table>
+    </page:list>
 </div>

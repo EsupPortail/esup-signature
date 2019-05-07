@@ -106,7 +106,7 @@ public class SignRequestService {
 		List<SignRequest> signRequests = new ArrayList<>();
 		for(SignBook signBook : signBooks) {
 			for(SignRequest signRequest : signBook.getSignRequests()) {
-				if(status == null || signRequest.getStatus().equals(status)) {
+				if(!signRequests.contains(signRequest) && (status == null || signRequest.getStatus().equals(status))) {
 					signRequests.add(signRequest);							
 				}
 			}
@@ -132,28 +132,23 @@ public class SignRequestService {
 		}
 	}
 	
-	public SignRequest createSignRequest(SignRequest signRequest, User user, SignRequestParams signRequestParams, List<String> recipientEmails) {
-			return createSignRequest(signRequest, user, new ArrayList<>(), signRequestParams, recipientEmails );
+	public SignRequest createSignRequest(SignRequest signRequest, User user, SignRequestParams signRequestParams) {
+			return createSignRequest(signRequest, user, new ArrayList<>(), signRequestParams);
 	}
 	
-	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document, SignRequestParams signRequestParams, List<String> recipientEmails) {
+	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document, SignRequestParams signRequestParams) {
 		List<Document> documents = new ArrayList<Document>();
 		documents.add(document);
-		return createSignRequest(signRequest, user, documents, signRequestParams, recipientEmails );
+		return createSignRequest(signRequest, user, documents, signRequestParams);
 	}
 	
-	public SignRequest createSignRequest(SignRequest signRequest, User user, List<Document> documents, SignRequestParams signRequestParams, List<String> recipientEmails) {
+	public SignRequest createSignRequest(SignRequest signRequest, User user, List<Document> documents, SignRequestParams signRequestParams) {
 		signRequest.setName(String.valueOf(generateUniqueId()));
 		signRequest.setCreateBy(user.getEppn());
 		signRequest.setCreateDate(new Date());
 		signRequest.setStatus(SignRequestStatus.draft);
 		signRequest.setSignRequestParams(signRequestParams);
 		signRequest.setOriginalDocuments(documents);
-		try {
-			signBookService.importSignRequestByRecipients(signRequest, recipientEmails, user);
-		} catch (EsupSignatureException e) {
-			logger.warn("import error", e);
-		}
 		signRequest.persist();
 		for(Document document : documents) {
 			document.setSignRequestId(signRequest.getId());
@@ -463,9 +458,8 @@ public class SignRequestService {
 
 	public List<SignBook> getSignBooksList(SignRequest signRequest) {
 		List<SignBook> signBooks = new ArrayList<>();
-		Set<Long> signBookIds = signRequest.getSignBooks().keySet();
-		for(long signBookId : signBookIds) {
-			signBooks.add(SignBook.findSignBook(signBookId));
+		for(String signBookNames : signRequest.getOriginalSignBookNames()) {
+			signBooks.add(SignBook.findSignBooksByNameEquals(signBookNames).getSingleResult());
 		}
 		return signBooks;
 	}

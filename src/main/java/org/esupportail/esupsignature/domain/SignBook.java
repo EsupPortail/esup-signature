@@ -25,7 +25,7 @@ import org.springframework.roo.addon.tostring.RooToString;
 
 @RooJavaBean
 @RooToString
-@RooJpaActiveRecord(finders={"findSignBooksByRecipientEmailsEquals", "findSignBooksByModeratorEmailsEquals", "findSignBooksByCreateByEquals", "findSignBooksByNameEquals", "findSignBooksBySignBookTypeEquals", "findSignBooksByRecipientEmailsAndSignBookTypeEquals"})
+@RooJpaActiveRecord(finders={"findSignBooksBySignRequestsEquals", "findSignBooksByRecipientEmailsEquals", "findSignBooksByModeratorEmailsEquals", "findSignBooksByCreateByEquals", "findSignBooksByNameEquals", "findSignBooksBySignBookTypeEquals", "findSignBooksByRecipientEmailsAndSignBookTypeEquals"})
 public class SignBook {
 
 	@Column(unique=true)

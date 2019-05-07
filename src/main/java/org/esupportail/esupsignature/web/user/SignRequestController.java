@@ -116,7 +116,8 @@ public class SignRequestController {
 	private FileService fileService;
 
 	@RequestMapping(produces = "text/html")
-	public String list(@RequestParam(value = "page", required = false) Integer page,
+	public String list(
+			@RequestParam(value = "page", required = false) Integer page,
 			@RequestParam(value = "toSign", required = false) Boolean toSign,
 			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "signBookId", required = false) Long signBookId,
@@ -137,10 +138,7 @@ public class SignRequestController {
 			}
 		} 
 		User user = userService.getUserFromAuthentication();
-		if (user == null) {
-			return "redirect:/user/users/?form";
-		}
-		if(!user.isReady()) {
+		if (user == null || !user.isReady()) {
 			return "redirect:/user/users/?form";
 		}
 		populateEditForm(uiModel, new SignRequest());
@@ -155,14 +153,13 @@ public class SignRequestController {
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
 		
-		List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailsEquals(recipientEmails).getResultList();
+		List<SignBook> signBooks = SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList();
+		if(signBookId != null) {	
+			signRequests.addAll(SignBook.findSignBook(signBookId).getSignRequests());
+		} else {
 		if(toSign != null) {
 			if(toSign) {
-				if(signBookId != null) {	
-					signRequests.addAll(SignBook.findSignBook(signBookId).getSignRequests());
-				} else {
-					signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, toSign, SignRequestStatus.pending, page, size);
-				}
+				signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, toSign, SignRequestStatus.pending, page, size);
 				signRequests = signRequests.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 				nrOfPages = (float) signRequestService.findSignRequestByUserAndStatusEquals(user, statusFilterEnum).size() / sizeNo;
 			} else {
@@ -174,7 +171,7 @@ public class SignRequestController {
 		} else {
 			signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, false, null, page, size);
 		}
-		
+		}
 		uiModel.addAttribute("mydocs", "active");
 		uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
 		uiModel.addAttribute("page", page);
@@ -202,14 +199,14 @@ public class SignRequestController {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
-			SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
-			uiModel.addAttribute("currentSignBook", signBook);
-			if(signBook == null && signRequest.getSignBooks().size() > 0) {
-				signBook = SignBook.findSignBook(signRequest.getSignBooks().keySet().iterator().next());
+			List<SignBook> signBooks = signBookService.getSignBookBySignRequest(signRequest);
+			if(signBooks.size() > 0 && signRequest.getSignBooks().size() > 0) {
+				SignBook signBook = signBooks.get(0);
+				if(!signRequest.isOverloadSignBookParams() && signBook != null) {
+					signRequest.setSignRequestParams(signBook.getSignRequestParams());
+				}
 			}
-			if(!signRequest.isOverloadSignBookParams() && signBook != null) {
-				signRequest.setSignRequestParams(signBook.getSignRequestParams());
-			}
+
 			Document toDisplayDocument = null;
 			File toDisplayFile = null;
 			
@@ -271,7 +268,7 @@ public class SignRequestController {
 			@RequestParam(value = "signType", required = false) String signType, 
 			@RequestParam(value = "signBookNames", required = false) String[] signBookNames,
 			@RequestParam(value="newPageType", required = false) String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
-			HttpServletRequest request, RedirectAttributes redirectAttrs) {
+			HttpServletRequest request, RedirectAttributes redirectAttrs) throws EsupSignatureException {
 		if (bindingResult.hasErrors()) {
 			uiModel.addAttribute("signRequest", signRequest);
 			return "user/signrequests/create";
@@ -289,6 +286,7 @@ public class SignRequestController {
 			signRequestParams.persist();
 		}
 		
+		/*
 		List<String> recipientEmails = new ArrayList<>();
 		
 		if(signBookNames != null && signBookNames.length > 0) {
@@ -304,14 +302,27 @@ public class SignRequestController {
 				}
 			}
 		}
-		
-		if(recipientEmails.size() == 0) {
-			redirectAttrs.addFlashAttribute("messageCustom", "no recipient");
-			return "redirect:/user/signrequests/?form";
-		}else {
-			signRequest = signRequestService.createSignRequest(signRequest, user, signRequestParams, recipientEmails);
-			return "redirect:/user/signrequests/" + signRequest.getId();
+		*/
+		signRequest = signRequestService.createSignRequest(signRequest, user, signRequestParams);
+		List<SignBook> signBooks = new ArrayList<>();
+		if(signBookNames != null && signBookNames.length > 0) {
+			for(String signBookName : signBookNames) {
+				SignBook signBook;
+				if(SignBook.countFindSignBooksByNameEquals(signBookName) > 0) {
+					signBooks.add(SignBook.findSignBooksByNameEquals(signBookName).getSingleResult());
+				} else {
+					signBooks.add(SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(signBookName), SignBookType.user).getSingleResult());
+				}
+			}
 		}
+		//on traite les groups en premier
+		signBooks = signBooks.stream().sorted(Comparator.comparing(SignBook::getSignBookType)).collect(Collectors.toList());
+
+		for(SignBook signBook : signBooks) {
+			signBookService.importSignRequestInSignBook(signRequest, signBook, user);			
+		}
+		
+		return "redirect:/user/signrequests/" + signRequest.getId();
 	}
 
 	@RequestMapping(value = "/add-doc/{id}", method = RequestMethod.POST, produces = "text/html")
