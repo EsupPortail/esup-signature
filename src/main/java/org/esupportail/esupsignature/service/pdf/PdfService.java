@@ -28,9 +28,11 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.color.PDOutputIntent;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.apache.pdfbox.preflight.PreflightDocument;
 import org.apache.pdfbox.preflight.ValidationResult;
 import org.apache.pdfbox.preflight.ValidationResult.ValidationError;
@@ -62,7 +64,11 @@ public class PdfService {
 
 	@Resource
 	private FileService fileService;
-	
+
+	@Value("${pdf.width}")
+	private int pdfWidth;
+	@Value("${pdf.height}")
+	private int pdfHeight;
 	@Value("${pdf.pdfToImageDpi}")
 	private int pdfToImageDpi;
 	@Value("${sign.widthThreshold}")
@@ -83,9 +89,7 @@ public class PdfService {
 	}
 	
 	public File stampImage(File toSignFile, SignRequestParams params, User user, boolean addPage, boolean addDate) {
-
 		//TODO add ip ? + date
-		
 		SignRequestParams.SignType signType = params.getSignType();
     	PdfParameters pdfParameters = getPdfParameters(toSignFile);
 		toSignFile = formatPdf(toSignFile, params, addPage);
@@ -300,6 +304,33 @@ public class PdfService {
 		return false;
 	}
 	
+	public int[] getSignFieldCoord(File pdfFile) {
+		PDDocument pdDocument = null;
+		try {
+			pdDocument = PDDocument.load(pdfFile);
+			PDPage pdPage = pdDocument.getPage(0);
+			List<PDSignatureField> signatureFields = pdDocument.getSignatureFields();
+			for(PDSignatureField pdSignatureField : signatureFields) {
+				if(pdSignatureField.getValue() == null) {
+					int[] pos = new int[2];
+					pos[0] = (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX();
+					pos[1] = (int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight();
+		    		return pos;
+				}
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		} finally {
+			try {
+				pdDocument.close();
+			} catch (IOException e) {
+				logger.error(e.getMessage(), e);
+			}
+		}
+
+		return null;
+	}
+	
 	public File toPdfA(File pdfFile) {
 		if(!checkPdfA(pdfFile)) {
 	        try {
@@ -312,10 +343,19 @@ public class PdfService {
 					pdAcroForm.setNeedAppearances(false);
 					PDResources pdResources = new PDResources();
 					pdAcroForm.setDefaultResources(pdResources);
-	
+
+					List<PDSignatureField> signatureFields = pdDocument.getSignatureFields();
+					for(PDSignatureField pdSignatureField : signatureFields) {
+						if(pdSignatureField.getSignature() == null) {
+							pdSignatureField.setSignature(new PDSignature());
+							break;
+						}
+					}
+					
 				    List<PDField> fields = new ArrayList<>(pdAcroForm.getFields());
-				    processFields(fields, pdResources);
-				    pdAcroForm.flatten();
+				    if(processFields(fields, pdResources)) {
+				    	pdAcroForm.flatten();
+				    }
 				}
 		        try {
 			        XMPMetadata xmpMetadata = XMPMetadata.createXMPMetadata();
@@ -364,10 +404,16 @@ public class PdfService {
         return pdfFile;
 	}	
 	
-	private void processFields(List<PDField> fields, PDResources resources) {
-	    fields.stream().forEach(f -> {
-	    	logger.debug("process :" + f.getFullyQualifiedName() + " : " + f.getFieldType());
-	        f.setReadOnly(true);
+	private boolean processFields(List<PDField> fields, PDResources resources) {
+		for(PDField f : fields) {
+			logger.debug("process :" + f.getFullyQualifiedName() + " : " + f.getFieldType());
+	    	if(f.getFieldType().equals("Sig")) {
+	    		PDSignatureField pdSignatureField = (PDSignatureField) f;
+    			if(pdSignatureField.getSignature() == null) {
+    				return false;
+    			}
+	    	}
+			f.setReadOnly(true);
 	        COSDictionary cosObject = f.getCOSObject();
 	        String value = cosObject.getString(COSName.DV) == null ?
 	                       cosObject.getString(COSName.V) : cosObject.getString(COSName.DV);
@@ -377,10 +423,9 @@ public class PdfService {
 	        		if(f.getFieldType().equals("Btn")) {
 	        			value = "Off";
 	        		}
-	    	    	if(f.getFieldType().equals("Sig")) {
-	    	    		//TODO gerer les signatures
-	    	    		return;
-	    	    	}
+		        	if(f.getFieldType().equals("Sig")) {
+		        		continue;
+		        	}
 	        	}
 	            f.setValue(value);
 	        } catch (IOException e) {
@@ -400,7 +445,8 @@ public class PdfService {
 	        if (f instanceof PDNonTerminalField) {
 	            processFields(((PDNonTerminalField) f).getChildren(), resources);
 	        }
-	    });
+	    }
+		return true;
 	}
 	
 	public List<String> pagesAsBase64Images(File pdfFile) {

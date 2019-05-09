@@ -220,6 +220,11 @@ public class SignRequestController {
 					uiModel.addAttribute("pdfWidth", pdfParameters.getWidth());
 					uiModel.addAttribute("pdfHeight", pdfParameters.getHeight());
 					uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+					int[] pos = pdfService.getSignFieldCoord(toDisplayFile);
+					if(pos != null) {
+						signRequest.getSignRequestParams().setXPos(pos[0]);
+						signRequest.getSignRequestParams().setYPos(pos[1]);
+					}
 					if(user.getSignImage() != null) {
 						uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 						int[] size = pdfService.getSignSize(user.getSignImage().getJavaIoFile());
