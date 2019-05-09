@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
@@ -12,6 +13,7 @@ import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
 import java.awt.image.ImageProducer;
 import java.awt.image.RGBImageFilter;
+import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -20,12 +22,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.Base64;
 import java.util.Hashtable;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.io.FilenameUtils;
@@ -207,32 +212,78 @@ public class FileService {
 	    }
 	}
 	
-	//TODO gestion de la transparence
-	public Image makeColorTransparent(final BufferedImage im, final Color color)
-	   {
-	      final ImageFilter filter = new RGBImageFilter()
-	      {
-	         // the color we are looking for (white)... Alpha bits are set to opaque
-	         public int markerRGB = color.getRGB() | 0xFFFFFFFF;
+	public String base64Transparence(String base64Image) {
+		BufferedImage image = makeColorTransparent(base64StringToImg(base64Image));
+		return imgToBase64String(image, "png");
+	}
+	
+	
+	public static boolean colorsAreSimilar(final Color c1, final Color c2, final int tolerance) {
+		int r1 = c1.getRed();
+		int g1 = c1.getGreen();
+		int b1 = c1.getBlue();
+		int r2 = c2.getRed();
+		int g2 = c2.getGreen();
+		int b2 = c2.getBlue();
 
-	         public final int filterRGB(final int x, final int y, final int rgb)
-	         {
-	            if ((rgb | 0xFF000000) == markerRGB)
-	            {
-	               // Mark the alpha bits as zero - transparent
-	               return 0x00FFFFFF & rgb;
-	            }
-	            else
-	            {
-	               // nothing to do
-	               return rgb;
-	            }
-	         }
-	      };
+		return ((r2 - tolerance <= r1) && (r1 <= r2 + tolerance) &&
+				(g2 - tolerance <= g1) && (g1 <= g2 + tolerance) &&
+				(b2 - tolerance <= b1) && (b1 <= b2 + tolerance));
+	}
+	
+	public BufferedImage makeColorTransparent(BufferedImage im)
+	   {
+		final ImageFilter filter = new RGBImageFilter() {
+
+			@Override
+			public int filterRGB(int x, int y, int rgb) {
+				final Color filterColor = new Color(rgb);
+
+				if(colorsAreSimilar(filterColor, Color.WHITE, 40)) {
+					return 0x00FFFFFF & rgb;
+				} else {
+					return rgb;
+				}
+			}
+		};
 
 	      final ImageProducer ip = new FilteredImageSource(im.getSource(), filter);
-	      return Toolkit.getDefaultToolkit().createImage(ip);
+	      return toBufferedImage(Toolkit.getDefaultToolkit().createImage(ip));
+	      
 	   }
+	
+	public static BufferedImage toBufferedImage(Image image) 
+	  { 
+	  if (image instanceof BufferedImage) return (BufferedImage) image; 
+	 
+	  // This code ensures that all the pixels in the image are loaded 
+	  image = new ImageIcon(image).getImage(); 
+	 
+	  BufferedImage bimage = new BufferedImage(image.getWidth(null),image.getHeight(null), 
+	    BufferedImage.TYPE_INT_ARGB); 
+	  Graphics g = bimage.createGraphics(); 
+	  g.drawImage(image,0,0,null); 
+	  g.dispose(); 
+	  return bimage; 
+	  } 
+	
+	public static String imgToBase64String(RenderedImage img, String formatName) {
+	    final ByteArrayOutputStream os = new ByteArrayOutputStream();
+	    try {
+	        ImageIO.write(img, formatName, Base64.getEncoder().wrap(os));
+	        return os.toString(StandardCharsets.ISO_8859_1.name());
+	    } catch (final IOException ioe) {
+	        throw new UncheckedIOException(ioe);
+	    }
+	}
+
+	public static BufferedImage base64StringToImg(String base64Image) {
+	    try {
+	        return ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(base64Image.substring(base64Image.lastIndexOf(',') + 1).trim())));
+	    } catch (final IOException ioe) {
+	        throw new UncheckedIOException(ioe);
+	    }
+	}
 	
 	public BufferedImage imageToBufferedImage(final Image image)
 	   {

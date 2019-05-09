@@ -120,6 +120,21 @@ public class SignBook {
         return q;
     }
     
+    public static TypedQuery<SignBook> findSignBooksBySignBookTypeEquals(SignBookType signBookType, String sortFieldName, String sortOrder) {
+        if (signBookType == null) throw new IllegalArgumentException("The signBookType argument is required");
+        EntityManager em = SignBook.entityManager();
+        StringBuilder queryBuilder = new StringBuilder("SELECT o FROM SignBook AS o WHERE o.signBookType = :signBookType");
+        if (fieldNames4OrderClauseFilter.contains(sortFieldName)) {
+            queryBuilder.append(" ORDER BY ").append(sortFieldName);
+            if ("ASC".equalsIgnoreCase(sortOrder) || "DESC".equalsIgnoreCase(sortOrder)) {
+                queryBuilder.append(" ").append(sortOrder);
+            }
+        }
+        TypedQuery<SignBook> q = em.createQuery(queryBuilder.toString(), SignBook.class);
+        q.setParameter("signBookType", signBookType);
+        return q;
+    }
+    
     public static Long countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(List<String> recipientEmails, SignBookType signBookType) {
         if (recipientEmails == null) throw new IllegalArgumentException("The recipientEmails argument is required");
         if (signBookType == null) throw new IllegalArgumentException("The signBookType argument is required");

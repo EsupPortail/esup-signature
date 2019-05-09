@@ -321,27 +321,27 @@ public class SignRequestService {
 				signBookService.resetSignBookParams(signBook);
 			}
 			if(signType.equals(SignType.visa)) {
-				updateInfo(signRequest, SignRequestStatus.checked, messageSource.getMessage("updateinfo_visa", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+				updateStatus(signRequest, SignRequestStatus.checked, messageSource.getMessage("updateinfo_visa", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 			} else {
-				updateInfo(signRequest, SignRequestStatus.signed, messageSource.getMessage("updateinfo_sign", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+				updateStatus(signRequest, SignRequestStatus.signed, messageSource.getMessage("updateinfo_sign", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 			}
 			if (!signBook.getTargetType().equals(DocumentIOType.none)) {
 				try {
 					signBookService.exportFileToTarget(signBook, signRequest, user);
-					updateInfo(signRequest, SignRequestStatus.exported, messageSource.getMessage("updateinfo_exporttotarget", null, Locale.FRENCH) + " " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", signRequest.getComment());
+					updateStatus(signRequest, SignRequestStatus.exported, messageSource.getMessage("updateinfo_exporttotarget", null, Locale.FRENCH) + " " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", signRequest.getComment());
 				} catch (EsupSignatureException e) {
 					logger.error("error on export file to fs", e);
 				}
 			}
 			if(signBook.isAutoRemove()) {
 				signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
-				updateInfo(signRequest, SignRequestStatus.completed, messageSource.getMessage("updateinfo_autoremove", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+				updateStatus(signRequest, SignRequestStatus.completed, messageSource.getMessage("updateinfo_autoremove", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 			}
 		} else {
 			if(signType.equals(SignType.visa)) {
-				updateInfo(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_visa", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+				updateStatus(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_visa", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 			} else {
-				updateInfo(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_sign", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+				updateStatus(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_sign", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 			}
 		}
 	}
@@ -370,7 +370,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void updateInfo(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, User user, String returnCode, String comment) {
+	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, User user, String returnCode, String comment) {
 		Log log = new Log();
 		log.setSignRequestId(signRequest.getId());
 		log.setEppn(user.getEppn());
@@ -412,7 +412,7 @@ public class SignRequestService {
 
 	public void refuse(SignRequest signRequest, User user) {
 		signBookService.removeSignRequestFromAllSignBooks(signRequest);
-		updateInfo(signRequest, SignRequestStatus.refused, messageSource.getMessage("updateinfo_refuse", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+		updateStatus(signRequest, SignRequestStatus.refused, messageSource.getMessage("updateinfo_refuse", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 	}
 	
 	public void toggleNeedAllSign(SignRequest signRequest) {

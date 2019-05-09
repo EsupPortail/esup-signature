@@ -108,7 +108,9 @@ public class PdfService {
 				try {
 					//signImage = fileService.stringToImageFile("Visé par\n " + getInitials(user.getFirstname() + " " + user.getName()), "png");
 					addText(contentStream, "Visé par " + getInitials(user.getFirstname() + " " + user.getName()), xPos, yPos);
-					addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos + 20);
+					if(addDate) {
+						addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos + 20);
+					}
 				} catch (IOException e) {
 					logger.error(e.getMessage(), e);
 					signImage = null;
@@ -116,7 +118,7 @@ public class PdfService {
 			} else {
 				int topHeight = 0;
 				if(addDate) {
-					//TODO add nom prenom
+					//TODO add nom prenom ?
 					addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos);
 					topHeight = 20;
 				}

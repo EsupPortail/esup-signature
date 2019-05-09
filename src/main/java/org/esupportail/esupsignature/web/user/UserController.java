@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.user;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.DayOfWeek;
@@ -41,6 +42,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -49,6 +51,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@CrossOrigin(origins = "*")
 @RequestMapping("/user/users")
 @Controller
 @Scope(value="session")
@@ -167,7 +170,7 @@ public class UserController {
         }
         Document oldSignImage = userToUpdate.getSignImage();
         if(!user.getSignImageBase64().isEmpty()) {
-        	userToUpdate.setSignImage(documentService.createDocument(user.getSignImageBase64(), userToUpdate.getEppn() + "_sign", "application/png"));
+        	userToUpdate.setSignImage(documentService.createDocument(fileService.base64Transparence(user.getSignImageBase64()), userToUpdate.getEppn() + "_sign", "application/png"));
         }
         if(oldSignImage != null) {
         	oldSignImage.getBigFile().getBinaryFile().free();

@@ -4,12 +4,20 @@
     <jsp:output omit-xml-declaration="yes"/>
    	<div class="card">
 		<div class="card-header">
-			<div class="row">
-				<div class="col-lg-12 text-center">
+			<nav class="nav justify-content-between" aria-label="breadcrumb">
+				<ol class="breadcrumb col-11">
+					<li class="breadcrumb-item active">Liste des parapheurs</li>
+				</ol>
+				<div class="navbar-nav align-self-center">
+				<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+					<span class="fas fa-info-circle"><!--  --></span>
+				</button>
+			</div>
+			</nav>
+			<div class="col-lg-12 text-center">
 			    	<button alt="Créer un SignBook" class="btn btn-success" onclick="location.href='/manager/signbooks?form'" title="Créer un SignBook">
 	            		<i class="fas fa-book"><!--  --></i>&amp;nbsp;<spring:message code="menu_item_signbook_new_label" />
 					</button>
-				</div>
 			</div>
     	</div>
 		<div class="card-body">

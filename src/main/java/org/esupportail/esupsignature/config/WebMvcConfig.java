@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.config;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -13,6 +15,9 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.http.CacheControl;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.ui.context.support.ResourceBundleThemeSource;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -114,6 +119,18 @@ public class WebMvcConfig implements WebMvcConfigurer {
 		bundleMessageSource.setBasenames("WEB-INF/i18n/messages", "WEB-INF/i18n/application");
 		bundleMessageSource.setFallbackToSystemLocale(false);
 		return bundleMessageSource;
+	}
+	
+	@Bean
+	public CorsFilter corsFilter() {
+	    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	    final CorsConfiguration config = new CorsConfiguration();
+	    config.setAllowCredentials(true);
+	    config.setAllowedOrigins(Collections.singletonList("*"));
+	    config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept"));
+	    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH"));
+	    source.registerCorsConfiguration("/**", config);
+	    return new CorsFilter(source);
 	}
 	
 }

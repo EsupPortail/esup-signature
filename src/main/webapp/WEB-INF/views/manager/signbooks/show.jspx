@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <div xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:spring="http://www.springframework.org/tags" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
-    <jsp:output omit-xml-declaration="yes"/>
+    <jsp:output omit-xml-declaration="yes"/>	
+    <div class="card card-header">
+		<div class="row">
+			<div class="col-lg-9">
+			<nav aria-label="breadcrumb">
+			  <ol class="breadcrumb">
+	    		<li class="breadcrumb-item"><a href="/manager">Liste des parapheurs</a></li>
+			    <li class="breadcrumb-item active" aria-current="page">Parapheur : ${signBook.name}</li>
+			  </ol>
+			</nav>
+			</div>
+		</div>
+	</div>
     <div aria-expanded="true" class="collapse" id="collapseHelp" style="">
         <div class="card card-body bg-info text-white">
             <spring:message code="help_manager_signbook_show"/>
@@ -45,6 +57,18 @@
                                 </div>
                             </dd>
                         </dl>
+                        <dl class="display-group border-bottom m-0">
+                            <dt class="col-lg-5">
+                                <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signrequestparams"/>
+                            </dt>
+                            <dd>
+                            	<ul>
+                                <li>${signBook.signRequestParams.signType}</li>
+                                <li>${signBook.signRequestParams.newPageType}</li>
+                                </ul>
+                            </dd>
+                        </dl>
+
                         <field:display field="description" id="s_org_esupportail_esupsignature_domain_SignBook_description" object="${signBook}" z="user-managed"/>
                         <field:display field="sourceType" id="s_org_esupportail_esupsignature_domain_SignBook_sourceType" object="${signBook}" render="false" z="user-managed"/>
                         <dl class="display-group border-bottom m-0">

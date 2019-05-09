@@ -105,11 +105,11 @@ public class SignBookController {
 		if (page != null || size != null) {
 			int sizeNo = size == null ? 10 : size.intValue();
 			//final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
-			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks(sortFieldName, sortOrder));
+			uiModel.addAttribute("signBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group, sortFieldName, sortOrder).getResultList());
 			float nrOfPages = (float) SignBook.countSignBooks() / sizeNo;
 			uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
 		} else {
-			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks(sortFieldName, sortOrder));
+			uiModel.addAttribute("signBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group, sortFieldName, sortOrder).getResultList());
 		}
 		addDateTimeFormatPatterns(uiModel);
 		return "manager/signbooks/list";
@@ -163,13 +163,15 @@ public class SignBookController {
 			signBookToUpdate.setTargetType(signBook.getTargetType());
 			signBookToUpdate.getSignRequestParams().setSignType(SignType.valueOf(signType));
 			signBookToUpdate.getSignRequestParams().setNewPageType(NewPageType.valueOf(newPageType));
-			Document newModel = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-			if(newModel != null) {
-				Document oldModel = signBookToUpdate.getModelFile();
-				signBookToUpdate.setModelFile(newModel);
-				oldModel.remove();
+			if(!multipartFile.isEmpty()) {
+				Document newModel = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
+				if(newModel != null) {
+					Document oldModel = signBookToUpdate.getModelFile();
+					signBookToUpdate.setModelFile(newModel);
+					oldModel.remove();
+				}
+				newModel.setSignRequestId(signBookToUpdate.getId());
 			}
-			newModel.setSignRequestId(signBookToUpdate.getId());
 			signBookToUpdate.merge();
 		} else {
 			if(SignBook.countFindSignBooksByNameEquals(signBook.getName()) == 0) {

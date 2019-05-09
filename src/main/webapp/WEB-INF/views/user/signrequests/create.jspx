@@ -5,7 +5,7 @@
 
 	<div class="card card-header">
 		<nav class="nav justify-content-between" aria-label="breadcrumb">
-			<div class="navbar-nav">
+			<div class="navbar-nav col-11">
 				<ol class="breadcrumb">
 					<li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
 					<li class="breadcrumb-item active">Nouvelle demande de signature</li>
@@ -178,7 +178,7 @@
 	    		    if (search.length &lt; 3) {
 	    		      callback('Merci de saisir au moins 3 caractères')
 	    		    }
-	    		    fetch('/user/users/searchLdap?searchString=' + search)
+	    		    fetch('/ws/searchLdap?searchString=' + search)
 	    		    .then(function (response) {
 	    		      return response.json()
 	    		    })

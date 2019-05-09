@@ -203,6 +203,8 @@ public class SigningService {
 	}
 
 	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user) throws IOException {
+		//TODO get sign field position ?
+		
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		File signImage = user.getSignImage().getJavaIoFile();
 		FileDocument fileDocumentImage = new FileDocument(signImage);

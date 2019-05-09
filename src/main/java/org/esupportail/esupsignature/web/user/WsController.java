@@ -2,7 +2,11 @@ package org.esupportail.esupsignature.web.user;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.persistence.NoResultException;
@@ -15,13 +19,18 @@ import org.esupportail.esupsignature.domain.SignBook;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.domain.SignBook.SignBookType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -49,6 +58,9 @@ public class WsController {
 	@Resource
 	DocumentService documentService;
 	
+	@Autowired(required = false)
+	private LdapPersonService ldapPersonService;
+	
 	@Resource
 	private ReloadableResourceBundleMessageSource messageSource;
 	
@@ -67,7 +79,7 @@ public class WsController {
 			signBookService.importSignRequestInSignBook(signRequest, signBook, user);
 			signRequest.setTitle(signBookName);
 			logger.info(file.getOriginalFilename() + " was added into signbook" + signBookName + " with id " + signRequest.getName());
-			signRequestService.updateInfo(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_wsupload", null, Locale.FRENCH), user, "SUCCESS", "");
+			signRequestService.updateStatus(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_wsupload", null, Locale.FRENCH), user, "SUCCESS", "");
 			signRequest.merge();
 			return signRequest.getName();
 		} else {
@@ -150,6 +162,33 @@ public class WsController {
 		}
 		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
+	
+	@RequestMapping(value="/searchLdap")
+	@ResponseBody
+	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString, @RequestParam(required=false) String ldapTemplateName) {
+
+		logger.info("ldap search for : " + searchString);
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Content-Type", "application/json; charset=utf-8");
+		List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
+		List<SignBook> signBooks = SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList();
+		for(SignBook signBook : signBooks) {
+			PersonLdap personLdap = new PersonLdap();
+			personLdap.setUid("parapheur");
+			personLdap.setMail(signBook.getName());
+			personLdap.setDisplayName(signBook.getName());
+			ldapList.add(personLdap);
+		}
+		if(ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
+			List<PersonLdap> ldapSearchList = new ArrayList<PersonLdap>();
+			ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
+			ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
+
+		}
+
+
+		return ldapList;
+   }
 	
 	public User getSystemUser() {
 		User user = new User();

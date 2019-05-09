@@ -298,7 +298,13 @@
 									Parapheur(s) d'origine(s)					
 								</dt>
 								<dd>
-									${signRequest.originalSignBookNames}	
+								<table class="table table-sm">
+								<c:forEach items="${signRequest.originalSignBookNames}" var="originalSignBookName">
+							  		<tr>
+										<td><i class="fas fa-book"><!--  --></i>&amp;nbsp;${originalSignBookName}</td>
+									</tr>
+								</c:forEach>
+								</table>
 								</dd>
 							</dl>
 							
@@ -319,7 +325,7 @@
 									  	<tbody>
 											<c:forEach items="${signRequest.signBooksLabels}" var="signBooksLabel">
 										  		<tr>
-													<td><i class="fas fa-book"><!--  --></i>&amp;nbsp;${signBooksLabel.key}</td>
+													<td><i class="fas fa-user"><!--  --></i>&amp;nbsp;${signBooksLabel.key}</td>
 													<td align="center">
 														<c:choose>
 															<c:when test="${signBooksLabel.value eq true}">
