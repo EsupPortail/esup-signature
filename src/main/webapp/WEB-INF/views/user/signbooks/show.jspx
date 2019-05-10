@@ -20,5 +20,6 @@
         <field:display field="signRequests" id="s_org_esupportail_esupsignature_domain_SignBook_signRequests" object="${signbook}" z="RNdjxyETP2PeuFHvINnVRL0tR5E="/>
         <field:display field="signRequestParams" id="s_org_esupportail_esupsignature_domain_SignBook_signRequestParams" object="${signbook}" z="pOF1NvatD6uWlUBqDyu4fNhecDQ="/>
         <field:display field="signBookType" id="s_org_esupportail_esupsignature_domain_SignBook_signBookType" object="${signbook}" z="D+rCqskR6jbY7H/o4aXQg6BiWBk="/>
+        <field:display field="signBooks" id="s_org_esupportail_esupsignature_domain_SignBook_SignBooks" object="${signbook}" z="Z06YBaaBPEi+CWYiZr6aTravhKs="/>
     </page:show>
 </div>

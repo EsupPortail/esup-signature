@@ -56,6 +56,10 @@ public class SignBook {
 
     @ElementCollection(targetClass=String.class)
     private List<String> recipientEmails = new ArrayList<String>();
+
+    //TODO : mini workflow
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.ALL })
+    private List<SignBook> SignBooks = new ArrayList<SignBook>();
     
     private boolean autoRemove = false;
     

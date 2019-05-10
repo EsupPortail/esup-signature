@@ -180,6 +180,7 @@ public class SignRequestService {
 		boolean addPage = false;
 		if(!SignRequestParams.NewPageType.none.equals(signRequest.getSignRequestParams().getNewPageType())) {
 			int nbSignOk = signRequest.countSignOk();
+			//TODO or get next signature field
 			signRequest.getSignRequestParams().setXPos(firstPosX + ((nbSignOk - (Math.abs(nbSignOk / 3) * 3)) * 150));
 			signRequest.getSignRequestParams().setYPos(firstPosY +(Math.abs(nbSignOk / 3) * 100));
 			if(nbSignOk == 0) {

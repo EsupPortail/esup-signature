@@ -8,8 +8,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
@@ -45,6 +47,7 @@ import org.apache.xmpbox.schema.DublinCoreSchema;
 import org.apache.xmpbox.schema.PDFAIdentificationSchema;
 import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.xml.XmpSerializer;
+import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequestParams;
 import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
@@ -304,33 +307,6 @@ public class PdfService {
 		return false;
 	}
 	
-	public int[] getSignFieldCoord(File pdfFile) {
-		PDDocument pdDocument = null;
-		try {
-			pdDocument = PDDocument.load(pdfFile);
-			PDPage pdPage = pdDocument.getPage(0);
-			List<PDSignatureField> signatureFields = pdDocument.getSignatureFields();
-			for(PDSignatureField pdSignatureField : signatureFields) {
-				if(pdSignatureField.getValue() == null) {
-					int[] pos = new int[2];
-					pos[0] = (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX();
-					pos[1] = (int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight();
-		    		return pos;
-				}
-			}
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-		} finally {
-			try {
-				pdDocument.close();
-			} catch (IOException e) {
-				logger.error(e.getMessage(), e);
-			}
-		}
-
-		return null;
-	}
-	
 	public File toPdfA(File pdfFile) {
 		if(!checkPdfA(pdfFile)) {
 	        try {
@@ -343,8 +319,9 @@ public class PdfService {
 					pdAcroForm.setNeedAppearances(false);
 					PDResources pdResources = new PDResources();
 					pdAcroForm.setDefaultResources(pdResources);
-
+					//a chaque signature un verouille un champ signature
 					List<PDSignatureField> signatureFields = pdDocument.getSignatureFields();
+					signatureFields = signatureFields.stream().sorted(Comparator.comparing(PDSignatureField::getPartialName)).collect(Collectors.toList());
 					for(PDSignatureField pdSignatureField : signatureFields) {
 						if(pdSignatureField.getSignature() == null) {
 							pdSignatureField.setSignature(new PDSignature());
@@ -447,6 +424,34 @@ public class PdfService {
 	        }
 	    }
 		return true;
+	}
+	
+	public int[] getSignFieldCoord(File pdfFile) {
+		PDDocument pdDocument = null;
+		try {
+			pdDocument = PDDocument.load(pdfFile);
+			PDPage pdPage = pdDocument.getPage(0);
+			List<PDSignatureField> signatureFields = pdDocument.getSignatureFields();
+			signatureFields = signatureFields.stream().sorted(Comparator.comparing(PDSignatureField::getPartialName)).collect(Collectors.toList());
+			for(PDSignatureField pdSignatureField : signatureFields) {
+				if(pdSignatureField.getValue() == null) {
+					int[] pos = new int[2];
+					pos[0] = (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX();
+					pos[1] = (int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight();
+		    		return pos;
+				}
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		} finally {
+			try {
+				pdDocument.close();
+			} catch (IOException e) {
+				logger.error(e.getMessage(), e);
+			}
+		}
+
+		return null;
 	}
 	
 	public List<String> pagesAsBase64Images(File pdfFile) {

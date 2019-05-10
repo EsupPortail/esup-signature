@@ -201,11 +201,10 @@ public class SignRequestController {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
-			List<SignBook> signBooks = signBookService.getSignBookBySignRequest(signRequest);
-			if(signBooks.size() > 0 && signRequest.getSignBooks().size() > 0) {
-				SignBook signBook = signBooks.get(0);
-				if(!signRequest.isOverloadSignBookParams() && signBook != null) {
-					signRequest.setSignRequestParams(signBook.getSignRequestParams());
+			SignBook userSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
+			if(userSignBook != null) {
+				if(!signRequest.isOverloadSignBookParams()) {
+					signRequest.setSignRequestParams(userSignBook.getSignRequestParams());
 				}
 			}
 
