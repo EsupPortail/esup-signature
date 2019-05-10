@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -19,6 +21,7 @@ import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.domain.SignBook.SignBookType;
 import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
+import org.esupportail.esupsignature.domain.SignRequestParams;
 import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
@@ -34,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class SignBookService {
@@ -58,6 +62,9 @@ public class SignBookService {
 	@Resource
 	private DocumentService documentService;
 
+	@Resource
+	private UserService userService;
+	
 	@Resource
 	private ReloadableResourceBundleMessageSource messageSource;
 	
@@ -99,6 +106,135 @@ public class SignBookService {
 		signbook.setSignRequestParams(signRequestService.getEmptySignRequestParams());
 		signbook.persist();
 		return signbook;
+	}
+	
+	public void updateSignBook(SignBook signBook, SignBook signBookToUpdate, SignRequestParams signRequestParams, MultipartFile multipartFile) throws EsupSignatureException {
+		signBookToUpdate.getRecipientEmails().removeAll(signBook.getRecipientEmails());
+		signBookToUpdate.getRecipientEmails().addAll(signBook.getRecipientEmails());
+		signBookToUpdate.getModeratorEmails().removeAll(signBook.getModeratorEmails());
+		signBookToUpdate.getModeratorEmails().addAll(signBook.getModeratorEmails());
+		signBookToUpdate.setName(signBook.getName());
+		signBookToUpdate.setDocumentsSourceUri(signBook.getDocumentsSourceUri());
+		signBookToUpdate.setSourceType(signBook.getSourceType());
+		signBookToUpdate.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
+		signBookToUpdate.setTargetType(signBook.getTargetType());
+		signBookToUpdate.getSignRequestParams().setSignType(signRequestParams.getSignType());
+		signBookToUpdate.getSignRequestParams().setNewPageType(signRequestParams.getNewPageType());
+		if(!multipartFile.isEmpty()) {
+			Document newModel;
+			try {
+				newModel = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
+			} catch (IOException e) {
+				logger.error("enable to add model", e);
+				throw new EsupSignatureException(e.getMessage(), e);
+			}
+			if(newModel != null) {
+				Document oldModel = signBookToUpdate.getModelFile();
+				signBookToUpdate.setModelFile(newModel);
+				oldModel.remove();
+			}
+			newModel.setSignParentId(signBookToUpdate.getId());
+		}
+		signBookToUpdate.merge();
+		
+	}
+	
+	public void createGroupSignBook(SignBook signBook, User user, SignRequestParams signRequestParams, MultipartFile multipartFile) throws EsupSignatureException {
+		if(SignBook.countFindSignBooksByNameEquals(signBook.getName()) == 0) {
+			signRequestParams.persist();
+			signBook.setSignBookType(SignBookType.group);
+			signBook.setCreateBy(user.getEppn());
+			signBook.setCreateDate(new Date());
+			signBook.getRecipientEmails().removeAll(Collections.singleton(""));
+			List<String> recipientEmails = new ArrayList<>();
+			for(String recipientEmail : signBook.getRecipientEmails()) {
+				if(SignBook.countFindSignBooksByNameEquals(recipientEmail) == 0) {
+					if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.user) == 0) {
+						userService.createUser(recipientEmail);
+					}
+					recipientEmails.add(recipientEmail);
+				} else {
+					recipientEmails.addAll(SignBook.findSignBooksByNameEquals(recipientEmail).getSingleResult().getRecipientEmails());
+					
+				}
+			}
+			signBook.setRecipientEmails(new ArrayList<String>(new HashSet<String>(recipientEmails)));
+			signBook.getModeratorEmails().removeAll(Collections.singleton(""));
+			for(String moderatorEmail : signBook.getModeratorEmails()) {
+				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(moderatorEmail)) == 0) {
+					userService.createUser(moderatorEmail);
+				}
+			}
+			Document model = null;
+			if(multipartFile != null) {
+				try {
+					model = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
+				} catch (IOException e) {
+					logger.error("enable to add model", e);
+					throw new EsupSignatureException(e.getMessage(), e);
+				}
+				signBook.setModelFile(model);
+			}
+			signBook.setSignRequestParams(signRequestParams);
+			signBook.persist();
+			if(model != null) {
+				model.setSignParentId(signBook.getId());
+			}
+		} else {
+			throw new EsupSignatureException("all ready exist");
+		}
+	}
+	
+	public void createWorkflowSignBook(SignBook signBook, User user, SignRequestParams signRequestParams, MultipartFile multipartFile) throws EsupSignatureException {
+		if(SignBook.countFindSignBooksByNameEquals(signBook.getName()) == 0) {
+			signRequestParams.persist();
+			signBook.setSignBookType(SignBookType.workflow);
+			signBook.setCreateBy(user.getEppn());
+			signBook.setCreateDate(new Date());
+			signBook.getRecipientEmails().removeAll(Collections.singleton(""));
+			List<SignBook> signBooks = new ArrayList<>();
+			for(String recipientEmail : signBook.getRecipientEmails()) {
+				if(SignBook.countFindSignBooksByNameEquals(recipientEmail) == 0) {
+					SignBook userSignBook;
+					if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.user) == 0) {
+						userSignBook = userService.createUser(recipientEmail);
+					} else {
+						userSignBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.user).getSingleResult();
+					}
+					signBooks.add(userSignBook);
+				} else {
+					SignBook groupSignBook = SignBook.findSignBooksByNameEquals(recipientEmail).getSingleResult();
+					if(!signBooks.contains(groupSignBook)) {
+						signBooks.add(groupSignBook);
+					}
+				}
+			}
+			signBook.setSignBooks(new ArrayList<SignBook>(new HashSet<SignBook>(signBooks)));
+			signBook.setRecipientEmails(null);
+			signBook.getModeratorEmails().removeAll(Collections.singleton(""));
+			for(String moderatorEmail : signBook.getModeratorEmails()) {
+				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(moderatorEmail)) == 0) {
+					userService.createUser(moderatorEmail);
+				}
+			}
+			Document model = null;
+			if(multipartFile != null) {
+				try {
+					model = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
+				} catch (IOException e) {
+					logger.error("enable to add model", e);
+					throw new EsupSignatureException(e.getMessage(), e);
+				}
+				signBook.setModelFile(model);
+			}
+			signBook.setSignRequestParams(signRequestParams);
+			signBook.persist();
+			if(model != null) {
+				model.setSignParentId(signBook.getId());
+			}
+		} else {
+			throw new EsupSignatureException("all ready exist");
+		}
 	}
 	
 	public void resetSignBookParams(SignBook signBook) {
@@ -187,31 +323,12 @@ public class SignBookService {
 			List<String> recipientEmailsList = new ArrayList<>();
 			recipientEmailsList.add(recipientEmail);
 			SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmailsList, SignBookType.user).getSingleResult();
-			/*
-			if(signBook.getSignBookType().equals(SignBookType.group)) {
-				if(!signRequest.getSignBooks().containsKey(signBook.getId())) {
-					List<String> recipientsEmailsFromGroup = signBook.getRecipientEmails();
-					for(String recipientEmailFromGroup : recipientsEmailsFromGroup) {
-						List<String> recipientEmailFromGroupList = new ArrayList<>();
-						recipientEmailFromGroupList.add(recipientEmailFromGroup);
-						SignBook signBookFromGroup = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmailFromGroupList, SignBookType.user).getSingleResult();
-						signRequest.getSignBooks().put(signBookFromGroup.getId(), false);
-						signBookFromGroup.getSignRequests().add(signRequest);
-						//signRequestService.updateInfo(signRequest, SignRequestStatus.pending, "imported in signbook " + signBook.getName(), user, "SUCCESS", "");
-						logger.info("signRequest " + signRequest.getId() + " added to signBook : " + signBook.getId() + " by " + user.getEppn());
-					}
-				} else {
-					throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getName());
-				}
+			if(!signRequest.getSignBooks().containsKey(signBook.getId())) {
+				signRequest.getSignBooks().put(signBook.getId(), false);
 			} else {
-				*/
-				if(!signRequest.getSignBooks().containsKey(signBook.getId())) {
-					signRequest.getSignBooks().put(signBook.getId(), false);
-				} else {
-					//throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getName());
-					logger.warn(signRequest.getId() + " is already in signbook" + signBook.getName());
-				}
-			//}
+				//throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getName());
+				logger.warn(signRequest.getId() + " is already in signbook" + signBook.getName());
+			}
 		}
 	}
 	

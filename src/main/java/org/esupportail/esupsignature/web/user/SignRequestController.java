@@ -292,23 +292,6 @@ public class SignRequestController {
 			signRequestParams.persist();
 		}
 		
-		/*
-		List<String> recipientEmails = new ArrayList<>();
-		
-		if(signBookNames != null && signBookNames.length > 0) {
-			for(String signBookName : signBookNames) {
-				if(SignBook.countFindSignBooksByNameEquals(signBookName) > 0) {
-					SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
-					recipientEmails.addAll(signBook.getRecipientEmails());
-				} else {
-					if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(signBookName)) == 0) {
-						userService.createUser(signBookName);
-					}
-					recipientEmails.add(signBookName);
-				}
-			}
-		}
-		*/
 		signRequest = signRequestService.createSignRequest(signRequest, user, signRequestParams);
 		List<SignBook> signBooks = new ArrayList<>();
 		if(signBookNames != null && signBookNames.length > 0) {
@@ -363,7 +346,7 @@ public class SignRequestController {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		Document document = Document.findDocument(id);
-		SignRequest signRequest = SignRequest.findSignRequest(document.getSignRequestId());
+		SignRequest signRequest = SignRequest.findSignRequest(document.getSignParentId());
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			signRequest.getOriginalDocuments().remove(document);
 		}

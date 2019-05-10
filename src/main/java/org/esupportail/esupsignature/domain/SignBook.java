@@ -81,7 +81,7 @@ public class SignBook {
 	private SignBookType signBookType;
 	
 	public enum SignBookType {
-		user, group;
+		user, group, workflow;
 	}
 	
     public enum DocumentIOType {

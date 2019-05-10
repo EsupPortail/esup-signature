@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.web.manager;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -83,6 +82,7 @@ public class SignBookController {
 		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
 		List<SignBookType> signBookTypes = new LinkedList<SignBookType>(Arrays.asList(SignBookType.values()));
 		signBookTypes.remove(SignBookType.user);
+		uiModel.addAttribute("allSignBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
 		uiModel.addAttribute("signBookTypes", signBookTypes);
 		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
 		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
@@ -105,11 +105,11 @@ public class SignBookController {
 		if (page != null || size != null) {
 			int sizeNo = size == null ? 10 : size.intValue();
 			//final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
-			uiModel.addAttribute("signBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group, sortFieldName, sortOrder).getResultList());
+			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks(sortFieldName, sortOrder));
 			float nrOfPages = (float) SignBook.countSignBooks() / sizeNo;
 			uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
 		} else {
-			uiModel.addAttribute("signBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group, sortFieldName, sortOrder).getResultList());
+			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks(sortFieldName, sortOrder));
 		}
 		addDateTimeFormatPatterns(uiModel);
 		return "manager/signbooks/list";
@@ -118,6 +118,8 @@ public class SignBookController {
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(Model uiModel) {
         populateEditForm(uiModel, new SignBook());
+        //TODO : si parapheur group, que des users
+        //TODO : si parapheur workflow, que de groups
         return "manager/signbooks/create";
     }
 	
@@ -139,7 +141,7 @@ public class SignBookController {
 	
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(@Valid SignBook signBook, @RequestParam("multipartFile") MultipartFile multipartFile,
-			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, RedirectAttributes redirectAttrs, HttpServletRequest httpServletRequest) throws IOException {
+			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, RedirectAttributes redirectAttrs, HttpServletRequest httpServletRequest) {
 		if (bindingResult.hasErrors()) {
 			populateEditForm(uiModel, signBook);
 			return "manager/signbooks/create";
@@ -148,70 +150,31 @@ public class SignBookController {
 		SignBook signBookToUpdate = null;
 		signBookToUpdate = SignBook.findSignBook(signBook.getId());
 		signBook.setName(signBook.getName().trim());
-		if (signBookToUpdate != null) {
-			if(signBookToUpdate.getSignBookType().equals(SignBookType.user)) {
-				return "redirect:/manager/signbooks/" + signBook.getId();
-			}
-			signBookToUpdate.getRecipientEmails().removeAll(signBook.getRecipientEmails());
-			signBookToUpdate.getRecipientEmails().addAll(signBook.getRecipientEmails());
-			signBookToUpdate.getModeratorEmails().removeAll(signBook.getModeratorEmails());
-			signBookToUpdate.getModeratorEmails().addAll(signBook.getModeratorEmails());
-			signBookToUpdate.setName(signBook.getName());
-			signBookToUpdate.setDocumentsSourceUri(signBook.getDocumentsSourceUri());
-			signBookToUpdate.setSourceType(signBook.getSourceType());
-			signBookToUpdate.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
-			signBookToUpdate.setTargetType(signBook.getTargetType());
-			signBookToUpdate.getSignRequestParams().setSignType(SignType.valueOf(signType));
-			signBookToUpdate.getSignRequestParams().setNewPageType(NewPageType.valueOf(newPageType));
-			if(!multipartFile.isEmpty()) {
-				Document newModel = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-				if(newModel != null) {
-					Document oldModel = signBookToUpdate.getModelFile();
-					signBookToUpdate.setModelFile(newModel);
-					oldModel.remove();
+		
+		SignRequestParams signRequestParams = new SignRequestParams();
+		signRequestParams.setSignType(SignType.valueOf(signType));
+		signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
+		signRequestParams.setSignPageNumber(1);
+		try {		
+			if (signBookToUpdate != null) {
+				if(signBookToUpdate.getSignBookType().equals(SignBookType.user)) {
+					return "redirect:/manager/signbooks/" + signBook.getId();
 				}
-				newModel.setSignRequestId(signBookToUpdate.getId());
-			}
-			signBookToUpdate.merge();
-		} else {
-			if(SignBook.countFindSignBooksByNameEquals(signBook.getName()) == 0) {
-				signBook.setCreateBy(user.getEppn());
-				signBook.setCreateDate(new Date());
-				SignRequestParams signRequestParams = new SignRequestParams();
-				signRequestParams.setSignType(SignType.valueOf(signType));
-				signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
-				signRequestParams.setSignPageNumber(1);
-				//signRequestParams.setXPos(0);
-				//signRequestParams.setYPos(0);
-				signRequestParams.persist();
-				signBook.getRecipientEmails().removeAll(Collections.singleton(""));
-				for(String recipientEmail : signBook.getRecipientEmails()) {
-					if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(recipientEmail)) == 0) {
-						userService.createUser(recipientEmail);
-					}
-				}
-				signBook.getModeratorEmails().removeAll(Collections.singleton(""));
-				for(String moderatorEmail : signBook.getModeratorEmails()) {
-					if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(moderatorEmail)) == 0) {
-						userService.createUser(moderatorEmail);
-					}
-				}
-				signBook.setSignBookType(SignBookType.group);
-				Document model = null;
-				if(multipartFile != null) {
-					model = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-					signBook.setModelFile(model);
-				}
-				signBook.setSignRequestParams(signRequestParams);
-				signBook.persist();
-				if(model != null) {
-					model.setSignRequestId(signBook.getId());
-				}
+				signBookService.updateSignBook(signBook, signBookToUpdate, signRequestParams, multipartFile);
 			} else {
-				redirectAttrs.addFlashAttribute("messageCustom", signBook.getName() + " already exist");
-				return "redirect:/manager/signbooks?form";
+				if(signBook.getSignBookType().equals(SignBookType.workflow)) {
+					signBookService.createWorkflowSignBook(signBook, user, signRequestParams, multipartFile);
+				} else {
+					signBookService.createGroupSignBook(signBook, user, signRequestParams, multipartFile);
+				}
 			}
+		} catch (EsupSignatureException e) {
+			logger.error("enable to create signBookGroup", e);
+			redirectAttrs.addFlashAttribute("messageCustom", signBook.getName() + " " + e.getMessage());
+			return "redirect:/manager/signbooks?form";
+
 		}
+
 		uiModel.asMap().clear();
 		return "redirect:/manager/signbooks/" + encodeUrlPathSegment(signBook.getId().toString(), httpServletRequest);
 	}

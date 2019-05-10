@@ -14,7 +14,7 @@ privileged aspect Document_Roo_Jpa_ActiveRecord {
     @PersistenceContext
     transient EntityManager Document.entityManager;
     
-    public static final List<String> Document.fieldNames4OrderClauseFilter = java.util.Arrays.asList("logger", "fileName", "size", "signRequestId", "contentType", "createDate", "bigFile");
+    public static final List<String> Document.fieldNames4OrderClauseFilter = java.util.Arrays.asList("logger", "fileName", "size", "signParentId", "contentType", "createDate", "bigFile");
     
     public static final EntityManager Document.entityManager() {
         EntityManager em = new Document().entityManager;

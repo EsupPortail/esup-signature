@@ -25,8 +25,31 @@
                 <div class="card bg-light">
                     <div class="card-header">Infos&amp;nbsp;</div>
                     <div class="card-body">
+                        <dl class="display-group border-bottom m-0">
+                            <dt class="col-lg-5">
+                                <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signbooktype"/>
+                            </dt>
+                            <dd>
+								${signBook.signBookType}
+                            </dd>
+                        </dl>
+                    
                         <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignBook_name" object="${signBook}" z="user-managed"/>
                         <field:display field="moderatorEmails" id="s_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" object="${signbook}" render="false" z="user-managed"/>
+
+                        <dl class="display-group border-bottom m-0">
+                            <dt class="col-lg-5">
+                                <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signbooks"/>
+                            </dt>
+                            <dd>
+                            	<ul>
+                            	<c:forEach items="${signBook.signBooks}" var="workflowSignbook">
+	                            	<li>${workflowSignbook.name}</li>
+                            	</c:forEach>
+                            	</ul>								
+                            </dd>
+                        </dl>
+
                         <dl class="display-group border-bottom m-0">
                             <dt class="col-lg-5">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_recipientemails"/>

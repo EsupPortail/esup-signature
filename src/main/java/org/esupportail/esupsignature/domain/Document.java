@@ -34,7 +34,7 @@ public class Document {
 
     private Long size;
     
-    private Long signRequestId;
+    private Long signParentId;
 
     private String contentType;
 

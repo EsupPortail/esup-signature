@@ -25,12 +25,12 @@ privileged aspect Document_Roo_JavaBean {
         this.size = size;
     }
     
-    public Long Document.getSignRequestId() {
-        return this.signRequestId;
+    public Long Document.getSignParentId() {
+        return this.signParentId;
     }
     
-    public void Document.setSignRequestId(Long signRequestId) {
-        this.signRequestId = signRequestId;
+    public void Document.setSignParentId(Long signParentId) {
+        this.signParentId = signParentId;
     }
     
     public String Document.getContentType() {
