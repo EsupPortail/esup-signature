@@ -96,7 +96,7 @@ public class UserService {
 		if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user) == 0) {
 			return signBookService.createUserSignBook(user);
 		} else {
-			return SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult();
+			return signBookService.getUserSignBook(user);
 		}
 	}
 	

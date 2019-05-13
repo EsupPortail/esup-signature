@@ -82,6 +82,7 @@ public class SignBookController {
 		uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
 		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
 		List<SignBookType> signBookTypes = new LinkedList<SignBookType>(Arrays.asList(SignBookType.values()));
+		signBookTypes.remove(SignBookType.system);
 		signBookTypes.remove(SignBookType.user);
 		uiModel.addAttribute("signBookTypes", signBookTypes);
 		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
@@ -120,27 +121,12 @@ public class SignBookController {
     	User user = userService.getUserFromAuthentication();
     	populateEditForm(uiModel, new SignBook());
 		List<SignBook> signBooks = new ArrayList<SignBook>();
-		signBooks.add(signBookService.getCreatorSignBook(user));
+		signBookService.creatorSignBook(user);
+		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.system).getResultList());
 		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
 		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.user).getResultList());
 		uiModel.addAttribute("allSignBooks", signBooks);
         return "manager/signbooks/create";
-    }
-	
-    @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
-    public String updateForm(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
-		User user = userService.getUserFromAuthentication();
-		SignBook signBook = SignBook.findSignBook(id);
-		if(signBook.getSignBookType().equals(SignBookType.user)) {
-			return "redirect:/manager/signbooks/" + id;
-		} else {
-			if (!signBookService.checkUserManageRights(user, signBook)) {
-				redirectAttrs.addFlashAttribute("messageCustom", "access error");
-				return "redirect:/manager/signbooks/" + id;
-			}
-		}
-		populateEditForm(uiModel, signBook);
-        return "manager/signbooks/update";
     }
 	
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
@@ -191,6 +177,22 @@ public class SignBookController {
 		return "redirect:/manager/signbooks/" + encodeUrlPathSegment(signBook.getId().toString(), httpServletRequest);
 	}
 
+    @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
+    public String updateForm(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
+		User user = userService.getUserFromAuthentication();
+		SignBook signBook = SignBook.findSignBook(id);
+		if(signBook.getSignBookType().equals(SignBookType.user)) {
+			return "redirect:/manager/signbooks/" + id;
+		} else {
+			if (!signBookService.checkUserManageRights(user, signBook)) {
+				redirectAttrs.addFlashAttribute("messageCustom", "access error");
+				return "redirect:/manager/signbooks/" + id;
+			}
+		}
+		populateEditForm(uiModel, signBook);
+        return "manager/signbooks/update";
+    }
+	
     @RequestMapping(method = RequestMethod.PUT, produces = "text/html")
     public String update(@Valid SignBook signBook, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
         if (bindingResult.hasErrors()) {

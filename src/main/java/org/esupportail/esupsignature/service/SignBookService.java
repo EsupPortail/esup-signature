@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -90,31 +89,23 @@ public class SignBookService {
 		}
 		return fsAccessService;
 	}
-
-	public SignBook getUserSignBook(User user) {
-		SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(user.getEmail()), SignBookType.user).getSingleResult(); 
-		return signBook;
-	}
 	
-	public SignBook getCreatorSignBook(User user) {
+	public void creatorSignBook(User user) {
 		SignBook signBook;
-		if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList("creator"), SignBookType.user) > 0) {
-			signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList("creator"), SignBookType.user).getSingleResult();
-		}
-		else {
+		if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList("creator"), SignBookType.system) == 0) {
 			signBook = new SignBook();
 			signBook.setName("Créateur de la demande");
 			signBook.setRecipientEmails(Arrays.asList("creator"));
 			signBook.setCreateDate(new Date());
 			signBook.setSignRequestParams(null);
 			signBook.setModelFile(null);
-			signBook.setSignBookType(SignBookType.user);
+			signBook.setSignBookType(SignBookType.system);
 			signBook.setSourceType(DocumentIOType.none);
 			signBook.setTargetType(DocumentIOType.none);
 			signBook.setSignRequestParams(signRequestService.getEmptySignRequestParams());
 			signBook.persist();
 		}
-		return signBook;
+		
 	}
 	
 	public SignBook createUserSignBook(User user) {
@@ -172,19 +163,11 @@ public class SignBookService {
 			signBook.setCreateBy(user.getEppn());
 			signBook.setCreateDate(new Date());
 			signBook.getRecipientEmails().removeAll(Collections.singleton(""));
-			List<String> recipientEmails = new ArrayList<>();
 			for(String recipientEmail : signBook.getRecipientEmails()) {
-				if(SignBook.countFindSignBooksByNameEquals(recipientEmail) == 0) {
-					if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.user) == 0) {
-						userService.createUser(recipientEmail);
-					}
-					recipientEmails.add(recipientEmail);
-				} else {
-					recipientEmails.addAll(SignBook.findSignBooksByNameEquals(recipientEmail).getSingleResult().getRecipientEmails());
-					
+				if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.user) == 0) {
+					userService.createUser(recipientEmail);
 				}
 			}
-			signBook.setRecipientEmails(new ArrayList<String>(new HashSet<String>(recipientEmails)));
 			signBook.getModeratorEmails().removeAll(Collections.singleton(""));
 			for(String moderatorEmail : signBook.getModeratorEmails()) {
 				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(moderatorEmail)) == 0) {
@@ -332,7 +315,7 @@ public class SignBookService {
 		for(String recipientEmail : recipientEmails) {
 			List<String> recipientEmailsList = new ArrayList<>();
 			recipientEmailsList.add(recipientEmail);
-			SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmailsList, SignBookType.user).getSingleResult();
+			SignBook signBook = getUserSignBookByRecipientEmail(recipientEmail);
 			if(signBook.getRecipientEmails().contains("creator")) {
 				signBook = getUserSignBook(user);
 			}
@@ -376,6 +359,15 @@ public class SignBookService {
 		return null;
 	}
 
+
+	public SignBook getUserSignBook(User user) {
+		return getUserSignBookByRecipientEmail(user.getEmail());
+	}
+	
+	public SignBook getUserSignBookByRecipientEmail(String recipientEmail) {
+		return SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.user).getSingleResult();
+	}
+	
 	public List<SignBook> getSignBookBySignRequest(SignRequest signRequest) {
 		List<SignRequest> signRequests = Arrays.asList(signRequest);
 		List<SignBook> signBooks = SignBook.findSignBooksBySignRequestsEquals(signRequests).getResultList();

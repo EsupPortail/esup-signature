@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.user;
 
-import java.awt.Color;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.DayOfWeek;
@@ -115,10 +114,7 @@ public class UserController {
         if(user.getKeystore() != null) {
         	uiModel.addAttribute("keystore", user.getKeystore().getFileName());
         }        
-        List<String> recipientEmails = new ArrayList<>();
-		recipientEmails.add(user.getEmail());
-        SignBook defaultSignBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult();
-        uiModel.addAttribute("defaultSignBook", defaultSignBook);
+        uiModel.addAttribute("defaultSignBook", signBookService.getUserSignBook(user));
         uiModel.addAttribute("isPasswordSet", (password != null && password != ""));
         return "user/users/show";
     }
@@ -129,11 +125,7 @@ public class UserController {
 		User user = userService.getUserFromAuthentication();
 		if(user != null) {
 	        uiModel.addAttribute("user", user);
-	        
-	        List<String> recipientEmails = new ArrayList<>();
-			recipientEmails.add(user.getEmail());
-        	SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult();
-        	uiModel.addAttribute("signBook", signBook);
+        	uiModel.addAttribute("signBook", signBookService.getUserSignBook(user));
         	uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
         	uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
         	uiModel.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
@@ -177,9 +169,7 @@ public class UserController {
     		oldSignImage.getBigFile().remove();
     		oldSignImage.remove();
     	}
-        List<String> recipientEmails = new ArrayList<>();
-		recipientEmails.add(user.getEmail());
-    	SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult();
+    	SignBook signBook = signBookService.getUserSignBook(user);
     	if(signType != null) {
     		signBook.getSignRequestParams().setSignType(SignType.valueOf(signType));
     	}

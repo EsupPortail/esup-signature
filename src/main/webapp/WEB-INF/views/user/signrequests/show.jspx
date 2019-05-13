@@ -299,12 +299,35 @@
 								</dt>
 								<dd>
 								<table class="table table-sm">
-								<c:forEach items="${signRequest.originalSignBookNames}" var="originalSignBookName">
-							  		<tr>
-										<td><i class="fas fa-book"><!--  --></i>&amp;nbsp;${originalSignBookName}</td>
-									</tr>
-								</c:forEach>
+									<c:forEach items="${signRequest.originalSignBookNames}" var="originalSignBookName">
+								  		<tr>
+											<td><i class="fas fa-book"><!--  --></i>&amp;nbsp;${originalSignBookName}</td>
+										</tr>
+									</c:forEach>
 								</table>
+								Etapes du workflow  : ${signRequest.signBooksWorkflowStep + 1}
+								<c:set var="step" value="0" />
+								<c:forEach items="${originalSignBooks.signBooks}" var="signBookSteps">
+								<c:choose>
+									<c:when test="${step eq signRequest.signBooksWorkflowStep}">
+										<div class="alert alert-primary">
+											${signBookSteps.name}
+										</div>
+									</c:when>
+									<c:when test="${step > signRequest.signBooksWorkflowStep}">
+										<div class="alert alert-secondary">
+											${signBookSteps.name}
+										</div>
+									</c:when>									
+									<c:when test="${step &lt; signRequest.signBooksWorkflowStep}">
+										<div class="alert alert-success">
+											${signBookSteps.name}
+										</div>
+									</c:when>
+								</c:choose>
+								<c:set var="step" value="${step + 1}" />
+								</c:forEach>
+								
 								</dd>
 							</dl>
 							

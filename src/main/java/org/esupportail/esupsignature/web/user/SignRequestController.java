@@ -248,6 +248,10 @@ public class SignRequestController {
 			if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
 				uiModel.addAttribute("signable", "ok");
 			}
+			SignBook firstOriginalSignBook = SignBook.findSignBooksByNameEquals(signRequest.getOriginalSignBookNames().get(0)).getSingleResult();
+			if(firstOriginalSignBook.getSignBookType().equals(SignBookType.workflow)) {
+				uiModel.addAttribute("originalSignBooks", firstOriginalSignBook);
+			}
 			uiModel.addAttribute("allSignBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
 			uiModel.addAttribute("nbSignOk", signRequest.countSignOk());
 			return "user/signrequests/show";
@@ -262,9 +266,7 @@ public class SignRequestController {
 	public String createForm(Model uiModel) {
 		populateEditForm(uiModel, new SignRequest());
 		User user = userService.getUserFromAuthentication();
-		List<String> recipientEmails = new ArrayList<>();
-		recipientEmails.add(user.getEmail());
-		uiModel.addAttribute("mySignBook", SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult());
+		uiModel.addAttribute("mySignBook", signBookService.getUserSignBook(user));
 		uiModel.addAttribute("allSignBooks", SignBook.findAllSignBooks());
 		return "user/signrequests/create";
 	}
@@ -273,7 +275,8 @@ public class SignRequestController {
 	public String create(@Valid SignRequest signRequest, BindingResult bindingResult, 
 			@RequestParam(value = "signType", required = false) String signType, 
 			@RequestParam(value = "signBookNames", required = false) String[] signBookNames,
-			@RequestParam(value="newPageType", required = false) String newPageType, Model uiModel, HttpServletRequest httpServletRequest,
+			@RequestParam(value = "newPageType", required = false) String newPageType, 
+			Model uiModel, HttpServletRequest httpServletRequest,
 			HttpServletRequest request, RedirectAttributes redirectAttrs) throws EsupSignatureException {
 		if (bindingResult.hasErrors()) {
 			uiModel.addAttribute("signRequest", signRequest);
@@ -291,7 +294,7 @@ public class SignRequestController {
 			signRequestParams.setSignPageNumber(1);
 			signRequestParams.persist();
 		}
-		
+		//TODO si signbook type workflow == 1 seul
 		signRequest = signRequestService.createSignRequest(signRequest, user, signRequestParams);
 		List<SignBook> signBooks = new ArrayList<>();
 		if(signBookNames != null && signBookNames.length > 0) {
@@ -299,7 +302,7 @@ public class SignRequestController {
 				if(SignBook.countFindSignBooksByNameEquals(signBookName) > 0) {
 					signBooks.add(SignBook.findSignBooksByNameEquals(signBookName).getSingleResult());
 				} else {
-					signBooks.add(SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(signBookName), SignBookType.user).getSingleResult());
+					signBooks.add(signBookService.getUserSignBookByRecipientEmail(signBookName));
 				}
 			}
 		}
@@ -557,7 +560,7 @@ public class SignRequestController {
 						if(SignBook.countFindSignBooksByNameEquals(signBookName) > 0) {
 							signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
 						} else {
-							signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(signBookName), SignBookType.user).getSingleResult();
+							signBook = signBookService.getUserSignBookByRecipientEmail(signBookName);
 						}
 					}
 					try {
