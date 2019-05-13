@@ -18,7 +18,7 @@ privileged aspect ApplicationConversionServiceFactoryBean_Roo_ConversionService 
     public Converter<Document, String> ApplicationConversionServiceFactoryBean.getDocumentToStringConverter() {
         return new org.springframework.core.convert.converter.Converter<org.esupportail.esupsignature.domain.Document, java.lang.String>() {
             public String convert(Document document) {
-                return new StringBuilder().append(document.getFileName()).append(' ').append(document.getSize()).append(' ').append(document.getSignParentId()).append(' ').append(document.getContentType()).toString();
+                return new StringBuilder().append(document.getFileName()).append(' ').append(document.getSize()).append(' ').append(document.getParentId()).append(' ').append(document.getContentType()).toString();
             }
         };
     }

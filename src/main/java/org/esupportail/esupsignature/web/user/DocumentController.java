@@ -69,7 +69,7 @@ public class DocumentController {
 	@RequestMapping(value = "/{id}/getimage", method = RequestMethod.GET)
 	public void getImageAsByteArray(@PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException {
 		Document document = Document.findDocument(id);
-		SignRequest signRequest = SignRequest.findSignRequest(document.getSignParentId());
+		SignRequest signRequest = SignRequest.findSignRequest(document.getParentId());
 		User user = userService.getUserFromAuthentication();
 		InputStream in = null;
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
@@ -86,8 +86,8 @@ public class DocumentController {
 	@RequestMapping(value = "/{id}/getimagepdfpage/{page}", method = RequestMethod.GET)
 	public void getImagePdfAsByteArray(@PathVariable("id") Long id, @PathVariable("page") int page, HttpServletResponse response) throws IOException {
 		Document document = Document.findDocument(id);
-		SignRequest signRequest = SignRequest.findSignRequest(document.getSignParentId());
-		SignBook signBook = SignBook.findSignBook(document.getSignParentId());
+		SignRequest signRequest = SignRequest.findSignRequest(document.getParentId());
+		SignBook signBook = SignBook.findSignBook(document.getParentId());
 		User user = userService.getUserFromAuthentication();
 		InputStream in = null;
 		if((signRequest != null && signRequestService.checkUserViewRights(user, signRequest)) 
@@ -126,7 +126,7 @@ public class DocumentController {
     @RequestMapping(value = "/getfile/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		Document document = Document.findDocument(id);
-		SignRequest signRequest = SignRequest.findSignRequest(document.getSignParentId());
+		SignRequest signRequest = SignRequest.findSignRequest(document.getParentId());
 		User user = userService.getUserFromAuthentication();
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
 			try {

@@ -8,6 +8,6 @@
         <field:display field="contentType" id="s_org_esupportail_esupsignature_domain_Document_contentType" object="${document}" z="o7A4uDE3Zoq9NbCw9rn8AODaV4s="/>
         <field:display field="bigFile" id="s_org_esupportail_esupsignature_domain_Document_bigFile" object="${document}" render="false" z="user-managed"/>
         <field:display date="true" dateTimePattern="${document_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_Document_createDate" object="${document}" z="uVF4L9+lRA0RY5KXzV1bv5qx7mQ="/>
-        <field:display field="signParentId" id="s_org_esupportail_esupsignature_domain_Document_signParentId" object="${document}" z="poiAHUnBbt/UICw0LwAWOfKLh44="/>
+        <field:display field="parentId" id="s_org_esupportail_esupsignature_domain_Document_parentId" object="${document}" z="NGzO5AwNJxQMpLXoeAKYMg57XI4="/>
     </page:show>
 </div>

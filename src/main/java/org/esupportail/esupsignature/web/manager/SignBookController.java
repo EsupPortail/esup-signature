@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.manager;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
@@ -119,7 +120,7 @@ public class SignBookController {
     public String createForm(Model uiModel) {
         populateEditForm(uiModel, new SignBook());
         //TODO : si parapheur group, que des users
-        //TODO : si parapheur workflow, que de groups
+        //TODO : si parapheur workflow, que des groups
         return "manager/signbooks/create";
     }
 	
@@ -141,7 +142,7 @@ public class SignBookController {
 	
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(@Valid SignBook signBook, @RequestParam("multipartFile") MultipartFile multipartFile,
-			BindingResult bindingResult, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, RedirectAttributes redirectAttrs, HttpServletRequest httpServletRequest) {
+			BindingResult bindingResult, @RequestParam(name = "signBooksIds", required = false) long[] signBooksIds, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, RedirectAttributes redirectAttrs, HttpServletRequest httpServletRequest) {
 		if (bindingResult.hasErrors()) {
 			populateEditForm(uiModel, signBook);
 			return "manager/signbooks/create";
@@ -163,6 +164,11 @@ public class SignBookController {
 				signBookService.updateSignBook(signBook, signBookToUpdate, signRequestParams, multipartFile);
 			} else {
 				if(signBook.getSignBookType().equals(SignBookType.workflow)) {
+					List<SignBook> signBooks = new ArrayList<>();
+					for(long signBookId : signBooksIds) {
+						signBooks.add(SignBook.findSignBook(signBookId));
+					}
+					signBook.setSignBooks(signBooks);
 					signBookService.createWorkflowSignBook(signBook, user, signRequestParams, multipartFile);
 				} else {
 					signBookService.createGroupSignBook(signBook, user, signRequestParams, multipartFile);

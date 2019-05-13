@@ -265,7 +265,7 @@ public class SignRequestController {
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
 		uiModel.addAttribute("mySignBook", SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user).getSingleResult());
-		uiModel.addAttribute("allSignBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
+		uiModel.addAttribute("allSignBooks", SignBook.findAllSignBooks());
 		return "user/signrequests/create";
 	}
 
@@ -296,7 +296,6 @@ public class SignRequestController {
 		List<SignBook> signBooks = new ArrayList<>();
 		if(signBookNames != null && signBookNames.length > 0) {
 			for(String signBookName : signBookNames) {
-				SignBook signBook;
 				if(SignBook.countFindSignBooksByNameEquals(signBookName) > 0) {
 					signBooks.add(SignBook.findSignBooksByNameEquals(signBookName).getSingleResult());
 				} else {
@@ -346,7 +345,7 @@ public class SignRequestController {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		Document document = Document.findDocument(id);
-		SignRequest signRequest = SignRequest.findSignRequest(document.getSignParentId());
+		SignRequest signRequest = SignRequest.findSignRequest(document.getParentId());
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			signRequest.getOriginalDocuments().remove(document);
 		}
@@ -582,13 +581,20 @@ public class SignRequestController {
 	@RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
 	public String complete(@PathVariable("id") Long id, 
 			@RequestParam(value = "comment", required = false) String comment,
-			HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
+			HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) throws EsupSignatureException {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if(signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
-			signBookService.removeSignRequestFromAllSignBooks(signRequest);
-			signRequestService.updateStatus(signRequest, SignRequestStatus.completed, messageSource.getMessage("updateinfo_manualcomplete", null, Locale.FRENCH), user, "SUCCESS", comment);
+			SignBook signBook = SignBook.findSignBooksByNameEquals(signRequest.getOriginalSignBookNames().get(0)).getSingleResult();
+			if(signBook.getSignBookType().equals(SignBookType.workflow) && signBook.getSignBooksStep() < signBook.getSignBooks().size() - 1) {
+				signBook.setSignBooksStep(signBook.getSignBooksStep() + 1);
+				signBookService.removeSignRequestFromAllSignBooks(signRequest);
+				signBookService.importSignRequestInSignBook(signRequest, signBook, user);	
+			} else {
+				signBookService.removeSignRequestFromAllSignBooks(signRequest);
+				signRequestService.updateStatus(signRequest, SignRequestStatus.completed, messageSource.getMessage("updateinfo_manualcomplete", null, Locale.FRENCH), user, "SUCCESS", comment);
+			}
 		} else {
 			logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
 		}

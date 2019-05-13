@@ -21,5 +21,6 @@
         <field:select field="signRequestParams" id="c_org_esupportail_esupsignature_domain_SignBook_signRequestParams" itemValue="id" items="${signrequestparamses}" path="/signrequestparamses" z="ILeGzNZRgDtb8BigixiIGZLza6Y="/>
         <field:input field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" z="f+6cYDSUdD1L18T2XB9zprJD7d8="/>
         <field:select field="SignBooks" id="c_org_esupportail_esupsignature_domain_SignBook_SignBooks" itemValue="id" items="${signbooks}" multiple="true" path="/manager/signbooks" z="2oIWwcDDaL6PZPzUck/lums8oI4="/>
+        <field:input field="signBooksStep" id="c_org_esupportail_esupsignature_domain_SignBook_signBooksStep" validationMessageCode="field_invalid_integer" z="m0UKhVUZqeiYNBirrzcqCKaN+KM="/>
     </form:update>
 </div>

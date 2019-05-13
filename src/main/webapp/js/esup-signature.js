@@ -340,18 +340,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
 //create signBook
 var	signBookTypeSelect;
+var recipientEmailInput;
+var signBooksIdsInput;
+var tempoFieldInput;
 
 document.addEventListener('DOMContentLoaded', function() {
 	signBookTypeSelect = document.getElementById("_signBookType_id");
+	recipientEmailInput = document.getElementById("_c_org_esupportail_esupsignature_domain_SignRequest_recipientemails");
+	signBooksIdsInput = document.getElementById("_c_org_esupportail_esupsignature_domain_SignRequest_signBooksIds");
+	tempoFieldInput = document.getElementById("_c_org_esupportail_esupsignature_domain_SignRequest_tempofield");
+	if(recipientEmailInput != null) {
+		recipientEmailInput.style.display = "none";
+		signBooksIdsInput.style.display = "none";
+	}
 });
 
 function changeSignBookForm() {
-	var selectedValue = signBookTypeSelect.options[signBookTypeSelect.selectedIndex].value; 
+	var selectedValue = signBookTypeSelect.options[signBookTypeSelect.selectedIndex].value;
 	if(selectedValue == "group") {
-		var recipientEmailInput = document.getElementById("_c_org_esupportail_esupsignature_domain_SignBook_recipientEmail");
-		recipientEmailInput.style.display = "none";
+		recipientEmailInput.style.display = "flex";
+		signBooksIdsInput.style.display = "none";
+		tempoFieldInput.style.display = "none";
 	} else {
-		recipientEmailInput.style.display = "block";
+		recipientEmailInput.style.display = "none";
+		signBooksIdsInput.style.display = "flex";
+		tempoFieldInput.style.display = "none";
 	}
 }
 

@@ -151,7 +151,7 @@ public class SignRequestService {
 		signRequest.setOriginalDocuments(documents);
 		signRequest.persist();
 		for(Document document : documents) {
-			document.setSignRequestId(signRequest.getId());
+			document.setParentId(signRequest.getId());
 		}
 		return signRequest;
 	}
@@ -159,13 +159,13 @@ public class SignRequestService {
 	public void addOriginalDocuments(SignRequest signRequest, List<Document> documents) {
 		for(Document document : documents) {
 			signRequest.getOriginalDocuments().add(document);
-			document.setSignRequestId(signRequest.getId());
+			document.setParentId(signRequest.getId());
 		}
 	}
 	
 	public void addOriginalDocuments(SignRequest signRequest, Document document) {
 		signRequest.getOriginalDocuments().add(document);
-		document.setSignRequestId(signRequest.getId());
+		document.setParentId(signRequest.getId());
 	}
 	
 	public void sign(SignRequest signRequest, User user, String password, boolean addDate) throws EsupSignatureIOException, EsupSignatureSignException, EsupSignatureNexuException, EsupSignatureKeystoreException, IOException {
@@ -307,7 +307,7 @@ public class SignRequestService {
 		try {
 			Document document = documentService.createDocument(signedFile, "signed_" + signRequest.getSignRequestParams().getSignType().toString() + "_" + user.getEppn() + "_" + signedFile.getName(), fileService.getContentType(signedFile));
 			signRequest.getSignedDocuments().add(document);
-			document.setSignRequestId(signRequest.getId());
+			document.setParentId(signRequest.getId());
 		} catch (IOException e) {
 			throw new EsupSignatureIOException("error on save signed file", e);
 		}

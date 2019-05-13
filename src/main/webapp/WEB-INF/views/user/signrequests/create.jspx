@@ -61,7 +61,7 @@
 			<div class="col-lg-8">
 				<select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple" >
 					<c:forEach items="${allSignBooks}" var="signBook">
-						<option value="${signBook.name}">${signBook.name} (parapheur)</option>
+						<option value="${signBook.name}">${signBook.name} (${signBook.signBookType})</option>
 					</c:forEach>
 				</select>
 			</div>
@@ -166,34 +166,35 @@
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_SignRequest" render="${not empty dependencies}" z="user-managed"/>
     <script type="text/javascript">
     var signBookNamesSelect = new SlimSelect({
-			select: '#signBookNames',
-			placeholder: 'Choisir un ou plusieurs parapheur(s)',
-	    	  searchText: 'Aucun résultat',
-	    	  searchPlaceholder: 'Rechercher',
-	    	  searchHighlight: true,
-	    	  searchFilter: (option, search) =&gt; {
-	  		    return true;
-	  		  },
-	    	  ajax: function (search, callback) {
-	    		    if (search.length &lt; 3) {
-	    		      callback('Merci de saisir au moins 3 caractères')
-	    		    }
-	    		    fetch('/ws/searchLdap?searchString=' + search)
-	    		    .then(function (response) {
-	    		      return response.json()
-	    		    })
-	    		    .then(function (json) {
-	    		      let data = []
-	    		      for (let i = 0; i &lt; json.length; i++) {
-	    		        data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
-	    		      }
-	    		      callback(data)
-	    		    })
-	    		    .catch(function(error) {
-	    		      callback(false)
-	    		    })
-	    		  }
-	  	});
+		select: '#signBookNames',
+		placeholder: 'Choisir un ou plusieurs parapheur(s)',
+		searchText: 'Aucun résultat',
+		searchPlaceholder: 'Rechercher',
+		limit: 0, 
+		searchHighlight: true,
+		searchFilter: (option, search) =&gt; {
+			return true;
+		},
+		ajax: function (search, callback) {
+			if (search.length &lt; 3) {
+		    	callback('Merci de saisir au moins 3 caractères')
+		    }
+		    fetch('/ws/searchSignBook?searchString=' + search)
+		    .then(function (response) {
+		    	return response.json()
+		    })
+		    .then(function (json) {
+		    	let data = [];
+		    	for (let i = 0; i &lt; json.length; i++) {
+		        	data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
+		   		}
+		   		callback(data)
+		    })
+		    .catch(function(error) {
+		    	callback(false)
+		    })
+		}
+  	});
 		
 		//enable _allSignToComplete
 		var allSignToCompleteDiv;
@@ -208,11 +209,16 @@
 		
 		function checkNbRecipients() {
 			if(signBookSelect.selectedOptions.length > 0) {
-				if(signBookSelect.selectedOptions.length > 1 || signBookSelect.selectedOptions[0].text.includes("parapheur")) {
+				if(signBookSelect.selectedOptions.length > 1 || signBookSelect.selectedOptions[0].text.includes("group")) {
 					allSignToCompleteDiv.classList.remove("div-disable");
 				} else {
-					allSignToCompleteDiv.classList.add("div-disable");
-					allSignToComplete.checked = false;
+					if(signBookSelect.selectedOptions[0].text.includes("workflow")) {
+						allSignToCompleteDiv.classList.remove("div-disable");
+					} else {
+						allSignToCompleteDiv.classList.add("div-disable");
+						allSignToComplete.checked = false;
+
+					}
 				}
 			} else {
 				allSignToCompleteDiv.classList.add("div-disable");

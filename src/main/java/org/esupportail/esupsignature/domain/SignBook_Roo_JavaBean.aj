@@ -96,6 +96,14 @@ privileged aspect SignBook_Roo_JavaBean {
         this.SignBooks = SignBooks;
     }
     
+    public Integer SignBook.getSignBooksStep() {
+        return this.signBooksStep;
+    }
+    
+    public void SignBook.setSignBooksStep(Integer signBooksStep) {
+        this.signBooksStep = signBooksStep;
+    }
+    
     public boolean SignBook.isAutoRemove() {
         return this.autoRemove;
     }

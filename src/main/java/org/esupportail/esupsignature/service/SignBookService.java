@@ -133,7 +133,7 @@ public class SignBookService {
 				signBookToUpdate.setModelFile(newModel);
 				oldModel.remove();
 			}
-			newModel.setSignParentId(signBookToUpdate.getId());
+			newModel.setParentId(signBookToUpdate.getId());
 		}
 		signBookToUpdate.merge();
 		
@@ -178,7 +178,7 @@ public class SignBookService {
 			signBook.setSignRequestParams(signRequestParams);
 			signBook.persist();
 			if(model != null) {
-				model.setSignParentId(signBook.getId());
+				model.setParentId(signBook.getId());
 			}
 		} else {
 			throw new EsupSignatureException("all ready exist");
@@ -192,25 +192,6 @@ public class SignBookService {
 			signBook.setCreateBy(user.getEppn());
 			signBook.setCreateDate(new Date());
 			signBook.getRecipientEmails().removeAll(Collections.singleton(""));
-			List<SignBook> signBooks = new ArrayList<>();
-			for(String recipientEmail : signBook.getRecipientEmails()) {
-				if(SignBook.countFindSignBooksByNameEquals(recipientEmail) == 0) {
-					SignBook userSignBook;
-					if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.user) == 0) {
-						userSignBook = userService.createUser(recipientEmail);
-					} else {
-						userSignBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.user).getSingleResult();
-					}
-					signBooks.add(userSignBook);
-				} else {
-					SignBook groupSignBook = SignBook.findSignBooksByNameEquals(recipientEmail).getSingleResult();
-					if(!signBooks.contains(groupSignBook)) {
-						signBooks.add(groupSignBook);
-					}
-				}
-			}
-			signBook.setSignBooks(new ArrayList<SignBook>(new HashSet<SignBook>(signBooks)));
-			signBook.setRecipientEmails(null);
 			signBook.getModeratorEmails().removeAll(Collections.singleton(""));
 			for(String moderatorEmail : signBook.getModeratorEmails()) {
 				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(moderatorEmail)) == 0) {
@@ -230,7 +211,7 @@ public class SignBookService {
 			signBook.setSignRequestParams(signRequestParams);
 			signBook.persist();
 			if(model != null) {
-				model.setSignParentId(signBook.getId());
+				model.setParentId(signBook.getId());
 			}
 		} else {
 			throw new EsupSignatureException("all ready exist");
@@ -308,8 +289,11 @@ public class SignBookService {
 
 		if (!signBook.getSignRequests().contains(signRequest)) {
 			signBook.getSignRequests().add(signRequest);
-			//signBook.merge();
-			importSignRequestByRecipients(signRequest, signBook.getRecipientEmails(), user);
+			if(signBook.getSignBookType().equals(SignBookType.workflow)) {
+				importSignRequestByRecipients(signRequest, signBook.getSignBooks().get(signBook.getSignBooksStep()).getRecipientEmails(), user);
+			} else {
+				importSignRequestByRecipients(signRequest, signBook.getRecipientEmails(), user);
+			}
 			signRequest.getOriginalSignBookNames().add(signBook.getName());
 			signRequestService.updateStatus(signRequest, SignRequestStatus.draft, messageSource.getMessage("updateinfo_sendtosignbook", null, Locale.FRENCH) + " " + signBook.getName(), user, "SUCCESS", "");
 		} else {

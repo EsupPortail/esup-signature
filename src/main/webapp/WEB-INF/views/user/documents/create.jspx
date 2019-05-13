@@ -8,7 +8,7 @@
         <field:input field="contentType" id="c_org_esupportail_esupsignature_domain_Document_contentType" z="BL1RlWyepVn6Q84Qx18U2Fsv3v8="/>
         <field:select field="bigFile" id="c_org_esupportail_esupsignature_domain_Document_bigFile" itemValue="id" items="${bigfiles}" path="/bigfiles" render="false" z="user-managed"/>
         <field:datetime dateTimePattern="${document_createdate_date_format}" field="createDate" id="c_org_esupportail_esupsignature_domain_Document_createDate" z="Jo5dQxVN3xqTRWex0jRaWI2x0GE="/>
-        <field:input field="signParentId" id="c_org_esupportail_esupsignature_domain_Document_signParentId" validationMessageCode="field_invalid_integer" z="nnR/+ls89zINOZ4JpbSUXcBHMNA="/>
+        <field:input field="parentId" id="c_org_esupportail_esupsignature_domain_Document_parentId" validationMessageCode="field_invalid_integer" z="I1W7iX8PI9szp2AJJ9/xXbtR5Gg="/>
     </form:create>
     <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_Document" render="${not empty dependencies}" z="GiTbM34NMDcUe6m5TIU+guhtobo="/>
 </div>

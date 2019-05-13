@@ -166,15 +166,30 @@ public class WsController {
 	@RequestMapping(value="/searchLdap")
 	@ResponseBody
 	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString, @RequestParam(required=false) String ldapTemplateName) {
+		logger.debug("ldap search for : " + searchString);
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Content-Type", "application/json; charset=utf-8");
+		List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
+		if(ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
+			List<PersonLdap> ldapSearchList = new ArrayList<PersonLdap>();
+			ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
+			ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
 
-		logger.info("ldap search for : " + searchString);
+		}
+		return ldapList;
+   }
+	
+	@RequestMapping(value="/searchSignBook")
+	@ResponseBody
+	public List<PersonLdap> searchSignBook(@RequestParam(value="searchString") String searchString, @RequestParam(required=false) String ldapTemplateName) {
+		logger.debug("signBook search for : " + searchString);
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Content-Type", "application/json; charset=utf-8");
 		List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
 		List<SignBook> signBooks = SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList();
 		for(SignBook signBook : signBooks) {
 			PersonLdap personLdap = new PersonLdap();
-			personLdap.setUid("parapheur");
+			personLdap.setUid(signBook.getSignBookType().toString());
 			personLdap.setMail(signBook.getName());
 			personLdap.setDisplayName(signBook.getName());
 			ldapList.add(personLdap);
@@ -185,8 +200,6 @@ public class WsController {
 			ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
 
 		}
-
-
 		return ldapList;
    }
 	
