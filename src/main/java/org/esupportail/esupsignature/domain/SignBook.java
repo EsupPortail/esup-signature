@@ -61,8 +61,6 @@ public class SignBook {
     @ManyToMany(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.ALL })
     private List<SignBook> SignBooks = new ArrayList<SignBook>();
     
-    private Integer signBooksStep = 0; 
-    
     private boolean autoRemove = false;
     
     @Enumerated(EnumType.STRING)

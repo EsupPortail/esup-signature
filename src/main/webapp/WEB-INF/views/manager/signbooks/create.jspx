@@ -7,7 +7,7 @@
 		<nav class="nav justify-content-between" aria-label="breadcrumb">
 			<div class="navbar-nav col-11">
 				<ol class="breadcrumb">
-					<li class="breadcrumb-item"><a href="/manager/">Liste des parapheus</a></li>
+					<li class="breadcrumb-item"><a href="/manager/">Liste des parapheurs</a></li>
 					<li class="breadcrumb-item active">Nouvelle demande de signature</li>
 				</ol>
 			</div>

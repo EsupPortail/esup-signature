@@ -96,6 +96,14 @@ privileged aspect SignRequest_Roo_JavaBean {
         this.signBooks = signBooks;
     }
     
+    public Integer SignRequest.getSignBooksWorkflowStep() {
+        return this.signBooksWorkflowStep;
+    }
+    
+    public void SignRequest.setSignBooksWorkflowStep(Integer signBooksWorkflowStep) {
+        this.signBooksWorkflowStep = signBooksWorkflowStep;
+    }
+    
     public List<String> SignRequest.getOriginalSignBookNames() {
         return this.originalSignBookNames;
     }

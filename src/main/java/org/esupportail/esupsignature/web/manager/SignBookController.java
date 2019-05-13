@@ -83,7 +83,6 @@ public class SignBookController {
 		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
 		List<SignBookType> signBookTypes = new LinkedList<SignBookType>(Arrays.asList(SignBookType.values()));
 		signBookTypes.remove(SignBookType.user);
-		uiModel.addAttribute("allSignBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
 		uiModel.addAttribute("signBookTypes", signBookTypes);
 		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
 		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
@@ -118,9 +117,13 @@ public class SignBookController {
 	
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(Model uiModel) {
-        populateEditForm(uiModel, new SignBook());
-        //TODO : si parapheur group, que des users
-        //TODO : si parapheur workflow, que des groups
+    	User user = userService.getUserFromAuthentication();
+    	populateEditForm(uiModel, new SignBook());
+		List<SignBook> signBooks = new ArrayList<SignBook>();
+		signBooks.add(signBookService.getCreatorSignBook(user));
+		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
+		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.user).getResultList());
+		uiModel.addAttribute("allSignBooks", signBooks);
         return "manager/signbooks/create";
     }
 	
@@ -166,7 +169,10 @@ public class SignBookController {
 				if(signBook.getSignBookType().equals(SignBookType.workflow)) {
 					List<SignBook> signBooks = new ArrayList<>();
 					for(long signBookId : signBooksIds) {
-						signBooks.add(SignBook.findSignBook(signBookId));
+						SignBook signBook2 = SignBook.findSignBook(signBookId);
+						if(!signBooks.contains(signBook2)) {
+							signBooks.add(signBook2);
+						}
 					}
 					signBook.setSignBooks(signBooks);
 					signBookService.createWorkflowSignBook(signBook, user, signRequestParams, multipartFile);

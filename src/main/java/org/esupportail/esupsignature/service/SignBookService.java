@@ -91,21 +91,47 @@ public class SignBookService {
 		return fsAccessService;
 	}
 
+	public SignBook getUserSignBook(User user) {
+		SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(user.getEmail()), SignBookType.user).getSingleResult(); 
+		return signBook;
+	}
+	
+	public SignBook getCreatorSignBook(User user) {
+		SignBook signBook;
+		if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList("creator"), SignBookType.user) > 0) {
+			signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList("creator"), SignBookType.user).getSingleResult();
+		}
+		else {
+			signBook = new SignBook();
+			signBook.setName("Créateur de la demande");
+			signBook.setRecipientEmails(Arrays.asList("creator"));
+			signBook.setCreateDate(new Date());
+			signBook.setSignRequestParams(null);
+			signBook.setModelFile(null);
+			signBook.setSignBookType(SignBookType.user);
+			signBook.setSourceType(DocumentIOType.none);
+			signBook.setTargetType(DocumentIOType.none);
+			signBook.setSignRequestParams(signRequestService.getEmptySignRequestParams());
+			signBook.persist();
+		}
+		return signBook;
+	}
+	
 	public SignBook createUserSignBook(User user) {
-		SignBook signbook = new SignBook();
-		signbook.setName(user.getFirstname() + " " + user.getName());
-		signbook.setDescription("Parapheur personnel de " + signbook.getName());
-		signbook.setCreateBy(user.getEppn());
-		signbook.setCreateDate(new Date());
-		signbook.getRecipientEmails().add(user.getEmail());
-		signbook.setSignRequestParams(null);
-		signbook.setModelFile(null);
-		signbook.setSignBookType(SignBookType.user);
-		signbook.setSourceType(DocumentIOType.none);
-		signbook.setTargetType(DocumentIOType.none);
-		signbook.setSignRequestParams(signRequestService.getEmptySignRequestParams());
-		signbook.persist();
-		return signbook;
+		SignBook signBook = new SignBook();
+		signBook.setName(user.getFirstname() + " " + user.getName());
+		signBook.setDescription("Parapheur personnel de " + signBook.getName());
+		signBook.setCreateBy(user.getEppn());
+		signBook.setCreateDate(new Date());
+		signBook.getRecipientEmails().add(user.getEmail());
+		signBook.setSignRequestParams(null);
+		signBook.setModelFile(null);
+		signBook.setSignBookType(SignBookType.user);
+		signBook.setSourceType(DocumentIOType.none);
+		signBook.setTargetType(DocumentIOType.none);
+		signBook.setSignRequestParams(signRequestService.getEmptySignRequestParams());
+		signBook.persist();
+		return signBook;
 	}
 	
 	public void updateSignBook(SignBook signBook, SignBook signBookToUpdate, SignRequestParams signRequestParams, MultipartFile multipartFile) throws EsupSignatureException {
@@ -290,7 +316,7 @@ public class SignBookService {
 		if (!signBook.getSignRequests().contains(signRequest)) {
 			signBook.getSignRequests().add(signRequest);
 			if(signBook.getSignBookType().equals(SignBookType.workflow)) {
-				importSignRequestByRecipients(signRequest, signBook.getSignBooks().get(signBook.getSignBooksStep()).getRecipientEmails(), user);
+				importSignRequestByRecipients(signRequest, signBook.getSignBooks().get(signRequest.getSignBooksWorkflowStep()).getRecipientEmails(), user);
 			} else {
 				importSignRequestByRecipients(signRequest, signBook.getRecipientEmails(), user);
 			}
@@ -307,6 +333,9 @@ public class SignBookService {
 			List<String> recipientEmailsList = new ArrayList<>();
 			recipientEmailsList.add(recipientEmail);
 			SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmailsList, SignBookType.user).getSingleResult();
+			if(signBook.getRecipientEmails().contains("creator")) {
+				signBook = getUserSignBook(user);
+			}
 			if(!signRequest.getSignBooks().containsKey(signBook.getId())) {
 				signRequest.getSignBooks().put(signBook.getId(), false);
 			} else {
