@@ -195,7 +195,7 @@
 		    })
 		}
   	});
-		
+
 		//enable _allSignToComplete
 		var allSignToCompleteDiv;
 		var allSignToComplete;
@@ -209,22 +209,32 @@
 		
 		function checkNbRecipients() {
 			if(signBookSelect.selectedOptions.length > 0) {
-				if(signBookSelect.selectedOptions.length > 1 || signBookSelect.selectedOptions[0].text.includes("group")) {
+				console.log(signBookSelect.selectedOptions[signBookSelect.selectedOptions.length - 1].text);
+				if(signBookSelect.selectedOptions.length > 1 &amp;&amp; !signBookSelect.selectedOptions[signBookSelect.selectedOptions.length - 1].text.includes("workflow")) {
 					allSignToCompleteDiv.classList.remove("div-disable");
+					signBookNamesSelect.config.limit = 0;
+				} else if (signBookSelect.selectedOptions[signBookSelect.selectedOptions.length - 1].text.includes("group")) {
+					allSignToCompleteDiv.classList.remove("div-disable");
+					signBookNamesSelect.config.limit = 0;
 				} else {
-					if(signBookSelect.selectedOptions[0].text.includes("workflow")) {
+					if(signBookSelect.selectedOptions[signBookSelect.selectedOptions.length - 1].text.includes("workflow")) {
 						allSignToCompleteDiv.classList.remove("div-disable");
+						signBookNamesSelect.config.limit = 1;
+						if(signBookSelect.selectedOptions.length > 1) {
+							var value = signBookSelect.selectedOptions[signBookSelect.selectedOptions.length - 1].value;
+							signBookNamesSelect.set([]);
+							signBookNamesSelect.set(value);					
+						}
 					} else {
 						allSignToCompleteDiv.classList.add("div-disable");
 						allSignToComplete.checked = false;
-
-					}
+						signBookNamesSelect.config.limit = 0;
+						}
 				}
 			} else {
 				allSignToCompleteDiv.classList.add("div-disable");
 				allSignToComplete.checked = false;
 			}
-			
 		}
     </script>
 </div>

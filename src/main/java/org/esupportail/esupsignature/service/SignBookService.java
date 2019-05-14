@@ -300,16 +300,15 @@ public class SignBookService {
 			signBook.getSignRequests().add(signRequest);
 			if(signBook.getSignBookType().equals(SignBookType.workflow)) {
 				importSignRequestByRecipients(signRequest, signBook.getSignBooks().get(signRequest.getSignBooksWorkflowStep() - 1).getRecipientEmails(), user);
+				signRequestService.updateStatus(signRequest, SignRequestStatus.draft, messageSource.getMessage("updateinfo_sendtosignbook", null, Locale.FRENCH) + " " + signBook.getSignBooks().get(signRequest.getSignBooksWorkflowStep() - 1).getName(), user, "SUCCESS", "");
 				if(signRequest.getSignBooksWorkflowStep() > 1) {
 					signRequestService.pendingSignRequest(signRequest, user);
-				} else {
-					signRequestService.updateStatus(signRequest, SignRequestStatus.draft, messageSource.getMessage("updateinfo_sendtosignbook", null, Locale.FRENCH) + " " + signBook.getName(), user, "SUCCESS", "");					
 				}
+				signRequest.getOriginalSignBookNames().clear();
 			} else {
 				importSignRequestByRecipients(signRequest, signBook.getRecipientEmails(), user);
 				signRequestService.updateStatus(signRequest, SignRequestStatus.draft, messageSource.getMessage("updateinfo_sendtosignbook", null, Locale.FRENCH) + " " + signBook.getName(), user, "SUCCESS", "");
 			}
-			signRequest.getOriginalSignBookNames().clear();
 			signRequest.getOriginalSignBookNames().add(signBook.getName());
 		} else {
 			//throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getName());

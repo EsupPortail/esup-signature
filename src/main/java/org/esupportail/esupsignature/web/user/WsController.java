@@ -186,19 +186,24 @@ public class WsController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Content-Type", "application/json; charset=utf-8");
 		List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
-		List<SignBook> signBooks = SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList();
+		if(ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
+			List<PersonLdap> ldapSearchList = new ArrayList<PersonLdap>();
+			ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
+			ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
+
+		}
+
+		List<SignBook> signBooks = new ArrayList<>() ;
+		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.system).getResultList());
+		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.workflow).getResultList());
+		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
+
 		for(SignBook signBook : signBooks) {
 			PersonLdap personLdap = new PersonLdap();
 			personLdap.setUid(signBook.getSignBookType().toString());
 			personLdap.setMail(signBook.getName());
 			personLdap.setDisplayName(signBook.getName());
 			ldapList.add(personLdap);
-		}
-		if(ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
-			List<PersonLdap> ldapSearchList = new ArrayList<PersonLdap>();
-			ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
-			ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
-
 		}
 		return ldapList;
    }

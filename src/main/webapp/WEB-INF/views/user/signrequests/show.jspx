@@ -305,6 +305,7 @@
 										</tr>
 									</c:forEach>
 								</table>
+								<c:if test="${fn:length(originalSignBooks.signBooks) > 0}">
 								Etapes du workflow  : ${signRequest.signBooksWorkflowStep}
 								
 								<div class="bs-stepper vertical linear">
@@ -345,6 +346,7 @@
 								</c:forEach>
 									</div>
 								</div>
+								</c:if>
 								</dd>
 							</dl>
 							

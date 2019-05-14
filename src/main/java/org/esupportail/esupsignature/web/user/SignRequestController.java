@@ -191,6 +191,7 @@ public class SignRequestController {
 
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
+		//TODO fill model if pdf and pdfform
 		User user = userService.getUserFromAuthentication();
 		if(!user.isReady()) {
 			return "redirect:/user/users/?form";
