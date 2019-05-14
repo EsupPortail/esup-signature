@@ -27,7 +27,6 @@ import org.esupportail.esupsignature.domain.SignRequestParams;
 import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
-import org.esupportail.esupsignature.domain.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
@@ -589,15 +588,8 @@ public class SignRequestController {
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if(signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
-			SignBook signBook = SignBook.findSignBooksByNameEquals(signRequest.getOriginalSignBookNames().get(0)).getSingleResult();
-			if(signBook.getSignBookType().equals(SignBookType.workflow) && signRequest.getSignBooksWorkflowStep() < signBook.getSignBooks().size()) {
-				signRequest.setSignBooksWorkflowStep(signRequest.getSignBooksWorkflowStep() + 1);
-				signBookService.removeSignRequestFromAllSignBooks(signRequest);
-				signBookService.importSignRequestInSignBook(signRequest, signBook, user);	
-			} else {
-				signBookService.removeSignRequestFromAllSignBooks(signRequest);
-				signRequestService.updateStatus(signRequest, SignRequestStatus.completed, messageSource.getMessage("updateinfo_manualcomplete", null, Locale.FRENCH), user, "SUCCESS", comment);
-			}
+			SignBook originalSignBook = SignBook.findSignBooksByNameEquals(signRequest.getOriginalSignBookNames().get(0)).getSingleResult();
+			signRequestService.completeSignRequest(signRequest, originalSignBook, user);
 		} else {
 			logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
 		}
@@ -611,18 +603,9 @@ public class SignRequestController {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
+		signRequest.setComment(comment);
 		if(signRequestService.checkUserViewRights(user, signRequest) && signRequest.getStatus().equals(SignRequestStatus.draft)) {
-			signRequestService.updateStatus(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_sendforsign", null, Locale.FRENCH), user, "SUCCESS", comment);
-			for(Long signBookId : signRequest.getSignBooks().keySet()) {
-				SignBook signBook = SignBook.findSignBook(signBookId);
-				for(String emailRecipient : signBook.getRecipientEmails()) {
-					User recipient = User.findUsersByEmailEquals(emailRecipient).getSingleResult();
-					//TODO : add force email alert
-					if(user.getEmailAlertFrequency() == null|| user.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(user)) {
-						userService.sendEmailAlert(recipient);
-					}
-				}
-			}
+			signRequestService.pendingSignRequest(signRequest, user);
 		} else {
 			logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");
 		}

@@ -300,18 +300,24 @@ public class SignBookService {
 			signBook.getSignRequests().add(signRequest);
 			if(signBook.getSignBookType().equals(SignBookType.workflow)) {
 				importSignRequestByRecipients(signRequest, signBook.getSignBooks().get(signRequest.getSignBooksWorkflowStep() - 1).getRecipientEmails(), user);
+				if(signRequest.getSignBooksWorkflowStep() > 1) {
+					signRequestService.pendingSignRequest(signRequest, user);
+				} else {
+					signRequestService.updateStatus(signRequest, SignRequestStatus.draft, messageSource.getMessage("updateinfo_sendtosignbook", null, Locale.FRENCH) + " " + signBook.getName(), user, "SUCCESS", "");					
+				}
 			} else {
 				importSignRequestByRecipients(signRequest, signBook.getRecipientEmails(), user);
+				signRequestService.updateStatus(signRequest, SignRequestStatus.draft, messageSource.getMessage("updateinfo_sendtosignbook", null, Locale.FRENCH) + " " + signBook.getName(), user, "SUCCESS", "");
 			}
+			signRequest.getOriginalSignBookNames().clear();
 			signRequest.getOriginalSignBookNames().add(signBook.getName());
-			signRequestService.updateStatus(signRequest, SignRequestStatus.draft, messageSource.getMessage("updateinfo_sendtosignbook", null, Locale.FRENCH) + " " + signBook.getName(), user, "SUCCESS", "");
 		} else {
 			//throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getName());
 			logger.warn(signRequest.getId() + " is already in signbook" + signBook.getName());
 		}
 	}
 
-	public void importSignRequestByRecipients(SignRequest signRequest,  List<String> recipientEmails, User user) {
+	private void importSignRequestByRecipients(SignRequest signRequest,  List<String> recipientEmails, User user) {
 		for(String recipientEmail : recipientEmails) {
 			List<String> recipientEmailsList = new ArrayList<>();
 			recipientEmailsList.add(recipientEmail);
@@ -338,7 +344,6 @@ public class SignBookService {
 			signBook.merge();
 		}
 		signRequest.getSignBooks().clear();
-		signRequest.getOriginalSignBookNames().clear();
 	}
 
 	public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook, User user) {

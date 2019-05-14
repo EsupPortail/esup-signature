@@ -5,12 +5,12 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -28,6 +28,7 @@ import org.esupportail.esupsignature.domain.SignRequestParams;
 import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.domain.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
@@ -84,6 +85,9 @@ public class SignRequestService {
 	private FileService fileService;
 
 	@Resource
+	private UserService userService;
+	
+	@Resource
 	private ReloadableResourceBundleMessageSource messageSource;
 	
 	@Value("${sign.defaultSignatureForm}")
@@ -100,13 +104,11 @@ public class SignRequestService {
 	}
 	
 	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, Boolean toSign, SignRequestStatus status, Integer page, Integer size) {
-		List<String> recipientEmails = new ArrayList<>();
-		recipientEmails.add(user.getEmail());
-		List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailsEquals(recipientEmails).getResultList();
+		List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailsEquals(Arrays.asList(user.getEmail())).getResultList();
 		List<SignRequest> signRequests = new ArrayList<>();
 		for(SignBook signBook : signBooks) {
-			for(SignRequest signRequest : signBook.getSignRequests()) {
-				if(!signRequests.contains(signRequest) && (status == null || signRequest.getStatus().equals(status))) {
+			for(SignRequest signRequest : SignRequest.findAllSignRequests()) {
+				if(signRequest.getSignBooks().containsKey(signBook.getId()) && (status == null || signRequest.getStatus().equals(status))) {
 					signRequests.add(signRequest);							
 				}
 			}
@@ -204,14 +206,18 @@ public class SignRequestService {
 		
 		if (signedFile != null) {
 			addSignedFile(signRequest, signedFile, user);
-			applySignBookRules(signRequest, user);
+			try {
+				applySignBookRules(signRequest, user);
+			} catch (EsupSignatureException e) {
+				throw new EsupSignatureSignException("error on apply signBook rules", e);
+			}
 			step = "end";
 		} else {
 			throw new EsupSignatureSignException("enable to sign document");
 		}
 	}
 
-	public void nexuSign(SignRequest signRequest, User user, AbstractSignatureForm signatureDocumentForm, AbstractSignatureParameters parameters) throws EsupSignatureKeystoreException, EsupSignatureIOException {
+	public void nexuSign(SignRequest signRequest, User user, AbstractSignatureForm signatureDocumentForm, AbstractSignatureParameters parameters) throws EsupSignatureKeystoreException, EsupSignatureIOException, EsupSignatureSignException {
 		logger.info(user.getEppn() + " launch nexu signature for signRequest : " + signRequest.getId());
 		DSSDocument dssDocument;
 		
@@ -227,7 +233,11 @@ public class SignRequestService {
 			File signedFile = fileService.inputStreamToFile(signedDocument.openStream(), signedDocument.getName());
 			if (signedFile != null) {
 				addSignedFile(signRequest, signedFile, user);
+				try {
 				applySignBookRules(signRequest, user);
+				} catch (EsupSignatureException e) {
+					throw new EsupSignatureSignException("error on apply signBook rules", e);
+				}
 			}
 		} catch (IOException e) {
 			logger.error("error to read signed file", e);
@@ -313,8 +323,9 @@ public class SignRequestService {
 		}
 	}
 
-	public void applySignBookRules(SignRequest signRequest, User user) {
+	public void applySignBookRules(SignRequest signRequest, User user) throws EsupSignatureException {
 		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
+		SignBook originalSignBook = SignBook.findSignBooksByNameEquals(signRequest.getOriginalSignBookNames().get(0)).getSingleResult();
 		SignRequestParams.SignType signType = signRequest.getSignRequestParams().getSignType();
 		signRequest.getSignBooks().put(signBook.getId(), true);
 		if (isSignRequestCompleted(signRequest)) {
@@ -334,9 +345,8 @@ public class SignRequestService {
 					logger.error("error on export file to fs", e);
 				}
 			}
-			if(signBook.isAutoRemove()) {
-				signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
-				updateStatus(signRequest, SignRequestStatus.completed, messageSource.getMessage("updateinfo_autoremove", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+			if(originalSignBook.isAutoRemove()) {
+				completeSignRequest(signRequest, originalSignBook, user);
 			}
 		} else {
 			if(signType.equals(SignType.visa)) {
@@ -344,6 +354,31 @@ public class SignRequestService {
 			} else {
 				updateStatus(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_sign", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 			}
+		}
+	}
+	
+	public void pendingSignRequest(SignRequest signRequest, User user) {
+		updateStatus(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_sendforsign", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+		for(Long signBookId : signRequest.getSignBooks().keySet()) {
+			SignBook signBook = SignBook.findSignBook(signBookId);
+			for(String emailRecipient : signBook.getRecipientEmails()) {
+				User recipient = User.findUsersByEmailEquals(emailRecipient).getSingleResult();
+				//TODO : add force email alert
+				if(user.getEmailAlertFrequency() == null|| user.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(user)) {
+					userService.sendEmailAlert(recipient);
+				}
+			}
+		}
+	}
+	
+	public void completeSignRequest(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
+		if(signBook.getSignBookType().equals(SignBookType.workflow) && signRequest.getSignBooksWorkflowStep() < signBook.getSignBooks().size()) {
+			signRequest.setSignBooksWorkflowStep(signRequest.getSignBooksWorkflowStep() + 1);
+			signBookService.removeSignRequestFromAllSignBooks(signRequest);
+			signBookService.importSignRequestInSignBook(signRequest, signBook, user);	
+		} else {
+			signBookService.removeSignRequestFromAllSignBooks(signRequest);
+			updateStatus(signRequest, SignRequestStatus.completed, messageSource.getMessage("updateinfo_autoremove", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 		}
 	}
 	

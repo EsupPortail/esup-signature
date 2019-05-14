@@ -47,10 +47,10 @@
                             	<c:set var="step" value="1" />
                             	<c:forEach items="${signBook.signBooks}" var="workflowSignbook">
                             	<div class="step" data-target="#test-vl-1">
-					                <button type="button" class="step-trigger col-12 text-left" role="tab" aria-selected="false">
+					                <span class="step-trigger col-12 text-left" role="tab" >
 					                  <span class="bs-stepper-circle">${step}</span>
 					                  <span class="bs-stepper-label">${workflowSignbook.name}</span>
-					                </button>
+					                </span>
 					                </div>
 					                <c:if test="${fn:length(signBook.signBooks) > step}">
 					                <div class="line"><!--  --></div>		

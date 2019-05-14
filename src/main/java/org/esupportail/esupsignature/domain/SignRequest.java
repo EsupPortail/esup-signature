@@ -34,7 +34,7 @@ import org.springframework.roo.addon.tostring.RooToString;
 
 @RooJavaBean
 @RooToString
-@RooJpaActiveRecord(finders={"findSignRequestsByNameEquals", "findSignRequestsByCreateByEquals", "findSignRequestsByRecipientEmailEquals", "findSignRequestsByCreateByAndStatusEquals"})
+@RooJpaActiveRecord(finders={"findSignRequestsByNameEquals", "findSignRequestsByCreateByEquals", "findSignRequestsByCreateByAndStatusEquals"})
 public class SignRequest {
 
 	protected final static Logger log = LoggerFactory.getLogger(SignRequest.class);

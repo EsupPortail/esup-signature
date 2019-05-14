@@ -23,6 +23,7 @@ import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsFor
 import org.esupportail.esupsignature.dss.web.model.SignatureValueAsString;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
+import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.SigningService;
@@ -176,7 +177,7 @@ public class NexuProcessController {
 			signatureDocumentForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 	        try {
 	        	signRequestService.nexuSign(signRequest, user, signatureDocumentForm, parameters);
-			} catch (EsupSignatureIOException e) {
+			} catch (EsupSignatureIOException | EsupSignatureSignException e) {
 				logger.error(e.getMessage(), e);
 			}
 	        signRequest.merge();

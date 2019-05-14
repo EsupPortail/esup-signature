@@ -295,3 +295,8 @@ input:checked + .slider:before {
   text-align: left !important;
   justify-content: left !important;
 }
+
+.step-trigger {
+		cursor: default !important;
+		background-color: rgba(0,0,0,.12) !important;
+}
