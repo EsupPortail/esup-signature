@@ -48,7 +48,8 @@
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-fileinput/5.0.1/css/fileinput.min.css" media="all" rel="stylesheet" type="text/css" />
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/slim-select/1.18.10/slimselect.min.js"><!-- --></script>
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/slim-select/1.18.10/slimselect.min.css" rel="stylesheet" />
-
+	<link href="https://cdn.jsdelivr.net/npm/bs-stepper/dist/css/bs-stepper.min.css" rel="stylesheet" />
+	
 	<link rel="stylesheet" type="text/css" href="${esup_signature_css_url}" />
 		
 	<spring:url value="/resources/images/favicon.ico" var="favicon" />	

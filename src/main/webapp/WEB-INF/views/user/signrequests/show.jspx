@@ -305,29 +305,45 @@
 										</tr>
 									</c:forEach>
 								</table>
-								Etapes du workflow  : ${signRequest.signBooksWorkflowStep + 1}
-								<c:set var="step" value="0" />
+								Etapes du workflow  : 
+								
+								<div class="bs-stepper vertical linear">
+  								<div class="bs-stepper-header" role="tablist">
+  								<c:set var="step" value="1" />
 								<c:forEach items="${originalSignBooks.signBooks}" var="signBookSteps">
 								<c:choose>
 									<c:when test="${step eq signRequest.signBooksWorkflowStep}">
-										<div class="alert alert-primary">
-											${signBookSteps.name}
-										</div>
+									<div class="step active" data-target="#test-vl-1">
+						                <button type="button" class="step-trigger col-12 text-left" role="tab" aria-selected="false">
+						                  <span class="bs-stepper-circle">${step}</span>
+						                  <span class="bs-stepper-label">${signBookSteps.name}</span>
+						                </button>
+						              </div>
 									</c:when>
 									<c:when test="${step > signRequest.signBooksWorkflowStep}">
-										<div class="alert alert-secondary">
-											${signBookSteps.name}
-										</div>
+										<div class="step" data-target="#test-vl-1">
+						                <button type="button" class="step-trigger col-12 text-left" role="tab" aria-selected="false" disabled="disabled">
+						                  <span class="bs-stepper-circle">${step}</span>
+						                  <span class="bs-stepper-label">${signBookSteps.name}</span>
+						                </button>
+						              </div>
 									</c:when>									
 									<c:when test="${step &lt; signRequest.signBooksWorkflowStep}">
-										<div class="alert alert-success">
-											${signBookSteps.name}
-										</div>
+										<div class="step" data-target="#test-vl-1">
+						                <button type="button" class="step-trigger col-12 text-left" role="tab" aria-selected="false" disabled="disabled">
+						                  <span class="bs-stepper-circle bg-success">${step}</span>
+						                  <span class="bs-stepper-label">${signBookSteps.name}</span>
+						                </button>
+						              </div>
 									</c:when>
 								</c:choose>
+								 <c:if test="${fn:length(originalSignBooks.signBooks) > step}">
+					                <div class="line"><!--  --></div>		
+					                </c:if>							
 								<c:set var="step" value="${step + 1}" />
 								</c:forEach>
-								
+									</div>
+								</div>
 								</dd>
 							</dl>
 							

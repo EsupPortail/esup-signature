@@ -590,7 +590,7 @@ public class SignRequestController {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if(signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
 			SignBook signBook = SignBook.findSignBooksByNameEquals(signRequest.getOriginalSignBookNames().get(0)).getSingleResult();
-			if(signBook.getSignBookType().equals(SignBookType.workflow) && signRequest.getSignBooksWorkflowStep() < signBook.getSignBooks().size() - 1) {
+			if(signBook.getSignBookType().equals(SignBookType.workflow) && signRequest.getSignBooksWorkflowStep() < signBook.getSignBooks().size()) {
 				signRequest.setSignBooksWorkflowStep(signRequest.getSignBooksWorkflowStep() + 1);
 				signBookService.removeSignRequestFromAllSignBooks(signRequest);
 				signBookService.importSignRequestInSignBook(signRequest, signBook, user);	

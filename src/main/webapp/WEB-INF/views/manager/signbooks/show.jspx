@@ -42,11 +42,23 @@
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signbooks"/>
                             </dt>
                             <dd>
-                            	<ul>
+                            	<div class="bs-stepper vertical linear">
+  								<div class="bs-stepper-header" role="tablist">
+                            	<c:set var="step" value="1" />
                             	<c:forEach items="${signBook.signBooks}" var="workflowSignbook">
-	                            	<li>${workflowSignbook.name}</li>
+                            	<div class="step" data-target="#test-vl-1">
+					                <button type="button" class="step-trigger col-12 text-left" role="tab" aria-selected="false">
+					                  <span class="bs-stepper-circle">${step}</span>
+					                  <span class="bs-stepper-label">${workflowSignbook.name}</span>
+					                </button>
+					                </div>
+					                <c:if test="${fn:length(signBook.signBooks) > step}">
+					                <div class="line"><!--  --></div>		
+					                </c:if>
+					                <c:set var="step" value="${step + 1}" />
                             	</c:forEach>
-                            	</ul>								
+                            	</div>
+                            	</div>
                             </dd>
                         </dl>
 
@@ -162,7 +174,8 @@
                             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" property="createBy" z="user-managed"/>
                             <table:column date="true" dateTimePattern="${signRequest_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" property="updateDate" render="false" z="user-managed"/>
                             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" property="updateBy" render="false" z="user-managed"/>
-                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" render="false" z="user-managed"/>
+                            <table:column id="c_org_esupportail_label_org_esupportail_esupsignature_domain_signrequest_" property="description" render="false" z="user-managed"/>
+                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_signbookworkflowstep" property="signBooksWorkflowStep" z="user-managed"/>
                             <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed"/>
                         </table:table>
                     </div>

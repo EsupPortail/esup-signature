@@ -70,7 +70,7 @@ public class SignRequest {
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<Long, Boolean> signBooks = new HashMap<Long, Boolean>();
     
-    private Integer signBooksWorkflowStep = 0; 
+    private Integer signBooksWorkflowStep = 1; 
     
     @ElementCollection(fetch = FetchType.LAZY)
     private List<String> originalSignBookNames = new ArrayList<>();

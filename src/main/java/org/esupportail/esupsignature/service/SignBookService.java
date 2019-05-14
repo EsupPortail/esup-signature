@@ -299,7 +299,7 @@ public class SignBookService {
 		if (!signBook.getSignRequests().contains(signRequest)) {
 			signBook.getSignRequests().add(signRequest);
 			if(signBook.getSignBookType().equals(SignBookType.workflow)) {
-				importSignRequestByRecipients(signRequest, signBook.getSignBooks().get(signRequest.getSignBooksWorkflowStep()).getRecipientEmails(), user);
+				importSignRequestByRecipients(signRequest, signBook.getSignBooks().get(signRequest.getSignBooksWorkflowStep() - 1).getRecipientEmails(), user);
 			} else {
 				importSignRequestByRecipients(signRequest, signBook.getRecipientEmails(), user);
 			}
@@ -365,7 +365,11 @@ public class SignBookService {
 	}
 	
 	public SignBook getUserSignBookByRecipientEmail(String recipientEmail) {
-		return SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.user).getSingleResult();
+		if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.user) > 0) {
+			return SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.user).getSingleResult();
+		} else {
+			return SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.system).getSingleResult();
+		}
 	}
 	
 	public List<SignBook> getSignBookBySignRequest(SignRequest signRequest) {
