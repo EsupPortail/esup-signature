@@ -324,29 +324,30 @@ public class SignRequestService {
 	}
 
 	public void applySignBookRules(SignRequest signRequest, User user) throws EsupSignatureException {
-		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
-		SignBook originalSignBook = SignBook.findSignBooksByNameEquals(signRequest.getOriginalSignBookNames().get(0)).getSingleResult();
+		SignBook recipientSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
+		SignBook signBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
+		//SignBook originalSignBook = SignBook.findSignBooksByNameEquals(signRequest.getOriginalSignBookNames().get(0)).getSingleResult();
 		SignRequestParams.SignType signType = signRequest.getSignRequestParams().getSignType();
-		signRequest.getSignBooks().put(signBook.getId(), true);
+		signRequest.getSignBooks().put(recipientSignBook.getId(), true);
 		if (isSignRequestCompleted(signRequest)) {
-			if(signBook.getSignBookType().equals(SignBookType.user)) {
-				signBookService.resetSignBookParams(signBook);
+			if(recipientSignBook.getSignBookType().equals(SignBookType.user)) {
+				signBookService.resetSignBookParams(recipientSignBook);
 			}
 			if(signType.equals(SignType.visa)) {
 				updateStatus(signRequest, SignRequestStatus.checked, messageSource.getMessage("updateinfo_visa", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 			} else {
 				updateStatus(signRequest, SignRequestStatus.signed, messageSource.getMessage("updateinfo_sign", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 			}
-			if (!signBook.getTargetType().equals(DocumentIOType.none)) {
+			if (!recipientSignBook.getTargetType().equals(DocumentIOType.none)) {
 				try {
-					signBookService.exportFileToTarget(signBook, signRequest, user);
-					updateStatus(signRequest, SignRequestStatus.exported, messageSource.getMessage("updateinfo_exporttotarget", null, Locale.FRENCH) + " " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", signRequest.getComment());
+					signBookService.exportFileToTarget(recipientSignBook, signRequest, user);
+					updateStatus(signRequest, SignRequestStatus.exported, messageSource.getMessage("updateinfo_exporttotarget", null, Locale.FRENCH) + " " + recipientSignBook.getTargetType() + " : " + recipientSignBook.getDocumentsTargetUri(), user, "SUCCESS", signRequest.getComment());
 				} catch (EsupSignatureException e) {
 					logger.error("error on export file to fs", e);
 				}
 			}
-			if(originalSignBook.isAutoRemove()) {
-				completeSignRequest(signRequest, originalSignBook, user);
+			if(signBook.isAutoRemove()) {
+				completeSignRequest(signRequest, signBook, user);
 			}
 		} else {
 			if(signType.equals(SignType.visa)) {
@@ -491,14 +492,6 @@ public class SignRequestService {
 		signRequestParams.setSignType(SignType.visa);
 		signRequestParams.persist();
 		return signRequestParams;
-	}
-
-	public List<SignBook> getSignBooksList(SignRequest signRequest) {
-		List<SignBook> signBooks = new ArrayList<>();
-		for(String signBookNames : signRequest.getOriginalSignBookNames()) {
-			signBooks.add(SignBook.findSignBooksByNameEquals(signBookNames).getSingleResult());
-		}
-		return signBooks;
 	}
 	
 	public long generateUniqueId() {

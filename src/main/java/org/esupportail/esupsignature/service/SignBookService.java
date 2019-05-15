@@ -304,12 +304,12 @@ public class SignBookService {
 				if(signRequest.getSignBooksWorkflowStep() > 1) {
 					signRequestService.pendingSignRequest(signRequest, user);
 				}
-				signRequest.getOriginalSignBookNames().clear();
+				//signRequest.getOriginalSignBookNames().clear();
 			} else {
 				importSignRequestByRecipients(signRequest, signBook.getRecipientEmails(), user);
 				signRequestService.updateStatus(signRequest, SignRequestStatus.draft, messageSource.getMessage("updateinfo_sendtosignbook", null, Locale.FRENCH) + " " + signBook.getName(), user, "SUCCESS", "");
 			}
-			signRequest.getOriginalSignBookNames().add(signBook.getName());
+			//signRequest.getOriginalSignBookNames().add(signBook.getName());
 		} else {
 			logger.warn(signRequest.getId() + " is already in signbook" + signBook.getName());
 		}
@@ -333,7 +333,7 @@ public class SignBookService {
 	}
 	
 	public void removeSignRequestFromAllSignBooks(SignRequest signRequest) {
-		List<SignBook> signBooks = signRequestService.getSignBooksList(signRequest);
+		List<SignBook> signBooks = getSignBookBySignRequest(signRequest);
 		for(SignBook signBook : signBooks) {
 			List<SignRequest> signRequests = new ArrayList<>();
 			signRequests.addAll(signBook.getSignRequests());
@@ -376,8 +376,7 @@ public class SignBookService {
 	}
 	
 	public List<SignBook> getSignBookBySignRequest(SignRequest signRequest) {
-		List<SignRequest> signRequests = Arrays.asList(signRequest);
-		List<SignBook> signBooks = SignBook.findSignBooksBySignRequestsEquals(signRequests).getResultList();
+		List<SignBook> signBooks = SignBook.findSignBooksBySignRequestsEquals(Arrays.asList(signRequest)).getResultList();
 		return signBooks;
 	}
 	

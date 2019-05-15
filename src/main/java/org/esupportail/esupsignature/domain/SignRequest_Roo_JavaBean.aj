@@ -112,14 +112,6 @@ privileged aspect SignRequest_Roo_JavaBean {
         this.nbSign = nbSign;
     }
     
-    public List<String> SignRequest.getOriginalSignBookNames() {
-        return this.originalSignBookNames;
-    }
-    
-    public void SignRequest.setOriginalSignBookNames(List<String> originalSignBookNames) {
-        this.originalSignBookNames = originalSignBookNames;
-    }
-    
     public boolean SignRequest.isAllSignToComplete() {
         return this.allSignToComplete;
     }

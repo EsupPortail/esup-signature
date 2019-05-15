@@ -134,7 +134,6 @@
 											</c:choose>
 											</c:when>
 											<c:otherwise>
-												${modelId}
 												<c:if test="${not empty modelId}">
 												<button type="button" class="btn btn-info" onclick="window.open('${modelId}', '_blank')">
 													<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" /> le modèle
@@ -304,21 +303,20 @@
 									Parapheur(s) d'origine(s)					
 								</dt>
 								<dd>
-								<table class="table table-sm">
-									<c:forEach items="${signRequest.originalSignBookNames}" var="originalSignBookName">
-								  		<tr>
-											<td><i class="fas fa-book"><!--  --></i>&amp;nbsp;${originalSignBookName}</td>
-										</tr>
+								<ul class="list-group">
+									<c:forEach items="${originalSignBooks}" var="originalSignBook">
+								  		<li class="list-group-item"><i class="fas fa-book"><!--  --></i>&amp;nbsp;${originalSignBook.name}</li>
+										
 									</c:forEach>
-								</table>
-								<c:if test="${fn:length(originalSignBooks.signBooks) > 0}">
+								</ul>
+								<c:if test="${fn:length(firstOriginalSignBook.signBooks) > 0}">
 								Etapes du workflow  : ${signRequest.signBooksWorkflowStep}
 								
 								<div class="bs-stepper vertical linear">
   								<div class="bs-stepper-header" role="tablist">
   								
   								<c:set var="step" value="1" />
-								<c:forEach items="${originalSignBooks.signBooks}" var="signBookSteps">
+								<c:forEach items="${firstOriginalSignBook.signBooks}" var="signBookSteps">
 								<c:choose>
 									<c:when test="${step eq signRequest.signBooksWorkflowStep and signRequest.status ne 'completed'}">
 									<div class="step active" data-target="#test-vl-1">
@@ -345,7 +343,7 @@
 						              </div>
 									</c:otherwise>
 								</c:choose>
-								 <c:if test="${fn:length(originalSignBooks.signBooks) > step}">
+								 <c:if test="${fn:length(firstOriginalSignBook.signBooks) > step}">
 					                <div class="line"><!--  --></div>		
 					                </c:if>							
 								<c:set var="step" value="${step + 1}" />

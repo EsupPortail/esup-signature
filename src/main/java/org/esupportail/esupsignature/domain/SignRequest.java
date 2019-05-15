@@ -1,11 +1,13 @@
 package org.esupportail.esupsignature.domain;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.EntityManager;
@@ -25,6 +27,7 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import org.esupportail.esupsignature.service.SignBookService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -36,7 +39,7 @@ import org.springframework.roo.addon.tostring.RooToString;
 @RooToString
 @RooJpaActiveRecord(finders={"findSignRequestsByNameEquals", "findSignRequestsByCreateByEquals", "findSignRequestsByCreateByAndStatusEquals"})
 public class SignRequest {
-
+	
 	protected final static Logger log = LoggerFactory.getLogger(SignRequest.class);
 
 	@Column(unique=true)
@@ -74,16 +77,16 @@ public class SignRequest {
     
     private Integer nbSign = 0;
     
-    @ElementCollection(fetch = FetchType.LAZY)
-    private List<String> originalSignBookNames = new ArrayList<>();
-    
-    
     private boolean allSignToComplete = false;
     
     public enum SignRequestStatus {
 		draft, pending, canceled, checked, signed, refused, deleted, exported, completed;
 	}
 	
+    public List<SignBook> getOriginalSignBooks() {
+    	return SignBook.findSignBooksBySignRequestsEquals(Arrays.asList(this)).getResultList();
+    }
+    
     public void setStatus(SignRequestStatus status) {
         this.status = status;
     }

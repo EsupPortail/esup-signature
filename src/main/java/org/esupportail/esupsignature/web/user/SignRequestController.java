@@ -248,14 +248,14 @@ public class SignRequestController {
 			if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
 				uiModel.addAttribute("signable", "ok");
 			}
-			SignBook firstOriginalSignBook = SignBook.findSignBooksByNameEquals(signRequest.getOriginalSignBookNames().get(0)).getSingleResult();
+			SignBook firstOriginalSignBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
 			if(firstOriginalSignBook.getSignBookType().equals(SignBookType.workflow)) {
-				uiModel.addAttribute("originalSignBooks", firstOriginalSignBook);
+				uiModel.addAttribute("firstOriginalSignBook", firstOriginalSignBook);
 			}
-			System.err.println(firstOriginalSignBook.getModelFile());
 			if(firstOriginalSignBook.getModelFile() != null) {
 				uiModel.addAttribute("modelId", firstOriginalSignBook.getModelFile().getUrl());
 			}
+			uiModel.addAttribute("originalSignBooks", signBookService.getSignBookBySignRequest(signRequest));
 			uiModel.addAttribute("allSignBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
 			uiModel.addAttribute("nbSignOk", signRequest.countSignOk());
 			return "user/signrequests/show";
@@ -593,7 +593,7 @@ public class SignRequestController {
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if(signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
-			SignBook originalSignBook = SignBook.findSignBooksByNameEquals(signRequest.getOriginalSignBookNames().get(0)).getSingleResult();
+			SignBook originalSignBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
 			signRequestService.completeSignRequest(signRequest, originalSignBook, user);
 		} else {
 			logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
