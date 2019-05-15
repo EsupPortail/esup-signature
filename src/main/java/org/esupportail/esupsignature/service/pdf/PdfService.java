@@ -27,6 +27,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.color.PDOutputIntent;
@@ -82,22 +83,8 @@ public class PdfService {
 	@Value("${sign.widthThreshold}")
 	private int signWidthThreshold;
 	
-	public File formatPdf(File toSignFile, SignRequestParams params, boolean addPage) {
-    	if(!SignRequestParams.NewPageType.none.equals(params.getNewPageType()) && addPage) {
-    		if(SignRequestParams.NewPageType.onBegin.equals(params.getNewPageType())) {
-    			toSignFile = addNewPage(toSignFile, null, 0);
-    			params.setSignPageNumber(1);
-    		} else {
-    			toSignFile = addNewPage(toSignFile, null, -1);
-            	params.setSignPageNumber(getPdfParameters(toSignFile).getTotalNumberOfPages());
-    		}
-    	}
-    	toSignFile = toPdfA(toSignFile);
-    	return toSignFile;
-	}
-	
-	public File stampImage(File toSignFile, SignRequestParams params, User user, boolean addPage, boolean addDate) {
-		//TODO add ip ? + date
+	public File stampImage(File toSignFile, SignRequestParams params, User user, boolean addPage, boolean addDate) throws InvalidPasswordException, IOException {
+		//TODO add ip ? + date + nom ?
 		SignRequestParams.SignType signType = params.getSignType();
     	PdfParameters pdfParameters = getPdfParameters(toSignFile);
 		toSignFile = formatPdf(toSignFile, params, addPage);
@@ -115,6 +102,7 @@ public class PdfService {
 			File signImage;
 			int xPos = (int) params.getXPos();
 			int yPos = (int) params.getYPos();
+			//TODO remplace tolocalestring
 			//DateFormat format = new SimpleDateFormat("dd MMM YYYY HH:mm:ss", Locale.FRENCH);
 			if(signType.equals(SignType.visa)) {
 				try {
@@ -190,10 +178,33 @@ public class PdfService {
 		return new int[]{signWidth, signHeight};
 	}
 	
-	public File addNewPage(File pdfFile, String template, int position) {
+	public File formatPdf(File toSignFile, SignRequestParams params, boolean addPage) throws InvalidPasswordException, IOException {
+		PDDocument pdDocument = PDDocument.load(toSignFile);
+		if(!SignRequestParams.NewPageType.none.equals(params.getNewPageType()) && addPage) {
+    		if(SignRequestParams.NewPageType.onBegin.equals(params.getNewPageType())) {
+    			addNewPage(pdDocument, null, 0);
+    			params.setSignPageNumber(1);
+    		} else {
+    			addNewPage(pdDocument, null, -1);
+            	params.setSignPageNumber(getPdfParameters(toSignFile).getTotalNumberOfPages());
+    		}
+    	}
+        try {
+			useNextSignatureField(pdDocument);
+			pdDocument.save(toSignFile);
+			if(!checkPdfA(toSignFile)) {
+		        convertToPDFA(pdDocument);
+			}
+        } catch (Exception e) {
+			logger.error("file read error", e);
+		}
+        pdDocument.save(toSignFile);
+        pdDocument.close();
+    	return toSignFile;
+	}
+	
+	public PDDocument addNewPage(PDDocument pdDocument, String template, int position) {
 		try {
-			File targetFile = File.createTempFile(pdfFile.getName(), ".pdf");
-			PDDocument pdDocument = PDDocument.load(pdfFile);
 			PDDocument targetPDDocument = new PDDocument();
 			PDPage newPage = null;
 			if(template != null) {
@@ -220,61 +231,12 @@ public class PdfService {
 			if(position == -1) {
 				targetPDDocument.addPage(newPage);
 			}
-			targetPDDocument.save(targetFile);
-			targetPDDocument.close();
-		    return targetFile;
+		    return targetPDDocument;
 		} catch (IOException e) {
 			logger.error("error to add blank page", e);
 		}
 		return null;
 	}
-	
-	
-	public File addBlankPage(File pdfFile, int position) {
-		try {
-			File targetFile = File.createTempFile(pdfFile.getName(), ".pdf");
-			PDDocument pdDocument = PDDocument.load(pdfFile);
-			PDDocument targetPDDocument = new PDDocument();
-			PDPage blankPage = new PDPage(PDRectangle.A4);
-			if(position == 0) {
-				targetPDDocument.addPage(blankPage);
-			} 
-			
-			for(PDPage page : pdDocument.getPages()) {
-				targetPDDocument.addPage(page);
-			}
-			
-			if(position == -1) {
-				targetPDDocument.addPage(blankPage);
-			}
-			targetPDDocument.save(targetFile);
-			targetPDDocument.close();
-		    return targetFile;
-		} catch (IOException e) {
-			logger.error("error to add blank page", e);
-		}
-		return null;
-	}
-
-	public File flatten(File pdfFile) {
-        try {
-			File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
-			PDDocument pdDocument = PDDocument.load(pdfFile);
-			PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
-			pdAcroForm.setNeedAppearances(false);
-			pdAcroForm.flatten();
-	        try {
-				pdDocument.save(targetFile);
-	        } catch (Exception e) {
-				logger.error("PDF/A convert error", e);
-			}
-			pdDocument.close();
-	        return targetFile;
-        } catch (IOException e) {
-			logger.error("file read error", e);
-		}
-        return pdfFile;
-	}	
 	
 	public File ldapFill(File pdfFile, User user) {
 		PersonLdap personLdap = userService.getPersonLdap(user);
@@ -318,7 +280,7 @@ public class PdfService {
 	        	}
 	        	//TODO probleme pdfa non conforme
 	        	if(v.getErrorCode().equals("7.1")) {
-	        		logger.info("contains PDFA metedata");
+	        		logger.info("contains PDFA metadata");
 	        		return true;
 	        	}
 	        }
@@ -339,79 +301,69 @@ public class PdfService {
 		return false;
 	}
 	
-	public File toPdfA(File pdfFile) {
-		if(!checkPdfA(pdfFile)) {
-	        try {
-				File targetFile =  new File(Files.createTempDir(), pdfFile.getName());
-				PDDocument pdDocument = PDDocument.load(pdfFile);
-		        PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
-				PDAcroForm pdAcroForm = cat.getAcroForm();
-				PDDocumentInformation info = pdDocument.getDocumentInformation();
-				if(pdAcroForm != null) {
-					pdAcroForm.setNeedAppearances(false);
-					PDResources pdResources = new PDResources();
-					pdAcroForm.setDefaultResources(pdResources);
-					//a chaque signature on verouille un champ signature par ordre alphabetique
-					List<PDSignatureField> signatureFields = pdDocument.getSignatureFields();
-					signatureFields = signatureFields.stream().sorted(Comparator.comparing(PDSignatureField::getPartialName)).collect(Collectors.toList());
-					for(PDSignatureField pdSignatureField : signatureFields) {
-						if(pdSignatureField.getSignature() == null) {
-							pdSignatureField.setSignature(new PDSignature());
-							break;
-						}
-					}
-					
-				    List<PDField> fields = new ArrayList<>(pdAcroForm.getFields());
-				    if(processFields(fields, pdResources)) {
-				    	pdAcroForm.flatten();
-				    }
+	private PDDocument useNextSignatureField(PDDocument pdDocument) throws Exception {
+		//on verouille le prochain champ signature (par ordre alphabetique)
+        PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
+		PDAcroForm pdAcroForm = cat.getAcroForm();
+		if(pdAcroForm != null) {
+			pdAcroForm.setNeedAppearances(false);
+			PDResources pdResources = new PDResources();
+			pdAcroForm.setDefaultResources(pdResources);
+			List<PDSignatureField> signatureFields = pdDocument.getSignatureFields();
+			signatureFields = signatureFields.stream().sorted(Comparator.comparing(PDSignatureField::getPartialName)).collect(Collectors.toList());
+			for(PDSignatureField pdSignatureField : signatureFields) {
+				if(pdSignatureField.getSignature() == null) {
+					pdSignatureField.setSignature(new PDSignature());
+					break;
 				}
-		        try {
-			        XMPMetadata xmpMetadata = XMPMetadata.createXMPMetadata();
-		        
-			        DublinCoreSchema dublinCoreSchema = xmpMetadata.createAndAddDublinCoreSchema();
-			        dublinCoreSchema.setTitle(info.getTitle());
-			        
-			        XMPBasicSchema xmpBasicSchema = xmpMetadata.createAndAddXMPBasicSchema();
-			        xmpBasicSchema.setCreatorTool(info.getCreator());
-			        xmpBasicSchema.setCreateDate(info.getCreationDate());
-			        xmpBasicSchema.setModifyDate(info.getModificationDate());
-	
-			        
-			        PDFAIdentificationSchema pdfaid = new PDFAIdentificationSchema(xmpMetadata);
-		        	pdfaid.setConformance("B");
-			        pdfaid.setPart(1);
-			        pdfaid.setAboutAsSimple(null);
-			        xmpMetadata.addSchema(pdfaid);
-			        
-			        XmpSerializer serializer = new XmpSerializer();
-	                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	                serializer.serialize(xmpMetadata, baos, false);
-	            
-			        PDMetadata metadata = new PDMetadata(pdDocument);
-	                metadata.importXMPMetadata(baos.toByteArray());
-			        cat.setMetadata(metadata);
-	
-			        InputStream colorProfile = PdfService.class.getResourceAsStream("/sRGB.icc");
-		            PDOutputIntent intent = new PDOutputIntent(pdDocument, colorProfile);
-		            intent.setInfo("sRGB IEC61966-2.1");
-		            intent.setOutputCondition("sRGB IEC61966-2.1");
-		            intent.setOutputConditionIdentifier("sRGB IEC61966-2.1");
-		            intent.setRegistryName("http://www.color.org");
-		            cat.addOutputIntent(intent);
-		            		
-			        pdDocument.save(targetFile);
-					pdDocument.close();
-			        return targetFile;		        
-		        } catch (Exception e) {
-					logger.error("PDF/A convert error", e);
-				}
-	        } catch (IOException e) {
-				logger.error("file read error", e);
 			}
+			
+		    List<PDField> fields = new ArrayList<>(pdAcroForm.getFields());
+		    if(processFields(fields, pdResources)) {
+		    	pdAcroForm.flatten();
+		    }
 		}
-        return pdfFile;
-	}	
+		return pdDocument;
+	}
+	
+	private PDDocument convertToPDFA(PDDocument pdDocument) throws Exception {
+		PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
+		PDDocumentInformation info = pdDocument.getDocumentInformation();
+        XMPMetadata xmpMetadata = XMPMetadata.createXMPMetadata();
+        
+        DublinCoreSchema dublinCoreSchema = xmpMetadata.createAndAddDublinCoreSchema();
+        dublinCoreSchema.setTitle(info.getTitle());
+        
+        XMPBasicSchema xmpBasicSchema = xmpMetadata.createAndAddXMPBasicSchema();
+        xmpBasicSchema.setCreatorTool(info.getCreator());
+        xmpBasicSchema.setCreateDate(info.getCreationDate());
+        xmpBasicSchema.setModifyDate(info.getModificationDate());
+
+        
+        PDFAIdentificationSchema pdfaid = new PDFAIdentificationSchema(xmpMetadata);
+    	pdfaid.setConformance("B");
+        pdfaid.setPart(1);
+        pdfaid.setAboutAsSimple(null);
+        xmpMetadata.addSchema(pdfaid);
+        
+        XmpSerializer serializer = new XmpSerializer();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        serializer.serialize(xmpMetadata, baos, false);
+    
+        PDMetadata metadata = new PDMetadata(pdDocument);
+        metadata.importXMPMetadata(baos.toByteArray());
+        cat.setMetadata(metadata);
+
+        InputStream colorProfile = PdfService.class.getResourceAsStream("/sRGB.icc");
+        PDOutputIntent intent = new PDOutputIntent(pdDocument, colorProfile);
+        intent.setInfo("sRGB IEC61966-2.1");
+        intent.setOutputCondition("sRGB IEC61966-2.1");
+        intent.setOutputConditionIdentifier("sRGB IEC61966-2.1");
+        intent.setRegistryName("http://www.color.org");
+        cat.addOutputIntent(intent);
+        		
+        return pdDocument;	
+	}
 	
 	private boolean processFields(List<PDField> fields, PDResources resources) {
 		for(PDField f : fields) {

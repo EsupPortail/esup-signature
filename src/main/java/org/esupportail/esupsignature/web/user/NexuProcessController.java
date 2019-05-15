@@ -101,7 +101,11 @@ public class NexuProcessController {
     				if(signRequest.countSignOk() == 0) {
     					addPage = true;
     				}
-        			toSignFile = pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage);
+        			try {
+						toSignFile = pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage);
+					} catch (IOException e) {
+						logger.error("error on format pdf", e);
+					}
         			signatureDocumentForm = signingService.getSignatureDocumentForm(Arrays.asList(toSignFile), SignatureForm.PAdES);
         		} else {
         			signatureDocumentForm = signingService.getSignatureDocumentForm(Arrays.asList(toSignFile), defaultSignatureForm);

@@ -4,7 +4,7 @@
     <jsp:output omit-xml-declaration="yes"/>	
     <div class="card card-header">
 		<div class="row">
-			<div class="col-lg-9">
+			<div class="col-lg-11">
 			<nav aria-label="breadcrumb">
 			  <ol class="breadcrumb">
 	    		<li class="breadcrumb-item"><a href="/manager">Liste des parapheurs</a></li>
@@ -30,16 +30,16 @@
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signbooktype"/>
                             </dt>
                             <dd>
-								${signBook.signBookType}
+                            	<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signbooktype_${signBook.signBookType}"/>
                             </dd>
                         </dl>
                     
                         <field:display field="name" id="s_org_esupportail_esupsignature_domain_SignBook_name" object="${signBook}" z="user-managed"/>
                         <field:display field="moderatorEmails" id="s_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" object="${signbook}" render="false" z="user-managed"/>
-
+						<c:if test="${signBook.signBookType eq 'workflow'}">
                         <dl class="display-group border-bottom m-0">
                             <dt class="col-lg-5">
-                                <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signbooks"/>
+                                <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signbooktype_${signBook.signBookType}"/>
                             </dt>
                             <dd>
                             	<div class="bs-stepper vertical linear">
@@ -61,7 +61,8 @@
                             	</div>
                             </dd>
                         </dl>
-
+						</c:if>
+						<c:if test="${signBook.signBookType eq 'group'}">
                         <dl class="display-group border-bottom m-0">
                             <dt class="col-lg-5">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_recipientemails"/>
@@ -77,6 +78,7 @@
                                 </div>
                             </dd>
                         </dl>
+                        </c:if>
                         <dl class="display-group border-bottom m-0">
                             <dt class="col-lg-5">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_moderatoremails"/>
@@ -98,8 +100,8 @@
                             </dt>
                             <dd>
                             	<ul>
-                                <li>${signBook.signRequestParams.signType}</li>
-                                <li>${signBook.signRequestParams.newPageType}</li>
+                                <li><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" /> : <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signBook.signRequestParams.signType}" /></li>
+                                <li><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype" /> : <spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signBook.signRequestParams.newPageType}" /></li>
                                 </ul>
                             </dd>
                         </dl>
@@ -141,17 +143,19 @@
                         </c:if>
                         <dl class="display-group border-bottom m-0">
                             <dt class="col-lg-5">
-                                Nombre demandes dans le parapheur
+                                <spring:message code="label_org_esupportail_esupsignature_domain_signbook_autoremove" />
                             </dt>
-                            <dd>
-                                <div class="alert alert-dark col-12">
-	                                <i class="fa fa-file">
-	                                    ${fn:length(signBook.signRequests)}
-	                                </i> 
-                                </div>
+							<dd>
+	                           	<c:choose>
+	                               	<c:when test="${signBook.autoRemove}">
+		                                <i class="fas fa-check fa-2x text-success"><!--  --></i>
+		                            </c:when>
+		                            <c:otherwise>
+		                                <i class="fas fa-times fa-2x text-danger"><!--  --></i>
+		                            </c:otherwise>
+	                            </c:choose>
                             </dd>
                         </dl>
-                        
                         <field:display field="signRequests" id="s_org_esupportail_esupsignature_domain_SignBook_signRequests" object="${signBook}" render="false" z="user-managed"/>
                         <field:display field="signRequestParams" id="s_org_esupportail_esupsignature_domain_SignBook_signRequestParams" object="${signBook}" render="false" z="user-managed"/>
                         <field:display field="signBookType" id="s_org_esupportail_esupsignature_domain_SignBook_signBookType" object="${signBook}" render="false" z="user-managed"/>
@@ -161,25 +165,15 @@
                         <field:display field="XPos" id="s_org_esupportail_esupsignature_domain_SignBook_XPos" object="${signBook}" render="false" z="user-managed"/>
                         <field:display field="YPos" id="s_org_esupportail_esupsignature_domain_SignBook_YPos" object="${signBook}" render="false" z="user-managed"/>
                         <field:display field="modelFile" id="s_org_esupportail_esupsignature_domain_SignBook_modelFile" object="${signBook}" render="false" z="user-managed"/>
-                        <field:display field="autoRemove" id="s_org_esupportail_esupsignature_domain_SignBook_autoRemove" object="${signBook}" z="user-managed"/>
+                        <field:display render="false" field="autoRemove" id="s_org_esupportail_esupsignature_domain_SignBook_autoRemove" object="${signBook}" z="user-managed"/>
                         <field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignBook_createBy" object="${signBook}" z="user-managed"/>
                         <field:display date="true" dateTimePattern="${signBook_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignBook_createDate" object="${signBook}" z="user-managed"/>
                         <field:display field="updateBy" id="s_org_esupportail_esupsignature_domain_SignBook_updateBy" object="${signBook}" render="false" z="user-managed"/>
                         <field:display date="true" dateTimePattern="${signBook_updatedate_date_format}" field="updateDate" id="s_org_esupportail_esupsignature_domain_SignBook_updateDate" object="${signBook}" render="false" z="user-managed"/>
                         <field:display field="signBooksGroup" id="s_org_esupportail_esupsignature_domain_SignBook_signBooksGroup" object="${signBook}" render="false" z="user-managed"/>
-                        <table:table data="${signRequests}" delete="false" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">
-                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_name" property="name" render="false" z="user-managed"/>
-                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_title" property="title" z="user-managed"/>
-                            <table:column date="true" dateTimePattern="${signRequest_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" property="createDate" z="user-managed"/>
-                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" property="createBy" z="user-managed"/>
-                            <table:column date="true" dateTimePattern="${signRequest_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" property="updateDate" render="false" z="user-managed"/>
-                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" property="updateBy" render="false" z="user-managed"/>
-                            <table:column id="c_org_esupportail_label_org_esupportail_esupsignature_domain_signrequest_" property="description" render="false" z="user-managed"/>
-                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_signbookworkflowstep" property="signBooksWorkflowStep" z="user-managed"/>
-                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed"/>
-                        </table:table>
                     </div>
                 </div>
+
                 <c:if test="${not empty documentId}">
                     <div class="card bg-light">
                         <div class="card-header">
@@ -217,6 +211,22 @@
                         </div>
                     </div>
                 </c:if>
+                                <div class="card bg-light">
+                    <div class="card-header">Demandes&amp;nbsp;</div>
+                    <div class="card-body">
+                        <table:table data="${signRequests}" delete="false" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">
+                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_name" property="name" render="false" z="user-managed"/>
+                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_title" property="title" z="user-managed"/>
+                            <table:column date="true" dateTimePattern="${signRequest_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" property="createDate" z="user-managed"/>
+                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" property="createBy" z="user-managed"/>
+                            <table:column date="true" dateTimePattern="${signRequest_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" property="updateDate" render="false" z="user-managed"/>
+                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" property="updateBy" render="false" z="user-managed"/>
+                            <table:column id="c_org_esupportail_label_org_esupportail_esupsignature_domain_signrequest_" property="description" render="false" z="user-managed"/>
+                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_signbookworkflowstep" property="signBooksWorkflowStep" z="user-managed"/>
+                            <table:column id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed"/>
+                        </table:table>                    
+                	</div>
+                </div>
             </div>
             <c:if test="${not empty documentId}">
                 <div class="col-lg-6">

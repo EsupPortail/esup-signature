@@ -48,7 +48,14 @@
                         <select class="form-control" id="_sourceType_id" name="sourceType" size="1">
                             <c:forEach items="${sourceTypes}" var="sourceType">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_documentiotype_${sourceType}" var="sourceTypeLabel"/>
+                            <c:choose>
+                                <c:when test="${signBook.sourceType eq  sourceType}">
+                                <option value="${sourceType}" selected="selected">${sourceTypeLabel}</option>
+                                </c:when>
+                                <c:otherwise>
                                 <option value="${sourceType}">${sourceTypeLabel}</option>
+                                </c:otherwise>
+                                </c:choose>
                             </c:forEach>
                         </select>
                     </div>
@@ -65,7 +72,14 @@
                         <select class="form-control" id="_targetType_id" name="targetType" size="1">
                             <c:forEach items="${targetTypes}" var="targetType">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_documentiotype_${targetType}" var="targetTypeLabel"/>
+                            	<c:choose>
+                                <c:when test="${signBook.targetType eq  targetType}">
+                                <option value="${targetType}" selected="selected">${targetTypeLabel}</option>
+                                </c:when>
+                                <c:otherwise>
                                 <option value="${targetType}">${targetTypeLabel}</option>
+                                </c:otherwise>
+                                </c:choose>
                             </c:forEach>
                         </select>
                     </div>
@@ -84,7 +98,14 @@
                     </label>
                     <div class="col-lg-6">
                         <label class="switch">
-                            <input id="_autoRemove_id" name="autoRemove" type="checkbox"/>
+                            <c:choose>
+	                                	<c:when test="${signBook.autoRemove}">
+			                            	<input id="_autoRemove_id" name="autoRemove" type="checkbox" checked="checked"/>
+			                            </c:when>
+			                            <c:otherwise>
+			                            	<input id="_autoRemove_id" name="autoRemove" type="checkbox"/>
+			                            </c:otherwise>
+		                            </c:choose>
                             <span class="slider round">
                                 <!--  -->
                             </span>
@@ -102,7 +123,14 @@
                         <select class="form-control" id="_signType_id" name="signType" size="1">
                             <c:forEach items="${signTypes}" var="signType">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signType}" var="signTypeLabel"/>
+                                <c:choose>
+                                <c:when test="${signBook.signRequestParams.signType eq  signType}">
+                                <option value="${signType}" selected="selected">${signTypeLabel}</option>
+                                </c:when>
+                                <c:otherwise>
                                 <option value="${signType}">${signTypeLabel}</option>
+                                </c:otherwise>
+                                </c:choose>
                             </c:forEach>
                         </select>
                     </div>
@@ -118,7 +146,14 @@
                         <select class="form-control" id="_newPageType_id" name="newPageType" size="1">
                             <c:forEach items="${newPageTypes}" var="newPageType">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${newPageType}" var="newpagetypeLabel"/>
-                                <option value="${newPageType}">${newpagetypeLabel}</option>
+                            <c:choose>
+                                <c:when test="${signBook.signRequestParams.newPageType eq  newPageType}">
+                                	<option value="${newPageType}" selected="selected">${newpagetypeLabel}</option>
+                                </c:when>
+                                <c:otherwise>
+                                	<option value="${newPageType}">${newpagetypeLabel}</option>
+                                </c:otherwise>
+                                </c:choose>
                             </c:forEach>
                         </select>
                     </div>
@@ -195,7 +230,6 @@
         		      callback('Merci de saisir au moins 3 caractères')
         		      return
         		    }
-        		    // Perform your own ajax request here
         		    fetch('/user/users/searchLdap?searchString=' + search)
         		    .then(function (response) {
         		      return response.json()
@@ -205,14 +239,9 @@
         		      for (let i = 0; i &lt; json.length; i++) {
         		        data.push({text: json[i].displayName, value: json[i].mail});
         		      }
-
-        		      // Upon successful fetch send data to callback function.
-        		      // Be sure to send data back in the proper format.
-        		      // Refer to the method setData for examples of proper format.
         		      callback(data)
         		    })
         		    .catch(function(error) {
-        		      // If any erros happened send false back through the callback
         		      callback(false)
         		    })
         		  }

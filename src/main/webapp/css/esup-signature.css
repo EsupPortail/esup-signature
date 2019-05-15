@@ -271,6 +271,16 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
+.slider.roundoff {
+  border-radius: 34px;
+  padding-top: 5px;
+}
+
+.slider.roundoff:before {
+  border-radius: 50%;
+  display: none;
+}
+
 /* select slim */
 .ss-main .ss-multi-selected .ss-values .ss-value {
     font-size: 16px;
