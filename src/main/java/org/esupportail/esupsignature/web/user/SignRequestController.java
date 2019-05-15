@@ -252,6 +252,7 @@ public class SignRequestController {
 			if(firstOriginalSignBook.getSignBookType().equals(SignBookType.workflow)) {
 				uiModel.addAttribute("originalSignBooks", firstOriginalSignBook);
 			}
+			System.err.println(firstOriginalSignBook.getModelFile());
 			if(firstOriginalSignBook.getModelFile() != null) {
 				uiModel.addAttribute("modelId", firstOriginalSignBook.getModelFile().getUrl());
 			}

@@ -247,8 +247,8 @@ public class PdfService {
 			PDFont font = PDType1Font.HELVETICA;
 			PDResources resources = new PDResources();
 			resources.put(COSName.getPDFName("Helvetica"), font);
-			pdAcroForm.setDefaultResources(resources);
 			if(pdAcroForm != null) {
+				pdAcroForm.setDefaultResources(resources);
 				List<PDField> fields = pdAcroForm.getFields();
 				for(PDField pdField : fields) {
 					if(pdField.getPartialName().contains("ldap")) {

@@ -296,7 +296,6 @@ public class SignBookService {
 	}
 
 	public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
-
 		if (!signBook.getSignRequests().contains(signRequest)) {
 			signBook.getSignRequests().add(signRequest);
 			if(signBook.getSignBookType().equals(SignBookType.workflow)) {
@@ -312,7 +311,6 @@ public class SignBookService {
 			}
 			signRequest.getOriginalSignBookNames().add(signBook.getName());
 		} else {
-			//throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getName());
 			logger.warn(signRequest.getId() + " is already in signbook" + signBook.getName());
 		}
 	}

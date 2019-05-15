@@ -73,6 +73,7 @@ public class SignBook {
     @ManyToMany(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.ALL })
     private List<SignRequest> signRequests = new ArrayList<SignRequest>();
 
+    //TODO multiple params + steps ou nb signatures
     @ManyToOne(fetch = FetchType.LAZY)
     private SignRequestParams signRequestParams = new SignRequestParams();
 	

@@ -104,6 +104,14 @@ privileged aspect SignRequest_Roo_JavaBean {
         this.signBooksWorkflowStep = signBooksWorkflowStep;
     }
     
+    public Integer SignRequest.getNbSign() {
+        return this.nbSign;
+    }
+    
+    public void SignRequest.setNbSign(Integer nbSign) {
+        this.nbSign = nbSign;
+    }
+    
     public List<String> SignRequest.getOriginalSignBookNames() {
         return this.originalSignBookNames;
     }

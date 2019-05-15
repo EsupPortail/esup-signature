@@ -134,9 +134,12 @@
 											</c:choose>
 											</c:when>
 											<c:otherwise>
+												${modelId}
+												<c:if test="${not empty modelId}">
 												<button type="button" class="btn btn-info" onclick="window.open('${modelId}', '_blank')">
 													<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" /> le modèle
 												</button>
+												</c:if>
 												<div class="alert alert-info" >Vous devez ajouter des documents</div>
 											</c:otherwise>
 										</c:choose>
