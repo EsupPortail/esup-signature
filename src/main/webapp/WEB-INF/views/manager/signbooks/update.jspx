@@ -4,47 +4,13 @@
     <jsp:output omit-xml-declaration="yes"/>
     <form:update id="fu_org_esupportail_esupsignature_domain_SignBook" modelAttribute="signBook" multipart="true" path="/manager/signbooks" versionField="Version" z="user-managed">
         <div class="row">
-            <div class="col-lg-6">
+            <div class="col-lg-12">
                 <field:select checkboxes="false" cssClass="form-control" field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" items="${signBookTypes}" multiple="false" path="/signrequests" render="false" size="1" z="user-managed"/>
-                <!-- 
-				<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_signBookType_id">
-					<label class="col-lg-3  col-form-label" for="signBookType">
-						<strong>Type de parapheur</strong>
-					</label>
-					<div class="col-lg-9">
-						<select onchange="changeSignBookForm();" id="_signBookType_id" name="signBookType" class="form-control" size="1">
-							<c:forEach items="${signBookTypes}" var="signBookType">
-	               	         	<spring:message code="label_org_esupportail_esupsignature_domain_signbook_signbooktype_${signBookType}" var="signBookTypeLabel"/>
-	         					<option value="${signBookType}">${signBookTypeLabel}</option>
-	                        </c:forEach>
-						</select>
-					</div>
-				</div>
-				 -->
+
                 <field:input autocomplete="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignBook_name" required="true" z="user-managed"/>
                 <field:input cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" render="false" required="true" z="user-managed"/>
-                <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_recipientemails">
-                    <label class="col-lg-3  col-form-label" for="recipientemailsSelect">
-                        <strong>
-                            <spring:message code="label_org_esupportail_esupsignature_domain_signbook_recipientemails"/>
-                            <button class="btn btn-sm btn-light" data-target="#collapseHelp1" data-toggle="collapse" type="button">
-                                <span class="fas fa-info-circle text-info"/>
-                            </button>
-                            <div class="collapse" id="collapseHelp1">
-                                <div class="alert alert-info">
-                                    <!--  -->
-                                </div>
-                            </div>
-                        </strong>
-                    </label>
-                    <div class="col-lg-9">
-                        <select id="recipientemailsSelect" multiple="multiple" name="recipientEmails" required="required">
-                            <c:forEach items="${signBook.recipientEmails}" var="recipientEmail">
-                                <option selected="selected" value="${recipientEmail}">${recipientEmail}</option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                </div>
+
+
                 <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_moderatoremails">
                     <label class="col-lg-3  col-form-label" for="moderatoremailsSelect">
                         <strong>
@@ -125,8 +91,6 @@
                         </label>
                     </div>
                 </div>
-            </div>
-            <div class="col-lg-6">
                 <field:select checkboxes="false" cssClass="form-control" field="signType" id="c_org_esupportail_esupsignature_domain_SignBook_signType" items="${signTypes}" multiple="false" path="/" render="false" size="1" z="user-managed"/>
                 <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signType_id">
                     <label class="col-lg-3  col-form-label" for="signType">
@@ -216,44 +180,7 @@
 			}
 		};
 		
-    	new SlimSelect({
-      	  select: '#recipientemailsSelect',
-      	  placeholder: 'Choisir un ou plusieurs utilisateurs',
-      	  searchText: 'Aucun résultat',
-      	  searchPlaceholder: 'Rechercher',
-      	  searchHighlight: true,
-      	  searchFilter: (option, search) =&gt; {
-		    return true;
-		  },
-      	  ajax: function (search, callback) {
-      		    if (search.length &lt; 3) {
-      		      callback('Merci de saisir au moins 3 caractères')
-      		      return
-      		    }
-      		    // Perform your own ajax request here
-      		    fetch('/user/users/searchLdap?searchString=' + search)
-      		    .then(function (response) {
-      		      return response.json()
-      		    })
-      		    .then(function (json) {
-      		      let data = []
-      		      for (let i = 0; i &lt; json.length; i++) {
-      		        data.push({text: json[i].displayName, value: json[i].mail});
-      		      }
-
-      		      // Upon successful fetch send data to callback function.
-      		      // Be sure to send data back in the proper format.
-      		      // Refer to the method setData for examples of proper format.
-      		      callback(data)
-      		    })
-      		    .catch(function(error) {
-      		      // If any erros happened send false back through the callback
-      		      callback(false)
-      		    })
-      		  }
-      	  
-      	});
-      	
+    	      	
       	new SlimSelect({
         	  select: '#moderatoremailsSelect',
         	  placeholder: 'Choisir un ou plusieurs utilisateurs',

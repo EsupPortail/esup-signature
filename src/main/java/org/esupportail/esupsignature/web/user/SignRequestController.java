@@ -252,6 +252,9 @@ public class SignRequestController {
 			if(firstOriginalSignBook.getSignBookType().equals(SignBookType.workflow)) {
 				uiModel.addAttribute("originalSignBooks", firstOriginalSignBook);
 			}
+			if(firstOriginalSignBook.getModelFile() != null) {
+				uiModel.addAttribute("modelId", firstOriginalSignBook.getModelFile().getUrl());
+			}
 			uiModel.addAttribute("allSignBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
 			uiModel.addAttribute("nbSignOk", signRequest.countSignOk());
 			return "user/signrequests/show";

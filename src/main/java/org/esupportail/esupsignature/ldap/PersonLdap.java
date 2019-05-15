@@ -17,6 +17,7 @@
  */
 package org.esupportail.esupsignature.ldap;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import org.springframework.roo.addon.javabean.RooJavaBean;
@@ -80,6 +81,20 @@ public class PersonLdap {
 	private String supannAutreMail;
 	private Long mailuserquota;
 
+	public String getValueByFieldName(String fieldName) {
+		Field[] fields = this.getClass().getDeclaredFields();
+		for(Field field : fields) {
+			if(field.getName().equals(fieldName)) {
+				try {
+					return field.get(this).toString();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return null;
+	}
+	
 }
 	
 	

@@ -472,13 +472,14 @@ public class SignRequestService {
 	}
 
 	public boolean checkUserViewRights(User user, SignRequest signRequest) {
-		List<Log> log = Log.findLogsByEppnAndSignRequestIdEquals(user.getEppn(), signRequest.getId()).getResultList();
-		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
-		if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0 || signBook != null) {
-			return true;
-		} else {
-			return false;
+		if(signRequest != null) {
+			List<Log> log = Log.findLogsByEppnAndSignRequestIdEquals(user.getEppn(), signRequest.getId()).getResultList();
+			SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
+			if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0 || signBook != null) {
+				return true;
+			}
 		}
+		return false;
 	}
 	
 	public SignRequestParams getEmptySignRequestParams() {

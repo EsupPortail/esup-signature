@@ -27,6 +27,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.color.PDOutputIntent;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
@@ -47,11 +48,12 @@ import org.apache.xmpbox.schema.DublinCoreSchema;
 import org.apache.xmpbox.schema.PDFAIdentificationSchema;
 import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.xml.XmpSerializer;
-import org.esupportail.esupsignature.domain.SignRequest;
 import org.esupportail.esupsignature.domain.SignRequestParams;
 import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
 import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,6 +70,9 @@ public class PdfService {
 	@Resource
 	private FileService fileService;
 
+	@Resource
+	private UserService userService;
+	
 	@Value("${pdf.width}")
 	private int pdfWidth;
 	@Value("${pdf.height}")
@@ -271,6 +276,33 @@ public class PdfService {
         return pdfFile;
 	}	
 	
+	public File ldapFill(File pdfFile, User user) {
+		PersonLdap personLdap = userService.getPersonLdap(user);
+		try {
+			File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
+			PDDocument pdDocument = PDDocument.load(pdfFile);
+			PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+			PDFont font = PDType1Font.HELVETICA;
+			PDResources resources = new PDResources();
+			resources.put(COSName.getPDFName("Helvetica"), font);
+			pdAcroForm.setDefaultResources(resources);
+			if(pdAcroForm != null) {
+				List<PDField> fields = pdAcroForm.getFields();
+				for(PDField pdField : fields) {
+					if(pdField.getPartialName().contains("ldap")) {
+						pdField.setValue(personLdap.getValueByFieldName(pdField.getPartialName().split("_")[1]));
+					}
+				}
+			}
+			pdDocument.save(targetFile);
+			pdDocument.close();
+	        return targetFile;
+        } catch (IOException e) {
+			logger.error("file read error", e);
+		}
+        return null;
+	}
+	
 	public boolean checkPdfA(File pdfFile) {
 		logger.info("check pdfa validity");
 		try {
@@ -319,7 +351,7 @@ public class PdfService {
 					pdAcroForm.setNeedAppearances(false);
 					PDResources pdResources = new PDResources();
 					pdAcroForm.setDefaultResources(pdResources);
-					//a chaque signature un verouille un champ signature
+					//a chaque signature on verouille un champ signature par ordre alphabetique
 					List<PDSignatureField> signatureFields = pdDocument.getSignatureFields();
 					signatureFields = signatureFields.stream().sorted(Comparator.comparing(PDSignatureField::getPartialName)).collect(Collectors.toList());
 					for(PDSignatureField pdSignatureField : signatureFields) {

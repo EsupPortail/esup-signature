@@ -127,19 +127,26 @@ public class DocumentController {
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		Document document = Document.findDocument(id);
 		SignRequest signRequest = SignRequest.findSignRequest(document.getParentId());
+		SignBook signBook = SignBook.findSignBook(document.getParentId());
 		User user = userService.getUserFromAuthentication();
-		if(signRequestService.checkUserViewRights(user, signRequest)) {
+		//TODO les modèle ne sont pas protégés
+		if(signRequestService.checkUserViewRights(user, signRequest) || signBook != null) {
 			try {
+				File fileToDownload = document.getJavaIoFile();
+				if(signBook != null && document.getContentType().equals("application/pdf")) {
+					//TODO remplissage pdf
+					fileToDownload = pdfService.ldapFill(fileToDownload, user);
+				}
 				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
 				response.setContentType(document.getContentType());
-				IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+				IOUtils.copy(new FileInputStream(fileToDownload), response.getOutputStream());
 				return new ResponseEntity<>(HttpStatus.OK);
 			} catch (Exception e) {
 				logger.error("get file error", e);
 				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		} else {
-			logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
+			logger.warn(user.getEppn() + " try to access " + id + " without view rights");
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 	}

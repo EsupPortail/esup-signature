@@ -214,6 +214,12 @@ public class SignBookController {
 			if(modelFile.getContentType().equals("application/pdf")) {
 				PdfParameters pdfParameters = pdfService.getPdfParameters(modelFile.getJavaIoFile());
 				uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+				int[] signFieldCoord = pdfService.getSignFieldCoord(modelFile.getJavaIoFile());
+				if(signFieldCoord != null && signFieldCoord.length > 0) {
+					uiModel.addAttribute("containsSignatureFields", true);			
+				} else {
+					uiModel.addAttribute("containsSignatureFields", false);
+				}
 			}
 		}
 		uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());

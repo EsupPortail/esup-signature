@@ -155,6 +155,16 @@ public class UserService {
     	
     }
     
+    public PersonLdap getPersonLdap(User user) {
+    	if(personDao != null) {
+    		List<PersonLdap> persons =  personDao.getPersonNamesByEppn(user.getEppn());
+    		if(persons.size() > 0) {
+    			return persons.get(0);
+    		}
+    	}
+    	return null;
+    }
+    
     public User addKeystore(User user) {
     	
     	return user;
