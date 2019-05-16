@@ -22,6 +22,7 @@
     	</div>
 		<div class="card-body">
 		        <table:table delete="false" update="false" data="${signBooks}" id="l_org_esupportail_esupsignature_domain_SignBook" path="/manager/signbooks" z="user-managed">
+		        	<table:column id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" property="signBookType" z="user-managed"/>
 		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_name" property="name" z="user-managed"/>
 		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_description" property="description" z="user-managed"/>
 		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmails" property="recipientEmailsLabels" z="user-managed"/>
