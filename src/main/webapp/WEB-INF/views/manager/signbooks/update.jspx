@@ -124,7 +124,7 @@
                             <c:forEach items="${signTypes}" var="signType">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signType}" var="signTypeLabel"/>
                                 <c:choose>
-                                <c:when test="${signBook.signRequestParams.signType eq  signType}">
+                                <c:when test="${signBook.signRequestParams[0].signType eq  signType}">
                                 <option value="${signType}" selected="selected">${signTypeLabel}</option>
                                 </c:when>
                                 <c:otherwise>
@@ -147,7 +147,7 @@
                             <c:forEach items="${newPageTypes}" var="newPageType">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${newPageType}" var="newpagetypeLabel"/>
                             <c:choose>
-                                <c:when test="${signBook.signRequestParams.newPageType eq  newPageType}">
+                                <c:when test="${signBook.signRequestParams[0].newPageType eq  newPageType}">
                                 	<option value="${newPageType}" selected="selected">${newpagetypeLabel}</option>
                                 </c:when>
                                 <c:otherwise>

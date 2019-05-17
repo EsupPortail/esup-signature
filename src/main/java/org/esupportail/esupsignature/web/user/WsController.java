@@ -75,7 +75,7 @@ public class WsController {
 		if(file != null) {
 			logger.info("adding new file into signbook" + signBookName);
 			Document documentToAdd = documentService.createDocument(file, file.getOriginalFilename());
-			signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams());
+			signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams().get(0));
 			signBookService.importSignRequestInSignBook(signRequest, signBook, user);
 			signRequest.setTitle(signBookName);
 			logger.info(file.getOriginalFilename() + " was added into signbook" + signBookName + " with id " + signRequest.getName());

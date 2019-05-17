@@ -100,8 +100,6 @@
                             </dt>
                             <dd>
                             	<ul>
-                                <li><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" /> : <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signBook.signRequestParams.signType}" /></li>
-                                <li><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype" /> : <spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${signBook.signRequestParams.newPageType}" /></li>
                                 </ul>
                             </dd>
                         </dl>
@@ -182,24 +180,52 @@
                         <div class="card-body">
                         <c:choose>
                         <c:when test="${containsSignatureFields eq false}">
-                            <form action="/manager/signbooks/updateParams/${id}" autocomplete="off" class="form-inline" method="post">
+                        <table class="table">
+                        	<c:set var="signNumber" value="1" />
+                        	<c:forEach items="${signBook.signRequestParams}" var="signRequestParam">
+							<tr>
+							<td>
+							Signature ${signNumber} (page : ${signRequestParam.signPageNumber}, XPos : ${signRequestParam.XPos}, YPos : ${signRequestParam.YPos})
+							</td>
+							<td>
+								<c:if test="${signNumber > 1}">
+                        		<form action="/manager/signbooks/deleteParams/${signRequestParam.id}" autocomplete="off" class="form-inline" method="post">
+                        			<input type="hidden" name="signBookId" value="${id}" />
+                        			<button onclick="submit();" alt="Update signRequestParams" class="btn btn-danger fas fa-times" id="Update signRequestParams" title="Update signRequestParams" type="button"><!--  --></button>
+                        		</form>		
+                        		</c:if>
+                       		</td>
+                       		</tr>
+                       		<c:set var="signNumber" value="${signNumber + 1}" />
+                        	</c:forEach>
+                        	</table>
+                        	<form action="/manager/signbooks/updateParams/${id}" autocomplete="off" class="form-inline" method="post">
                                 <div class="form-group" style="display: none;">
                                     <small>
                                         <div class="row">
                                             <div class="col-lg-3">
-										Page : <input autocomplete="off" class="form-control form-control-sm col-4" id="signPageNumber" name="signPageNumber" readonly="readonly" type="text" value="${signBook.signRequestParams.signPageNumber}"/>
+										Page : <input autocomplete="off" class="form-control form-control-sm col-4" id="signPageNumber" name="signPageNumber" readonly="readonly" type="text" value="1"/>
                                             </div>
                                             <div class="col-lg-3">
-										X position : <input autocomplete="off" class="form-control form-control-sm col-4" id="xPos" name="xPos" readonly="readonly" type="text" value="${signBook.signRequestParams.XPos}"/>
+										X position : <input autocomplete="off" class="form-control form-control-sm col-4" id="xPos" name="xPos" readonly="readonly" type="text" value="0"/>
                                             </div>
                                             <div class="col-lg-3">
-										Y position : <input autocomplete="off" class="form-control form-control-sm col-4" id="yPos" name="yPos" readonly="readonly" type="text" value="${signBook.signRequestParams.YPos}"/>
+										Y position : <input autocomplete="off" class="form-control form-control-sm col-4" id="yPos" name="yPos" readonly="readonly" type="text" value="0"/>
                                             </div>
                                         </div>
                                     </small>
                                 </div>
                                 <spring:message code="menu_item_updateparams" var="updateParamsLabel"/>
-                                <input alt="Update signRequestParams" class="btn btn-success float-right" id="Update signRequestParams" title="Update signRequestParams" type="submit" value="${updateParamsLabel}"/>
+                                <button onclick="submit();" alt="Update signRequestParams" class="btn btn-success" id="Update signRequestParams" title="Update signRequestParams" type="submit" value="">
+                                <i class="fas fa-save"><!--  --></i>&amp;nbsp;
+                                Modifier la position de la dernière signature
+                                </button>
+                            </form>
+                            <form action="/manager/signbooks/addParams/${id}" autocomplete="off" class="form-inline" method="post">
+                                <button onclick="submit();" alt="Update signRequestParams" class="btn btn-success" id="Update signRequestParams" title="Update signRequestParams" type="submit" value="">
+                                <i class="fas fa-plus"><!--  --></i>&amp;nbsp;
+                                Ajouter une signature
+                                </button>
                             </form>
                             </c:when>
                             <c:otherwise>
@@ -247,9 +273,21 @@
                             </div>
                             <div class="d-flex justify-content-center">
                                 <spring:url value="/user/documents/${documentId}/getimagepdfpage" var="documentUrl"/>
-                                <div id="pointer_div" onclick="savePosition();" onmousemove="pointIt(event);" onmouseout="resetPosition();" style="background-size: 595px;background-image:url('${documentUrl}/${signBook.signRequestParams.signPageNumber -1}');width:595px;height:842px;border:1px solid #CCC;">
+                                <div id="pointer_div" onclick="savePosition();" onmousemove="pointIt(event);" onmouseout="resetPosition();" style="position:relative;background-size: 595px;background-image:url('${documentUrl}/0');width:595px;height:842px;border:1px solid #CCC;">
                                 <c:if test="${containsSignatureFields eq false}">
-                                    <div id="cross" style="left:${signBook.signRequestParams.XPos};top:${signBook.signRequestParams.YPos};position:relative;pointer-events: none;">
+		                        	<c:set var="signNumber" value="1" />
+		                        	<c:forEach items="${signBook.signRequestParams}" var="signRequestParam">
+	                                    <div id="signParam_${signRequestParam.signPageNumber}" style="left:${signRequestParam.XPos};top:${signRequestParam.YPos};position:absolute;pointer-events: none;">
+	                                        <div id="" style="width: 100px; height: 75px; background-color: gray; text-align: center; opacity: 0.9;">
+	                                            <i class="fas fa-signature fa-3x text-success">
+	                                                ${signNumber}
+	                                            </i>
+	                                        </div>
+	                                    </div>
+	                                    <c:set var="signNumber" value="${signNumber + 1}" />
+									</c:forEach>									
+	                                
+                                    <div id="cross" style="left:0px;top:0px;position:relative;pointer-events: none;z-index: 10;">
                                         <div id="borders" style="width: 100px; height: 75px; background-color: gray; text-align: center; opacity: 0.7;">
                                             <i class="fas fa-signature fa-3x">
                                                 <!--  -->
@@ -262,8 +300,9 @@
                         </div>
                         <script type="text/javascript">
 						var nbImagePage = ${imagePagesSize};
-						var currentImagePage = ${signBook.signRequestParams.signPageNumber} -1;
+						var currentImagePage = 0;
 						var documentUrl = "${documentUrl}";
+						hideSigns(0)
 					</script>
                     </div>
                 </div>

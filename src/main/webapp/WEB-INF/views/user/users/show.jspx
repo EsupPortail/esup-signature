@@ -81,13 +81,13 @@
 			<dd>
 				<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" />
 				:
-				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" value="${defaultSignBook.signRequestParams.signType}">
-					<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${defaultSignBook.signRequestParams.signType}" /></small>
+				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" value="${defaultSignBook.signRequestParams[0].signType}">
+					<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${defaultSignBook.signRequestParams[0].signType}" /></small>
 				</div>
 				<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_newpagetype" />
 				:
-				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" value="${defaultSignBook.signRequestParams.signType}">
-					<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${defaultSignBook.signRequestParams.newPageType}" /></small>
+				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" value="${defaultSignBook.signRequestParams[0].newPageType}">
+					<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${defaultSignBook.signRequestParams[0].newPageType}" /></small>
 				</div>
 			</dd>
 		</dl>

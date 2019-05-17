@@ -145,6 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 function nextImage() {
 	currentImagePage++;
+	hideSigns(currentImagePage)
 	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "/" + currentImagePage + "')";
 	if (currentImagePage == nbImagePage - 1) {
 		document.getElementById("next").disabled = true;
@@ -157,6 +158,7 @@ function nextImage() {
 
 function previousImage() {
 	currentImagePage--;
+	hideSigns(currentImagePage)
 	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "/" + currentImagePage + "')";
 	if (currentImagePage == 0) {
 		document.getElementById("previous").disabled = true;
@@ -165,6 +167,17 @@ function previousImage() {
 		document.getElementById("next").disabled = false;
 	}
 	document.getElementById("signPageNumber").value = currentImagePage + 1;
+}
+
+function hideSigns(currentImagePage) {
+	var signImages = document.querySelectorAll('[id^="signParam_"]');
+	[].forEach.call(signImages, function(signImage) {
+		if(signImage.id.includes(currentImagePage + 1)) {
+			signImage.style.display = "block";
+		} else {
+			signImage.style.display = "none";
+		}
+	});
 }
 
 //toggle overloadsignparams

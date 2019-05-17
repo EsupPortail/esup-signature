@@ -102,7 +102,8 @@ public class SignBookService {
 			signBook.setSignBookType(SignBookType.system);
 			signBook.setSourceType(DocumentIOType.none);
 			signBook.setTargetType(DocumentIOType.none);
-			signBook.setSignRequestParams(signRequestService.getEmptySignRequestParams());
+			signBook.setSignRequestParams(new ArrayList<>());
+			signBook.getSignRequestParams().add(signRequestService.getEmptySignRequestParams());
 			signBook.persist();
 		}
 		
@@ -120,7 +121,8 @@ public class SignBookService {
 		signBook.setSignBookType(SignBookType.user);
 		signBook.setSourceType(DocumentIOType.none);
 		signBook.setTargetType(DocumentIOType.none);
-		signBook.setSignRequestParams(signRequestService.getEmptySignRequestParams());
+		signBook.setSignRequestParams(new ArrayList<>());
+		signBook.getSignRequestParams().add(signRequestService.getEmptySignRequestParams());
 		signBook.persist();
 		return signBook;
 	}
@@ -135,8 +137,8 @@ public class SignBookService {
 		signBookToUpdate.setSourceType(signBook.getSourceType());
 		signBookToUpdate.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
 		signBookToUpdate.setTargetType(signBook.getTargetType());
-		signBookToUpdate.getSignRequestParams().setSignType(signRequestParams.getSignType());
-		signBookToUpdate.getSignRequestParams().setNewPageType(signRequestParams.getNewPageType());
+		signBookToUpdate.getSignRequestParams().get(0).setSignType(signRequestParams.getSignType());
+		signBookToUpdate.getSignRequestParams().get(0).setNewPageType(signRequestParams.getNewPageType());
 		signBookToUpdate.setAutoRemove(signBook.isAutoRemove());
 		if(!multipartFile.isEmpty()) {
 			Document newModel;
@@ -185,7 +187,7 @@ public class SignBookService {
 				}
 				signBook.setModelFile(model);
 			}
-			signBook.setSignRequestParams(signRequestParams);
+			signBook.getSignRequestParams().add(signRequestParams);
 			signBook.persist();
 			if(model != null) {
 				model.setParentId(signBook.getId());
@@ -218,7 +220,7 @@ public class SignBookService {
 				}
 				signBook.setModelFile(model);
 			}
-			signBook.setSignRequestParams(signRequestParams);
+			signBook.getSignRequestParams().add(signRequestParams);
 			signBook.persist();
 			if(model != null) {
 				model.setParentId(signBook.getId());
@@ -229,9 +231,9 @@ public class SignBookService {
 	}
 	
 	public void resetSignBookParams(SignBook signBook) {
-		signBook.getSignRequestParams().setSignPageNumber(1);
-		signBook.getSignRequestParams().setXPos(defaultPositionX);
-		signBook.getSignRequestParams().setYPos(defaultPositionY);
+		signBook.getSignRequestParams().get(0).setSignPageNumber(1);
+		signBook.getSignRequestParams().get(0).setXPos(defaultPositionX);
+		signBook.getSignRequestParams().get(0).setYPos(defaultPositionY);
 		signBook.merge();
 	}
 	
@@ -252,7 +254,7 @@ public class SignBookService {
 						}
 						List<String> signBookRecipientsEmails = new ArrayList<>();
 						signBookRecipientsEmails.add(user.getEmail());
-						SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams());
+						SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams().get(0));
 						signRequest.merge();
 						fsAccessService.remove(fsFile);
 					}

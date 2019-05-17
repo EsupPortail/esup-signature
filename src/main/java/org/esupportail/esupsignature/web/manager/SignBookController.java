@@ -25,6 +25,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
@@ -70,6 +71,9 @@ public class SignBookController {
 	@Resource
 	private SignBookService signBookService;
 
+	@Resource
+	private SignRequestService signRequestService;
+	
 	@Resource
 	private DocumentService documentService;
 
@@ -222,6 +226,8 @@ public class SignBookController {
 				}
 			}
 		}
+		
+		uiModel.addAttribute("lastSignRequestParam", signBook.getSignRequestParams().get(signBook.getSignRequestParams().size() - 1));
 		uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());
 		uiModel.addAttribute("signRequests", signBook.getSignRequests());
 		uiModel.addAttribute("signBook", signBook);
@@ -263,15 +269,54 @@ public class SignBookController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/signbooks/" + id;
 		}
-		signBook.getSignRequestParams().setSignPageNumber(signPageNumber);
-		signBook.getSignRequestParams().setXPos(xPos);
-		signBook.getSignRequestParams().setYPos(yPos);
+		signBook.getSignRequestParams().get(signBook.getSignRequestParams().size() - 1).setSignPageNumber(signPageNumber);
+		signBook.getSignRequestParams().get(signBook.getSignRequestParams().size() - 1).setXPos(xPos);
+		signBook.getSignRequestParams().get(signBook.getSignRequestParams().size() - 1).setYPos(yPos);
 		signBook.setUpdateBy(user.getEppn());
 		signBook.setUpdateDate(new Date());
 
 		return "redirect:/manager/signbooks/" + id;
 	}
 
+	@RequestMapping(value = "/deleteParams/{id}", method = RequestMethod.POST)
+	public String deleteParams(@PathVariable("id") Long id,
+			@RequestParam(value = "signBookId", required = true) Long signBookId,
+			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
+		User user = userService.getUserFromAuthentication();
+		SignRequestParams signRequestParams = SignRequestParams.findSignRequestParams(id); 
+		SignBook signBook = SignBook.findSignBook(signBookId);
+		if (!signBook.getCreateBy().equals(user.getEppn())) {
+			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+			return "redirect:/manager/signbooks/" + id;
+		}
+		if(!signBook.getSignRequestParams().get(0).equals(signRequestParams)) {
+			signBook.getSignRequestParams().remove(signRequestParams);
+			signBook.setUpdateBy(user.getEppn());
+			signBook.setUpdateDate(new Date());
+			signBook.merge();
+		}
+		//signRequestParams.remove();
+		
+		return "redirect:/manager/signbooks/" + signBookId;
+	}
+	
+	@RequestMapping(value = "/addParams/{id}", method = RequestMethod.POST)
+	public String addParams(@PathVariable("id") Long id, 
+			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
+		User user = userService.getUserFromAuthentication();
+		SignBook signBook = SignBook.findSignBook(id);
+
+		if (!signBook.getCreateBy().equals(user.getEppn())) {
+			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+			return "redirect:/manager/signbooks/" + id;
+		}
+		signBook.getSignRequestParams().add(signRequestService.getEmptySignRequestParams());
+		signBook.setUpdateBy(user.getEppn());
+		signBook.setUpdateDate(new Date());
+
+		return "redirect:/manager/signbooks/" + id;
+	}
+	
 	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
 	public String getFileFromSource(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();

@@ -174,7 +174,7 @@ public class SignRequestService {
 		step = "Demarrage de la signature";
 		SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		if(!signRequest.isOverloadSignBookParams()) {
-			signRequest.getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().getSignType());
+			signRequest.getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().get(0).getSignType());
 		}
 		if(signRequest.getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
 			throw new EsupSignatureNexuException("redirect to nexuSign");
@@ -356,6 +356,7 @@ public class SignRequestService {
 				updateStatus(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_sign", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 			}
 		}
+		signRequest.setNbSign(signRequest.getNbSign() + 1);
 	}
 	
 	public void pendingSignRequest(SignRequest signRequest, User user) {

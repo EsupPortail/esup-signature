@@ -171,7 +171,7 @@ public class UserController {
     	}
     	SignBook signBook = signBookService.getUserSignBook(user);
     	if(signType != null) {
-    		signBook.getSignRequestParams().setSignType(SignType.valueOf(signType));
+    		signBook.getSignRequestParams().get(0).setSignType(SignType.valueOf(signType));
     	}
     	userToUpdate.setReady(true);
     	return "redirect:/user/users/";

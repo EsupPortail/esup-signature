@@ -132,11 +132,11 @@ privileged aspect SignBook_Roo_JavaBean {
         this.signRequests = signRequests;
     }
     
-    public SignRequestParams SignBook.getSignRequestParams() {
+    public List<SignRequestParams> SignBook.getSignRequestParams() {
         return this.signRequestParams;
     }
     
-    public void SignBook.setSignRequestParams(SignRequestParams signRequestParams) {
+    public void SignBook.setSignRequestParams(List<SignRequestParams> signRequestParams) {
         this.signRequestParams = signRequestParams;
     }
     

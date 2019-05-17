@@ -201,16 +201,14 @@ public class SignRequestController {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
-			SignBook userSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
-			if(userSignBook != null) {
+			SignBook originalSignBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
+			if(originalSignBook != null) {
 				if(!signRequest.isOverloadSignBookParams()) {
-					signRequest.setSignRequestParams(userSignBook.getSignRequestParams());
+					signRequest.setSignRequestParams(originalSignBook.getSignRequestParams().get(0));
 				}
 			}
-
 			Document toDisplayDocument = null;
 			File toDisplayFile = null;
-			
 			if(signRequestService.getToSignDocuments(signRequest).size() == 1) {
 				toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
 				toDisplayFile = toDisplayDocument.getJavaIoFile();
@@ -378,7 +376,7 @@ public class SignRequestController {
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			if(!signRequest.isOverloadSignBookParams()) {
 				SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(user.getEmail()), SignBookType.user).getSingleResult();
-				signRequest.setSignRequestParams(signBook.getSignRequestParams());
+				signRequest.setSignRequestParams(signBook.getSignRequestParams().get(0));
 				signRequest.merge();
 			}
 			if(signPageNumber != null) {
@@ -436,7 +434,7 @@ public class SignRequestController {
 				}
 				try {
 					if(!signRequest.isOverloadSignBookParams()) {
-						signRequest.getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().getSignType());
+						signRequest.getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().get(0).getSignType());
 					}
 					if(signRequest.getSignRequestParams().getSignType().equals(SignRequestParams.SignType.visa)) {
 						signRequestService.updateStatus(signRequest, SignRequestStatus.checked, messageSource.getMessage("updateinfo_visa", null, Locale.FRENCH), user, "SUCCESS", comment);		
