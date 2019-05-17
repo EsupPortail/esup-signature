@@ -34,7 +34,7 @@
       <div class="card-body">
       		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signType_id">
 			<label class="col-lg-3  col-form-label" for="signType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype" /></strong>
-			&amp;nbsp;<button data-target="#collapseHelpSignType" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+			&amp;nbsp;<button data-target="#collapseHelpSignType" data-toggle="collapse" type="button" class="btn btn-sm btn-info"><span class="fas fa-info-circle"></span></button>
 					<div class="show" id="collapseHelpSignType">
 						<div class="alert alert-info">
 							<small>
@@ -66,7 +66,7 @@
 		</div>   
    		<div class="form-group">
 			<label class="col-lg-3  col-form-label" for="newPageType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_signimage" /></strong>
-			&amp;nbsp;<button data-target="#collapseHelpSignImage" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"><!-- --></span></button>
+			&amp;nbsp;<button data-target="#collapseHelpSignImage" data-toggle="collapse" type="button" class="btn btn-sm btn-info"><span class="fas fa-info-circle "><!-- --></span></button>
 					<div class="collapse show" id="collapseHelpSignImage">
 						<div class="alert alert-info">
 							<small>
@@ -97,7 +97,7 @@
 		<input type="hidden" name="signImageBase64" id="signImageBase64" />
 		<div class="form-group">
 			<label class="col-lg-3  col-form-label" for="newPageType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_keystore" /></strong>
-			&amp;nbsp;<button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"><!-- --></span></button>
+			&amp;nbsp;<button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button" class="btn btn-sm btn-info"><span class="fas fa-info-circle "><!-- --></span></button>
 					<div class="collapse show" id="collapseHelpKeyStore">
 						<div class="alert alert-info">
 							<small>
@@ -160,8 +160,8 @@
       <div class="card-body">
         		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertFrequency">
 			<label class="col-lg-3  col-form-label" for="signType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency" /></strong>
-			&amp;nbsp;<button data-target="#collapseHelpEmailAlertFrequency" data-toggle="collapse" type="button" class="btn btn-sm btn-light">
-				<span class="fas fa-info-circle text-info"><!--  --></span>
+			&amp;nbsp;<button data-target="#collapseHelpEmailAlertFrequency" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+				<span class="fas fa-info-circle "><!--  --></span>
 			</button>
 					<div class="collapse" id="collapseHelpEmailAlertFrequency">
 						<div class="alert alert-info">
@@ -189,8 +189,8 @@
 		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertHour" style="display: none;">
 			<label class="col-lg-3  col-form-label" for="signType">
 			<strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailalerthour" /></strong>
-			&amp;nbsp;<button data-target="#collapseHelpEmailAlertHour" data-toggle="collapse" type="button" class="btn btn-sm btn-light">
-				<span class="fas fa-info-circle text-info"><!--  --></span>
+			&amp;nbsp;<button data-target="#collapseHelpEmailAlertHour" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+				<span class="fas fa-info-circle "><!--  --></span>
 			</button>
 					<div class="collapse" id="collapseHelpEmailAlertHour">
 						<div class="alert alert-info">
@@ -205,7 +205,7 @@
 		<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertDay" style="display: none;">
 			<label class="col-lg-3  col-form-label" for="signType">
 			<strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailalertday" /></strong>
-			&amp;nbsp;<button data-target="#collapseHelpEmailAlertDay" data-toggle="collapse" type="button" class="btn btn-sm btn-light"><span class="fas fa-info-circle text-info"></span></button>
+			&amp;nbsp;<button data-target="#collapseHelpEmailAlertDay" data-toggle="collapse" type="button" class="btn btn-sm btn-info"><span class="fas fa-info-circle "></span></button>
 					<div class="collapse" id="collapseHelpEmailAlertDay">
 						<div class="alert alert-info">
 							<small><!--  --></small>
