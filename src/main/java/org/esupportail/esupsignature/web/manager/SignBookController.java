@@ -237,18 +237,23 @@ public class SignBookController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
     public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, Model uiModel, RedirectAttributes redirectAttrs) {
+    	//TODO flash message -> i18n
     	User user = userService.getUserFromAuthentication();
     	SignBook signBook = SignBook.findSignBook(id);
     		populateEditForm(uiModel, signBook);
 		if(signBook.getSignBookType().equals(SignBookType.user)) {
 			logger.error("can not delete user signBook");
-			redirectAttrs.addFlashAttribute("messageCustom", "delete error");
+			redirectAttrs.addFlashAttribute("messageCustom", "Impossible de supprimer un parapheur utilisateur");
 			return "redirect:/manager/signbooks/" + id;
 		} else {
 			if (!signBookService.checkUserManageRights(user, signBook)) {
-				redirectAttrs.addFlashAttribute("messageCustom", "delete error");
+				redirectAttrs.addFlashAttribute("messageCustom", "Non autorisé");
 				return "redirect:/manager/signbooks/" + id;
 			}    
+		}
+		if(signBook.getSignRequests().size() > 0) {
+			redirectAttrs.addFlashAttribute("messageCustom", "Le parapheur n'est pas vide");
+			return "redirect:/manager/signbooks/" + id;
 		}
         signBook.remove();
         uiModel.asMap().clear();

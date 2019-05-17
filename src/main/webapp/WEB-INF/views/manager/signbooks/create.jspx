@@ -8,7 +8,7 @@
 			<div class="navbar-nav col-11">
 				<ol class="breadcrumb">
 					<li class="breadcrumb-item"><a href="/manager/">Liste des parapheurs</a></li>
-					<li class="breadcrumb-item active">Nouvelle demande de signature</li>
+					<li class="breadcrumb-item active">Création d'un nouveau parapheur</li>
 				</ol>
 			</div>
 			<div class="navbar-nav align-self-center">
@@ -20,9 +20,9 @@
 
 		<div id="collapseHelp" class="show" aria-expanded="true">
 		<div class="alert alert-info">
-			<p>Ce formulaire permet la création d'un parapheur</p>
-			<p>Vous pouvez créer des parapheurs "fonctionnels" en selectionant les personnes destinataire</p>
-			<p>Vous pouvez aussi créer des parapheurs "Automates" en précisant, en plus, une source et une destination pour les documents</p>
+			<p>Vous pouvez créer des parapheurs "Groupe" en selectionant les personnes destinataires</p>
+			<p>Vous pouvez aussi créer des parapheurs "Workflow" en séléctionnant plusieurs parapheurs qui s'enchaineront en série</p>
+			<p>De plus vous pouvez rendre l'ajout de documents automatique en précisant une source et une destination</p>
 	    </div>
 	    </div>
 	</div>
@@ -55,12 +55,12 @@
                             <button class="btn btn-sm btn-info" data-target="#collapseHelp1" data-toggle="collapse" type="button">
                                 <span class="fas fa-info-circle"/>
                             </button>
-                            <div class="collapse" id="collapseHelp1">
-                                <div class="alert alert-info">
-                                    <!--  -->
-                                </div>
-                            </div>
                         </strong>
+                        <div class="collapse" id="collapseHelp1">
+                            <div class="alert alert-info">
+                                Après avoir choisi le type, vous pourez sélectionner les destinataires
+                            </div>
+                        </div>
                     </label>
                 </div>
 
@@ -90,10 +90,10 @@
                     <label class="col-lg-3  col-form-label" for="recipientemailsSelect">
                         <strong>
                             Parapheurs
-                            <button class="btn btn-sm btn-info" data-target="#collapseHelp1" data-toggle="collapse" type="button">
+                            <button class="btn btn-sm btn-info" data-target="#collapseHelp3" data-toggle="collapse" type="button">
                                 <span class="fas fa-info-circle"/>
                             </button>
-                            <div class="collapse" id="collapseHelp2">
+                            <div class="collapse" id="collapseHelp3">
                                 <div class="alert alert-info">
                                     <!--  -->
                                 </div>
@@ -113,10 +113,10 @@
                     <label class="col-lg-3  col-form-label" for="moderatoremailsSelect">
                         <strong>
                             <spring:message code="label_org_esupportail_esupsignature_domain_signbook_moderatoremails"/>&amp;nbsp;
-                            <button class="btn btn-sm btn-info" data-target="#collapseHelp3" data-toggle="collapse" type="button">
+                            <button class="btn btn-sm btn-info" data-target="#collapseHelp4" data-toggle="collapse" type="button">
                                 <span class="fas fa-info-circle"/>
                             </button>
-                            <div class="collapse" id="collapseHelp3">
+                            <div class="collapse" id="collapseHelp4">
                                 <div class="alert alert-info">
                                     <!--  -->
                                 </div>
@@ -180,7 +180,7 @@
                     </label>
                     <div class="col-lg-6">
                         <label class="switch">
-                            <input id="_autoRemove_id" name="autoRemove" type="checkbox"/>
+                            <input id="_autoRemove_id" name="autoRemove" type="checkbox" checked="checked"/>
                             <span class="slider round">
                                 <!--  -->
                             </span>
@@ -330,7 +330,6 @@
       		      callback('Merci de saisir au moins 3 caractères')
       		      return
       		    }
-      		    // Perform your own ajax request here
       		    fetch('/user/users/searchLdap?searchString=' + search)
       		    .then(function (response) {
       		      return response.json()
@@ -340,14 +339,9 @@
       		      for (let i = 0; i &lt; json.length; i++) {
       		        data.push({text: json[i].displayName, value: json[i].mail});
       		      }
-
-      		      // Upon successful fetch send data to callback function.
-      		      // Be sure to send data back in the proper format.
-      		      // Refer to the method setData for examples of proper format.
       		      callback(data)
       		    })
       		    .catch(function(error) {
-      		      // If any erros happened send false back through the callback
       		      callback(false)
       		    })
       		  }

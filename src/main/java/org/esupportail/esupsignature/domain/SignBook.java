@@ -11,7 +11,6 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -57,13 +56,15 @@ public class SignBook {
     @ElementCollection(targetClass=String.class)
     private List<String> recipientEmails = new ArrayList<String>();
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.ALL })
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.MERGE, javax.persistence.CascadeType.PERSIST})
     private List<SignBook> SignBooks = new ArrayList<SignBook>();
     
-    private boolean autoRemove = false;
+    //TODO renomer autoWorkflow
+    private boolean autoRemove = true;
     
     //TODO alerte au moment de la cloture
     
+    //TODO alerte + validation de la demande par le gestionnaire
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;
     
@@ -72,11 +73,11 @@ public class SignBook {
     @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.ALL }, orphanRemoval = true)
     private Document modelFile = new Document();
     
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.ALL })
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL })
     private List<SignRequest> signRequests = new ArrayList<SignRequest>();
 
     //TODO multiple params + steps ou nb signatures
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.ALL })
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.MERGE, javax.persistence.CascadeType.PERSIST})
     private List<SignRequestParams> signRequestParams = new ArrayList<SignRequestParams>();
 	
 	@Enumerated(EnumType.STRING)

@@ -499,13 +499,9 @@ public class SignRequestController {
 	public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page,
 			@RequestParam(value = "size", required = false) Integer size, Model uiModel) {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
-		for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
-			SignBook signBook = SignBook.findSignBook(signBookId.getKey());
-			if (signBook != null) {
-				signBook.getSignRequests().remove(signRequest);
-				signBook.merge();
-			}
-		}
+		
+		signBookService.removeSignRequestFromAllSignBooks(signRequest);
+		
 		List<Log> logs = Log.findLogsBySignRequestIdEquals(id).getResultList();
 		for(Log log : logs) {
 			log.remove();
