@@ -62,6 +62,8 @@ public class SignBook {
     
     private boolean autoRemove = false;
     
+    //TODO alerte au moment de la cloture
+    
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;
     

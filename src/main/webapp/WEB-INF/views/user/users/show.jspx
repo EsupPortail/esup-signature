@@ -91,6 +91,17 @@
 				</div>
 			</dd>
 		</dl>
+		<dl class="display-group border-bottom m-0">
+			<dt class="col-lg-5">
+				Fréquence d'alerte
+			</dt>
+			<dd>
+				<c:if test="${empty user.emailAlertFrequency}">
+					non paramétrée (par défaut, une alerte sera envoyée à chaque nouvelle demande)
+				</c:if>
+				${user.emailAlertFrequency}
+			</dd>
+		</dl>
 		<c:if test="${not empty user.emailAlertFrequency}"> 
 		<dl class="display-group border-bottom m-0">
 			<dt class="col-lg-5">
@@ -100,7 +111,6 @@
 				<spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency_${user.emailAlertFrequency}" />
 			</dd>
 		</dl>
-		
 		<c:choose>
 			<c:when test="${user.emailAlertFrequency eq 'daily'}">
 				<field:display field="emailAlertHour" id="s_org_esupportail_esupsignature_domain_User_emailAlertHour" object="${user}" z="user-managed" />			

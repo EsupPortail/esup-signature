@@ -103,7 +103,7 @@
                     <div class="col-lg-9">
                         <select id="signBooksIdsSelect" multiple="multiple" name="signBooksIds">
 						<c:forEach items="${allSignBooks}" var="signBook">
-							<option value="${signBook.id}">${signBook.name}</option>
+							<option value="${signBook.id}">${signBook.name} (${signBook.signBookType})</option>
 						</c:forEach>                    
 					    </select>
                     </div>

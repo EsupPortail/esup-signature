@@ -151,7 +151,9 @@ public class SignBookService {
 			if(newModel != null) {
 				Document oldModel = signBookToUpdate.getModelFile();
 				signBookToUpdate.setModelFile(newModel);
-				oldModel.remove();
+				if(oldModel != null) {
+					oldModel.remove();
+				}
 			}
 			newModel.setParentId(signBookToUpdate.getId());
 		}
