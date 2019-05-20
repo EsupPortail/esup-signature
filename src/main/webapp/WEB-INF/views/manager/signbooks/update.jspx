@@ -6,11 +6,8 @@
         <div class="row">
             <div class="col-lg-12">
                 <field:select checkboxes="false" cssClass="form-control" field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" items="${signBookTypes}" multiple="false" path="/signrequests" render="false" size="1" z="user-managed"/>
-
                 <field:input autocomplete="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignBook_name" required="true" z="user-managed"/>
                 <field:input cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" render="false" required="true" z="user-managed"/>
-
-
                 <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_moderatoremails">
                     <label class="col-lg-3  col-form-label" for="moderatoremailsSelect">
                         <strong>
@@ -48,13 +45,13 @@
                         <select class="form-control" id="_sourceType_id" name="sourceType" size="1">
                             <c:forEach items="${sourceTypes}" var="sourceType">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_documentiotype_${sourceType}" var="sourceTypeLabel"/>
-                            <c:choose>
-                                <c:when test="${signBook.sourceType eq  sourceType}">
-                                <option value="${sourceType}" selected="selected">${sourceTypeLabel}</option>
-                                </c:when>
-                                <c:otherwise>
-                                <option value="${sourceType}">${sourceTypeLabel}</option>
-                                </c:otherwise>
+                                <c:choose>
+                                    <c:when test="${signBook.sourceType eq  sourceType}">
+                                        <option selected="selected" value="${sourceType}">${sourceTypeLabel}</option>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <option value="${sourceType}">${sourceTypeLabel}</option>
+                                    </c:otherwise>
                                 </c:choose>
                             </c:forEach>
                         </select>
@@ -72,13 +69,13 @@
                         <select class="form-control" id="_targetType_id" name="targetType" size="1">
                             <c:forEach items="${targetTypes}" var="targetType">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_documentiotype_${targetType}" var="targetTypeLabel"/>
-                            	<c:choose>
-                                <c:when test="${signBook.targetType eq  targetType}">
-                                <option value="${targetType}" selected="selected">${targetTypeLabel}</option>
-                                </c:when>
-                                <c:otherwise>
-                                <option value="${targetType}">${targetTypeLabel}</option>
-                                </c:otherwise>
+                                <c:choose>
+                                    <c:when test="${signBook.targetType eq  targetType}">
+                                        <option selected="selected" value="${targetType}">${targetTypeLabel}</option>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <option value="${targetType}">${targetTypeLabel}</option>
+                                    </c:otherwise>
                                 </c:choose>
                             </c:forEach>
                         </select>
@@ -99,13 +96,13 @@
                     <div class="col-lg-6">
                         <label class="switch">
                             <c:choose>
-	                                	<c:when test="${signBook.autoRemove}">
-			                            	<input id="_autoRemove_id" name="autoRemove" type="checkbox" checked="checked"/>
-			                            </c:when>
-			                            <c:otherwise>
-			                            	<input id="_autoRemove_id" name="autoRemove" type="checkbox"/>
-			                            </c:otherwise>
-		                            </c:choose>
+                                <c:when test="${signBook.autoRemove}">
+                                    <input checked="checked" id="_autoRemove_id" name="autoRemove" type="checkbox"/>
+                                </c:when>
+                                <c:otherwise>
+                                    <input id="_autoRemove_id" name="autoRemove" type="checkbox"/>
+                                </c:otherwise>
+                            </c:choose>
                             <span class="slider round">
                                 <!--  -->
                             </span>
@@ -124,12 +121,12 @@
                             <c:forEach items="${signTypes}" var="signType">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signType}" var="signTypeLabel"/>
                                 <c:choose>
-                                <c:when test="${signBook.signRequestParams[0].signType eq  signType}">
-                                <option value="${signType}" selected="selected">${signTypeLabel}</option>
-                                </c:when>
-                                <c:otherwise>
-                                <option value="${signType}">${signTypeLabel}</option>
-                                </c:otherwise>
+                                    <c:when test="${signBook.signRequestParams[0].signType eq  signType}">
+                                        <option selected="selected" value="${signType}">${signTypeLabel}</option>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <option value="${signType}">${signTypeLabel}</option>
+                                    </c:otherwise>
                                 </c:choose>
                             </c:forEach>
                         </select>
@@ -146,13 +143,13 @@
                         <select class="form-control" id="_newPageType_id" name="newPageType" size="1">
                             <c:forEach items="${newPageTypes}" var="newPageType">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${newPageType}" var="newpagetypeLabel"/>
-                            <c:choose>
-                                <c:when test="${signBook.signRequestParams[0].newPageType eq  newPageType}">
-                                	<option value="${newPageType}" selected="selected">${newpagetypeLabel}</option>
-                                </c:when>
-                                <c:otherwise>
-                                	<option value="${newPageType}">${newpagetypeLabel}</option>
-                                </c:otherwise>
+                                <c:choose>
+                                    <c:when test="${signBook.signRequestParams[0].newPageType eq  newPageType}">
+                                        <option selected="selected" value="${newPageType}">${newpagetypeLabel}</option>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <option value="${newPageType}">${newpagetypeLabel}</option>
+                                    </c:otherwise>
                                 </c:choose>
                             </c:forEach>
                         </select>
@@ -186,6 +183,7 @@
         <field:select field="signBooksGroup" id="c_org_esupportail_esupsignature_domain_SignBook_signBooksGroup" itemValue="id" items="${signbooks}" multiple="true" path="/manager/signbooks" render="false" z="user-managed"/>
         <field:input field="moderatorEmails" id="c_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" render="false" z="user-managed"/>
         <field:input field="recipientEmails" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmails" render="false" z="user-managed"/>
+        <field:select field="SignBooks" id="c_org_esupportail_esupsignature_domain_SignBook_SignBooks" itemValue="id" items="${signbooks}" multiple="true" path="/manager/signbooks" z="2oIWwcDDaL6PZPzUck/lums8oI4="/>
     </form:update>
     <script type="text/javascript">
 		var sourceSelector = document.getElementById("_sourceType_id");
