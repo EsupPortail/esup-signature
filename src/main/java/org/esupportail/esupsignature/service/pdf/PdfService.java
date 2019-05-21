@@ -107,7 +107,7 @@ public class PdfService {
 			if(signType.equals(SignType.visa)) {
 				try {
 					//signImage = fileService.stringToImageFile("Visé par\n " + getInitials(user.getFirstname() + " " + user.getName()), "png");
-					addText(contentStream, "Visé par " + getInitials(user.getFirstname() + " " + user.getName()), xPos, yPos);
+					addText(contentStream, "Visé par " + user.getFirstname() + " " + user.getName(), xPos, yPos);
 					if(addDate) {
 						addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos + 20);
 					}

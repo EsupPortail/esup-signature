@@ -69,6 +69,7 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 		http.addFilterBefore(switchUserFilter, SwitchUserFilter.class);
 		http.addFilterBefore(concurrencyFilter, ConcurrentSessionFilter.class);
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy);
+		http.headers().frameOptions().sameOrigin();
 		http.csrf().disable();		
 	}
 
