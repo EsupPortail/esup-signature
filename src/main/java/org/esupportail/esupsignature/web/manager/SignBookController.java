@@ -32,7 +32,6 @@ import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.roo.addon.web.mvc.controller.scaffold.RooWebScaffold;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -49,7 +48,6 @@ import org.springframework.web.util.WebUtils;
 
 @RequestMapping("/manager/signbooks")
 @Controller
-@RooWebScaffold(path = "manager/signbooks", formBackingObject = SignBook.class)
 @Transactional
 public class SignBookController {
 
@@ -255,7 +253,7 @@ public class SignBookController {
 			redirectAttrs.addFlashAttribute("messageCustom", "Le parapheur n'est pas vide");
 			return "redirect:/manager/signbooks/" + id;
 		}
-        signBook.remove();
+		signBook.remove();
         uiModel.asMap().clear();
         uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
         uiModel.addAttribute("size", (size == null) ? "10" : size.toString());
@@ -365,4 +363,9 @@ public class SignBookController {
         return pathSegment;
     }
 
+
+	void addDateTimeFormatPatterns(Model uiModel) {
+        uiModel.addAttribute("signBook_createdate_date_format", "dd/MM/yyyy HH:mm");
+        uiModel.addAttribute("signBook_updatedate_date_format", "dd/MM/yyyy HH:mm");
+    }
 }

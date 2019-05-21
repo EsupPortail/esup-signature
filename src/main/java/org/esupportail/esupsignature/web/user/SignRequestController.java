@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -201,8 +200,9 @@ public class SignRequestController {
 		SignRequest signRequest = SignRequest.findSignRequest(id);
 		if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
 			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
-			SignBook originalSignBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
-			if(originalSignBook != null) {
+			List<SignBook> originalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
+			if(originalSignBooks.size() > 0) {
+				SignBook originalSignBook = originalSignBooks.get(0);
 				if(!signRequest.isOverloadSignBookParams()) {
 					signRequest.setSignRequestParams(originalSignBook.getSignRequestParams().get(0));
 				}
@@ -246,12 +246,15 @@ public class SignRequestController {
 			if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
 				uiModel.addAttribute("signable", "ok");
 			}
-			SignBook firstOriginalSignBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
-			if(firstOriginalSignBook.getSignBookType().equals(SignBookType.workflow)) {
-				uiModel.addAttribute("firstOriginalSignBook", firstOriginalSignBook);
-			}
-			if(firstOriginalSignBook.getModelFile() != null) {
-				uiModel.addAttribute("modelId", firstOriginalSignBook.getModelFile().getUrl());
+			List<SignBook> firstOriginalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
+			if(firstOriginalSignBooks.size() > 0 ) {
+				SignBook firstOriginalSignBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
+				if(firstOriginalSignBook.getSignBookType().equals(SignBookType.workflow)) {
+					uiModel.addAttribute("firstOriginalSignBook", firstOriginalSignBook);
+				}
+				if(firstOriginalSignBook.getModelFile() != null) {
+					uiModel.addAttribute("modelId", firstOriginalSignBook.getModelFile().getUrl());
+				}
 			}
 			uiModel.addAttribute("originalSignBooks", signBookService.getSignBookBySignRequest(signRequest));
 			uiModel.addAttribute("allSignBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());

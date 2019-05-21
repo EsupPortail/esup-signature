@@ -8,7 +8,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
@@ -24,7 +23,7 @@ import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
 @EnableSpringConfigured
-@EnableTransactionManagement(mode=AdviceMode.ASPECTJ)
+@EnableTransactionManagement
 @EnableJpaRepositories(basePackages = "org.esupportail.esupsignature.domain")
 public class PersistenceConfig {
 
@@ -62,6 +61,7 @@ public class PersistenceConfig {
 	    properties.put("hibernate.hbm2ddl.import_files", hibernateHbm2ddlImportFiles);
 	    properties.put("hibernate.ejb.naming_strategy", "org.hibernate.cfg.ImprovedNamingStrategy");
 	    properties.put("hibernate.connection.charSet", "UTF-8");
+	    properties.put("javax.persistence.transactionType", "RESOURCE_LOCAL");
 	    return properties;
 	  }
 	
@@ -92,7 +92,7 @@ public class PersistenceConfig {
 		entityManagerFactory.setJpaPropertyMap(hibernateJpaProperties());
 		return entityManagerFactory;
 	}
-
+	
 	@Bean
 	public JpaTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
 		JpaTransactionManager transactionManager = new JpaTransactionManager();

@@ -317,7 +317,5 @@
                 </div>
             </c:if>
         </div>
-        <field:display field="recipientEmails" id="s_org_esupportail_esupsignature_domain_SignBook_recipientEmails" object="${signBook}" render="false" z="user-managed"/>
-        <field:display field="signBooks" id="s_org_esupportail_esupsignature_domain_SignBook_SignBooks" object="${signbook}" z="Z06YBaaBPEi+CWYiZr6aTravhKs="/>
     </page:show>
 </div>

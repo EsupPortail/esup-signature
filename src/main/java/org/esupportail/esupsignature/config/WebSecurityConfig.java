@@ -1,7 +1,5 @@
 package org.esupportail.esupsignature.config;
 
-import javax.annotation.Resource;
-
 import org.esupportail.esupsignature.security.cas.CasWebSecurityConfigurerAdapter;
 import org.esupportail.esupsignature.security.shib.DatabaseUserDetailsService;
 import org.esupportail.esupsignature.security.shib.ShibWebSecurityConfigurerAdapter;
@@ -24,7 +22,7 @@ public class WebSecurityConfig {
 	@Value("${security.filter}")
 	private String filter;
 	
-	@Resource
+	@Autowired
 	private DatabaseUserDetailsService databaseUserDetailsService;
 	
 	@Autowired(required = false)
