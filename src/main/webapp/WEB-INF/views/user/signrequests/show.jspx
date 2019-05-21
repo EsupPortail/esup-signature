@@ -269,7 +269,7 @@
 								      <small><fmt:formatDate pattern = "dd/MM/YYYY HH:mm" value = "${comment.logDate}" /></small>
 								    </div>
 								    <p>
-								     Action efectuée : <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_${comment.finalStatus}" />
+								     Action effectuée : <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_${comment.finalStatus}" />
 								    </p>
 								    <p class="mb-1">
 								    	${comment.comment}
