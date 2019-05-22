@@ -33,6 +33,10 @@
 	</task:scheduled-tasks>
 
 	<task:scheduled-tasks scheduler="globalScheduler">
+    	<task:scheduled ref="scheduledTaskService" method="scanAllSignbooksTargets" fixed-delay="300000" initial-delay="5000"/>
+	</task:scheduled-tasks>
+
+	<task:scheduled-tasks scheduler="globalScheduler">
     	<task:scheduled ref="scheduledTaskService" method="sendAllEmailAlerts" fixed-delay="300000" initial-delay="5000"/>
 	</task:scheduled-tasks>
 

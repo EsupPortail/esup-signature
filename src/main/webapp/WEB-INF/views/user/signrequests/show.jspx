@@ -329,7 +329,7 @@
 									<c:when test="${step > signRequest.signBooksWorkflowStep}">
 										<div class="step" data-target="#test-vl-1">
 						                <button type="button" class="step-trigger col-12 text-left" role="tab" aria-selected="false" disabled="disabled">
-						                  <span class="bs-stepper-circle">${step}</span>
+						                  <span class="bs-stepper-circle bg-success">${step}</span>
 						                  <span class="bs-stepper-label">${signBookSteps.name}</span>
 						                </button>
 						              </div>

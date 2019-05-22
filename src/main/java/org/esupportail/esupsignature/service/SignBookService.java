@@ -244,7 +244,15 @@ public class SignBookService {
 			logger.info("retrieve from " + signBook.getSourceType() + " in " + signBook.getDocumentsSourceUri());
 			FsAccessService fsAccessService = getFsAccessService(signBook.getSourceType());
 			try {
-				List<FsFile> fsFiles = fsAccessService.listFiles(signBook.getDocumentsSourceUri());
+				List<FsFile> fsFiles = new ArrayList<FsFile>();
+				try {
+					fsFiles.addAll(fsAccessService.listFiles("/" + signBook.getDocumentsSourceUri() + "/"));
+				} catch (EsupStockException e) {
+					logger.warn("create non existing folder because", e);
+					fsAccessService.createFile("/", signBook.getSignBookType().toString(), "folder");
+					fsAccessService.createFile("/" + signBook.getSignBookType().toString(), signBook.getName(), "folder");
+					fsAccessService.createFile("/" + signBook.getSignBookType().toString() + "/" + signBook.getName(), "signed", "folder");
+				}
 				if (fsFiles.size() > 0) {
 					for (FsFile fsFile : fsFiles) {
 						logger.info("adding file : " + fsFile.getFile().getName());
@@ -257,27 +265,35 @@ public class SignBookService {
 						List<String> signBookRecipientsEmails = new ArrayList<>();
 						signBookRecipientsEmails.add(user.getEmail());
 						SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams().get(0));
-						signRequest.merge();
+						signRequest.setTitle("Import depuis " + signBook.getSourceType() + " : " + signBook.getDocumentsSourceUri());
+						importSignRequestInSignBook(signRequest, signBook, user);
+						signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Import depuis " + signBook.getSourceType() + " : " + signBook.getDocumentsSourceUri(), user, "SUCCESS", null);
 						fsAccessService.remove(fsFile);
 					}
 				} else {
-					logger.info("no file to import in this folder : " + signBook.getDocumentsSourceUri());
-					throw new EsupSignatureIOException("alert_no_file_to_import");
+					throw new EsupSignatureIOException("no file to import in this folder : " + signBook.getDocumentsSourceUri());
 				}
 			} catch (IOException e) {
 				logger.error("read fsaccess error : ", e);
+			} catch (EsupSignatureException e) {
+				logger.error("import in signBook error", e);
 			}
 		} else {
 			logger.debug("no source type for signbook : " + signBook.getName());
 		}
 	}
 
-	public void exportFilesToTarget(SignBook signBook, User user) throws EsupSignatureException {
+	public void exportFilesToTarget(SignBook signBook, User user) {
 		for (SignRequest signRequest : signBook.getSignRequests()) {
-			if (signRequest.getStatus().equals(SignRequestStatus.signed) && signRequestService.isSignRequestCompleted(signRequest)) {
-				exportFileToTarget(signBook, signRequest, user);
-				//signRequestService.updateInfo(signRequest, SignRequestStatus.exported, "export to target " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS");
-				removeSignRequestFromAllSignBooks(signRequest);
+			if (signRequest.getStatus().equals(SignRequestStatus.completed) && signRequestService.isSignRequestCompleted(signRequest)) {
+				try {
+					exportFileToTarget(signBook, signRequest, user);
+					//TODO : controle avant suppression + clear blobs
+					removeSignRequestFromAllSignBooks(signRequest);
+					signRequestService.updateStatus(signRequest, SignRequestStatus.exported, messageSource.getMessage("updateinfo_exporttotarget", null, Locale.FRENCH) + " " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", "");
+				} catch (EsupSignatureException e) {
+					logger.error("error on file export to target", e);
+				}
 			}
 		}
 	}
@@ -289,8 +305,7 @@ public class SignBookService {
 			try {
 				File signedFile = signRequestService.getLastSignedDocument(signRequest).getJavaIoFile();
 				InputStream inputStream = new FileInputStream(signedFile);
-				fsAccessService.putFile(signBook.getDocumentsTargetUri(), signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
-				signRequestService.updateStatus(signRequest, SignRequestStatus.exported, messageSource.getMessage("updateinfo_exporttotarget", null, Locale.FRENCH) + " " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", "");
+				fsAccessService.putFile("/" + signBook.getDocumentsTargetUri() + "/", signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
 			} catch (Exception e) {
 				throw new EsupSignatureException("write fsaccess error : ", e);
 			}

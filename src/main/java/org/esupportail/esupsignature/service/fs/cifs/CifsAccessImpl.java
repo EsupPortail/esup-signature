@@ -154,10 +154,11 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 
 	@Override
 	public boolean remove(FsFile fsFile) throws EsupStockException {
+		logger.info("remove file " + fsFile.getPath() + "/" + fsFile.getName());
 		boolean success = false;
 		SmbFile file;
 		try {
-			file = cd(fsFile.getPath() + fsFile.getFile().getName());
+			file = cd("/" + fsFile.getPath() + "/" + fsFile.getName());
 			file.delete();
 			success = true;
 		} catch (SmbException e) {
@@ -165,7 +166,6 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 					+ e.getMessage(), e);
 			success = false;
 		}
-		logger.debug("remove file " + fsFile.getPath() + fsFile.getFile().getName() + ": " + success);
 		return success;
 	}
 
@@ -176,6 +176,7 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 			if (!ppath.isEmpty() && !ppath.endsWith("/")) {
 				ppath = ppath + "/";
 			}
+			open();
 			SmbFile newFile = new SmbFile(root.getPath() + ppath + title, this.cifsContext);
 			logger.info("newFile : " + newFile.toString());
 			if ("folder".equals(type)) {
@@ -194,6 +195,9 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 					+ e.getMessage(), e);
 		} catch (MalformedURLException e) {
 			logger.error("problem in creation file that must not occur. " +  e.getMessage(), e);
+		} catch (EsupStockException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return null;
 	}
@@ -335,8 +339,9 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 			} else {
 				for(SmbFile smbFile : resource.listFiles()) {
 					FsFile fsFile = new FsFile();
-					fsFile.setFile(fileService.inputStreamToFile(smbFile.getInputStream(), smbFile.getName()));
-					fsFiles.add(fsFile);
+					if(!smbFile.isDirectory()) {
+						fsFiles.add(toFsFile(smbFile));
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -348,9 +353,13 @@ public class CifsAccessImpl extends FsAccessService implements DisposableBean {
 	private FsFile toFsFile(SmbFile smbFile) throws IOException {
 		FsFile fsFile = new FsFile();
 		fsFile.setName(smbFile.getName());
-		fsFile.setContentType(smbFile.getContentType());
+		fsFile.setContentType(smbFile.guessContentTypeFromName(smbFile.getName()));
 		fsFile.setFile(fileService.inputStreamToFile(smbFile.getInputStream(), smbFile.getName()));
-		fsFile.setCreateBy(smbFile.getOwnerUser().getAccountName());
+		/*
+		if(smbFile.getOwnerUser() != null) {
+			fsFile.setCreateBy(smbFile.getOwnerUser().getAccountName());
+		}
+		*/
 		fsFile.setCreateDate(new Date(smbFile.getDate()));
 		return fsFile;
 	}

@@ -338,14 +338,6 @@ public class SignRequestService {
 			} else {
 				updateStatus(signRequest, SignRequestStatus.signed, messageSource.getMessage("updateinfo_sign", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 			}
-			if (!recipientSignBook.getTargetType().equals(DocumentIOType.none)) {
-				try {
-					signBookService.exportFileToTarget(recipientSignBook, signRequest, user);
-					updateStatus(signRequest, SignRequestStatus.exported, messageSource.getMessage("updateinfo_exporttotarget", null, Locale.FRENCH) + " " + recipientSignBook.getTargetType() + " : " + recipientSignBook.getDocumentsTargetUri(), user, "SUCCESS", signRequest.getComment());
-				} catch (EsupSignatureException e) {
-					logger.error("error on export file to fs", e);
-				}
-			}
 			if(signBook.isAutoRemove()) {
 				completeSignRequest(signRequest, signBook, user);
 			}
@@ -379,7 +371,9 @@ public class SignRequestService {
 			signBookService.removeSignRequestFromAllSignBooks(signRequest);
 			signBookService.importSignRequestInSignBook(signRequest, signBook, user);	
 		} else {
-			signBookService.removeSignRequestFromAllSignBooks(signRequest);
+			if(signBook.getTargetType().equals(DocumentIOType.none)) {
+				signBookService.removeSignRequestFromAllSignBooks(signRequest);
+			}
 			updateStatus(signRequest, SignRequestStatus.completed, messageSource.getMessage("updateinfo_autoremove", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 		}
 	}

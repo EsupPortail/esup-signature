@@ -42,10 +42,10 @@
 			</div>
 		</c:when>
 		<c:when test="${signRequest.status eq 'exported'}">
-			<div class="alert alert-info text-center" id="status_${signRequest.id}" title="${signRequest.status}">
+			<div class="alert alert-warning text-center" id="status_${signRequest.id}" title="${signRequest.status}">
 				<small>
 				<i class="fas fa-file-export"> <!--  -->
-				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
+				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_exported" />
 				</small>
 			</div>
 		</c:when>										

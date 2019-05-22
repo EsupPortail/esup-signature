@@ -7,6 +7,27 @@
             <div class="col-lg-12">
                 <field:select checkboxes="false" cssClass="form-control" field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" items="${signBookTypes}" multiple="false" path="/signrequests" render="false" size="1" z="user-managed"/>
                 <field:input autocomplete="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignBook_name" required="true" z="user-managed"/>
+	            <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_signBookType_id">
+                    <label class="col-lg-3  col-form-label" for="signBookType">
+                        <strong>Type de parapheur</strong>
+                    </label>
+                    <div class="col-lg-9">
+                        <select class="form-control" id="_signBookType_id" name="signBookType" onchange="changeSignBookForm();" size="1">
+                            <option disabled="disabled" selected="selected" value="">Choisir un type de parapheur</option>
+                            <c:forEach items="${signBookTypes}" var="signBookType">
+                                <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signbooktype_${signBookType}" var="signBookTypeLabel"/>
+                                <c:choose>
+                                	<c:when test="${signBook.signBookType eq signBookType}">
+                                		<option value="${signBookType}" selected="selected">${signBookTypeLabel}</option>
+                                	</c:when>
+                                	<c:otherwise>
+                                		<option value="${signBookType}" disabled="disabled">${signBookTypeLabel}</option>
+                                	</c:otherwise>
+                                </c:choose>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </div>
                 <field:input cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" render="false" required="true" z="user-managed"/>
                 <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_moderatoremails">
                     <label class="col-lg-3  col-form-label" for="moderatoremailsSelect">
@@ -57,7 +78,7 @@
                         </select>
                     </div>
                 </div>
-                <field:input cssClass="form-control" field="documentsSourceUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri" z="user-managed"/>
+                <field:input placeholder="Si autre que la valeur par défaut" cssClass="form-control" field="documentsSourceUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri" z="user-managed"/>
                 <field:input field="targetType" id="c_org_esupportail_esupsignature_domain_SignBook_targetType" render="false" z="user-managed"/>
                 <div class="form-group" id="c_org_esupportail_esupsignature_domain_SignBook_targetType">
                     <label class="col-lg-3  col-form-label" for="targetType">
@@ -81,7 +102,7 @@
                         </select>
                     </div>
                 </div>
-                <field:input cssClass="form-control" field="documentsTargetUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" z="user-managed"/>
+                <field:input placeholder="Si autre que la valeur par défaut" cssClass="form-control" field="documentsTargetUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" z="user-managed"/>
                 <field:select field="signRequests" id="c_org_esupportail_esupsignature_domain_SignBook_signRequests" itemValue="id" items="${signrequests}" multiple="true" path="/signrequests" render="false" z="user-managed"/>
                 <field:input field="params" id="c_org_esupportail_esupsignature_domain_SignBook_params" render="false" z="user-managed"/>
                 <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignBook_status" render="false" z="user-managed"/>
@@ -183,7 +204,7 @@
         <field:select field="signBooksGroup" id="c_org_esupportail_esupsignature_domain_SignBook_signBooksGroup" itemValue="id" items="${signbooks}" multiple="true" path="/manager/signbooks" render="false" z="user-managed"/>
         <field:input field="moderatorEmails" id="c_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" render="false" z="user-managed"/>
         <field:input field="recipientEmails" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmails" render="false" z="user-managed"/>
-        <field:select field="SignBooks" id="c_org_esupportail_esupsignature_domain_SignBook_SignBooks" itemValue="id" items="${signbooks}" multiple="true" path="/manager/signbooks" z="2oIWwcDDaL6PZPzUck/lums8oI4="/>
+        <field:select render="false" field="SignBooks" id="c_org_esupportail_esupsignature_domain_SignBook_SignBooks" itemValue="id" items="${signbooks}" multiple="true" path="/manager/signbooks" z="user-managed"/>
     </form:update>
     <script type="text/javascript">
 		var sourceSelector = document.getElementById("_sourceType_id");

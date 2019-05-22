@@ -19,7 +19,6 @@
 		<spring-data.version>2.1.5.RELEASE</spring-data.version>
 		<dss.framework.version>5.4</dss.framework.version>
 		<dss.framework.root.directory>${project.parent.basedir}/../dss</dss.framework.root.directory>
-		<cxf.version>3.2.7</cxf.version>
 		<jackson-jaxrs-json-provider.version>2.9.7</jackson-jaxrs-json-provider.version>
 		<hsqldb.version>2.4.1</hsqldb.version>
 		<nexu.version>1.22</nexu.version>
@@ -71,7 +70,6 @@
 			<artifactId>bcpkix-jdk15on</artifactId>
 			<version>${bouncycastle.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
@@ -528,33 +526,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-frontend-jaxws</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-transports-http</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-features-logging</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-rs-service-description</artifactId> <!-- to access to wadl -->
-			<version>${cxf.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-rs-client</artifactId>
-			<version>${cxf.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>com.fasterxml.jackson.jaxrs</groupId>
 			<artifactId>jackson-jaxrs-json-provider</artifactId>
 			<version>${jackson-jaxrs-json-provider.version}</version>
@@ -595,11 +566,6 @@
 			<artifactId>hsqldb</artifactId>
 			<version>${hsqldb.version}</version>
 			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
-			<version>2.2.11</version>
 		</dependency>
 		<dependency>
 			<groupId>com.zaxxer</groupId>

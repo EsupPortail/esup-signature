@@ -62,6 +62,7 @@ public class Document {
 		    OutputStream outputStream = new FileOutputStream(targetFile);
 		    IOUtils.copy(inputStream, outputStream);
 		    outputStream.close();
+		    inputStream.close();
 			return targetFile;
     	} catch (SQLException | IOException e) {
     		logger.error("error to convert BigFile to java.io.File", e);

@@ -145,7 +145,7 @@
                         </select>
                     </div>
                 </div>
-                <field:input cssClass="form-control" field="documentsSourceUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri" z="user-managed"/>
+                <field:input placeholder="A saisir si autre que la valeur par défaut" cssClass="form-control" field="documentsSourceUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri" z="user-managed"/>
                 <field:input field="targetType" id="c_org_esupportail_esupsignature_domain_SignBook_targetType" render="false" z="user-managed"/>
                 <div class="form-group" id="c_org_esupportail_esupsignature_domain_SignBook_targetType">
                     <label class="col-lg-3  col-form-label" for="targetType">
@@ -162,7 +162,7 @@
                         </select>
                     </div>
                 </div>
-                <field:input cssClass="form-control" field="documentsTargetUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" z="user-managed"/>
+                <field:input placeholder="A saisir si autre que la valeur par défaut" cssClass="form-control" field="documentsTargetUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" z="user-managed"/>
                 <field:select field="signRequests" id="c_org_esupportail_esupsignature_domain_SignBook_signRequests" itemValue="id" items="${signrequests}" multiple="true" path="/signrequests" render="false" z="user-managed"/>
                 <field:input field="params" id="c_org_esupportail_esupsignature_domain_SignBook_params" render="false" z="user-managed"/>
                 <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignBook_status" render="false" z="user-managed"/>

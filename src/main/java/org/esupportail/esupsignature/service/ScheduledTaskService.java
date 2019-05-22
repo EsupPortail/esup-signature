@@ -32,10 +32,14 @@ public class ScheduledTaskService {
 	private OJService oJService;
 
 	@Transactional
-	public void scanAllSignbooksSources() throws EsupSignatureIOException, EsupStockException {
+	public void scanAllSignbooksSources() throws EsupStockException {
 		List<SignBook> signBooks = SignBook.findAllSignBooks();
 		for(SignBook signBook : signBooks) {
-			signBookService.importFilesFromSource(signBook, getSchedulerUser());
+			try {
+				signBookService.importFilesFromSource(signBook, getSchedulerUser());
+			} catch (EsupSignatureIOException e) {
+				logger.warn(e.getMessage());
+			}
 			
 		}
 	}

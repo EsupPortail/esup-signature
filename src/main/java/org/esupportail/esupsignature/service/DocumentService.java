@@ -1,7 +1,5 @@
 package org.esupportail.esupsignature.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -64,25 +62,5 @@ public class DocumentService {
         document.persist();
         return document;
 	}
-	
-	/* copy and close inputstream */  
-	public static InputStream clone(final InputStream inputStream) {
-        try {
-            inputStream.mark(0);
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int readLength = 0;
-            while ((readLength = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, readLength);
-            }
-            outputStream.flush();
-            inputStream.close();
-            return new ByteArrayInputStream(outputStream.toByteArray());
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
 	
 }

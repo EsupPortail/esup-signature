@@ -117,11 +117,11 @@
                         </dl>
                         <c:if test="${signBook.sourceType ne 'none'}">
                             <field:display field="documentsSourceUri" id="s_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri" object="${signBook}" z="user-managed"/>
-                            <a class="btn btn-primary" href="/manager/signbooks/get-files-from-source/${id}">
+                            <button class="btn btn-primary" onclick="location.href='/manager/signbooks/get-files-from-source/${id}'">
                                 <i class="fas fa-file-import">
                                     <!--  -->
                                 </i> Import from source
-							</a>
+							</button>
                         </c:if>
                         <field:display field="targetType" id="s_org_esupportail_esupsignature_domain_SignBook_targetType" object="${signBook}" render="false" z="user-managed"/>
                         <dl class="display-group border-bottom m-0">
@@ -134,11 +134,11 @@
                         </dl>
                         <c:if test="${signBook.targetType ne 'none'}">
                             <field:display field="documentsTargetUri" id="s_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" object="${signBook}" z="user-managed"/>
-                            <a class="btn btn-primary" href="/manager/signbooks/send-files-to-target/${id}">
+                            <button class="btn btn-primary" onclick="location.href='/manager/signbooks/send-files-to-target/${id}'">
                                 <i class="fas fa-file-export">
                                     <!--  -->
                                 </i> Export to source
-							</a>
+							</button>
                         </c:if>
                         <dl class="display-group border-bottom m-0">
                             <dt class="col-lg-5">

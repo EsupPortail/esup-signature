@@ -65,6 +65,7 @@ public class FileService {
 		OutputStream outputStream = new FileOutputStream(file);
 		IOUtils.copy(inputStream, outputStream);
 		outputStream.close();
+		inputStream.close();
 		return file;
 	}
 

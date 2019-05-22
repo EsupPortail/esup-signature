@@ -142,7 +142,14 @@ public class SignBookController {
 		SignBook signBookToUpdate = null;
 		signBookToUpdate = SignBook.findSignBook(signBook.getId());
 		signBook.setName(signBook.getName().trim());
-		
+		if(signBook.getSourceType() != null && signBook.getDocumentsSourceUri().isEmpty()) {
+			String defaultSourceUri =  signBook.getSignBookType().toString() + "/" + signBook.getName();
+			signBook.setDocumentsSourceUri(defaultSourceUri);
+		}
+		if(signBook.getTargetType() != null && signBook.getDocumentsTargetUri().isEmpty()) {
+			String defaultTargetUri =  signBook.getSignBookType().toString() + "/" + signBook.getName() + "/signed";
+			signBook.setDocumentsTargetUri(defaultTargetUri);
+		}
 		SignRequestParams signRequestParams = new SignRequestParams();
 		signRequestParams.setSignType(SignType.valueOf(signType));
 		signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
@@ -332,9 +339,9 @@ public class SignBookController {
 		try {
 			signBookService.importFilesFromSource(signBook, user);
 		} catch (EsupSignatureIOException e) {
-			redirectAttrs.addFlashAttribute("messageWarning", e.getMessage());
+			redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
 		} catch (EsupStockException e) {
-			redirectAttrs.addFlashAttribute("messageError", e.getMessage());
+			redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
 		}
 		
 		return "redirect:/manager/signbooks/" + id;
