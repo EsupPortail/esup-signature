@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:spring="http://www.springframework.org/tags" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+   	<div class="card">
+		<div class="card-header">
+			<nav class="nav justify-content-between" aria-label="breadcrumb">
+				<ol class="breadcrumb col-11">
+					<li class="breadcrumb-item active">Liste des workflows</li>
+				</ol>
+				<div class="navbar-nav align-self-center">
+				<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+					<span class="fas fa-info-circle"><!--  --></span>
+				</button>
+			</div>
+			</nav>
+			<div class="col-lg-12 text-center">
+			    	<button alt="Créer un SignBook" class="btn btn-success" onclick="location.href='/manager/workflows?form'" title="Créer un workflow">
+	            		<i class="fas fa-book"><!--  --></i>&amp;nbsp;Créer un nouveau workflow
+					</button>
+			</div>
+    	</div>
+		<div class="card-body">
+		        <table:table delete="false" update="false" data="${signBooks}" id="l_org_esupportail_esupsignature_domain_SignBook" path="/manager/workflows" z="user-managed">
+		        	<table:column id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" property="signBookType" z="user-managed"/>
+		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_name" property="name" z="user-managed"/>
+		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_description" property="description" z="user-managed"/>
+		            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignBook_SignBooks" property="SignBooks" z="user-managed"/>
+		            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmails" property="recipientEmailsLabels" z="user-managed"/>
+		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" property="moderatorEmailsLabels" z="user-managed"/>
+		            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" property="signBookType" z="user-managed"/>
+		            <table:column render="false" date="true" dateTimePattern="${signBook_createdate_date_format}" id="c_org_esupportail_esupsignature_domain_SignBook_createDate" property="createDate" z="user-managed"/>
+		            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignBook_createBy" property="createBy" z="user-managed"/>
+		            <table:column render="false" date="true" dateTimePattern="${signBook_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignBook_updateDate" property="updateDate" z="user-managed"/>
+		            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignBook_updateBy" property="updateBy" z="user-managed"/>
+		        </table:table>
+		    <page:list id="pl_org_esupportail_esupsignature_domain_SignBook" items="${signBooks}" z="user-managed" />
+    	</div>
+    </div>
+</div>

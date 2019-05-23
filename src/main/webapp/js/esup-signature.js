@@ -358,6 +358,7 @@ var signBooksIdsInput;
 var tempoFieldInput;
 
 document.addEventListener('DOMContentLoaded', function() {
+	/*
 	signBookTypeSelect = document.getElementById("_signBookType_id");
 	recipientEmailInput = document.getElementById("_c_org_esupportail_esupsignature_domain_SignRequest_recipientemails");
 	signBooksIdsInput = document.getElementById("_c_org_esupportail_esupsignature_domain_SignRequest_signBooksIds");
@@ -366,6 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		recipientEmailInput.style.display = "none";
 		signBooksIdsInput.style.display = "none";
 	}
+	*/
 });
 
 function changeSignBookForm() {
@@ -428,3 +430,42 @@ function checkAlertFrequency() {
 		emailAlertHour.style.display = "none";
 	}
 }
+
+$(document).ready(function() {
+    $('#select-from').dblclick(function(){
+        $('#select-from option:selected').each( function() {
+                $('#select-to').append("<option value='"+$(this).val()+"'>"+$(this).text()+"</option>");
+            $(this).remove();
+        });
+    });
+    $('#select-to').dblclick(function(){
+        $('#select-to option:selected').each( function() {
+            $('#select-from').append("<option value='"+$(this).val()+"'>"+$(this).text()+"</option>");
+            $(this).remove();
+        });
+    });
+    $('#btn-up').bind('click', function() {
+        $('#select-to option:selected').each( function() {
+            var newPos = $('#select-to option').index(this) - 1;
+            if (newPos > -1) {
+                $('#select-to option').eq(newPos).before("<option value='"+$(this).val()+"' selected='selected'>"+$(this).text()+"</option>");
+                $(this).remove();
+            }
+        });
+    });
+    $('#btn-down').bind('click', function() {
+        var countOptions = $('#select-to option').length;
+        $('#select-to option:selected').each( function() {
+            var newPos = $('#select-to option').index(this) + 1;
+            if (newPos < countOptions) {
+                $('#select-to option').eq(newPos).after("<option value='"+$(this).val()+"' selected='selected'>"+$(this).text()+"</option>");
+                $(this).remove();
+            }
+        });
+    });
+    
+    $('#signBook').submit(function(){
+        $('#select-to option').prop('selected', true);
+    });
+});
+    

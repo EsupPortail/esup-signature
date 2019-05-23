@@ -257,7 +257,10 @@ public class SignRequestController {
 				}
 			}
 			uiModel.addAttribute("originalSignBooks", signBookService.getSignBookBySignRequest(signRequest));
-			uiModel.addAttribute("allSignBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
+			List<SignBook> allSignBooks = new ArrayList<SignBook>();
+			allSignBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.workflow).getResultList());
+			allSignBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
+			uiModel.addAttribute("allSignBooks", allSignBooks);
 			uiModel.addAttribute("nbSignOk", signRequest.countSignOk());
 			return "user/signrequests/show";
 		} else {

@@ -36,11 +36,10 @@
 						</menu:category>
 					</sec:authorize>
 					<sec:authorize access="hasRole('ROLE_MANAGER')">
-						<menu:item activeMenu="${role=='manager'}" label="Gestionnaire" menuClass="nav-link" id="i_signbook_list" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed" />
-						<menu:category render="false" activeMenu="${role=='manager'}" id="c_manager" label="Manager" z="user-managed">
-							<menu:item menuClass="dropdown-item" id="i_signbook_list" messageCode="global_menu_list" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed" />
-							<menu:item render="false" menuClass="dropdown-item" id="i_user_list" messageCode="global_menu_list" url="/manager/users?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed" />
-							<menu:item render="false" menuClass="dropdown-item" id="i_document_list" messageCode="global_menu_list" url="/manager/signrequests?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed" />
+						<menu:item render="false" activeMenu="${role=='manager'}" label="Gestionnaire" menuClass="nav-link" id="i_signbook_list" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed" />
+						<menu:category render="true" activeMenu="${role=='manager'}" id="c_manager" label="Gestionnaire" z="user-managed">
+							<menu:item label="Parapheurs" menuClass="dropdown-item" id="i_signbook_list" url="/manager/signbooks?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed" />
+							<menu:item label="Workflows" menuClass="dropdown-item" id="i_workflow_list" url="/manager/workflows?page=1&amp;size=${empty param.size ? 10 : param.size}" z="user-managed" />
 						</menu:category>
 					</sec:authorize>
 					<sec:authorize access="hasRole('ROLE_ADMIN')">

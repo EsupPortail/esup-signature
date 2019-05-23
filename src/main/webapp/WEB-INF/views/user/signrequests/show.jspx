@@ -186,6 +186,7 @@
 										<dl class="display-group border-bottom m-0">
 											<dt class="col-lg-6">
 										  		<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
+										  		<!-- Si la demande se trouve dans plusieurs parapheurs vous pouvez choisir si toutes les signatures sont exigées pour passer au status signé -->
 											</dt>
 											<dd>
 											<div class="input-group">
@@ -229,6 +230,42 @@
 										</div>
 									</dd>
 								</dl>
+								<c:if test="${user.eppn eq signRequest.createBy and signRequest.status ne 'completed'}">
+									<dl class="display-group border-bottom m-0">
+										<dt class="col-lg-5">
+											<spring:message code="menu_item_sendtosignbook" />&amp;nbsp;
+						           			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-info"><span class="fas fa-info-circle"></span></button>
+											<div class="collapse" id="collapseHelp1">
+												<div class="alert alert-info">
+													<small>
+														Vous pouvez envoyer la demande dans un autre parapheur.
+													</small>
+												</div>
+											</div>
+										</dt>
+										<dd class="col-lg-7">
+											<spring:url value="/user/signrequests/send-to-signbook/${id}" var="sendToSignBookUrl" />
+											<form class="form-group" action="${sendToSignBookUrl}" method="get">
+												<div class="input-group">
+												<select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple" >
+													<c:forEach items="${allSignBooks}" var="signBook">
+														<option value="${signBook.name}">${signBook.name} (${signBook.signBookType})</option>
+													</c:forEach>
+												</select>
+												</div>
+												<div class="input-group">
+													<textarea class="form-control" type="text" name="comment" placeholder="Commentaire"><!--  --></textarea>
+												</div>
+												<div class="input-group">
+													<button type="submit" class="btn btn-primary">
+														<i class="fas fa-share-square"> <!--  -->
+														</i>&amp;nbsp;<spring:message code="button_send" />
+													</button>
+												</div>
+											</form>
+										</dd>
+									</dl>
+								</c:if>
 							</c:when>
 							<c:otherwise>
 								<c:if test="${fn:length(signRequest.signBooks) > 1}">
@@ -390,43 +427,6 @@
 								</dd>
 
 							</dl>
-							<c:if test="${user.eppn eq signRequest.createBy}">
-							<dl class="display-group border-bottom m-0">
-								<dt class="col-lg-5">
-									<spring:message code="menu_item_sendtosignbook" />&amp;nbsp;
-				           			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-info"><span class="fas fa-info-circle"></span></button>
-									<div class="collapse" id="collapseHelp1">
-										<div class="alert alert-info">
-											<small>
-												A tous moments vous pouvez envoyer la demande dans un autre parapheur.
-												Si la demande se trouve dans plusieurs parapheurs vous pouvez choisir si toutes les signatures sont exigées pour passer au status signé
-											</small>
-										</div>
-									</div>
-								</dt>
-								<dd class="col-lg-7">
-									<spring:url value="/user/signrequests/send-to-signbook/${id}" var="sendToSignBookUrl" />
-									<form class="form-group" action="${sendToSignBookUrl}" method="get">
-										<div class="input-group">
-										<select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple" >
-											<c:forEach items="${allSignBooks}" var="signBook">
-												<option value="${signBook.name}">${signBook.name} (parapheur)</option>
-											</c:forEach>
-										</select>
-										</div>
-										<div class="input-group">
-											<textarea class="form-control" type="text" name="comment" placeholder="Commentaire"><!--  --></textarea>
-										</div>
-										<div class="input-group">
-											<button type="submit" class="btn btn-primary">
-												<i class="fas fa-share-square"> <!--  -->
-												</i>&amp;nbsp;<spring:message code="button_send" />
-											</button>
-										</div>
-									</form>
-								</dd>
-							</dl>
-							</c:if>
 						</div>
 					</div>
 				</div>
