@@ -22,7 +22,7 @@
     	</div>
 		<div class="card-body">
 		        <table:table delete="false" update="false" data="${signBooks}" id="l_org_esupportail_esupsignature_domain_SignBook" path="/manager/workflows" z="user-managed">
-		        	<table:column id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" property="signBookType" z="user-managed"/>
+		        	<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" property="signBookType" z="user-managed"/>
 		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_name" property="name" z="user-managed"/>
 		            <table:column id="c_org_esupportail_esupsignature_domain_SignBook_description" property="description" z="user-managed"/>
 		            <table:column render="false" id="c_org_esupportail_esupsignature_domain_SignBook_SignBooks" property="SignBooks" z="user-managed"/>
