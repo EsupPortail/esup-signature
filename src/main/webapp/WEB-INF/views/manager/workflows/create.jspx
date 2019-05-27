@@ -7,9 +7,9 @@
             <div class="navbar-nav col-11">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
-                        <a href="/manager/">Liste des parapheurs</a>
+                        <a href="/manager/workflows">Liste des workflows</a>
                     </li>
-                    <li class="breadcrumb-item active">Création d'un nouveau parapheur</li>
+                    <li class="breadcrumb-item active">Création d'un nouveau workflow</li>
                 </ol>
             </div>
             <div class="navbar-nav align-self-center">
@@ -22,9 +22,8 @@
         </nav>
         <div aria-expanded="true" class="show" id="collapseHelp">
             <div class="alert alert-info">
-                <p>Vous pouvez créer des parapheurs "Groupe" en selectionant les personnes destinataires</p>
-                <p>Vous pouvez aussi créer des parapheurs "Workflow" en séléctionnant plusieurs parapheurs qui s'enchaineront en série</p>
-                <p>De plus vous pouvez rendre l'ajout de documents automatique en précisant une source et une destination</p>
+                <p>Pour créer un nouveau workflow, sélectionner plusieurs parapheurs qui s'enchaineront en série</p>
+                <p>Vous pouvez rendre l'ajout de documents automatique en précisant une source et une destination</p>
             </div>
         </div>
     </div>
