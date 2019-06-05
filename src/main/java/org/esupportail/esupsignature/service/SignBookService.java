@@ -90,7 +90,7 @@ public class SignBookService {
 		return fsAccessService;
 	}
 	
-	public void creatorSignBook(User user) {
+	public void creatorSignBook() {
 		SignBook signBook;
 		if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList("creator"), SignBookType.system) == 0) {
 			signBook = new SignBook();
@@ -188,8 +188,12 @@ public class SignBookService {
 					throw new EsupSignatureException(e.getMessage(), e);
 				}
 				signBook.setModelFile(model);
+			} else {
+				signBook.setModelFile(null);
 			}
 			signBook.getSignRequestParams().add(signRequestParams);
+			signBook.setSourceType(DocumentIOType.none);
+			signBook.setTargetType(DocumentIOType.none);
 			signBook.persist();
 			if(model != null) {
 				model.setParentId(signBook.getId());

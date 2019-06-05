@@ -42,6 +42,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @Controller
 @Transactional
 @RequestMapping(value = "/ws/")
@@ -67,25 +69,42 @@ public class WsController {
 	//TODO creation / recupération de demandes par WS + declenchement d'evenements + multidocs
 	@ResponseBody
 	@RequestMapping(value = "/create-sign-request", method = RequestMethod.POST)
-	public String createSignRequest(@RequestParam("file") MultipartFile file, @RequestParam String signBookName, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
+	public String createSignRequest(@RequestParam("file") MultipartFile file, @RequestParam String signBookName, @RequestParam String creatorEmail, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
 		SignRequest signRequest= new SignRequest();
 		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
-		User user = getSystemUser();
+		User user = User.findUsersByEmailEquals(creatorEmail).getSingleResult();
 		user.setIp(httpServletRequest.getRemoteAddr());
 		if(file != null) {
 			logger.info("adding new file into signbook" + signBookName);
 			Document documentToAdd = documentService.createDocument(file, file.getOriginalFilename());
 			signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams().get(0));
 			signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-			signRequest.setTitle(signBookName);
+			signRequest.setTitle(file.getOriginalFilename());
 			logger.info(file.getOriginalFilename() + " was added into signbook" + signBookName + " with id " + signRequest.getName());
-			signRequestService.updateStatus(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_wsupload", null, Locale.FRENCH), user, "SUCCESS", "");
+			signRequestService.pendingSignRequest(signRequest, user);
 			signRequest.merge();
 			return signRequest.getName();
 		} else {
 			logger.warn("no file to import");
 		}
 		return null;
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/create-sign-book", method = RequestMethod.POST)
+	public ResponseEntity<String> createSignBook(@RequestParam String signBookName, @RequestParam String signBookType, @RequestParam String signBookRecipientEmails, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
+		User user = getSystemUser();
+		user.setIp(httpServletRequest.getRemoteAddr());
+		SignBook signBook = new SignBook();
+		ObjectMapper mapper = new ObjectMapper();
+		signBook.setRecipientEmails(mapper.readValue(signBookRecipientEmails, List.class));
+		signBook.setName(signBookName);
+		if(signBookType.equals("serial")) {
+			signBookService.createWorkflowSignBook(signBook, user, signRequestService.getEmptySignRequestParams(), null);
+		} else {
+			signBookService.createGroupSignBook(signBook, user, signRequestService.getEmptySignRequestParams(), null);
+		}
+		return new ResponseEntity<String>(HttpStatus.OK);
 	}
 	
 	@Transactional
@@ -112,6 +131,21 @@ public class WsController {
 			logger.error(e.getMessage(), e);
 		}
 		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/check-sign-request", method = RequestMethod.GET)
+	public String checkSignRequest(@RequestParam String signBookName, @RequestParam String fileToken, HttpServletResponse response, Model model) {
+		try {
+			SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
+			SignRequest signRequest = SignRequest.findSignRequestsByNameEquals(fileToken).getSingleResult();
+			if(signBook.getSignRequests().contains(signRequest)) {
+				return signRequest.getStatus().toString();
+			}
+		} catch (NoResultException e) {
+			logger.error(e.getMessage(), e);
+		}
+		return null;
 	}
 	
 	@Transactional

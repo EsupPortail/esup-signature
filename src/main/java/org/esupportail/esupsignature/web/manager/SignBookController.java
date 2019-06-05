@@ -123,7 +123,7 @@ public class SignBookController {
     	User user = userService.getUserFromAuthentication();
     	populateEditForm(uiModel, new SignBook());
 		List<SignBook> signBooks = new ArrayList<SignBook>();
-		signBookService.creatorSignBook(user);
+		signBookService.creatorSignBook();
 		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.system).getResultList());
 		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
 		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.user).getResultList());

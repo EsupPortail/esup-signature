@@ -501,6 +501,7 @@ public class SignRequestService {
         } 
         return val;
     }
+	
 	public String getStep() {
 		return step;
 	}
