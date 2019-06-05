@@ -92,17 +92,14 @@ public class WsController {
 	
 	@ResponseBody
 	@RequestMapping(value = "/create-sign-book", method = RequestMethod.POST)
-	public ResponseEntity<String> createSignBook(@RequestParam String signBookName, @RequestParam String signBookType, @RequestParam String signBookRecipientEmails, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
+	public ResponseEntity<String> createSignBook(@RequestParam String signBook, @RequestParam String signBookType, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
 		User user = getSystemUser();
 		user.setIp(httpServletRequest.getRemoteAddr());
-		SignBook signBook = new SignBook();
 		ObjectMapper mapper = new ObjectMapper();
-		signBook.setRecipientEmails(mapper.readValue(signBookRecipientEmails, List.class));
-		signBook.setName(signBookName);
-		if(signBookType.equals("serial")) {
-			signBookService.createWorkflowSignBook(signBook, user, signRequestService.getEmptySignRequestParams(), null);
+		if(signBookType.equals("workflow")) {
+			signBookService.createWorkflowSignBook(mapper.readValue(signBook, SignBook.class), user, signRequestService.getEmptySignRequestParams(), null);
 		} else {
-			signBookService.createGroupSignBook(signBook, user, signRequestService.getEmptySignRequestParams(), null);
+			signBookService.createGroupSignBook(mapper.readValue(signBook, SignBook.class), user, signRequestService.getEmptySignRequestParams(), null);
 		}
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
