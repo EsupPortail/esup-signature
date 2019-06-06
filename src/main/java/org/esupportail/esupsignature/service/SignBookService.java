@@ -250,6 +250,16 @@ public class SignBookService {
 		}
 	}
 	
+	public void deleteSignBook(SignBook signBook) {
+		if(signBook.getSignRequests().size() == 0) {
+			for(SignBook signBookStep : signBook.getSignBooks()) {
+				deleteSignBook(signBookStep);
+			}
+			signBook.setSignBooks(null);
+			signBook.remove();
+		}
+	}
+	
 	public void resetSignBookParams(SignBook signBook) {
 		signBook.getSignRequestParams().get(0).setSignPageNumber(1);
 		signBook.getSignRequestParams().get(0).setXPos(defaultPositionX);

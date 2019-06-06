@@ -103,6 +103,16 @@ public class WsController {
 		}
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
+
+	@ResponseBody
+	@RequestMapping(value = "/delete-sign-book", method = RequestMethod.POST)
+	public ResponseEntity<String> deleteSignBook(@RequestParam String signBookName, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
+		User user = getSystemUser();
+		user.setIp(httpServletRequest.getRemoteAddr());
+		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
+		signBookService.deleteSignBook(signBook);
+		return new ResponseEntity<String>(HttpStatus.OK);
+	}
 	
 	@Transactional
 	@RequestMapping(value = "/get-signed-file", method = RequestMethod.GET)
