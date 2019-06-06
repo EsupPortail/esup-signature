@@ -32,7 +32,7 @@
             <div class="col-lg-12">
                 <field:input autocomplete="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignBook_name" required="true" z="user-managed"/>
                 <field:select checkboxes="false" cssClass="form-control" field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" items="${signBookTypes}" multiple="false" path="/signrequests" render="false" size="1" z="user-managed"/>
-                <input type="hidden" id="_signBookType_id" name="signBookType" value="workflow" />
+                <input type="hidden" id="_signBookType_id" name="signBookType" value="group" />
                 <field:input cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" render="false" required="true" z="user-managed"/>
                 <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_recipientemails">
                     <label class="col-lg-3  col-form-label" for="recipientemailsSelect">

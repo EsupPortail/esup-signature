@@ -209,7 +209,16 @@ public class SignBookService {
 			signBook.setSignBookType(SignBookType.workflow);
 			signBook.setCreateBy(user.getEppn());
 			signBook.setCreateDate(new Date());
+			List<String> signBookStepNames = new ArrayList<String>();
 			signBook.getRecipientEmails().removeAll(Collections.singleton(""));
+			signBookStepNames.addAll(signBook.getRecipientEmails());
+			signBook.setRecipientEmails(null);
+			
+			for(String signBookStepName : signBookStepNames) {
+				SignBook signBookStep = SignBook.findSignBooksByNameEquals(signBookStepName).getSingleResult();
+				signBook.getSignBooks().add(signBookStep);
+			}
+			
 			signBook.getModeratorEmails().removeAll(Collections.singleton(""));
 			for(String moderatorEmail : signBook.getModeratorEmails()) {
 				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(moderatorEmail)) == 0) {
@@ -225,8 +234,13 @@ public class SignBookService {
 					throw new EsupSignatureException(e.getMessage(), e);
 				}
 				signBook.setModelFile(model);
+			} else {
+				signBook.setModelFile(null);
 			}
 			signBook.getSignRequestParams().add(signRequestParams);
+			//TODO manage target
+			signBook.setSourceType(DocumentIOType.none);
+			signBook.setTargetType(DocumentIOType.none);
 			signBook.persist();
 			if(model != null) {
 				model.setParentId(signBook.getId());
@@ -404,7 +418,7 @@ public class SignBookService {
 	}
 	
 	public boolean checkUserManageRights(User user, SignBook signBook) {
-		if (signBook.getCreateBy().equals(user.getEppn()) || signBook.getModeratorEmails().contains(user.getEmail())) {
+		if (signBook.getCreateBy().equals(user.getEppn()) || signBook.getModeratorEmails().contains(user.getEmail()) || signBook.getCreateBy().equals("System")) {
 			return true;
 		} else {
 			return false;

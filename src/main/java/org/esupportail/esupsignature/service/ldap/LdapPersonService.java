@@ -9,18 +9,21 @@ import org.esupportail.esupsignature.ldap.PersonAttributMapper;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.filter.LikeFilter;
 import org.springframework.ldap.filter.OrFilter;
 import org.springframework.ldap.support.LdapUtils;
+import org.springframework.stereotype.Service;
 
-
+@Service
 public class LdapPersonService {
 	
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
+	@Autowired
     private LdapTemplate ldapTemplate;
     
     private Map<String, LdapTemplate> ldapTemplates = new HashMap<String, LdapTemplate>();

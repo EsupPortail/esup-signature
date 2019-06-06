@@ -136,9 +136,9 @@ public class WsController {
 		try {
 			SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
 			SignRequest signRequest = SignRequest.findSignRequestsByNameEquals(fileToken).getSingleResult();
-			if(signBook.getSignRequests().contains(signRequest)) {
+			//if(signBook.getSignRequests().contains(signRequest)) {
 				return signRequest.getStatus().toString();
-			}
+			//}
 		} catch (NoResultException e) {
 			logger.error(e.getMessage(), e);
 		}

@@ -71,7 +71,7 @@ public class UserController {
 	}
 	
 	
-	@Autowired(required = false)
+	@Autowired
 	private LdapPersonService ldapPersonService;
 	
 	@Resource
