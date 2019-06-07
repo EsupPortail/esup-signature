@@ -214,13 +214,13 @@
 							<c:set var="signRequest" value="${signRequestItem}" scope="request" />
 							<tr class="roocol">
 								<td class="none"><input value="${signRequest.id}" name="check" type="checkbox" class="check" /></td>
-								<td class="none" style="width: 240px;">${signRequest.title}</td>
+								<td class="none"><p class="truncate" title="${signRequest.title}">${signRequest.title}</p></td>
 								<td class="none"><fmt:formatDate value="${signRequest.createDate}" pattern="dd/MM/yyyy HH:mm" /></td>
 								<td class="none">${signRequest.createBy}</td>
 								<td class="none">
 								<ul class="list-group">
 								<c:forEach items="${signRequest.originalSignBooks}" var="originalSignBook">
-								<li class="list-group-item"><i class="fas fa-book"><!--  --></i>&amp;nbsp;${originalSignBook.name}</li>
+								<li class="list-group-item truncate" title="${originalSignBook.name}"><i class="fas fa-book"><!--  --></i>&amp;nbsp;${originalSignBook.name}</li>
 								</c:forEach>
 								</ul>
 								</td>

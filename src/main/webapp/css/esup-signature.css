@@ -310,3 +310,10 @@ input:checked + .slider:before {
 		cursor: default !important;
 		background-color: rgba(0,0,0,.12) !important;
 }
+
+.truncate {
+  width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
