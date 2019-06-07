@@ -203,7 +203,7 @@
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createby" /></th>
 							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" /></th>
 							<th class="none">Destinataires</th>
-							<th class="type"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" /></th>
+							<th class="type d-none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" /></th>
 							<th class="status"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_status" /></th>
 							<th><spring:message code="button_view" /></th>
 							<th><spring:message code="button_delete" /></th>
@@ -246,7 +246,7 @@
 									</table>
 								</td>
 								<spring:url htmlEscape="true" var="json" value="${signRequest.signBooksJson}" />
-								<td class="type">
+								<td class="type d-none">
 								<input type="hidden" id="signbook_${signRequest.id}" value="${json}" />
 								<c:if test="${not empty signRequest.signRequestParams.signType}">
 									<div class="alert alert-secondary text-center" id="type_${signRequest.id}" title="${signRequest.signRequestParams.signType}">
