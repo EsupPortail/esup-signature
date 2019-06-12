@@ -20,7 +20,7 @@ package org.esupportail.esupsignature.web.manager;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;

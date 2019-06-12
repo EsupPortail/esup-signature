@@ -22,7 +22,7 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 
-import org.esupportail.esupsignature.domain.AppliVersion;
+import org.esupportail.esupsignature.entity.AppliVersion;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

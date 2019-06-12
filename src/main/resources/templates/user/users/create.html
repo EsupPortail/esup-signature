@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+	<div id="ribbon" class="card">
+		<div class="card-body">
+		<button type="button" onclick="document.getElementById('fc_org_esupportail_esupsignature_domain_User').submit();" class="mr-2 btn btn-outline-dark btn-light float-left">
+		<p class="text-center">
+		<i class="fas fa-save fa-2x"></i>
+		<br/>
+		Enregistrer
+		</p>
+		</button>
+		</div>
+		</div>
+	</div>		
+	<main role="main" class="container">
+	<div id="collapseHelp" class="collapse show" aria-expanded="true" style="">
+		<div class="alert alert-info">
+			<p style="font-weight: bold;">Bienvenue sur l'application Esup-Signature. Merci de compléter vos informations pour pouvoir commencer à signer.</p>
+			<ul>
+				<li>Pour pouvoir faire une signature visuelle sur un PDF il faut au moins sélectionner un fichier image de votre signature. (dans l'idéal il faut que le fond de l'image soit transparent)</li>
+				<li>Pour faire de la signature électronique, il faut soit importer un keystore au format PKCS12, soit utilser la signature via NexU. <br /> Il est possible d'en générer un sur la plateforme <a href="https://www.digicert.com/sso">https://www.digicert.com/sso</a> (voir <a href="https://services.renater.fr/tcs/certcentral/orders/request-certificate">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a> pour plus de détails).
+				</li>
+				<li>Enfin vous pouvez choisir vos paramètres de signature par défaut ainsi que vos paramètres d'alerte.</li>
+			</ul>
+			<p>
+				Vous pouvez modifier / compléter vos paramètres à tous moments en utilisant l'onglet <span class="fa fa-cog">
+					<!-- -->
+				</span>
+			</p>
+			<p>
+				Dès que vous apercevez ce symbole
+				<button type="button" class="btn btn-sm btn-info">
+					<span class="fas fa-info-circle "></span>
+				</button>
+				, cliquez dessus pour obtenir de l'aide.
+			</p>
+		</div>
+	</div>
+	<form id="fc_org_esupportail_esupsignature_domain_User" th:object="${user}" enctype="multipart/form-data" action="user/users" method="post">
+		<input type="hidden" th:field="*{id}">
+		<div id="accordion" role="tablist" aria-multiselectable="true">
+			<div class="card">
+				<div class="card-header" role="tab" id="headingOne">
+					<h5 class="mb-0">
+						<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne"> Identité <i class="fas fa-caret-down">
+								<!--  -->
+						</i>
+						</a>
+					</h5>
+				</div>
+
+				<div id="collapseOne" class="collapse show" role="tabpanel" aria-labelledby="headingOne">
+					<div class="card-body">
+						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_name">
+							<label class="col-lg-3 col-form-label" for="name"><strong>Nom</strong></label>
+							<div class="col-lg-9">
+								<input class="form-control" readonly="readonly" type="text" th:field="*{name}">
+							</div>
+						</div>
+						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_firstname">
+							<label class="col-lg-3 col-form-label" for="firstname"><strong>Prénom</strong></label>
+							<div class="col-lg-9">
+								<input class="form-control" readonly="readonly" type="text" th:field="*{firstname}">
+							</div>
+						</div>
+						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_eppn">
+							<label class="col-lg-3 col-form-label" for="eppn"><strong>Eppn</strong></label>
+							<div class="col-lg-9">
+								<input class="form-control" readonly="readonly" type="text" th:field="*{eppn}">
+							</div>
+						</div>
+						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_email">
+							<label class="col-lg-3 col-form-label" for="email"><strong>Email</strong></label>
+							<div class="col-lg-9">
+								<input class="form-control" readonly="readonly" type="text" th:field="*{email}">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header" role="tab" id="headingTwo">
+					<h5 class="mb-0">
+						<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"> Signature <i class="fas fa-caret-down">
+								<!--  -->
+						</i>
+						</a>
+					</h5>
+				</div>
+				<div id="collapseTwo" class="show" role="tabpanel" aria-labelledby="headingTwo">
+					<div class="card-body">
+						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signType_id">
+							<label for="signType"><strong>Type de signature par défaut</strong>
+								<button data-target="#collapseHelpSignType" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+									<span class="fas fa-info-circle "></span>
+								</button>
+								<div class="show" id="collapseHelpSignType">
+									<div class="alert alert-info">
+										<small>
+											<ul>
+												<li>La signature electronique s'appuie sur le certificat P12 uploader au niveau de vos paramètres</li>
+												<li>Apposition de la signature : ajoute simplement l'image de votre signature sur un PDF à l'endroit voulu</li>
+												<li>La signature electronique avec NexU s'appuie l'application NexU qui permet l'utilisation d'un certificat matériel</li>
+												<li>Confirmation de lecture : permet de valider la lecture d'un document</li>
+											</ul>
+										</small>
+									</div>
+								</div> </label>
+							<div class="col-lg-9">
+								<select class="form-control" id="_signType_id" name="signType" onchange="checkRequirement();" size="1">
+									<th:block th:each="signType : ${signTypes}">
+										<option th:if="${signBook != null && signType == signBook.signRequestParams[0].signType}" th:text="${signType}" th:value="${signType}" selected="selected"></option>
+										<option th:if="${signBook == null || signType != signBook.signRequestParams[0].signType}" th:text="${signType}" th:value="${signType}"></option>
+									</th:block>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="newPageType"><strong>Image de la signature</strong>
+								<button data-target="#collapseHelpSignImage" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+									<span class="fas fa-info-circle ">
+										<!-- -->
+									</span>
+								</button>
+								<div class="collapse show" id="collapseHelpSignImage">
+									<div class="alert alert-info">
+										<small> Après avoir sélectionné une image, vous pourrez ajuster sa taille pour que la signature entre dans le carré blanc. Si votre signature est grande (contient un tampon par exemple), il est possible d'élargir le carré blanc (la signature prendra plus de place sur le document) <br /> Une image de la signature sera toujours nécessaire pour signer un PDF
+										</small>
+									</div>
+								</div> </label>
+							<div class="col-lg-9">
+								<div class="input-group">
+									<div class="custom-file">
+										<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" /> <label class="custom-file-label" id="inputGroupLabel01" for="upload"> <spring:message code="field_file_image" />
+										</label>
+									</div>
+								</div>
+								<div id="vanilla-crop">
+									<!--  -->
+								</div>
+							</div>
+						</div>
+						<input type="hidden" name="signImageBase64" id="signImageBase64" />
+						<div class="form-group">
+							<label for="newPageType"><strong>Keystore</strong>
+								<button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+									<span class="fas fa-info-circle ">
+										<!-- -->
+									</span>
+								</button>
+								<div class="collapse show" id="collapseHelpKeyStore">
+									<div class="alert alert-info">
+										<small> Il est possible de générer un keystore en suivant cette procédure <a href="https://services.renater.fr/tcs/certcentral/orders/request-certificate" target="_blank">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a>
+										</small>
+									</div>
+								</div> </label>
+							<div class="col-lg-9">
+								<div class="input-group">
+									<div class="custom-file">
+										<input type="file" accept="application/x-pkcs12" class="custom-file-input" name="multipartKeystore" id="inputGroupFile02" value="Choose a file" aria-describedby="inputGroupFileAddon02" /> <label class="custom-file-label" id="inputGroupLabel02" for="upload"> <spring:message code="field_file_keystore" />
+										</label>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
+							<label class="col-lg-3  col-form-label" for="newPageType"><strong> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype" /></strong></label>
+							<div class="col-lg-9">
+								<select class="form-control" id="_newPageType_id" name="newPageType" size="1">
+									<th:block th:each="newPageType : ${newPageTypes}">
+										<option th:if="${signBook != null && newPageType == signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="${newPageType}" selected="selected" >${newPageType}</option>
+										<option th:if="${signBook == null || newPageType != signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="${newPageType}">${newPageType}</option>
+									</th:block>
+								</select>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header" role="tab" id="headingThree">
+					<h5 class="mb-0">
+						<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree"> Alertes <i class="fas fa-caret-down">
+								<!--  -->
+						</i>
+						</a>
+					</h5>
+				</div>
+				<div id="collapseThree" class="show" role="tabpanel" aria-labelledby="headingThree">
+					<div class="card-body">
+						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertFrequency">
+							<label class="col-lg-3  col-form-label" for="signType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency" /></strong>
+								<button data-target="#collapseHelpEmailAlertFrequency" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+									<span class="fas fa-info-circle "></span>
+								</button>
+								<div class="collapse" id="collapseHelpEmailAlertFrequency">
+									<div class="alert alert-info">
+										<small>
+											<!--  -->
+										</small>
+									</div>
+								</div> </label>
+							<div class="col-lg-9">
+								<select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency" size="1" onchange="checkAlertFrequency();">
+									<option selected="selected" value="">-- Choisir votre préférence d'alerte --</option>
+									<c:forEach items="${emailAlertFrequencies}" var="emailAlertFrequency">
+										<spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency_${emailAlertFrequency}" var="emailAlertFrequencyLabel" />
+										<option value="${emailAlertFrequency}">${emailAlertFrequencyLabel}</option>
+									</c:forEach>
+								</select>
+							</div>
+						</div>
+						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertHour" style="display: none;">
+							<label class="col-lg-3  col-form-label" for="signType"> <strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailalerthour" /></strong>
+								<button data-target="#collapseHelpEmailAlertHour" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+									<span class="fas fa-info-circle "></span>
+								</button>
+								<div class="collapse" id="collapseHelpEmailAlertHour">
+									<div class="alert alert-info">
+										<small>
+											<!--  -->
+										</small>
+									</div>
+								</div>
+							</label>
+							<div class="col-lg-9">
+								<input id="emailAlertHour" name="emailAlertHour" class="form-control" type="time" value="" autocomplete="off" />
+							</div>
+						</div>
+						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertDay" style="display: none;">
+							<label class="col-lg-3  col-form-label" for="signType"> <strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailalertday" /></strong>
+								<button data-target="#collapseHelpEmailAlertDay" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+									<span class="fas fa-info-circle text-white"></span>
+								</button>
+								<div class="collapse" id="collapseHelpEmailAlertDay">
+									<div class="alert alert-info">
+										<small>
+											<!--  -->
+										</small>
+									</div>
+								</div>
+							</label>
+							<div class="col-lg-9">
+								<select class="form-control" id="_emailAlertDay_id" name="emailAlertDay" size="1">
+									<c:forEach items="${daysOfWeek}" var="emailAlertDay">
+										<spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertDay_${emailAlertDay}" var="emailAlertDayLabel" />
+										<c:choose>
+											<c:when test="${emailAlertDay eq user.emailAlertDay}">
+												<option selected="selected" value="${emailAlertDay}">${emailAlertDayLabel}</option>
+											</c:when>
+											<c:otherwise>
+												<option value="${emailAlertDay}">${emailAlertDayLabel}</option>
+											</c:otherwise>
+										</c:choose>
+									</c:forEach>
+								</select>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<input type="submit" value="valider">
+		</div>
+	</form>
+	</main>
+	<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>

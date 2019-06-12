@@ -24,7 +24,6 @@ import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
-import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 import org.springframework.security.web.session.ConcurrentSessionFilter;
 
 public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
@@ -37,9 +36,6 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 	private String casService;
 	@Value("${security.nfcWsAccessAuthorizeIps}")
 	private String[] nfcWsAccessAuthorizeIps;
-	
-	@Autowired
-	private SwitchUserFilter switchUserFilter;
 	
 	@Autowired
 	private CasAuthenticationSuccessHandler casAuthenticationSuccessHandler;
@@ -66,7 +62,6 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 		http.addFilterBefore(authenticationFilter(), CasAuthenticationFilter.class);
 		http.addFilterBefore(singleLogoutFilter(), CasAuthenticationFilter.class);
 		http.addFilterBefore(requestSingleLogoutFilter(), LogoutFilter.class);
-		http.addFilterBefore(switchUserFilter, SwitchUserFilter.class);
 		http.addFilterBefore(concurrencyFilter, ConcurrentSessionFilter.class);
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy);
 		http.headers().frameOptions().sameOrigin();

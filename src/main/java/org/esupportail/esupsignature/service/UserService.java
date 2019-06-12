@@ -12,14 +12,16 @@ import javax.annotation.Resource;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
-import org.esupportail.esupsignature.domain.SignBook;
-import org.esupportail.esupsignature.domain.SignBook.SignBookType;
-import org.esupportail.esupsignature.domain.SignRequest;
-import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
-import org.esupportail.esupsignature.domain.User;
-import org.esupportail.esupsignature.domain.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.SignBook.SignBookType;
+import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
+import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
+import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.mail.MailSenderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,12 +32,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
 
+	@Autowired
+	private UserRepository userRepository;
+	
 	@Autowired(required = false)
-	PersonLdapDao personDao;
-    
+	private PersonLdapDao personDao;
+    	
 	@Resource
 	private DocumentService documentService;
 
+	@Autowired
+	private SignBookRepository signBookRepository;
+	
 	@Resource
 	private SignBookService signBookService;
 
@@ -50,6 +58,12 @@ public class UserService {
 	
 	@Value("${root.url}")
 	private String rootUrl;
+	
+	public List<User> getAllUsers() {
+		List<User> list = new ArrayList<User>();
+		userRepository.findAll().forEach(e -> list.add(e));
+		return list;
+	}
 	
 	public boolean isUserReady(User user) {
 		return user.isReady();
@@ -74,8 +88,8 @@ public class UserService {
 	
 	public SignBook createUser(String eppn, String name, String firstName, String email) {
 		User user;
-		if(User.countFindUsersByEppnEquals(eppn) > 0) {
-    		user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		if(userRepository.countByEppn(eppn) > 0) {
+    		user = userRepository.findByEppn(eppn).get(0);
     	} else {
 	    	user = new User();
 			user.setSignImage(null);
@@ -86,14 +100,10 @@ public class UserService {
 		user.setFirstname(firstName);
 		user.setEppn(eppn);
 		user.setEmail(email);
-		if(user.getId() == null) {
-			user.persist();
-		} else {
-			user.merge();
-		}
+		userRepository.save(user);
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
-		if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(recipientEmails, SignBookType.user) == 0) {
+		if(signBookRepository.countByRecipientEmailsAndSignBookType(recipientEmails, SignBookType.user) == 0) {
 			return signBookService.createUserSignBook(user);
 		} else {
 			return signBookService.getUserSignBook(user);
@@ -127,7 +137,7 @@ public class UserService {
 			mailSenderService.sendMail(to, "Alerte esup-signature", writer.toString(), null);
 		}
 		user.setLastSendAlertDate(date);
-		user.merge();
+		userRepository.save(user);
 	}
 	
     public User getUserFromAuthentication() {
@@ -139,8 +149,8 @@ public class UserService {
     			eppn = persons.get(0).getEduPersonPrincipalName();
     		}
     	}
-		if (User.countFindUsersByEppnEquals(eppn) > 0) {
-			User user = User.findUsersByEppnEquals(eppn).getSingleResult();
+		if (userRepository.countByEppn(eppn) > 0) {
+			User user = userRepository.findByEppn(eppn).get(0);
 			return user;
 		} else {
 			return null;
@@ -150,7 +160,7 @@ public class UserService {
 	
     public User addSignImage(User user, String signImageBase64) throws IOException {
     	user.setSignImage(documentService.createDocument(user.getSignImageBase64(), user.getEppn() + "_sign", "application/png"));
-    	user.merge();
+    	userRepository.save(user);
     	return user;
     	
     }

@@ -5,7 +5,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -14,14 +13,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.domain.Document;
-import org.esupportail.esupsignature.domain.SignBook;
-import org.esupportail.esupsignature.domain.SignBook.SignBookType;
-import org.esupportail.esupsignature.domain.SignRequest;
-import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
-import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignBook.SignBookType;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.ldap.PersonLdap;
+import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -51,14 +53,23 @@ public class WsController {
 
 	private static final Logger logger = LoggerFactory.getLogger(WsController.class);
 
-	@Resource
-	SignRequestService signRequestService;
+	@Autowired
+	private SignRequestRepository signRequestRepository;
 	
 	@Resource
-	SignBookService signBookService;
+	private SignRequestService signRequestService;
 
+	@Autowired
+	private SignBookRepository signBookRepository;
+	
 	@Resource
-	DocumentService documentService;
+	private SignBookService signBookService;
+
+	@Autowired
+	private UserRepository userRepository;
+	
+	@Resource
+	private DocumentService documentService;
 	
 	@Autowired(required = false)
 	private LdapPersonService ldapPersonService;
@@ -71,8 +82,8 @@ public class WsController {
 	@RequestMapping(value = "/create-sign-request", method = RequestMethod.POST)
 	public String createSignRequest(@RequestParam("file") MultipartFile file, @RequestParam String signBookName, @RequestParam String creatorEmail, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
 		SignRequest signRequest= new SignRequest();
-		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
-		User user = User.findUsersByEmailEquals(creatorEmail).getSingleResult();
+		SignBook signBook = signBookRepository.findByName(signBookName).get(0);
+		User user = userRepository.findByEmail(creatorEmail).get(0);
 		user.setIp(httpServletRequest.getRemoteAddr());
 		if(file != null) {
 			logger.info("adding new file into signbook" + signBookName);
@@ -82,7 +93,7 @@ public class WsController {
 			signRequest.setTitle(file.getOriginalFilename());
 			logger.info(file.getOriginalFilename() + " was added into signbook" + signBookName + " with id " + signRequest.getName());
 			signRequestService.pendingSignRequest(signRequest, user);
-			signRequest.merge();
+			signRequestRepository.save(signRequest);
 			return signRequest.getName();
 		} else {
 			logger.warn("no file to import");
@@ -109,7 +120,7 @@ public class WsController {
 	public ResponseEntity<String> deleteSignBook(@RequestParam String signBookName, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
 		User user = getSystemUser();
 		user.setIp(httpServletRequest.getRemoteAddr());
-		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
+		SignBook signBook = signBookRepository.findByName(signBookName).get(0);
 		signBookService.deleteSignBook(signBook);
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
@@ -118,8 +129,8 @@ public class WsController {
 	@RequestMapping(value = "/get-signed-file", method = RequestMethod.GET)
 	public ResponseEntity<Void> getSignedFile(@RequestParam String signBookName, @RequestParam String name, HttpServletResponse response, Model model) {
 		try {
-		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
-		SignRequest signRequest = SignRequest.findSignRequestsByNameEquals(name).getSingleResult();
+		SignBook signBook = signBookRepository.findByName(signBookName).get(0);
+		SignRequest signRequest = signRequestRepository.findByName(signBookName).get(0);
 		if(signBook.getSignRequests().contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.signed)) {
 			Document document = signRequestService.getLastSignedDocument(signRequest);
 			try {
@@ -144,8 +155,8 @@ public class WsController {
 	@RequestMapping(value = "/check-sign-request", method = RequestMethod.GET)
 	public String checkSignRequest(@RequestParam String signBookName, @RequestParam String fileToken, HttpServletResponse response, Model model) {
 		try {
-			SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
-			SignRequest signRequest = SignRequest.findSignRequestsByNameEquals(fileToken).getSingleResult();
+			SignBook signBook = signBookRepository.findByName(signBookName).get(0);
+			SignRequest signRequest = signRequestRepository.findByName(fileToken).get(0);
 			//if(signBook.getSignRequests().contains(signRequest)) {
 				return signRequest.getStatus().toString();
 			//}
@@ -159,8 +170,8 @@ public class WsController {
 	@RequestMapping(value = "/complete-sign-request", method = RequestMethod.POST)
 	public ResponseEntity<Void> completeSignRequest(@RequestParam String signBookName, @RequestParam String name, HttpServletRequest httpServletRequest, HttpServletResponse response, Model model) {
 		try {
-		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
-		SignRequest signRequest = SignRequest.findSignRequestsByNameEquals(name).getSingleResult();
+		SignBook signBook = signBookRepository.findByName(signBookName).get(0);
+		SignRequest signRequest = signRequestRepository.findByName(name).get(0);
 		User user = getSystemUser();
 		user.setIp(httpServletRequest.getRemoteAddr());
 		if(signBook.getSignRequests().contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.signed)) {
@@ -183,15 +194,15 @@ public class WsController {
 	@ResponseBody
 	@RequestMapping(value = "/count-signed-in-signbook", produces = "text/html")
 	public String countSignedInSignBook(@RequestParam String signBookName, HttpServletRequest httpServletRequest) throws IOException, ParseException {
-		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
+		SignBook signBook = signBookRepository.findByName(signBookName).get(0);
 		return String.valueOf(signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.signed)).count());
 	}
 	
 	@Transactional
 	@RequestMapping(value = "/move-sign-request", method = RequestMethod.POST)
 	public ResponseEntity<Void> moveSignRequest(@RequestParam String signBookName, @RequestParam String name, HttpServletRequest httpServletRequest, HttpServletResponse response, Model model) {
-		SignBook signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
-		SignRequest signRequest = SignRequest.findSignRequestsByNameEquals(name).getSingleResult();
+		SignBook signBook = signBookRepository.findByName(signBookName).get(0);
+		SignRequest signRequest = signRequestRepository.findByName(name).get(0);
 		User user = getSystemUser();
 		user.setIp(httpServletRequest.getRemoteAddr());
 		try {
@@ -235,9 +246,9 @@ public class WsController {
 		}
 
 		List<SignBook> signBooks = new ArrayList<>() ;
-		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.system).getResultList());
-		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.workflow).getResultList());
-		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
+		signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.system));
+		signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.workflow));
+		signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.group));
 
 		for(SignBook signBook : signBooks) {
 			PersonLdap personLdap = new PersonLdap();

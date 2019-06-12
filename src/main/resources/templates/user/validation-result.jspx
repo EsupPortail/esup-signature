@@ -1,0 +1,58 @@
+<div xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:spring="http://www.springframework.org/tags" xmlns:util="urn:jsptagdir:/WEB-INF/tags/util" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:sec="http://www.springframework.org/security/tags" xmlns:form="http://www.springframework.org/tags/form">
+	<jsp:directive.page contentType="text/html;charset=UTF-8" />
+	<jsp:output omit-xml-declaration="yes" />
+	
+		<div class="card card-header">
+		<nav class="nav justify-content-between" aria-label="breadcrumb">
+			<div class="navbar-nav">
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
+					<li class="breadcrumb-item active"><a href="/user/validation">Outil de validation</a></li>
+					<li class="breadcrumb-item active">Résultats de la validation</li>
+				</ol>
+			</div>
+			<div class="navbar-nav align-self-center">
+				<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+					<span class="fas fa-info-circle"><!--  --></span>
+				</button>
+			</div>
+		</nav>
+	</div>
+	
+	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
+		<div class="alert alert-info">
+	        Le service de validation est fourni par l'outil DSS.
+	        <br/>
+   			Légende :
+   			<ul>
+	   			<li><button class="btn btn-success">&amp;nbsp;</button> : Succès</li>
+   				<li><button class="btn btn-warning">&amp;nbsp;</button> : Alerte</li>
+   				<li><button class="btn btn-danger">&amp;nbsp;</button> : Erreur</li>
+   			</ul>
+		</div>
+	</div>
+	<div class="card">
+		<div class="card-body">
+			<div class="row">
+				<div class="col-lg-12">
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+					  <li class="nav-item">
+					    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#simple" role="tab" aria-controls="simple" aria-selected="true">Simple report</a>
+					  </li>
+					  <li class="nav-item">
+					    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#detailed" role="tab" aria-controls="detailed" aria-selected="false">Detailed report</a>
+					  </li>
+					<li>		<a href="/user/validation/download-detailed-report" role="button" class="btn btn-primary">
+					<i class="fa fa-download" aria-hidden="true"><!--  --></i>&amp;nbsp;Download report</a>
+					</li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+						<div class="tab-pane fade show active" id="simple" role="tabpanel" aria-labelledby="home-tab">${simpleReport}</div>
+			  			<div class="tab-pane fade" id="detailed" role="tabpanel" aria-labelledby="profile-tab">${detailedReport}</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>

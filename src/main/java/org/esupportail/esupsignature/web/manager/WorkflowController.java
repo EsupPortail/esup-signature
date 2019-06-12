@@ -12,17 +12,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
-import org.esupportail.esupsignature.domain.Document;
-import org.esupportail.esupsignature.domain.SignBook;
-import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
-import org.esupportail.esupsignature.domain.SignBook.SignBookType;
-import org.esupportail.esupsignature.domain.SignRequest;
-import org.esupportail.esupsignature.domain.SignRequestParams;
-import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
-import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
-import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.SignBook.DocumentIOType;
+import org.esupportail.esupsignature.entity.SignBook.SignBookType;
+import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
+import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -32,6 +36,7 @@ import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -55,6 +60,9 @@ public class WorkflowController {
 	public String getActiveMenu() {
 		return "manager/workflows";
 	}
+	
+	@Autowired
+	private UserRepository userRepository;
 
 	@Resource
 	private UserService userService;
@@ -64,11 +72,21 @@ public class WorkflowController {
 		return userService.getUserFromAuthentication();
 	}
 
+	@Autowired
+	private SignBookRepository signBookRepository;
+	
 	@Resource
 	private SignBookService signBookService;
 
+	@Autowired
+	private SignRequestRepository signRequestRepository;
+	
 	@Resource
 	private SignRequestService signRequestService;
+	
+	
+	@Autowired
+	private SignRequestParamsRepository signRequestParamsRepository; 
 	
 	@Resource
 	private DocumentService documentService;
@@ -78,7 +96,7 @@ public class WorkflowController {
 
 	void populateEditForm(Model uiModel, SignBook signBook) {
 		uiModel.addAttribute("signBook", signBook);
-		uiModel.addAttribute("users", User.findAllUsers());
+		uiModel.addAttribute("users", userRepository.findAll());
 		uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
 		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
 		List<SignBookType> signBookTypes = new LinkedList<SignBookType>(Arrays.asList(SignBookType.values()));
@@ -88,7 +106,7 @@ public class WorkflowController {
 		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
 		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
 		addDateTimeFormatPatterns(uiModel);
-		uiModel.addAttribute("signrequests", SignRequest.findAllSignRequests());
+		uiModel.addAttribute("signrequests", signRequestRepository.findAll());
 	}
 
 	@RequestMapping(produces = "text/html")
@@ -103,14 +121,14 @@ public class WorkflowController {
     	if(sortFieldName == null) {
     		sortFieldName = "signBookType";
     	}
-		if (page != null || size != null) {
+    	if (page != null || size != null) {
 			int sizeNo = size == null ? 10 : size.intValue();
 			//final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
-			uiModel.addAttribute("signBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.workflow, sortFieldName, sortOrder).getResultList());
-			float nrOfPages = (float) SignBook.countSignBooks() / sizeNo;
+			uiModel.addAttribute("signBooks", signBookRepository.findBySignBookType(SignBookType.workflow));
+			float nrOfPages = (float) signBookRepository.count() / sizeNo;
 			uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
 		} else {
-			uiModel.addAttribute("signBooks", SignBook.findSignBooksBySignBookTypeEquals(SignBookType.workflow, sortFieldName, sortOrder).getResultList());
+			uiModel.addAttribute("signBooks", signBookRepository.findBySignBookType(SignBookType.workflow));
 		}
 		addDateTimeFormatPatterns(uiModel);
 		return "manager/workflows/list";
@@ -122,9 +140,9 @@ public class WorkflowController {
     	populateEditForm(uiModel, new SignBook());
 		List<SignBook> signBooks = new ArrayList<SignBook>();
 		signBookService.creatorSignBook();
-		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.system).getResultList());
-		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
-		signBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.user).getResultList());
+		signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.system));
+		signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.group));
+		signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.user));
 		uiModel.addAttribute("allSignBooks", signBooks);
         return "manager/workflows/create";
     }
@@ -138,7 +156,7 @@ public class WorkflowController {
 		}
 		User user = userService.getUserFromAuthentication();
 		SignBook signBookToUpdate = null;
-		signBookToUpdate = SignBook.findSignBook(signBook.getId());
+		signBookToUpdate = signBookRepository.findById(signBook.getId()).get();
 		signBook.setName(signBook.getName().trim());
 		if(signBook.getSourceType() != null && signBook.getDocumentsSourceUri().isEmpty()) {
 			String defaultSourceUri =  signBook.getSignBookType().toString() + "/" + signBook.getName();
@@ -162,7 +180,7 @@ public class WorkflowController {
 			} else {
 					List<SignBook> signBooks = new ArrayList<>();
 					for(long signBookId : signBooksIds) {
-						SignBook signBook2 = SignBook.findSignBook(signBookId);
+						SignBook signBook2 = signBookRepository.findById(signBookId).get();
 						if(!signBooks.contains(signBook2)) {
 							signBooks.add(signBook2);
 						}
@@ -184,7 +202,7 @@ public class WorkflowController {
     @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
     public String updateForm(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
-		SignBook signBook = SignBook.findSignBook(id);
+		SignBook signBook = signBookRepository.findById(id).get();
 		if(!signBook.getSignBookType().equals(SignBookType.workflow)) {
 			return "redirect:/manager/workflows/" + id;
 		} else {
@@ -204,14 +222,14 @@ public class WorkflowController {
             return "manager/workflows/update";
         }
         uiModel.asMap().clear();
-        signBook.merge();
+        signBookRepository.save(signBook);
         return "redirect:/manager/workflows/" + signBook.getId();
     }
 	
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
 		addDateTimeFormatPatterns(uiModel);
-		SignBook signBook = SignBook.findSignBook(id);
+		SignBook signBook = signBookRepository.findById(id).get();
 		Document modelFile = signBook.getModelFile();
 		if (modelFile != null && modelFile.getSize() > 0) {
 			uiModel.addAttribute("documentId", modelFile.getId());
@@ -239,7 +257,7 @@ public class WorkflowController {
     public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, Model uiModel, RedirectAttributes redirectAttrs) {
     	//TODO flash message -> i18n
     	User user = userService.getUserFromAuthentication();
-    	SignBook signBook = SignBook.findSignBook(id);
+    	SignBook signBook = signBookRepository.findById(id).get();
     		populateEditForm(uiModel, signBook);
 		if(!signBook.getSignBookType().equals(SignBookType.workflow)) {
 			logger.error("can not delete user signBook");
@@ -255,7 +273,7 @@ public class WorkflowController {
 			redirectAttrs.addFlashAttribute("messageCustom", "Le parapheur n'est pas vide");
 			return "redirect:/manager/workflows/" + id;
 		}
-		signBook.remove();
+		signBookRepository.delete(signBook);
         uiModel.asMap().clear();
         uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
         uiModel.addAttribute("size", (size == null) ? "10" : size.toString());
@@ -268,7 +286,7 @@ public class WorkflowController {
 			@RequestParam(value = "signPageNumber", required = true) int signPageNumber,
 			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
 		User user = userService.getUserFromAuthentication();
-		SignBook signBook = SignBook.findSignBook(id);
+		SignBook signBook = signBookRepository.findById(id).get();
 
 		if (!signBook.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
@@ -288,8 +306,8 @@ public class WorkflowController {
 			@RequestParam(value = "signBookId", required = true) Long signBookId,
 			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
 		User user = userService.getUserFromAuthentication();
-		SignRequestParams signRequestParams = SignRequestParams.findSignRequestParams(id); 
-		SignBook signBook = SignBook.findSignBook(signBookId);
+		SignRequestParams signRequestParams = signRequestParamsRepository.findById(id).get();
+		SignBook signBook = signBookRepository.findById(id).get();
 		if (!signBook.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/workflows/" + id;
@@ -298,7 +316,7 @@ public class WorkflowController {
 			signBook.getSignRequestParams().remove(signRequestParams);
 			signBook.setUpdateBy(user.getEppn());
 			signBook.setUpdateDate(new Date());
-			signBook.merge();
+			signBookRepository.save(signBook);
 		}
 		//signRequestParams.remove();
 		
@@ -309,7 +327,7 @@ public class WorkflowController {
 	public String addParams(@PathVariable("id") Long id, 
 			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
 		User user = userService.getUserFromAuthentication();
-		SignBook signBook = SignBook.findSignBook(id);
+		SignBook signBook = signBookRepository.findById(id).get();
 
 		if (!signBook.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
@@ -325,7 +343,7 @@ public class WorkflowController {
 	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
 	public String getFileFromSource(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
-		SignBook signBook = SignBook.findSignBook(id);
+		SignBook signBook = signBookRepository.findById(id).get();
 
 		if (!signBook.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
@@ -346,7 +364,7 @@ public class WorkflowController {
 	@RequestMapping(value = "/send-files-to-target/{id}", produces = "text/html")
 	public String sendFileToTarget(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureException {
 		User user = userService.getUserFromAuthentication();
-		SignBook signBook = SignBook.findSignBook(id);
+		SignBook signBook = signBookRepository.findById(id).get();
 		if (!signBook.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/workflows/" + id;

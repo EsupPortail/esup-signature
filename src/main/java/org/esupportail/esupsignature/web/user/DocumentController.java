@@ -12,11 +12,15 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.domain.BigFile;
-import org.esupportail.esupsignature.domain.Document;
-import org.esupportail.esupsignature.domain.SignBook;
-import org.esupportail.esupsignature.domain.SignRequest;
-import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.entity.BigFile;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.repository.BigFileRepository;
+import org.esupportail.esupsignature.repository.DocumentRepository;
+import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -24,6 +28,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -56,6 +61,18 @@ public class DocumentController {
 		return userService.getUserFromAuthentication();
 	}
 	
+	@Autowired
+	private SignRequestRepository signRequestRepository;
+
+	@Autowired
+	private SignBookRepository signBookRepository;
+	
+	@Autowired
+	private DocumentRepository documentRepository;
+	
+	@Autowired
+	private BigFileRepository bigFileRepository;
+	
 	@Resource
 	private PdfService pdfService;
 
@@ -70,8 +87,8 @@ public class DocumentController {
 	
 	@RequestMapping(value = "/{id}/getimage", method = RequestMethod.GET)
 	public void getImageAsByteArray(@PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException {
-		Document document = Document.findDocument(id);
-		SignRequest signRequest = SignRequest.findSignRequest(document.getParentId());
+		Document document = documentRepository.findById(id).get();
+		SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
 		User user = userService.getUserFromAuthentication();
 		InputStream in = null;
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
@@ -87,9 +104,9 @@ public class DocumentController {
 	
 	@RequestMapping(value = "/{id}/getimagepdfpage/{page}", method = RequestMethod.GET)
 	public void getImagePdfAsByteArray(@PathVariable("id") Long id, @PathVariable("page") int page, HttpServletResponse response) throws IOException {
-		Document document = Document.findDocument(id);
-		SignRequest signRequest = SignRequest.findSignRequest(document.getParentId());
-		SignBook signBook = SignBook.findSignBook(document.getParentId());
+		Document document = documentRepository.findById(id).get();
+		SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
+		SignBook signBook = signBookRepository.findById(document.getParentId()).get();
 		User user = userService.getUserFromAuthentication();
 		InputStream in = null;
 		if((signRequest != null && signRequestService.checkUserViewRights(user, signRequest)) 
@@ -127,9 +144,9 @@ public class DocumentController {
     
     @RequestMapping(value = "/getfile/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
-		Document document = Document.findDocument(id);
-		SignRequest signRequest = SignRequest.findSignRequest(document.getParentId());
-		SignBook signBook = SignBook.findSignBook(document.getParentId());
+		Document document = documentRepository.findById(id).get();
+		SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
+		SignBook signBook = signBookRepository.findById(document.getParentId()).get();
 		User user = userService.getUserFromAuthentication();
 		//TODO les modèle ne sont pas protégés
 		if(signRequestService.checkUserViewRights(user, signRequest) || signBook != null) {
@@ -175,7 +192,7 @@ public class DocumentController {
             return "user/documents/create";
         }
         uiModel.asMap().clear();
-        document.persist();
+        documentRepository.save(document);
         return "redirect:/user/documents/" + encodeUrlPathSegment(document.getId().toString(), httpServletRequest);
     }
 
@@ -188,7 +205,7 @@ public class DocumentController {
 	@RequestMapping(value = "/{id}", produces = "text/html")
     public String show(@PathVariable("id") Long id, Model uiModel) {
         addDateTimeFormatPatterns(uiModel);
-        uiModel.addAttribute("document", Document.findDocument(id));
+        uiModel.addAttribute("document", documentRepository.findById(id).get());
         uiModel.addAttribute("itemId", id);
         return "user/documents/show";
     }
@@ -198,11 +215,11 @@ public class DocumentController {
         if (page != null || size != null) {
             int sizeNo = size == null ? 10 : size.intValue();
             final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
-            uiModel.addAttribute("documents", Document.findDocumentEntries(firstResult, sizeNo, sortFieldName, sortOrder));
-            float nrOfPages = (float) Document.countDocuments() / sizeNo;
+            uiModel.addAttribute("documents", documentRepository.findAll());
+            float nrOfPages = (float) documentRepository.count() / sizeNo;
             uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
         } else {
-            uiModel.addAttribute("documents", Document.findAllDocuments(sortFieldName, sortOrder));
+            uiModel.addAttribute("documents", documentRepository.findAll());
         }
         addDateTimeFormatPatterns(uiModel);
         return "user/documents/list";
@@ -215,20 +232,20 @@ public class DocumentController {
             return "user/documents/update";
         }
         uiModel.asMap().clear();
-        document.merge();
+        documentRepository.save(document);
         return "redirect:/user/documents/" + encodeUrlPathSegment(document.getId().toString(), httpServletRequest);
     }
 
 	@RequestMapping(value = "/{id}", params = "form", produces = "text/html")
     public String updateForm(@PathVariable("id") Long id, Model uiModel) {
-        populateEditForm(uiModel, Document.findDocument(id));
+        populateEditForm(uiModel, documentRepository.findById(id).get());
         return "user/documents/update";
     }
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
     public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, Model uiModel) {
-        Document document = Document.findDocument(id);
-        document.remove();
+        Document document = documentRepository.findById(id).get();
+        documentRepository.delete(document);
         uiModel.asMap().clear();
         uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
         uiModel.addAttribute("size", (size == null) ? "10" : size.toString());
@@ -242,6 +259,6 @@ public class DocumentController {
 	void populateEditForm(Model uiModel, Document document) {
         uiModel.addAttribute("document", document);
         addDateTimeFormatPatterns(uiModel);
-        uiModel.addAttribute("bigfiles", BigFile.findAllBigFiles());
+        uiModel.addAttribute("bigfiles", bigFileRepository.findAll());
     }
 }

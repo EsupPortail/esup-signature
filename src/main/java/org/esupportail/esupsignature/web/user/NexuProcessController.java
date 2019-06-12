@@ -11,9 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.xml.bind.DatatypeConverter;
 
-import org.esupportail.esupsignature.domain.Document;
-import org.esupportail.esupsignature.domain.SignRequest;
-import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.DataToSignParams;
 import org.esupportail.esupsignature.dss.web.model.GetDataToSignResponse;
@@ -21,9 +18,13 @@ import org.esupportail.esupsignature.dss.web.model.SignDocumentResponse;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureValueAsString;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.SigningService;
@@ -70,6 +71,9 @@ public class NexuProcessController {
 	@Autowired
 	private SigningService signingService;
 
+	@Autowired
+	private SignRequestRepository signRequestRepository;
+	
 	@Resource
 	private PdfService pdfService;
 	
@@ -90,7 +94,7 @@ public class NexuProcessController {
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String showSignatureParameters(@PathVariable("id") Long id, Model model, HttpServletRequest request, RedirectAttributes redirectAttrs) {
     	User user = userService.getUserFromAuthentication();
-		SignRequest signRequest = SignRequest.findSignRequest(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			AbstractSignatureForm signatureDocumentForm = null;
     		List<Document> documents = signRequestService.getToSignDocuments(signRequest);
@@ -138,7 +142,7 @@ public class NexuProcessController {
 		signatureDocumentForm.setBase64CertificateChain(params.getCertificateChain());
 		signatureDocumentForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
     	User user = userService.getUserFromAuthentication();
-		SignRequest signRequest = SignRequest.findSignRequest(signRequestId);
+		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			ToBeSigned dataToSign;
 			if(signatureDocumentForm.getClass().equals(SignatureMultipleDocumentsForm.class)) {
@@ -175,7 +179,7 @@ public class NexuProcessController {
 			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm, 
 			@ModelAttribute("signRequestId") Long signRequestId, BindingResult result) throws EsupSignatureKeystoreException {
 		User user = userService.getUserFromAuthentication();
-		SignRequest signRequest = SignRequest.findSignRequest(signRequestId);
+		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			SignDocumentResponse signedDocumentResponse;
 			signatureDocumentForm.setBase64SignatureValue(signatureValue.getSignatureValue());
@@ -184,7 +188,7 @@ public class NexuProcessController {
 			} catch (EsupSignatureIOException | EsupSignatureSignException e) {
 				logger.error(e.getMessage(), e);
 			}
-	        signRequest.merge();
+	        signRequestRepository.save(signRequest);
 	        signedDocumentResponse = new SignDocumentResponse();
 	        signedDocumentResponse.setUrlToDownload("download");
 	        return signedDocumentResponse;

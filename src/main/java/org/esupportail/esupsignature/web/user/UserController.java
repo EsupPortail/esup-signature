@@ -10,19 +10,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.domain.Document;
-import org.esupportail.esupsignature.domain.SignBook;
-import org.esupportail.esupsignature.domain.SignBook.SignBookType;
-import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
-import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
-import org.esupportail.esupsignature.domain.User;
-import org.esupportail.esupsignature.domain.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignBook.SignBookType;
+import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
+import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.ldap.PersonLdap;
+import org.esupportail.esupsignature.repository.BigFileRepository;
+import org.esupportail.esupsignature.repository.DocumentRepository;
+import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -35,14 +37,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpHeaders;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -51,11 +53,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @CrossOrigin(origins = "*")
-@RequestMapping("/user/users")
+@RequestMapping("user/users")
 @Controller
 @Scope(value="session")
 @Transactional
-@EnableScheduling
+//@EnableScheduling
 public class UserController {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
@@ -64,18 +66,26 @@ public class UserController {
 	public String getActiveMenu() {
 		return "user/users";
 	}
-	
+	/*
 	@ModelAttribute("user")
 	public User getUser() {
 		return userService.getUserFromAuthentication();
 	}
-	
+	*/
+	@Autowired
+	private UserRepository userRepository;
 	
 	@Autowired
 	private LdapPersonService ldapPersonService;
+
+	@Autowired
+	private DocumentRepository documentRepository;
 	
 	@Resource
 	private DocumentService documentService;
+	
+	@Autowired
+	private BigFileRepository bigFileRepository;
 	
 	@Resource
 	private FileService fileService;
@@ -85,7 +95,10 @@ public class UserController {
 	
 	@Resource
 	private UserService userService;
-
+	
+	@Autowired
+	private SignBookRepository signBookRepository;
+	
 	@Resource
 	private SignBookService signBookService;
 	
@@ -101,7 +114,7 @@ public class UserController {
 		this.password = password;
 	}
 	
-    @RequestMapping(produces = "text/html")
+    @GetMapping
     public String show(Model uiModel) throws Exception {
     	User user = userService.getUserFromAuthentication();
     	if(!user.isReady()) {
@@ -119,13 +132,13 @@ public class UserController {
         return "user/users/show";
     }
     
-    @RequestMapping(params = "form", produces = "text/html")
+    @GetMapping(params = "form")
     public String createForm(Model uiModel) throws IOException, SQLException {
     	//TODO : choix automatique du mode de signature
 		User user = userService.getUserFromAuthentication();
 		if(user != null) {
 	        uiModel.addAttribute("user", user);
-        	uiModel.addAttribute("signBook", signBookService.getUserSignBook(user));
+        	//uiModel.addAttribute("signBook", signBookService.getUserSignBook(user));
         	uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
         	uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
         	uiModel.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
@@ -146,28 +159,26 @@ public class UserController {
 
     }
     
-    @RequestMapping(method = RequestMethod.POST, produces = "text/html")
-    public String create(@Valid User user, @RequestParam(value = "newPageType", required=false) String newPageType, @RequestParam(value = "signType", required=false) String signType, @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttrs) throws Exception {
-    	if (bindingResult.hasErrors()) {
-        	populateEditForm(uiModel, user);
-            return "user/users/update";
-        }
-        uiModel.asMap().clear();
+    @PostMapping
+    public String create(Long id, @RequestParam(value = "newPageType", required=false) String newPageType, @RequestParam(value = "signType", required=false) String signType, @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, Model model) throws Exception {
+        model.asMap().clear();
+        User user = userRepository.findById(id).get();
 		User userToUpdate = userService.getUserFromAuthentication();
         if(!multipartKeystore.isEmpty()) {
             if(userToUpdate.getKeystore() != null) {
-            	userToUpdate.getKeystore().remove();
+            	bigFileRepository.delete(userToUpdate.getKeystore().getBigFile());
+            	documentRepository.delete(userToUpdate.getKeystore());
             }
             userToUpdate.setKeystore(documentService.createDocument(multipartKeystore, multipartKeystore.getOriginalFilename()));
         }
         Document oldSignImage = userToUpdate.getSignImage();
-        if(!user.getSignImageBase64().isEmpty()) {
+        if(user.getSignImageBase64() != null) {
         	userToUpdate.setSignImage(documentService.createDocument(fileService.base64Transparence(user.getSignImageBase64()), userToUpdate.getEppn() + "_sign", "application/png"));
         }
         if(oldSignImage != null) {
         	oldSignImage.getBigFile().getBinaryFile().free();
-    		oldSignImage.getBigFile().remove();
-    		oldSignImage.remove();
+        	bigFileRepository.delete(oldSignImage.getBigFile());
+        	documentRepository.delete(oldSignImage);
     	}
     	SignBook signBook = signBookService.getUserSignBook(user);
     	if(signType != null) {
@@ -215,7 +226,7 @@ public class UserController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Content-Type", "application/json; charset=utf-8");
 		List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
-		List<SignBook> signBooks = SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList();
+		List<SignBook> signBooks = signBookRepository.findBySignBookType(SignBookType.group);
 		for(SignBook signBook : signBooks) {
 			PersonLdap personLdap = new PersonLdap();
 			personLdap.setUid("parapheur");
@@ -236,7 +247,7 @@ public class UserController {
 	
     void populateEditForm(Model uiModel, User user) {
         uiModel.addAttribute("user", user);
-        uiModel.addAttribute("files", Document.findAllDocuments());
+        uiModel.addAttribute("files", documentRepository.findAll());
     }
 
 	@Scheduled(fixedDelay = 5000)

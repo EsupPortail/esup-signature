@@ -17,26 +17,31 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import org.apache.commons.codec.binary.Base64;
-import org.esupportail.esupsignature.domain.Document;
-import org.esupportail.esupsignature.domain.Log;
-import org.esupportail.esupsignature.domain.SignBook;
-import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
-import org.esupportail.esupsignature.domain.SignBook.SignBookType;
-import org.esupportail.esupsignature.domain.SignRequest;
-import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
-import org.esupportail.esupsignature.domain.SignRequestParams;
-import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
-import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
-import org.esupportail.esupsignature.domain.User;
-import org.esupportail.esupsignature.domain.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.Log;
+import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignBook.DocumentIOType;
+import org.esupportail.esupsignature.entity.SignBook.SignBookType;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
+import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
+import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureNexuException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
+import org.esupportail.esupsignature.repository.LogRepository;
+import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
@@ -63,6 +68,12 @@ public class SignRequestService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestService.class);
 
+	@Autowired
+	private SignRequestRepository signRequestRepository;
+
+	@Autowired
+	private LogRepository logRepository;
+	
 	@Resource
 	private UserKeystoreService userKeystoreService;
 
@@ -75,15 +86,24 @@ public class SignRequestService {
 	@Resource
 	private DocumentService documentService;
 
+	@Autowired
+	private SignBookRepository signBookRepository;
+	
 	@Resource
 	private SignBookService signBookService;
 
+	@Autowired
+	private SignRequestParamsRepository signRequestParamsRepository; 
+	
 	@Autowired
 	private SigningService signingService;
 
 	@Resource
 	private FileService fileService;
 
+	@Autowired
+	private UserRepository userRepository;
+	
 	@Resource
 	private UserService userService;
 	
@@ -99,15 +119,21 @@ public class SignRequestService {
 	
 	private String step = "";
 	
+	public List<SignRequest> getAllSignRequests() {
+		List<SignRequest> list = new ArrayList<SignRequest>();
+		signRequestRepository.findAll().forEach(e -> list.add(e));
+		return list;
+	}
+	
 	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status) {
 		return findSignRequestByUserAndStatusEquals(user, true, status, null, null);
 	}
 	
 	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, Boolean toSign, SignRequestStatus status, Integer page, Integer size) {
-		List<SignBook> signBooks = SignBook.findSignBooksByRecipientEmailsEquals(Arrays.asList(user.getEmail())).getResultList();
+		List<SignBook> signBooks = signBookRepository.findByRecipientEmails(Arrays.asList(user.getEmail()));
 		List<SignRequest> signRequests = new ArrayList<>();
 		for(SignBook signBook : signBooks) {
-			for(SignRequest signRequest : SignRequest.findAllSignRequests()) {
+			for(SignRequest signRequest : getAllSignRequests()) {
 				if(signRequest.getSignBooks().containsKey(signBook.getId()) && (status == null || signRequest.getStatus().equals(status))) {
 					signRequests.add(signRequest);							
 				}
@@ -115,12 +141,12 @@ public class SignRequestService {
 		}
 		List<Log> logs;
 		if(toSign) {
-			logs = Log.findLogsByEppnAndActionEquals(user.getEppn(), "sign").getResultList();
+			logs = logRepository.findByEppnAndAction(user.getEppn(), "sign");
 		} else {
-			logs = Log.findLogsByEppnEquals(user.getEppn()).getResultList();
+			logs = logRepository.findByEppn(user.getEppn());
 		}
 		for(Log log : logs) {
-			SignRequest signRequest = SignRequest.findSignRequest(log.getSignRequestId());
+			SignRequest signRequest = signRequestRepository.findById(log.getSignRequestId()).get();
 			if(signRequest != null && !signRequests.contains(signRequest) && (status == null || signRequest.getStatus().equals(status))) {
 				signRequests.add(signRequest);
 			}
@@ -151,7 +177,7 @@ public class SignRequestService {
 		signRequest.setStatus(SignRequestStatus.draft);
 		signRequest.setSignRequestParams(signRequestParams);
 		signRequest.setOriginalDocuments(documents);
-		signRequest.persist();
+		signRequestRepository.save(signRequest);
 		for(Document document : documents) {
 			document.setParentId(signRequest.getId());
 		}
@@ -354,9 +380,9 @@ public class SignRequestService {
 	public void pendingSignRequest(SignRequest signRequest, User user) {
 		updateStatus(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_sendforsign", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
 		for(Long signBookId : signRequest.getSignBooks().keySet()) {
-			SignBook signBook = SignBook.findSignBook(signBookId);
+			SignBook signBook = signBookRepository.findById(signBookId).get();
 			for(String emailRecipient : signBook.getRecipientEmails()) {
-				User recipient = User.findUsersByEmailEquals(emailRecipient).getSingleResult();
+				User recipient = userRepository.findByEmail(emailRecipient).get(0);
 				//TODO : add force email alert
 				if(user.getEmailAlertFrequency() == null|| user.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(user)) {
 					userService.sendEmailAlert(recipient);
@@ -418,7 +444,7 @@ public class SignRequestService {
 		} else {
 			log.setFinalStatus(signRequest.getStatus().toString());
 		}
-		log.persist();
+		logRepository.save(log);
 		//signRequest.merge();
 	}
 
@@ -453,7 +479,7 @@ public class SignRequestService {
 		} else {
 			signRequest.setAllSignToComplete(true);
 		}
-		signRequest.merge();
+		signRequestRepository.save(signRequest);
 	}
 	
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {
@@ -469,7 +495,7 @@ public class SignRequestService {
 
 	public boolean checkUserViewRights(User user, SignRequest signRequest) {
 		if(signRequest != null) {
-			List<Log> log = Log.findLogsByEppnAndSignRequestIdEquals(user.getEppn(), signRequest.getId()).getResultList();
+			List<Log> log = logRepository.findByEppnAndSignRequestId(user.getEppn(), signRequest.getId());
 			SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 			if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0 || signBook != null) {
 				return true;
@@ -485,7 +511,7 @@ public class SignRequestService {
 		//signRequestParams.setYPos(0);
 		signRequestParams.setNewPageType(NewPageType.none);
 		signRequestParams.setSignType(SignType.visa);
-		signRequestParams.persist();
+//		signRequestParamsRepository.save(signRequestParams);
 		return signRequestParams;
 	}
 	

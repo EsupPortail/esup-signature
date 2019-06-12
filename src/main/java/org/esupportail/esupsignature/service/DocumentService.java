@@ -11,13 +11,21 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.esupportail.esupsignature.domain.BigFile;
-import org.esupportail.esupsignature.domain.Document;
+import org.esupportail.esupsignature.entity.BigFile;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.repository.DocumentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class DocumentService {
+	
+	@Autowired
+	private DocumentRepository documentRepository;
+	
+	@Resource
+	private BigFileService bigFileService;
 	
 	@Resource
 	private FileService fileService;
@@ -49,18 +57,18 @@ public class DocumentService {
         return persistDocument(inputStream, name, size, contentType);
     }
 	
-	public Document persistDocument(InputStream inputStream, String name, long size, String contentType) throws IOException {
+	public Document persistDocument(InputStream inputStream, String name, long size, String contentType)
+			throws IOException {
 		Document document = new Document();
 		document.setCreateDate(new Date());
-        document.setFileName(name);
-        BigFile bigFile = new BigFile();
-        bigFile.setBinaryFileStream(inputStream, size);
-        bigFile.persist();
-        document.setBigFile(bigFile);
-        document.setSize(size);
-        document.setContentType(contentType);
-        document.persist();
-        return document;
+		document.setFileName(name);
+		BigFile bigFile = new BigFile();
+		bigFileService.setBinaryFileStream(bigFile, inputStream, size);
+		document.setBigFile(bigFile);
+		document.setSize(size);
+		document.setContentType(contentType);
+		documentRepository.save(document);
+		return document;
 	}
 	
 }

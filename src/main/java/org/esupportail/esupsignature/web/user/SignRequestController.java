@@ -16,21 +16,27 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.domain.Document;
-import org.esupportail.esupsignature.domain.Log;
-import org.esupportail.esupsignature.domain.SignBook;
-import org.esupportail.esupsignature.domain.SignBook.SignBookType;
-import org.esupportail.esupsignature.domain.SignRequest;
-import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
-import org.esupportail.esupsignature.domain.SignRequestParams;
-import org.esupportail.esupsignature.domain.SignRequestParams.NewPageType;
-import org.esupportail.esupsignature.domain.SignRequestParams.SignType;
-import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.Log;
+import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignBook.SignBookType;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
+import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
+import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureNexuException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
+import org.esupportail.esupsignature.repository.DocumentRepository;
+import org.esupportail.esupsignature.repository.LogRepository;
+import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -40,6 +46,7 @@ import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
@@ -79,9 +86,6 @@ public class SignRequestController {
 	private long passwordTimeout;
 
 	@Resource
-	private UserService userService;
-	
-	@Resource
 	private ReloadableResourceBundleMessageSource messageSource;
 	
 	@ModelAttribute("user")
@@ -100,12 +104,33 @@ public class SignRequestController {
 		this.password = password;
 	}
 
+	@Autowired
+	private UserRepository userRepository;
+
+	@Resource
+	private UserService userService;
+
+	@Autowired
+	private SignRequestRepository signRequestRepository;
+	
 	@Resource
 	private SignRequestService signRequestService;
 
+	@Autowired
+	private SignRequestParamsRepository signRequestParamsRepository; 
+	
+	@Autowired
+	private SignBookRepository signBookRepository;
+	
 	@Resource
 	private SignBookService signBookService;
 
+	@Autowired
+	private LogRepository logRepository;
+
+	@Autowired
+	private DocumentRepository documentRepository;
+	
 	@Resource
 	private DocumentService documentService;
 
@@ -153,9 +178,9 @@ public class SignRequestController {
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
 		
-		List<SignBook> signBooks = SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList();
+		List<SignBook> signBooks = signBookRepository.findBySignBookType(SignBookType.group);
 		if(signBookId != null) {	
-			signRequests.addAll(SignBook.findSignBook(signBookId).getSignRequests());
+			signRequests.addAll(signBookRepository.findById(signBookId).get().getSignRequests());
 		} else {
 		if(toSign != null) {
 			if(toSign) {
@@ -163,9 +188,8 @@ public class SignRequestController {
 				signRequests = signRequests.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 				nrOfPages = (float) signRequestService.findSignRequestByUserAndStatusEquals(user, statusFilterEnum).size() / sizeNo;
 			} else {
-				signRequests = SignRequest.findSignRequests(user.getEppn(), statusFilterEnum, "", page, size, sortFieldName, sortOrder)
-						.getResultList();
-				nrOfPages = (float) SignRequest.countFindSignRequests(user.getEppn(), statusFilterEnum, "") / sizeNo;
+				signRequests = signRequestService.getAllSignRequests();
+				nrOfPages = (float) signRequestRepository.count();
 				
 			}
 		} else {
@@ -179,7 +203,7 @@ public class SignRequestController {
 		uiModel.addAttribute("toSign", toSign);
 		uiModel.addAttribute("signBookId", signBookId);
 		uiModel.addAttribute("nbToSignRequests",signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending).size());
-		uiModel.addAttribute("nbPedingSignRequests", SignRequest.countFindSignRequestsByCreateByAndStatusEquals(user.getEppn(), SignRequestStatus.pending));
+		uiModel.addAttribute("nbPedingSignRequests", signRequestRepository.countByCreateByAndStatus(user.getEppn(), SignRequestStatus.pending));
 		uiModel.addAttribute("signRequests", signRequests);
 		uiModel.addAttribute("signBooks", signBooks);
 		uiModel.addAttribute("statusFilter", statusFilterEnum);
@@ -197,9 +221,9 @@ public class SignRequestController {
 		}
 		
 		addDateTimeFormatPatterns(uiModel);
-		SignRequest signRequest = SignRequest.findSignRequest(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
-			uiModel.addAttribute("signBooks", SignBook.findAllSignBooks());
+			uiModel.addAttribute("signBooks", signBookService.getAllSignBooks());
 			List<SignBook> originalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
 			if(originalSignBooks.size() > 0) {
 				SignBook originalSignBook = originalSignBooks.get(0);
@@ -232,7 +256,7 @@ public class SignRequestController {
 				uiModel.addAttribute("documentType", fileService.getExtension(toDisplayFile));		
 				uiModel.addAttribute("documentId", toDisplayDocument.getId());
 			}
-			List<Log> logs = Log.findLogsBySignRequestIdEquals(signRequest.getId()).getResultList();
+			List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
 			uiModel.addAttribute("logs", logs);
 			uiModel.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
 			if(user.getSignImage() != null) {
@@ -258,8 +282,8 @@ public class SignRequestController {
 			}
 			uiModel.addAttribute("originalSignBooks", signBookService.getSignBookBySignRequest(signRequest));
 			List<SignBook> allSignBooks = new ArrayList<SignBook>();
-			allSignBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.workflow).getResultList());
-			allSignBooks.addAll(SignBook.findSignBooksBySignBookTypeEquals(SignBookType.group).getResultList());
+			allSignBooks.addAll(signBookRepository.findBySignBookType(SignBookType.workflow));
+			allSignBooks.addAll(signBookRepository.findBySignBookType(SignBookType.group));
 			uiModel.addAttribute("allSignBooks", allSignBooks);
 			uiModel.addAttribute("nbSignOk", signRequest.countSignOk());
 			return "user/signrequests/show";
@@ -275,7 +299,7 @@ public class SignRequestController {
 		populateEditForm(uiModel, new SignRequest());
 		User user = userService.getUserFromAuthentication();
 		uiModel.addAttribute("mySignBook", signBookService.getUserSignBook(user));
-		uiModel.addAttribute("allSignBooks", SignBook.findAllSignBooks());
+		uiModel.addAttribute("allSignBooks", signBookService.getAllSignBooks());
 		return "user/signrequests/create";
 	}
 
@@ -300,15 +324,15 @@ public class SignRequestController {
 			signRequestParams.setSignType(SignType.valueOf(signType));
 			signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
 			signRequestParams.setSignPageNumber(1);
-			signRequestParams.persist();
+			signRequestParamsRepository.save(signRequestParams);
 		}
 		//TODO si signbook type workflow == 1 seul
 		signRequest = signRequestService.createSignRequest(signRequest, user, signRequestParams);
 		List<SignBook> signBooks = new ArrayList<>();
 		if(signBookNames != null && signBookNames.length > 0) {
 			for(String signBookName : signBookNames) {
-				if(SignBook.countFindSignBooksByNameEquals(signBookName) > 0) {
-					signBooks.add(SignBook.findSignBooksByNameEquals(signBookName).getSingleResult());
+				if(signBookRepository.countByName(signBookName) > 0) {
+					signBooks.add(signBookRepository.findByName(signBookName).get(0));
 				} else {
 					signBooks.add(signBookService.getUserSignBookByRecipientEmail(signBookName));
 				}
@@ -331,7 +355,7 @@ public class SignRequestController {
 		logger.info("start add documents");
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
-		SignRequest signRequest = SignRequest.findSignRequest(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
 			try {
 				if(signRequest.getOriginalDocuments().size() > 0 && 
@@ -341,7 +365,7 @@ public class SignRequestController {
 				}
 				List<Document> documents =  documentService.createDocuments(multipartFiles);
 				signRequestService.addOriginalDocuments(signRequest, documents);
-				signRequest.merge();
+				signRequestRepository.save(signRequest);
 			} catch (IOException e) {
 				logger.error("error to add file : " + multipartFiles[0].getOriginalFilename(), e);
 			}
@@ -355,8 +379,8 @@ public class SignRequestController {
 	public String removeDocument(@PathVariable("id") Long id, HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
-		Document document = Document.findDocument(id);
-		SignRequest signRequest = SignRequest.findSignRequest(document.getParentId());
+		Document document = documentRepository.findById(id).get();
+		SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			signRequest.getOriginalDocuments().remove(document);
 		}
@@ -378,18 +402,18 @@ public class SignRequestController {
 		}
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
-		SignRequest signRequest = SignRequest.findSignRequest(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			if(!signRequest.isOverloadSignBookParams()) {
-				SignBook signBook = SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(user.getEmail()), SignBookType.user).getSingleResult();
+				SignBook signBook =  signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0);
 				signRequest.setSignRequestParams(signBook.getSignRequestParams().get(0));
-				signRequest.merge();
+				signRequestRepository.save(signRequest);
 			}
 			if(signPageNumber != null) {
 				signRequest.getSignRequestParams().setSignPageNumber(signPageNumber);
 				signRequest.getSignRequestParams().setXPos(xPos);
 				signRequest.getSignRequestParams().setYPos(yPos);
-				signRequest.merge();
+				signRequestRepository.save(signRequest);
 			}
 			if (!"".equals(password)) {
 	        	setPassword(password);
@@ -397,7 +421,7 @@ public class SignRequestController {
 			try {
 				signRequest.setComment(comment);
 				signRequestService.sign(signRequest, user, this.password, addDate);
-				signRequest.merge();
+				signRequestRepository.save(signRequest);
 			} catch (EsupSignatureKeystoreException e) {
 				logger.error("keystore error", e);
 				redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
@@ -432,7 +456,7 @@ public class SignRequestController {
 		float nbSigned = 0;
 		progress = "0";
 		for(Long id : ids){
-			SignRequest signRequest = SignRequest.findSignRequest(id);
+			SignRequest signRequest = signRequestRepository.findById(id).get();
 			SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 			if (signRequestService.checkUserSignRights(user, signRequest)) {
 				if (!"".equals(password)) {
@@ -491,7 +515,7 @@ public class SignRequestController {
 			Model model, HttpServletRequest request) throws SQLException {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
-		SignRequest signRequest = SignRequest.findSignRequest(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (!signRequestService.checkUserSignRights(user, signRequest)) {
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
 			return "redirect:/user/signrequests/" + id;
@@ -504,15 +528,15 @@ public class SignRequestController {
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
 	public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page,
 			@RequestParam(value = "size", required = false) Integer size, Model uiModel) {
-		SignRequest signRequest = SignRequest.findSignRequest(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		
 		signBookService.removeSignRequestFromAllSignBooks(signRequest);
 		
-		List<Log> logs = Log.findLogsBySignRequestIdEquals(id).getResultList();
+		List<Log> logs = logRepository.findBySignRequestId(id);
 		for(Log log : logs) {
-			log.remove();
+			logRepository.delete(log);
 		}
-		signRequest.remove();
+		signRequestRepository.delete(signRequest);
 		uiModel.asMap().clear();
 		uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
 		uiModel.addAttribute("size", (size == null) ? "10" : size.toString());
@@ -521,7 +545,7 @@ public class SignRequestController {
 
 	@RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
 	public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
-		SignRequest signRequest = SignRequest.findSignRequest(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		User user = userService.getUserFromAuthentication();
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
 			Document document = signRequestService.getLastSignedDocument(signRequest);
@@ -539,7 +563,7 @@ public class SignRequestController {
 
 	@RequestMapping(value = "/toggle-need-all-sign/{id}", method = RequestMethod.GET)
 	public String toggleNeedAllSign(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
-		SignRequest signRequest = SignRequest.findSignRequest(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		signRequestService.toggleNeedAllSign(signRequest);
 		return "redirect:/user/signrequests/" + id;
 	}
@@ -552,17 +576,17 @@ public class SignRequestController {
 			RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
-		SignRequest signRequest = SignRequest.findSignRequest(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequest.getCreateBy().equals(user.getEppn())) {
 			if(signBookNames != null && signBookNames.length > 0) {
 				for(String signBookName : signBookNames) {
 					SignBook signBook;
-					if(SignBook.countFindSignBooksByNameEquals(signBookName) == 0 && SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(signBookName), SignBookType.user) == 0) {
+					if(signBookRepository.countByName(signBookName) == 0 && signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user) == 0) {
 						signBook = userService.createUser(signBookName);
 						//recipientEmails.add(signBookName);
 					} else {
-						if(SignBook.countFindSignBooksByNameEquals(signBookName) > 0) {
-							signBook = SignBook.findSignBooksByNameEquals(signBookName).getSingleResult();
+						if(signBookRepository.countByName(signBookName) > 0) {
+							signBook = signBookRepository.findByName(signBookName).get(0);
 						} else {
 							signBook = signBookService.getUserSignBookByRecipientEmail(signBookName);
 						}
@@ -591,7 +615,7 @@ public class SignRequestController {
 			HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) throws EsupSignatureException {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
-		SignRequest signRequest = SignRequest.findSignRequest(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
 			SignBook originalSignBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
 			signRequestService.completeSignRequest(signRequest, originalSignBook, user);
@@ -607,7 +631,7 @@ public class SignRequestController {
 			HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
-		SignRequest signRequest = SignRequest.findSignRequest(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		signRequest.setComment(comment);
 		if(signRequestService.checkUserViewRights(user, signRequest) && signRequest.getStatus().equals(SignRequestStatus.draft)) {
 			signRequestService.pendingSignRequest(signRequest, user);
@@ -623,7 +647,7 @@ public class SignRequestController {
 			HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
-		SignRequest signRequest = SignRequest.findSignRequest(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
 			signRequestService.updateStatus(signRequest, null, messageSource.getMessage("updateinfo_addcomment", null, Locale.FRENCH), user, "SUCCESS", comment);
 		} else {
@@ -635,7 +659,6 @@ public class SignRequestController {
 	void populateEditForm(Model uiModel, SignRequest signRequest) {
 		uiModel.addAttribute("signRequest", signRequest);
 		addDateTimeFormatPatterns(uiModel);
-		uiModel.addAttribute("files", Document.findAllDocuments());
 		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
 		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
 	}

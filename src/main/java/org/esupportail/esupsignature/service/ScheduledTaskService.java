@@ -6,14 +6,16 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.esupportail.esupsignature.domain.SignBook;
-import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.dss.web.service.OJService;
+import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +35,7 @@ public class ScheduledTaskService {
 
 	@Transactional
 	public void scanAllSignbooksSources() throws EsupStockException {
-		List<SignBook> signBooks = SignBook.findAllSignBooks();
+		List<SignBook> signBooks = signBookService.getAllSignBooks();
 		for(SignBook signBook : signBooks) {
 			try {
 				signBookService.importFilesFromSource(signBook, getSchedulerUser());
@@ -46,7 +48,7 @@ public class ScheduledTaskService {
 
 	@Transactional
 	public void scanAllSignbooksTargets() throws EsupSignatureException {
-		List<SignBook> signBooks = SignBook.findAllSignBooks();
+		List<SignBook> signBooks = signBookService.getAllSignBooks();
 		for(SignBook signBook : signBooks) {
 			signBookService.exportFilesToTarget(signBook, getSchedulerUser());
 		}
@@ -54,7 +56,7 @@ public class ScheduledTaskService {
 	
 	@Transactional
 	public void sendAllEmailAlerts() throws EsupSignatureException {
-		List<User> users = User.findAllUsers();
+		List<User> users = userService.getAllUsers();
 		for(User user : users) {
 			logger.debug("check email alert for " + user.getEppn());
 			if(userService.checkEmailAlert(user)) {

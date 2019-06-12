@@ -14,16 +14,20 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import org.esupportail.esupsignature.domain.Document;
-import org.esupportail.esupsignature.domain.SignBook;
-import org.esupportail.esupsignature.domain.SignBook.DocumentIOType;
-import org.esupportail.esupsignature.domain.SignBook.SignBookType;
-import org.esupportail.esupsignature.domain.SignRequest;
-import org.esupportail.esupsignature.domain.SignRequest.SignRequestStatus;
-import org.esupportail.esupsignature.domain.SignRequestParams;
-import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignBook.DocumentIOType;
+import org.esupportail.esupsignature.entity.SignBook.SignBookType;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
+import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.repository.DocumentRepository;
+import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
+import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
@@ -33,6 +37,7 @@ import org.esupportail.esupsignature.service.fs.opencmis.CmisAccessImpl;
 import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.stereotype.Service;
@@ -43,6 +48,18 @@ public class SignBookService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignBookService.class);
 
+	@Autowired
+	private SignBookRepository signBookRepository;
+	
+	@Autowired
+	private DocumentRepository documentRepository;
+	
+	@Autowired
+	private UserRepository userRepository;
+	
+	@Autowired
+	private SignRequestParamsRepository signRequestParamsRepository; 
+	
 	@Resource
 	private FileService fileService;
 
@@ -72,6 +89,13 @@ public class SignBookService {
 	@Value("${sign.defaultPositionY}")
 	private int defaultPositionY;
 	
+	
+	public List<SignBook> getAllSignBooks() {
+		List<SignBook> list = new ArrayList<SignBook>();
+		signBookRepository.findAll().forEach(e -> list.add(e));
+		return list;
+	}
+	
 	private FsAccessService getFsAccessService(DocumentIOType type) {
 		FsAccessService fsAccessService = null;
 		switch (type) {
@@ -92,7 +116,7 @@ public class SignBookService {
 	
 	public void creatorSignBook() {
 		SignBook signBook;
-		if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList("creator"), SignBookType.system) == 0) {
+		if(signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList("creator"), SignBookType.system) == 0) {
 			signBook = new SignBook();
 			signBook.setName("Créateur de la demande");
 			signBook.setRecipientEmails(Arrays.asList("creator"));
@@ -104,7 +128,7 @@ public class SignBookService {
 			signBook.setTargetType(DocumentIOType.none);
 			signBook.setSignRequestParams(new ArrayList<>());
 			signBook.getSignRequestParams().add(signRequestService.getEmptySignRequestParams());
-			signBook.persist();
+			signBookRepository.save(signBook);
 		}
 		
 	}
@@ -121,9 +145,9 @@ public class SignBookService {
 		signBook.setSignBookType(SignBookType.user);
 		signBook.setSourceType(DocumentIOType.none);
 		signBook.setTargetType(DocumentIOType.none);
-		signBook.setSignRequestParams(new ArrayList<>());
+		signBook.setSignRequestParams(new ArrayList<SignRequestParams>());
 		signBook.getSignRequestParams().add(signRequestService.getEmptySignRequestParams());
-		signBook.persist();
+		signBookRepository.save(signBook);
 		return signBook;
 	}
 	
@@ -152,30 +176,30 @@ public class SignBookService {
 				Document oldModel = signBookToUpdate.getModelFile();
 				signBookToUpdate.setModelFile(newModel);
 				if(oldModel != null) {
-					oldModel.remove();
+					documentRepository.delete(oldModel);
 				}
 			}
 			newModel.setParentId(signBookToUpdate.getId());
 		}
-		signBookToUpdate.merge();
+		signBookRepository.save(signBook);
 		
 	}
 	
 	public void createGroupSignBook(SignBook signBook, User user, SignRequestParams signRequestParams, MultipartFile multipartFile) throws EsupSignatureException {
-		if(SignBook.countFindSignBooksByNameEquals(signBook.getName()) == 0) {
-			signRequestParams.persist();
+		if(signBookRepository.countByName(signBook.getName()) == 0) {
+			signRequestParamsRepository.save(signRequestParams);
 			signBook.setSignBookType(SignBookType.group);
 			signBook.setCreateBy(user.getEppn());
 			signBook.setCreateDate(new Date());
 			signBook.getRecipientEmails().removeAll(Collections.singleton(""));
 			for(String recipientEmail : signBook.getRecipientEmails()) {
-				if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.user) == 0) {
+				if(signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.user) == 0) {
 					userService.createUser(recipientEmail);
 				}
 			}
 			signBook.getModeratorEmails().removeAll(Collections.singleton(""));
 			for(String moderatorEmail : signBook.getModeratorEmails()) {
-				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(moderatorEmail)) == 0) {
+				if(signBookRepository.countByRecipientEmails(Arrays.asList(moderatorEmail)) == 0) {
 					userService.createUser(moderatorEmail);
 				}
 			}
@@ -194,7 +218,7 @@ public class SignBookService {
 			signBook.getSignRequestParams().add(signRequestParams);
 			signBook.setSourceType(DocumentIOType.none);
 			signBook.setTargetType(DocumentIOType.none);
-			signBook.persist();
+			signBookRepository.save(signBook);
 			if(model != null) {
 				model.setParentId(signBook.getId());
 			}
@@ -204,8 +228,8 @@ public class SignBookService {
 	}
 	
 	public void createWorkflowSignBook(SignBook signBook, User user, SignRequestParams signRequestParams, MultipartFile multipartFile) throws EsupSignatureException {
-		if(SignBook.countFindSignBooksByNameEquals(signBook.getName()) == 0) {
-			signRequestParams.persist();
+		if(signBookRepository.countByName(signBook.getName()) == 0) {
+			signRequestParamsRepository.save(signRequestParams);
 			signBook.setSignBookType(SignBookType.workflow);
 			signBook.setCreateBy(user.getEppn());
 			signBook.setCreateDate(new Date());
@@ -215,16 +239,17 @@ public class SignBookService {
 			signBook.setRecipientEmails(null);
 			
 			for(String signBookStepName : signBookStepNames) {
-				SignBook signBookStep = SignBook.findSignBooksByNameEquals(signBookStepName).getSingleResult();
+				SignBook signBookStep = signBookRepository.findByName(signBookStepName).get(0);
 				signBook.getSignBooks().add(signBookStep);
 			}
-			
+			/*
 			signBook.getModeratorEmails().removeAll(Collections.singleton(""));
 			for(String moderatorEmail : signBook.getModeratorEmails()) {
 				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(moderatorEmail)) == 0) {
 					userService.createUser(moderatorEmail);
 				}
 			}
+			*/
 			Document model = null;
 			if(multipartFile != null) {
 				try {
@@ -241,7 +266,7 @@ public class SignBookService {
 			//TODO manage target
 			signBook.setSourceType(DocumentIOType.none);
 			signBook.setTargetType(DocumentIOType.none);
-			signBook.persist();
+			signBookRepository.save(signBook);
 			if(model != null) {
 				model.setParentId(signBook.getId());
 			}
@@ -256,7 +281,7 @@ public class SignBookService {
 				deleteSignBook(signBookStep);
 			}
 			signBook.setSignBooks(null);
-			signBook.remove();
+			signBookRepository.delete(signBook);
 		}
 	}
 	
@@ -264,7 +289,7 @@ public class SignBookService {
 		signBook.getSignRequestParams().get(0).setSignPageNumber(1);
 		signBook.getSignRequestParams().get(0).setXPos(defaultPositionX);
 		signBook.getSignRequestParams().get(0).setYPos(defaultPositionY);
-		signBook.merge();
+		signBookRepository.save(signBook);
 	}
 	
 	public void importFilesFromSource(SignBook signBook, User user) throws EsupSignatureIOException, EsupStockException {
@@ -286,8 +311,8 @@ public class SignBookService {
 						logger.info("adding file : " + fsFile.getFile().getName());
 						fsFile.setPath(signBook.getDocumentsSourceUri());
 						Document documentToAdd = documentService.createDocument(fsFile.getFile(), fsFile.getName(), fsFile.getContentType());
-						if (fsFile.getCreateBy() != null && User.countFindUsersByEppnEquals(fsFile.getCreateBy()) > 0) {
-							user = User.findUsersByEppnEquals(fsFile.getCreateBy()).getSingleResult();
+						if (fsFile.getCreateBy() != null && userRepository.countByEppn(fsFile.getCreateBy()) > 0) {
+							user = userRepository.findByEppn(fsFile.getCreateBy()).get(0);
 							user.setIp("127.0.0.1");
 						}
 						List<String> signBookRecipientsEmails = new ArrayList<>();
@@ -386,7 +411,7 @@ public class SignBookService {
 			signRequests.addAll(signBook.getSignRequests());
 			signRequests.remove(signRequest);
 			signBook.setSignRequests(signRequests);
-			signBook.merge();
+			signBookRepository.save(signBook);
 		}
 		signRequest.getSignBooks().clear();
 	}
@@ -394,13 +419,13 @@ public class SignBookService {
 	public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook, User user) {
 		signRequest.getSignBooks().remove(signBook.getId());
 		signBook.getSignRequests().remove(signRequest);
-		signBook.merge();
+		signBookRepository.save(signBook);
 	}
 	
 	public SignBook getSignBookBySignRequestAndUser(SignRequest signRequest, User user) {
 		if (signRequest.getSignBooks().size() > 0) {
 			for(Map.Entry<Long, Boolean> signBookId : signRequest.getSignBooks().entrySet()) {
-				SignBook signBook = SignBook.findSignBook(signBookId.getKey());
+				SignBook signBook = signBookRepository.findById(signBookId.getKey()).get();
 				if(signBook.getRecipientEmails().contains(user.getEmail()) && signRequest.getSignBooks().containsKey(signBookId.getKey())) {
 					return signBook;
 				}
@@ -415,15 +440,15 @@ public class SignBookService {
 	}
 	
 	public SignBook getUserSignBookByRecipientEmail(String recipientEmail) {
-		if(SignBook.countFindSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.user) > 0) {
-			return SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.user).getSingleResult();
+		if(signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.user) > 0) {
+			return signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.user).get(0);
 		} else {
-			return SignBook.findSignBooksByRecipientEmailsAndSignBookTypeEquals(Arrays.asList(recipientEmail), SignBookType.system).getSingleResult();
+			return signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.system).get(0);
 		}
 	}
 	
 	public List<SignBook> getSignBookBySignRequest(SignRequest signRequest) {
-		List<SignBook> signBooks = SignBook.findSignBooksBySignRequestsEquals(Arrays.asList(signRequest)).getResultList();
+		List<SignBook> signBooks = signBookRepository.findBySignRequests(Arrays.asList(signRequest));
 		return signBooks;
 	}
 	

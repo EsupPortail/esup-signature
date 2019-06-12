@@ -2,9 +2,10 @@ package org.esupportail.esupsignature.web.manager;
 
 import javax.annotation.Resource;
 
-import org.esupportail.esupsignature.domain.Log;
-import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -21,6 +22,9 @@ public class LogController {
 		return "manager/logs";
 	}
 	
+	@Autowired
+	private LogRepository logRepository;
+	
 	@Resource
 	private UserService userService;
 	
@@ -32,7 +36,7 @@ public class LogController {
 	@RequestMapping(value = "/{id}", produces = "text/html")
     public String show(@PathVariable("id") Long id, Model uiModel) {
         addDateTimeFormatPatterns(uiModel);
-        uiModel.addAttribute("log", Log.findLog(id));
+        uiModel.addAttribute("log", logRepository.findById(id).get());
         uiModel.addAttribute("itemId", id);
         return "manager/logs/show";
     }
@@ -42,11 +46,11 @@ public class LogController {
         if (page != null || size != null) {
             int sizeNo = size == null ? 10 : size.intValue();
             final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
-            uiModel.addAttribute("logs", Log.findLogEntries(firstResult, sizeNo, sortFieldName, sortOrder));
-            float nrOfPages = (float) Log.countLogs() / sizeNo;
+            uiModel.addAttribute("logs", logRepository.findAll());
+            float nrOfPages = (float) logRepository.count() / sizeNo;
             uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
         } else {
-            uiModel.addAttribute("logs", Log.findAllLogs(sortFieldName, sortOrder));
+            uiModel.addAttribute("logs", logRepository.findAll());
         }
         addDateTimeFormatPatterns(uiModel);
         return "manager/logs/list";

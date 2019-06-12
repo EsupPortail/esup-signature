@@ -69,7 +69,7 @@ public class OJService {
 	@Autowired
 	private DataLoader dataLoader;
 	
-	@Resource(name="trustedCertificatUrlList")
+	@Resource
 	private List<String> trustedCertificatUrlList;
 	
 	@Autowired
@@ -78,7 +78,7 @@ public class OJService {
 	@Resource
 	private FileService fileService;
 	
-	@Scheduled(fixedDelay=Long.MAX_VALUE, initialDelay=10000)
+	//@Scheduled(fixedDelay=Long.MAX_VALUE, initialDelay=10000)
 	public void getCertificats() throws MalformedURLException, IOException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
 		Security.addProvider(new BouncyCastleProvider());
 		List<ServiceInfo> serviceInfos = getServicesInfos();

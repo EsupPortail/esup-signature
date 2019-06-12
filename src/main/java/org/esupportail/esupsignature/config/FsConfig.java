@@ -8,8 +8,11 @@ import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
 
 @Configuration
+@PropertySources({@PropertySource("fs.properties")})
 public class FsConfig {
 
 	@Value("${fs.cifs.uri}")

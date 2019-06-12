@@ -10,13 +10,13 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.esupportail.esupsignature.domain.SignRequestParams;
-import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.dss.web.WebAppUtils;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.ExtensionForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
+import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;

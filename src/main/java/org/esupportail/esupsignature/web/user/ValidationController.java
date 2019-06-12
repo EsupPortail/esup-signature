@@ -6,12 +6,13 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
-import org.esupportail.esupsignature.domain.Document;
-import org.esupportail.esupsignature.domain.SignRequest;
-import org.esupportail.esupsignature.domain.User;
 import org.esupportail.esupsignature.dss.web.model.ValidationForm;
 import org.esupportail.esupsignature.dss.web.service.FOPService;
 import org.esupportail.esupsignature.dss.web.service.XSLTService;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
@@ -65,6 +66,9 @@ public class ValidationController {
 	@Resource
 	private FileService fileService;
 
+	@Autowired
+	private SignRequestRepository signRequestRepository;
+	
 	@Resource
 	private SignRequestService signRequestService;
 	
@@ -95,7 +99,7 @@ public class ValidationController {
 	@Transactional
 	@RequestMapping(value = "/document/{id}")
 	public String validateDocument(@PathVariable(name="id") long id, Model model) {
-		SignRequest signRequest = SignRequest.findSignRequest(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		Document toValideDocument = signRequestService.getLastSignedDocument(signRequest);
 		Reports reports = validationService.validate(fileService.toMultipartFile(toValideDocument.getJavaIoFile(), toValideDocument.getContentType()));
 		

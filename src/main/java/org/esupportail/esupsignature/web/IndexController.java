@@ -20,7 +20,7 @@ package org.esupportail.esupsignature.web;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import org.esupportail.esupsignature.domain.User;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -47,8 +47,10 @@ public class IndexController {
 	}
 	
 	@RequestMapping
-	public String index(HttpServletRequest request, Model uiModel) {
+	public String index(HttpServletRequest request, Model model) {
 		User user = userService.getUserFromAuthentication();
+		model.addAttribute("user", user);
+		System.err.println(user);
 		if(user != null) {
 			return "redirect:/user/signrequests/";
 		}
