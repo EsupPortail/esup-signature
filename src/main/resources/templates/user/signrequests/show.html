@@ -3,6 +3,24 @@
 <head th:replace="fragments/head :: head"></head>
 <body>
 	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+	<div class="row">
+	<div class="col-lg-9">
+		<nav aria-label="breadcrumb">
+		  <ol class="breadcrumb">
+    		<li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
+		    <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.name}"></span></li>
+		  </ol>
+		</nav>
+		</div>
+		<div class="col-lg-2 text-right">
+			<div th:replace="user/signrequests/includes/status :: status"></div>
+		</div>
+		<div class="col-lg-1 text-right align-self-center">
+			<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+				<i class="fas fa-info-circle"></i>
+			</button>
+		</div>
+		</div>
 	<div id="ribbon" class="card">
 		<div class="card-body">
 		<button type="button" onclick="document.getElementById('fc_org_esupportail_esupsignature_domain_SignRequest').submit();" class="mr-2 btn btn-outline-dark btn-light float-left">
@@ -17,22 +35,7 @@
 	<main role="main" class="">
 	<div class="card card-header">
 		<div class="row">
-			<div class="col-lg-9">
-			<nav aria-label="breadcrumb">
-			  <ol class="breadcrumb">
-	    		<li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
-			    <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.name}"></span></li>
-			  </ol>
-			</nav>
-			</div>
-			<div class="col-lg-2 text-right">
-				<div th:replace="user/signrequests/includes/status :: status"></div>
-			</div>
-			<div class="col-lg-1 text-right align-self-center">
-				<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
-					<i class="fas fa-info-circle"></i>
-				</button>
-			</div>
+			
 		</div>
 	</div>
 	<div aria-expanded="true" class="collapse" id="collapseHelp">

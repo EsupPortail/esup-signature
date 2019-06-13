@@ -3,21 +3,7 @@
 <head th:replace="fragments/head :: head"></head>
 <body>
 	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-	<div id="ribbon" class="card">
-		<div class="card-body">
-		<button type="button" onclick="document.getElementById('fc_org_esupportail_esupsignature_domain_SignRequest').submit();" class="mr-2 btn btn-outline-dark btn-light float-left">
-		<p class="text-center">
-		<i class="fas fa-save fa-2x"></i>
-		<br/>
-		Enregistrer
-		</p>
-		</button>
-		</div>
-		</div>
-	</div>	
-	<main role="main" class="container">
-	<div class="card card-header">
-		<nav class="nav justify-content-between" aria-label="breadcrumb">
+	<nav class="nav justify-content-between" aria-label="breadcrumb">
 			<div class="navbar-nav col-11">
 				<ol class="breadcrumb">
 					<li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
@@ -31,13 +17,28 @@
 			</div>
 		</nav>
 
-		<div id="collapseHelp" class="show" aria-expanded="true" style="">
+		<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
 		<div class="alert alert-info">
 			<p>Ce formulaire permet de soumettre à signature un ou plusieurs documents en selectionnant le parapheur qui convient</p>
 			<p>Après avoir saisi les paramètres de la demande, vous pourrez ajouter des documents</p>
 	    </div>
 	    </div>
 	</div>
+	<div id="ribbon" class="card">
+		<div class="card-body">
+		<button type="button" onclick="document.getElementById('fc_org_esupportail_esupsignature_domain_SignRequest').submit();" class="mr-2 btn btn-outline-dark btn-light float-left">
+		<p class="text-center">
+		<i class="fas fa-save fa-2x"></i>
+		<br/>
+		Enregistrer
+		</p>
+		</button>
+		</div>
+		</div>
+	</div>	
+	<main role="main" class="container">
+	<div class="card card-body bg-light">
+		
 
 	<form id="fc_org_esupportail_esupsignature_domain_SignRequest" multipart="true" action="/user/signrequests" method="post">
     <div class="row">

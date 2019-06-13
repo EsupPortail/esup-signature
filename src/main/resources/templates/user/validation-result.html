@@ -1,7 +1,8 @@
-<div xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:spring="http://www.springframework.org/tags" xmlns:util="urn:jsptagdir:/WEB-INF/tags/util" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:sec="http://www.springframework.org/security/tags" xmlns:form="http://www.springframework.org/tags/form">
-	<jsp:directive.page contentType="text/html;charset=UTF-8" />
-	<jsp:output omit-xml-declaration="yes" />
-	
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
 		<div class="card card-header">
 		<nav class="nav justify-content-between" aria-label="breadcrumb">
 			<div class="navbar-nav">
@@ -25,9 +26,9 @@
 	        <br/>
    			Légende :
    			<ul>
-	   			<li><button class="btn btn-success">&amp;nbsp;</button> : Succès</li>
-   				<li><button class="btn btn-warning">&amp;nbsp;</button> : Alerte</li>
-   				<li><button class="btn btn-danger">&amp;nbsp;</button> : Erreur</li>
+	   			<li><button class="btn btn-success"></button> : Succès</li>
+   				<li><button class="btn btn-warning"></button> : Alerte</li>
+   				<li><button class="btn btn-danger"></button> : Erreur</li>
    			</ul>
 		</div>
 	</div>
@@ -43,16 +44,16 @@
 					    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#detailed" role="tab" aria-controls="detailed" aria-selected="false">Detailed report</a>
 					  </li>
 					<li>		<a href="/user/validation/download-detailed-report" role="button" class="btn btn-primary">
-					<i class="fa fa-download" aria-hidden="true"><!--  --></i>&amp;nbsp;Download report</a>
+					<i class="fa fa-download" aria-hidden="true"></i> Download report</a>
 					</li>
 					</ul>
 					<div class="tab-content" id="myTabContent">
-						<div class="tab-pane fade show active" id="simple" role="tabpanel" aria-labelledby="home-tab">${simpleReport}</div>
-			  			<div class="tab-pane fade" id="detailed" role="tabpanel" aria-labelledby="profile-tab">${detailedReport}</div>
+						<div class="tab-pane fade show active" id="simple" role="tabpanel" aria-labelledby="home-tab" th:utext="${simpleReport}"></div>
+			  			<div class="tab-pane fade" id="detailed" role="tabpanel" aria-labelledby="profile-tab" th:utext="${detailedReport}"></div>
 					</div>
 				</div>
 
 			</div>
 		</div>
 	</div>
-</div>
+</body></html>
