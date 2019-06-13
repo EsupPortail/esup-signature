@@ -434,6 +434,9 @@ public class SignBookService {
 		return null;
 	}
 
+	public List<SignBook> getOriginalSignBook(SignRequest signRequest) {
+		return signBookRepository.findBySignRequests(Arrays.asList(signRequest));
+	}
 
 	public SignBook getUserSignBook(User user) {
 		return getUserSignBookByRecipientEmail(user.getEmail());

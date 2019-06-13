@@ -1,8 +1,29 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<div xmlns:fmt="http://java.sun.com/jsp/jstl/fmt" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:spring="http://www.springframework.org/tags" xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:util="urn:jsptagdir:/WEB-INF/tags/util" version="2.0">
-	<jsp:directive.page contentType="text/html;charset=UTF-8" />
-	<jsp:output omit-xml-declaration="yes" />
-	<div class="card card-header">
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+	<div id="ribbon" class="card">
+		<div class="card-body">
+		<button type="button" onclick="location.href='/user/signrequests?form'" class="mr-2 btn btn-outline-dark btn-light float-left">
+		<p class="text-center">
+		<i class="fas fa-plus fa-2x"></i>
+		<br/>
+		Nouvelle demande de signature
+		</p>
+		</button>
+		<button type="button" onclick="location.href='/user/signrequests?form'" class="mr-2 btn btn-outline-dark btn-light float-left">
+		<p class="text-center">
+		<i class="fas fa-shield-alt fa-2x"></i>
+		<br/>
+		Valider la signature d'un document
+		</p>
+		</button>
+		</div>
+	</div>
+	<main role="main" class="">
+	<div class="card">
+	<div class="card-header">
 		<nav class="nav justify-content-between" aria-label="breadcrumb">
 			<ol class="breadcrumb col-11">
 				<li class="breadcrumb-item active">Liste des demandes</li>
@@ -13,71 +34,7 @@
 				</button>
 			</div>
 		</nav>
-		<br/>
-		<div class="row">
-			<div class="col-lg-6 text-center">
-				<button type="button" alt="Signer un nouveau document" class="btn btn-success" onclick="location.href='/user/signrequests?form'" title="Signer un nouveau Document">
-					<i class="fas fa-plus">
-						<!--  -->
-					</i>&amp;nbsp;
-					<spring:message code="menu_item_signrequest_new" />
-				</button>
-			</div>
-			<div class="col-lg-6 text-center">
-				<button type="button" alt="Valider la signature d'un document" class="btn btn-success" onclick="location.href='/user/validation'" title="Signer un nouveau Document">
-					<i class="fas fa-shield-alt">
-						<!--  -->
-					</i>&amp;nbsp;Valider la signature d'un document
-				</button>
-			</div>
-		</div>
-	</div>
-
-	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
-		<div class="alert alert-info">
-			<p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
-			<p>
-			Statut des demandes de signatures :
-			</p>
-			<p>
-			<span class="alert alert-primary">
-				<i class="fas fa-clock"> <!--  --></i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
-			</span>
-			La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures 
-			</p>
-			<p>
-			<span class="alert alert-success">
-				<i class="fas fa-file-signature"> <!--  -->
-				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
-			</span>
-			Tous les critères de signatures sont remplis
-			</p>
-			<p>
-			<span class="alert alert-success">
-				<i class="far fa-check-circle"> <!--  -->
-				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
-			</span>
-			Le document à été validé par tous les participants
-			</p>
-			<p>
-			<span class="alert alert-danger">
-				<i class="fas fa-ban"> <!--  -->
-				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
-			</span>
-			La demande à été refusée et retirée des parapheurs
-			</p>
-			<p>
-			<span class="alert alert-warning">
-				<i class="fas fa-flag-checkered"> <!--  -->
-				</i>&amp;nbsp;<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
-			</span>
-			La demande la demande à été retirée des parapheurs, elle va être supprimée de l'application automatiquement
-			</p>
-		</div>
-	</div>
-	<div class="card">
-		<div class="card-header">
-		<div class="row">
+				<div class="row">
 
 			<div class="col-lg-12">
 			<form class="" action="" method="get">
@@ -85,7 +42,7 @@
 			<div class="card">
 				<div class="card-header">
                     <div class="accordion-heading">
-                        <a class="accordion-toggle" data-parent="#accordionfilter" data-toggle="collapse" href="#collapseFilter">Filtres&amp;nbsp;<i class="fas fa-caret-down"><!--  --></i></a>
+                        <a class="accordion-toggle" data-parent="#accordionfilter" data-toggle="collapse" href="#collapseFilter">Filtres<i class="fas fa-caret-down"><!--  --></i></a>
                     </div>
                     <div class="accordion-body collapse ${finderview ? 'in' : ''}" id="collapseFilter">
                         <div class="accordion-inner">
@@ -170,7 +127,7 @@
 			<div class="form-inline">
 				<div class="input-group">
 					<button id="opendocs" alt="Open docs" class="btn btn-info" onclick="openCheckedDocs()" title="open docs" style="display: none;">
-						<span class="far fa-eye"><!--  --></span>&amp;nbsp;<spring:message code="menu_item_open_docs" />
+						<span class="far fa-eye"><!--  --></span><spring:message code="menu_item_open_docs" />
 					</button>
 				</div>
 				<div class="input-group">
@@ -178,12 +135,12 @@
 				</div>
 				<div class="input-group">
 					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Sign docs" class="btn btn-primary" onclick="submitSignRequests()" title="Sign docs" style="display: none;">
-						<span class="fa fa-pencil-alt"><!--  --></span>&amp;nbsp;<spring:message code="menu_item_sign_docs" />
+						<span class="fa fa-pencil-alt"><!--  --></span><spring:message code="menu_item_sign_docs" />
 					</button>
 				</div>
 				<div class="input-group">
 					<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Passer au statut terminé" class="btn btn-warning" onclick="completeSignRequests()" title="Passer au statut terminé" style="display: none;">
-						<span class="fas fa-flag-checkered"><!--  --></span>&amp;nbsp;Passer au statut terminé
+						<span class="fas fa-flag-checkered"><!--  --></span>Passer au statut terminé
 					</button>
 				</div>				
 				<div class="mx-auto"><!--  --></div>
@@ -191,6 +148,50 @@
 			</div>
 			</div>
 		</div>
+	</div>
+
+	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
+		<div class="alert alert-info">
+			<p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
+			<p>
+			Statut des demandes de signatures :
+			</p>
+			<p>
+			<span class="alert alert-primary">
+				<i class="fas fa-clock"> <!--  --></i><spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
+			</span>
+			La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures 
+			</p>
+			<p>
+			<span class="alert alert-success">
+				<i class="fas fa-file-signature"> <!--  -->
+				</i><spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
+			</span>
+			Tous les critères de signatures sont remplis
+			</p>
+			<p>
+			<span class="alert alert-success">
+				<i class="far fa-check-circle"> <!--  -->
+				</i><spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
+			</span>
+			Le document à été validé par tous les participants
+			</p>
+			<p>
+			<span class="alert alert-danger">
+				<i class="fas fa-ban"> <!--  -->
+				</i><spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
+			</span>
+			La demande à été refusée et retirée des parapheurs
+			</p>
+			<p>
+			<span class="alert alert-warning">
+				<i class="fas fa-flag-checkered"> <!--  -->
+				</i><spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
+			</span>
+			La demande la demande à été retirée des parapheurs, elle va être supprimée de l'application automatiquement
+			</p>
+		</div>
+	</div>
 		<div style="display: none;" id="alertsigndocs" alt="Sign docs" class="alert alert-danger" role="alert" >Impossible de signer en masse la selection actuelle</div>
 		<div class="card-body">
 			<div class="table-responsive">
@@ -198,76 +199,71 @@
 					<thead>
 						<tr>
 							<th data-type="html"><input id="selectall" type="checkbox" /></th>
-							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_title" /></th>
-							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createdate" /></th>
-							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_createby" /></th>
-							<th class="none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_insignbook" /></th>
+							<th class="none">Titre</th>
+							<th class="none">Date de création</th>
+							<th class="none">Créé par</th>
+							<th class="none">Dans le parapheur</th>
 							<th class="none">Destinataires</th>
-							<th class="type d-none"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signtype" /></th>
-							<th class="status"><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_status" /></th>
-							<th><spring:message code="button_view" /></th>
-							<th><spring:message code="button_delete" /></th>
+							<th class="type d-none">Type de signature</th>
+							<th class="status">Statut</th>
+							<th>Voir</th>
+							<th>Supprimer</th>
 						</tr>
 					</thead>
 					<tbody>
-						<c:forEach items="${signRequests}" var="signRequestItem" >
-							<c:set var="signRequest" value="${signRequestItem}" scope="request" />
+						<th:block th:each="signRequest : ${signRequests}" >
 							<tr class="roocol">
-								<td class="none"><input value="${signRequest.id}" name="check" type="checkbox" class="check" /></td>
-								<td class="none"><p class="truncate" title="${signRequest.title}">${signRequest.title}</p></td>
-								<td class="none"><fmt:formatDate value="${signRequest.createDate}" pattern="dd/MM/yyyy HH:mm" /></td>
-								<td class="none">${signRequest.createBy}</td>
+								<td class="none"><input th:value="${signRequest.id}" name="check" type="checkbox" class="check" /></td>
+								<td class="none"><p class="truncate" th:title="${signRequest.title}" th:text="${signRequest.title}"></p></td>
+								<td class="none"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
+								<td class="none"><span th:text="${signRequest.createBy}"></span></td>
 								<td class="none">
 								<ul class="list-group">
-								<c:forEach items="${signRequest.originalSignBooks}" var="originalSignBook">
-								<li class="list-group-item truncate" title="${originalSignBook.name}"><i class="fas fa-book"><!--  --></i>&amp;nbsp;${originalSignBook.name}</li>
-								</c:forEach>
+								<th:block th:each="originalSignBook : ${signRequest.originalSignBooks}">
+								<li class="list-group-item truncate" title="${originalSignBook.name}">
+								<i class="fas fa-book"></i><span th:text="${originalSignBook.name}"></span></li>
+								</th:block>
 								</ul>
 								</td>
 								<td class="signbook" style="display: block;">
 									<table class="table table-sm">
 									  	<tbody>
-											<c:forEach items="${signRequest.signBooksLabels}" var="signBooksLabel">
+											<th:block th:each="signBooksLabel : ${signRequest.signBooksLabels}" >
 									  			<tr>
-													<td width="100%">${signBooksLabel.key}</td>
+													<td width="100%" th:text="${signBooksLabel.key}"></td>
 													<td align="center">
-														<c:choose>
-															<c:when test="${signBooksLabel.value eq true}">
-																<i class="fas fa-check text-success"><!--  --></i>
-															</c:when>
-															<c:otherwise>
-																<i class="fas fa-times text-danger"><!--  --></i>
-															</c:otherwise>
-														</c:choose>
+														<div th:switch="${signBooksLabel.value}">
+															<i th:case="true" class="fas fa-check text-success"></i>
+															<i th:case="false" class="fas fa-times text-danger"></i>
+														</div>
 													</td>
 												</tr>
-											</c:forEach>
+											</th:block>
 										</tbody>
 									</table>
 								</td>
-								<spring:url htmlEscape="true" var="json" value="${signRequest.signBooksJson}" />
 								<td class="type d-none">
-								<input type="hidden" id="signbook_${signRequest.id}" value="${json}" />
-								<c:if test="${not empty signRequest.signRequestParams.signType}">
+								<input type="hidden" th:id="'signbook_' + ${signRequest.id}" th:value="${signRequest.signBooksJson}" />
+								<div th:if="${signRequest.signRequestParams.signType != null}">
 									<div class="alert alert-secondary text-center" id="type_${signRequest.id}" title="${signRequest.signRequestParams.signType}">
-										<small><spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signRequest.signRequestParams.signType}" /></small>
+										<small><span th:text="${signRequest.signRequestParams.signType}"></span></small>
 									</div>
-								</c:if>	
+								</div>	
 								</td>
 								<td class="status" style="width: 150px;">
-									<jsp:include page="includes/status.jspx" />
+									<div th:replace="user/signrequests/includes/status :: status"></div>
 								</td>
 								<td class="utilbox">
-									<button class="btn btn-info far fa-eye" title="Sign Request" alt="Sign Request" onclick="location.href='/user/signrequests/${signRequest.id}'">
+									<button class="btn btn-info far fa-eye" title="Sign Request" alt="Sign Request" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '\''">
 										<!--  -->
 									</button>
 								</td>
-								<td class="utilbox"><form class="delete" action="/user/signrequests/${signRequest.id}" method="post">
+								<td class="utilbox"><form class="delete" th:action="'/user/signrequests/' + ${signRequest.id}" method="post">
 										<input type="hidden" name="_method" value="DELETE" />
 										<button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" value="Supprimer Sign Request" type="submit" title="Supprimer Sign Request" class="btn btn-danger far fa-trash-alt" alt="Supprimer Sign Request" />
 									</form></td>
 							</tr>
-						</c:forEach>
+						</th:block>
 					</tbody>
 					<tfoot>
 						<tr>
@@ -455,14 +451,6 @@
 			</div>
 		</div>
 	</div>
-	<table:table render="false" data="${signRequests}" id="l_org_esupportail_esupsignature_domain_SignRequest" path="/user/signrequests" update="false" z="user-managed">
-		<table:column id="c_org_esupportail_esupsignature_domain_SignRequest_name" property="name" z="user-managed" />
-		<table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_SignRequest_createDate" property="createDate" z="user-managed" />
-		<table:column id="c_org_esupportail_esupsignature_domain_SignRequest_createBy" property="createBy" z="user-managed" />
-		<table:column render="false" date="true" dateTimePattern="${signRequest_updatedate_date_format}" id="c_org_esupportail_esupsignature_domain_SignRequest_updateDate" property="updateDate" z="user-managed" />
-		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_updateBy" property="updateBy" z="user-managed" />
-		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_description" property="description" z="user-managed" />
-		<table:column render="false" id="c_org_esupportail_esupsignature_domain_SignRequest_signType" property="signTypeLabel" z="user-managed" />
-		<table:column cssClass="status" id="c_org_esupportail_esupsignature_domain_SignRequest_status" property="status" z="user-managed" />
-	</table:table>
-</div>
+</main>
+</body>
+</html>

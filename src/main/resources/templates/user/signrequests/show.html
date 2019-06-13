@@ -1,23 +1,36 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<div xmlns:fmt="http://java.sun.com/jsp/jstl/fmt" xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" xmlns:spring="http://www.springframework.org/tags" xmlns:table="urn:jsptagdir:/WEB-INF/tags/form/fields" version="2.0">
-	<jsp:directive.page contentType="text/html;charset=UTF-8" />
-	<jsp:output omit-xml-declaration="yes" />
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+	<div id="ribbon" class="card">
+		<div class="card-body">
+		<button type="button" onclick="document.getElementById('fc_org_esupportail_esupsignature_domain_SignRequest').submit();" class="mr-2 btn btn-outline-dark btn-light float-left">
+		<p class="text-center">
+		<i class="fas fa-save fa-2x"></i>
+		<br/>
+		Enregistrer
+		</p>
+		</button>
+		</div>
+	</div>
+	<main role="main" class="">
 	<div class="card card-header">
 		<div class="row">
 			<div class="col-lg-9">
 			<nav aria-label="breadcrumb">
 			  <ol class="breadcrumb">
 	    		<li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
-			    <li class="breadcrumb-item active" aria-current="page"><spring:message code="menu_item_signrequest" /> : ${signRequest.name}</li>
+			    <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.name}"></span></li>
 			  </ol>
 			</nav>
 			</div>
 			<div class="col-lg-2 text-right">
-				<jsp:include page="includes/status.jspx" />
+				<div th:replace="user/signrequests/includes/status :: status"></div>
 			</div>
 			<div class="col-lg-1 text-right align-self-center">
 				<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
-					<span class="fas fa-info-circle"><!--  --></span>
+					<i class="fas fa-info-circle"></i>
 				</button>
 			</div>
 		</div>
@@ -43,24 +56,23 @@
 		</div>
 	</div>
 	<div class="card card-body">
-	<page:show list="false" update="false" delete="false" id="ps_org_esupportail_esupsignature_domain_SignRequest" object="${signRequest}" path="/user/signrequests" z="user-managed">
 		<div class="row">
 			<div class="col-lg-6">
 			<div id="accordion">
 				<div class="card bg-light">
 					<div class="card-header">
 						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseTools" aria-expanded="true" aria-controls="collapseTools">
-							<spring:message code="menu_item_signRequest_sign_label" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
-							</i>
+							Signature <i class="fas fa-caret-down"></i>
 						</button>
 					</div>
 					<div id="collapseTools" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
 						<div class="card-body text-center">
-							<c:choose>
-								<c:when test="${signable eq 'ok'}">
+							<div th:switch="${signable}">
+								<div th:case="'ok'">
 									<dl class="display-group border-bottom m-0 d-none">
 										<dt class="col-lg-6">
-											<spring:message code="label_org_esupportail_esupsignature_domain_currentsignbook" /><button data-target="#collapseHelpCurrent" data-toggle="collapse" type="button" class="btn btn-sm btn-info"><span class="fas fa-info-circle"></span></button>
+											Parapheur courant
+											<button data-target="#collapseHelpCurrent" data-toggle="collapse" type="button" class="btn btn-sm btn-info"><span class="fas fa-info-circle"></span></button>
 											<div class="collapse" id="collapseHelpCurrent">
 												<div class="alert alert-info">
 													<small>
@@ -71,94 +83,84 @@
 										</dt>
 										<dd>
 											<span class="alert alert-secondary">
-												<i class="fas fa-book"><!--  --></i>&amp;nbsp;${currentSignBook.name}
+												<i class="fas fa-book"></i> ${currentSignBook.name}
 											</span>
 										</dd>
 									</dl>
-									<c:choose>
-									<c:when test="${signRequest.signRequestParams.signType eq 'nexuSign'}">
-										<spring:url value="/resources/js/jsSignatureLevel.js" var="jsSignatureLevel_js_url" />
-										<script type="text/javascript" src="${jsSignatureLevel_js_url}"><!-- --></script>
-										<script type="text/javascript" src="/js/nexu-deploy.js"><!-- --></script>
+									<div th:switch="${signRequest.signRequestParams.signType.name()}">
+									<div th:case="'nexuSign'">
+										<script type="text/javascript" src="/resources/js/jsSignatureLevel.js"></script>
+										<script type="text/javascript" src="/js/nexu-deploy.js"></script>
 											<div id="nexu_missing_alert" style="display: none;" class="alert alert-warning">
-												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexucheck" />
-												<a href="https://github.com/nowina-solutions/nexu/releases/">NexU</a> <br /> <a onclick="location.reload();" class="btn btn-warning btnSeccion" id="btnSeccion3" value="Refresh"> <i class="fas fa-sync-alt"> <!--  -->
-												</i> <spring:message code="button_refresh" />
+												Contrôle de NexU
+												<a href="https://github.com/nowina-solutions/nexu/releases/">NexU</a> <br /> <a onclick="location.reload();" class="btn btn-warning btnSeccion" id="btnSeccion3" value="Refresh">
+												<i class="fas fa-sync-alt"></i> Actualiser
 												</a>
 											</div>
 											<div id="nexu_ready_alert" style="display: none;" class="alert alert-success">
-												<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexuready" />
-												<br /> <small><spring:message code="label_org_esupportail_esupsignature_domain_signrequest_nexumsg" /></small> <br />
-												<spring:message code="button_sign" var="signLabel" />
+												NexU OK
+												<br /> <small>Vous pouvez utiliser une clé materielle ou un keystore</small> <br />
+												Signature
 												<button type="button" class="btn btn-success" data-toggle="modal" data-target="#signatureModal">
-					  								<spring:message code="button_sign"/>
+					  								Signer
 												</button>
 											</div>
-									</c:when>
-									<c:otherwise>
+									</div>
+									<div th:case="*">
 										<dl>
 										<dd>
 										<button type="button" class="btn btn-success" data-toggle="modal" data-target="#signatureModal">
-			  								<i class="fas fa-file-signature"> <!--  --></i>&amp;nbsp;
-			  								<spring:message code="button_sign"/>
+			  								<i class="fas fa-file-signature"></i> 
+			  								Signer
 										</button>
 										</dd>
 										<dd>
 										<button type="button" class="btn btn-danger" data-toggle="modal" data-target="#refuseModal">
-											<i class="fas fa-ban"> <!--  --></i>&amp;nbsp;
-											<spring:message code="button_refuse" />
+											<i class="fas fa-ban"></i> 
+											Refuser
 										</button>
 										</dd>
 										</dl>
-									</c:otherwise>
-									</c:choose>
-								</c:when>
-								<c:otherwise>
-									<c:choose>
-									<c:when test="${user.eppn eq signRequest.createBy}">
-										<c:choose>
-											<c:when test="${fn:length(signRequest.originalDocuments) > 0}">
-											<c:choose>
-												<c:when test="${signRequest.status eq 'draft'}">
-													<spring:url value="/user/signrequests/pending/${id}" var="pendingUrl" />
-													<form action="${pendingUrl}">
-														<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows="" ><!--  --></textarea>
-														<button type="submit" class="btn btn-primary">
-							  								<i class="fa fa-paper-plane" aria-hidden="true"><!--  --></i>&amp;nbsp;Envoyer pour signature
-														</button>
-													</form>
-												</c:when>
-												<c:when test="${signRequest.status eq 'pending'}">
-													<div class="alert alert-info" >La demande est en cours de signature par le(s) destinataire(s)</div>
-												</c:when>
-											</c:choose>
-											</c:when>
-											<c:otherwise>
-												<c:if test="${not empty modelId}">
-												<button type="button" class="btn btn-info" onclick="window.open('${modelId}', '_blank')">
-													<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" /> le modèle
-												</button>
-												</c:if>
-												<div class="alert alert-info" >Vous devez ajouter des documents</div>
-											</c:otherwise>
-										</c:choose>
-									</c:when>
-									<c:otherwise>
-										<c:choose>
-											<c:when test="${signRequest.status eq 'draft'}">
-												<div class="alert alert-info" >Demande en cours de création</div>
-											</c:when>
-										</c:choose>
-									</c:otherwise>
-									</c:choose>
-								</c:otherwise>
-							</c:choose>
-							<c:if test="${user.eppn eq signRequest.createBy}">
-							<c:choose>
-								<c:when test="${signRequest.status eq 'signed' or signRequest.status eq 'checked'}">
+									</div>
+									</div>
+								</div>
+								<div th:case="*">
+									<div th:if="${user.eppn == signRequest.createBy}">
+										<div th:if="${#lists.size(signRequest.originalDocuments) > 0}">
+											<div th:if="${signRequest.status.name() == 'draft'}">
+												<form th:action="'/user/signrequests/pending/' + ${id}">
+													<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows="" ></textarea>
+													<button type="submit" class="btn btn-primary">
+						  								<i class="fa fa-paper-plane" aria-hidden="true"></i> Envoyer pour signature	
+													</button>
+												</form>
+											</div>
+											<div th:if="${signRequest.status.name() == 'pending'}">
+												<div class="alert alert-info" >La demande est en cours de signature par le(s) destinataire(s)</div>
+											</div>
+										</div>
+										<div th:unless="${#lists.size(signRequest.originalDocuments) > 0}">
+											<div th:if="${modelId != null}">
+											<button type="button" class="btn btn-info" onclick="window.open('${modelId}', '_blank')">
+												<i class="fas fa-download"></i> <spring:message code="button_download" /> le modèle
+											</button>
+											</div>
+											<div class="alert alert-info" >Vous devez ajouter des documents</div>
+										</div>
+									</div>
+									<div th:unless="${user.eppn == signRequest.createBy}">
+										<div th:if="${signRequest.status.name() == 'draft'}">
+											<div class="alert alert-info" >Demande en cours de création</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div th:if="${user.eppn == signRequest.createBy}">
+							<div th:switch="${signRequest.status.name()}">
+								<div th:case="'signed'">
 									<dl class="display-group border-bottom m-0">
 										<dt class="col-lg-5">
-											<spring:message code="menu_item_complete" />&amp;nbsp;
+											<spring:message code="menu_item_complete" /> 
 							          			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-info"><span class="fas fa-info-circle"></span></button>
 											<div class="collapse" id="collapseHelp1">
 												<div class="alert alert-info">
@@ -173,67 +175,64 @@
 									<form class="form-group" action="${completeUrl}" method="get">
 										<div class="input-group">
 											<button type="submit" class="btn btn-warning">
-												<i class="fas fa-flag-checkered"> <!--  -->
-												</i>&amp;nbsp;<spring:message code="button_complete" />
+												<i class="fas fa-flag-checkered">
+												</i>
+												Terminer
 											</button>
 										</div>
 									</form>
 									</dd>
 									</dl>
-								</c:when>
-								<c:otherwise>
-									<c:if test="${fn:length(signRequest.signBooks) > 1 and nbSignOk == 0}">
+								</div>
+								<div th:case="*">
+									<div th:if="${#lists.size(signRequest.signBooks) > 1 && nbSignOk == 0}">
 										<dl class="display-group border-bottom m-0">
 											<dt class="col-lg-6">
-										  		<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete" />
+										  		Toutes les signatures sont nécessaires
 										  		<!-- Si la demande se trouve dans plusieurs parapheurs vous pouvez choisir si toutes les signatures sont exigées pour passer au status signé -->
 											</dt>
 											<dd>
 											<div class="input-group">
 												<spring:url value="/user/signrequests/toggle-need-all-sign/${id}" var="toggleNeedAllSignUrl" />
 												<label class="switch">
-													<c:choose>
-														<c:when test="${signRequest.allSignToComplete eq true}">
-														  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete" checked="checked"/>
-														</c:when>
-														<c:otherwise>
-														  <input onclick="document.location='${toggleNeedAllSignUrl}'" type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
-														</c:otherwise>
-													</c:choose>
-												  	<span class="slider round"><!--  --></span>
+														<div th:if="${signRequest.allSignToComplete == true}">
+														  <input th:onclick="'document.location=\'/user/signrequests/toggle-need-all-sign/' + ${id} + '\''" type="checkbox" name="allSignToComplete" id="_allSignToComplete" checked="checked"/>
+														</div>
+														<div th:unless="${signRequest.allSignToComplete == true}">
+														  <input th:onclick="'document.location=\'/user/signrequests/toggle-need-all-sign/' + ${id} + '\''" type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
+														</div>
+												  	<span class="slider round"></span>
 												</label>
 											</div>
 											</dd>
 										</dl>
-									</c:if>
-								</c:otherwise>
-							</c:choose>
-							</c:if>
-							<c:choose>
-							<c:when test="${signRequest.status eq 'signed' or signRequest.status eq 'completed' or signRequest.status eq 'checked'}">
+									</div>
+								</div>
+							</div>
+							</div>
+							<div th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked'}">
 								<dl class="display-group border-bottom m-0">
 									<dt class="col-lg-5">
-										<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_signedfile" />
+										Documents signés
 									</dt>
 									<dd>
-										<spring:url value="/user/signrequests/get-last-file/${id}" var="signedFileUrl" />
 										<div class="input-group">
-										<button type="button" class="btn btn-success" onclick="window.open('${signedFileUrl}', '_blank')">
-											<i class="fas fa-download"><!--  --></i>&amp;nbsp;<spring:message code="button_download" /> le document signé
+										<button type="button" class="btn btn-success" onclick="window.open('/user/signrequests/get-last-file/${id}', '_blank')">
+											<i class="fas fa-download"></i> Télécharger le document signé
 										</button>
 										</div>
 										<br/>
 										<div class="input-group">
-										<button type="button" class="btn btn-success" onclick="location.href='/user/validation/document/${id}'">
-											<i class="fas fa-shield-alt"><!--  --></i>&amp;nbsp;<spring:message code="menu_item_validate" />
+										<button type="button" class="btn btn-success" th:onclick="'location.href=\'/user/validation/document/' + ${id} +'\''">
+											<i class="fas fa-shield-alt"></i> Valider le document
 										</button>
 										</div>
 									</dd>
 								</dl>
-								<c:if test="${user.eppn eq signRequest.createBy and signRequest.status ne 'completed'}">
+								<div th:if="${user.eppn == signRequest.createBy && signRequest.status.name() == 'completed'}">
 									<dl class="display-group border-bottom m-0">
 										<dt class="col-lg-5">
-											<spring:message code="menu_item_sendtosignbook" />&amp;nbsp;
+											Envoyer dans le parapheur
 						           			<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-info"><span class="fas fa-info-circle"></span></button>
 											<div class="collapse" id="collapseHelp1">
 												<div class="alert alert-info">
@@ -244,47 +243,43 @@
 											</div>
 										</dt>
 										<dd class="col-lg-7">
-											<spring:url value="/user/signrequests/send-to-signbook/${id}" var="sendToSignBookUrl" />
-											<form class="form-group" action="${sendToSignBookUrl}" method="get">
+											<form class="form-group" th:action="'/user/signrequests/send-to-signbook/' + ${id}" method="get">
 												<div class="input-group">
 												<select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple" >
-													<c:forEach items="${allSignBooks}" var="signBook">
-														<option value="${signBook.name}">${signBook.name} (${signBook.signBookType})</option>
-													</c:forEach>
+													<th:block th:each="signBook : ${allSignBooks}" >
+														<option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
+													</th:block>
 												</select>
 												</div>
 												<div class="input-group">
-													<textarea class="form-control" type="text" name="comment" placeholder="Commentaire"><!--  --></textarea>
+													<textarea class="form-control" type="text" name="comment" placeholder="Commentaire"></textarea>
 												</div>
 												<div class="input-group">
 													<button type="submit" class="btn btn-primary">
-														<i class="fas fa-share-square"> <!--  -->
-														</i>&amp;nbsp;<spring:message code="button_send" />
+														<i class="fas fa-share-square"></i>Envoyer
 													</button>
 												</div>
 											</form>
 										</dd>
 									</dl>
-								</c:if>
-							</c:when>
-							<c:otherwise>
-								<c:if test="${fn:length(signRequest.signBooks) > 1}">
-								<div class="alert alert-secondary">
-									<small>
-									<c:choose>
-										<c:when test="${signRequest.allSignToComplete eq true}">
-											<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete_on" />
-										</c:when>
-										<c:otherwise>
-											<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_allsigntocomplete_off" />
-										</c:otherwise>
-									</c:choose>
-									</small>
 								</div>
-							</c:if>
-							</c:otherwise>
-							</c:choose>
-							
+							</div>
+							<div th:unless="${signRequest.status == 'signed' || signRequest.status == 'completed' || signRequest.status == 'checked'}">
+								<div th:if="${#lists.size(signRequest.signBooks) > 1}">
+									<div class="alert alert-secondary">
+										<small>
+										<div th:switch="${signRequest.allSignToComplete}">
+											<div th:case="true">
+												Oui
+											</div>
+											<div th:case="*">
+												Non
+											</div>
+										</div>
+										</small>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -292,14 +287,13 @@
 				<div class="card bg-light">
 					<div class="card-header">
 						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseComments" aria-expanded="true" aria-controls="collapseTools">
-							Commentaires (${fn:length(comments)})&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
-							</i>
+							Commentaires <span th:text="'(' + ${#lists.size(comments)} + ')'"></span> <i class="fas fa-caret-down"></i>
 						</button>
 					</div>
 					<div id="collapseComments" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
 						<div class="card-body">
 							<div class="list-group">
-								<c:forEach items="${comments}" var="comment">
+								<th:block th:each="comment : ${comments}">
 								  <a href="#" class="list-group-item list-group-item-action">
 								    <div class="d-flex w-100 justify-content-between">
 								      <h5 class="mb-1">${comment.eppn}</h5>
@@ -312,13 +306,13 @@
 								    	${comment.comment}
 								    </p>
 								  </a>
-								</c:forEach>
+								</th:block>
 							</div>
 							<spring:url value="/user/signrequests/comment/${id}" var="commentUrl" />
 							<form action="${commentUrl}">
-								<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows="" ><!--  --></textarea>
+								<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows="" ></textarea>
 								<button type="submit" class="btn btn-primary">
-	  								<i class="fas fa-comments" aria-hidden="true"><!--  --></i>&amp;nbsp;Envoyer un commentaire
+	  								<i class="fas fa-comments" aria-hidden="true"></i> Envoyer un commentaire
 								</button>
 							</form>
 							
@@ -329,8 +323,7 @@
 				<div class="card bg-light">
 					<div class="card-header">
 						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseSignBook" aria-expanded="true" aria-controls="collapseTools">
-							<spring:message code="label_org_esupportail_esupsignature_domain_signbook" />s (${fn:length(signRequest.signBooks)})&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
-							</i>
+							Parapheurs (<span th:text="${#lists.size(signRequest.signBooks)}"></span>) <i class="fas fa-caret-down"></i>
 						</button>
 					</div>
 					<div id="collapseSignBook" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
@@ -341,12 +334,11 @@
 								</dt>
 								<dd>
 								<ul class="list-group">
-									<c:forEach items="${originalSignBooks}" var="originalSignBook">
-								  		<li class="list-group-item"><i class="fas fa-book"><!--  --></i>&amp;nbsp;${originalSignBook.name}</li>
-										
-									</c:forEach>
+									<th:block th:each="originalSignBook : ${originalSignBooks}">
+								  		<li class="list-group-item"><i class="fas fa-book"></i><span th:text="${originalSignBook.name}"></span></li>
+									</th:block>									
 								</ul>
-								<c:if test="${fn:length(firstOriginalSignBook.signBooks) > 0}">
+								<div th:if="${firstOriginalSignBook != null}">
 								Etapes du workflow  : ${signRequest.signBooksWorkflowStep}
 								
 								<div class="bs-stepper vertical linear">
@@ -381,13 +373,13 @@
 									</c:otherwise>
 								</c:choose>
 								 <c:if test="${fn:length(firstOriginalSignBook.signBooks) > step}">
-					                <div class="line"><!--  --></div>		
+					                <div class="line"></div>		
 					                </c:if>							
 								<c:set var="step" value="${step + 1}" />
 								</c:forEach>
 									</div>
 								</div>
-								</c:if>
+								</div>
 								</dd>
 							</dl>
 							
@@ -401,26 +393,23 @@
 									<table class="table table-sm">
 										<thead>
 									    	<tr>
-									      		<th scope="col">Destinataire</th>
-									      		<th scope="col"><spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" /></th>
+									      		<th scope="col">Nom</th>
+									      		<th scope="col">Statut</th>
 										    </tr>
 									  	</thead>
 									  	<tbody>
-											<c:forEach items="${signRequest.signBooksLabels}" var="signBooksLabel">
+											<th:block th:each="signBooksLabel : ${signRequest.signBooksLabels}" >
 										  		<tr>
-													<td><i class="fas fa-user"><!--  --></i>&amp;nbsp;${signBooksLabel.key}</td>
+													<td><i class="fas fa-user"></i> <span th:text="${signBooksLabel.key}" ></span></td>
 													<td align="center">
-														<c:choose>
-															<c:when test="${signBooksLabel.value eq true}">
-																<i class="fas fa-check text-success"><!--  --></i>
-															</c:when>
-															<c:otherwise>
-																<i class="fas fa-times text-danger"><!--  --></i>
-															</c:otherwise>
-														</c:choose>
+														<div th:switch="${signBooksLabel.value}">
+																<i th:case="true" class="fas fa-check text-success"></i>
+																<i th:case="false" class="fas fa-times text-danger"></i>
+															</div>
+														</div>
 													</td>
 												</tr>
-											</c:forEach>
+											</th:block>
 										</tbody>
 									</table>
 									</div>
@@ -433,14 +422,13 @@
 				<div class="card bg-light">
 					<div class="card-header">
 						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseInfos" aria-expanded="true" aria-controls="collapseInfos">
-							<spring:message code="menu_item_signrequest_infos" />&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
+							Informations <i class="fas fa-caret-down">
 							</i>
 						</button>
 					</div>
 					<div id="collapseInfos" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
 						<div class="card-body">
-							<c:choose>
-								<c:when test="${signRequest.overloadSignBookParams}" >
+								<div th:if="${signRequest.overloadSignBookParams}" >
 								<dl class="display-group border-bottom m-0">
 									<dt class="col-lg-5">
 										<spring:message code="label_org_esupportail_esupsignature_domain_signrequest_params" />
@@ -460,40 +448,45 @@
 										</div>
 									</dd>
 								</dl>
-								</c:when>
-								<c:otherwise>
+								</div>
+								<div th:unless="${signRequest.overloadSignBookParams}" >
 									<div class="alert alert-secondary text-center col-12 font-weight-light">
 										Les paramètre de l'utilisateur seront utilisés
 									</div>
-								</c:otherwise>
-							</c:choose>
-							<field:display render="false" field="recipientEmail" id="s_org_esupportail_esupsignature_domain_SignRequest_recipientEmail" object="${signRequest}" z="user-managed" />
-							<field:display render="false" field="status" id="s_org_esupportail_esupsignature_domain_SignRequest_status" object="${signRequest}" z="user-managed" />
-							<field:display field="originalFile" id="s_org_esupportail_esupsignature_domain_SignRequest_originalFile" object="${signRequest}" render="false" z="user-managed" />
-							<field:display field="signedFile" id="s_org_esupportail_esupsignature_domain_SignRequest_signedFile" object="${signRequest}" render="false" z="user-managed" />
-							<field:display render="false" field="signType" id="s_org_esupportail_esupsignature_domain_SignRequest_signType" object="${signRequest}" z="user-managed" />
-							<field:display date="true" dateTimePattern="${signRequest_createdate_date_format}" field="createDate" id="s_org_esupportail_esupsignature_domain_SignRequest_createDate" object="${signRequest}" z="user-managed" />
-							<field:display field="createBy" id="s_org_esupportail_esupsignature_domain_SignRequest_createBy" object="${signRequest}" z="user-managed" />
+								</div>
 						</div>
 					</div>
 				</div>
 				<div class="card bg-light">
 					<div class="card-header">
 						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseLogs" aria-expanded="true" aria-controls="collapseTools">
-							<spring:message code="menu_item_logs" /> (${fn:length(logs)})&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
-							</i>
+							Logs (<span th:text="(${#lists.size(logs)})"></span>) <i class="fas fa-caret-down"></i>
 						</button>
 					</div>
 					<div id="collapseLogs" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
 						<div class="card-body">
-							<table:table cssClass="table-sm" create="false" view="false" data="${logs}" delete="false" id="l_org_esupportail_esupsignature_domain_Log" path="/manager/logs" update="false" z="user-manager">
-								<table:column date="true" dateTimePattern="dd/MM/YYYY HH:mm" id="c_org_esupportail_esupsignature_domain_Log_logDate" property="logDate" z="user-manager" />
-								<table:column id="c_org_esupportail_esupsignature_domain_Log_eppn" property="eppn" z="user-manager" />
-								<table:column id="c_org_esupportail_esupsignature_domain_Log_action" property="action" z="user-manager" />
-								<table:column id="c_org_esupportail_esupsignature_domain_Log_initialStatus" property="initialStatus" z="user-manager" />
-								<table:column id="c_org_esupportail_esupsignature_domain_Log_finalStatus" property="finalStatus" z="user-manager" />
-								<table:column render="false" id="c_org_esupportail_esupsignature_domain_Log_returnCode" property="returnCode" z="user-manager" />
-							</table:table>
+							<table class="table table-sm table-striped table-hover">
+							<thead>
+								<tr>
+									<th class="none">Date</th>
+									<th class="none">Eppn</th>
+									<th class="none">Action</th>
+									<th class="none">Statut initial</th>
+									<th class="none">Statut final</th>
+									</tr>
+							</thead>
+							<tbody>
+								<th:block th:each="log : ${logs}">
+									<tr>
+									<td><span th:text=${log.logDate}></span></td>
+									<td><span th:text=${log.eppn}></span></td>
+									<td><span th:text=${log.action}></span></td>
+									<td><span th:text=${log.initialStatus}></span></td>
+									<td><span th:text=${log.finalStatus}></span></td>
+									</tr>
+								</th:block>
+							</tbody>
+							</table>
 						</div>
 					</div>
 				</div>
@@ -505,8 +498,7 @@
 				<div class="card bg-light">
 					<div class="card-header">
 						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseOriginals" aria-expanded="true" aria-controls="collapseOriginals">
-							Liste des documents originaux&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
-							</i>
+							Liste des documents originaux <i class="fas fa-caret-down"></i>
 						</button>
 					</div>
 					<div id="collapseOriginals" class="collapse show" aria-labelledby="headingOne" data-parent="">
@@ -520,8 +512,7 @@
 		    	<div class="card bg-light">
 					<div class="card-header">
 						<button class="btn btn-link" data-toggle="collapse" data-target="#collapseSigned" aria-expanded="true" aria-controls="collapseSigned">
-							Liste des documents signés&amp;nbsp;<i class="fas fa-caret-down"> <!--  -->
-							</i>
+							Liste des documents signés <i class="fas fa-caret-down"></i>
 						</button>
 					</div>
 					<div id="collapseSigned" class="collapse show" aria-labelledby="headingOne" data-parent="">
@@ -535,10 +526,11 @@
 			    
 			</div>
 		</div>
-	</page:show>
 	</div>
 	<c:set value="${signRequest.signRequestParams.signType}" var="signType"/>
-	<script type="text/javascript">
+
+<script th:inline="javascript">
+/*<![CDATA[*/
 	
 	var testSignBookName = document.getElementById("signBookNames");
 	
@@ -549,11 +541,11 @@
 	    	  searchText: 'Aucun résultat',
 	    	  searchPlaceholder: 'Rechercher',
 	    	  searchHighlight: true,
-	    	  searchFilter: (option, search) =&gt; {
+	    	  searchFilter: (option, search) => {
 	  		    return true;
 	  		  },
 	    	  ajax: function (search, callback) {
-	    		    if (search.length &lt; 3) {
+	    		    if (search.length < 3) {
 	    		      callback('Merci de saisir au moins 3 caractères')
 	    		    }
 	    		    fetch('/user/users/searchLdap?searchString=' + search)
@@ -562,7 +554,7 @@
 	    		    })
 	    		    .then(function (json) {
 	    		      let data = []
-	    		      for (let i = 0; i &lt; json.length; i++) {
+	    		      for (let i = 0; i< json.length; i++) {
 	    		        data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
 	    		      }
 	    		      callback(data)
@@ -578,9 +570,9 @@
 		var signRequestParams;
 		if(signPageNumber != null) {
 			signRequestParams = "password=" + document.getElementById("password").value +
-								"&amp;xPos=" + document.getElementById("xPos").value +
-								"&amp;yPos=" + document.getElementById("yPos").value +
-								"&amp;signPageNumber=" + document.getElementById("signPageNumber").value
+								"&xPos=" + document.getElementById("xPos").value +
+								"&yPos=" + document.getElementById("yPos").value +
+								"&signPageNumber=" + document.getElementById("signPageNumber").value
 								;
 		} else {
 			signRequestParams = "password=" + document.getElementById("password").value;
@@ -600,7 +592,7 @@
 			getStep();
 		}, 500);
 		var xmlHttp = new XMLHttpRequest();
-		xmlHttp.open('POST', '/user/signrequests/sign/${id}', true);
+		xmlHttp.open('POST', '/user/signrequests/sign/[[${id}]]', true);
 		xmlHttp.setRequestHeader('Content-Type',
 				'application/x-www-form-urlencoded');
 		xmlHttp.send(signRequestParams);
@@ -652,59 +644,51 @@
     	language: "fr",
         showCaption: false,
         showClose: false,
-        <c:if test="${signRequest.status ne 'draft' or user.eppn ne signRequest.createBy}">
+        [# th:if="${signRequest.status.name() != 'draft' || user.eppn != signRequest.createBy}"]
         	showUpload: false,
         	showBrowse: false,
         	showRemove: false,
         	dropZoneEnabled: false,
-        </c:if>
-        <c:if test="${signRequest.status eq 'draft' and user.eppn eq signRequest.createBy}">
+        [/]
+        [# th:if="${signRequest.status.name() == 'draft' && user.eppn == signRequest.createBy}"]
         	browseOnZoneClick: true,        
-        </c:if>
-    	uploadUrl: "/user/signrequests/add-doc/${id}",
+        [/]
+    	uploadUrl: "/user/signrequests/add-doc/[[${id}]]",
     	uploadAsync: false,
-    	<c:choose>
-    	<c:when test="${signRequest.signRequestParams.signTypeLabel eq 'pdfImageStamp' or signRequest.signRequestParams.signTypeLabel eq 'visa'}">
+    	[# th:if="${signRequest.signRequestParams.signTypeLabel == 'pdfImageStamp' || signRequest.signRequestParams.signTypeLabel == 'visa'}"]
         maxFileCount: 1,
         validateInitialCount: true,
-        </c:when>
-    	<c:otherwise>
+		[/]
+    	[# th:unless="${signRequest.signRequestParams.signTypeLabel == 'pdfImageStamp' || signRequest.signRequestParams.signTypeLabel == 'visa'}"]
     	overwriteInitial: false,
-    	</c:otherwise>
-    	</c:choose>
+    	[/]
         theme: 'explorer-fas',
         pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
     	initialPreview: [
-    		<c:forEach items="${signRequest.originalDocuments}" var="originalDocument">
-    		<spring:url value="${originalDocument.url}" var="originalDocumentUrl" />
-    		"${originalDocumentUrl}",
-    		</c:forEach>
+    		[# th:each="originalDocument : ${signRequest.originalDocuments}"]
+    		[# th:text=${originalDocument.url}][/],
+    		[/]
     		],
    	    initialPreviewConfig: [
-    		<c:forEach items="${signRequest.originalDocuments}" var="originalDocument">
-    		<spring:url value="${originalDocument.url}" var="originalDocumentUrl" />
-    		<c:set value="${fn:split(originalDocument.contentType, '/')[1]}" var="originalDocumentType" />
-   			<c:if test="${signRequest.status eq 'draft'}">
-       			<spring:url value="/user/signrequests/remove-doc/${originalDocument.id}" var="originalDocumentRemoveUrl" />
-       		</c:if>
-    		<c:choose>
-    			<c:when test="${originalDocumentType eq 'gif'}">
-	      	        {type: "image", size: ${originalDocument.size}, downloadUrl: "${originalDocumentUrl}", caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "${originalDocumentRemoveUrl}", key: ${originalDocument.id}},    				
-    			</c:when>
-      	      	<c:when test="${originalDocumentType eq 'pdf'}">
-      	    	  	{type: "pdf", size: ${originalDocument.size}, downloadUrl: "${originalDocumentUrl}",caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
-      	    	</c:when>
-    			<c:when test="${originalDocumentType eq 'doc'}">
-    				{type: "office", size: ${originalDocument.size}, downloadUrl: "${originalDocumentUrl}",caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
-    			</c:when>
-    			<c:when test="${originalDocumentType eq 'avi'}">
-    				{type: "video", size: ${originalDocument.size}, downloadUrl: "${originalDocumentUrl}",caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
-    			</c:when>
-	    		<c:otherwise>
-		    		{type: "other", size: ${originalDocument.size}, downloadUrl: "${originalDocumentUrl}",caption: "${originalDocument.fileName}", filename: "${originalDocument.fileName}", url: "${originalDocumentRemoveUrl}", key: ${originalDocument.id}},
-	    		</c:otherwise>
-    		</c:choose>
-    		</c:forEach>
+    		[# th:each="originalDocument : ${signRequest.originalDocuments}"]
+       		[# th:switch="${#strings.arraySplit(originalDocument.contentType, '/')[1]}"]
+    			[# th:case="'gif'"]
+	      	        {type: "image", size: [[${originalDocument.size}]], downloadUrl: "/user/documents/getfile/[[${id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/user/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},    				
+    			[/]
+      	      	[# th:case="'pdf'"]
+      	    	  	{type: "pdf", size: [[${originalDocument.size}]], downloadUrl: "/user/documents/getfile/[[${id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: "/user/signrequests/remove-doc/[[${originalDocument.id}]]", key: [[${originalDocument.id}]]},
+      	    	[/]
+    			[# th:case="'doc'"]
+    				{type: "office", size: [[${originalDocument.size}]], downloadUrl: [[${originalDocument.url}]],caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/user/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},
+    			[/]
+    			[# th:case="'avi'"]
+    				{type: "video", size: [[${originalDocument.size}]], downloadUrl: [[${originalDocument.url}]],caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/user/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},
+    			[/]
+	    		[# th:case="*"]
+		    		{type: "other", size: [[${originalDocument.size}]], downloadUrl: [[${originalDocument.url}]],caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/user/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},
+	    		[/]
+    		[/]
+    		[/]
    	    ],
    		initialPreviewAsData: true,
    		initialPreviewFileType: 'image',
@@ -719,8 +703,6 @@
             'txt': '<i class="fas fa-file-alt text-info fa-2x"></i>',
             'mov': '<i class="fas fa-file-video text-warning fa-2x"></i>',
             'mp3': '<i class="fas fa-file-audio text-warning  fa-2x"></i>',
-            // note for these file types below no extension determination logic 
-            // has been configured (the keys itself will be used as extensions)
             'jpg': '<i class="fas fa-file-image text-danger fa-2x"></i>', 
             'gif': '<i class="fas fa-file-image text-muted fa-2x"></i>', 
             'png': '<i class="fas fa-file-image text-primary fa-2x"></i>'    
@@ -759,9 +741,9 @@
                 }
                 return false;
             },
-            <c:if test="${signRequest.status ne 'draft' and user.eppn ne signRequest.createBy}">
+            [# th:if="${signRequest.status.name() != 'draft' || user.eppn != signRequest.createBy}"]
 	        	showRemove: false
-        	</c:if>
+        	[/]
 
         }
 		
@@ -780,25 +762,21 @@
         theme: 'explorer-fas',
         pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
     	initialPreview: [
-    		<c:forEach items="${signRequest.signedDocuments}" var="originalDocument">
-    		<spring:url value="${originalDocument.url}" var="originalDocumentUrl" />
-    		"${originalDocumentUrl}",
-    		</c:forEach>
+    		[# th:each="originalDocument : ${signRequest.signedDocuments}"]
+    		[[${originalDocument.url}]],
+    		[/]
     		],
    	    initialPreviewConfig: [
-    		<c:forEach items="${signRequest.signedDocuments}" var="originalDocument">
-    		<c:set value="${fn:split(originalDocument.contentType, '/')[1]}" var="originalDocumentType" />
-   			<spring:url value="${originalDocument.url}" var="originalDocumentUrl" />
-  			<fmt:formatDate value="${originalDocument.createDate}" pattern="dd/MM/yyyy HH:mm" var="originalDocumentDate" />
-   			<c:choose>
-      	      	<c:when test="${originalDocumentType eq 'pdf'}">
-      	    	  	{type: "pdf", downloadUrl: "${originalDocumentUrl}", size: ${originalDocument.size}, caption: "${originalDocumentDate} - ${originalDocument.fileName}", filename: "${originalDocument.createDate} - ${originalDocument.fileName}", key: ${originalDocument.id}},
-      	    	</c:when>
-	    		<c:otherwise>
-		    		{type: "other", downloadUrl: "${originalDocumentUrl}", size: ${originalDocument.size}, caption: "${originalDocumentDate} - ${originalDocument.fileName}", filename: "${originalDocument.fileName}", key: ${originalDocument.id}},
-	    		</c:otherwise>
-    		</c:choose>
-    		</c:forEach>
+    		[# th:each="originalDocument : ${signRequest.signedDocuments}"]
+			[# th:switch="${#strings.arraySplit(originalDocument.contentType, '/')[1]}"]
+      	      	[# th:case="'pdf'"]
+	      	      	{type: "pdf", size: [[${originalDocument.size}]], downloadUrl: "/user/documents/getfile/[[${id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], key: [[${originalDocument.id}]]},
+      	    	[/]
+	    		[# th:case="*"]
+					{type: "other", size: [[${originalDocument.size}]], downloadUrl: "/user/documents/getfile/[[${id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], key: [[${originalDocument.id}]]},
+	    		[/]
+    		[/]
+    		[/]
    	    ],
    		initialPreviewAsData: true,
    		initialPreviewFileType: 'image',
@@ -825,8 +803,8 @@
         }
 		
     });
-	
-	</script>
+/*]]>*/
+</script>
 
 <div class="modal fade" id="refuseModal" tabindex="-1" role="dialog" aria-labelledby="Refus" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
@@ -834,7 +812,7 @@
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Refus</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <i class="fas fa-times"><!--  --></i>
+          <i class="fas fa-times"></i>
         </button>
       </div>
       <div class="modal-body">
@@ -851,7 +829,7 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-body">
-        <jsp:include page="includes/signmodal.jspx" />
+	   <div th:replace="user/signrequests/includes/signmodal :: signmodal"></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
@@ -868,8 +846,7 @@
 					<div class="progress">
 						<div class="progress-bar progress-bar-striped progress-bar-animated active" style="width: 100%;" id="bar">
 							<strong>
-							<span id="bar-text"> <!--  -->
-							</span>
+							<span id="bar-text"></span>
 							</strong>
 						</div>
 					</div>
@@ -884,5 +861,6 @@
 			</div>
 		</div>
 	</div>
-	
-</div>
+</main>
+</body>
+</html>

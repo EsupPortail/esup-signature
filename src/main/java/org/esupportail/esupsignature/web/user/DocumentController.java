@@ -105,8 +105,14 @@ public class DocumentController {
 	@RequestMapping(value = "/{id}/getimagepdfpage/{page}", method = RequestMethod.GET)
 	public void getImagePdfAsByteArray(@PathVariable("id") Long id, @PathVariable("page") int page, HttpServletResponse response) throws IOException {
 		Document document = documentRepository.findById(id).get();
-		SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
-		SignBook signBook = signBookRepository.findById(document.getParentId()).get();
+		SignRequest signRequest = null;
+		if(signRequestRepository.countById(document.getParentId()) > 0) {
+			signRequest = signRequestRepository.findById(document.getParentId()).get();
+		}
+		SignBook signBook = null;
+		if(signBookRepository.countById(document.getParentId()) > 0) {
+			signBook = signBookRepository.findById(document.getParentId()).get();
+		}
 		User user = userService.getUserFromAuthentication();
 		InputStream in = null;
 		if((signRequest != null && signRequestService.checkUserViewRights(user, signRequest)) 
@@ -146,16 +152,11 @@ public class DocumentController {
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		Document document = documentRepository.findById(id).get();
 		SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
-		SignBook signBook = signBookRepository.findById(document.getParentId()).get();
 		User user = userService.getUserFromAuthentication();
 		//TODO les modèle ne sont pas protégés
-		if(signRequestService.checkUserViewRights(user, signRequest) || signBook != null) {
+		if(signRequestService.checkUserViewRights(user, signRequest)) {
 			try {
 				File fileToDownload = document.getJavaIoFile();
-				if(signBook != null && document.getContentType().equals("application/pdf")) {
-					//TODO remplissage pdf
-					fileToDownload = pdfService.ldapFill(fileToDownload, user);
-				}
 				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
 				response.setContentType(document.getContentType());
 				IOUtils.copy(new FileInputStream(fileToDownload), response.getOutputStream());

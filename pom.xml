@@ -138,6 +138,12 @@
 		    <artifactId>croppie</artifactId>
 		    <version>2.6.3</version>
 		</dependency>
+		
+		<dependency>
+		    <groupId>org.webjars.bower</groupId>
+		    <artifactId>bootstrap-fileinput</artifactId>
+		    <version>5.0.1</version>
+		</dependency>
 			
 		<dependency>
 		    <groupId>org.webjars</groupId>

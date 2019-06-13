@@ -1,11 +1,13 @@
 package org.esupportail.esupsignature.entity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -22,11 +24,12 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 
-import org.springframework.beans.factory.annotation.Configurable;
+import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.stereotype.Component;
 
 @Entity
-@Configurable
 public class SignRequest {
 	
 	@Id
@@ -78,25 +81,30 @@ public class SignRequest {
     public enum SignRequestStatus {
 		draft, pending, canceled, checked, signed, refused, deleted, exported, completed;
 	}
-/*
-    public List<SignBook> getOriginalSignBooks() {
-    	return SignBook.findSignBooksBySignRequestsEquals(Arrays.asList(this)).getResultList();
-    }
     
-    public Map<String, Boolean> getSignBooksLabels() {
-    	Map<String, Boolean> signBookNames = new HashMap<>();
-		for(Map.Entry<Long, Boolean> signBookId : signBooks.entrySet()) {
-			signBookNames.put(SignBook.findSignBook(signBookId.getKey()).getName(), signBookId.getValue());
-		}
-		return signBookNames;
-		
-    }
-    */
-    public void setStatus(SignRequestStatus status) {
-        this.status = status;
+    transient List<SignBook> originalSignBooks = new ArrayList<SignBook>();
+
+    public List<SignBook> getOriginalSignBooks() {
+    	return originalSignBooks;
     }
 
+    public void setOriginalSignBooks(List<SignBook> signBooks) {
+    	originalSignBooks = signBooks;
+    }
+
+    transient Map<String, Boolean> signBooksLabels;
     
+    public Map<String, Boolean> getSignBooksLabels() {
+		return signBooksLabels;
+	}
+
+	public void setSignBooksLabels(Map<String, Boolean> signBooksLabels) {
+		this.signBooksLabels = signBooksLabels;
+	}
+
+	public void setStatus(SignRequestStatus status) {
+        this.status = status;
+    }
     
     public int countSignOk() {
     	int nbSign = 0;

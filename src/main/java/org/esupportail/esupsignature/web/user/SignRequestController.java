@@ -6,8 +6,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -50,6 +52,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -196,6 +200,17 @@ public class SignRequestController {
 			signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, false, null, page, size);
 		}
 		}
+		
+		for(SignRequest signRequest : signRequests) {
+			signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
+			
+	    	Map<String, Boolean> signBookNames = new HashMap<>();
+			for(Map.Entry<Long, Boolean> signBookMap : signRequest.getSignBooks().entrySet()) {
+				signBookNames.put(signBookRepository.findById(signBookMap.getKey()).get().getName(), signBookMap.getValue());
+			}
+			signRequest.setSignBooksLabels(signBookNames);
+		}
+		
 		uiModel.addAttribute("mydocs", "active");
 		uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
 		uiModel.addAttribute("page", page);
@@ -265,6 +280,15 @@ public class SignRequestController {
 			if(user.getKeystore() != null) {
 				uiModel.addAttribute("keystore", user.getKeystore().getFileName());
 			}
+			
+			signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
+			
+	    	Map<String, Boolean> signBookNames = new HashMap<>();
+			for(Map.Entry<Long, Boolean> signBookMap : signRequest.getSignBooks().entrySet()) {
+				signBookNames.put(signBookRepository.findById(signBookMap.getKey()).get().getName(), signBookMap.getValue());
+			}
+			signRequest.setSignBooksLabels(signBookNames);
+			
 			uiModel.addAttribute("signRequest", signRequest);
 			uiModel.addAttribute("itemId", id);
 			if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
@@ -348,9 +372,9 @@ public class SignRequestController {
 		return "redirect:/user/signrequests/" + signRequest.getId();
 	}
 
-	@RequestMapping(value = "/add-doc/{id}", method = RequestMethod.POST, produces = "text/html")
+	@RequestMapping(value = "/add-doc/{id}", method = RequestMethod.POST, produces = "application/json")
 	@ResponseBody
-	public String addDocument(@PathVariable("id") Long id,
+	public ResponseEntity<String> addDocument(@PathVariable("id") Long id,
 			@RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest request) {
 		logger.info("start add documents");
 		User user = userService.getUserFromAuthentication();
@@ -370,13 +394,12 @@ public class SignRequestController {
 				logger.error("error to add file : " + multipartFiles[0].getOriginalFilename(), e);
 			}
 		}
-        return "{}";
+		return new ResponseEntity<String>("", HttpStatus.OK);
 
 	}
 
-	@RequestMapping(value = "/remove-doc/{id}", method = RequestMethod.POST, produces = "text/html")
-	@ResponseBody
-	public String removeDocument(@PathVariable("id") Long id, HttpServletRequest request) {
+	@RequestMapping(value = "/remove-doc/{id}", method = RequestMethod.POST, produces = "application/json")
+	public ResponseEntity<String> removeDocument(@PathVariable("id") Long id, HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		Document document = documentRepository.findById(id).get();
@@ -384,7 +407,7 @@ public class SignRequestController {
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			signRequest.getOriginalDocuments().remove(document);
 		}
-		return "{}";
+		return new ResponseEntity<String>("", HttpStatus.OK);
 	}
 	
 	@RequestMapping(value = "/sign/{id}", method = RequestMethod.POST)
