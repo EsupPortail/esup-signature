@@ -44,9 +44,9 @@ public class UserSignBookController {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserSignBookController.class);
 
-	@ModelAttribute("active")
+	@ModelAttribute("userMenu")
 	public String getActiveMenu() {
-		return "user/signbooks";
+		return "active";
 	}
 	
 	@Autowired

@@ -34,9 +34,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class CurrentSessionsController {
 	
-	@ModelAttribute("active")
+	@ModelAttribute("adminMenu")
 	String getCurrentMenu() {
-		return "sessions";
+		return "active";
 	}
 
 	@Autowired

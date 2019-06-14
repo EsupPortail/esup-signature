@@ -41,7 +41,7 @@
 				<thead>
 					<tr>
 						<th class="none">Nom</th>
-						<th class="none">Description</th>
+						<th class="none">Type</th>
 						<th class="none">Destinataires</th>
 						<th class="none">Gestionnaire(s) du parapheur</th>
 						<th>Voir</th>
@@ -51,7 +51,7 @@
 					<th:block th:each="signBook : ${signBooks}">
 						<tr class="roocol">
 							<td class="none" th:text="${signBook.name}"></td>
-							<td class="none" th:text="${signBook.description}"></td>
+							<td class="none" th:text="${signBook.signBookType}"></td>
 							<td th:if="${#lists.size(signBook.recipientEmails) > 0}" class="none">
 								<th:block th:each="recipientEmail : ${signBook.recipientEmails}">
 									<i class="far fa-envelope"></i>

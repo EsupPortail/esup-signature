@@ -57,7 +57,7 @@ public class SignBookController {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
 	
-	@ModelAttribute("menuSignBook")
+	@ModelAttribute("managerMenu")
 	public String getActiveMenu() {
 		return "active";
 	}

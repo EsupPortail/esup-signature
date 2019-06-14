@@ -3,48 +3,58 @@
 <head th:replace="fragments/head :: head"></head>
 <body>
 	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+	<nav class="nav justify-content-between" aria-label="breadcrumb">
+		<ol class="breadcrumb col-11">
+			<li class="breadcrumb-item active">Paramètres utilisateur</li>
+		</ol>
+		<div class="navbar-nav align-self-center">
+			<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+				<span class="fas fa-info-circle">
+					<!--  -->
+				</span>
+			</button>
+		</div>
+	</nav>
 	<div id="ribbon" class="card">
 		<div class="card-body">
-		<button type="button" onclick="document.getElementById('fc_org_esupportail_esupsignature_domain_User').submit();" class="mr-2 btn btn-outline-dark btn-light float-left">
-		<p class="text-center">
-		<i class="fas fa-save fa-2x"></i>
-		<br/>
-		Enregistrer
-		</p>
-		</button>
+			<button type="button" onclick="location.href='/user/users/?form'" class="mr-2 btn btn-outline-dark btn-light float-left">
+				<p class="text-center">
+					<i class="far fa-edit fa-2x"></i>
+					<br /> 
+					Modifier
+				</p>
+			</button>
 		</div>
-		</div>
-	</div>	
+	</div>
+	</div>
 	<main role="main" class="container">
 	<div class="card card-header">
-		<nav class="nav justify-content-between" aria-label="breadcrumb">
-				<ol class="breadcrumb col-11">
-					<li class="breadcrumb-item active">Paramètres utilisateur</li>
-				</ol>
-			<div class="navbar-nav align-self-center">
-				<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
-					<span class="fas fa-info-circle"><!--  --></span>
-				</button>
-			</div>
-		</nav>
-		</div>
-		<dl class="display-group border-bottom m-0"><dt class="col-lg-5">Nom</dt><dd th:text="${user.name}"></dd></dl>
-		<dl class="display-group border-bottom m-0"><dt class="col-lg-5">Prénom</dt><dd th:text="${user.firstname}"></dd></dl>
-		<dl class="display-group border-bottom m-0"><dt class="col-lg-5">EPPN</dt><dd th:text="${user.eppn}"></dd></dl>
-		<dl class="display-group border-bottom m-0"><dt class="col-lg-5">Email</dt><dd th:text="${user.email}"></dd></dl>
-		<dl class="display-group border-bottom m-0">
-			<dt class="col-lg-5">
-				Image de la signature
-			</dt>
+		<dl class="row border-bottom m-0">
+			<dt class="col-lg-5">Nom</dt>
+			<dd th:text="${user.name}"></dd>
+		</dl>
+		<dl class="row border-bottom m-0">
+			<dt class="col-lg-5">Prénom</dt>
+			<dd th:text="${user.firstname}"></dd>
+		</dl>
+		<dl class="row border-bottom m-0">
+			<dt class="col-lg-5">EPPN</dt>
+			<dd th:text="${user.eppn}"></dd>
+		</dl>
+		<dl class="row border-bottom m-0">
+			<dt class="col-lg-5">Email</dt>
+			<dd th:text="${user.email}"></dd>
+		</dl>
+		<dl class="row border-bottom m-0">
+			<dt class="col-lg-5">Image de la signature</dt>
 			<dd>
-				<img th:if="${signFile != null}" alt="signature" src="data:image/png;base64, ${signFile}" />
-				<i th:if="${signFile == null}" class="fas fa-ban"><!--  --></i>
+				<img th:if="${signFile != null}" alt="signature" src="data:image/png;base64, ${signFile}" /> <i th:if="${signFile == null}" class="fas fa-ban">
+					<!--  -->
+				</i>
 			</dd>
 		</dl>
-		<dl class="display-group border-bottom m-0">
-			<dt class="col-lg-5">
-				KeyStore
-			</dt>
+		<dl class="row border-bottom m-0">
+			<dt class="col-lg-5">KeyStore</dt>
 			<dd>
 				<div th:if="${keystore != null}">
 					<button type="button" class="btn btn-warning" th:onclick="'location.href=/user/users/get-keystore-file/' + ${user.id}">
@@ -52,8 +62,7 @@
 						</i>
 						<spring:message code="menu_item_user_download_keystore" />
 					</button>
-					<br />
-					<br />
+					<br /> <br />
 					<form action="viewCert" method="get">
 						<div class="input-group mb-2">
 							<c:if test="${not isPasswordSet}">
@@ -67,54 +76,51 @@
 						</div>
 					</form>
 				</div>
-				<i th:if="${keystore == null}" class="fas fa-ban"><!--  --></i>
+				<i th:if="${keystore == null}" class="fas fa-ban">
+					<!--  -->
+				</i>
 			</dd>
 		</dl>
-		
-		<dl class="display-group border-bottom m-0">
-			<dt class="col-lg-5">
-				Paramètres
-			</dt>
+
+		<dl class="row border-bottom m-0">
+			<dt class="col-lg-5">Paramètres</dt>
 			<dd>
-				Type de signature
-				:
-				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" th:text="${defaultSignBook.signRequestParams[0].signType}">
-				</div>
-				Page de garde
-				:
-				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" th:text="${defaultSignBook.signRequestParams[0].newPageType}">
-				</div>
+				Type de signature :
+				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" th:text="${defaultSignBook.signRequestParams[0].signType}"></div>
+				Page de garde :
+				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" th:text="${defaultSignBook.signRequestParams[0].newPageType}"></div>
 			</dd>
 		</dl>
-		<dl class="display-group border-bottom m-0">
-			<dt class="col-lg-5">
-				Fréquence d'alerte
-			</dt>
+		<dl class="row border-bottom m-0" th:if="${user.emailAlertFrequency == null}">
+			<dt class="col-lg-5">Fréquence d'alerte</dt>
 			<dd>
-				<div th:if="${user.emailAlertFrequency == null}">
-					non paramétrée (par défaut, une alerte sera envoyée à chaque nouvelle demande)
+				non paramétrée (par défaut, une alerte sera envoyée à chaque nouvelle demande)
+			</dd>
+		</dl>
+			<dl class="row border-bottom m-0" th:unless="${user.emailAlertFrequency == null}">
+				<dt class="col-lg-5">
+					Paramètre des alertes mails
+				</dt>
+				<dd th:text="${user.emailAlertFrequency}">
+				</dd>
+			</dl>
+			
+			<th:block th:switch="${user.emailAlertFrequency.name()}">
+				<div th:case="'daily'">
+				<dl class="row border-bottom m-0">
+					<dt class="col-lg-5">Heure dans la journée</dt>
+					<dd th:text="${user.emailAlertHour}">
+					</dd>
+				</dl>
 				</div>
-				<span th:text="${user.emailAlertFrequency}"></span>
-			</dd>
-		</dl>
-		<c:if test="${not empty user.emailAlertFrequency}"> 
-		<dl class="display-group border-bottom m-0">
-			<dt class="col-lg-5">
-				<spring:message code="label_org_esupportail_esupsignature_domain_user_emailalertfrequency" />
-			</dt>
-			<dd>
-				<spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency_${user.emailAlertFrequency}" />
-			</dd>
-		</dl>
-		<c:choose>
-			<c:when test="${user.emailAlertFrequency eq 'daily'}">
-				<field:display field="emailAlertHour" id="s_org_esupportail_esupsignature_domain_User_emailAlertHour" object="${user}" z="user-managed" />			
-			</c:when>
-			<c:when test="${user.emailAlertFrequency eq 'weekly'}">
-				<field:display field="emailAlertDay" id="s_org_esupportail_esupsignature_domain_User_emailAlertDay" object="${user}" z="user-managed" />			
-			</c:when>
-		</c:choose>
-		</c:if>
-</main>
+				<div th:case="'weekly'">
+					<dl class="row border-bottom m-0">
+						<dt class="col-lg-5">Jour de la semaine</dt>
+						<dd th:text="${user.emailAlertDay}">
+						</dd>
+					</dl>
+				</div>
+			</th:block>
+	</main>
 </body>
 </html>

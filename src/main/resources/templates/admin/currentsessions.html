@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+	<div class="card">
+		<div class="card-header">
+			<h5>Utilisateurs connectés</h5>
+			<div class="card card-body bg-primary text-white" th:text="${#lists.size(sessions)} + 'session(s) active(s)'">
+			</div>
+		</div>
+		<ul class="list-group list-group-flush">
+			<th:block th:each="session :${sessions}">
+				<li class="list-group-item" th:text="${session}"></li>
+			</th:block>
+		</ul>
+	</div>
+</body></html>
