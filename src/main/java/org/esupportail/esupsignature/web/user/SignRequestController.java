@@ -81,9 +81,9 @@ public class SignRequestController {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestController.class);
 
-	@ModelAttribute("active")
+	@ModelAttribute("menuSignRequest")
 	public String getActiveMenu() {
-		return "user/signrequests";
+		return "active";
 	}
 
 	@Value("${sign.passwordTimeout}")

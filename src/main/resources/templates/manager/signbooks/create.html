@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+	<nav class="nav justify-content-between" aria-label="breadcrumb">
+		<div class="navbar-nav col-11">
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a href="/manager/">Liste des parapheurs</a></li>
+				<li class="breadcrumb-item active">Création d'un nouveau parapheur</li>
+			</ol>
+		</div>
+		<div class="navbar-nav align-self-center">
+			<button class="btn btn-info" data-target="#collapseHelp" data-toggle="collapse" type="button">
+				<span class="fas fa-info-circle"> <!--  -->
+				</span>
+			</button>
+		</div>
+	</nav>
+	<div aria-expanded="true" class="collapse" id="collapseHelp">
+		<div class="alert alert-info">
+			<p>Pour créer un groupe, selectionnez les personnes destinataires</p>
+			<p>Vous pouvez rendre l'ajout de documents automatique en précisant une source et une destination</p>
+		</div>
+	</div>
+	<form id="fc_org_esupportail_esupsignature_domain_SignBook" th:object="${signBook}" action="/manager/signbooks" method="post" enctype="multipart/form-data">
+		<input type="hidden" name="type" th:value="${type}">
+		<div id="ribbon" class="card">
+			<div class="card-body">
+				<button type="submit" class="mr-2 btn btn-outline-dark btn-light float-left">
+					<p class="text-center">
+						<i class="fas fa-save fa-2x"></i> <br /> Enregistrer
+					</p>
+				</button>
+				<button type="button" class="btn  btn-danger float-right" value="Retour" onclick="location.href='/manager/signbooks'">
+					<i class="fas fa-times fa-1x"></i>
+				</button>
+			</div>
+		</div>
+		<main role="main" class="container">
+		<div class="card card-body bg-light">
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_name">
+						<label for="name"> <strong>Nom</strong>
+						</label> <input id="name" name="name" class="form-control" type="text" value="" required="required">
+					</div>
+					<input type="hidden" id="_signBookType_id" name="signBookType" value="group" />
+					
+					<div th:if="${type == 'group'}" class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_recipientemails">
+						<label for="recipientemailsSelect"> <strong> Destinataires </strong>
+							<button class="btn btn-sm btn-info" data-target="#collapseHelp2" data-toggle="collapse" type="button">
+								<i class="fas fa-info-circle"></i>
+							</button>
+							<div class="collapse" id="collapseHelp2">
+								<div class="alert alert-info"></div>
+							</div>
+						</label> <select id="recipientemailsSelect" multiple="multiple" name="recipientEmails" required="required"></select>
+						<script type="text/javascript">
+						new SlimSelect({
+    	  select: '#recipientemailsSelect',
+    	  placeholder: 'Choisir un ou plusieurs utilisateurs',
+    	  searchText: 'Aucun résultat',
+    	  searchPlaceholder: 'Rechercher',
+    	  searchHighlight: true,
+    	  searchFilter: (option, search) => {
+  		    return true;
+  		  },
+    	  ajax: function (search, callback) {
+    		    if (search.length < 3) {
+    		      callback('Merci de saisir au moins 3 caractères')
+    		      return
+    		    }
+    		    fetch('/ws/searchLdap?searchString=' + search)
+    		    .then(function (response) {
+    		      return response.json()
+    		    })
+    		    .then(function (json) {
+    		      let data = []
+    		      for (let i = 0; i < json.length; i++) {
+    		    	  data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
+    		      }
+    		      callback(data)
+    		    })
+    		    .catch(function(error) {
+    		      callback(false)
+    		    })
+    		  }
+    	  
+    	});
+						</script>
+					</div>
+
+					<div th:if="${type == 'workflow'}" class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBooksIds">
+						<label for="recipientemailsSelect"> <strong> Parapheurs
+								<button class="btn btn-sm btn-info" data-target="#collapseHelp3" data-toggle="collapse" type="button">
+									<i class="fas fa-info-circle"></i>
+								</button>
+								<div class="collapse" id="collapseHelp3">
+									<div class="alert alert-info"></div>
+								</div>
+						</strong>
+						</label>
+						<select id="select-from" class="form-control" multiple="multiple" size="10">
+							<th:block th:each="signBook : ${allSignBooks}">
+								<option th:value="${signBook.id}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
+							</th:block>
+						</select>
+						<select id="select-to" class="form-control" multiple="multiple" name="signBooksIds" size="10">
+						</select>
+						<button type="button" class="btn btn-light" href="JavaScript:void(0);" id="btn-up">
+							<i class="fas fa-sort-up">
+								<!--  -->
+							</i>
+						</button>
+						<button type="button" class="btn btn-light" href="JavaScript:void(0);" id="btn-down">
+							<i class="fas fa-sort-down">
+								<!--  -->
+							</i>
+						</button>
+					</div>
+
+					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_moderatoremails">
+						<label for="moderatoremailsSelect"> <strong>Gestionnaire(s) du parapheur</strong>
+							<button class="btn btn-sm btn-info" data-target="#collapseHelp4" data-toggle="collapse" type="button">
+								<i class="fas fa-info-circle"></i>
+							</button>
+							<div class="collapse" id="collapseHelp4">
+								<div class="alert alert-info">
+									<!--  -->
+								</div>
+							</div>
+						</label> <select id="moderatoremailsSelect" multiple="multiple" name="moderatorEmails"></select>
+					</div>
+					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
+						<label for="newPageType"> <strong> Protocole pour la source des documents </strong>
+						</label> <select class="form-control" id="_sourceType_id" name="sourceType" size="1">
+							<th:block th:each="sourceType : ${sourceTypes}">
+								<option th:value="${sourceType}" th:text="${sourceType}"></option>
+							</th:block>
+						</select>
+					</div>
+					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri" style="display: block;">
+						<label for="documentsSourceUri"> <strong>Lien pour la source des documents</strong>
+						</label> <input id="documentsSourceUri" name="documentsSourceUri" placeholder="A saisir si autre que la valeur par défaut" class="form-control" type="text" value="" autocomplete="on">
+					</div>
+					<div class="form-group" id="c_org_esupportail_esupsignature_domain_SignBook_targetType">
+						<label for="targetType"> <strong> Protocole pour la destination des documents </strong>
+						</label> <select class="form-control" id="_targetType_id" name="targetType" size="1">
+							<th:block th:each="targetType : ${targetTypes}">
+								<option th:value="${targetType}" th:text="${targetType}"></option>
+							</th:block>
+						</select>
+					</div>
+
+					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" style="display: block;">
+						<label for="documentsTargetUri"> <strong> Lien pour la destination des documents </strong>
+						</label> <input id="documentsTargetUri" name="documentsTargetUri" placeholder="A saisir si autre que la valeur par défaut" class="form-control" type="text" value="" autocomplete="on">
+					</div>
+					<div class="form-group" id="__id">
+						<label for="_autoRemove_id"> <strong> Gérer automatiquement l'avancement du workflow </strong>
+						</label> <label class="switch"> <input checked="checked" id="_autoRemove_id" name="autoRemove" type="checkbox" /> <span class="slider round"></span>
+						</label>
+					</div>
+					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signType_id">
+						<label for="signType"> <strong> Type de signature par défaut </strong>
+						</label> <select class="form-control" id="_signType_id" name="signType" size="1">
+							<th:block th:each="signType : ${signTypes}">
+								<option th:value="${signType}" th:text="${signType}"></option>
+							</th:block>
+						</select>
+					</div>
+					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
+						<label class="col-lg-3  col-form-label" for="newPageType"> <strong> Insérer une page de garde </strong>
+						</label> <select class="form-control" id="_newPageType_id" name="newPageType" size="1">
+							<th:block th:each="newPageType : ${newPageTypes}">
+								<option th:value="${newPageType}" th:text="${newPageType}"></option>
+							</th:block>
+						</select>
+					</div>
+					<div class="form-group">
+						<label class="col-lg-3  col-form-label" for="newPageType"> <strong> Ajouter un modèle </strong>
+						</label>
+						<div class="input-group">
+							<div class="custom-file">
+								<input aria-describedby="inputGroupFileAddon01" class="custom-file-input" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file" /> <label class="custom-file-label" for="upload" id="inputGroupLabel01"> <spring:message code="button_choose_file" />
+								</label>
+							</div>
+						</div>
+					</div>
+					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_description">
+						<label for="_description_id"> <strong>Description</strong>
+						</label>
+						<textarea id="_description_id" name="description" class="form-control" rows="5" cols="50"></textarea>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+		var sourceSelector = document.getElementById("_sourceType_id");
+		var targetSelector = document.getElementById("_targetType_id");
+		var sourceUri = document.getElementById("_c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri");
+		var targetUri = document.getElementById("_c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri");
+		sourceUri.style.display = "none";
+		targetUri.style.display = "none";
+		sourceSelector.onchange = function() {
+			if(sourceSelector.value != "none") {
+				sourceUri.style.display = "block";		
+			} else {
+				sourceUri.style.display = "none";
+			}
+		};
+		targetSelector.onchange = function() {
+			if(targetSelector.value != "none") {
+				targetUri.style.display = "block";		
+			} else {
+				targetUri.style.display = "none";
+			}
+		};
+		
+    	
+    	
+    	new SlimSelect({
+      	  select: '#moderatoremailsSelect',
+      	  placeholder: 'Choisir un ou plusieurs utilisateurs',
+      	  searchText: 'Aucun résultat',
+      	  searchPlaceholder: 'Rechercher',
+      	  searchHighlight: true,
+      	  searchFilter: (option, search) => {
+		    return true;
+		  },
+      	  ajax: function (search, callback) {
+      		    if (search.length < 3) {
+      		      callback('Merci de saisir au moins 3 caractères')
+      		      return
+      		    }
+      		    fetch('/user/users/searchLdap?searchString=' + search)
+      		    .then(function (response) {
+      		      return response.json()
+      		    })
+      		    .then(function (json) {
+      		      let data = []
+      		      for (let i = 0; i < json.length; i++) {
+      		        data.push({text: json[i].displayName, value: json[i].mail});
+      		      }
+      		      callback(data)
+      		    })
+      		    .catch(function(error) {
+      		      callback(false)
+      		    })
+      		  }
+      	  
+      	});
+    	
+	</script> </main>
+	</form>
+	<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>

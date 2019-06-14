@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+	<nav class="nav justify-content-between" aria-label="breadcrumb">
+		<ol class="breadcrumb col-11">
+			<li class="breadcrumb-item active">Liste des parapheurs</li>
+		</ol>
+		<div class="navbar-nav align-self-center">
+			<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+				<span class="fas fa-info-circle"> <!--  -->
+				</span>
+			</button>
+		</div>
+	</nav>
+
+	<div id="ribbon" class="card">
+		<div class="card-body">
+			<button type="button" onclick="location.href='/manager/signbooks?form&type=group'" class="mr-2 btn btn-outline-dark btn-light float-left">
+				<p class="text-center">
+					<i class="fas fa-book fa-2x"></i>
+					<br />
+					Créer un parapheur
+				</p>
+			</button>
+			<button type="button" onclick="location.href='/manager/signbooks?form&type=workflow'" class="mr-2 btn btn-outline-dark btn-light float-left">
+				<p class="text-center">
+				<i class="fas fa-project-diagram fa-2x"></i>
+				<br />
+				Créer un workflow en série
+				</p>
+			</button>
+		</div>
+	</div>
+
+	<div class="card">
+		<div class="card-body">
+
+			<table class="table table-sm table-striped table-hover">
+				<thead>
+					<tr>
+						<th class="none">Nom</th>
+						<th class="none">Description</th>
+						<th class="none">Destinataires</th>
+						<th class="none">Gestionnaire(s) du parapheur</th>
+						<th>Voir</th>
+					</tr>
+				</thead>
+				<tbody>
+					<th:block th:each="signBook : ${signBooks}">
+						<tr class="roocol">
+							<td class="none" th:text="${signBook.name}"></td>
+							<td class="none" th:text="${signBook.description}"></td>
+							<td th:if="${#lists.size(signBook.recipientEmails) > 0}" class="none">
+								<th:block th:each="recipientEmail : ${signBook.recipientEmails}">
+									<i class="far fa-envelope"></i>
+									<span th:text="${recipientEmail}"></span>
+									<br/>
+								</th:block>
+							</td>
+							<td th:unless="${#lists.size(signBook.recipientEmails) > 0}" class="none">
+								<th:block th:each="workflowSignBooks : ${signBook.signBooks}">
+									<i class="fas fa-book"></i>
+									<span th:text="${workflowSignBooks.name}"></span>
+									<br/>
+								</th:block>
+							</td>
+							<td class="none">
+								<th:block th:each="moderatorEmail : ${signBook.moderatorEmails}">
+									<i class="far fa-people"></i>
+									<span th:text="${moderatorEmail}"></span>
+									<br/>
+								</th:block>
+							
+							</td>
+							<td class="utilbox">
+								<button class="btn btn-info far fa-eye" title="Créer un nouveau parapheur" th:onclick="'location.href=\'/manager/signbooks/' + ${signBook.id} + '\';'" type="button"></button>
+							</td>
+						</tr>
+					</th:block>
+				</tbody>
+				<tfoot>
+					<tr>
+						<td colspan="5"><input value="1" type="hidden" name="page"><input value="10" type="hidden" name="size"></td>
+					</tr>
+				</tfoot>
+			</table>
+		</div>
+	</div>
+	<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>

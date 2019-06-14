@@ -223,6 +223,52 @@
 				targetUri.style.display = "none";
 			}
 		};
+		/*
+		new SlimSelect({
+	    	  select: '#signBooksIdsSelect',
+	    	  placeholder: 'Choisir des parapheurs',
+	    	  searchText: 'Aucun résultat',
+	    	  searchPlaceholder: 'Rechercher',
+	    	  searchHighlight: true,
+	    	  searchFilter: (option, search) =&gt; {
+	  		    return true;
+	  		  }
+	    	  
+	    	});
+		*/
+		/*
+    	new SlimSelect({
+    	  select: '#recipientemailsSelect',
+    	  placeholder: 'Choisir un ou plusieurs utilisateurs',
+    	  searchText: 'Aucun résultat',
+    	  searchPlaceholder: 'Rechercher',
+    	  searchHighlight: true,
+    	  searchFilter: (option, search) =&gt; {
+  		    return true;
+  		  },
+    	  ajax: function (search, callback) {
+    		    if (search.length &lt; 3) {
+    		      callback('Merci de saisir au moins 3 caractères')
+    		      return
+    		    }
+    		    fetch('/ws/searchLdap?searchString=' + search)
+    		    .then(function (response) {
+    		      return response.json()
+    		    })
+    		    .then(function (json) {
+    		      let data = []
+    		      for (let i = 0; i &lt; json.length; i++) {
+    		    	  data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
+    		      }
+    		      callback(data)
+    		    })
+    		    .catch(function(error) {
+    		      callback(false)
+    		    })
+    		  }
+    	  
+    	});
+    	*/
     	
     	new SlimSelect({
       	  select: '#moderatoremailsSelect',

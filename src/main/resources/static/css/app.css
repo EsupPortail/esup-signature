@@ -22,6 +22,7 @@ body {
   padding-left: 15px;
 }
 
+
 code {
   font-size: 80%;
 }
@@ -51,7 +52,7 @@ code {
   100% { transform: rotate(360deg); }
 }
 
-.custom-file-input:lang(fr) ~ .custom-file-label::after {
+.custom-file-input:lang(en) ~ .custom-file-label::after {
 	content: "Parcourir" !important;
 }
 
@@ -191,8 +192,8 @@ input:checked + .slider:before {
 }
 
 .step-trigger {
-		cursor: default !important;
-		background-color: rgba(0,0,0,.12) !important;
+	cursor: default !important;
+	background-color: rgba(0,0,0,.12) !important;
 }
 
 .truncate {

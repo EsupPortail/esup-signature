@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <page:show create="false" delete="false" id="ps_org_esupportail_esupsignature_domain_Log" object="${log}" path="/manager/logs" update="false" z="Nq5s9HUl3/8xLxjeDzmnZxn5tug=">
+        <field:display date="true" dateTimePattern="${log_logdate_date_format}" field="logDate" id="s_org_esupportail_esupsignature_domain_Log_logDate" object="${log}" z="l7pEwkCcTvufvBOWm09stJ323r8="/>
+        <field:display field="eppn" id="s_org_esupportail_esupsignature_domain_Log_eppn" object="${log}" z="DF+wiVAiQnB0CSCiYlYTgNSU7wo="/>
+        <field:display field="action" id="s_org_esupportail_esupsignature_domain_Log_action" object="${log}" z="pGtMIdxwYt8PshlmxZJmhMvCL90="/>
+        <field:display field="initialStatus" id="s_org_esupportail_esupsignature_domain_Log_initialStatus" object="${log}" z="l3a36ycoGIrIVKHZOFt9/8VZ5YE="/>
+        <field:display field="finalStatus" id="s_org_esupportail_esupsignature_domain_Log_finalStatus" object="${log}" z="/GiDUhQlrYOmhCI5JCRuBZJlIn0="/>
+        <field:display field="returnCode" id="s_org_esupportail_esupsignature_domain_Log_returnCode" object="${log}" z="/9Z8tmP/tEjvff+G86q2r8Sh+LM="/>
+        <field:display field="ip" id="s_org_esupportail_esupsignature_domain_Log_ip" object="${log}" z="DkJWbRiaNTm9wpwrQo9nyOxwufY="/>
+        <field:display field="signRequestId" id="s_org_esupportail_esupsignature_domain_Log_signRequestId" object="${log}" z="vnLqtEUQXOFi7n2vm3sx7gjKpNw="/>
+        <field:display field="comment" id="s_org_esupportail_esupsignature_domain_Log_comment" object="${log}" z="uc2mBNZKIxV0UP6ASV8RfWur044="/>
+    </page:show>
+</div>

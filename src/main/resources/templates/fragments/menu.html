@@ -7,11 +7,8 @@
 				<button aria-label="Toggle navigation" aria-expanded="false" aria-controls="_navbar" data-target="#_navbar" data-toggle="collapse" type="button" class="navbar-toggler">
 					<span class="navbar-toggler-icon"></span>
 				</button>
-				<li class="nav-item"><a title="Utilisateur" href="/user/signrequests/" class="nav-link  active">Utilisateur</a></li>
-				<li class="nav-item dropdown"><a aria-expanded="false" aria-haspopup="true" data-toggle="dropdown" role="button" id="navbarDropdown_c_manager" href="#" class="nav-link dropdown-toggle ">Gestionnaire</a>
-					<div aria-labelledby="navbarDropdown_c_manager" class="dropdown-menu">
-						<a title="Parapheurs" href="/manager/signbooks?page=1&amp;size=10" class="dropdown-item ">Parapheurs</a> <a title="Workflows" href="/manager/workflows?page=1&amp;size=10" class="dropdown-item ">Workflows</a>
-					</div></li>
+				<li class="nav-item"><a title="Utilisateur" href="/user/signrequests/" class="nav-link ${menuSignRequest}">Utilisateur</a></li>
+				<li class="nav-item"><a href="/manager/signbooks" aria-expanded="false" class="nav-link ${menuSignBook}" >Gestionnaire</a>
 				<li class="nav-item"><a title="Admin" href="/admin/currentsessions" class="nav-link  ">Admin</a></li>
 			</div>
 			<div class="navbar-nav">

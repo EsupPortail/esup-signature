@@ -2,73 +2,41 @@
 <div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:form="urn:jsptagdir:/WEB-INF/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:spring="http://www.springframework.org/tags" version="2.0">
     <jsp:directive.page contentType="text/html;charset=UTF-8"/>
     <jsp:output omit-xml-declaration="yes"/>
-    <div class="card card-header">
-        <nav aria-label="breadcrumb" class="nav justify-content-between">
-            <div class="navbar-nav col-11">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="/manager/workflows">Liste des workflows</a>
-                    </li>
-                    <li class="breadcrumb-item active">Création d'un nouveau workflow</li>
-                </ol>
-            </div>
-            <div class="navbar-nav align-self-center">
-                <button class="btn btn-info" data-target="#collapseHelp" data-toggle="collapse" type="button">
-                    <span class="fas fa-info-circle">
-                        <!--  -->
-                    </span>
-                </button>
-            </div>
-        </nav>
-        <div aria-expanded="true" class="show" id="collapseHelp">
-            <div class="alert alert-info">
-                <p>Pour créer un nouveau workflow, sélectionner plusieurs parapheurs qui s'enchaineront en série</p>
-                <p>Vous pouvez rendre l'ajout de documents automatique en précisant une source et une destination</p>
-            </div>
-        </div>
-    </div>
-    <form:create id="fc_org_esupportail_esupsignature_domain_SignBook" modelAttribute="signBook" multipart="true" path="/manager/workflows" render="${empty dependencies}" z="user-managed">
+    <form:update id="fu_org_esupportail_esupsignature_domain_SignBook" modelAttribute="signBook" multipart="true" path="/manager/signbooks" versionField="Version" z="user-managed">
         <div class="row">
             <div class="col-lg-12">
-                <field:input autocomplete="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignBook_name" required="true" z="user-managed"/>
                 <field:select checkboxes="false" cssClass="form-control" field="signBookType" id="c_org_esupportail_esupsignature_domain_SignBook_signBookType" items="${signBookTypes}" multiple="false" path="/signrequests" render="false" size="1" z="user-managed"/>
-                <input type="hidden" id="_signBookType_id" name="signBookType" value="workflow" />
-                <field:input cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" render="false" required="true" z="user-managed"/>
-                <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBooksIds">
-                    <label class="col-lg-3  col-form-label" for="recipientemailsSelect">
-                        <strong>
-                            Parapheurs
-                            <button class="btn btn-sm btn-info" data-target="#collapseHelp3" data-toggle="collapse" type="button">
-                                <span class="fas fa-info-circle"/>
-                            </button>
-                            <div class="collapse" id="collapseHelp3">
-                                <div class="alert alert-info">
-                                    <!--  -->
-                                </div>
-                            </div>
-                        </strong>
+                <field:input autocomplete="false" cssClass="form-control" field="name" id="c_org_esupportail_esupsignature_domain_SignBook_name" required="true" z="user-managed"/>
+	            <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_signBookType_id">
+                    <label class="col-lg-3  col-form-label" for="signBookType">
+                        <strong>Type de parapheur</strong>
                     </label>
                     <div class="col-lg-9">
-                    	<select id="select-from" class="form-control" multiple="multiple" size="10">
-                            <c:forEach items="${allSignBooks}" var="signBook">
-                                <option value="${signBook.id}">${signBook.name} (${signBook.signBookType})</option>
+                        <select class="form-control" id="_signBookType_id" name="signBookType" onchange="changeSignBookForm();" size="1">
+                            <option disabled="disabled" selected="selected" value="">Choisir un type de parapheur</option>
+                            <c:forEach items="${signBookTypes}" var="signBookType">
+                                <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signbooktype_${signBookType}" var="signBookTypeLabel"/>
+                                <c:choose>
+                                	<c:when test="${signBook.signBookType eq signBookType}">
+                                		<option value="${signBookType}" selected="selected">${signBookTypeLabel}</option>
+                                	</c:when>
+                                	<c:otherwise>
+                                		<option value="${signBookType}" disabled="disabled">${signBookTypeLabel}</option>
+                                	</c:otherwise>
+                                </c:choose>
                             </c:forEach>
                         </select>
-                        <select id="select-to" class="form-control" multiple="multiple" name="signBooksIds" size="10">
-                        <!--  -->
-                        </select>
-                        <button type="button" class="btn btn-light" href="JavaScript:void(0);" id="btn-up"><i class="fas fa-sort-up"><!--  --></i></button>
-    					<button type="button" class="btn btn-light" href="JavaScript:void(0);" id="btn-down"><i class="fas fa-sort-down"><!--  --></i></button>
                     </div>
                 </div>
+                <field:input cssClass="form-control" field="recipientEmail" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmail" render="false" required="true" z="user-managed"/>
                 <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_moderatoremails">
                     <label class="col-lg-3  col-form-label" for="moderatoremailsSelect">
                         <strong>
-                            <spring:message code="label_org_esupportail_esupsignature_domain_signbook_moderatoremails"/>&amp;nbsp;
-                            <button class="btn btn-sm btn-info" data-target="#collapseHelp4" data-toggle="collapse" type="button">
-                                <span class="fas fa-info-circle"/>
+                            <spring:message code="label_org_esupportail_esupsignature_domain_signbook_moderatoremails"/>
+                            <button class="btn btn-sm btn-light" data-target="#collapseHelp1" data-toggle="collapse" type="button">
+                                <span class="fas fa-info-circle text-info"/>
                             </button>
-                            <div class="collapse" id="collapseHelp4">
+                            <div class="collapse" id="collapseHelp1">
                                 <div class="alert alert-info">
                                     <!--  -->
                                 </div>
@@ -77,7 +45,9 @@
                     </label>
                     <div class="col-lg-9">
                         <select id="moderatoremailsSelect" multiple="multiple" name="moderatorEmails">
-                            <!--  -->
+                            <c:forEach items="${signBook.moderatorEmails}" var="moderatorEmail">
+                                <option selected="selected" value="${moderatorEmail}">${moderatorEmail}</option>
+                            </c:forEach>
                         </select>
                     </div>
                 </div>
@@ -96,12 +66,19 @@
                         <select class="form-control" id="_sourceType_id" name="sourceType" size="1">
                             <c:forEach items="${sourceTypes}" var="sourceType">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_documentiotype_${sourceType}" var="sourceTypeLabel"/>
-                                <option value="${sourceType}">${sourceTypeLabel}</option>
+                                <c:choose>
+                                    <c:when test="${signBook.sourceType eq  sourceType}">
+                                        <option selected="selected" value="${sourceType}">${sourceTypeLabel}</option>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <option value="${sourceType}">${sourceTypeLabel}</option>
+                                    </c:otherwise>
+                                </c:choose>
                             </c:forEach>
                         </select>
                     </div>
                 </div>
-                <field:input placeholder="A saisir si autre que la valeur par défaut" cssClass="form-control" field="documentsSourceUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri" z="user-managed"/>
+                <field:input placeholder="Si autre que la valeur par défaut" cssClass="form-control" field="documentsSourceUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri" z="user-managed"/>
                 <field:input field="targetType" id="c_org_esupportail_esupsignature_domain_SignBook_targetType" render="false" z="user-managed"/>
                 <div class="form-group" id="c_org_esupportail_esupsignature_domain_SignBook_targetType">
                     <label class="col-lg-3  col-form-label" for="targetType">
@@ -113,12 +90,19 @@
                         <select class="form-control" id="_targetType_id" name="targetType" size="1">
                             <c:forEach items="${targetTypes}" var="targetType">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_documentiotype_${targetType}" var="targetTypeLabel"/>
-                                <option value="${targetType}">${targetTypeLabel}</option>
+                                <c:choose>
+                                    <c:when test="${signBook.targetType eq  targetType}">
+                                        <option selected="selected" value="${targetType}">${targetTypeLabel}</option>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <option value="${targetType}">${targetTypeLabel}</option>
+                                    </c:otherwise>
+                                </c:choose>
                             </c:forEach>
                         </select>
                     </div>
                 </div>
-                <field:input placeholder="A saisir si autre que la valeur par défaut" cssClass="form-control" field="documentsTargetUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" z="user-managed"/>
+                <field:input placeholder="Si autre que la valeur par défaut" cssClass="form-control" field="documentsTargetUri" id="c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri" z="user-managed"/>
                 <field:select field="signRequests" id="c_org_esupportail_esupsignature_domain_SignBook_signRequests" itemValue="id" items="${signrequests}" multiple="true" path="/signrequests" render="false" z="user-managed"/>
                 <field:input field="params" id="c_org_esupportail_esupsignature_domain_SignBook_params" render="false" z="user-managed"/>
                 <field:input field="status" id="c_org_esupportail_esupsignature_domain_SignBook_status" render="false" z="user-managed"/>
@@ -132,7 +116,14 @@
                     </label>
                     <div class="col-lg-6">
                         <label class="switch">
-                            <input checked="checked" id="_autoRemove_id" name="autoRemove" type="checkbox"/>
+                            <c:choose>
+                                <c:when test="${signBook.autoRemove}">
+                                    <input checked="checked" id="_autoRemove_id" name="autoRemove" type="checkbox"/>
+                                </c:when>
+                                <c:otherwise>
+                                    <input id="_autoRemove_id" name="autoRemove" type="checkbox"/>
+                                </c:otherwise>
+                            </c:choose>
                             <span class="slider round">
                                 <!--  -->
                             </span>
@@ -150,7 +141,14 @@
                         <select class="form-control" id="_signType_id" name="signType" size="1">
                             <c:forEach items="${signTypes}" var="signType">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_signtype_${signType}" var="signTypeLabel"/>
-                                <option value="${signType}">${signTypeLabel}</option>
+                                <c:choose>
+                                    <c:when test="${signBook.signRequestParams[0].signType eq  signType}">
+                                        <option selected="selected" value="${signType}">${signTypeLabel}</option>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <option value="${signType}">${signTypeLabel}</option>
+                                    </c:otherwise>
+                                </c:choose>
                             </c:forEach>
                         </select>
                     </div>
@@ -166,7 +164,14 @@
                         <select class="form-control" id="_newPageType_id" name="newPageType" size="1">
                             <c:forEach items="${newPageTypes}" var="newPageType">
                                 <spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype_${newPageType}" var="newpagetypeLabel"/>
-                                <option value="${newPageType}">${newpagetypeLabel}</option>
+                                <c:choose>
+                                    <c:when test="${signBook.signRequestParams[0].newPageType eq  newPageType}">
+                                        <option selected="selected" value="${newPageType}">${newpagetypeLabel}</option>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <option value="${newPageType}">${newpagetypeLabel}</option>
+                                    </c:otherwise>
+                                </c:choose>
                             </c:forEach>
                         </select>
                     </div>
@@ -196,66 +201,70 @@
         <field:input field="yPos" id="c_org_esupportail_esupsignature_domain_SignBook_yPos" render="false" z="user-managed"/>
         <field:select field="modelFile" id="c_org_esupportail_esupsignature_domain_SignBook_modelFile" itemValue="id" items="${documents}" path="/user/documents" render="false" z="user-managed"/>
         <field:select field="signRequestParams" id="c_org_esupportail_esupsignature_domain_SignBook_signRequestParams" itemValue="id" items="${signrequestparamses}" path="/signrequestparamses" render="false" z="user-managed"/>
-        <field:select field="signBooksGroup" id="c_org_esupportail_esupsignature_domain_SignBook_signBooksGroup" itemValue="id" items="${signbooks}" multiple="true" path="/manager/workflows" render="false" z="user-managed"/>
+        <field:select field="signBooksGroup" id="c_org_esupportail_esupsignature_domain_SignBook_signBooksGroup" itemValue="id" items="${signbooks}" multiple="true" path="/manager/signbooks" render="false" z="user-managed"/>
         <field:input field="moderatorEmails" id="c_org_esupportail_esupsignature_domain_SignBook_moderatorEmails" render="false" z="user-managed"/>
         <field:input field="recipientEmails" id="c_org_esupportail_esupsignature_domain_SignBook_recipientEmails" render="false" z="user-managed"/>
-        <field:select render="false" field="SignBooks" id="c_org_esupportail_esupsignature_domain_SignBook_SignBooks" itemValue="id" items="${signbooks}" multiple="true" path="/manager/workflows" z="user-managed"/>
-    </form:create>
-    <form:dependency dependencies="${dependencies}" id="d_org_esupportail_esupsignature_domain_SignBook" render="${not empty dependencies}" z="user-managed"/>
+        <field:select render="false" field="SignBooks" id="c_org_esupportail_esupsignature_domain_SignBook_SignBooks" itemValue="id" items="${signbooks}" multiple="true" path="/manager/signbooks" z="user-managed"/>
+    </form:update>
     <script type="text/javascript">
 		var sourceSelector = document.getElementById("_sourceType_id");
 		var targetSelector = document.getElementById("_targetType_id");
-		var sourceUri = document.getElementById("_c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri");
-		var targetUri = document.getElementById("_c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri");
-		sourceUri.style.display = "none";
-		targetUri.style.display = "none";
+		var sourceUri = document
+				.getElementById("_c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri");
+		var targetUri = document
+				.getElementById("_c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri");
+		if(sourceUri.value == "") {
+			sourceUri.style.display = "none";
+		}
+		if(targetUri.value == "") {
+			targetUri.style.display = "none";
+		}
 		sourceSelector.onchange = function() {
-			if(sourceSelector.value != "none") {
-				sourceUri.style.display = "block";		
+			if (sourceSelector.value != "none") {
+				sourceUri.style.display = "block";
 			} else {
 				sourceUri.style.display = "none";
 			}
 		};
 		targetSelector.onchange = function() {
-			if(targetSelector.value != "none") {
-				targetUri.style.display = "block";		
+			if (targetSelector.value != "none") {
+				targetUri.style.display = "block";
 			} else {
 				targetUri.style.display = "none";
 			}
 		};
-    	
-    	new SlimSelect({
-      	  select: '#moderatoremailsSelect',
-      	  placeholder: 'Choisir un ou plusieurs utilisateurs',
-      	  searchText: 'Aucun résultat',
-      	  searchPlaceholder: 'Rechercher',
-      	  searchHighlight: true,
-      	  searchFilter: (option, search) =&gt; {
-		    return true;
-		  },
-      	  ajax: function (search, callback) {
-      		    if (search.length &lt; 3) {
-      		      callback('Merci de saisir au moins 3 caractères')
-      		      return
-      		    }
-      		    fetch('/user/users/searchLdap?searchString=' + search)
-      		    .then(function (response) {
-      		      return response.json()
-      		    })
-      		    .then(function (json) {
-      		      let data = []
-      		      for (let i = 0; i &lt; json.length; i++) {
-      		        data.push({text: json[i].displayName, value: json[i].mail});
-      		      }
-      		      callback(data)
-      		    })
-      		    .catch(function(error) {
-      		      callback(false)
-      		    })
-      		  }
-      	  
-      	});
-    	
-
+		
+    	      	
+      	new SlimSelect({
+        	  select: '#moderatoremailsSelect',
+        	  placeholder: 'Choisir un ou plusieurs utilisateurs',
+        	  searchText: 'Aucun résultat',
+        	  searchPlaceholder: 'Rechercher',
+        	  searchHighlight: true,
+        	  searchFilter: (option, search) =&gt; {
+        		    return true;
+        		  },
+        	  ajax: function (search, callback) {
+        		    if (search.length &lt; 3) {
+        		      callback('Merci de saisir au moins 3 caractères')
+        		      return
+        		    }
+        		    fetch('/user/users/searchLdap?searchString=' + search)
+        		    .then(function (response) {
+        		      return response.json()
+        		    })
+        		    .then(function (json) {
+        		      let data = []
+        		      for (let i = 0; i &lt; json.length; i++) {
+        		        data.push({text: json[i].displayName, value: json[i].mail});
+        		      }
+        		      callback(data)
+        		    })
+        		    .catch(function(error) {
+        		      callback(false)
+        		    })
+        		  }
+        	  
+        	});
 	</script>
 </div>

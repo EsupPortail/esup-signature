@@ -50,7 +50,6 @@ public class IndexController {
 	public String index(HttpServletRequest request, Model model) {
 		User user = userService.getUserFromAuthentication();
 		model.addAttribute("user", user);
-		System.err.println(user);
 		if(user != null) {
 			return "redirect:/user/signrequests/";
 		}

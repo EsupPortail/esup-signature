@@ -464,7 +464,7 @@ $(document).ready(function() {
         });
     });
     
-    $('#signBook').submit(function(){
+    $('#fc_org_esupportail_esupsignature_domain_SignBook').submit(function(){
         $('#select-to option').prop('selected', true);
     });
 });
