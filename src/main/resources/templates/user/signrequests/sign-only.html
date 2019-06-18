@@ -17,7 +17,7 @@
 	</nav>
 	<div aria-expanded="true" class="collapse" id="collapseHelp">
 		<div class="alert alert-info">
-		
+			Pour modifier la position de la signature, cliquez sur le document.
 			Selon le type de signature, le lancement de l'application NexU ou un mot de passe peut être demandé.
 		</div>
 	</div>
@@ -48,22 +48,22 @@
 							</div>
 						</div>
 						<div class="d-flex justify-content-center">
-							<div id="pointer_div" onclick="savePosition();" onmouseout="resetPosition();" onmousemove="pointIt(event);" th:style="'background-size: ' + ${pdfWidth} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/' + ${signRequest.signRequestParams.signPageNumber -1} + '\');width:' + ${pdfWidth} + 'px;height:' + ${pdfHeight} + 'px;border:1px solid #CCC;'">
+							<div id="pointer_div" onclick="savePositionx2();" onmouseout="resetPositionx2();" onmousemove="pointItx2(event);" th:style="'background-size: ' + ${pdfWidth * 2} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/' + ${signRequest.signRequestParams.signPageNumber -1} + '\');width:' + ${pdfWidth * 2} + 'px;height:' + ${pdfHeight * 2} + 'px;border:1px solid #CCC;'">
 								<th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.signRequestParams.newPageType.name() == 'none' && signRequest.signRequestParams.signType.name() != 'visa'}">
-									<div id="cross" th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center; left: ' + ${signRequest.signRequestParams.XPos} + 'px;top: ' + ${signRequest.signRequestParams.YPos} + 'px;position:relative;pointer-events: none;'">
-										<div id="borders" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
+									<div id="cross" th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth * 2} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth * 2} + 'px; height: ' + ${signHeight * 2} + 'px; line-height: ' + ${signHeight * 2} + 'px; text-align: center; left: ' + ${signRequest.signRequestParams.XPos * 2} + 'px;top: ' + ${signRequest.signRequestParams.YPos * 2} + 'px;position:relative;pointer-events: none;'">
+										<div id="borders" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth * 2} + 'px; height: ' + ${signHeight * 2} + 'px;'"></div>
 									</div>
 								</th:block>
 							</div>
 						</div>
 					</div>
 					<script th:inline="javascript">
-							/*<![CDATA[*/
-								var nbImagePage = [[${imagePagesSize}]];
-								var currentImagePage = [[${signRequest.signRequestParams.signPageNumber}]] - 1;
-								var documentUrl = [[${documentUrl}]];
-								/*]]>*/
-							</script>
+						/*<![CDATA[*/
+							var nbImagePage = [[${imagePagesSize}]];
+							var currentImagePage = [[${signRequest.signRequestParams.signPageNumber}]] - 1;
+							var documentUrl = [[${documentUrl}]];
+						/*]]>*/
+					</script>
 				</div>
 				<div class="d-none">
 					<div class="col-lg-4">

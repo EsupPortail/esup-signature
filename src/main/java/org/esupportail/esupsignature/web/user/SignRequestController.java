@@ -452,7 +452,7 @@ public class SignRequestController {
 			if(!signonly) {
 				return "redirect:/user/signrequests/" + id;
 			} else {
-				return "redirect:/user/signrequests/get-by-token/" + signRequest.getName();
+				return "redirect:/user/signrequests/sign-by-token/" + signRequest.getName();
 			}
 		} else {
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
@@ -511,8 +511,8 @@ public class SignRequestController {
 		}
 	}
 
-	@RequestMapping(value = "/get-by-token/{token}")
-	public String getByToken(@PathVariable("token") String token, RedirectAttributes redirectAttrs, HttpServletResponse response,
+	@RequestMapping(value = "/sign-by-token/{token}")
+	public String signByToken(@PathVariable("token") String token, RedirectAttributes redirectAttrs, HttpServletResponse response,
 			Model model, HttpServletRequest request) throws IOException, SQLException {
 
 		User user = userService.getUserFromAuthentication();
@@ -632,6 +632,17 @@ public class SignRequestController {
 		return "redirect:/user/signrequests/";
 	}
 
+	@RequestMapping(value = "/get-last-file-by-token/{token}", method = RequestMethod.GET)
+	public void getLastFileByToken(@PathVariable("token") String token, HttpServletResponse response, Model model) {
+		User user = userService.getUserFromAuthentication();
+		SignRequest signRequest = signRequestRepository.findByName(token).get(0);
+		if(signRequestService.checkUserViewRights(user, signRequest)) {
+			getLastFile(signRequest.getId(), response, model);
+		} else {
+			logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
+		}
+	}
+	
 	@RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
 	public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();

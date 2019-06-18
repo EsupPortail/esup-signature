@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.user;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -27,6 +28,7 @@ import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.web.JsonSignInfoMessage;
 import org.slf4j.Logger;
@@ -40,11 +42,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,6 +75,9 @@ public class WsController {
 	@Autowired
 	private UserRepository userRepository;
 
+	@Resource
+	private UserService userService;
+	
 	@Resource
 	private DocumentService documentService;
 
@@ -183,6 +190,11 @@ public class WsController {
 		return null;
 	}
 
+	@RequestMapping(value = "/sign-by-token/{token}")
+	public String signByToken(@PathVariable("token") String token, HttpServletRequest request) {
+		return "redirect:/user/signrequests/sign-by-token/" + token;
+	}
+	
 	@ResponseBody
 	@RequestMapping(value = "/check-user-status", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public String checkUserStatus(@RequestParam String eppn, HttpServletResponse response, Model model) throws JsonProcessingException {

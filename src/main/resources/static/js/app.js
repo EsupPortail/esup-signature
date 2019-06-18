@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 });
 
-var pointItEnable = true;
+var pointItEnable = false;
 
 function activeDate() {
 	
@@ -87,6 +87,25 @@ function activeDate() {
 	}
 }
 
+function pointItx2(event) {
+	posX = event.offsetX ? (event.offsetX)
+			: event.pageX
+					- document
+							.getElementById("pointer_div").offsetLeft;
+	posY = event.offsetY ? (event.offsetY)
+			: event.pageY
+					- document
+							.getElementById("pointer_div").offsetTop;
+	var cross = document.getElementById("cross");
+	if(cross != null && posX > 0 && posY > 0 && pointItEnable) {
+		cross.style.left = posX + "px";
+		cross.style.top = posY + "px";
+		document.getElementById("xPos").value = Math.round(posX / 2);
+		document.getElementById("yPos").value = Math.round(posY / 2);
+		document.getElementById("borders").classList.add("anim-border");
+	}
+}
+
 function pointIt(event) {
 	posX = event.offsetX ? (event.offsetX)
 			: event.pageX
@@ -106,6 +125,17 @@ function pointIt(event) {
 	}
 }
 
+function resetPositionx2() {
+	var cross = document.getElementById("cross");
+	if(cross != null) {
+		cross.style.left = (startPosX * 2)  + "px";
+		cross.style.top = (startPosY * 2)  + "px";
+		document.getElementById("xPos").value = startPosX;
+		document.getElementById("yPos").value = startPosY;
+		document.getElementById("borders").classList.remove("anim-border");
+	}
+}
+
 function resetPosition() {
 	var cross = document.getElementById("cross");
 	if(cross != null) {
@@ -114,6 +144,22 @@ function resetPosition() {
 		document.getElementById("xPos").value = startPosX;
 		document.getElementById("yPos").value = startPosY;
 		document.getElementById("borders").classList.remove("anim-border");
+	}
+}
+
+
+function savePositionx2() {
+	var borders = document.getElementById("borders");
+	if(borders != null) {
+		if(pointItEnable) {
+			startPosX = posX / 2;
+			startPosY = posY / 2;
+			pointItEnable = false;
+			borders .classList.remove("anim-border");
+		} else {
+			pointItEnable = true;
+			borders .classList.add("anim-border");
+		}
 	}
 }
 
