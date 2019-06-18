@@ -160,7 +160,7 @@ public class UserController {
     }
     
     @PostMapping
-    public String create(Long id, @RequestParam(value = "newPageType", required=false) String newPageType, @RequestParam(value = "signType", required=false) String signType, @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, Model model) throws Exception {
+    public String create(Long id, @RequestParam(value = "signImageBase64", required=false) String signImageBase64, @RequestParam(value = "newPageType", required=false) String newPageType, @RequestParam(value = "signType", required=false) String signType, @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, Model model) throws Exception {
         model.asMap().clear();
         User user = userRepository.findById(id).get();
 		User userToUpdate = userService.getUserFromAuthentication();
@@ -172,8 +172,8 @@ public class UserController {
             userToUpdate.setKeystore(documentService.createDocument(multipartKeystore, multipartKeystore.getOriginalFilename()));
         }
         Document oldSignImage = userToUpdate.getSignImage();
-        if(user.getSignImageBase64() != null) {
-        	userToUpdate.setSignImage(documentService.createDocument(fileService.base64Transparence(user.getSignImageBase64()), userToUpdate.getEppn() + "_sign", "application/png"));
+        if(signImageBase64 != null && !signImageBase64.isEmpty()) {
+        	userToUpdate.setSignImage(documentService.createDocument(fileService.base64Transparence(signImageBase64), userToUpdate.getEppn() + "_sign", "application/png"));
         }
         if(oldSignImage != null) {
         	oldSignImage.getBigFile().getBinaryFile().free();

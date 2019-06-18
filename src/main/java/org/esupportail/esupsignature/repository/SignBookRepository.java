@@ -7,7 +7,7 @@ import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.springframework.data.repository.CrudRepository;
 
-public interface SignBookRepository extends CrudRepository<SignBook, Long>  {
+public interface SignBookRepository extends CrudRepository<SignBook, Long>, SignBookRepositoryCustom  {
 	Long countById(Long id);
     List<SignBook> findByName(String name);
     Long countByName(String name);

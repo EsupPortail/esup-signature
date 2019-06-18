@@ -216,7 +216,7 @@
 								<td class="none">
 									<ul class="list-group">
 										<th:block th:each="originalSignBook : ${signRequest.originalSignBooks}">
-											<li class="list-group-item truncate" title="${originalSignBook.name}"><i class="fas fa-book"></i><span th:text="${originalSignBook.name}"></span></li>
+											<li class="list-group-item truncate" th:title="${originalSignBook.name}"><i class="fas fa-book"></i><span th:text="${originalSignBook.name}"></span></li>
 										</th:block>
 									</ul>
 								</td>

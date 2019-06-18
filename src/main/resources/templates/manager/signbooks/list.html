@@ -42,6 +42,7 @@
 					<tr>
 						<th class="none">Nom</th>
 						<th class="none">Type</th>
+						<th class="none">Créé par</th>
 						<th class="none">Destinataires</th>
 						<th class="none">Gestionnaire(s) du parapheur</th>
 						<th>Voir</th>
@@ -52,19 +53,24 @@
 						<tr class="roocol">
 							<td class="none" th:text="${signBook.name}"></td>
 							<td class="none" th:text="${signBook.signBookType}"></td>
+							<td class="none" th:text="${signBook.createBy}"></td>
 							<td th:if="${#lists.size(signBook.recipientEmails) > 0}" class="none">
+							<div class="alert alert-secondary">
 								<th:block th:each="recipientEmail : ${signBook.recipientEmails}">
-									<i class="far fa-envelope"></i>
+									<i class="fas fa-user"></i>
 									<span th:text="${recipientEmail}"></span>
 									<br/>
 								</th:block>
+								</div>
 							</td>
 							<td th:unless="${#lists.size(signBook.recipientEmails) > 0}" class="none">
+							<div class="alert alert-secondary">
 								<th:block th:each="workflowSignBooks : ${signBook.signBooks}">
 									<i class="fas fa-book"></i>
 									<span th:text="${workflowSignBooks.name}"></span>
 									<br/>
 								</th:block>
+								</div>
 							</td>
 							<td class="none">
 								<th:block th:each="moderatorEmail : ${signBook.moderatorEmails}">

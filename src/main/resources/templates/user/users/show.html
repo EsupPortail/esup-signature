@@ -48,7 +48,7 @@
 		<dl class="row border-bottom m-0">
 			<dt class="col-lg-5">Image de la signature</dt>
 			<dd>
-				<img th:if="${signFile != null}" alt="signature" src="data:image/png;base64, ${signFile}" /> <i th:if="${signFile == null}" class="fas fa-ban">
+				<img th:if="${signFile != null}" alt="signature" th:src="'data:image/png;base64, ' + ${signFile}" /> <i th:if="${signFile == null}" class="fas fa-ban">
 					<!--  -->
 				</i>
 			</dd>

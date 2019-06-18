@@ -5,16 +5,14 @@
 	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
 	<div id="ribbon" class="card">
 		<div class="card-body">
-		<button type="button" onclick="document.getElementById('fc_org_esupportail_esupsignature_domain_User').submit();" class="mr-2 btn btn-outline-dark btn-light float-left">
-		<p class="text-center">
-		<i class="fas fa-save fa-2x"></i>
-		<br/>
-		Enregistrer
-		</p>
-		</button>
+			<button type="button" onclick="document.getElementById('fc_org_esupportail_esupsignature_domain_User').submit();" class="mr-2 btn btn-outline-dark btn-light float-left">
+				<p class="text-center">
+					<i class="fas fa-save fa-2x"></i> <br /> Enregistrer
+				</p>
+			</button>
 		</div>
-		</div>
-	</div>		
+	</div>
+
 	<main role="main" class="container">
 	<div id="collapseHelp" class="collapse show" aria-expanded="true" style="">
 		<div class="alert alert-info">
@@ -26,8 +24,7 @@
 				<li>Enfin vous pouvez choisir vos paramètres de signature par défaut ainsi que vos paramètres d'alerte.</li>
 			</ul>
 			<p>
-				Vous pouvez modifier / compléter vos paramètres à tous moments en utilisant l'onglet <span class="fa fa-cog">
-					<!-- -->
+				Vous pouvez modifier / compléter vos paramètres à tous moments en utilisant l'onglet <span class="fa fa-cog"> <!-- -->
 				</span>
 			</p>
 			<p>
@@ -45,8 +42,7 @@
 			<div class="card">
 				<div class="card-header" role="tab" id="headingOne">
 					<h5 class="mb-0">
-						<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne"> Identité <i class="fas fa-caret-down">
-								<!--  -->
+						<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne"> Identité <i class="fas fa-caret-down"> <!--  -->
 						</i>
 						</a>
 					</h5>
@@ -84,8 +80,7 @@
 			<div class="card">
 				<div class="card-header" role="tab" id="headingTwo">
 					<h5 class="mb-0">
-						<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"> Signature <i class="fas fa-caret-down">
-								<!--  -->
+						<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"> Signature <i class="fas fa-caret-down"> <!--  -->
 						</i>
 						</a>
 					</h5>
@@ -121,8 +116,7 @@
 						<div class="form-group">
 							<label for="newPageType"><strong>Image de la signature</strong>
 								<button data-target="#collapseHelpSignImage" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
-									<span class="fas fa-info-circle ">
-										<!-- -->
+									<span class="fas fa-info-circle "> <!-- -->
 									</span>
 								</button>
 								<div class="collapse show" id="collapseHelpSignImage">
@@ -134,7 +128,9 @@
 							<div class="col-lg-9">
 								<div class="input-group">
 									<div class="custom-file">
-										<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" /> <label class="custom-file-label" id="inputGroupLabel01" for="upload"> <spring:message code="field_file_image" />
+										<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" />
+										<label class="custom-file-label" id="inputGroupLabel01" for="upload">
+											<spring:message code="field_file_image" />
 										</label>
 									</div>
 								</div>
@@ -147,8 +143,7 @@
 						<div class="form-group">
 							<label for="newPageType"><strong>Keystore</strong>
 								<button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
-									<span class="fas fa-info-circle ">
-										<!-- -->
+									<span class="fas fa-info-circle "> <!-- -->
 									</span>
 								</button>
 								<div class="collapse show" id="collapseHelpKeyStore">
@@ -167,15 +162,12 @@
 							</div>
 						</div>
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
-							<label class="col-lg-3  col-form-label" for="newPageType"><strong> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_newpagetype" /></strong></label>
-							<div class="col-lg-9">
-								<select class="form-control" id="_newPageType_id" name="newPageType" size="1">
-									<th:block th:each="newPageType : ${newPageTypes}">
-										<option th:if="${signBook != null && newPageType == signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="${newPageType}" selected="selected" >${newPageType}</option>
-										<option th:if="${signBook == null || newPageType != signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="${newPageType}">${newPageType}</option>
-									</th:block>
-								</select>
-							</div>
+							<label class="col-form-label" for="newPageType"><strong>Ajout d'une Page de garde</strong></label> <select class="form-control" id="_newPageType_id" name="newPageType" size="1">
+								<th:block th:each="newPageType : ${newPageTypes}">
+									<option th:if="${signBook != null && newPageType == signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="${newPageType}" selected="selected">${newPageType}</option>
+									<option th:if="${signBook == null || newPageType != signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="${newPageType}">${newPageType}</option>
+								</th:block>
+							</select>
 						</div>
 					</div>
 				</div>
@@ -183,8 +175,7 @@
 			<div class="card">
 				<div class="card-header" role="tab" id="headingThree">
 					<h5 class="mb-0">
-						<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree"> Alertes <i class="fas fa-caret-down">
-								<!--  -->
+						<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree"> Alertes <i class="fas fa-caret-down"> <!--  -->
 						</i>
 						</a>
 					</h5>
@@ -198,8 +189,7 @@
 								</button>
 								<div class="collapse" id="collapseHelpEmailAlertFrequency">
 									<div class="alert alert-info">
-										<small>
-											<!--  -->
+										<small> <!--  -->
 										</small>
 									</div>
 								</div> </label>
@@ -220,8 +210,7 @@
 								</button>
 								<div class="collapse" id="collapseHelpEmailAlertHour">
 									<div class="alert alert-info">
-										<small>
-											<!--  -->
+										<small> <!--  -->
 										</small>
 									</div>
 								</div>
@@ -237,8 +226,7 @@
 								</button>
 								<div class="collapse" id="collapseHelpEmailAlertDay">
 									<div class="alert alert-info">
-										<small>
-											<!--  -->
+										<small> <!--  -->
 										</small>
 									</div>
 								</div>

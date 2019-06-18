@@ -11,7 +11,7 @@
 		<div th:case="'pending'" class="alert alert-primary text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
 			<small>
 			<i class="fas fa-clock"></i>
-			En attente
+			En attente de signature
 			</small>
 		</div>
 		<div th:case="'signed'" class="alert alert-success text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">

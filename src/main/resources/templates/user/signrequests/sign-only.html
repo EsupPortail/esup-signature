@@ -1,21 +1,30 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<div th:fragment="signmodal">
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+	<nav class="nav justify-content-between" aria-label="breadcrumb">
+		<ol class="breadcrumb col-11">
+			<li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
+			<li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.name}"></span></li>
+		</ol>
+		<div class="navbar-nav align-self-center">
+			<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+				<span class="fas fa-info-circle"> <!--  -->
+				</span>
+			</button>
+		</div>
+	</nav>
 	<div aria-expanded="true" class="collapse" id="collapseHelp">
 		<div class="alert alert-info">
-			<c:choose>
-				<c:when test="${documentType eq 'pdf' and signRequest.status eq 'pending'}">
-			Pour signer un document, il faut positionner la signature sur le document à l'aide de la souris puis cliquer sur "Signer".
-			</c:when>
-				<c:otherwise>
-			Ajouter des documents à l'aide du module de droite (ne pas oublié de cliquer sur "Transférer"). Lorsque tous les documents sont transférés cliquer sur "Envoyer pour signature"
-		</c:otherwise>
-			</c:choose>
-			<br /> Selon le type de signature, le lancement de l'application NexU ou un mot de passe peut être demandé.
+		
+			Selon le type de signature, le lancement de l'application NexU ou un mot de passe peut être demandé.
 		</div>
 	</div>
+	<main role="main" class=" container">
 	<div th:if="${signable == 'ok'}">
 		<form id="signForm" th:action="'/user/signrequests/sign/' + ${signRequest.id}" method="post">
+			<input type="hidden" name="signonly" value="true">
 			<div th:if="${documentType == 'pdf'}">
 				<div class="row">
 					<div class="col-lg-12">
@@ -68,17 +77,8 @@
 					</div>
 				</div>
 			</div>
-			<dl class="display-group border-bottom m-0">
-				<dt class="col-lg-5">Commentaire</dt>
-				<dd>
-					<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows=""></textarea>
-				</dd>
-			</dl>
-			<dl class="display-group border-bottom m-0">
-				<dt class="col-lg-5">
-					Signature
-				</dt>
-				<dd>
+								<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows=""></textarea>
+
 					<div th:if="${user.signImage == null && documentType == 'pdf' && signRequest.signRequestParams.signType.name() != 'visa'}">
 						<div class="card card-body bg-danger text-white">
 							<a href="/user/users/" class="text-white">Pas d'image de signature</a>
@@ -102,24 +102,55 @@
 							</div>
 						</div>
 						<div th:case="'nexuSign'">
-							<button type="submit" class="btn btn-success" data-target="#signatureModal">
+							<button type="submit" class="btn btn-success  text-center" data-target="#signatureModal">
 								Signer
 							</button>
 						</div>
 						<div th:case="*">
 							<div th:if="${signRequest.signRequestParams.signType.name() == 'visa'}">
-								<input alt="${visaLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="Signer" />
+								<input alt="${visaLabel}" class="btn btn-success  text-center" id="signe" title="Signe" type="submit" value="Signer" />
 							</div>
 							<div th:unless="${signRequest.signRequestParams.signType.name() == 'visa'}">
 								<div th:if="${user.signImage != null}">
-									<input alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="submit" value="Signer" />
+									<input alt="${signLabel}" class="btn btn-success  text-center" id="signe" title="Signe" type="submit" value="Signer" />
 								</div>
 							</div>
 						</div>
 					</div>
-				</dd>
-			</dl>
+
 		</form>
 	</div>
-</div>
+	<div th:unless="${signable == 'ok'}">
+		<div class="alert alert-info">
+		Vous n'avez plus d'ation à effectuer sur cette demande, merci de fermer cette fenetre
+		<br/>
+		<input class="btn btn-danger text-center" id="signe" title="Signe" type="submit" value="Fermer" onclick="window.close();" />
+		</div>
+		
+	</div>
+
+	<div id="wait" class="modal fade" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-body text-center">
+					<h5>Signature en cours</h5>
+					<div class="progress">
+						<div class="progress-bar progress-bar-striped progress-bar-animated active" style="width: 100%;" id="bar">
+							<strong> <span id="bar-text"></span>
+							</strong>
+						</div>
+					</div>
+					<div style="display: none;" id="passwordError" class="alert alert-danger" role="alert">
+						Mauvais mot de passe
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">Close</button>
+					<button id="validModal" onclick="window.location.reload()" type="button" class="btn btn-success align-self-center" data-dismiss="modal">Terminer</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	</main>
+</body>
 </html>

@@ -98,8 +98,8 @@ function pointIt(event) {
 							.getElementById("pointer_div").offsetTop;
 	var cross = document.getElementById("cross");
 	if(cross != null && posX > 0 && posY > 0 && pointItEnable) {
-		cross.style.left = (posX);
-		cross.style.top = (posY);
+		cross.style.left = posX + "px";
+		cross.style.top = posY + "px";
 		document.getElementById("xPos").value = posX;
 		document.getElementById("yPos").value = posY;
 		document.getElementById("borders").classList.add("anim-border");
@@ -109,8 +109,8 @@ function pointIt(event) {
 function resetPosition() {
 	var cross = document.getElementById("cross");
 	if(cross != null) {
-		cross.style.left = (startPosX);
-		cross.style.top = (startPosY);
+		cross.style.left = startPosX  + "px";
+		cross.style.top = startPosY  + "px";
 		document.getElementById("xPos").value = startPosX;
 		document.getElementById("yPos").value = startPosY;
 		document.getElementById("borders").classList.remove("anim-border");

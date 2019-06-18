@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -507,11 +508,8 @@ public class SignRequestService {
 	public SignRequestParams getEmptySignRequestParams() {
 		SignRequestParams signRequestParams = new SignRequestParams();
 		signRequestParams.setSignPageNumber(1);
-		//signRequestParams.setXPos(0);
-		//signRequestParams.setYPos(0);
 		signRequestParams.setNewPageType(NewPageType.none);
 		signRequestParams.setSignType(SignType.visa);
-//		signRequestParamsRepository.save(signRequestParams);
 		return signRequestParams;
 	}
 	
@@ -527,6 +525,14 @@ public class SignRequestService {
         } 
         return val;
     }
+	
+	public void setSignBooksLabels(SignRequest signRequest) {
+		Map<String, Boolean> signBookNames = new HashMap<>();
+		for(Map.Entry<Long, Boolean> signBookMap : signRequest.getSignBooks().entrySet()) {
+			signBookNames.put(signBookRepository.findById(signBookMap.getKey()).get().getName(), signBookMap.getValue());
+		}
+		signRequest.setSignBooksLabels(signBookNames);
+	}
 	
 	public String getStep() {
 		return step;

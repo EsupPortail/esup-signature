@@ -123,11 +123,11 @@ public class SignBookController {
 		if (page != null || size != null) {
 			int sizeNo = size == null ? 10 : size.intValue();
 			//final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
-			uiModel.addAttribute("signBooks", signBookRepository.findAll());
+			uiModel.addAttribute("signBooks", signBookRepository.findByNotCreateBy("System"));
 			float nrOfPages = (float) signBookRepository.count() / sizeNo;
 			uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
 		} else {
-			uiModel.addAttribute("signBooks", signBookRepository.findAll());
+			uiModel.addAttribute("signBooks", signBookRepository.findByNotCreateBy("System"));
 		}
 		addDateTimeFormatPatterns(uiModel);
 		return "manager/signbooks/list";
