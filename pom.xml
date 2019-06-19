@@ -15,6 +15,7 @@
 	<version>0.8.0.BUILD-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
+		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
 		<bouncycastle.version>1.60</bouncycastle.version>
 		<aspectj.version>1.9.3</aspectj.version>
 		<java.version>1.8</java.version>
@@ -99,7 +100,11 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-ldap</artifactId>
 		</dependency>
-
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-tomcat</artifactId>
+		    <scope>provided</scope>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.webjars/popper.js -->
 		<dependency>
 		   <groupId>org.webjars</groupId>
