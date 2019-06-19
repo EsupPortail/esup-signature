@@ -21,18 +21,13 @@ import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
 import java.util.List;
 
-import javax.naming.Name;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ldap.NameNotFoundException;
-import org.springframework.ldap.core.DistinguishedName;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.filter.LikeFilter;
 
-@SuppressWarnings("deprecation")
 public class PersonLdapDao {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
@@ -47,30 +42,11 @@ public class PersonLdapDao {
 		return this.ldapTemplate;
 	}
 
-	public PersonLdap findByPrimaryKey(String uid) {
-		Name dn = buildDn(uid);
-		try {
-			PersonLdap personLdap = (PersonLdap) ldapTemplate.lookup(dn, new PersonAttributMapper());
-			return personLdap;
-		} catch(NameNotFoundException nnfe) {
-			log.warn("Problème lors de la récupération LDAP de " + uid + " : " + nnfe.getMessage());
-		}
-		return null;
-	}
-	
-	private Name buildDn(String uid) {
-		DistinguishedName dn = new DistinguishedName();
-		dn.add("ou", "people");
-		dn.add("uid", uid);
-		return dn;
-	}
-	
 	public List<PersonLdap> getPersonNamesByUid(String uid) {
 		AndFilter filter = new AndFilter();
 		filter.and(new EqualsFilter("objectclass", "person"));
 		filter.and(new LikeFilter("uid", uid));
-		return ldapTemplate.search("", filter.encode(),
-				new PersonAttributMapper());
+		return ldapTemplate.search("", filter.encode(), new PersonAttributMapper());
 	}
 	
 	public List<PersonLdap> getPersonNamesByEppn(String eppn) {
@@ -95,8 +71,7 @@ public class PersonLdapDao {
 		filter.and(new EqualsFilter("objectclass", "person"));
 		filter.and(new LikeFilter(attribut, value));
 		log.info(filter.encode() + ", " + filter.toString());
-		return ldapTemplate.search("", filter.encode(),
-				new PersonAttributMapper());
+		return ldapTemplate.search("", filter.encode(), new PersonAttributMapper());
 	} 
 
 	public List<PersonLdap> getPersonLdaps(String attribut, String value, String moreFilter) {

@@ -25,7 +25,7 @@ import javax.naming.directory.Attributes;
 
 import org.springframework.ldap.core.AttributesMapper;
 
-public class PersonAttributMapper implements AttributesMapper {
+public class PersonAttributMapper implements AttributesMapper<PersonLdap> {
 	
 	public PersonLdap mapFromAttributes(Attributes attrs)
 			throws javax.naming.NamingException {
