@@ -2,10 +2,17 @@ package org.esupportail.esupsignature;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 @SpringBootApplication
-public class EsupSignatureApplication {
+public class EsupSignatureApplication extends SpringBootServletInitializer {
 
+	@Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+        return builder.sources(EsupSignatureApplication.class);
+    }
+	
 	public static void main(String[] args) {
 		SpringApplication.run(EsupSignatureApplication.class, args);
 	}
