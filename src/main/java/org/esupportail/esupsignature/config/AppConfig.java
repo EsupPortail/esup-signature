@@ -36,14 +36,6 @@ import org.springframework.web.servlet.view.tiles3.TilesView;
 public class AppConfig implements WebMvcConfigurer {
 
     @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
-        builder.indentOutput(true);
-        converters.add(new MappingJackson2HttpMessageConverter(builder.build()));
-        converters.add(new ResourceHttpMessageConverter());
-    }
-    	
-    @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
     	registry.addResourceHandler(
                 "/webjars/**",

@@ -514,4 +514,17 @@ $(document).ready(function() {
         $('#select-to option').prop('selected', true);
     });
 });
+
+function resizeHeader() {
+	$(document.body).css("margin-top", $(".header-fixed").height());
+}
+
+$( document ).ready(function() {
+	resizeHeader();
+});
+
+$(window).resize(function() {
+	resizeHeader();
+}).resize();
+
     

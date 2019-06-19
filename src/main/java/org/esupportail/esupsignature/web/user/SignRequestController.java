@@ -52,6 +52,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
@@ -422,7 +423,7 @@ public class SignRequestController {
 				signRequest.setSignRequestParams(signBook.getSignRequestParams().get(0));
 				signRequestRepository.save(signRequest);
 			}
-			if(signPageNumber != null) {
+			if(signPageNumber != null && xPos != null && yPos != null) {
 				signRequest.getSignRequestParams().setSignPageNumber(signPageNumber);
 				signRequest.getSignRequestParams().setXPos(xPos);
 				signRequest.getSignRequestParams().setYPos(yPos);
@@ -592,7 +593,7 @@ public class SignRequestController {
 	}
 	
 	@ResponseBody
-	@RequestMapping(value = "/get-progress")
+	@RequestMapping(value = "/get-progress", produces = MediaType.APPLICATION_JSON_VALUE)
 	public String getProgress(RedirectAttributes redirectAttrs, HttpServletResponse response,
 			Model model, HttpServletRequest request) {
 		logger.debug("getProgress : " + progress);

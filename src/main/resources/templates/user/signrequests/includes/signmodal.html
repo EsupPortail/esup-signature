@@ -88,8 +88,10 @@
 						<div th:case="'certSign'">
 							<div th:if="${keystore != null}">
 								<div class="input-group">
-									Mot de passe
-									<input class="form-control" placeholder="${passwordLabel}" id="password" name="password" type="password" />
+								<div class="input-prepend">
+								<span class="input-group-text" >Mot de passe</span>	
+									</div>
+									<input class="form-control" required="required" placeholder="Vous allez signer à l'aide d'un certificat, merci d'entrer le mot de passe" id="password" name="password" type="password" />
 									<div class="input-group-append">
 										<input data-toggle="modal" data-target="#wait" onclick="submitSignRequest();" alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="button" value="Signer" />
 									</div>

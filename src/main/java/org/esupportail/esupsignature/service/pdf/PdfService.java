@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 
-import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -29,14 +28,17 @@ import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.color.PDOutputIntent;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
 import org.apache.pdfbox.preflight.PreflightDocument;
 import org.apache.pdfbox.preflight.ValidationResult;
 import org.apache.pdfbox.preflight.ValidationResult.ValidationError;
@@ -50,9 +52,8 @@ import org.apache.xmpbox.schema.PDFAIdentificationSchema;
 import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
-import org.esupportail.esupsignature.ldap.PersonLdap;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
@@ -191,10 +192,7 @@ public class PdfService {
     	}
         try {
 			useNextSignatureField(pdDocument);
-			pdDocument.save(toSignFile);
-			if(!checkPdfA(toSignFile)) {
-		        convertToPDFA(pdDocument);
-			}
+	        convertToPDFA(pdDocument);
         } catch (Exception e) {
 			logger.error("file read error", e);
 		}
@@ -236,33 +234,6 @@ public class PdfService {
 			logger.error("error to add blank page", e);
 		}
 		return null;
-	}
-	
-	public File ldapFill(File pdfFile, User user) {
-		PersonLdap personLdap = userService.getPersonLdap(user);
-		try {
-			File targetFile =  File.createTempFile(pdfFile.getName(), ".pdf");
-			PDDocument pdDocument = PDDocument.load(pdfFile);
-			PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
-			PDFont font = PDType1Font.HELVETICA;
-			PDResources resources = new PDResources();
-			resources.put(COSName.getPDFName("Helvetica"), font);
-			if(pdAcroForm != null) {
-				pdAcroForm.setDefaultResources(resources);
-				List<PDField> fields = pdAcroForm.getFields();
-				for(PDField pdField : fields) {
-					if(pdField.getPartialName().contains("ldap")) {
-						pdField.setValue(personLdap.getValueByFieldName(pdField.getPartialName().split("_")[1]));
-					}
-				}
-			}
-			pdDocument.save(targetFile);
-			pdDocument.close();
-	        return targetFile;
-        } catch (IOException e) {
-			logger.error("file read error", e);
-		}
-        return null;
 	}
 	
 	public boolean checkPdfA(File pdfFile) {
@@ -307,43 +278,59 @@ public class PdfService {
 		PDAcroForm pdAcroForm = cat.getAcroForm();
 		if(pdAcroForm != null) {
 			pdAcroForm.setNeedAppearances(false);
-			PDResources pdResources = new PDResources();
-			pdAcroForm.setDefaultResources(pdResources);
 			List<PDSignatureField> signatureFields = pdDocument.getSignatureFields();
 			signatureFields = signatureFields.stream().sorted(Comparator.comparing(PDSignatureField::getPartialName)).collect(Collectors.toList());
 			for(PDSignatureField pdSignatureField : signatureFields) {
 				if(pdSignatureField.getSignature() == null) {
-					pdSignatureField.setSignature(new PDSignature());
+					pdSignatureField.setValue(new PDSignature());
 					break;
 				}
 			}
-			
-		    List<PDField> fields = new ArrayList<>(pdAcroForm.getFields());
-		    if(processFields(fields, pdResources)) {
-		    	pdAcroForm.flatten();
-		    }
+
 		}
 		return pdDocument;
 	}
 	
 	private PDDocument convertToPDFA(PDDocument pdDocument) throws Exception {
+		
+		//TODO repair convert...
+		
+		InputStream fontStreamArial = new ClassPathResource("Arial.ttf").getInputStream();
+		InputStream fontStream = new ClassPathResource("Helvetica.ttf").getInputStream();
+		InputStream fontStream2 = new ClassPathResource("Helvetica-Bold.ttf").getInputStream();
+		PDType0Font.load(pdDocument, fontStreamArial);
+		PDType0Font.load(pdDocument, fontStream);
+		PDType0Font.load(pdDocument, fontStream2);
+		
 		PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
+		
+		PDAcroForm pdAcroForm = cat.getAcroForm();
+		if(pdAcroForm != null) {
+			PDResources pdResources = new PDResources();
+			pdAcroForm.setDefaultResources(pdResources);
+		    List<PDField> fields = new ArrayList<>(pdAcroForm.getFields());
+		    //si plus de champ signature vide on applati
+		    if(processFields(fields, pdResources)) {
+		    	pdAcroForm.flatten();
+		    }
+		}
 		PDDocumentInformation info = pdDocument.getDocumentInformation();
+		
         XMPMetadata xmpMetadata = XMPMetadata.createXMPMetadata();
         
         DublinCoreSchema dublinCoreSchema = xmpMetadata.createAndAddDublinCoreSchema();
         dublinCoreSchema.setTitle(info.getTitle());
+        dublinCoreSchema.setDescription("Test");
         
         XMPBasicSchema xmpBasicSchema = xmpMetadata.createAndAddXMPBasicSchema();
         xmpBasicSchema.setCreatorTool(info.getCreator());
         xmpBasicSchema.setCreateDate(info.getCreationDate());
         xmpBasicSchema.setModifyDate(info.getModificationDate());
-
         
         PDFAIdentificationSchema pdfaid = new PDFAIdentificationSchema(xmpMetadata);
     	pdfaid.setConformance("B");
         pdfaid.setPart(1);
-        pdfaid.setAboutAsSimple(null);
+        pdfaid.setAboutAsSimple("");
         xmpMetadata.addSchema(pdfaid);
         
         XmpSerializer serializer = new XmpSerializer();
@@ -366,27 +353,30 @@ public class PdfService {
 	}
 	
 	private boolean processFields(List<PDField> fields, PDResources resources) {
+		boolean noSignFieldEmpty = true; 
 		for(PDField f : fields) {
 			logger.debug("process :" + f.getFullyQualifiedName() + " : " + f.getFieldType());
-	    	if(f.getFieldType().equals("Sig")) {
-	    		PDSignatureField pdSignatureField = (PDSignatureField) f;
-    			if(pdSignatureField.getSignature() == null) {
-    				return false;
-    			}
-	    	}
+			if(f instanceof PDSignatureField) {
+        		if(((PDSignatureField) f).getSignature() == null) {
+        			noSignFieldEmpty = false;
+        		}
+        	}
 			f.setReadOnly(true);
-	        COSDictionary cosObject = f.getCOSObject();
-	        String value = cosObject.getString(COSName.DV) == null ?
-	                       cosObject.getString(COSName.V) : cosObject.getString(COSName.DV);
-	        try {
-	        	if(value == null) {
-	        		value = "";
-	        		if(f.getFieldType().equals("Btn")) {
+        	String value = "";
+			try {
+	        	if (f instanceof PDTextField) {
+	        		value = f.getValueAsString();
+	        	}
+	        	if (f instanceof PDCheckBox) {
+	        		PDCheckBox box = (PDCheckBox) f;
+	        		if(box.isChecked()) {
+	        			value = "On";
+	        		} else {
 	        			value = "Off";
 	        		}
-		        	if(f.getFieldType().equals("Sig")) {
-		        		continue;
-		        	}
+	        	}
+	        	if(f instanceof PDSignatureField) {
+	        		continue;
 	        	}
 	            f.setValue(value);
 	        } catch (IOException e) {
@@ -407,7 +397,7 @@ public class PdfService {
 	            processFields(((PDNonTerminalField) f).getChildren(), resources);
 	        }
 	    }
-		return true;
+		return noSignFieldEmpty;
 	}
 	
 	public int[] getSignFieldCoord(File pdfFile) {

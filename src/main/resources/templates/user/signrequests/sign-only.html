@@ -2,6 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
+<div class="header-fixed fixed-top">
 	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
 	<nav class="nav justify-content-between" aria-label="breadcrumb">
 		<ol class="breadcrumb col-11">
@@ -15,6 +16,62 @@
 			</button>
 		</div>
 	</nav>
+	<div id="ribbon" class="card">
+		<div class="card-body">
+			<div th:if="${user.signImage == null && documentType == 'pdf' && signRequest.signRequestParams.signType.name() != 'visa'}">
+						<div class="card card-body bg-danger text-white">
+							<a href="/user/users/" class="text-white">Pas d'image de signature</a>
+						</div>
+					</div>
+					<div th:switch="${signRequest.signRequestParams.signType.name()}">
+						<div th:case="'certSign'">
+							<div th:if="${keystore != null}">
+								<div class="input-group">
+								<div class="input-group-prepend">
+								    <span class="input-group-text" >Signature</span>
+								  </div>
+									
+									<input class="form-control" required="required" placeholder="Vous allez signer à l'aide d'un certificat, merci d'entrer le mot de passe" id="password" name="password" type="password" />
+									<div class="input-group-append">
+										<input data-toggle="modal" data-target="#wait" onclick="submitSignRequest();" alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="button" value="Signer" />
+									</div>
+								</div>
+							</div>
+							<div th:unless="${keystore != null}">
+								<div class="card card-body bg-danger text-white">
+									<a href="/user/users/" class="text-white">Pas de keystore</a>
+								</div>
+							</div>
+						</div>
+						<div th:case="'nexuSign'">
+							<button type="submit" class="btn btn-success  text-center" data-target="#signatureModal">
+								Signer
+							</button>
+						</div>
+						<div th:case="*">
+							<div th:if="${signRequest.signRequestParams.signType.name() == 'visa'}">
+								<input alt="${visaLabel}" class="btn btn-success  text-center" id="signe" title="Signe" type="submit" value="Signer" />
+							</div>
+							<div th:unless="${signRequest.signRequestParams.signType.name() == 'visa'}">
+								<div th:if="${user.signImage != null}">
+									<input alt="${signLabel}" class="btn btn-success  text-center" id="signe" title="Signe" type="submit" value="Signer" />
+								</div>
+							</div>
+						</div>
+					</div>
+
+	<nav >
+		<ul class="pagination">
+			<li class="page-item"><span class="page-link"><span aria-hidden="true">«</span></span></li>
+			<li id="previous" class="page-item"><a onclick="previousImage();" class="page-link" aria-label="Précédent"><span aria-hidden="true">‹</span></a></li>
+			<li id="next" class="page-item"><a onclick="nextImage();" class="page-link" aria-label="Prochain"><span aria-hidden="true">›</span></a></li>
+			<li class="page-item"><a class="page-link" aria-label="Dernier"><span aria-hidden="true">»</span></a></li>
+		</ul>
+	</nav>
+
+		</div>
+	</div>
+	</div>
 	<div aria-expanded="true" class="collapse" id="collapseHelp">
 		<div class="alert alert-info">
 			Pour modifier la position de la signature, cliquez sur le document.
@@ -79,45 +136,7 @@
 			</div>
 								<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows=""></textarea>
 
-					<div th:if="${user.signImage == null && documentType == 'pdf' && signRequest.signRequestParams.signType.name() != 'visa'}">
-						<div class="card card-body bg-danger text-white">
-							<a href="/user/users/" class="text-white">Pas d'image de signature</a>
-						</div>
-					</div>
-					<div th:switch="${signRequest.signRequestParams.signType.name()}">
-						<div th:case="'certSign'">
-							<div th:if="${keystore != null}">
-								<div class="input-group">
-									Mot de passe
-									<input class="form-control" placeholder="${passwordLabel}" id="password" name="password" type="password" />
-									<div class="input-group-append">
-										<input data-toggle="modal" data-target="#wait" onclick="submitSignRequest();" alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="button" value="Signer" />
-									</div>
-								</div>
-							</div>
-							<div th:unless="${keystore != null}">
-								<div class="card card-body bg-danger text-white">
-									<a href="/user/users/" class="text-white">Pas de keystore</a>
-								</div>
-							</div>
-						</div>
-						<div th:case="'nexuSign'">
-							<button type="submit" class="btn btn-success  text-center" data-target="#signatureModal">
-								Signer
-							</button>
-						</div>
-						<div th:case="*">
-							<div th:if="${signRequest.signRequestParams.signType.name() == 'visa'}">
-								<input alt="${visaLabel}" class="btn btn-success  text-center" id="signe" title="Signe" type="submit" value="Signer" />
-							</div>
-							<div th:unless="${signRequest.signRequestParams.signType.name() == 'visa'}">
-								<div th:if="${user.signImage != null}">
-									<input alt="${signLabel}" class="btn btn-success  text-center" id="signe" title="Signe" type="submit" value="Signer" />
-								</div>
-							</div>
-						</div>
-					</div>
-
+					
 		</form>
 	</div>
 	<div th:unless="${signable == 'ok'}">
@@ -153,4 +172,68 @@
 	</div>
 	</main>
 </body>
+	<script th:inline="javascript">
+		/*<![CDATA[*/
+function submitSignRequest() {
+	var signPageNumber = document.getElementById("signPageNumber");
+	var signRequestParams;
+	if(signPageNumber != null) {
+		signRequestParams = "password=" + document.getElementById("password").value +
+							"&Pos=" + document.getElementById("xPos").value +
+							"&yPos=" + document.getElementById("yPos").value +
+							"&signPageNumber=" + document.getElementById("signPageNumber").value +
+							"&signonly=true"
+							;
+	} else {
+		signRequestParams = "password=" + document.getElementById("password").value;
+	}
+	
+	sendData(signRequestParams);
+
+}
+
+function sendData(signRequestParams) {
+	document.getElementById("passwordError").style.display = "none";
+	document.getElementById("closeModal").style.display = "none";
+	document.getElementById("validModal").style.display = "none";
+	document.getElementById("bar").style.display = "none";
+	document.getElementById("bar").classList.add("progress-bar-animated");
+	getProgressTimer = setInterval(function() {
+		getStep();
+	}, 500);
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open('POST', '/user/signrequests/sign/[[${signRequest.id}]]', true);
+	xmlHttp.setRequestHeader('Content-Type',
+			'application/x-www-form-urlencoded');
+	xmlHttp.send(signRequestParams);
+}
+
+function getStep() {
+	console.log("getStep");
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open("GET", "/user/signrequests/get-step", false);
+	xmlHttp.onreadystatechange = function() {
+		var result = xmlHttp.responseText;
+		if (result == "security_bad_password") {
+			document.getElementById("passwordError").style.display = "block";
+			document.getElementById("closeModal").style.display = "block";
+			document.getElementById("bar").classList.remove("progress-bar-animated");
+			clearInterval(getProgressTimer);
+		} else if (result == "end") {
+			clearInterval(getProgressTimer);
+			document.getElementById("validModal").style.display = "block";
+			document.getElementById("bar").classList.remove("progress-bar-animated");
+			document.getElementById("bar-text").innerHTML = "Signature terminée";
+			clearInterval(getProgressTimer);
+		} else {
+			document.getElementById("bar").style.display = "block";
+			document.getElementById("bar").style.width = 100 + "%";
+			document.getElementById("bar-text").innerHTML = result;				
+		}
+	}
+	xmlHttp.send(null);
+	return;
+}
+/*]]>*/
+</script>
 </html>
