@@ -29,7 +29,7 @@ import org.springframework.security.web.session.ConcurrentSessionFilter;
 
 @Configuration
 @EnableWebSecurity
-@PropertySources({@PropertySource("security.properties")})
+@PropertySources(value = {@PropertySource("classpath:security.properties")})
 public class SecurityConfig {
 	
 	@Value("${security.filter}")

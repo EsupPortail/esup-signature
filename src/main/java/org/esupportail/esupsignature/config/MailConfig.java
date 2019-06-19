@@ -15,7 +15,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 
 @Configuration
-@PropertySources({@PropertySource("mail.properties")})
+@PropertySources(value = {@PropertySource("classpath:mail.properties")})
 public class MailConfig {
 
 	@Value("${mail.senderHost}")
