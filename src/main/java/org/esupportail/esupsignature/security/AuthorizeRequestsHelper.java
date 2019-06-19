@@ -14,11 +14,10 @@ public class AuthorizeRequestsHelper {
 			http.authorizeRequests().antMatchers("/nfc-ws/**").access("hasIpAddress('"+ ip +"')");			
 		}
 		http.authorizeRequests()
-		.antMatchers("/login/impersonate").access("hasRole('ROLE_ADMIN')")
 		.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
 		.antMatchers("/manager/", "/manager/**").access("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
 		.antMatchers("/user/", "/user/**").access("isAuthenticated()")
-		.antMatchers("/login/**").access("isAuthenticated()")
+		.antMatchers("/login", "/login/**").access("isAuthenticated()")
 		.antMatchers("/**").access("permitAll");
 		
 	}

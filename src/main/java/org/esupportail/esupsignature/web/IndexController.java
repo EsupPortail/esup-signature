@@ -22,7 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -52,8 +51,11 @@ public class IndexController {
 		model.addAttribute("user", user);
 		if(user != null) {
 			return "redirect:/user/signrequests/";
+		} else {
+			userService.createUser(SecurityContextHolder.getContext().getAuthentication());
+			return "index";			
 		}
-		return "index";
+
 	}
 	
 	@RequestMapping("/login")

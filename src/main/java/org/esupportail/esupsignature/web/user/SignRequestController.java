@@ -449,10 +449,10 @@ public class SignRequestController {
 			} catch (IOException e) {
 				logger.error(e.getMessage());
 			}
-			if(!signonly) {
-				return "redirect:/user/signrequests/" + id;
-			} else {
+			if(signonly != null && signonly) {
 				return "redirect:/user/signrequests/sign-by-token/" + signRequest.getName();
+			} else {
+				return "redirect:/user/signrequests/" + id;				
 			}
 		} else {
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
