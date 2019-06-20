@@ -182,10 +182,10 @@ function savePosition() {
 document.addEventListener('DOMContentLoaded', function() {
 	if(typeof currentImagePage !== 'undefined') {
 		if (currentImagePage == 0) {
-			document.getElementById("previous").disabled = true;
+			document.getElementById("previous").classList.add("disabled");
 		}
 		if (currentImagePage == nbImagePage - 1) {
-			document.getElementById("next").disabled = true;
+			document.getElementById("next").classList.add("disabled");
 		}
 	}
 });
@@ -194,10 +194,10 @@ function nextImage() {
 	hideSigns(currentImagePage)
 	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "/" + currentImagePage + "')";
 	if (currentImagePage == nbImagePage - 1) {
-		document.getElementById("next").disabled = true;
+		document.getElementById("next").classList.add("disabled");
 	}
 	if (currentImagePage > 0) {
-		document.getElementById("previous").disabled = false;
+		document.getElementById("previous").classList.remove("disabled");
 	}
 	document.getElementById("signPageNumber").value = currentImagePage + 1;
 }
@@ -207,10 +207,10 @@ function previousImage() {
 	hideSigns(currentImagePage)
 	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "/" + currentImagePage + "')";
 	if (currentImagePage == 0) {
-		document.getElementById("previous").disabled = true;
+		document.getElementById("previous").classList.add("disabled");
 	}
 	if (nbImagePage - 1 > currentImagePage) {
-		document.getElementById("next").disabled = false;
+		document.getElementById("next").classList.remove("disabled");
 	}
 	document.getElementById("signPageNumber").value = currentImagePage + 1;
 }

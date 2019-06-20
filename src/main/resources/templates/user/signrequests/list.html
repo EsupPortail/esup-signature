@@ -2,66 +2,62 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
-	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-	<nav class="nav justify-content-between" aria-label="breadcrumb">
-		<ol class="breadcrumb col-11">
-			<li class="breadcrumb-item active">Liste des demandes</li>
-		</ol>
-		<div class="navbar-nav align-self-center">
-			<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
-				<span class="fas fa-info-circle">
-					<!--  -->
-				</span>
-			</button>
-		</div>
-	</nav>
-	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
-		<div class="alert alert-info">
-			<p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
-			<p>Statut des demandes de signatures :</p>
-			<p>
-				<span class="alert alert-primary"> <i class="fas fa-clock"> <!--  --></i>
-				<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
-				</span> La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures
-			</p>
-			<p>
-				<span class="alert alert-success"> <i class="fas fa-file-signature"> <!--  -->
-				</i>
-				<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
-				</span> Tous les critères de signatures sont remplis
-			</p>
-			<p>
-				<span class="alert alert-success"> <i class="far fa-check-circle"> <!--  -->
-				</i>
-				<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
-				</span> Le document à été validé par tous les participants
-			</p>
-			<p>
-				<span class="alert alert-danger"> <i class="fas fa-ban"> <!--  -->
-				</i>
-				<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
-				</span> La demande à été refusée et retirée des parapheurs
-			</p>
-			<p>
-				<span class="alert alert-warning"> <i class="fas fa-flag-checkered"> <!--  -->
-				</i>
-				<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
-				</span> La demande la demande à été retirée des parapheurs, elle va être supprimée de l'application automatiquement
-			</p>
-		</div>
-	</div>
-	<div id="ribbon" class="card">
-		<div class="card-body">
-			<button type="button" onclick="location.href='/user/signrequests?form'" class="mr-2 btn btn-outline-dark btn-light float-left">
-				<p class="text-center">
-					<i class="fas fa-plus fa-2x"></i> <br /> Nouvelle demande de signature
+	<div class="header-fixed fixed-top">
+		<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+		<nav class="nav justify-content-between bg-white" aria-label="breadcrumb">
+			<ol class="breadcrumb col-11">
+				<li class="breadcrumb-item active">Liste des demandes</li>
+			</ol>
+			<div class="navbar-nav align-self-center">
+				<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+					<span class="fas fa-info-circle"> <!--  -->
+					</span>
+				</button>
+			</div>
+		</nav>
+		<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
+			<div class="alert alert-info">
+				<p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
+				<p>Statut des demandes de signatures :</p>
+				<p>
+					<span class="alert alert-primary"> <i class="fas fa-clock"> <!--  --></i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
+					</span> La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures
 				</p>
-			</button>
-			<button type="button" onclick="location.href='/user/validation'" class="mr-2 btn btn-outline-dark btn-light float-left">
-				<p class="text-center">
-					<i class="fas fa-shield-alt fa-2x"></i> <br /> Valider la signature d'un document
+				<p>
+					<span class="alert alert-success"> <i class="fas fa-file-signature"> <!--  -->
+					</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
+					</span> Tous les critères de signatures sont remplis
 				</p>
-			</button>
+				<p>
+					<span class="alert alert-success"> <i class="far fa-check-circle"> <!--  -->
+					</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
+					</span> Le document à été validé par tous les participants
+				</p>
+				<p>
+					<span class="alert alert-danger"> <i class="fas fa-ban"> <!--  -->
+					</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
+					</span> La demande à été refusée et retirée des parapheurs
+				</p>
+				<p>
+					<span class="alert alert-warning"> <i class="fas fa-flag-checkered"> <!--  -->
+					</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
+					</span> La demande la demande à été retirée des parapheurs, elle va être supprimée de l'application automatiquement
+				</p>
+			</div>
+		</div>
+		<div id="ribbon" class="card">
+			<div class="card-body">
+				<button type="button" onclick="location.href='/user/signrequests?form'" class="mr-2 btn btn-outline-dark btn-light float-left">
+					<p class="text-center">
+						<i class="fas fa-plus fa-2x"></i> <br /> Nouvelle demande de signature
+					</p>
+				</button>
+				<button type="button" onclick="location.href='/user/validation'" class="mr-2 btn btn-outline-dark btn-light float-left">
+					<p class="text-center">
+						<i class="fas fa-shield-alt fa-2x"></i> <br /> Valider la signature d'un document
+					</p>
+				</button>
+			</div>
 		</div>
 	</div>
 	<main role="main" class="">
@@ -113,9 +109,7 @@
 													</c:choose>
 												</select>
 												<div class="input-group-prepend">
-													<div class="input-group-text">
-														Statut
-													</div>
+													<div class="input-group-text">Statut</div>
 												</div>
 												<select class="form-control" name="statusFilter" id="statusFilter" onchange="submit();">
 													<option value="" disabled="disabled" selected="selected">Choisir un statut</option>
@@ -156,8 +150,7 @@
 					<div class="form-inline">
 						<div class="input-group">
 							<button id="opendocs" alt="Open docs" class="btn btn-info" onclick="openCheckedDocs()" title="open docs" style="display: none;">
-								<span class="far fa-eye">
-									<!--  -->
+								<span class="far fa-eye"> <!--  -->
 								</span>
 								<spring:message code="menu_item_open_docs" />
 							</button>
@@ -167,16 +160,14 @@
 						</div>
 						<div class="input-group">
 							<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Sign docs" class="btn btn-primary" onclick="submitSignRequests()" title="Sign docs" style="display: none;">
-								<span class="fa fa-pencil-alt">
-									<!--  -->
+								<span class="fa fa-pencil-alt"> <!--  -->
 								</span>
 								<spring:message code="menu_item_sign_docs" />
 							</button>
 						</div>
 						<div class="input-group">
 							<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Passer au statut terminé" class="btn btn-warning" onclick="completeSignRequests()" title="Passer au statut terminé" style="display: none;">
-								<span class="fas fa-flag-checkered">
-									<!--  -->
+								<span class="fas fa-flag-checkered"> <!--  -->
 								</span>Passer au statut terminé
 							</button>
 						</div>
@@ -272,7 +263,6 @@
 			</div>
 			<page:list id="pl_org_esupportail_esupsignature_domain_SignRequest" items="${signRequests}" z="user-managed" />
 		</div>
-	</div>
 	</div>
 	<script type="text/javascript">
 		var selectAll = document.getElementById("selectall");
@@ -434,7 +424,7 @@
 						<!--  -->
 					</div>
 					<div style="display: none;" id="passwordError" class="alert alert-danger" role="alert">
-						<spring:message code="security_bad_password" />
+						Mauvais mot de passe
 					</div>
 					<button onclick="javascript:window.location.reload()" id="closeModal" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 				</div>
@@ -442,6 +432,6 @@
 		</div>
 	</div>
 	</main>
-<footer th:replace="fragments/footer :: footer"></footer>
+	<footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>
