@@ -1,4 +1,4 @@
-	package org.esupportail.esupsignature.web.user;
+package org.esupportail.esupsignature.web.user;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -50,7 +49,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -88,9 +86,6 @@ public class SignRequestController {
 
 	@Value("${sign.passwordTimeout}")
 	private long passwordTimeout;
-
-	@Resource
-	private ReloadableResourceBundleMessageSource messageSource;
 	
 	@ModelAttribute("user")
 	public User getUser() {
@@ -485,7 +480,7 @@ public class SignRequestController {
 						signRequest.getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().get(0).getSignType());
 					}
 					if(signRequest.getSignRequestParams().getSignType().equals(SignRequestParams.SignType.visa)) {
-						signRequestService.updateStatus(signRequest, SignRequestStatus.checked, messageSource.getMessage("updateinfo_visa", null, Locale.FRENCH), user, "SUCCESS", comment);		
+						signRequestService.updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", comment);		
 					} else 
 					if(signRequest.getSignRequestParams().getSignType().equals(SignRequestParams.SignType.nexuSign)) {
 						logger.error("no multiple nexu sign");
@@ -694,7 +689,7 @@ public class SignRequestController {
 					}
 					try {
 						signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-						signRequestService.updateStatus(signRequest, SignRequestStatus.draft, messageSource.getMessage("updateinfo_sendtosignbook", null, Locale.FRENCH) + " " + signBook.getName(), user, "SUCCESS", comment);
+						signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé au parapheur " + signBook.getName(), user, "SUCCESS", comment);
 					} catch (EsupSignatureException e) {
 						logger.warn(e.getMessage());
 						redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
@@ -750,7 +745,7 @@ public class SignRequestController {
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
-			signRequestService.updateStatus(signRequest, null, messageSource.getMessage("updateinfo_addcomment", null, Locale.FRENCH), user, "SUCCESS", comment);
+			signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", user, "SUCCESS", comment);
 		} else {
 			logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
 		}

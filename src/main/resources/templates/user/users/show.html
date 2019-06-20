@@ -60,18 +60,16 @@
 					<button type="button" class="btn btn-warning" th:onclick="'location.href=/user/users/get-keystore-file/' + ${user.id}">
 						<i class="fas fa-download"> <!--  -->
 						</i>
-						<spring:message code="menu_item_user_download_keystore" />
+						Télécharger le keystore
 					</button>
 					<br /> <br />
-					<form action="viewCert" method="get">
+					<form action="/user/users/viewCert" method="get">
 						<div class="input-group mb-2">
-							<c:if test="${not isPasswordSet}">
-								<spring:message code="label_org_esupportail_esupsignature_domain_user_password" var="passwordLabel" />
-								<input class="form-control" placeholder="${passwordLabel}" type="password" name="password" />
-							</c:if>
+							<div th:if="${!isPasswordSet}">
+								<input class="form-control" placeholder="Mot de passe" type="password" name="password" />
+							</div>
 							<div class="input-group-append">
-								<spring:message code="menu_item_user_check_certificat" var="checkCertLabel" />
-								<input class="btn btn-primary" type="submit" value="${checkCertLabel}" />
+								<input class="btn btn-primary" type="submit" value="Afficher le certificat" />
 							</div>
 						</div>
 					</form>
@@ -86,9 +84,9 @@
 			<dt class="col-lg-5">Paramètres</dt>
 			<dd>
 				Type de signature :
-				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" th:text="${defaultSignBook.signRequestParams[0].signType}"></div>
+				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" th:text="#{'signbook.signtype.' + ${defaultSignBook.signRequestParams[0].signType}}"></div>
 				Page de garde :
-				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" th:text="${defaultSignBook.signRequestParams[0].newPageType}"></div>
+				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" th:text="#{'signbook.newpagetype.' + ${defaultSignBook.signRequestParams[0].newPageType}}"></div>
 			</dd>
 		</dl>
 		<dl class="row border-bottom m-0" th:if="${user.emailAlertFrequency == null}">
@@ -122,5 +120,7 @@
 				</div>
 			</th:block>
 	</main>
+	<div th:replace="fragments/message :: message"></div>
+	
 </body>
 </html>

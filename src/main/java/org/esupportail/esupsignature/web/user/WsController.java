@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.web.user;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -34,7 +33,6 @@ import org.esupportail.esupsignature.web.JsonSignInfoMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -48,7 +46,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -83,9 +80,6 @@ public class WsController {
 
 	@Autowired(required = false)
 	private LdapPersonService ldapPersonService;
-
-	@Resource
-	private ReloadableResourceBundleMessageSource messageSource;
 
 	// TODO creation / recupération de demandes par WS + declenchement
 	// d'evenements + multidocs

@@ -130,11 +130,11 @@
 					</div>
 					<div th:case="*">
 						<div th:if="${signRequest.signRequestParams.signType.name() == 'visa'}">
-							<input alt="${visaLabel}" class="btn btn-success  text-center" id="signe" title="Signe" type="submit" value="Viser" />
+							<input alt="${visaLabel}" class="btn btn-success  text-center" id="signe" onclick="document.getElementById('signForm').submit();" type="button" value="Viser" />
 						</div>
 						<div th:unless="${signRequest.signRequestParams.signType.name() == 'visa'}">
 							<div th:if="${user.signImage != null}">
-								<input alt="${signLabel}" class="btn btn-success  text-center" id="signe" title="Signe" type="submit" value="Signer" />
+								<input alt="${signLabel}" class="btn btn-success  text-center" id="signe" onclick="document.getElementById('signForm').submit();" type="button" value="Signer" />
 							</div>
 						</div>
 					</div>

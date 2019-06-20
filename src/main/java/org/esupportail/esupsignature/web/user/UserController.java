@@ -138,7 +138,7 @@ public class UserController {
 		User user = userService.getUserFromAuthentication();
 		if(user != null) {
 	        uiModel.addAttribute("user", user);
-        	//uiModel.addAttribute("signBook", signBookService.getUserSignBook(user));
+        	uiModel.addAttribute("signBook", signBookService.getUserSignBook(user));
         	uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
         	uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
         	uiModel.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
@@ -174,12 +174,13 @@ public class UserController {
         Document oldSignImage = userToUpdate.getSignImage();
         if(signImageBase64 != null && !signImageBase64.isEmpty()) {
         	userToUpdate.setSignImage(documentService.createDocument(fileService.base64Transparence(signImageBase64), userToUpdate.getEppn() + "_sign", "application/png"));
+            if(oldSignImage != null) {
+            	oldSignImage.getBigFile().getBinaryFile().free();
+            	bigFileRepository.delete(oldSignImage.getBigFile());
+            	documentRepository.delete(oldSignImage);
+        	}
         }
-        if(oldSignImage != null) {
-        	oldSignImage.getBigFile().getBinaryFile().free();
-        	bigFileRepository.delete(oldSignImage.getBigFile());
-        	documentRepository.delete(oldSignImage);
-    	}
+
     	SignBook signBook = signBookService.getUserSignBook(user);
     	if(signType != null) {
     		signBook.getSignRequestParams().get(0).setSignType(SignType.valueOf(signType));

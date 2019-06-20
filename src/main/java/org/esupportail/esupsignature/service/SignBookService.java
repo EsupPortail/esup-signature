@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -39,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -80,9 +78,6 @@ public class SignBookService {
 
 	@Resource
 	private UserService userService;
-	
-	@Resource
-	private ReloadableResourceBundleMessageSource messageSource;
 	
 	@Value("${sign.defaultPositionX}")
 	private int defaultPositionX;
@@ -343,7 +338,7 @@ public class SignBookService {
 					exportFileToTarget(signBook, signRequest, user);
 					//TODO : controle avant suppression + clear blobs
 					removeSignRequestFromAllSignBooks(signRequest);
-					signRequestService.updateStatus(signRequest, SignRequestStatus.exported, messageSource.getMessage("updateinfo_exporttotarget", null, Locale.FRENCH) + " " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", "");
+					signRequestService.updateStatus(signRequest, SignRequestStatus.exported, "Copié vers la destination " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", "");
 				} catch (EsupSignatureException e) {
 					logger.error("error on file export to target", e);
 				}
@@ -372,14 +367,14 @@ public class SignBookService {
 			signBook.getSignRequests().add(signRequest);
 			if(signBook.getSignBookType().equals(SignBookType.workflow)) {
 				importSignRequestByRecipients(signRequest, signBook.getSignBooks().get(signRequest.getSignBooksWorkflowStep() - 1).getRecipientEmails(), user);
-				signRequestService.updateStatus(signRequest, SignRequestStatus.draft, messageSource.getMessage("updateinfo_sendtosignbook", null, Locale.FRENCH) + " " + signBook.getSignBooks().get(signRequest.getSignBooksWorkflowStep() - 1).getName(), user, "SUCCESS", "");
+				signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé dans le parapheur " + signBook.getSignBooks().get(signRequest.getSignBooksWorkflowStep() - 1).getName(), user, "SUCCESS", "");
 				if(signRequest.getSignBooksWorkflowStep() > 1) {
 					signRequestService.pendingSignRequest(signRequest, user);
 				}
 				//signRequest.getOriginalSignBookNames().clear();
 			} else {
 				importSignRequestByRecipients(signRequest, signBook.getRecipientEmails(), user);
-				signRequestService.updateStatus(signRequest, SignRequestStatus.draft, messageSource.getMessage("updateinfo_sendtosignbook", null, Locale.FRENCH) + " " + signBook.getName(), user, "SUCCESS", "");
+				signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé dans le parapheur " + signBook.getName(), user, "SUCCESS", "");
 			}
 			//signRequest.getOriginalSignBookNames().add(signBook.getName());
 		} else {

@@ -108,9 +108,6 @@ public class SignRequestService {
 	@Resource
 	private UserService userService;
 	
-	@Resource
-	private ReloadableResourceBundleMessageSource messageSource;
-	
 	@Value("${sign.defaultSignatureForm}")
 	private SignatureForm defaultSignatureForm;
 	@Value("${sign.firstPosX}")
@@ -361,25 +358,25 @@ public class SignRequestService {
 				signBookService.resetSignBookParams(recipientSignBook);
 			}
 			if(signType.equals(SignType.visa)) {
-				updateStatus(signRequest, SignRequestStatus.checked, messageSource.getMessage("updateinfo_visa", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+				updateStatus(signRequest, SignRequestStatus.checked, "Visa" , user, "SUCCESS", signRequest.getComment());
 			} else {
-				updateStatus(signRequest, SignRequestStatus.signed, messageSource.getMessage("updateinfo_sign", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+				updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
 			}
 			if(signBook.isAutoRemove()) {
 				completeSignRequest(signRequest, signBook, user);
 			}
 		} else {
 			if(signType.equals(SignType.visa)) {
-				updateStatus(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_visa", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+				updateStatus(signRequest, SignRequestStatus.pending, "Visa", user, "SUCCESS", signRequest.getComment());
 			} else {
-				updateStatus(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_sign", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+				updateStatus(signRequest, SignRequestStatus.pending, "Signature", user, "SUCCESS", signRequest.getComment());
 			}
 		}
 		signRequest.setNbSign(signRequest.getNbSign() + 1);
 	}
 	
 	public void pendingSignRequest(SignRequest signRequest, User user) {
-		updateStatus(signRequest, SignRequestStatus.pending, messageSource.getMessage("updateinfo_sendforsign", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+		updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 		for(Long signBookId : signRequest.getSignBooks().keySet()) {
 			SignBook signBook = signBookRepository.findById(signBookId).get();
 			for(String emailRecipient : signBook.getRecipientEmails()) {
@@ -401,7 +398,7 @@ public class SignRequestService {
 			if(signBook.getTargetType().equals(DocumentIOType.none)) {
 				signBookService.removeSignRequestFromAllSignBooks(signRequest);
 			}
-			updateStatus(signRequest, SignRequestStatus.completed, messageSource.getMessage("updateinfo_autoremove", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+			updateStatus(signRequest, SignRequestStatus.completed, "Terminé automatiquement", user, "SUCCESS", signRequest.getComment());
 		}
 	}
 	
@@ -471,7 +468,7 @@ public class SignRequestService {
 
 	public void refuse(SignRequest signRequest, User user) {
 		signBookService.removeSignRequestFromAllSignBooks(signRequest);
-		updateStatus(signRequest, SignRequestStatus.refused, messageSource.getMessage("updateinfo_refuse", null, Locale.FRENCH), user, "SUCCESS", signRequest.getComment());
+		updateStatus(signRequest, SignRequestStatus.refused, "Refusé", user, "SUCCESS", signRequest.getComment());
 	}
 	
 	public void toggleNeedAllSign(SignRequest signRequest) {
