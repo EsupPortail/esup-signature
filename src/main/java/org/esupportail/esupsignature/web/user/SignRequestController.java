@@ -49,9 +49,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -138,21 +141,12 @@ public class SignRequestController {
 
 	@RequestMapping(produces = "text/html")
 	public String list(
-			@RequestParam(value = "page", required = false) Integer page,
 			@RequestParam(value = "toSign", required = false) Boolean toSign,
 			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "signBookId", required = false) Long signBookId,
-			@RequestParam(value = "size", required = false) Integer size,
-			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
-			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
+			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model uiModel) {
 		SignRequestStatus statusFilterEnum = null;
 
-		if(page == null) {
-			page = 1;
-		}
-		if(size == null) {
-			size = 10;
-		}
 		if(statusFilter != null) {
 			if(!statusFilter.isEmpty()) {
 				statusFilterEnum = SignRequestStatus.valueOf(statusFilter);
@@ -164,33 +158,22 @@ public class SignRequestController {
 		}
 		populateEditForm(uiModel, new SignRequest());
 
-		if (sortOrder == null) {
-			sortOrder = "desc";
-			sortFieldName = "createDate";
-		}
-		List<SignRequest> signRequests = new ArrayList<>();
-		float nrOfPages = 1;
-		int sizeNo = size == null ? 10 : size.intValue();
+
+		Page<SignRequest> signRequests;
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
 		
 		List<SignBook> signBooks = signBookRepository.findBySignBookType(SignBookType.group);
-		if(signBookId != null) {	
-			signRequests.addAll(signBookRepository.findById(signBookId).get().getSignRequests());
-		} else {
 		if(toSign != null) {
 			if(toSign) {
-				signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, toSign, SignRequestStatus.pending, page, size);
-				signRequests = signRequests.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
-				nrOfPages = (float) signRequestService.findSignRequestByUserAndStatusEquals(user, statusFilterEnum).size() / sizeNo;
+				signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, toSign, SignRequestStatus.pending, pageable);
 			} else {
-				signRequests = signRequestService.getAllSignRequests();
-				nrOfPages = (float) signRequestRepository.count();
+				signRequests = signRequestService.getAllSignRequests(pageable);
 				
 			}
 		} else {
-			signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, false, null, page, size);
-		}
+			//signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, false, null, pageable);
+			signRequests = signRequestRepository.findBySignResquestByCreateBy(user.getEppn(), pageable);
 		}
 		
 		for(SignRequest signRequest : signRequests) {
@@ -204,12 +187,9 @@ public class SignRequestController {
 		}
 		
 		uiModel.addAttribute("mydocs", "active");
-		uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
-		uiModel.addAttribute("page", page);
-		uiModel.addAttribute("size", size);
 		uiModel.addAttribute("toSign", toSign);
 		uiModel.addAttribute("signBookId", signBookId);
-		uiModel.addAttribute("nbToSignRequests",signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending).size());
+		uiModel.addAttribute("nbToSignRequests",signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending, pageable).getTotalElements());
 		uiModel.addAttribute("nbPedingSignRequests", signRequestRepository.countByCreateByAndStatus(user.getEppn(), SignRequestStatus.pending));
 		uiModel.addAttribute("signRequests", signRequests);
 		uiModel.addAttribute("signBooks", signBooks);
@@ -357,9 +337,9 @@ public class SignRequestController {
 		return "redirect:/user/signrequests/" + signRequest.getId();
 	}
 
-	@RequestMapping(value = "/add-doc/{id}", method = RequestMethod.POST, produces = "application/json")
 	@ResponseBody
-	public ResponseEntity<String> addDocument(@PathVariable("id") Long id,
+	@RequestMapping(value = "/add-doc/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public Object addDocument(@PathVariable("id") Long id,
 			@RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest request) {
 		logger.info("start add documents");
 		User user = userService.getUserFromAuthentication();
@@ -379,12 +359,13 @@ public class SignRequestController {
 				logger.error("error to add file : " + multipartFiles[0].getOriginalFilename(), e);
 			}
 		}
-		return new ResponseEntity<String>("", HttpStatus.OK);
-
+		String[] ok = {"ok"};
+		return ok;
 	}
 
-	@RequestMapping(value = "/remove-doc/{id}", method = RequestMethod.POST, produces = "application/json")
-	public ResponseEntity<String> removeDocument(@PathVariable("id") Long id, HttpServletRequest request) {
+	@ResponseBody
+	@RequestMapping(value = "/remove-doc/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public Object removeDocument(@PathVariable("id") Long id, HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		Document document = documentRepository.findById(id).get();
@@ -392,7 +373,8 @@ public class SignRequestController {
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			signRequest.getOriginalDocuments().remove(document);
 		}
-		return new ResponseEntity<String>("", HttpStatus.OK);
+		String[] ok = {"ok"};
+		return ok;
 	}
 	
 	@RequestMapping(value = "/sign/{id}", method = RequestMethod.POST)

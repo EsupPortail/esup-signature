@@ -1,15 +1,32 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
-	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-	<div id="ribbon" class="card">
-		<div class="card-body">
-			<button type="button" onclick="document.getElementById('fu_org_esupportail_esupsignature_domain_User').submit();" class="mr-2 btn btn-outline-dark btn-light float-left">
-				<p class="text-center">
-					<i class="fas fa-save fa-2x"></i> <br /> Enregistrer
-				</p>
-			</button>
+	<div class="header-fixed fixed-top">
+
+		<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+				<nav class="nav justify-content-between" aria-label="breadcrumb">
+			<ol class="breadcrumb col-11">
+				<li class="breadcrumb-item active">Paramètres utilisateur</li>
+			</ol>
+			<div class="navbar-nav align-self-center">
+				<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+					<span class="fas fa-info-circle"> <!--  -->
+					</span>
+				</button>
+			</div>
+		</nav>
+		<div id="ribbon" class="card">
+			<div class="card-body">
+				<button type="button" onclick="document.getElementById('fu_org_esupportail_esupsignature_domain_User').submit();" class="mr-2 btn btn-outline-dark btn-light float-left">
+					<p class="text-center">
+						<i class="fas fa-save fa-2x"></i> <br /> Enregistrer
+					</p>
+				</button>
+				<button type="button" class="btn  btn-danger float-right" value="Retour" onclick="location.href='/user/users'">
+					<i class="fas fa-times fa-1x"></i>
+				</button>
+			</div>
 		</div>
 	</div>
 	<main role="main" class="container">
@@ -136,18 +153,12 @@
 						</div>
 					</div>
 					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
-						<label class="col-form-label" for="newPageType"><strong>Ajout d'une Page de garde</strong></label>
-						<div class="col-lg-9">
-							<div class="input-group">
-								<select class="form-control" id="_newPageType_id" name="newPageType" size="1">
-									<th:block th:each="newPageType : ${newPageTypes}">
-										<option th:if="${signBook != null && newPageType == signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="${newPageType}" selected="selected">${newPageType}</option>
-										<option th:if="${signBook == null || newPageType != signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="${newPageType}">${newPageType}</option>
-									</th:block>
-
-								</select>
-							</div>
-						</div>
+						<label class="col-form-label" for="newPageType"><strong>Ajout d'une page de garde</strong></label> <select class="form-control" id="_newPageType_id" name="newPageType" size="1">
+							<th:block th:each="newPageType : ${newPageTypes}">
+								<option th:if="${signBook != null && newPageType == signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}" selected="selected"></option>
+								<option th:if="${signBook == null || newPageType != signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}"></option>
+							</th:block>
+						</select>
 					</div>
 				</div>
 			</div>
@@ -159,81 +170,39 @@
 						</a>
 					</h5>
 				</div>
-				<div id="collapseThree" class="collapse" role="tabpanel" aria-labelledby="headingThree">
+				<div id="collapseThree" class="show" role="tabpanel" aria-labelledby="headingThree">
 					<div class="card-body">
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertFrequency">
-							<label class="col-lg-3  col-form-label" for="signType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency" /></strong>
+							<label class="col-form-label" for="signType"> <strong>Fréquence d'alerte</strong>
 								<button data-target="#collapseHelpEmailAlertFrequency" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
 									<span class="fas fa-info-circle "> <!--  -->
 									</span>
 								</button>
 								<div class="collapse" id="collapseHelpEmailAlertFrequency">
 									<div class="alert alert-info">
-										<small> <!--  -->
-										</small>
+										<small>Vous pouvez choisir une fréquence pour les alertes</small>
 									</div>
-								</div> </label>
-							<div class="col-lg-9">
-								<select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency" size="1" onchange="checkAlertFrequency();">
-									<option selected="selected" value="">-- Choisir votre préférence d'alerte --</option>
-									<c:forEach items="${emailAlertFrequencies}" var="emailAlertFrequency">
-										<spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency_${emailAlertFrequency}" var="emailAlertFrequencyLabel" />
-										<c:choose>
-											<c:when test="${emailAlertFrequency eq user.emailAlertFrequency}">
-												<option selected="selected" value="${emailAlertFrequency}">${emailAlertFrequencyLabel}</option>
-											</c:when>
-											<c:otherwise>
-												<option value="${emailAlertFrequency}">${emailAlertFrequencyLabel}</option>
-											</c:otherwise>
-										</c:choose>
-									</c:forEach>
-								</select>
-							</div>
+								</div>
+							</label> <select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency" size="1" onchange="checkAlertFrequency();">
+								<option selected="selected" value="">-- Choisir votre préférence d'alerte --</option>
+								<th:block th:each="emailAlertFrequency : ${emailAlertFrequencies}">
+									<option th:if="${emailAlertFrequency == user.emailAlertFrequency}" selected="selected" th:value="${emailAlertFrequency}" th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
+									<option th:unless="${emailAlertFrequency == user.emailAlertFrequency}" th:value="${emailAlertFrequency}" th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
+								</th:block>
+							</select>
 						</div>
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertHour" style="display: none;">
-							<label class="col-lg-3  col-form-label" for="signType"> <strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailalerthour" /></strong>
-								<button data-target="#collapseHelpEmailAlertHour" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
-									<span class="fas fa-info-circle "> <!--  -->
-									</span>
-								</button>
-								<div class="collapse" id="collapseHelpEmailAlertHour">
-									<div class="alert alert-info">
-										<small> <!--  -->
-										</small>
-									</div>
-								</div>
-							</label>
-							<div class="col-lg-9">
-								<input id="emailAlertHour" name="emailAlertHour" class="form-control" type="time" value="${user.emailAlertHour}" autocomplete="off" />
-							</div>
+							<label class="col-form-label" for="emailAlertHour"> <strong>Heure d'alerte</strong>
+							</label> <input id="emailAlertHour" name="emailAlertHour" class="form-control" type="time" value="${user.emailAlertHour}" autocomplete="off" />
 						</div>
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertDay" style="display: none;">
-							<label class="col-lg-3  col-form-label" for="signType"> <strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailalertday" /></strong>
-								<button data-target="#collapseHelpEmailAlertDay" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
-									<span class="fas fa-info-circle "></span>
-								</button>
-								<div class="collapse" id="collapseHelpEmailAlertDay">
-									<div class="alert alert-info">
-										<small> <!--  -->
-										</small>
-									</div>
-								</div>
-							</label>
-							<div class="col-lg-9">
-								<select class="form-control" id="_emailAlertDay_id" name="emailAlertDay" size="1">
-									<c:forEach items="${daysOfWeek}" var="emailAlertDay">
-										<spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertDay_${emailAlertDay}" var="emailAlertDayLabel" />
-										<c:choose>
-											<c:when test="${emailAlertDay eq user.emailAlertDay}">
-												<option selected="selected" value="${emailAlertDay}">${emailAlertDayLabel}</option>
-											</c:when>
-											<c:otherwise>
-												<option value="${emailAlertDay}">${emailAlertDayLabel}</option>
-											</c:otherwise>
-										</c:choose>
-									</c:forEach>
-								</select>
-							</div>
+							<label class="col-form-label" for="emailAlertDay"> <strong>Jour de l'alerte</strong>
+							</label> <select class="form-control" id="_emailAlertDay_id" name="emailAlertDay">
+								<th:block th:each="emailAlertDay : ${daysOfWeek}" var="emailAlertDay">
+									<option th:if="${emailAlertDay == user.emailAlertDay}" selected="selected" th:value="${emailAlertDay}" th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
+									<option th:unless="${emailAlertDay == user.emailAlertDay}" th:value="${emailAlertDay}" th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
+								</th:block>
+							</select>
 						</div>
 					</div>
 				</div>

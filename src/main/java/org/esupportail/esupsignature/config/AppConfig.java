@@ -16,6 +16,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.thymeleaf.dialect.springdata.SpringDataDialect;
 
 @Configuration 
 @ComponentScan
@@ -43,6 +44,11 @@ public class AppConfig implements WebMvcConfigurer {
         return new HiddenHttpMethodFilter();
     }
 
+    @Bean
+    public SpringDataDialect springDataDialect() {
+        return new SpringDataDialect();
+    }
+    
 	@Bean
 	public CommonsMultipartResolver multipartResolver() {
 		CommonsMultipartResolver commonsMultipartResolver = new CommonsMultipartResolver();

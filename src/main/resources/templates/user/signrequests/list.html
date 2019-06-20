@@ -187,7 +187,8 @@
 						<tr>
 							<th data-type="html"><input id="selectall" type="checkbox" /></th>
 							<th class="none">Titre</th>
-							<th class="none">Date de création</th>
+							<th class="none"><a class="sorted"
+									sd:pagination-sort="createDate">Date de création</a></th>
 							<th class="none">Créé par</th>
 							<th class="none">Dans le parapheur</th>
 							<th class="none">Destinataires</th>
@@ -227,12 +228,14 @@
 										</tbody>
 									</table>
 								</td>
-								<td class="type d-none"><input type="hidden" th:id="'signbook_' + ${signRequest.id}" th:value="${signRequest.signBooksJson}" />
-									<div th:if="${signRequest.signRequestParams.signType != null}">
+								<td class="type d-none">
+								<input type="hidden" th:id="'signbook_' + ${signRequest.id}" th:value="${signRequest.signBooksJson}" />
+									<div th:if="${signRequest.signRequestParams != null}">
 										<div class="alert alert-secondary text-center" id="type_${signRequest.id}" title="${signRequest.signRequestParams.signType}">
 											<small><span th:text="${signRequest.signRequestParams.signType}"></span></small>
 										</div>
-									</div></td>
+									</div>
+								</td>
 								<td class="status" style="width: 150px;">
 									<div th:replace="user/signrequests/includes/status :: status"></div>
 								</td>
@@ -261,7 +264,9 @@
 					</tfoot>
 				</table>
 			</div>
-			<page:list id="pl_org_esupportail_esupsignature_domain_SignRequest" items="${signRequests}" z="user-managed" />
+		</div>
+		<div class="card-footer">
+			<nav th:replace="fragments/pagination :: pagination"></nav>
 		</div>
 	</div>
 	<script type="text/javascript">

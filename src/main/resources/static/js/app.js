@@ -448,7 +448,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function checkRequirement() {
-
 	var signTypeSelect = document.getElementById("_signType_id");
 	var selectedValue = signTypeSelect.options[signTypeSelect.selectedIndex].value; 
 	if(selectedValue == 'certSign') {

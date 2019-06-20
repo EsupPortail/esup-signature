@@ -105,6 +105,11 @@
 		    <artifactId>spring-boot-starter-tomcat</artifactId>
 		    <scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>io.github.jpenren</groupId>
+			<artifactId>thymeleaf-spring-data-dialect</artifactId>
+			<version>3.4.0</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.webjars/popper.js -->
 		<dependency>
 		   <groupId>org.webjars</groupId>

@@ -10,7 +10,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -40,7 +39,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureNexuException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
@@ -49,7 +47,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import eu.europa.esig.dss.ASiCContainerType;
@@ -92,9 +92,6 @@ public class SignRequestService {
 	
 	@Resource
 	private SignBookService signBookService;
-
-	@Autowired
-	private SignRequestParamsRepository signRequestParamsRepository; 
 	
 	@Autowired
 	private SigningService signingService;
@@ -123,11 +120,31 @@ public class SignRequestService {
 		return list;
 	}
 	
-	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status) {
-		return findSignRequestByUserAndStatusEquals(user, true, status, null, null);
+	public Page<SignRequest> getAllSignRequests(Pageable pageable) {
+		List<SignRequest> signRequests = new ArrayList<SignRequest>();
+		signRequestRepository.findAll().forEach(e -> signRequests.add(e));
+		Page<SignRequest> page = new PageImpl<>(signRequests, pageable, signRequests.size());
+		return page;
 	}
 	
-	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, Boolean toSign, SignRequestStatus status, Integer page, Integer size) {
+	public Page<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status, Pageable pageable) {
+		List<SignRequest> signRequests = findSignRequestByUserAndStatusEquals(user, true, status);
+		Page<SignRequest> page = new PageImpl<>(signRequests, pageable, signRequests.size());
+		return page;
+	}
+
+	public Page<SignRequest> findSignRequestByUserAndStatusEquals(User user, Boolean toSign, SignRequestStatus status, Pageable pageable) {
+		List<SignRequest> signRequests = findSignRequestByUserAndStatusEquals(user, toSign, status);
+		signRequests = signRequests.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
+		Page<SignRequest> page = new PageImpl<SignRequest>(signRequests.subList((int) pageable.getOffset(), (int) (pageable.getPageSize() + pageable.getOffset())) , pageable, signRequests.size());
+		return page;
+	}
+	
+	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status) {
+		return findSignRequestByUserAndStatusEquals(user, true, status);
+	}
+	
+	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, Boolean toSign, SignRequestStatus status) {
 		List<SignBook> signBooks = signBookRepository.findByRecipientEmails(Arrays.asList(user.getEmail()));
 		List<SignRequest> signRequests = new ArrayList<>();
 		for(SignBook signBook : signBooks) {
@@ -149,13 +166,7 @@ public class SignRequestService {
 				signRequests.add(signRequest);
 			}
 		}
-		signRequests = signRequests.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
-		
-		if(page != null) {
-			return signRequests.stream().skip((page - 1) * size).limit(size).collect(Collectors.toList());
-		} else {
-			return signRequests;
-		}
+		return signRequests;
 	}
 	
 	public SignRequest createSignRequest(SignRequest signRequest, User user, SignRequestParams signRequestParams) {
