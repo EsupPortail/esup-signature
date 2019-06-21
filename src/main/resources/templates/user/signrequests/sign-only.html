@@ -26,6 +26,16 @@
 
 				<div class="mr-2 alert alert-secondary float-left" style="height: 100px;">
 				<div class="custom-control custom-switch">
+					<label class="switch"> <input onclick="toggleZoom();" checked="checked" type="checkbox" name="zoom" id="_zoom" /> <span class="slider round"> <!--  -->
+					</span>
+					</label>
+					<br/>
+					<label class="control-label" for="customSwitches">Zoom</label>
+				</div>
+				</div>
+
+				<div class="mr-2 alert alert-secondary float-left" style="height: 100px;">
+				<div class="custom-control custom-switch">
 					<label class="switch"> <input onclick="activeDate();" type="checkbox" name="addDate" id="_activeDate" /> <span class="slider round"> <!--  -->
 					</span>
 					</label>
@@ -40,10 +50,12 @@
 						<li id="next" class="page-item"><a onclick="nextImage();" class="page-link" aria-label="Prochain"><span aria-hidden="true">›</span></a></li>
 					</ul>Pagination
 				</div>
-
+				<button th:if="${signRequest.signRequestParams.signType.name() == 'nexuSign'}" type="button"  data-toggle="modal" data-target="#signModal"  class="mr-2 btn btn-success float-left" style="height: 100px;">
+					<i class="fas fa-signature fa-2x"></i><br/>Valider la signature
+				</button>
 				
-				<button type="button"  data-toggle="modal" data-target="#signModal"  class="mr-2 btn btn-outline-dark btn-light float-left" style="height: 100px;">
-					<i class="fas fa-signature fa-2x"></i><br/> Signer
+				<button th:unless="${signRequest.signRequestParams.signType.name() == 'nexuSign'}" type="button" onclick="document.getElementById('signForm').submit();"  class="mr-2 btn btn-success float-left" style="height: 100px;">
+					<i class="fas fa-signature fa-2x"></i><br/>Valider la signature
 				</button>
 
 
@@ -62,7 +74,7 @@
 				<div class="row">
 					<div class="col-lg-12">
 						<div class="d-flex justify-content-center">
-							<div id="pointer_div" onclick="savePositionx2();" onmouseout="resetPositionx2();" onmousemove="pointItx2(event);" th:style="'background-size: ' + ${pdfWidth * 2} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/' + ${signRequest.signRequestParams.signPageNumber -1} + '\');width:' + ${pdfWidth * 2} + 'px;height:' + ${pdfHeight * 2} + 'px;border:1px solid #CCC;'">
+							<div id="pointer_div" onclick="savePosition();" onmouseout="resetPosition();" onmousemove="pointIt(event);" th:style="'background-size: ' + ${pdfWidth * 2} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/' + ${signRequest.signRequestParams.signPageNumber -1} + '\');width:' + ${pdfWidth * 2} + 'px;height:' + ${pdfHeight * 2} + 'px;border:1px solid #CCC;'">
 								<th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.signRequestParams.newPageType.name() == 'none' && signRequest.signRequestParams.signType.name() != 'visa'}">
 									<div id="cross" th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth * 2} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth * 2} + 'px; height: ' + ${signHeight * 2} + 'px; line-height: ' + ${signHeight * 2} + 'px; text-align: center; left: ' + ${signRequest.signRequestParams.XPos * 2} + 'px;top: ' + ${signRequest.signRequestParams.YPos * 2} + 'px;position:relative;pointer-events: none;'">
 										<div id="borders" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth * 2} + 'px; height: ' + ${signHeight * 2} + 'px;'"></div>
@@ -172,6 +184,27 @@
 </body>
 <script th:inline="javascript">
 /*<![CDATA[*/
+zoom == 2;	
+function toggleZoom() {
+	if(zoom == 1) {
+		//document.getElementById("borders").style =
+		zoom = 2;
+	} else {
+		zoom = 1;
+	}
+	
+	document.getElementById("pointer_div").style = "background-size: " + [[${pdfWidth}]] * zoom + "px;background-image:url('/user/documents/[[${documentId}]]/getimagepdfpage/[[${signRequest.signRequestParams.signPageNumber -1}]]');width:" + [[${pdfWidth}]] * zoom + "px;height: " + [[${pdfHeight}]] * zoom + "px;border:1px solid #CCC;";
+	document.getElementById("cross").style.backgroundSize = ""+[[${signWidth}]] * zoom + "px";
+	document.getElementById("cross").style.width = ""+[[${signWidth}]] * zoom + "px"; 
+	document.getElementById("cross").style.height = ""+[[${signHeight}]] * zoom + "px"; 
+	document.getElementById("cross").style.lineHeight = ""+[[${signHeight}]] * zoom + "px";
+	document.getElementById("cross").style.left = ""+document.getElementById("xPos").value * zoom + "px";
+	document.getElementById("cross").style.top = ""+document.getElementById("yPos").value * zoom + "px";
+	document.getElementById("borders").style.width = ""+[[${signWidth}]] * zoom + "px"; 
+	document.getElementById("borders").style.height = ""+[[${signHeight}]] * zoom + "px"; 
+
+}
+
 function submitSignRequest() {
 	var signPageNumber = document.getElementById("signPageNumber");
 	var signRequestParams;

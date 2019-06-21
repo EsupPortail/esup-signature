@@ -156,6 +156,32 @@ public class WsController {
 		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
+	@Transactional
+	@RequestMapping(value = "/get-last-file", method = RequestMethod.GET)
+	public ResponseEntity<Void> getLastFile(@RequestParam String signBookName, @RequestParam String name, HttpServletResponse response, Model model) {
+		try {
+			SignBook signBook = signBookRepository.findByName(signBookName).get(0);
+			SignRequest signRequest = signRequestRepository.findByName(name).get(0);
+			if (signBook.getSignRequests().contains(signRequest)) {
+				Document document = signRequestService.getLastSignedDocument(signRequest);
+				try {
+					response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+					response.setContentType(document.getContentType());
+					IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+					return new ResponseEntity<>(HttpStatus.OK);
+				} catch (Exception e) {
+					logger.error("get file error", e);
+				}
+			} else {
+				logger.warn("no signed version of " + name);
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+		} catch (NoResultException e) {
+			logger.error(e.getMessage(), e);
+		}
+		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
 	@ResponseBody
 	@RequestMapping(value = "/check-sign-request", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public JsonSignInfoMessage checkSignRequest(@RequestParam String signBookName, @RequestParam String fileToken, HttpServletResponse response, Model model) throws JsonProcessingException {
