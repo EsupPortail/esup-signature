@@ -428,7 +428,7 @@ public class SignRequestController {
 				logger.error(e.getMessage());
 			}
 			if(signonly != null && signonly) {
-				return "redirect:/user/signrequests/sign-by-token/" + signRequest.getName();
+				return "redirect:" + request.getHeader("referer");
 			} else {
 				return "redirect:/user/signrequests/" + id;				
 			}
