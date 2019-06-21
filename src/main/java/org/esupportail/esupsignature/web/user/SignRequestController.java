@@ -385,8 +385,9 @@ public class SignRequestController {
 			@RequestParam(value = "addDate", required = false) Boolean addDate,
 			@RequestParam(value = "signonly", required = false) Boolean signonly,
 			@RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
-			@RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
-			HttpServletResponse response, Model model, HttpServletRequest request) {
+			@RequestParam(value = "password", required = false) String password,
+			@RequestParam(value = "referer", required = false) String referer,
+			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) {
 		//TODO : choose xades cades
 		if(addDate == null) {
 			addDate = false;
@@ -428,7 +429,7 @@ public class SignRequestController {
 				logger.error(e.getMessage());
 			}
 			if(signonly != null && signonly) {
-				return "redirect:" + request.getHeader("referer");
+				return "redirect:" + referer;
 			} else {
 				return "redirect:/user/signrequests/" + id;				
 			}
@@ -542,6 +543,7 @@ public class SignRequestController {
 
 			signRequestService.setSignBooksLabels(signRequest);
 			
+			model.addAttribute("referer", request.getHeader("referer"));
 			model.addAttribute("signRequest", signRequest);
 			if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
 				model.addAttribute("signable", "ok");

@@ -57,6 +57,7 @@
 	<div th:if="${signable == 'ok'}">
 		<form id="signForm" th:action="'/user/signrequests/sign/' + ${signRequest.id}" method="post">
 			<input type="hidden" name="signonly" value="true">
+			<input type="hidden" name="referer" th:value="${referer}">
 			<div th:if="${documentType == 'pdf'}">
 				<div class="row">
 					<div class="col-lg-12">
