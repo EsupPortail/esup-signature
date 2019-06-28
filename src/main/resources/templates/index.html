@@ -1,22 +1,33 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-	<head th:replace="fragments/head :: head"></head>
-	<body>
-		<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-		<main role="main" class="container">
-	<div id="col-lg-12">
-		<div id="lastleoauth"><!--  --></div>
-		<div id="debug"><!--  --></div>
-		<spring:url value="/login" var="loginUrl"></spring:url>
-		<H1>Bienvenue sur Esup Signature</H1>
-		<sec:authorize access="not isAuthenticated()">
-			<button class="btn btn-primary btn-lg btn-block" onclick="window.location='/login'">
-			
-				<h3><span class="float-left">Se connecter</span><span class="fas fa-arrow-right float-right"><!--  --></span></h3>
-			</button>
-		</sec:authorize>
+<head th:replace="fragments/head :: head"></head>
+<body>
+	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+	<main role="main" class="container">
+	<div class="card">
+		<div class="card-header">
+			<h2>Bienvenue dans Esup Signature</h2>
+		</div>
+		<div class="card-body text-center">
+			<div class="d-none" sec:authorize="isAuthenticated()">
+				<span th:if="${auth != null}" th:text="${auth}"></span>
+			</div>
+			<div sec:authorize="isAnonymous()">
+				<button type="button" onclick="document.location.href='/login-oauth'"
+					class="btn btn-outline-dark col-6">Connectez-vous avec
+					OAuth2</button>
+				<br />
+				<button type="button" onclick="document.location.href='/login-cas'"
+					class="btn btn-outline-dark col-6">Connectez-vous avec CAS
+				</button>
+				<br />
+				<button type="button" onclick="document.location.href='/login-shib'"
+					class="btn btn-outline-dark col-6">Connectez-vous avec
+					Shibboleth</button>
+			</div>
+		</div>
 	</div>
-		</main>
-		<footer th:replace="fragments/footer :: footer"></footer>
-	</body>
+	</main>
+	<footer th:replace="fragments/footer :: footer"></footer>
+</body>
 </html>

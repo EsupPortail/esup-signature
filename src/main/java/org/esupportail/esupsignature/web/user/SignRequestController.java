@@ -56,6 +56,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -146,7 +148,8 @@ public class SignRequestController {
 			@RequestParam(value = "signBookId", required = false) Long signBookId,
 			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model uiModel) {
 		SignRequestStatus statusFilterEnum = null;
-
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		uiModel.addAttribute("auth", auth);
 		if(statusFilter != null) {
 			if(!statusFilter.isEmpty()) {
 				statusFilterEnum = SignRequestStatus.valueOf(statusFilter);

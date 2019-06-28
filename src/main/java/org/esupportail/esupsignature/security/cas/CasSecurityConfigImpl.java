@@ -1,13 +1,16 @@
 package org.esupportail.esupsignature.security.cas;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.esupportail.esupsignature.security.AuthorizeRequestsHelper;
+import org.esupportail.esupsignature.security.SecurityConfig;
 import org.jasig.cas.client.session.SingleSignOutFilter;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -16,65 +19,90 @@ import org.springframework.security.cas.authentication.CasAssertionAuthenticatio
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
 import org.springframework.security.cas.web.CasAuthenticationEntryPoint;
 import org.springframework.security.cas.web.CasAuthenticationFilter;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
+import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
+import org.springframework.security.ldap.search.LdapUserSearch;
+import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
-import org.springframework.security.web.session.ConcurrentSessionFilter;
 
-public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
-
-	@Value("${security.cas.key}")
-	private String casKey;	
-	@Value("${security.cas.url}")
-	private String casUrl;
-	@Value("${security.cas.service}")
-	private String casService;
-	@Value("${security.nfcWsAccessAuthorizeIps}")
-	private String[] nfcWsAccessAuthorizeIps;
+@ConfigurationProperties(prefix="security")
+public class CasSecurityConfigImpl implements SecurityConfig {
 	
+	private String casKey;
+	private String casUrl;
+	private String casService;
+	
+	
+
+	public String getCasKey() {
+		return casKey;
+	}
+
+
+	public void setCasKey(String casKey) {
+		this.casKey = casKey;
+	}
+
+
+	public String getCasUrl() {
+		return casUrl;
+	}
+
+
+	public void setCasUrl(String casUrl) {
+		this.casUrl = casUrl;
+	}
+
+
+	public String getCasService() {
+		return casService;
+	}
+
+
+	public void setCasService(String casService) {
+		this.casService = casService;
+	}
+
 	@Autowired
 	private CasAuthenticationSuccessHandler casAuthenticationSuccessHandler;
 	
 	@Autowired
-	private LdapUserDetailsService ldapUserDetailsService;
-	
-	@Autowired
-	private ConcurrentSessionFilter concurrencyFilter;
-	
-	@Autowired
 	private RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
 
-	@Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(casAuthenticationProvider());
-        auth.userDetailsService(ldapUserDetailsService);
-    }
+	@Autowired
+	private LdapContextSource ldapContextSource;
 	
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
-		AuthorizeRequestsHelper.setAuthorizeRequests(http, nfcWsAccessAuthorizeIps);
-		http.exceptionHandling().authenticationEntryPoint(getEntryPoint());
-		http.addFilterBefore(authenticationFilter(), CasAuthenticationFilter.class);
-		http.addFilterBefore(singleLogoutFilter(), CasAuthenticationFilter.class);
-		http.addFilterBefore(requestSingleLogoutFilter(), LogoutFilter.class);
-		http.addFilterBefore(concurrencyFilter, ConcurrentSessionFilter.class);
-		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy);
-		http.headers().frameOptions().sameOrigin();
-		http.csrf().disable();		
+	public String getLoginUrl() {
+		return "/login-cas";
 	}
-
-	public CasAuthenticationFilter authenticationFilter() {
+	
+	public CasAuthenticationEntryPoint getAuthenticationEntryPoint() {
+		CasAuthenticationEntryPoint authenticationEntryPoint = new CasAuthenticationEntryPoint();
+		authenticationEntryPoint.setLoginUrl(casUrl + "/login");
+		authenticationEntryPoint.setServiceProperties(serviceProperties());
+		return authenticationEntryPoint;
+	}
+	
+	
+	public ServiceProperties serviceProperties() {
+		ServiceProperties serviceProperties = new ServiceProperties();
+		serviceProperties.setService(casService);
+		serviceProperties.setSendRenew(false);
+		return serviceProperties;
+	}
+	
+	
+	public CasAuthenticationFilter getAuthenticationProcessingFilter() {
 		CasAuthenticationFilter authenticationFilter = new CasAuthenticationFilter();
 		authenticationFilter.setAuthenticationManager(casAuthenticationManager());
 		authenticationFilter.setSessionAuthenticationStrategy(sessionAuthenticationStrategy);
 		authenticationFilter.setAuthenticationSuccessHandler(casAuthenticationSuccessHandler);
 		return authenticationFilter;
 	}
+
 	
 	public AuthenticationManager casAuthenticationManager() {
 		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<AuthenticationProvider>();
@@ -83,6 +111,7 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 		return authenticationManager;
 	}
 
+	
 	public CasAuthenticationProvider casAuthenticationProvider() {
 		CasAuthenticationProvider authenticationProvider = new CasAuthenticationProvider();
 		authenticationProvider.setAuthenticationUserDetailsService(casAuthUserDetailsService());
@@ -92,31 +121,41 @@ public class CasWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapte
 		return authenticationProvider;
 	}
 	
-    public Cas20ServiceTicketValidator cas20ServiceTicketValidator() {
-        return new Cas20ServiceTicketValidator(casUrl);
-    }
 	
-	public CasAuthenticationEntryPoint getEntryPoint() {
-		CasAuthenticationEntryPoint authenticationEntryPoint = new CasAuthenticationEntryPoint();
-		authenticationEntryPoint.setLoginUrl(casUrl + "/login");
-		authenticationEntryPoint.setServiceProperties(serviceProperties());
-		return authenticationEntryPoint;
+	public Cas20ServiceTicketValidator cas20ServiceTicketValidator() {
+		return new Cas20ServiceTicketValidator(casUrl);
 	}
 	
-	public ServiceProperties serviceProperties(){
-		ServiceProperties serviceProperties = new ServiceProperties();
-		serviceProperties.setService(casService);
-		serviceProperties.setSendRenew(false);
-		return serviceProperties;
-	}
-
 	
 	public UserDetailsByNameServiceWrapper<CasAssertionAuthenticationToken> casAuthUserDetailsService() {
 		UserDetailsByNameServiceWrapper<CasAssertionAuthenticationToken> byNameServiceWrapper = new UserDetailsByNameServiceWrapper<>();
-		byNameServiceWrapper.setUserDetailsService(ldapUserDetailsService);
+		byNameServiceWrapper.setUserDetailsService(ldapUserDetailsService());
 		return byNameServiceWrapper;
 	}
+	
+	
+	public LdapUserDetailsService ldapUserDetailsService() {
 
+		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch("ou=people", "(uid={0})", ldapContextSource);
+		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource,
+				"ou=groups");
+
+		Map<String, String> mappingGroupesRoles = new HashMap<String, String>();
+		mappingGroupesRoles.put("ROLE_FOR.ESUP-SIGNATURE.ADMIN", "ROLE_ADMIN");
+		mappingGroupesRoles.put("ROLE_FOR.ESUP-SIGNATURE.MANAGER", "ROLE_MANAGER");
+		casLdapAuthoritiesPopulator.setMappingGroupesRoles(mappingGroupesRoles);
+
+		LdapUserDetailsService ldapUserDetailsService = new LdapUserDetailsService(ldapUserSearch,
+				casLdapAuthoritiesPopulator);
+
+		LdapUserDetailsMapper ldapUserDetailsMapper = new LdapUserDetailsMapper();
+		ldapUserDetailsMapper.setRoleAttributes(new String[] {});
+
+		ldapUserDetailsService.setUserDetailsMapper(ldapUserDetailsMapper);
+
+		return ldapUserDetailsService;
+	}
+	
 	public SingleSignOutFilter singleLogoutFilter() {
 		SingleSignOutFilter singleSignOutFilter = new SingleSignOutFilter();
 		singleSignOutFilter.setCasServerUrlPrefix(casUrl + "/logout");
