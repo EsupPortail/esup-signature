@@ -7,6 +7,7 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 public class OAuthSecurityConfigImpl implements SecurityConfig {
 	
 	/*
+
 	public ClientRegistrationRepository clientRegistrationRepository() {
         String clientId = "295837101524-b9kj77m2kp30ahr01kk5abaprr9r3h12.apps.googleusercontent.com";
 		String clientSecret = "OPeG_a0fifx1r5qcN5RONL_o";
@@ -19,7 +20,7 @@ public class OAuthSecurityConfigImpl implements SecurityConfig {
 
         return new InMemoryClientRegistrationRepository(Arrays.asList(registration));
     }
-	*/
+*/
 	
 	public String getLoginUrl() {
 		return "/login-oauth";

@@ -34,8 +34,6 @@ public class CasSecurityConfigImpl implements SecurityConfig {
 	private String casKey;
 	private String casUrl;
 	private String casService;
-	
-	
 
 	public String getCasKey() {
 		return casKey;

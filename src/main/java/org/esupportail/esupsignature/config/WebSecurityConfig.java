@@ -1,16 +1,17 @@
 package org.esupportail.esupsignature.config;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import org.esupportail.esupformfiller.security.cas.CasSecurityConfigImpl;
-import org.esupportail.esupformfiller.security.shib.ShibSecurityConfigImpl;
 import org.esupportail.esupsignature.security.AuthorizeRequestsHelper;
 import org.esupportail.esupsignature.security.SecurityConfig;
+import org.esupportail.esupsignature.security.cas.CasSecurityConfigImpl;
 import org.esupportail.esupsignature.security.oauth.OAuthAuthenticationSuccessHandler;
 import org.esupportail.esupsignature.security.oauth.OAuthSecurityConfigImpl;
+import org.esupportail.esupsignature.security.shib.ShibSecurityConfigImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -73,9 +74,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
 	private OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler;
-	
-	@Autowired
-	private RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -94,7 +92,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				http.addFilter(securityConfig.getAuthenticationProcessingFilter());
 			}
 		}
-		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy);
+		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy());
 		http.csrf().disable();
 		http.headers().frameOptions().sameOrigin();
 	}
@@ -117,5 +115,4 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		return authenticationStrategy;
 	}
 
-	
 }

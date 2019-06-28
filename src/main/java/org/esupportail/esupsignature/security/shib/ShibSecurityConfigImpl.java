@@ -1,13 +1,13 @@
-package org.esupportail.esupformfiller.security.shib;
+package org.esupportail.esupsignature.security.shib;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.esupportail.esupformfiller.security.Group2UserRoleService;
-import org.esupportail.esupformfiller.security.SecurityConfig;
-import org.esupportail.esupformfiller.security.SpelGroupService;
+import org.esupportail.esupsignature.security.Group2UserRoleService;
+import org.esupportail.esupsignature.security.SecurityConfig;
+import org.esupportail.esupsignature.security.SpelGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationManager;
