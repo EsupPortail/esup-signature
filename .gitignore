@@ -2,6 +2,7 @@ log.roo
 target
 .hg
 .hgignore
+.attach*
 /bin
 Servers
 log.roo
