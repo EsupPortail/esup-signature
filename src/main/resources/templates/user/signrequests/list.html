@@ -61,7 +61,7 @@
 		</div>
 	</div>
 	<main role="main" class="">
-	<div class="card">
+	<div class="card d-none">
 		<div class="card-header">
 			<div class="row">
 
@@ -81,32 +81,6 @@
 												</div>
 												<select class="form-control" name="toSign" onchange="submit();">
 													<option value="">Choisir un filtre</option>
-													<c:choose>
-														<c:when test="${toSign eq true}">
-															<option value="false">
-																<spring:message code="menu_item_user_my_documents" />
-															</option>
-															<option value="true" selected="selected">
-																<spring:message code="menu_item_user_to_sign_documents" />
-															</option>
-														</c:when>
-														<c:when test="${toSign eq false}">
-															<option value="false" selected="selected">
-																<spring:message code="menu_item_user_my_documents" />
-															</option>
-															<option value="true">
-																<spring:message code="menu_item_user_to_sign_documents" />
-															</option>
-														</c:when>
-														<c:otherwise>
-															<option value="false">
-																<spring:message code="menu_item_user_my_documents" />
-															</option>
-															<option value="true">
-																<spring:message code="menu_item_user_to_sign_documents" />
-															</option>
-														</c:otherwise>
-													</c:choose>
 												</select>
 												<div class="input-group-prepend">
 													<div class="input-group-text">Statut</div>
@@ -115,27 +89,21 @@
 													<option value="" disabled="disabled" selected="selected">Choisir un statut</option>
 													<option value="">Tous</option>
 													<th:block th:each="status : ${statuses}">
-														<option th:if="${status == statusFilter}" th:value="${status}" selected="selected" th:text="${status}"></option>
-														<option th:unless="${status == statusFilter}" th:value="${status}" th:text="${status}"></option>
+														<option th:if="${status == statusFilter}" th:value="${status}" selected="selected" th:text="#{'signbook.status.' + ${status}}"></option>
+														<option th:unless="${status == statusFilter}" th:value="${status}" th:text="#{'signbook.status.' + ${status}}"></option>
 													</th:block>
 												</select>
 												<div class="input-group-prepend">
 													<div class="input-group-text">
-														<spring:message code="label_org_esupportail_esupsignature_domain_signbook" />
+														parapheur
 													</div>
 												</div>
 												<select class="form-control" name="signBookId" onchange="submit();">
 													<option value="" disabled="disabled" selected="selected"><spring:message code="menu_item_choose_signbook" /></option>
-													<c:forEach items="${signBooks}" var="signBook">
-														<c:choose>
-															<c:when test="${signBookId eq signBook.id}">
-																<option value="${signBook.id}" selected="selected">${signBook.name}</option>
-															</c:when>
-															<c:otherwise>
-																<option value="${signBook.id}">${signBook.name}</option>
-															</c:otherwise>
-														</c:choose>
-													</c:forEach>
+													<th:block th:each="signBook : ${signBooks}">
+														<option th:if="${signBookId == signBook.id}" th:value="${signBook.id}" th:text="${signBook.name}" selected="selected"></option>
+														<option th:unless="${signBookId == signBook.id}" th:value="${signBook.id}" th:text="${signBook.name}"></option>
+													</th:block>
 												</select>
 											</div>
 										</div>
@@ -180,6 +148,8 @@
 			</div>
 		</div>
 		<div style="display: none;" id="alertsigndocs" alt="Sign docs" class="alert alert-danger" role="alert">Impossible de signer en masse la selection actuelle</div>
+		</div>
+		<div class="card">
 		<div class="card-body">
 			<div class="table-responsive">
 				<table class="table table-sm table-striped table-hover">
