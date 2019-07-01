@@ -175,7 +175,6 @@ public class SignRequestController {
 				
 			}
 		} else {
-			//signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, false, null, pageable);
 			signRequests = signRequestRepository.findBySignResquestByCreateBy(user.getEppn(), pageable);
 		}
 		
@@ -598,8 +597,7 @@ public class SignRequestController {
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
-	public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page,
-			@RequestParam(value = "size", required = false) Integer size, Model uiModel) {
+	public String delete(@PathVariable("id") Long id, Model uiModel) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		
 		signBookService.removeSignRequestFromAllSignBooks(signRequest);
@@ -610,8 +608,6 @@ public class SignRequestController {
 		}
 		signRequestRepository.delete(signRequest);
 		uiModel.asMap().clear();
-		uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
-		uiModel.addAttribute("size", (size == null) ? "10" : size.toString());
 		return "redirect:/user/signrequests/";
 	}
 
