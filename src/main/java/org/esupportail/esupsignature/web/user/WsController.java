@@ -160,9 +160,8 @@ public class WsController {
 	@RequestMapping(value = "/get-last-file", method = RequestMethod.GET)
 	public ResponseEntity<Void> getLastFile(@RequestParam String signBookName, @RequestParam String name, HttpServletResponse response, Model model) {
 		try {
-			SignBook signBook = signBookRepository.findByName(signBookName).get(0);
 			SignRequest signRequest = signRequestRepository.findByName(name).get(0);
-			if (signBook.getSignRequests().contains(signRequest)) {
+			if(signRequest != null) {
 				Document document = signRequestService.getLastSignedDocument(signRequest);
 				try {
 					response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
