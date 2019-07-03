@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -26,6 +27,11 @@ public class ShibAuthenticationSuccessHandler implements AuthenticationSuccessHa
         String name = request.getHeader("sn");
         String firstName = request.getHeader("givenName");
         userService.createUser(eppn, name, firstName, email);
+        /*
+		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+		String targetURL = defaultSavedRequest.getRedirectUrl();
+        redirectStrategy.sendRedirect(request, response, targetURL);
+        */
 	}
 	
 }

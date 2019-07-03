@@ -64,8 +64,20 @@ public class IndexController {
 
 	}
 	
-	@RequestMapping("/login")
-	public String login(HttpServletRequest request, Model uiModel) {
+	@RequestMapping("/login/oauth2/code/google")
+	public String loginGoogle(HttpServletRequest request, Model uiModel) {
+		return "redirect:/";			
+	}
+	@RequestMapping("/login-cas")
+	public String loginCas(HttpServletRequest request, Model uiModel) {
+		return "redirect:/";			
+	}
+	@RequestMapping("/login-shib")
+	public String loginShib(HttpServletRequest request, Model uiModel) {
+		return "redirect:/";			
+	}
+	@RequestMapping("/login-oauth")
+	public String loginOAuth(HttpServletRequest request, Model uiModel) {
 		return "redirect:/";			
 	}
 }

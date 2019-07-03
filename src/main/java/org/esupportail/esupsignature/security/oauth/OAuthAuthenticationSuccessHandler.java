@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -31,7 +32,9 @@ public class OAuthAuthenticationSuccessHandler implements AuthenticationSuccessH
 		String prenom = defaultOidcUser.getAttributes().get("given_name").toString();
 		String email = defaultOidcUser.getAttributes().get("email").toString();
 		userService.createUser(id, name, prenom, email); 
-		redirectStrategy.sendRedirect(request, response, "/");
+		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+		String targetURL = defaultSavedRequest.getRedirectUrl();
+        redirectStrategy.sendRedirect(request, response, targetURL);
 	}
 	
 }

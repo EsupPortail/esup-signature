@@ -30,7 +30,9 @@ public class CasAuthenticationSuccessHandler implements AuthenticationSuccessHan
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         userService.createUser(authentication);
-        redirectStrategy.sendRedirect(request, response, "/");
+		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+		String targetURL = defaultSavedRequest.getRedirectUrl();
+        redirectStrategy.sendRedirect(request, response, targetURL);
 	}
 
 }
