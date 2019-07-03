@@ -13,17 +13,11 @@
 				<span th:if="${auth != null}" th:text="${auth}"></span>
 			</div>
 			<div sec:authorize="isAnonymous()">
-				<button type="button" onclick="document.location.href='/login-oauth'"
-					class="btn btn-outline-dark col-6">Connectez-vous avec
-					OAuth2</button>
-				<br />
-				<button type="button" onclick="document.location.href='/login-cas'"
-					class="btn btn-outline-dark col-6">Connectez-vous avec CAS
-				</button>
-				<br />
-				<button type="button" onclick="document.location.href='/login-shib'"
-					class="btn btn-outline-dark col-6">Connectez-vous avec
-					Shibboleth</button>
+				<th:block th:each="securityConfig : ${securityConfigs}">
+					<button type="button"
+						th:data-url="${securityConfig.loginUrl}"
+						onclick="location.href=this.getAttribute('data-url')" th:text="${securityConfig.name}" class="btn btn-outline-dark col-6"></button>
+				</th:block>
 			</div>
 		</div>
 	</div>

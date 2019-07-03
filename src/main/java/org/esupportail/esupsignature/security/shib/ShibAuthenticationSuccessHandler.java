@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,10 +18,12 @@ public class ShibAuthenticationSuccessHandler implements AuthenticationSuccessHa
 	@Resource
 	private UserService userService;
 
+	//private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+	
 	//pas de rediretion ici !
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        String eppn = authentication.getName();
+		String eppn = authentication.getName();
         String email = request.getHeader("mail");
         String name = request.getHeader("sn");
         String firstName = request.getHeader("givenName");

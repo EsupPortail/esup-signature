@@ -1,25 +1,20 @@
 package org.esupportail.esupsignature.security.oauth;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.esupportail.esupsignature.security.CustomAuthenticationProvider;
 import org.esupportail.esupsignature.security.SecurityConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationProvider;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.web.AuthenticatedPrincipalOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
@@ -34,20 +29,20 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 
-@Component
 public class OAuthSecurityConfigImpl implements SecurityConfig {
-	
-	@Autowired
-	protected CustomAuthenticationProvider authenticationProvider;
 	
 	@Autowired
 	private OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler;
 	
 	@Autowired
 	private RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
+
+	public String getName() {
+		return "OAuth2";
+	}
 	
 	public String getLoginUrl() {
-		return "/login-oauth";
+		return "/login/oauth2entry";
 	}
 	
 	@Autowired
@@ -75,6 +70,20 @@ public class OAuthSecurityConfigImpl implements SecurityConfig {
 		return repository; 
 	}
 	
+
+	public OAuth2LoginAuthenticationFilter getAuthenticationProcessingFilter() {
+		OAuth2LoginAuthenticationFilter auth2LoginAuthenticationFilter = new OAuth2LoginAuthenticationFilter(clientRegistrationRepository, authorizedClientService(clientRegistrationRepository), OAuth2LoginAuthenticationFilter.DEFAULT_FILTER_PROCESSES_URI);
+		auth2LoginAuthenticationFilter.setAuthenticationSuccessHandler(oAuthAuthenticationSuccessHandler);
+		auth2LoginAuthenticationFilter.setSessionAuthenticationStrategy(sessionAuthenticationStrategy);
+		auth2LoginAuthenticationFilter.setAuthorizationRequestRepository(authorizationRequestRepository());
+		auth2LoginAuthenticationFilter.setAuthenticationManager(oAuthAuthenticationManager());
+		RequestMatcher authenticationNullMatcher = request -> SecurityContextHolder.getContext().getAuthentication() == null;
+		auth2LoginAuthenticationFilter.setRequiresAuthenticationRequestMatcher(new AndRequestMatcher(new AntPathRequestMatcher("/login/oauth2/code/google"), authenticationNullMatcher));
+		
+		return auth2LoginAuthenticationFilter;
+		
+	}
+
     @Bean
     public OAuth2AuthorizedClientService authorizedClientService(
             ClientRegistrationRepository clientRegistrationRepository) {
@@ -92,20 +101,6 @@ public class OAuthSecurityConfigImpl implements SecurityConfig {
 		return new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/google");
 	}
 	
-	@Bean
-	public OAuth2LoginAuthenticationFilter getAuthenticationProcessingFilter() {
-		OAuth2LoginAuthenticationFilter auth2LoginAuthenticationFilter = new OAuth2LoginAuthenticationFilter(clientRegistrationRepository, authorizedClientService(clientRegistrationRepository), OAuth2LoginAuthenticationFilter.DEFAULT_FILTER_PROCESSES_URI);
-		auth2LoginAuthenticationFilter.setAuthenticationSuccessHandler(oAuthAuthenticationSuccessHandler);
-		auth2LoginAuthenticationFilter.setSessionAuthenticationStrategy(sessionAuthenticationStrategy);
-		auth2LoginAuthenticationFilter.setAuthorizationRequestRepository(authorizationRequestRepository());
-		auth2LoginAuthenticationFilter.setAuthenticationManager(oAuthAuthenticationManager());
-		RequestMatcher authenticationNullMatcher = request -> SecurityContextHolder.getContext().getAuthentication() == null;
-		auth2LoginAuthenticationFilter.setRequiresAuthenticationRequestMatcher(new AndRequestMatcher(new AntPathRequestMatcher("/login/oauth2/code/google"), authenticationNullMatcher));
-		
-		return auth2LoginAuthenticationFilter;
-		
-	}
-
 	@Bean
 	public AuthenticationManager oAuthAuthenticationManager() {
 		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<AuthenticationProvider>();

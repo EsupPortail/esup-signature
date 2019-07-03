@@ -17,11 +17,15 @@
  */
 package org.esupportail.esupsignature.web;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.security.SecurityConfig;
 import org.esupportail.esupsignature.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -37,6 +41,9 @@ public class IndexController {
 	public String getActiveMenu() {
 		return "index";
 	}
+	
+	@Autowired
+	private List<SecurityConfig> securityConfigs;
 	
 	@Resource
 	private UserService userService;
@@ -55,6 +62,7 @@ public class IndexController {
 		} else {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			if("anonymousUser".equals(auth.getName())) {
+				model.addAttribute("securityConfigs", securityConfigs);
 				return "index"; 
 			} else {
 				userService.createUser(SecurityContextHolder.getContext().getAuthentication());
@@ -64,20 +72,9 @@ public class IndexController {
 
 	}
 	
-	@RequestMapping("/login/oauth2/code/google")
-	public String loginGoogle(HttpServletRequest request, Model uiModel) {
+	@RequestMapping("/login/**")
+	public String loginRedirection(HttpServletRequest request, Model uiModel) {
 		return "redirect:/";			
 	}
-	@RequestMapping("/login-cas")
-	public String loginCas(HttpServletRequest request, Model uiModel) {
-		return "redirect:/";			
-	}
-	@RequestMapping("/login-shib")
-	public String loginShib(HttpServletRequest request, Model uiModel) {
-		return "redirect:/";			
-	}
-	@RequestMapping("/login-oauth")
-	public String loginOAuth(HttpServletRequest request, Model uiModel) {
-		return "redirect:/";			
-	}
+
 }

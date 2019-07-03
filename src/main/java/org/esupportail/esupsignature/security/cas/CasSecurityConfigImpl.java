@@ -10,6 +10,7 @@ import org.jasig.cas.client.session.SingleSignOutFilter;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -28,6 +29,7 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 
+//@Component
 @ConfigurationProperties(prefix="security")
 public class CasSecurityConfigImpl implements SecurityConfig {
 	
@@ -73,8 +75,13 @@ public class CasSecurityConfigImpl implements SecurityConfig {
 	@Autowired
 	private LdapContextSource ldapContextSource;
 	
+
+	public String getName() {
+		return "CAS";
+	}
+	
 	public String getLoginUrl() {
-		return "/login-cas";
+		return "/login/casentry";
 	}
 	
 	public CasAuthenticationEntryPoint getAuthenticationEntryPoint() {

@@ -1,15 +1,11 @@
 package org.esupportail.esupsignature.security.shib;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
 
 public class ShibRequestHeaderAuthenticationFilter extends RequestHeaderAuthenticationFilter {
@@ -18,8 +14,9 @@ public class ShibRequestHeaderAuthenticationFilter extends RequestHeaderAuthenti
 
 	private String credentialsRequestHeader4thisClass;
 
+	@Resource
 	private UserService userService;
-	
+/*	
 	@Override
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, Authentication authResult) throws IOException, ServletException {
         super.successfulAuthentication(request, response, authResult);
@@ -31,7 +28,7 @@ public class ShibRequestHeaderAuthenticationFilter extends RequestHeaderAuthenti
         userService.createUser(eppn, name, firstName, email);
         log.info("User " + eppn + " created");
     }
-	
+	*/
 	/* 
 	 * Surcharge de la méthode initiale : si pas d'attributs correspondant à credentialsRequestHeader (shib) ; on continue  :
 	 * 	credentials ldap suffisent (et pas de credentials du tout aussi ...). 

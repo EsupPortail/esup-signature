@@ -15,6 +15,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
+import org.springframework.stereotype.Component;
 
 @ConfigurationProperties(prefix="security")
 public class ShibSecurityConfigImpl implements SecurityConfig {
@@ -39,12 +40,15 @@ public class ShibSecurityConfigImpl implements SecurityConfig {
 		this.shibCredentialsRequestHeader = shibCredentialsRequestHeader;
 	}
 
-
 	@Autowired
 	private ShibAuthenticationSuccessHandler shibAuthenticationSuccessHandler;
+
+	public String getName() {
+		return "Shibboleth";
+	}
 	
 	public String getLoginUrl() {
-		return "/login-shib";
+		return "/login/shibentry";
 	}
 	
 	public LoginUrlAuthenticationEntryPoint getAuthenticationEntryPoint() {

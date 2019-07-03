@@ -16,7 +16,7 @@ public class AuthorizeRequestsHelper {
 		http.authorizeRequests()
 		.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
 		.antMatchers("/manager/", "/manager/**").access("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
-		.antMatchers("/user/", "/user/**").access("isAuthenticated()");
+		.antMatchers("/user/", "/user/**").authenticated();
 		
 	}
 
