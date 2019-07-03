@@ -46,6 +46,14 @@ public class OAuthSecurityConfigImpl implements SecurityConfig {
 	@Autowired
 	private RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
 	
+	public String getLoginUrl() {
+		return "/login-oauth";
+	}
+	
+	@Autowired
+	private ClientRegistrationRepository clientRegistrationRepository;
+	
+	/* A GARDER POUR MULTIPLE AUTH OU FRANCE CONNECT
 	@Bean
 	public ClientRegistrationRepository clientRegistrationRepository() {
         String clientId = "295837101524-b9kj77m2kp30ahr01kk5abaprr9r3h12.apps.googleusercontent.com";
@@ -59,6 +67,7 @@ public class OAuthSecurityConfigImpl implements SecurityConfig {
 
         return new InMemoryClientRegistrationRepository(Arrays.asList(registration));
     }
+    */
 
 	@Bean
 	public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
@@ -78,10 +87,6 @@ public class OAuthSecurityConfigImpl implements SecurityConfig {
         return new AuthenticatedPrincipalOAuth2AuthorizedClientRepository(authorizedClientService);
     }
 	
-	public String getLoginUrl() {
-		return "/login-oauth";
-	}
-	
 	@Bean
 	public LoginUrlAuthenticationEntryPoint getAuthenticationEntryPoint() {
 		return new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/google");
@@ -89,15 +94,13 @@ public class OAuthSecurityConfigImpl implements SecurityConfig {
 	
 	@Bean
 	public OAuth2LoginAuthenticationFilter getAuthenticationProcessingFilter() {
-		OAuth2LoginAuthenticationFilter auth2LoginAuthenticationFilter = new OAuth2LoginAuthenticationFilter(clientRegistrationRepository(), authorizedClientService(clientRegistrationRepository()), OAuth2LoginAuthenticationFilter.DEFAULT_FILTER_PROCESSES_URI);
+		OAuth2LoginAuthenticationFilter auth2LoginAuthenticationFilter = new OAuth2LoginAuthenticationFilter(clientRegistrationRepository, authorizedClientService(clientRegistrationRepository), OAuth2LoginAuthenticationFilter.DEFAULT_FILTER_PROCESSES_URI);
 		auth2LoginAuthenticationFilter.setAuthenticationSuccessHandler(oAuthAuthenticationSuccessHandler);
 		auth2LoginAuthenticationFilter.setSessionAuthenticationStrategy(sessionAuthenticationStrategy);
 		auth2LoginAuthenticationFilter.setAuthorizationRequestRepository(authorizationRequestRepository());
 		auth2LoginAuthenticationFilter.setAuthenticationManager(oAuthAuthenticationManager());
-
 		RequestMatcher authenticationNullMatcher = request -> SecurityContextHolder.getContext().getAuthentication() == null;
-		auth2LoginAuthenticationFilter.setRequiresAuthenticationRequestMatcher(new AndRequestMatcher(new AntPathRequestMatcher("/login/oauth2/code/google"),
-				authenticationNullMatcher));
+		auth2LoginAuthenticationFilter.setRequiresAuthenticationRequestMatcher(new AndRequestMatcher(new AntPathRequestMatcher("/login/oauth2/code/google"), authenticationNullMatcher));
 		
 		return auth2LoginAuthenticationFilter;
 		
