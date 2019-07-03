@@ -15,7 +15,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
-import org.springframework.stereotype.Component;
 
 @ConfigurationProperties(prefix="security")
 public class ShibSecurityConfigImpl implements SecurityConfig {

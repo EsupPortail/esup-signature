@@ -73,15 +73,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		for(SecurityConfig securityConfig : securityConfigs()) {
 			http.antMatcher("/**").authorizeRequests().antMatchers(securityConfig.getLoginUrl()).authenticated();
 			http.exceptionHandling().defaultAuthenticationEntryPointFor(securityConfig.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityConfig.getLoginUrl()));
-			if(securityConfig.getAuthenticationProcessingFilter() != null) {
-				http.addFilterBefore(securityConfig.getAuthenticationProcessingFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
-			}
+			http.addFilterBefore(securityConfig.getAuthenticationProcessingFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
 		}
-		
 		if(enableOAuth) {
 			http.oauth2Client();
 		}
-
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy());
 		http.csrf().disable();
 		http.headers().frameOptions().sameOrigin();
