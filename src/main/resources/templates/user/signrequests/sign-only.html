@@ -85,9 +85,10 @@
 					</div>
 					<script th:inline="javascript">
 						/*<![CDATA[*/
+							var zoom = 2;
 							var nbImagePage = [[${imagePagesSize}]];
 							var currentImagePage = [[${signRequest.signRequestParams.signPageNumber}]] - 1;
-							var documentUrl = [[${documentUrl}]];
+							var documentUrl = "/user/documents/[[${documentId}]]/getimagepdfpage/";
 						/*]]>*/
 					</script>
 				</div>
@@ -187,13 +188,12 @@
 zoom == 2;	
 function toggleZoom() {
 	if(zoom == 1) {
-		//document.getElementById("borders").style =
 		zoom = 2;
 	} else {
 		zoom = 1;
 	}
 	
-	document.getElementById("pointer_div").style = "background-size: " + [[${pdfWidth}]] * zoom + "px;background-image:url('/user/documents/[[${documentId}]]/getimagepdfpage/[[${signRequest.signRequestParams.signPageNumber -1}]]');width:" + [[${pdfWidth}]] * zoom + "px;height: " + [[${pdfHeight}]] * zoom + "px;border:1px solid #CCC;";
+	document.getElementById("pointer_div").style = "background-size: " + [[${pdfWidth}]] * zoom + "px;background-image:url('/user/documents/[[${documentId}]]/getimagepdfpage/ "+ currentImagePage + "');width:" + [[${pdfWidth}]] * zoom + "px;height: " + [[${pdfHeight}]] * zoom + "px;border:1px solid #CCC;";
 	document.getElementById("cross").style.backgroundSize = ""+[[${signWidth}]] * zoom + "px";
 	document.getElementById("cross").style.width = ""+[[${signWidth}]] * zoom + "px"; 
 	document.getElementById("cross").style.height = ""+[[${signHeight}]] * zoom + "px"; 

@@ -55,7 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
 var pointerDiv;
 var startPosX;
 var startPosY;
-var zoom = 2;
 var pointItEnable = true;
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -100,8 +99,8 @@ function pointIt(event) {
 	if(cross != null && posX > 0 && posY > 0 && pointItEnable) {
 		cross.style.left = posX + "px";
 		cross.style.top = posY + "px";
-		document.getElementById("xPos").value = posX / zoom;
-		document.getElementById("yPos").value = posY / zoom;
+		document.getElementById("xPos").value = Math.round(posX / zoom);
+		document.getElementById("yPos").value = Math.round(posY / zoom);
 		document.getElementById("borders").classList.add("anim-border");
 	}
 }
@@ -121,8 +120,8 @@ function savePosition() {
 	var borders = document.getElementById("borders");
 	if(borders != null) {
 		if(pointItEnable) {
-			startPosX = posX / zoom;
-			startPosY = posY / zoom;
+			startPosX = Math.round(posX / zoom);
+			startPosY = Math.round(posY / zoom);
 			pointItEnable = false;
 			borders .classList.remove("anim-border");
 		} else {

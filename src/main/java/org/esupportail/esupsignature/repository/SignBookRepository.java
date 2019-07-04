@@ -17,4 +17,5 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long>, Sign
     List<SignBook> findByRecipientEmails(List<String> recipientEmails);
     Long countByRecipientEmails(List<String> recipientEmails);
     List<SignBook> findBySignBookType(SignBookType signBookType);
+    List<SignBook> findByExternal(Boolean external);
 }

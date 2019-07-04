@@ -61,25 +61,18 @@
 		</div>
 	</div>
 	<main role="main" class="">
-	<div class="card d-none">
+	<div class="card">
 		<div class="card-header">
 			<div class="row">
 
 				<div class="col-lg-12">
 					<form class="" action="" method="get">
-						<div id="accordionfilter">
 							<div class="card">
-								<div class="card-header">
-									<div class="accordion-heading">
-										<a class="accordion-toggle" data-parent="#accordionfilter" data-toggle="collapse" href="#collapseFilter">Filtres <i class="fas fa-caret-down"></i></a>
-									</div>
-									<div class="accordion-body collapse ${finderview ? 'in' : ''}" id="collapseFilter">
-										<div class="accordion-inner">
 											<div class="input-group">
-												<div class="input-group-prepend">
+												<div class="input-group-prepend d-none">
 													<div class="input-group-text">Type</div>
 												</div>
-												<select class="form-control" name="toSign" onchange="submit();">
+												<select class="form-control d-none" name="toSign" onchange="submit();">
 													<option value="">Choisir un filtre</option>
 												</select>
 												<div class="input-group-prepend">
@@ -93,12 +86,12 @@
 														<option th:unless="${status == statusFilter}" th:value="${status}" th:text="#{'signbook.status.' + ${status}}"></option>
 													</th:block>
 												</select>
-												<div class="input-group-prepend">
+												<div class="input-group-prepend d-none">
 													<div class="input-group-text">
 														parapheur
 													</div>
 												</div>
-												<select class="form-control" name="signBookId" onchange="submit();">
+												<select class="form-control d-none" name="signBookId" onchange="submit();">
 													<option value="" disabled="disabled" selected="selected"><spring:message code="menu_item_choose_signbook" /></option>
 													<th:block th:each="signBook : ${signBooks}">
 														<option th:if="${signBookId == signBook.id}" th:value="${signBook.id}" th:text="${signBook.name}" selected="selected"></option>
@@ -106,11 +99,6 @@
 													</th:block>
 												</select>
 											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
 
 					</form>
 				</div>

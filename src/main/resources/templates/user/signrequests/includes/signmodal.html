@@ -49,13 +49,13 @@
 						</div>
 					</div>
 					<script th:inline="javascript">
-							/*<![CDATA[*/
-								zoom == 1;
-								var nbImagePage = [[${imagePagesSize}]];
-								var currentImagePage = [[${signRequest.signRequestParams.signPageNumber}]] - 1;
-								var documentUrl = [[${documentUrl}]];
-								/*]]>*/
-							</script>
+					/*<![CDATA[*/
+						var zoom = 1;
+						var nbImagePage = [[${imagePagesSize}]];
+						var currentImagePage = [[${signRequest.signRequestParams.signPageNumber}]] - 1;
+						var documentUrl = "/user/documents/[[${documentId}]]/getimagepdfpage/";
+					/*]]>*/
+					</script>
 				</div>
 				<div class="d-none">
 					<div class="col-lg-4">

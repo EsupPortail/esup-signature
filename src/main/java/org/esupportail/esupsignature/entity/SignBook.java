@@ -68,6 +68,8 @@ public class SignBook {
 
     private String updateBy;
     
+    private Boolean external = false;
+    
     @Size(max = 500)
     private String description;
     
@@ -276,4 +278,13 @@ public class SignBook {
     public SignBookType getSignBookType() {
         return this.signBookType;
     }
+
+	public Boolean getExternal() {
+		return external;
+	}
+
+	public void setExternal(Boolean external) {
+		this.external = external;
+	}
+    
 }

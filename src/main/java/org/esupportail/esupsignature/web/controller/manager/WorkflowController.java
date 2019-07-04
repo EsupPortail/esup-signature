@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.manager;
+package org.esupportail.esupsignature.web.controller.manager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,13 +14,12 @@ import javax.validation.Valid;
 
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
+import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
@@ -187,7 +186,7 @@ public class WorkflowController {
 						}
 					}
 					signBook.setSignBooks(signBooks);
-					signBookService.createWorkflowSignBook(signBook, user, signRequestParams, multipartFile);
+					signBookService.createWorkflowSignBook(signBook, user, signRequestParams, multipartFile, false);
 			}
 		} catch (EsupSignatureException e) {
 			logger.error("enable to create signBookGroup", e);

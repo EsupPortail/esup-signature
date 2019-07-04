@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.manager;
+package org.esupportail.esupsignature.web.controller.manager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -138,9 +138,7 @@ public class SignBookController {
     	populateEditForm(uiModel, new SignBook());
 		List<SignBook> signBooks = new ArrayList<SignBook>();
 		signBookService.creatorSignBook();
-		signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.system));
-		signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.group));
-		signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.user));
+		signBooks.addAll(signBookRepository.findByExternal(false));
 		uiModel.addAttribute("allSignBooks", signBooks);
 		uiModel.addAttribute("type", type);
         return "manager/signbooks/create";
@@ -184,10 +182,10 @@ public class SignBookController {
 						}
 					}
 					signBook.setSignBooks(signBooks);
-					signBookService.createWorkflowSignBook(signBook, user, signRequestParams, multipartFile);
+					signBookService.createWorkflowSignBook(signBook, user, signRequestParams, multipartFile, false);
 				} else {
 					signBook.setSignBookType(SignBookType.group);
-					signBookService.createGroupSignBook(signBook, user, signRequestParams, multipartFile);
+					signBookService.createGroupSignBook(signBook, user, signRequestParams, multipartFile, false);
 				}
 			}
 		} catch (EsupSignatureException e) {

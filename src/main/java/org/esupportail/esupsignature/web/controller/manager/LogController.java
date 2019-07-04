@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.manager;
+package org.esupportail.esupsignature.web.controller.manager;
 
 import javax.annotation.Resource;
 

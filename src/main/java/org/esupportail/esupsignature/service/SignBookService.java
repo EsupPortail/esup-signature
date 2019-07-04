@@ -180,13 +180,14 @@ public class SignBookService {
 		
 	}
 	
-	public void createGroupSignBook(SignBook signBook, User user, SignRequestParams signRequestParams, MultipartFile multipartFile) throws EsupSignatureException {
+	public void createGroupSignBook(SignBook signBook, User user, SignRequestParams signRequestParams, MultipartFile multipartFile, boolean external) throws EsupSignatureException {
 		if(signBookRepository.countByName(signBook.getName()) == 0) {
 			signRequestParamsRepository.save(signRequestParams);
 			signBook.setSignBookType(SignBookType.group);
 			signBook.setCreateBy(user.getEppn());
 			signBook.setCreateDate(new Date());
 			signBook.getRecipientEmails().removeAll(Collections.singleton(""));
+			signBook.setExternal(external);
 			for(String recipientEmail : signBook.getRecipientEmails()) {
 				if(signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.user) == 0) {
 					userService.createUser(recipientEmail);
@@ -222,7 +223,7 @@ public class SignBookService {
 		}
 	}
 	
-	public void createWorkflowSignBook(SignBook signBook, User user, SignRequestParams signRequestParams, MultipartFile multipartFile) throws EsupSignatureException {
+	public void createWorkflowSignBook(SignBook signBook, User user, SignRequestParams signRequestParams, MultipartFile multipartFile, boolean external) throws EsupSignatureException {
 		if(signBookRepository.countByName(signBook.getName()) == 0) {
 			signRequestParamsRepository.save(signRequestParams);
 			signBook.setSignBookType(SignBookType.workflow);
@@ -232,7 +233,7 @@ public class SignBookService {
 			signBook.getRecipientEmails().removeAll(Collections.singleton(""));
 			signBookStepNames.addAll(signBook.getRecipientEmails());
 			signBook.setRecipientEmails(null);
-			
+			signBook.setExternal(external);
 			for(String signBookStepName : signBookStepNames) {
 				SignBook signBookStep = signBookRepository.findByName(signBookStepName).get(0);
 				signBook.getSignBooks().add(signBookStep);

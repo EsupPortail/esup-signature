@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.user;
+package org.esupportail.esupsignature.web.controller.user;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -113,9 +113,9 @@ public class WsController {
 		user.setIp(httpServletRequest.getRemoteAddr());
 		ObjectMapper mapper = new ObjectMapper();
 		if (signBookType.equals("workflow")) {
-			signBookService.createWorkflowSignBook(mapper.readValue(signBook, SignBook.class), user, signRequestService.getEmptySignRequestParams(), null);
+			signBookService.createWorkflowSignBook(mapper.readValue(signBook, SignBook.class), user, signRequestService.getEmptySignRequestParams(), null, true);
 		} else {
-			signBookService.createGroupSignBook(mapper.readValue(signBook, SignBook.class), user, signRequestService.getEmptySignRequestParams(), null);
+			signBookService.createGroupSignBook(mapper.readValue(signBook, SignBook.class), user, signRequestService.getEmptySignRequestParams(), null, true);
 		}
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}

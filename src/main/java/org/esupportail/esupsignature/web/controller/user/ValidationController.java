@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.user;
+package org.esupportail.esupsignature.web.controller.user;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;

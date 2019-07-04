@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.esupportail.esupsignature.web.admin;
+package org.esupportail.esupsignature.web.controller.admin;
 
 import java.io.IOException;
 import java.util.List;

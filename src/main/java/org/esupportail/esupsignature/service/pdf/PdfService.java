@@ -196,6 +196,7 @@ public class PdfService {
         } catch (Exception e) {
 			logger.error("file read error", e);
 		}
+        pdDocument.setAllSecurityToBeRemoved(true);
         pdDocument.save(toSignFile);
         pdDocument.close();
     	return toSignFile;

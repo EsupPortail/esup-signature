@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.user;
+package org.esupportail.esupsignature.web.controller.user;
 
 import java.io.File;
 import java.io.IOException;
@@ -101,6 +101,8 @@ public class SignRequestController {
 	
 	private String password;
 	
+	private SignRequestStatus statusFilter = null;
+	
 	long startTime;
 
 	public void setPassword(String password) {
@@ -144,24 +146,18 @@ public class SignRequestController {
 	@RequestMapping(produces = "text/html")
 	public String list(
 			@RequestParam(value = "toSign", required = false) Boolean toSign,
-			@RequestParam(value = "statusFilter", required = false) String statusFilter,
+			@RequestParam(value = "statusFilter", required = false) SignRequestStatus statusFilter,
 			@RequestParam(value = "signBookId", required = false) Long signBookId,
 			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model uiModel) {
-		SignRequestStatus statusFilterEnum = null;
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		uiModel.addAttribute("auth", auth);
-		if(statusFilter != null) {
-			if(!statusFilter.isEmpty()) {
-				statusFilterEnum = SignRequestStatus.valueOf(statusFilter);
-			}
-		} 
 		User user = userService.getUserFromAuthentication();
 		if (user == null || !user.isReady()) {
 			return "redirect:/user/users/?form";
 		}
-		populateEditForm(uiModel, new SignRequest());
-
-
+		
+		if(statusFilter != null) {
+			this.statusFilter = statusFilter;
+		}
+		
 		Page<SignRequest> signRequests;
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
@@ -175,7 +171,7 @@ public class SignRequestController {
 				
 			}
 		} else {
-			signRequests = signRequestRepository.findBySignResquestByCreateBy(user.getEppn(), pageable);
+			signRequests = signRequestRepository.findBySignResquestByCreateByAndStatus(user.getEppn(), this.statusFilter,  pageable);
 		}
 		
 		for(SignRequest signRequest : signRequests) {
@@ -195,7 +191,7 @@ public class SignRequestController {
 		uiModel.addAttribute("nbPedingSignRequests", signRequestRepository.countByCreateByAndStatus(user.getEppn(), SignRequestStatus.pending));
 		uiModel.addAttribute("signRequests", signRequests);
 		uiModel.addAttribute("signBooks", signBooks);
-		uiModel.addAttribute("statusFilter", statusFilterEnum);
+		uiModel.addAttribute("statusFilter", this.statusFilter);
 		uiModel.addAttribute("statuses", SignRequest.SignRequestStatus.values());
 		uiModel.addAttribute("queryUrl", "?toSign=" + toSign);
 		return "user/signrequests/list";

@@ -11,6 +11,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.repository.SignRequestRepositoryCustom;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -39,6 +40,36 @@ public class SignRequestRepositoryImpl implements SignRequestRepositoryCustom {
         predicates.add(criteriaBuilder.or(criteriaBuilder.equal(queryRoot.get("createBy"), createBy)));
         
        	predicatesCount.add(criteriaBuilder.or(criteriaBuilder.equal(countRoot.get("createBy"), createBy)));
+
+        query.select(queryRoot);
+        query.where(criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()])));
+        query.orderBy(QueryUtils.toOrders(pageable.getSort(), queryRoot, criteriaBuilder));
+
+        count.select(criteriaBuilder.count(countRoot));
+        count.where(criteriaBuilder.and(predicatesCount.toArray(new Predicate[predicatesCount.size()])));
+        long nbSignRequest = entityManager.createQuery(count).getSingleResult();
+        Page<SignRequest> page = new PageImpl<SignRequest>(entityManager.createQuery(query).setFirstResult((int) pageable.getOffset()).setMaxResults(pageable.getPageSize()).getResultList(), pageable, nbSignRequest);
+       	return page;
+	}
+
+	@Override
+	public Page<SignRequest> findBySignResquestByCreateByAndStatus(String createBy, SignRequestStatus status, Pageable pageable) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<SignRequest> query = criteriaBuilder.createQuery(SignRequest.class);
+        Root<SignRequest> queryRoot = query.from(SignRequest.class);
+        CriteriaQuery<Long> count = criteriaBuilder.createQuery(Long.class);
+        Root<SignRequest> countRoot = count.from(SignRequest.class);
+
+        
+        final List<Predicate> predicates = new ArrayList<Predicate>();
+        final List<Predicate> predicatesCount = new ArrayList<Predicate>();
+       
+        predicates.add(criteriaBuilder.or(criteriaBuilder.equal(queryRoot.get("createBy"), createBy)));
+       	predicatesCount.add(criteriaBuilder.or(criteriaBuilder.equal(countRoot.get("createBy"), createBy)));
+        if(status != null) {
+        	predicates.add(criteriaBuilder.or(criteriaBuilder.equal(queryRoot.get("status"), status)));
+        	predicatesCount.add(criteriaBuilder.or(criteriaBuilder.equal(countRoot.get("status"), status)));
+        }
 
         query.select(queryRoot);
         query.where(criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()])));

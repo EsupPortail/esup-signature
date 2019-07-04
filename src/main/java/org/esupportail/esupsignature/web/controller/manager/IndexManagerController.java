@@ -15,66 +15,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.esupportail.esupsignature.web;
-
-import java.util.List;
+package org.esupportail.esupsignature.web.controller.manager;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.security.SecurityConfig;
 import org.esupportail.esupsignature.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@RequestMapping("/")
+@RequestMapping("/manager")
 @Controller
-public class IndexController {
-	
+public class IndexManagerController {
+
 	@ModelAttribute("active")
 	public String getActiveMenu() {
-		return "index";
+		return "manager";
 	}
-	
-	@Autowired
-	private List<SecurityConfig> securityConfigs;
-	
-	@Resource
-	private UserService userService;
 	
 	@ModelAttribute("user")
 	public User getUser() {
 		return userService.getUserFromAuthentication();
 	}
+
+	@Resource
+	private UserService userService;
 	
 	@RequestMapping
-	public String index(HttpServletRequest request, Model model) {
+	public String index(HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
-		model.addAttribute("user", user);
-		if(user != null) {
-			return "redirect:/user/signrequests/";
-		} else {
-			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-			if("anonymousUser".equals(auth.getName())) {
-				model.addAttribute("securityConfigs", securityConfigs);
-				return "index"; 
-			} else {
-				userService.createUser(SecurityContextHolder.getContext().getAuthentication());
-				return "index";			
-			}
-		}
+    	if(!user.isReady()) {
+			return "redirect:/user/users/?form";
+		}    	
 
-	}
-	
-	@RequestMapping("/login/**")
-	public String loginRedirection(HttpServletRequest request, Model uiModel) {
-		return "redirect:/";			
+		return "redirect:/manager/signbooks";
 	}
 
 }

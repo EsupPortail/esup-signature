@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.user;
+package org.esupportail.esupsignature.web.controller.user;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;

@@ -5,11 +5,14 @@
 	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
 	<nav class="nav justify-content-between" aria-label="breadcrumb">
 		<ol class="breadcrumb col-11">
-			<li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
-			<li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.name}"></span></li>
+			<li class="breadcrumb-item"><a href="javascript:history.back()">Liste des demandes</a></li>
+			<li class="breadcrumb-item active" aria-current="page">Demande
+				de signature : <span th:text="${signRequest.name}"></span>
+			</li>
 		</ol>
 		<div class="navbar-nav align-self-center">
-			<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+			<button data-target="#collapseHelp" data-toggle="collapse"
+				type="button" class="btn btn-info">
 				<span class="fas fa-info-circle"> <!--  -->
 				</span>
 			</button>
@@ -17,7 +20,8 @@
 	</nav>
 	<div aria-expanded="true" class="collapse" id="collapseHelp">
 		<div class="alert alert-info">
-			Cet écran permet d'effectuer plusieurs types d'actions sur votre demande :
+			Cet écran permet d'effectuer plusieurs types d'actions sur votre
+			demande :
 			<ul>
 				<li>Ajouter des documents à votre demande et l'envoyer</li>
 				<li>Consulter les documents à signer</li>
@@ -29,15 +33,21 @@
 	</div>
 	<div id="ribbon" class="card">
 		<div class="card-body">
-			<div th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked'}">
-				<button type="button" class="mr-2 btn btn-outline-dark btn-light float-left" th:onclick="'window.open(\'/user/signrequests/get-last-file/' + ${id} + '\', \'_blank\')'">
+			<div
+				th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked'}">
+				<button type="button"
+					class="mr-2 btn btn-outline-dark btn-light float-left"
+					th:onclick="'window.open(\'/user/signrequests/get-last-file/' + ${id} + '\', \'_blank\')'">
 					<p class="text-center">
 						<i class="fas fa-save fa-2x"></i> <br /> Enregistrer sous
 					</p>
 				</button>
-				<button type="button" class="mr-2 btn btn-outline-dark btn-light float-left" th:onclick="'location.href=\'/user/validation/document/' + ${id} +'\''">
+				<button type="button"
+					class="mr-2 btn btn-outline-dark btn-light float-left"
+					th:onclick="'location.href=\'/user/validation/document/' + ${id} +'\''">
 					<p class="text-center">
-						<i class="fas fa-shield-alt fa-2x"></i> <br> Valider le document
+						<i class="fas fa-shield-alt fa-2x"></i> <br> Valider le
+						document
 					</p>
 				</button>
 			</div>
@@ -45,25 +55,36 @@
 			<div th:if="${signable == 'ok'}">
 				<div th:switch="${signRequest.signRequestParams.signType.name()}">
 					<div th:case="'nexuSign'">
-						<script type="text/javascript" src="/resources/js/jsSignatureLevel.js"></script>
+						<script type="text/javascript"
+							src="/resources/js/jsSignatureLevel.js"></script>
 						<script type="text/javascript" src="/js/nexu-deploy.js"></script>
-						<div id="nexu_missing_alert" style="display: none;" class="alert alert-warning">
-							Contrôle de NexU <a href="https://github.com/nowina-solutions/nexu/releases/">NexU</a> <br /> <a onclick="location.reload();" class="btn btn-warning btnSeccion" id="btnSeccion3"> <i class="fas fa-sync-alt"></i> Actualiser
+						<div id="nexu_missing_alert" style="display: none;"
+							class="alert alert-warning">
+							Contrôle de NexU <a
+								href="https://github.com/nowina-solutions/nexu/releases/">NexU</a>
+							<br /> <a onclick="location.reload();"
+								class="btn btn-warning btnSeccion" id="btnSeccion3"> <i
+								class="fas fa-sync-alt"></i> Actualiser
 							</a>
 						</div>
-						<div id="nexu_ready_alert" style="display: none;" class="alert alert-success">
-							NexU OK <br /> <small>Vous pouvez utiliser une clé materielle ou un keystore</small> <br /> Signature
-							<button type="button" class="btn btn-success" data-toggle="modal" data-target="#signatureModal">Signer</button>
+						<div id="nexu_ready_alert" style="display: none;"
+							class="alert alert-success">
+							NexU OK <br /> <small>Vous pouvez utiliser une clé
+								materielle ou un keystore</small> <br /> Signature
+							<button type="button" class="btn btn-success" data-toggle="modal"
+								data-target="#signatureModal">Signer</button>
 						</div>
 					</div>
 					<div th:case="*">
-						<button type="button" class="mr-2 btn btn-outline-dark btn-light float-left" data-toggle="modal" data-target="#signatureModal">
+						<button type="button" class="mr-2 btn btn-success float-left"
+							data-toggle="modal" data-target="#signatureModal">
 							<p class="text-center">
 								<i class="fas fa-signature fa-2x"></i> <br />Signer
 							</p>
 						</button>
 
-						<button type="button" class="mr-2 btn btn-outline-dark btn-light float-left" data-toggle="modal" data-target="#refuseModal">
+						<button type="button" class="mr-2 btn btn-danger float-left"
+							data-toggle="modal" data-target="#refuseModal">
 							<p class="text-center">
 								<i class="fas fa-ban fa-2x"></i><br />Refuser
 							</p>
@@ -75,68 +96,51 @@
 			<div th:if="${user.eppn == signRequest.createBy}">
 				<div th:if="${#lists.size(signRequest.originalDocuments) > 0}">
 					<div th:if="${signRequest.status.name() == 'draft'}">
-						<button type="button" class="mr-2 btn btn-outline-dark btn-light float-left" data-toggle="modal" data-target="#sendModal">
+						<button type="button"
+							class="mr-2 btn btn-outline-dark btn-light float-left"
+							data-toggle="modal" data-target="#sendModal">
 							<p class="text-center">
-								<i class="fa fa-paper-plane fa-2x" aria-hidden="true"></i><br /> Envoyer pour signature
+								<i class="fa fa-paper-plane fa-2x" aria-hidden="true"></i><br />
+								Envoyer pour signature
 							</p>
 						</button>
 					</div>
 				</div>
 			</div>
 
-			<div th:if="${user.eppn == signRequest.createBy && signRequest.status.name() == 'completed'}">
-				<button type="button" class="mr-2 btn btn-outline-dark btn-light float-left" data-toggle="modal" data-target="#reSendModal">
+			<div
+				th:if="${user.eppn == signRequest.createBy && signRequest.status.name() == 'completed'}">
+				<button type="button"
+					class="mr-2 btn btn-outline-dark btn-light float-left"
+					data-toggle="modal" data-target="#reSendModal">
 					<p class="text-center">
-					<i class="fa fa-paper-plane fa-2x" aria-hidden="true"></i><br /> Envoyer dans le parapheur
+						<i class="fa fa-paper-plane fa-2x" aria-hidden="true"></i><br />
+						Envoyer dans le parapheur
 					</p>
 				</button>
 			</div>
 
-			<button type="button" title="Retour" class="btn  btn-danger float-right" value="Retour" onclick="location.href='/user/signrequests'">
+			<button type="button" title="Retour"
+				class="btn  btn-danger float-right" value="Retour"
+				onclick="window.history.back();">
 				<i class="fas fa-times fa-1x"></i>
 			</button>
 
 		</div>
 	</div>
 	<main role="main" class="">
-	<div class="card card-body">
-		<div class="card bg-light">
-			<div class="card-header">
-				<button class="btn btn-link" data-toggle="collapse" data-target="#collapseOriginals" aria-expanded="true" aria-controls="collapseOriginals">
-					Liste des documents originaux <i class="fas fa-caret-down"></i>
-				</button>
-			</div>
-			<div id="collapseOriginals" class="collapse show" aria-labelledby="headingOne" data-parent="">
-				<div class="card-body">
-					<div class="file-loading">
-						<input id="multipartFile" name="multipartFiles" type="file" multiple="multiple" />
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="card bg-light">
-			<div class="card-header">
-				<button class="btn btn-link" data-toggle="collapse" data-target="#collapseSigned" aria-expanded="true" aria-controls="collapseSigned">
-					Liste des documents signés <i class="fas fa-caret-down"></i>
-				</button>
-			</div>
-			<div id="collapseSigned" class="collapse show" aria-labelledby="headingOne" data-parent="">
-				<div class="card-body">
-					<div class="file-loading">
-						<input id="signedFiles" type="file" multiple="multiple" />
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<div id="accordion">
+	<div id="accordion">
+		<div class="card card-body">
 			<div class="card bg-light">
 				<div class="card-header">
-					<button class="btn btn-link" data-toggle="collapse" data-target="#collapseTools" aria-expanded="true" aria-controls="collapseTools">
+					<button class="btn btn-link" data-toggle="collapse"
+						data-target="#collapseTools" aria-expanded="true"
+						aria-controls="collapseTools">
 						Statut <i class="fas fa-caret-down"></i>
 					</button>
 				</div>
-				<div id="collapseTools" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+				<div id="collapseTools" class="collapse show"
+					aria-labelledby="headingOne" data-parent="#accordion">
 					<div class="card-body text-center">
 						<div th:replace="user/signrequests/includes/status :: status"></div>
 						<div th:switch="${signable}">
@@ -144,17 +148,22 @@
 								<dl class="display-group border-bottom m-0 d-none">
 									<dt class="col-lg-6">
 										Parapheur courant
-										<button data-target="#collapseHelpCurrent" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+										<button data-target="#collapseHelpCurrent"
+											data-toggle="collapse" type="button"
+											class="btn btn-sm btn-info">
 											<span class="fas fa-info-circle"></span>
 										</button>
 										<div class="collapse" id="collapseHelpCurrent">
 											<div class="alert alert-info">
-												<small> Les paramètres du parapheur courant sont appliqués par défaut. Vous pouvez modifier la position manuellement à l'aide de la prévisualisation. </small>
+												<small> Les paramètres du parapheur courant sont
+													appliqués par défaut. Vous pouvez modifier la position
+													manuellement à l'aide de la prévisualisation. </small>
 											</div>
 										</div>
 									</dt>
 									<dd>
-										<span class="alert alert-secondary"> <i class="fas fa-book"></i> ${currentSignBook.name}
+										<span class="alert alert-secondary"> <i
+											class="fas fa-book"></i> ${currentSignBook.name}
 										</span>
 									</dd>
 								</dl>
@@ -164,7 +173,8 @@
 									<div th:if="${#lists.size(signRequest.originalDocuments) > 0}">
 										<div th:if="${signRequest.status.name() == 'pending'}">
 											<div class="alert alert-info">
-												La demande est en cours de signature par le(s) destinataire(s) suivants :
+												La demande est en cours de signature par le(s)
+												destinataire(s) suivants :
 												<div class="form-group">
 													<table class="table table-striped table-sm">
 														<thead class="thead-dark">
@@ -174,12 +184,15 @@
 															</tr>
 														</thead>
 														<tbody>
-															<th:block th:each="signBooksLabel : ${signRequest.signBooksLabels}">
+															<th:block
+																th:each="signBooksLabel : ${signRequest.signBooksLabels}">
 																<tr>
-																	<td><i class="fas fa-user"></i> <span th:text="${signBooksLabel.key}"></span></td>
+																	<td><i class="fas fa-user"></i> <span
+																		th:text="${signBooksLabel.key}"></span></td>
 																	<td align="center">
 																		<div th:switch="${signBooksLabel.value}">
-																			<i th:case="true" class="fas fa-check text-success"></i> <i th:case="false" class="fas fa-times text-danger"></i>
+																			<i th:case="true" class="fas fa-check text-success"></i>
+																			<i th:case="false" class="fas fa-times text-danger"></i>
 																		</div>
 																		</div>
 																	</td>
@@ -191,20 +204,24 @@
 											</div>
 										</div>
 									</div>
-									<div th:unless="${#lists.size(signRequest.originalDocuments) > 0}">
+									<div
+										th:unless="${#lists.size(signRequest.originalDocuments) > 0}">
 										<div th:if="${modelId != null}">
-											<button type="button" class="btn btn-info" onclick="window.open('${modelId}', '_blank')">
+											<button type="button" class="btn btn-info"
+												onclick="window.open('${modelId}', '_blank')">
 												<i class="fas fa-download"></i>
 												<spring:message code="button_download" />
 												le modèle
 											</button>
 										</div>
-										<div class="alert alert-info">Vous devez ajouter des documents</div>
+										<div class="alert alert-info">Vous devez ajouter des
+											documents</div>
 									</div>
 								</div>
 								<div th:unless="${user.eppn == signRequest.createBy}">
 									<div th:if="${signRequest.status.name() == 'draft'}">
-										<div class="alert alert-info">Demande en cours de création</div>
+										<div class="alert alert-info">Demande en cours de
+											création</div>
 									</div>
 								</div>
 							</div>
@@ -215,17 +232,21 @@
 									<dl class="display-group border-bottom m-0">
 										<dt class="col-lg-5">
 											Terminer
-											<button data-target="#collapseHelp1" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+											<button data-target="#collapseHelp1" data-toggle="collapse"
+												type="button" class="btn btn-sm btn-info">
 												<span class="fas fa-info-circle"></span>
 											</button>
 											<div class="collapse" id="collapseHelp1">
 												<div class="alert alert-info">
-													<small> La cloture de la demande permet de liberer le parapheur. La demande sera supprimée dans un délai défini par l'administrateur. </small>
+													<small> La cloture de la demande permet de liberer
+														le parapheur. La demande sera supprimée dans un délai
+														défini par l'administrateur. </small>
 												</div>
 											</div>
 										</dt>
 										<dd class="col-lg-7">
-											<spring:url value="/user/signrequests/complete/${id}" var="completeUrl" />
+											<spring:url value="/user/signrequests/complete/${id}"
+												var="completeUrl" />
 											<form class="form-group" action="${completeUrl}" method="get">
 												<div class="input-group">
 													<button type="submit" class="btn btn-warning">
@@ -237,7 +258,8 @@
 									</dl>
 								</div>
 								<div th:case="*">
-									<div th:if="${#lists.size(signRequest.signBooks) > 1 && nbSignOk == 0}">
+									<div
+										th:if="${#lists.size(signRequest.signBooks) > 1 && nbSignOk == 0}">
 										<dl class="display-group border-bottom m-0">
 											<dt class="col-lg-6">
 												Toutes les signatures sont nécessaires
@@ -245,13 +267,21 @@
 											</dt>
 											<dd>
 												<div class="input-group">
-													<spring:url value="/user/signrequests/toggle-need-all-sign/${id}" var="toggleNeedAllSignUrl" />
+													<spring:url
+														value="/user/signrequests/toggle-need-all-sign/${id}"
+														var="toggleNeedAllSignUrl" />
 													<label class="switch">
 														<div th:if="${signRequest.allSignToComplete == true}">
-															<input th:onclick="'document.location=\'/user/signrequests/toggle-need-all-sign/' + ${id} + '\''" type="checkbox" name="allSignToComplete" id="_allSignToComplete" checked="checked" />
+															<input
+																th:onclick="'document.location=\'/user/signrequests/toggle-need-all-sign/' + ${id} + '\''"
+																type="checkbox" name="allSignToComplete"
+																id="_allSignToComplete" checked="checked" />
 														</div>
 														<div th:unless="${signRequest.allSignToComplete == true}">
-															<input th:onclick="'document.location=\'/user/signrequests/toggle-need-all-sign/' + ${id} + '\''" type="checkbox" name="allSignToComplete" id="_allSignToComplete" />
+															<input
+																th:onclick="'document.location=\'/user/signrequests/toggle-need-all-sign/' + ${id} + '\''"
+																type="checkbox" name="allSignToComplete"
+																id="_allSignToComplete" />
 														</div> <span class="slider round"></span>
 													</label>
 												</div>
@@ -262,7 +292,8 @@
 							</div>
 						</div>
 
-						<div th:unless="${signRequest.status == 'signed' || signRequest.status == 'completed' || signRequest.status == 'checked'}">
+						<div
+							th:unless="${signRequest.status == 'signed' || signRequest.status == 'completed' || signRequest.status == 'checked'}">
 							<div th:if="${#lists.size(signRequest.signBooks) > 1}">
 								<div class="alert alert-secondary">
 									<small>
@@ -277,35 +308,84 @@
 					</div>
 				</div>
 			</div>
+			
 
 			<div class="card bg-light">
 				<div class="card-header">
-					<button class="btn btn-link" data-toggle="collapse" data-target="#collapseComments" aria-expanded="true" aria-controls="collapseTools">
-						Commentaires <span th:text="'(' + ${#lists.size(comments)} + ')'"></span> <i class="fas fa-caret-down"></i>
+					<button class="btn btn-link" data-toggle="collapse"
+						data-target="#collapseOriginals" aria-expanded="true"
+						aria-controls="collapseOriginals">
+						Liste des documents originaux <i class="fas fa-caret-down"></i>
 					</button>
 				</div>
-				<div id="collapseComments" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+				<div id="collapseOriginals" class="collapse show"
+					aria-labelledby="headingOne" data-parent="">
+					<div class="card-body">
+						<div class="file-loading">
+							<input id="multipartFile" name="multipartFiles" type="file"
+								multiple="multiple" />
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="card bg-light">
+				<div class="card-header">
+					<button class="btn btn-link" data-toggle="collapse"
+						data-target="#collapseSigned" aria-expanded="true"
+						aria-controls="collapseSigned">
+						Liste des documents signés <i class="fas fa-caret-down"></i>
+					</button>
+				</div>
+				<div id="collapseSigned" class="collapse show"
+					aria-labelledby="headingOne" data-parent="">
+					<div class="card-body">
+						<div class="file-loading">
+							<input id="signedFiles" type="file" multiple="multiple" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+
+
+			<div class="card bg-light">
+				<div class="card-header">
+					<button class="btn btn-link" data-toggle="collapse"
+						data-target="#collapseComments" aria-expanded="true"
+						aria-controls="collapseTools">
+						Commentaires <span th:text="'(' + ${#lists.size(comments)} + ')'"></span>
+						<i class="fas fa-caret-down"></i>
+					</button>
+				</div>
+				<div id="collapseComments" class="collapse"
+					aria-labelledby="headingOne" data-parent="#accordion">
 					<div class="card-body">
 						<div class="list-group">
 							<th:block th:each="comment : ${comments}">
 								<a href="#" class="list-group-item list-group-item-action">
 									<div class="d-flex w-100 justify-content-between">
 										<h5 class="mb-1">${comment.eppn}</h5>
-										<small><fmt:formatDate pattern="dd/MM/YYYY HH:mm" value="${comment.logDate}" /></small>
+										<small><fmt:formatDate pattern="dd/MM/YYYY HH:mm"
+												value="${comment.logDate}" /></small>
 									</div>
 									<p>
 										Action effectuée :
-										<spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_${comment.finalStatus}" />
+										<spring:message
+											code="label_org_esupportail_esupsignature_domain_signbook_status_${comment.finalStatus}" />
 									</p>
 									<p class="mb-1">${comment.comment}</p>
 								</a>
 							</th:block>
 						</div>
-						<spring:url value="/user/signrequests/comment/${id}" var="commentUrl" />
+						<spring:url value="/user/signrequests/comment/${id}"
+							var="commentUrl" />
 						<form action="${commentUrl}">
-							<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows=""></textarea>
+							<textarea placeholder="Vous pouvez ajouter un commentaire"
+								class="form-control" name="comment" cols="" rows=""></textarea>
 							<button type="submit" class="btn btn-primary">
-								<i class="fas fa-comments" aria-hidden="true"></i> Envoyer un commentaire
+								<i class="fas fa-comments" aria-hidden="true"></i> Envoyer un
+								commentaire
 							</button>
 						</form>
 
@@ -315,47 +395,71 @@
 
 			<div class="card bg-light">
 				<div class="card-header">
-					<button class="btn btn-link" data-toggle="collapse" data-target="#collapseSignBook" aria-expanded="true" aria-controls="collapseTools">
-						Parapheurs (<span th:text="${#lists.size(originalSignBooks)}"></span>) <i class="fas fa-caret-down"></i>
+					<button class="btn btn-link" data-toggle="collapse"
+						data-target="#collapseSignBook" aria-expanded="true"
+						aria-controls="collapseTools">
+						Parapheurs (<span th:text="${#lists.size(originalSignBooks)}"></span>)
+						<i class="fas fa-caret-down"></i>
 					</button>
 				</div>
-				<div id="collapseSignBook" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+				<div id="collapseSignBook" class="collapse"
+					aria-labelledby="headingOne" data-parent="#accordion">
 					<div class="card-body">
 						<dl class="display-group border-bottom m-0">
 							<dt class="col-lg-5">Parapheur(s) d'origine(s)</dt>
 							<dd>
 								<ul class="list-group">
 									<th:block th:each="originalSignBook : ${originalSignBooks}">
-										<li class="list-group-item"><i class="fas fa-book"></i><span th:text="${originalSignBook.name}"></span></li>
+										<li class="list-group-item"><i class="fas fa-book"></i><span
+											th:text="${originalSignBook.name}"></span></li>
 									</th:block>
 								</ul>
 								<div th:if="${firstOriginalSignBook != null}">
-									Etapes du workflow : <span th:text="${signRequest.signBooksWorkflowStep}"></span>
+									Etapes du workflow : <span
+										th:text="${signRequest.signBooksWorkflowStep}"></span>
 									<div class="bs-stepper vertical linear">
 										<div class="bs-stepper-header" role="tablist">
-											<th:block th:each="signBookSteps,iterator : ${firstOriginalSignBook.signBooks}">
-												<div th:if="${iterator.index + 1 == signRequest.signBooksWorkflowStep && signRequest.status != 'completed'}">
+											<th:block
+												th:each="signBookSteps,iterator : ${firstOriginalSignBook.signBooks}">
+												<div
+													th:if="${iterator.index + 1 == signRequest.signBooksWorkflowStep && signRequest.status != 'completed'}">
 													<div class="step active" data-target="#test-vl-1">
-														<button type="button" class="step-trigger col-12 text-left" role="tab" aria-selected="false">
-															<span class="bs-stepper-circle bg-danger" th:text="${iterator.index + 1}"></span> <span class="bs-stepper-label" th:text="${signBookSteps.name}"></span>
+														<button type="button"
+															class="step-trigger col-12 text-left" role="tab"
+															aria-selected="false">
+															<span class="bs-stepper-circle bg-danger"
+																th:text="${iterator.index + 1}"></span> <span
+																class="bs-stepper-label" th:text="${signBookSteps.name}"></span>
 														</button>
 													</div>
 												</div>
-												<div th:if="${iterator.index + 1 > signRequest.signBooksWorkflowStep}">
+												<div
+													th:if="${iterator.index + 1 > signRequest.signBooksWorkflowStep}">
 													<div class="step" data-target="#test-vl-1">
-														<button type="button" class="step-trigger col-12 text-left" role="tab" aria-selected="false" disabled="disabled">
-															<span class="bs-stepper-circle" th:text="${iterator.index + 1}"></span> <span class="bs-stepper-label" th:text="${signBookSteps.name}"></span>
+														<button type="button"
+															class="step-trigger col-12 text-left" role="tab"
+															aria-selected="false" disabled="disabled">
+															<span class="bs-stepper-circle"
+																th:text="${iterator.index + 1}"></span> <span
+																class="bs-stepper-label" th:text="${signBookSteps.name}"></span>
 														</button>
 													</div>
 												</div>
-												<div th:unless="${iterator.index + 1 > signRequest.signBooksWorkflowStep || iterator.index + 1 == signRequest.signBooksWorkflowStep}">
+												<div
+													th:unless="${iterator.index + 1 > signRequest.signBooksWorkflowStep || iterator.index + 1 == signRequest.signBooksWorkflowStep}">
 													<div class="step" data-target="#test-vl-1">
-														<button type="button" class="step-trigger col-12 text-left" role="tab" aria-selected="false" disabled="disabled">
-															<span class="bs-stepper-circle bg-success" th:text="${iterator.index + 1}"></span> <span class="bs-stepper-label" th:text="${signBookSteps.name}"></span>
+														<button type="button"
+															class="step-trigger col-12 text-left" role="tab"
+															aria-selected="false" disabled="disabled">
+															<span class="bs-stepper-circle bg-success"
+																th:text="${iterator.index + 1}"></span> <span
+																class="bs-stepper-label" th:text="${signBookSteps.name}"></span>
 														</button>
 													</div>
 												</div>
-												<div th:if="${#lists.size(firstOriginalSignBook.signBooks) > iterator.index + 1}" class="line"></div>
+												<div
+													th:if="${#lists.size(firstOriginalSignBook.signBooks) > iterator.index + 1}"
+													class="line"></div>
 											</th:block>
 										</div>
 									</div>
@@ -367,11 +471,14 @@
 			</div>
 			<div class="card bg-light">
 				<div class="card-header">
-					<button class="btn btn-link" data-toggle="collapse" data-target="#collapseInfos" aria-expanded="true" aria-controls="collapseInfos">
+					<button class="btn btn-link" data-toggle="collapse"
+						data-target="#collapseInfos" aria-expanded="true"
+						aria-controls="collapseInfos">
 						Informations <i class="fas fa-caret-down"> </i>
 					</button>
 				</div>
-				<div id="collapseInfos" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+				<div id="collapseInfos" class="collapse"
+					aria-labelledby="headingOne" data-parent="#accordion">
 					<div class="card-body">
 						<div th:if="${signRequest.overloadSignBookParams}">
 							<dl class="display-group border-bottom m-0">
@@ -379,11 +486,13 @@
 								<dd class="col-lg-7">
 									<div class="form-group">
 										Type de signature :
-										<div class="alert alert-secondary text-center col-12 font-weight-light">
+										<div
+											class="alert alert-secondary text-center col-12 font-weight-light">
 											<small th:text="${signRequest.signRequestParams.signType}"></small>
 										</div>
 										Ajout d'une page de garde :
-										<div class="alert alert-secondary text-center col-12 font-weight-light">
+										<div
+											class="alert alert-secondary text-center col-12 font-weight-light">
 											<small th:text="${signRequest.signRequestParams.newPageType}"></small>
 										</div>
 									</div>
@@ -391,18 +500,24 @@
 							</dl>
 						</div>
 						<div th:unless="${signRequest.overloadSignBookParams}">
-							<div class="alert alert-secondary text-center col-12 font-weight-light">Les paramètres de l'utilisateur seront utilisés</div>
+							<div
+								class="alert alert-secondary text-center col-12 font-weight-light">Les
+								paramètres de l'utilisateur seront utilisés</div>
 						</div>
 					</div>
 				</div>
 			</div>
 			<div class="card bg-light">
 				<div class="card-header">
-					<button class="btn btn-link" data-toggle="collapse" data-target="#collapseLogs" aria-expanded="true" aria-controls="collapseTools">
-						Logs (<span th:text="(${#lists.size(logs)})"></span>) <i class="fas fa-caret-down"></i>
+					<button class="btn btn-link" data-toggle="collapse"
+						data-target="#collapseLogs" aria-expanded="true"
+						aria-controls="collapseTools">
+						Logs (<span th:text="(${#lists.size(logs)})"></span>) <i
+							class="fas fa-caret-down"></i>
 					</button>
 				</div>
-				<div id="collapseLogs" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+				<div id="collapseLogs" class="collapse" aria-labelledby="headingOne"
+					data-parent="#accordion">
 					<div class="card-body">
 						<table class="table table-sm table-striped table-hover">
 							<thead>
@@ -432,33 +547,39 @@
 		</div>
 	</div>
 	</main>
-	<div class="modal fade" id="refuseModal" tabindex="-1" role="dialog" aria-labelledby="Refus" aria-hidden="true">
+	<div class="modal fade" id="refuseModal" tabindex="-1" role="dialog"
+		aria-labelledby="Refus" aria-hidden="true">
 		<div class="modal-dialog modal-lg" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="exampleModalLabel">Refus</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-label="Close">
 						<i class="fas fa-times"></i>
 					</button>
 				</div>
 				<div class="modal-body">
-					<div th:replace="user/signrequests/includes/refusemodal :: refusemodal"></div>
+					<div
+						th:replace="user/signrequests/includes/refusemodal :: refusemodal"></div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+					<button type="button" class="btn btn-secondary"
+						data-dismiss="modal">Annuler</button>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	<div class="modal fade" id="signatureModal" tabindex="-1" role="dialog" aria-labelledby="Signature" aria-hidden="true">
+	<div class="modal fade" id="signatureModal" tabindex="-1" role="dialog"
+		aria-labelledby="Signature" aria-hidden="true">
 		<div class="modal-dialog modal-lg" role="document">
 			<div class="modal-content">
 				<div class="modal-body">
 					<div th:replace="user/signrequests/includes/signmodal :: signmodal"></div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+					<button type="button" class="btn btn-secondary"
+						data-dismiss="modal">Annuler</button>
 				</div>
 			</div>
 		</div>
@@ -470,61 +591,77 @@
 				<div class="modal-body text-center">
 					<h5>Signature en cours</h5>
 					<div class="progress">
-						<div class="progress-bar progress-bar-striped progress-bar-animated active" style="width: 100%;" id="bar">
+						<div
+							class="progress-bar progress-bar-striped progress-bar-animated active"
+							style="width: 100%;" id="bar">
 							<strong> <span id="bar-text"></span>
 							</strong>
 						</div>
 					</div>
-					<div style="display: none;" id="passwordError" class="alert alert-danger" role="alert">
-						Mauvais mot de passe
+					<div style="display: none;" id="passwordError"
+						class="alert alert-danger" role="alert">Mauvais mot de passe
 					</div>
 				</div>
 				<div class="modal-footer">
-					<button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">Close</button>
-					<button id="validModal" onclick="window.location.reload()" type="button" class="btn btn-success align-self-center" data-dismiss="modal">Terminer</button>
+					<button id="closeModal" type="button"
+						class="btn btn-secondary align-self-center" data-dismiss="modal">Close</button>
+					<button id="validModal" onclick="window.location.reload()"
+						type="button" class="btn btn-success align-self-center"
+						data-dismiss="modal">Terminer</button>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	<div class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-labelledby="Refus" aria-hidden="true">
+	<div class="modal fade" id="sendModal" tabindex="-1" role="dialog"
+		aria-labelledby="Refus" aria-hidden="true">
 		<div class="modal-dialog modal-lg" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="exampleModalLabel">Envoi pour signature</h5>
+					<h5 class="modal-title" id="exampleModalLabel">Envoi pour
+						signature</h5>
 				</div>
 				<div class="modal-body">
 					<form th:action="'/user/signrequests/pending/' + ${id}">
-						<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows=""></textarea>
+						<textarea placeholder="Vous pouvez ajouter un commentaire"
+							class="form-control" name="comment" cols="" rows=""></textarea>
 						<button type="submit" class="btn btn-success">
 							<i class="fa fa-paper-plane" aria-hidden="true"></i> Envoyer
 						</button>
 					</form>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+					<button type="button" class="btn btn-secondary"
+						data-dismiss="modal">Annuler</button>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	<div class="modal fade" id="reSendModal" tabindex="-1" role="dialog" aria-labelledby="Refus" aria-hidden="true">
+	<div class="modal fade" id="reSendModal" tabindex="-1" role="dialog"
+		aria-labelledby="Refus" aria-hidden="true">
 		<div class="modal-dialog modal-lg" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="exampleModalLabel">Envoyer dans le parapheur</h5>
+					<h5 class="modal-title" id="exampleModalLabel">Envoyer dans le
+						parapheur</h5>
 				</div>
 				<div class="modal-body">
-					<form class="form-group" th:action="'/user/signrequests/send-to-signbook/' + ${id}" method="get">
+					<form class="form-group"
+						th:action="'/user/signrequests/send-to-signbook/' + ${id}"
+						method="get">
 						<div class="input-group">
-							<select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple">
+							<select onchange="checkNbRecipients();" name="signBookNames"
+								id="signBookNames" size="5" multiple="multiple">
 								<th:block th:each="signBook : ${allSignBooks}">
-									<option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
+									<option th:value="${signBook.name}"
+										th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
 								</th:block>
 							</select>
 						</div>
 						<div class="input-group">
-							<textarea class="form-control" name="comment" placeholder="Commentaire"></textarea>
+							<textarea class="form-control" name="comment"
+								placeholder="Commentaire"></textarea>
 						</div>
 						<div class="input-group">
 							<button type="submit" class="btn btn-primary">
@@ -534,13 +671,14 @@
 					</form>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+					<button type="button" class="btn btn-secondary"
+						data-dismiss="modal">Annuler</button>
 				</div>
 			</div>
 		</div>
 	</div>
 	<span th:text="${showSignModal}"></span>
-<script th:if="${showSignModal}" th:inline="javascript">
+	<script th:if="${showSignModal}" th:inline="javascript">
 
 $(window).on('load',function(){
     $('#signatureModal').modal('show');
