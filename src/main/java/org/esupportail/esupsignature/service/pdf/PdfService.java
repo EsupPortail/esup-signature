@@ -27,7 +27,6 @@ import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
-import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.color.PDOutputIntent;
@@ -524,18 +523,5 @@ public class PdfService {
 		return inputStream; 
 
 	}
-
-	public String getInitials(String name) { 
-        if (name.length() == 0) { 
-            return null; 
-        }
-        String initial = "" + Character.toUpperCase(name.charAt(0)); 
-        for (int i = 1; i < name.length() - 1; i++) { 
-            if (name.charAt(i) == ' ') {
-                initial += Character.toUpperCase(name.charAt(i + 1));
-            }
-        }
-        return initial;
-    } 
 	
 }

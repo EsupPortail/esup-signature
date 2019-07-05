@@ -17,6 +17,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.thymeleaf.dialect.springdata.SpringDataDialect;
+import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
 
 @Configuration 
 @ComponentScan
@@ -47,6 +48,11 @@ public class AppConfig implements WebMvcConfigurer {
     @Bean
     public SpringDataDialect springDataDialect() {
         return new SpringDataDialect();
+    }
+    
+    @Bean
+    public SpringSecurityDialect springSecurityDialect() {
+        return new SpringSecurityDialect();
     }
     
 	@Bean

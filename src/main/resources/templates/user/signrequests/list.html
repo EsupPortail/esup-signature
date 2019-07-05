@@ -60,42 +60,66 @@
 			</div>
 		</div>
 	</div>
-	<main role="main" class="">
+	<main role="main" class="container-fluid">
+	<br/>
+		<div class="card">
+		<div class="card-header">
+		Documents à signer
+		</div>
+		<div class="card-body">
+			<div th:if="${#lists.size(signRequestsToSign) > 0}" class="table-responsive">
+				<table class="table table-sm table-striped table-hover">
+					<thead>
+						<tr>
+							<th data-type="html"><input id="selectall" type="checkbox" /></th>
+							<th class="none">Titre</th>
+							<th class="none">Date de création</th>
+							<th class="none">Créé par</th>
+							<th>Voir</th>
+						</tr>
+					</thead>
+					<tbody>
+						<th:block th:each="signRequest : ${signRequestsToSign}">
+							<tr class="roocol">
+								<td class="none"><input th:value="${signRequest.id}" name="check" type="checkbox" class="check" /></td>
+								<td class="none"><p class="truncate" th:title="${signRequest.title}" th:text="${signRequest.title}"></p></td>
+								<td class="none"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
+								<td class="none"><span th:text="${signRequest.createBy}"></span></td>
+								
+								<td class="utilbox">
+									<button class="btn btn-info far fa-eye" title="Sign Request" alt="Sign Request" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '\''">
+										<!--  -->
+									</button>
+								</td>
+							</tr>
+						</th:block>
+					</tbody>
+				</table>
+			</div>
+			<span th:unless="${#lists.size(signRequestsToSign) > 0}" class="table-responsive">
+				Aucun document à signer pour le moment
+			</span>
+		</div>
+	</div>
+	<br/>
 	<div class="card">
 		<div class="card-header">
+		Documents envoyés
 			<div class="row">
 
 				<div class="col-lg-12">
 					<form class="" action="" method="get">
 							<div class="card">
 											<div class="input-group">
-												<div class="input-group-prepend d-none">
-													<div class="input-group-text">Type</div>
-												</div>
-												<select class="form-control d-none" name="toSign" onchange="submit();">
-													<option value="">Choisir un filtre</option>
-												</select>
 												<div class="input-group-prepend">
 													<div class="input-group-text">Statut</div>
 												</div>
 												<select class="form-control" name="statusFilter" id="statusFilter" onchange="submit();">
 													<option value="" disabled="disabled" selected="selected">Choisir un statut</option>
-													<option value="">Tous</option>
+													<option value="all">Tous</option>
 													<th:block th:each="status : ${statuses}">
 														<option th:if="${status == statusFilter}" th:value="${status}" selected="selected" th:text="#{'signbook.status.' + ${status}}"></option>
 														<option th:unless="${status == statusFilter}" th:value="${status}" th:text="#{'signbook.status.' + ${status}}"></option>
-													</th:block>
-												</select>
-												<div class="input-group-prepend d-none">
-													<div class="input-group-text">
-														parapheur
-													</div>
-												</div>
-												<select class="form-control d-none" name="signBookId" onchange="submit();">
-													<option value="" disabled="disabled" selected="selected"><spring:message code="menu_item_choose_signbook" /></option>
-													<th:block th:each="signBook : ${signBooks}">
-														<option th:if="${signBookId == signBook.id}" th:value="${signBook.id}" th:text="${signBook.name}" selected="selected"></option>
-														<option th:unless="${signBookId == signBook.id}" th:value="${signBook.id}" th:text="${signBook.name}"></option>
 													</th:block>
 												</select>
 											</div>
@@ -134,10 +158,10 @@
 					</div>
 				</div>
 			</div>
+			<div style="display: none;" id="alertsigndocs" alt="Sign docs" class="alert alert-danger" role="alert">Impossible de signer en masse la selection actuelle</div>
 		</div>
-		<div style="display: none;" id="alertsigndocs" alt="Sign docs" class="alert alert-danger" role="alert">Impossible de signer en masse la selection actuelle</div>
+	
 		</div>
-		<div class="card">
 		<div class="card-body">
 			<div class="table-responsive">
 				<table class="table table-sm table-striped table-hover">
@@ -148,7 +172,7 @@
 							<th class="none"><a class="sorted"
 									sd:pagination-sort="createDate">Date de création</a></th>
 							<th class="none">Créé par</th>
-							<th class="none">Dans le parapheur</th>
+							<th class="none d-none">Dans le parapheur</th>
 							<th class="none">Destinataires</th>
 							<th class="type d-none">Type de signature</th>
 							<th class="status">Statut</th>
@@ -163,7 +187,7 @@
 								<td class="none"><p class="truncate" th:title="${signRequest.title}" th:text="${signRequest.title}"></p></td>
 								<td class="none"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
 								<td class="none"><span th:text="${signRequest.createBy}"></span></td>
-								<td class="none">
+								<td class="none d-none">
 									<ul class="list-group">
 										<th:block th:each="originalSignBook : ${signRequest.originalSignBooks}">
 											<li class="list-group-item truncate" th:title="${originalSignBook.name}"><i class="fas fa-book"></i><span th:text="${originalSignBook.name}"></span></li>
@@ -178,7 +202,8 @@
 													<td width="100%" th:text="${signBooksLabel.key}"></td>
 													<td align="center">
 														<div th:switch="${signBooksLabel.value}">
-															<i th:case="true" class="fas fa-check text-success"></i> <i th:case="false" class="fas fa-times text-danger"></i>
+															<i th:case="true" class="fas fa-check-circle text-success"></i>
+															<i th:case="false" class="fas fa-exclamation-circle text-danger"></i>
 														</div>
 													</td>
 												</tr>
@@ -222,11 +247,11 @@
 					</tfoot>
 				</table>
 			</div>
-		</div>
 		<div class="card-footer">
 			<nav th:replace="fragments/pagination :: pagination"></nav>
 		</div>
-	</div>
+
+		</div>
 	<script type="text/javascript">
 		var selectAll = document.getElementById("selectall");
 		var checkBoxes = document.querySelectorAll(".check");

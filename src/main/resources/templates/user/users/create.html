@@ -5,7 +5,7 @@
 	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
 	<div id="ribbon" class="card">
 		<div class="card-body">
-			<button type="button" onclick="document.getElementById('fc_org_esupportail_esupsignature_domain_User').submit();" class="mr-2 btn btn-outline-dark btn-light float-left">
+			<button type="button" onclick="document.getElementById('fc_org_esupportail_esupsignature_domain_User').submit();" class="mr-2 btn btn-success float-left">
 				<p class="text-center">
 					<i class="fas fa-save fa-2x"></i> <br /> Enregistrer
 				</p>
@@ -107,8 +107,7 @@
 							<div class="col-lg-9">
 								<select class="form-control" id="_signType_id" name="signType" onchange="checkRequirement();" size="1">
 									<th:block th:each="signType : ${signTypes}">
-										<option th:if="${signBook != null && signType == signBook.signRequestParams[0].signType}" th:text="${signType}" th:value="${signType}" selected="selected"></option>
-										<option th:if="${signBook == null || signType != signBook.signRequestParams[0].signType}" th:text="${signType}" th:value="${signType}"></option>
+										<option th:text="#{'signbook.signtype.' + ${signType}}" th:value="${signType}"></option>
 									</th:block>
 								</select>
 							</div>
@@ -164,8 +163,7 @@
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
 							<label class="col-form-label" for="newPageType"><strong>Ajout d'une Page de garde</strong></label> <select class="form-control" id="_newPageType_id" name="newPageType" size="1">
 								<th:block th:each="newPageType : ${newPageTypes}">
-									<option th:if="${signBook != null && newPageType == signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="${newPageType}" selected="selected">${newPageType}</option>
-									<option th:if="${signBook == null || newPageType != signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="${newPageType}">${newPageType}</option>
+									<option th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}">${newPageType}</option>
 								</th:block>
 							</select>
 						</div>
@@ -183,7 +181,7 @@
 				<div id="collapseThree" class="show" role="tabpanel" aria-labelledby="headingThree">
 					<div class="card-body">
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertFrequency">
-							<label class="col-lg-3  col-form-label" for="signType"><strong><spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency" /></strong>
+							<label class="col-lg-3  col-form-label" for="signType">Fréquence d'alerte</strong>
 								<button data-target="#collapseHelpEmailAlertFrequency" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
 									<span class="fas fa-info-circle "></span>
 								</button>
@@ -196,10 +194,9 @@
 							<div class="col-lg-9">
 								<select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency" size="1" onchange="checkAlertFrequency();">
 									<option selected="selected" value="">-- Choisir votre préférence d'alerte --</option>
-									<c:forEach items="${emailAlertFrequencies}" var="emailAlertFrequency">
-										<spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertFrequency_${emailAlertFrequency}" var="emailAlertFrequencyLabel" />
-										<option value="${emailAlertFrequency}">${emailAlertFrequencyLabel}</option>
-									</c:forEach>
+									<th:block th:each="emailAlertFrequency : ${emailAlertFrequencies}">
+										<option th:value="${emailAlertFrequency}" th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
+									</th:block>
 								</select>
 							</div>
 						</div>
@@ -233,24 +230,16 @@
 							</label>
 							<div class="col-lg-9">
 								<select class="form-control" id="_emailAlertDay_id" name="emailAlertDay" size="1">
-									<c:forEach items="${daysOfWeek}" var="emailAlertDay">
-										<spring:message code="label_org_esupportail_esupsignature_domain_user_emailAlertDay_${emailAlertDay}" var="emailAlertDayLabel" />
-										<c:choose>
-											<c:when test="${emailAlertDay eq user.emailAlertDay}">
-												<option selected="selected" value="${emailAlertDay}">${emailAlertDayLabel}</option>
-											</c:when>
-											<c:otherwise>
-												<option value="${emailAlertDay}">${emailAlertDayLabel}</option>
-											</c:otherwise>
-										</c:choose>
-									</c:forEach>
+									<th:block th:each="emailAlertDay : ${daysOfWeek}" >
+										<option th:value="${emailAlertDay}" th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
+									</th:block>
 								</select>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-			<input type="submit" value="valider">
+			<input class="btn btn-success" type="submit" value="Enregister">
 		</div>
 	</form>
 	</main>

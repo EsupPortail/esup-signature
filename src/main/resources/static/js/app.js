@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
 var pointerDiv;
 var startPosX;
 var startPosY;
-var pointItEnable = true;
+var pointItEnable = false;
 
 document.addEventListener('DOMContentLoaded', function() {
 	pointerDiv = document.getElementById("pointer_div");
@@ -105,6 +105,10 @@ function pointIt(event) {
 	}
 }
 
+function animBorder() {
+	document.getElementById("borders").classList.add("anim-border");
+}
+
 function resetPosition() {
 	var cross = document.getElementById("cross");
 	if(cross != null) {
@@ -117,19 +121,28 @@ function resetPosition() {
 }
 
 function savePosition() {
-	var borders = document.getElementById("borders");
-	if(borders != null) {
-		if(pointItEnable) {
-			startPosX = Math.round(posX / zoom);
-			startPosY = Math.round(posY / zoom);
-			pointItEnable = false;
-			borders .classList.remove("anim-border");
-		} else {
-			pointItEnable = true;
-			borders .classList.add("anim-border");
-		}
+	console.log("save");
+	if(pointItEnable) {
+		var borders = document.getElementById("borders");
+		startPosX = Math.round(posX / zoom);
+		startPosY = Math.round(posY / zoom);
+		pointItEnable = false;
+		borders.classList.remove("anim-border");
+		cross.style.pointerEvents = "auto";
+		document.body.style.cursor = "default";
 	}
 }
+
+function dragSignature() {
+	console.log("drag");
+	var borders = document.getElementById("borders");
+	borders.classList.add("anim-border");
+	cross.style.pointerEvents = "none";
+	pointerDiv.style.pointerEvents = "auto";
+	document.body.style.cursor = "move";
+	pointItEnable = true;
+}
+
 
 // Paging
 document.addEventListener('DOMContentLoaded', function() {

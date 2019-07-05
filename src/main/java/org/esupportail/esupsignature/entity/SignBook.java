@@ -85,7 +85,7 @@ public class SignBook {
     private List<String> recipientEmails = new ArrayList<String>();
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.MERGE, javax.persistence.CascadeType.PERSIST})
-    private List<SignBook> SignBooks = new ArrayList<SignBook>();
+    private List<SignBook> signBooks = new ArrayList<SignBook>();
     
     //TODO renomer autoWorkflow
     private boolean autoRemove = true;
@@ -224,11 +224,11 @@ public class SignBook {
     }
     
     public List<SignBook> getSignBooks() {
-        return this.SignBooks;
+        return this.signBooks;
     }
     
     public void setSignBooks(List<SignBook> SignBooks) {
-        this.SignBooks = SignBooks;
+        this.signBooks = SignBooks;
     }
     
     public boolean isAutoRemove() {

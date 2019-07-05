@@ -217,8 +217,12 @@ public class WsController {
 	@ResponseBody
 	@RequestMapping(value = "/check-user-status", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public String checkUserStatus(@RequestParam String eppn, HttpServletResponse response, Model model) throws JsonProcessingException {
-		User user = userRepository.findByEppn(eppn).get(0);
-		return new ObjectMapper().writeValueAsString(user.isReady());
+		if(userRepository.countByEppn(eppn) > 0) {
+			User user = userRepository.findByEppn(eppn).get(0);
+			return new ObjectMapper().writeValueAsString(user.isReady());
+		} else {
+			return new ObjectMapper().writeValueAsString(false);
+		}
 	}
 
 	@Transactional

@@ -56,8 +56,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -145,8 +143,7 @@ public class SignRequestController {
 
 	@RequestMapping(produces = "text/html")
 	public String list(
-			@RequestParam(value = "toSign", required = false) Boolean toSign,
-			@RequestParam(value = "statusFilter", required = false) SignRequestStatus statusFilter,
+			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "signBookId", required = false) Long signBookId,
 			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model uiModel) {
 		User user = userService.getUserFromAuthentication();
@@ -155,25 +152,31 @@ public class SignRequestController {
 		}
 		
 		if(statusFilter != null) {
-			this.statusFilter = statusFilter;
-		}
-		
-		Page<SignRequest> signRequests;
-		List<String> recipientEmails = new ArrayList<>();
-		recipientEmails.add(user.getEmail());
-		
-		List<SignBook> signBooks = signBookRepository.findBySignBookType(SignBookType.group);
-		if(toSign != null) {
-			if(toSign) {
-				signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, toSign, SignRequestStatus.pending, pageable);
+			if(!statusFilter.equals("all")) {
+				this.statusFilter = SignRequestStatus.valueOf(statusFilter);
 			} else {
-				signRequests = signRequestService.getAllSignRequests(pageable);
-				
+				this.statusFilter = null;
 			}
-		} else {
-			signRequests = signRequestRepository.findBySignResquestByCreateByAndStatus(user.getEppn(), this.statusFilter,  pageable);
+		}
+
+		List<SignRequest> signRequestsToSign = new ArrayList<>();
+		List<SignBook> signBooksGroup = signBookRepository.findByRecipientEmailsContain(user.getEmail());
+		SignBook signBook = signBookRepository.findByName(user.getFirstname() + " " + user.getName()).get(0);
+		for(SignBook signBookGroup : signBooksGroup) {
+			signRequestsToSign.addAll(signBookGroup.getSignRequests());
+			List<SignBook> signBooksWorkflows = signBookRepository.findBySignBookContain(signBookGroup);
+			for(SignBook signBookWorkflow : signBooksWorkflows) {
+				for(SignRequest signRequest : signBookWorkflow.getSignRequests()) {
+					if(signRequest.getSignBooks().containsKey(signBook.getId()) && !signRequest.getSignBooks().get(signBook.getId())) {
+						signRequestsToSign.add(signRequest);
+					}
+				}
+			}
+
 		}
 		
+		Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByCreateByAndStatus(user.getEppn(), this.statusFilter,  pageable); 
+	
 		for(SignRequest signRequest : signRequests) {
 			signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
 			
@@ -185,15 +188,13 @@ public class SignRequestController {
 		}
 		
 		uiModel.addAttribute("mydocs", "active");
-		uiModel.addAttribute("toSign", toSign);
+		uiModel.addAttribute("signRequestsToSign", signRequestsToSign);
 		uiModel.addAttribute("signBookId", signBookId);
 		uiModel.addAttribute("nbToSignRequests",signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending, pageable).getTotalElements());
 		uiModel.addAttribute("nbPedingSignRequests", signRequestRepository.countByCreateByAndStatus(user.getEppn(), SignRequestStatus.pending));
 		uiModel.addAttribute("signRequests", signRequests);
-		uiModel.addAttribute("signBooks", signBooks);
 		uiModel.addAttribute("statusFilter", this.statusFilter);
 		uiModel.addAttribute("statuses", SignRequest.SignRequestStatus.values());
-		uiModel.addAttribute("queryUrl", "?toSign=" + toSign);
 		return "user/signrequests/list";
 	}
 	
