@@ -76,6 +76,7 @@
 							<th class="none">Date de création</th>
 							<th class="none">Créé par</th>
 							<th>Voir</th>
+							<th>Signer</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -85,11 +86,15 @@
 								<td class="none"><p class="truncate" th:title="${signRequest.title}" th:text="${signRequest.title}"></p></td>
 								<td class="none"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
 								<td class="none"><span th:text="${signRequest.createBy}"></span></td>
-								
 								<td class="utilbox">
-									<button class="btn btn-info far fa-eye" title="Sign Request" alt="Sign Request" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '\''">
+									<a class="btn btn-info far fa-eye" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}">
 										<!--  -->
-									</button>
+									</a>
+								</td>								
+								<td class="utilbox">
+									<a role="button" class="btn btn-success fas fa-signature" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
+										<!--  -->
+									</a>
 								</td>
 							</tr>
 						</th:block>

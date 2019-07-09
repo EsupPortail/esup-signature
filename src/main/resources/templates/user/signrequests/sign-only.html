@@ -3,7 +3,7 @@
 <head th:replace="fragments/head :: head"></head>
 <body>
 	<div class="header-fixed fixed-top">
-		<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+		<nav th:replace="fragments/emptyBar :: emptyBar"></nav>
 		<nav class="nav justify-content-between bg-white d-none" aria-label="breadcrumb">
 			<ol class="breadcrumb col-11">
 				<li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
@@ -47,8 +47,16 @@
 							
 				<div th:if="${imagePagesSize > 1}" class="mr-2 alert alert-secondary float-left" style="height: 100px;">
 					<ul class="pagination">
-						<li id="previous" class="page-item"><a onclick="previousImage();" class="page-link" aria-label="Précédent"><span aria-hidden="true">‹</span></a></li>
-						<li id="next" class="page-item"><a onclick="nextImage();" class="page-link" aria-label="Prochain"><span aria-hidden="true">›</span></a></li>
+						<li id="previous" class="page-item">
+							<a onclick="previousImage();" class="page-link" aria-label="Précédent">
+								<span aria-hidden="true">‹</span>
+							</a>
+						</li>
+						<li id="next" class="page-item">
+							<a onclick="nextImage();" class="page-link" aria-label="Prochain">
+								<span aria-hidden="true">›</span>
+							</a>
+						</li>
 					</ul>Navigation
 				</div>
 				<button th:if="${signRequest.signRequestParams.signType.name() == 'nexuSign'}" type="button"  data-toggle="modal" data-target="#signModal"  class="mr-2 btn btn-success float-left" style="height: 100px;">
@@ -113,7 +121,7 @@
 	</div>
 	<div th:unless="${signable == 'ok'}">
 		<div class="alert alert-info">
-			Vous n'avez plus d'ation à effectuer sur cette demande, merci de fermer cette fenetre <br /> <input class="btn btn-danger text-center" id="signe" title="Signe" type="submit" value="Fermer" onclick="window.close();" />
+			Vous n'avez plus d'ation à effectuer sur cette demande, merci de fermer cette fenetre <br /> <input class="btn btn-danger text-center" id="signe" title="Signe" type="submit" value="Fermer" onclick="window.history.back();" />
 		</div>
 
 	</div>

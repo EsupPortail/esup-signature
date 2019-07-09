@@ -201,3 +201,7 @@ input:checked + .slider:before {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.page-item.disabled a {
+	background-color: #CCC !important
+}

@@ -163,13 +163,15 @@ public class WsController {
 			SignRequest signRequest = signRequestRepository.findByName(name).get(0);
 			if(signRequest != null) {
 				Document document = signRequestService.getLastSignedDocument(signRequest);
-				try {
-					response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
-					response.setContentType(document.getContentType());
-					IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
-					return new ResponseEntity<>(HttpStatus.OK);
-				} catch (Exception e) {
-					logger.error("get file error", e);
+				if(document != null) {
+					try {
+						response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+						response.setContentType(document.getContentType());
+						IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+						return new ResponseEntity<>(HttpStatus.OK);
+					} catch (Exception e) {
+						logger.error("get file error", e);
+					}
 				}
 			} else {
 				logger.warn("no signed version of " + name);
@@ -209,6 +211,19 @@ public class WsController {
 		return null;
 	}
 
+	@ResponseBody
+	@RequestMapping(value = "/delete-sign-request", method = RequestMethod.GET)
+	public void deleteSignRequest(@RequestParam String signBookName, @RequestParam String fileToken, HttpServletResponse response, Model model) {
+		if (signBookRepository.countByName(signBookName) > 0) {
+			SignRequest signRequest = signRequestRepository.findByName(fileToken).get(0);
+			SignBook signBook = signBookRepository.findByName(signBookName).get(0);
+			signRequest.getOriginalSignBooks().remove(signBook);
+			signBook.getSignRequests().remove(signRequest);
+			signRequestRepository.delete(signRequest);
+			signBookService.deleteSignBook(signBook);
+		}
+	}
+	
 	@RequestMapping(value = "/sign-by-token/{token}")
 	public String signByToken(@PathVariable("token") String token, HttpServletRequest request) {
 		return "redirect:/user/signrequests/sign-by-token/" + token;
