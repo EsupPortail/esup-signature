@@ -261,7 +261,6 @@ public class SignBookService {
 			signBook.getSignRequestParams().add(signRequestParams);
 			//TODO manage target
 			signBook.setSourceType(DocumentIOType.none);
-			signBook.setTargetType(DocumentIOType.none);
 			signBookRepository.save(signBook);
 			if(model != null) {
 				model.setParentId(signBook.getId());
@@ -349,12 +348,14 @@ public class SignBookService {
 
 	public void exportFileToTarget(SignBook signBook, SignRequest signRequest, User user) throws EsupSignatureException {
 		if (signBook.getTargetType() != null && !signBook.getTargetType().equals(DocumentIOType.none)) {
-			logger.info("send to " + signBook.getTargetType() + " in " + signBook.getDocumentsTargetUri());
-			FsAccessService fsAccessService = getFsAccessService(signBook.getSourceType());
+			logger.info("send to " + signBook.getTargetType() + " in /" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri());
+			FsAccessService fsAccessService = getFsAccessService(signBook.getTargetType());
 			try {
 				File signedFile = signRequestService.getLastSignedDocument(signRequest).getJavaIoFile();
 				InputStream inputStream = new FileInputStream(signedFile);
-				fsAccessService.putFile("/" + signBook.getDocumentsTargetUri() + "/", signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
+				fsAccessService.createFile("/", signBook.getSignBookType().toString(), "folder");
+				fsAccessService.createFile("/" + signBook.getSignBookType().toString(), signBook.getDocumentsTargetUri(), "folder");
+				fsAccessService.putFile("/" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri() + "/", signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
 			} catch (Exception e) {
 				throw new EsupSignatureException("write fsaccess error : ", e);
 			}

@@ -214,8 +214,11 @@ function toggleZoom() {
 	document.getElementById("cross").style.left = ""+document.getElementById("xPos").value * zoom + "px";
 	document.getElementById("cross").style.top = ""+document.getElementById("yPos").value * zoom + "px";
 	document.getElementById("borders").style.width = ""+[[${signWidth}]] * zoom + "px"; 
-	document.getElementById("borders").style.height = ""+[[${signHeight}]] * zoom + "px"; 
-
+	document.getElementById("borders").style.height = ""+[[${signHeight}]] * zoom + "px";
+	var textDate = document.getElementById("textDate");
+	if(textDate != null) {
+		textDate.style.fontSize = 8 * zoom + "px";
+	}
 }
 
 function submitSignRequest() {

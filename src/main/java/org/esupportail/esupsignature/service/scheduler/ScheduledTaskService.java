@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.service;
+package org.esupportail.esupsignature.service.scheduler;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -11,11 +11,12 @@ import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ public class ScheduledTaskService {
 	@Resource
 	private OJService oJService;
 
+	@Scheduled(fixedRate = 10000)
 	@Transactional
 	public void scanAllSignbooksSources() throws EsupStockException {
 		List<SignBook> signBooks = signBookService.getAllSignBooks();
@@ -46,14 +48,17 @@ public class ScheduledTaskService {
 		}
 	}
 
+	@Scheduled(fixedRate = 10000)
 	@Transactional
 	public void scanAllSignbooksTargets() throws EsupSignatureException {
+		logger.info("scan all signbooks target");
 		List<SignBook> signBooks = signBookService.getAllSignBooks();
 		for(SignBook signBook : signBooks) {
 			signBookService.exportFilesToTarget(signBook, getSchedulerUser());
 		}
 	}
 	
+	@Scheduled(fixedRate = 10000)
 	@Transactional
 	public void sendAllEmailAlerts() throws EsupSignatureException {
 		List<User> users = userService.getAllUsers();

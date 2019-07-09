@@ -76,7 +76,7 @@ function activeDate() {
 		cross.style.height = cross.offsetHeight + 20;
 		borders.style.width = 200;
 		borders.style.height = borders.offsetHeight + 20;
-		borders.innerHTML = "<span class='align-top'>Le XX/XX/XXXX XX:XX</span>";
+		borders.innerHTML = "<span id='textDate' class='align-top' style='font-size:" + 8 * zoom + "px;'>Le XX/XX/XXXX XX:XX</span>";
 	} else {
 		cross.style.width = 100;
 		cross.style.height = cross.offsetHeight - 20;
@@ -145,6 +145,7 @@ function dragSignature() {
 
 
 // Paging
+/*
 document.addEventListener('DOMContentLoaded', function() {
 	if(typeof currentImagePage !== 'undefined') {
 		if (currentImagePage == 0) {
@@ -155,6 +156,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 });
+*/
 function nextImage() {
 	currentImagePage++;
 	hideSigns(currentImagePage)

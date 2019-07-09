@@ -370,7 +370,7 @@ public class PdfService {
 	        	if (f instanceof PDCheckBox) {
 	        		PDCheckBox box = (PDCheckBox) f;
 	        		if(box.isChecked()) {
-	        			value = "On";
+	        			value = "Yes";
 	        		} else {
 	        			value = "Off";
 	        		}
