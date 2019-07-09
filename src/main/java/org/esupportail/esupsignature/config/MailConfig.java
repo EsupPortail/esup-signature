@@ -1,18 +1,15 @@
 package org.esupportail.esupsignature.config;
 
 import java.io.IOException;
+import java.util.Properties;
 
-import org.apache.velocity.Template;
-import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.exception.VelocityException;
-import org.apache.velocity.runtime.RuntimeConstants;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
-import org.esupportail.esupsignature.service.mail.MailSenderService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 @Configuration
 @PropertySources(value = {@PropertySource("classpath:mail.properties")})
@@ -22,20 +19,15 @@ public class MailConfig {
 	private String senderHost;
 	@Value("${mail.senderFrom}")
 	private String senderFrom;
-
-	@Bean
-	public MailSenderService mailSenderService() {
-		return new MailSenderService(senderHost, senderFrom);
-	}
 	
 	@Bean
-    public Template emailTemplate() throws VelocityException, IOException {
-		VelocityEngine velocityEngine = new VelocityEngine();
-		velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
-		velocityEngine.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
-		velocityEngine.setProperty("runtime.log", "/tmp/velocity.log");
-		velocityEngine.init();
-        return velocityEngine.getTemplate("templates/emailTemplate.html", "UTF-8");
+    public JavaMailSender mailSender() throws IOException {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost(senderHost);
+        Properties javaMailProperties = new Properties();
+        mailSender.setJavaMailProperties(javaMailProperties);
+        return mailSender;
+
     }
 	
 }

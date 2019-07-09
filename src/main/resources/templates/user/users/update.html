@@ -44,28 +44,20 @@
 				<div id="collapseOne" class="collapse show" role="tabpanel" aria-labelledby="headingOne">
 					<div class="card-body">
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_name">
-							<label class="col-lg-3 col-form-label" for="name"><strong>Nom</strong></label>
-							<div class="col-lg-9">
-								<input class="form-control" readonly="readonly" type="text" th:field="*{name}">
-							</div>
+							<label class="col-form-label" for="name"><strong>Nom</strong></label>
+							<input class="form-control" readonly="readonly" type="text" th:field="*{name}">
 						</div>
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_firstname">
-							<label class="col-lg-3 col-form-label" for="firstname"><strong>Prénom</strong></label>
-							<div class="col-lg-9">
-								<input class="form-control" readonly="readonly" type="text" th:field="*{firstname}">
-							</div>
+							<label class="col-form-label" for="firstname"><strong>Prénom</strong></label>
+							<input class="form-control" readonly="readonly" type="text" th:field="*{firstname}">
 						</div>
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_eppn">
-							<label class="col-lg-3 col-form-label" for="eppn"><strong>Eppn</strong></label>
-							<div class="col-lg-9">
-								<input class="form-control" readonly="readonly" type="text" th:field="*{eppn}">
-							</div>
+							<label class="col-form-label" for="eppn"><strong>Identifiant</strong></label>
+							<input class="form-control" readonly="readonly" type="text" th:field="*{eppn}">
 						</div>
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_email">
-							<label class="col-lg-3 col-form-label" for="email"><strong>Email</strong></label>
-							<div class="col-lg-9">
-								<input class="form-control" readonly="readonly" type="text" th:field="*{email}">
-							</div>
+							<label class="col-form-label" for="email"><strong>Email</strong></label>
+							<input class="form-control" readonly="readonly" type="text" th:field="*{email}">
 						</div>
 					</div>
 				</div>
@@ -81,7 +73,8 @@
 				<div id="collapseTwo" class="show" role="tabpanel" aria-labelledby="headingTwo">
 					<div class="card-body">
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signType_id">
-							<label for="signType"><strong>Type de signature par défaut</strong>
+							<label class="col-form-label" for="signType">
+							<strong>Type de signature par défaut</strong>
 								<button data-target="#collapseHelpSignType" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
 									<span class="fas fa-info-circle "></span>
 								</button>
@@ -96,15 +89,18 @@
 											</ul>
 										</small>
 									</div>
-								</div> </label> <select class="form-control" id="_signType_id" name="signType" onchange="checkRequirement();" size="1">
-								<th:block th:each="signType : ${signTypes}">
-									<option th:if="${signBook != null && signType == signBook.signRequestParams[0].signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:value="${signType}" selected="selected"></option>
-									<option th:if="${signBook == null || signType != signBook.signRequestParams[0].signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:value="${signType}"></option>
-								</th:block>
+								</div> 
+							</label> 
+							<select class="form-control" id="_signType_id" name="signType" onchange="checkRequirement();" size="1">
+							<th:block th:each="signType : ${signTypes}">
+								<option th:if="${signBook != null && signType == signBook.signRequestParams[0].signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:value="${signType}" selected="selected"></option>
+								<option th:if="${signBook == null || signType != signBook.signRequestParams[0].signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:value="${signType}"></option>
+							</th:block>
 							</select>
 						</div>
 						<div class="form-group">
-							<label for="signature"><strong>Image de la signature</strong>
+							<label class="col-form-label" for="signature">
+								<strong>Image de la signature</strong>
 								<button data-target="#collapseHelpSignImage" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
 									<span class="fas fa-info-circle "> <!-- -->
 									</span>
@@ -114,13 +110,16 @@
 										<small> Après avoir sélectionné une image, vous pourrez ajuster sa taille pour que la signature entre dans le carré blanc. Si votre signature est grande (contient un tampon par exemple), il est possible d'élargir le carré blanc (la signature prendra plus de place sur le document) <br /> Une image de la signature sera toujours nécessaire pour signer un PDF
 										</small>
 									</div>
-								</div> </label>
-							<div class="alert alert-secondary col-6">
+								</div>
+							</label>
+							<div class="alert alert-secondary text-center">
 								<img th:if="${signFile != null}" alt="signature" th:src="'data:image/png;base64,' + ${signFile}" />
 							</div>
 							<div class="input-group">
 								<div class="custom-file">
-									<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" /> <label class="custom-file-label" id="inputGroupLabel01" for="upload"> <spring:message code="field_file_image" />
+									<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" />
+									<label class="custom-file-label" id="inputGroupLabel01" for="upload">
+										Choisir un fichier
 									</label>
 								</div>
 							</div>
@@ -128,10 +127,9 @@
 								<!--  -->
 							</div>
 						</div>
-					</div>
 					<input type="hidden" th:field="*{signImageBase64}" />
 					<div class="form-group">
-						<label for="keystore"><strong>Keystore</strong>
+						<label class="col-form-label" for="keystore"><strong>Keystore</strong>
 							<button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
 								<span class="fas fa-info-circle "> <!-- -->
 								</span>
@@ -141,19 +139,26 @@
 									<small> Il est possible de générer un keystore en suivant cette procédure <a href="https://services.renater.fr/tcs/certcentral/orders/request-certificate" target="_blank">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a>
 									</small>
 								</div>
-							</div> </label>
-						<div class="col-lg-9">
-							<div th:if="${user.keystore != null}" class="alert alert-secondary col-6" th:text="${user.keystore.fileName}"></div>
-							<div class="input-group">
-								<div class="custom-file">
-									<input type="file" accept="application/x-pkcs12" class="custom-file-input" name="multipartKeystore" id="inputGroupFile02" value="Choose a file" aria-describedby="inputGroupFileAddon02" /> <label class="custom-file-label" id="inputGroupLabel02" for="upload"> <spring:message code="field_file_keystore" />
-									</label>
-								</div>
+							</div>
+						</label>
+						<div th:if="${user.keystore != null}" class="alert alert-secondary col-6" th:text="${user.keystore.fileName}"></div>
+						<div class="input-group">
+							<div class="custom-file">
+								<input type="file" accept="application/x-pkcs12" class="custom-file-input" name="multipartKeystore" id="inputGroupFile02" value="Choose a file" aria-describedby="inputGroupFileAddon02" /> <label class="custom-file-label" id="inputGroupLabel02" for="upload"> <spring:message code="field_file_keystore" />
+								</label>
 							</div>
 						</div>
 					</div>
 					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
-						<label class="col-form-label" for="newPageType"><strong>Ajout d'une page de garde</strong></label> <select class="form-control" id="_newPageType_id" name="newPageType" size="1">
+						<label class="col-form-label" for="newPageType"><strong>Ajout d'une page de garde</strong>
+							<div class="collapse collapse" id="collapseHelpKeyStore">
+								<div class="alert alert-info">
+									<small> Il est possible de générer un keystore en suivant cette procédure <a href="https://services.renater.fr/tcs/certcentral/orders/request-certificate" target="_blank">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a>
+									</small>
+								</div>
+							</div>
+						</label>
+						<select class="form-control" id="_newPageType_id" name="newPageType" size="1">
 							<th:block th:each="newPageType : ${newPageTypes}">
 								<option th:if="${signBook != null && newPageType == signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}" selected="selected"></option>
 								<option th:if="${signBook == null || newPageType != signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}"></option>
@@ -161,6 +166,7 @@
 						</select>
 					</div>
 				</div>
+			</div>
 			</div>
 			<div class="card">
 				<div class="card-header" role="tab" id="headingThree">
@@ -183,7 +189,8 @@
 										<small>Vous pouvez choisir une fréquence pour les alertes</small>
 									</div>
 								</div>
-							</label> <select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency" size="1" onchange="checkAlertFrequency();">
+							</label>
+							<select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency" size="1" onchange="checkAlertFrequency();">
 								<option selected="selected" value="">-- Choisir votre préférence d'alerte --</option>
 								<th:block th:each="emailAlertFrequency : ${emailAlertFrequencies}">
 									<option th:if="${emailAlertFrequency == user.emailAlertFrequency}" selected="selected" th:value="${emailAlertFrequency}" th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
@@ -193,11 +200,12 @@
 						</div>
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertHour" style="display: none;">
 							<label class="col-form-label" for="emailAlertHour"> <strong>Heure d'alerte</strong>
-							</label> <input id="emailAlertHour" name="emailAlertHour" class="form-control" type="time" value="${user.emailAlertHour}" autocomplete="off" />
+							</label>
+							<input id="emailAlertHour" name="emailAlertHour" class="form-control" type="time" th:value="${user.emailAlertHour}" autocomplete="off" />
 						</div>
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertDay" style="display: none;">
-							<label class="col-form-label" for="emailAlertDay"> <strong>Jour de l'alerte</strong>
-							</label> <select class="form-control" id="_emailAlertDay_id" name="emailAlertDay">
+							<label class="col-form-label" for="emailAlertDay"> <strong>Jour de l'alerte</strong></label>
+							<select class="form-control" id="_emailAlertDay_id" name="emailAlertDay">
 								<th:block th:each="emailAlertDay : ${daysOfWeek}" var="emailAlertDay">
 									<option th:if="${emailAlertDay == user.emailAlertDay}" selected="selected" th:value="${emailAlertDay}" th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
 									<option th:unless="${emailAlertDay == user.emailAlertDay}" th:value="${emailAlertDay}" th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>

@@ -120,8 +120,12 @@
 		</form>
 	</div>
 	<div th:unless="${signable == 'ok'}">
-		<div class="alert alert-info">
-			Vous n'avez plus d'ation à effectuer sur cette demande, merci de fermer cette fenetre <br /> <input class="btn btn-danger text-center" id="signe" title="Signe" type="submit" value="Fermer" onclick="window.history.back();" />
+		<div class="alert alert-danger">
+			Vous n'avez plus d'ation à effectuer sur cette demande, merci de fermer cette fenetre
+			<br />
+			
+			<input class="btn btn-danger text-center d-none" id="signe" title="Signe" type="submit" value="Fermer" onclick="window.close();" />
+
 		</div>
 
 	</div>

@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -10,21 +9,18 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
-import org.apache.velocity.Template;
-import org.apache.velocity.VelocityContext;
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.service.mail.MailSenderService;
+import org.esupportail.esupsignature.service.mail.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -51,13 +47,7 @@ public class UserService {
 	private SignRequestService signRequestService;
 
 	@Resource
-	private MailSenderService mailSenderService;
-	
-	@Resource
-	private Template emailTemplate;
-	
-	@Value("${root.url}")
-	private String rootUrl;
+	private EmailService emailService;
 	
 	public List<User> getAllUsers() {
 		List<User> list = new ArrayList<User>();
@@ -128,13 +118,7 @@ public class UserService {
 		Date date = new Date();
 		List<SignRequest> signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending);
 		if(signRequests.size() > 0) {
-			String[] to = {user.getEmail()};
-			VelocityContext context = new VelocityContext();
-	        StringWriter writer = new StringWriter();
-	        context.put("signRequests", signRequests);
-	        context.put("rootUrl", rootUrl);
-	        emailTemplate.merge(context, writer);
-			mailSenderService.sendMail(to, "Alerte esup-signature", writer.toString(), null);
+			emailService.sendSignRequestAlert("test", user.getEmail(), signRequests);
 		}
 		user.setLastSendAlertDate(date);
 		userRepository.save(user);

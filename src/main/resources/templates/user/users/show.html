@@ -37,7 +37,7 @@
 			<dd th:text="${user.firstname}"></dd>
 		</dl>
 		<dl class="row border-bottom m-0">
-			<dt class="col-lg-5">EPPN</dt>
+			<dt class="col-lg-5">Identifiant</dt>
 			<dd th:text="${user.eppn}"></dd>
 		</dl>
 		<dl class="row border-bottom m-0">
@@ -104,7 +104,7 @@
 			<div th:case="'weekly'">
 				<dl class="row border-bottom m-0">
 					<dt class="col-lg-5">Jour de la semaine</dt>
-					<dd th:text="${user.emailAlertDay}"></dd>
+					<dd th:text="#{'user.emailAlertDay.' + ${user.emailAlertDay}}"></dd>
 				</dl>
 			</div>
 		</th:block>

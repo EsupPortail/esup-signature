@@ -160,7 +160,14 @@ public class UserController {
     }
     
     @PostMapping
-    public String create(Long id, @RequestParam(value = "signImageBase64", required=false) String signImageBase64, @RequestParam(value = "newPageType", required=false) String newPageType, @RequestParam(value = "signType", required=false) String signType, @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, Model model) throws Exception {
+    public String create(Long id, 
+    		@RequestParam(value = "signImageBase64", required=false) String signImageBase64, 
+    		@RequestParam(value = "newPageType", required=false) NewPageType newPageType, 
+    		@RequestParam(value = "signType", required=false) SignType signType,
+    		@RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
+    		@RequestParam(value = "emailAlertHour", required=false) String emailAlertHour,
+    		@RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
+    		@RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, Model model) throws Exception {
         model.asMap().clear();
         User user = userRepository.findById(id).get();
 		User userToUpdate = userService.getUserFromAuthentication();
@@ -183,8 +190,12 @@ public class UserController {
 
     	SignBook signBook = signBookService.getUserSignBook(user);
     	if(signType != null) {
-    		signBook.getSignRequestParams().get(0).setSignType(SignType.valueOf(signType));
+    		signBook.getSignRequestParams().get(0).setSignType(signType);
+    		signBook.getSignRequestParams().get(0).setNewPageType(newPageType);
     	}
+    	userToUpdate.setEmailAlertFrequency(emailAlertFrequency);
+    	userToUpdate.setEmailAlertHour(emailAlertHour);
+    	userToUpdate.setEmailAlertDay(emailAlertDay);
     	userToUpdate.setReady(true);
     	return "redirect:/user/users/";
     }
