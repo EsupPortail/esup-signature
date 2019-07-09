@@ -163,15 +163,16 @@ public class WsController {
 			SignRequest signRequest = signRequestRepository.findByName(name).get(0);
 			if(signRequest != null) {
 				Document document = signRequestService.getLastSignedDocument(signRequest);
-				if(document != null) {
-					try {
-						response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
-						response.setContentType(document.getContentType());
-						IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
-						return new ResponseEntity<>(HttpStatus.OK);
-					} catch (Exception e) {
-						logger.error("get file error", e);
-					}
+				if(document == null) {
+					document = signRequest.getOriginalDocuments().get(0);
+				}
+				try {
+					response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+					response.setContentType(document.getContentType());
+					IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+					return new ResponseEntity<>(HttpStatus.OK);
+				} catch (Exception e) {
+					logger.error("get file error", e);
 				}
 			} else {
 				logger.warn("no signed version of " + name);
