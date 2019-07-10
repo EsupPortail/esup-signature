@@ -24,25 +24,22 @@
 					</div>
 				</div>
 
-				<div class="mr-2 alert alert-secondary float-left" style="height: 100px;">
-				<div class="custom-control custom-switch">
-					<label class="switch">
-					<input onclick="toggleZoom();" checked="checked" type="checkbox" name="zoom" id="_zoom" /> <span class="slider round"> <!--  -->
-					</span>
-					</label>
-					<br/>
-					<label class="control-label" for="customSwitches">Zoom</label>
-				</div>
+				<div class="alert alert-secondary mr-2 float-left" style="height: 100px;">
+						<label class="switch">
+						<input onclick="toggleZoom();" checked="checked" type="checkbox" name="zoom" id="_zoom" /> <span class="slider round"> <!--  -->
+						</span>
+						</label>
+						<br/>
+						<label class="control-label" for="customSwitches">Zoom</label>
+
 				</div>
 
-				<div class="mr-2 alert alert-secondary float-left" style="height: 100px;">
-				<div class="custom-control custom-switch">
+				<div class="alert alert-secondary mr-2 float-left" style="height: 100px;">
 					<label class="switch"> <input onclick="activeDate();" type="checkbox" id="_activeDate" /> <span class="slider round"> <!--  -->
 					</span>
 					</label>
 					<br/>
 					<label class="control-label" for="customSwitches">Afficher la date</label>
-				</div>
 				</div>
 							
 				<div th:if="${imagePagesSize > 1}" class="mr-2 alert alert-secondary float-left" style="height: 100px;">
@@ -59,11 +56,11 @@
 						</li>
 					</ul>Navigation
 				</div>
-				<button th:if="${signRequest.signRequestParams.signType.name() == 'nexuSign'}" type="button"  data-toggle="modal" data-target="#signModal"  class="mr-2 btn btn-success float-left" style="height: 100px;">
+				<button class="mr-2 btn btn-success float-left"  th:if="${signRequest.signRequestParams.signType.name() == 'nexuSign'}" type="button"  data-toggle="modal" data-target="#signModal" style="height: 100px;">
 					<i class="fas fa-signature fa-2x"></i><br/>Valider la signature
 				</button>
 				
-				<button th:unless="${signRequest.signRequestParams.signType.name() == 'nexuSign'}" type="button" onclick="document.getElementById('signForm').submit();"  class="mr-2 btn btn-success float-left" style="height: 100px;">
+				<button class="mr-2 btn btn-success float-left" th:unless="${signRequest.signRequestParams.signType.name() == 'nexuSign'}" type="button" onclick="document.getElementById('signForm').submit();"  style="height: 100px;">
 					<i class="fas fa-signature fa-2x"></i><br/>Valider la signature
 				</button>
 				
@@ -87,7 +84,7 @@
 			<div th:if="${documentType == 'pdf'}">
 				<div class="row">
 					<div class="col-lg-12">
-						<div class="d-flex justify-content-center">
+						<div class="">
 							<div id="pointer_div" onmousedown="savePosition();" onmouseout="resetPosition();" onmousemove="pointIt(event);" th:style="'background-size: ' + ${pdfWidth * 2} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/' + ${signRequest.signRequestParams.signPageNumber -1} + '\');width:' + ${pdfWidth * 2} + 'px;height:' + ${pdfHeight * 2} + 'px;border:1px solid #CCC;pointer-events: none;'">
 								<th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.signRequestParams.newPageType.name() == 'none' && signRequest.signRequestParams.signType.name() != 'visa'}">
 									<div onclick="dragSignature();" onmouseover="animBorder();" id="cross" th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth * 2} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth * 2} + 'px; height: ' + ${signHeight * 2} + 'px; line-height: ' + ${signHeight * 2} + 'px; text-align: center; left: ' + ${signRequest.signRequestParams.XPos * 2} + 'px;top: ' + ${signRequest.signRequestParams.YPos * 2} + 'px;position:relative;pointer-events: auto;cursor: move;'">

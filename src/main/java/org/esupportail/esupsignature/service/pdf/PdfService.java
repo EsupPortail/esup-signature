@@ -322,8 +322,7 @@ public class PdfService {
 		pdDocument.setVersion(1.5f);
 		
 		PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
-		System.err.println(cat.getCOSObject().entrySet());
-		
+	
 		
 		PDAcroForm pdAcroForm = cat.getAcroForm();
 		if(pdAcroForm != null) {
