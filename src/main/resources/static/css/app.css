@@ -55,6 +55,10 @@ code {
 	content: "Parcourir" !important;
 }
 
+.custom-file-input:lang(en) ~ .custom-file-label::after {
+	content: "Parcourir" !important;
+}
+
 .anim-border {
 	border: 2px dotted red; 
 }
