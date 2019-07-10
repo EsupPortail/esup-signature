@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -31,6 +32,7 @@ import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.color.PDOutputIntent;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.graphics.state.PDSoftMask;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
@@ -46,6 +48,7 @@ import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
 import org.apache.xmpbox.XMPMetadata;
+import org.apache.xmpbox.schema.AdobePDFSchema;
 import org.apache.xmpbox.schema.DublinCoreSchema;
 import org.apache.xmpbox.schema.PDFAIdentificationSchema;
 import org.apache.xmpbox.schema.XMPBasicSchema;
@@ -87,7 +90,7 @@ public class PdfService {
 		//TODO add ip ? + date + nom ?
 		SignRequestParams.SignType signType = params.getSignType();
     	PdfParameters pdfParameters = getPdfParameters(toSignFile);
-		toSignFile = formatPdf(toSignFile, params, addPage);
+		toSignFile = formatPdf(toSignFile, params, addPage, user);
 		try {
 			File targetFile =  new File(Files.createTempDir(), toSignFile.getName());
 			PDDocument pdDocument = PDDocument.load(toSignFile);
@@ -120,7 +123,7 @@ public class PdfService {
 				if(addDate) {
 					//TODO add nom prenom ?
 					addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos);
-					topHeight = 20;
+					//topHeight = 20;
 				}
 				signImage = user.getSignImage().getJavaIoFile();
 				int[] size = getSignSize(signImage);
@@ -155,7 +158,7 @@ public class PdfService {
 	}
 	
 	public void addText(PDPageContentStream contentStream, String text, int xPos, int yPos) throws IOException {
-		int fontSize = 12;
+		int fontSize = 8;
 		contentStream.beginText();
 		contentStream.newLineAtOffset(xPos, 830 - yPos);
 		contentStream.setFont(PDType1Font.HELVETICA, fontSize);
@@ -178,22 +181,36 @@ public class PdfService {
 		return new int[]{signWidth, signHeight};
 	}
 	
-	public File formatPdf(File toSignFile, SignRequestParams params, boolean addPage) throws InvalidPasswordException, IOException {
+	public File formatPdf(File toSignFile, SignRequestParams params, boolean addPage, User user) throws InvalidPasswordException, IOException {
+		PDDocumentInformation info = new PDDocumentInformation();
+        info.setTitle(toSignFile.getName());
+        info.setSubject(toSignFile.getName());
+        info.setAuthor(user.getFirstname() + " " + user.getName());
+        info.setCreator(user.getFirstname() + " " + user.getName());
+        info.setProducer("esup-signature");
+        info.setKeywords("PDF, signed");
+        info.setCreationDate(Calendar.getInstance());
+        info.setModificationDate(Calendar.getInstance());
+        info.setTrapped("Unknown");
+        info.setCustomMetadataValue("swag", "yes");
+        
 		PDDocument pdDocument = PDDocument.load(toSignFile);
+		pdDocument.setDocumentInformation(info);
+		
 		if(!SignRequestParams.NewPageType.none.equals(params.getNewPageType()) && addPage) {
     		if(SignRequestParams.NewPageType.onBegin.equals(params.getNewPageType())) {
-    			addNewPage(pdDocument, null, 0);
+    			pdDocument = addNewPage(pdDocument, null, 0);
     			params.setSignPageNumber(1);
     		} else {
-    			addNewPage(pdDocument, null, -1);
-            	params.setSignPageNumber(getPdfParameters(toSignFile).getTotalNumberOfPages());
+    			pdDocument = addNewPage(pdDocument, null, -1);
+    			params.setSignPageNumber(getPdfParameters(toSignFile).getTotalNumberOfPages());
     		}
     	}
         try {
 			useNextSignatureField(pdDocument);
 	        convertToPDFA(pdDocument);
         } catch (Exception e) {
-			logger.error("file read error", e);
+			logger.error("format PDF error", e);
 		}
         pdDocument.setAllSecurityToBeRemoved(true);
         pdDocument.save(toSignFile);
@@ -301,8 +318,12 @@ public class PdfService {
 		PDType0Font.load(pdDocument, fontStreamArial);
 		PDType0Font.load(pdDocument, fontStream);
 		PDType0Font.load(pdDocument, fontStream2);
+
+		pdDocument.setVersion(1.5f);
 		
 		PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
+		System.err.println(cat.getCOSObject().entrySet());
+		
 		
 		PDAcroForm pdAcroForm = cat.getAcroForm();
 		if(pdAcroForm != null) {
@@ -318,9 +339,14 @@ public class PdfService {
 		
         XMPMetadata xmpMetadata = XMPMetadata.createXMPMetadata();
         
+        AdobePDFSchema pdfSchema = xmpMetadata.createAndAddAdobePDFSchema();
+        pdfSchema.setKeywords(info.getKeywords());
+        pdfSchema.setProducer(info.getProducer());
+        
         DublinCoreSchema dublinCoreSchema = xmpMetadata.createAndAddDublinCoreSchema();
         dublinCoreSchema.setTitle(info.getTitle());
-        dublinCoreSchema.setDescription("Test");
+        dublinCoreSchema.setDescription(info.getSubject());
+        dublinCoreSchema.addCreator(info.getCreator());
         
         XMPBasicSchema xmpBasicSchema = xmpMetadata.createAndAddXMPBasicSchema();
         xmpBasicSchema.setCreatorTool(info.getCreator());

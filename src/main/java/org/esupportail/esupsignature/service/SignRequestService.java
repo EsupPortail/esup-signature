@@ -316,7 +316,7 @@ public class SignRequestService {
 				if(signRequest.countSignOk() == 0) {
 					addPage = true;
 				}
-				File toSignFile = pdfService.formatPdf(toSignFiles.get(0), signRequest.getSignRequestParams(), addPage);
+				File toSignFile = pdfService.formatPdf(toSignFiles.get(0), signRequest.getSignRequestParams(), addPage, user);
 				parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), fileService.toMultipartFile(toSignFile, "pdf"), user);
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
 				documentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));

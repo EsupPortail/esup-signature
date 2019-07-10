@@ -5,7 +5,7 @@
 	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
 	<nav class="nav justify-content-between" aria-label="breadcrumb">
 		<ol class="breadcrumb col-11">
-			<li class="breadcrumb-item"><a href="javascript:history.back()">Liste des demandes</a></li>
+			<li class="breadcrumb-item"><a href="/user/signrequests">Liste des demandes</a></li>
 			<li class="breadcrumb-item active" aria-current="page">Demande
 				de signature : <span th:text="${signRequest.name}"></span>
 			</li>
@@ -812,11 +812,11 @@ $(window).on('load',function(){
         [/]
     	uploadUrl: "/user/signrequests/add-doc/[[${id}]]",
     	uploadAsync: false,
-    	[# th:if="${signRequest.signRequestParams.signTypeLabel == 'pdfImageStamp' || signRequest.signRequestParams.signTypeLabel == 'visa'}"]
+    	[# th:if="${signRequest.signRequestParams.signType.name() == 'pdfImageStamp' || signRequest.signRequestParams.signType.name() == 'visa'}"]
         maxFileCount: 1,
         validateInitialCount: true,
 		[/]
-    	[# th:unless="${signRequest.signRequestParams.signTypeLabel == 'pdfImageStamp' || signRequest.signRequestParams.signTypeLabel == 'visa'}"]
+    	[# th:unless="${signRequest.signRequestParams.signType.name() == 'pdfImageStamp' || signRequest.signRequestParams.signType.name() == 'visa'}"]
     	overwriteInitial: false,
     	[/]
         theme: 'explorer-fas',

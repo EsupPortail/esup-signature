@@ -16,6 +16,7 @@
 	</div>
 	<div th:if="${signable == 'ok'}">
 		<form id="signForm" th:action="'/user/signrequests/sign/' + ${signRequest.id}" method="post">
+							<input id="addDate" type="hidden" name="addDate" value="false">
 			<div th:if="${documentType == 'pdf'}">
 				<div class="row">
 					<div class="col-lg-12">
@@ -27,7 +28,7 @@
 								<dl class="display-group border-bottom m-0">
 									<dt class="col-lg-5">Afficher la date</dt>
 									<dd>
-										<label class="switch"> <input onclick="activeDate();" type="checkbox" name="addDate" id="_activeDate" /> <span class="slider round">
+										<label class="switch"> <input onclick="activeDate();" type="checkbox" id="_activeDate" /> <span class="slider round">
 												<!--  -->
 										</span>
 										</label>

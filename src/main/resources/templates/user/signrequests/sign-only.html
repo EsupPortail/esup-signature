@@ -37,7 +37,7 @@
 
 				<div class="mr-2 alert alert-secondary float-left" style="height: 100px;">
 				<div class="custom-control custom-switch">
-					<label class="switch"> <input onclick="activeDate();" type="checkbox" name="addDate" id="_activeDate" /> <span class="slider round"> <!--  -->
+					<label class="switch"> <input onclick="activeDate();" type="checkbox" id="_activeDate" /> <span class="slider round"> <!--  -->
 					</span>
 					</label>
 					<br/>
@@ -82,6 +82,7 @@
 	<div th:if="${signable == 'ok'}">
 		<form id="signForm" th:action="'/user/signrequests/sign/' + ${signRequest.id}" method="post">
 			<input type="hidden" name="signonly" value="true">
+			<input id="addDate" type="hidden" name="addDate" value="false">
 			<input type="hidden" name="referer" th:value="${referer}">
 			<div th:if="${documentType == 'pdf'}">
 				<div class="row">

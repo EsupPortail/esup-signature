@@ -106,7 +106,7 @@ public class NexuProcessController {
     					addPage = true;
     				}
         			try {
-						toSignFile = pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage);
+						toSignFile = pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage, user);
 					} catch (IOException e) {
 						logger.error("error on format pdf", e);
 					}
