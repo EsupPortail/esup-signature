@@ -94,7 +94,7 @@
 			<dd th:text="#{'user.emailAlertFrequency.' + ${user.emailAlertFrequency}}"></dd>
 		</dl>
 
-		<th:block th:switch="${user.emailAlertFrequency.name()}">
+		<th:block th:switch="${user.emailAlertFrequency}">
 			<div th:case="'daily'">
 				<dl class="row border-bottom m-0">
 					<dt class="col-lg-5">Heure dans la journée</dt>

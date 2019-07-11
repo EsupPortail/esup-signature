@@ -5,6 +5,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 
-import org.apache.fontbox.ttf.TrueTypeFont;
+import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -29,10 +30,13 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
 import org.apache.pdfbox.pdmodel.graphics.color.PDOutputIntent;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
@@ -67,6 +71,13 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import com.google.common.io.Files;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfAConformanceLevel;
+import com.itextpdf.text.pdf.PdfAWriter;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfImportedPage;
+import com.itextpdf.text.pdf.PdfReader;
 
 @Service
 public class PdfService {
@@ -317,22 +328,49 @@ public class PdfService {
 	}
 	
 	private PDDocument convertToPDFA(PDDocument pdDocument) throws Exception {
-		
 		//TODO repair convert...
-		PDFont font = PDTrueTypeFont.loadTTF(pdDocument, new ClassPathResource("Helvetica.ttf").getFile());
-		PDFont font2 = PDTrueTypeFont.loadTTF(pdDocument, new ClassPathResource("Helvetica-Bold.ttf").getFile());
-		PDType0Font.load(pdDocument, new ClassPathResource("Helvetica.ttf").getFile());
-		PDType0Font.load(pdDocument, new ClassPathResource("Helvetica-Bold.ttf").getFile());
+		//PDType0Font font = PDType0Font.load(pdDocument, new ClassPathResource("Helvetica.ttf").getInputStream());
+		PDStream pdStream  = new PDStream(pdDocument);
+
+		PDType0Font font2 = PDType0Font.load(pdDocument, new ClassPathResource("Helvetica-Bold.ttf").getInputStream());
+		
+		COSBase encoding = pdDocument.getDocumentCatalog().getCOSObject().getDictionaryObject(COSName.ENCODING);
+		PDFont font = new PDType1Font(pdDocument, new ClassPathResource("Helvetica.pfb").getInputStream(), Encoding.getInstance((COSName) encoding));
+        System.err.println(font.getName());
+        System.err.println(font.isEmbedded());
+        
+		for (int i = 0; i < pdDocument.getNumberOfPages(); ++i)
+		{
+		    PDPage page = pdDocument.getPage(i);
+		    PDResources pdResources = page.getResources();
+		    for (COSName fontName : pdResources.getFontNames())
+		    {
+		    	System.err.println(fontName);
+		        PDFont fonttest = pdResources.getFont(fontName);
+		        System.err.println(fonttest.getName());
+		        System.err.println(fonttest.getType());
+		        System.err.println(fonttest.getSubType());
+		        System.err.println(fonttest.isEmbedded());
+
+		        pdResources.put(fontName, font2);
+
+		        fonttest = pdResources.getFont(fontName);
+		        System.err.println(fonttest.getName());
+		        System.err.println(fonttest.getType());
+		        System.err.println(fonttest.getSubType());
+		        System.err.println(fonttest.isEmbedded());
+		        System.err.println("----------------------------------------------------");
+
+		    }
+		}
 		
 		PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
 		
 		PDAcroForm pdAcroForm = cat.getAcroForm();
 		if(pdAcroForm != null) {
-			PDResources pdResources = new PDResources();
-			pdAcroForm.setDefaultResources(pdResources);
-		    List<PDField> fields = new ArrayList<>(pdAcroForm.getFields());
+ 		    List<PDField> fields = new ArrayList<>(pdAcroForm.getFields());
 		    //si plus de champ signature vide on applati
-		    if(processFields(fields, pdResources, font)) {
+		    if(processFields(fields, pdAcroForm.getDefaultResources(), font)) {
 		    	pdAcroForm.flatten();
 		    }
 		}
@@ -383,7 +421,7 @@ public class PdfService {
         intent.setOutputConditionIdentifier("sRGB IEC61966-2.1");
         intent.setRegistryName("http://www.color.org");
         cat.addOutputIntent(intent);
-        
+
         return pdDocument;	
 	}
 	
@@ -487,6 +525,56 @@ public class PdfService {
 		}
         return imagePages;
 	}
+	
+	public static void convert() {
+        System.out.println("PDF to PDF/A");
+        // step 1: creation of a document-object
+        Document document = new Document();
+        PdfReader reader = null;
+        try {
+      
+            // step 2:
+            // we create a writer that listens to the document
+            // and directs a PDF-stream to a file
+          PdfAWriter writer = PdfAWriter.getInstance(document,   new FileOutputStream("C:\\temp\\PDFATest3.pdf"), PdfAConformanceLevel.PDF_A_1B);
+            document.addAuthor("Author");
+            document.addSubject("Subject");
+            document.addLanguage("nl-nl");
+            document.addCreationDate();
+ 
+            writer.setTagged();
+            writer.createXmpMetadata();
+            writer.setCompressionLevel(9);
+            // step 3: we open the document
+            document.open();
+            PdfContentByte cb = writer.getDirectContent(); // Holds the PDF data
+      
+      
+            // step 4:
+      
+            reader = new PdfReader("C:\\temp\\35170_NM3185HU.pdf");
+            PdfImportedPage page;
+            // Get number of pages:
+            int pageCount = reader.getNumberOfPages();
+            for (int i = 0; i < pageCount; i++) {
+                document.newPage();
+                page = writer.getImportedPage(reader, i+1);
+                cb.addTemplate(page, 0, 0);
+            }
+      
+        } catch (DocumentException de) {
+      
+            System.err.println(de.getMessage());
+      
+        } catch (IOException ioe) {
+      
+            System.err.println(ioe.getMessage());
+      
+        }
+        // step 5: we close the document
+        document.close();
+      
+    }
 	
 	public PdfParameters getPdfParameters(File pdfFile) {
 		PDDocument pdDocument = null;
