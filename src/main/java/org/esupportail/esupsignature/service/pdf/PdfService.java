@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 
+import org.apache.fontbox.ttf.TrueTypeFont;
+import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -28,11 +30,11 @@ import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.color.PDOutputIntent;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.pdmodel.graphics.state.PDSoftMask;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
@@ -94,6 +96,10 @@ public class PdfService {
 		try {
 			File targetFile =  new File(Files.createTempDir(), toSignFile.getName());
 			PDDocument pdDocument = PDDocument.load(toSignFile);
+			
+			InputStream fontStream = new ClassPathResource("Helvetica.ttf").getInputStream();
+			PDFont font = PDTrueTypeFont.loadTTF(pdDocument, fontStream);
+			
 	        PDPage pdPage = pdDocument.getPage(params.getSignPageNumber() - 1);
 	        
 			PDImageXObject pdImage;
@@ -110,9 +116,9 @@ public class PdfService {
 			if(signType.equals(SignType.visa)) {
 				try {
 					//signImage = fileService.stringToImageFile("Visé par\n " + getInitials(user.getFirstname() + " " + user.getName()), "png");
-					addText(contentStream, "Visé par " + user.getFirstname() + " " + user.getName(), xPos, yPos);
+					addText(contentStream, "Visé par " + user.getFirstname() + " " + user.getName(), xPos, yPos, font);
 					if(addDate) {
-						addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos + 20);
+						addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos + 20, font);
 					}
 				} catch (IOException e) {
 					logger.error(e.getMessage(), e);
@@ -122,7 +128,7 @@ public class PdfService {
 				int topHeight = 0;
 				if(addDate) {
 					//TODO add nom prenom ?
-					addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos);
+					addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos, font);
 					//topHeight = 20;
 				}
 				signImage = user.getSignImage().getJavaIoFile();
@@ -157,11 +163,11 @@ public class PdfService {
 		return null;
 	}
 	
-	public void addText(PDPageContentStream contentStream, String text, int xPos, int yPos) throws IOException {
+	public void addText(PDPageContentStream contentStream, String text, int xPos, int yPos, PDFont font) throws IOException {
 		int fontSize = 8;
 		contentStream.beginText();
 		contentStream.newLineAtOffset(xPos, 830 - yPos);
-		contentStream.setFont(PDType1Font.HELVETICA, fontSize);
+		contentStream.setFont(font, fontSize);
 		contentStream.showText(text);
 		contentStream.endText();
 	}
@@ -196,7 +202,8 @@ public class PdfService {
         
 		PDDocument pdDocument = PDDocument.load(toSignFile);
 		pdDocument.setDocumentInformation(info);
-		
+        pdDocument.setAllSecurityToBeRemoved(true);
+        
 		if(!SignRequestParams.NewPageType.none.equals(params.getNewPageType()) && addPage) {
     		if(SignRequestParams.NewPageType.onBegin.equals(params.getNewPageType())) {
     			pdDocument = addNewPage(pdDocument, null, 0);
@@ -211,8 +218,9 @@ public class PdfService {
 	        convertToPDFA(pdDocument);
         } catch (Exception e) {
 			logger.error("format PDF error", e);
+			return null;
 		}
-        pdDocument.setAllSecurityToBeRemoved(true);
+       
         pdDocument.save(toSignFile);
         pdDocument.close();
     	return toSignFile;
@@ -311,18 +319,12 @@ public class PdfService {
 	private PDDocument convertToPDFA(PDDocument pdDocument) throws Exception {
 		
 		//TODO repair convert...
-		
-		InputStream fontStreamArial = new ClassPathResource("Arial.ttf").getInputStream();
-		InputStream fontStream = new ClassPathResource("Helvetica.ttf").getInputStream();
-		InputStream fontStream2 = new ClassPathResource("Helvetica-Bold.ttf").getInputStream();
-		PDType0Font.load(pdDocument, fontStreamArial);
-		PDType0Font.load(pdDocument, fontStream);
-		PDType0Font.load(pdDocument, fontStream2);
-
-		pdDocument.setVersion(1.5f);
+		PDFont font = PDTrueTypeFont.loadTTF(pdDocument, new ClassPathResource("Helvetica.ttf").getFile());
+		PDFont font2 = PDTrueTypeFont.loadTTF(pdDocument, new ClassPathResource("Helvetica-Bold.ttf").getFile());
+		PDType0Font.load(pdDocument, new ClassPathResource("Helvetica.ttf").getFile());
+		PDType0Font.load(pdDocument, new ClassPathResource("Helvetica-Bold.ttf").getFile());
 		
 		PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
-	
 		
 		PDAcroForm pdAcroForm = cat.getAcroForm();
 		if(pdAcroForm != null) {
@@ -330,10 +332,18 @@ public class PdfService {
 			pdAcroForm.setDefaultResources(pdResources);
 		    List<PDField> fields = new ArrayList<>(pdAcroForm.getFields());
 		    //si plus de champ signature vide on applati
-		    if(processFields(fields, pdResources)) {
+		    if(processFields(fields, pdResources, font)) {
 		    	pdAcroForm.flatten();
 		    }
 		}
+
+		cat.getCOSObject().removeItem(COSName.D);
+		COSDictionary trailer = new COSDictionary();
+		pdDocument.getDocument().setTrailer(trailer);
+		trailer.setItem(COSName.ROOT, pdDocument.getDocumentCatalog());
+		cat.getCOSObject().setName(COSName.SMASK, "None");
+		cat.getCOSObject().setName(COSName.SUBTYPE, "pdf");
+		
 		PDDocumentInformation info = pdDocument.getDocumentInformation();
 		
         XMPMetadata xmpMetadata = XMPMetadata.createXMPMetadata();
@@ -352,19 +362,19 @@ public class PdfService {
         xmpBasicSchema.setCreateDate(info.getCreationDate());
         xmpBasicSchema.setModifyDate(info.getModificationDate());
         
-        PDFAIdentificationSchema pdfaid = new PDFAIdentificationSchema(xmpMetadata);
+        PDFAIdentificationSchema pdfaid = xmpMetadata.createAndAddPFAIdentificationSchema();
     	pdfaid.setConformance("B");
         pdfaid.setPart(1);
         pdfaid.setAboutAsSimple("");
-        xmpMetadata.addSchema(pdfaid);
         
         XmpSerializer serializer = new XmpSerializer();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         serializer.serialize(xmpMetadata, baos, false);
     
         PDMetadata metadata = new PDMetadata(pdDocument);
-        metadata.importXMPMetadata(baos.toByteArray());
         cat.setMetadata(metadata);
+        
+        metadata.importXMPMetadata(baos.toByteArray());
 
         InputStream colorProfile = PdfService.class.getResourceAsStream("/sRGB.icc");
         PDOutputIntent intent = new PDOutputIntent(pdDocument, colorProfile);
@@ -373,11 +383,12 @@ public class PdfService {
         intent.setOutputConditionIdentifier("sRGB IEC61966-2.1");
         intent.setRegistryName("http://www.color.org");
         cat.addOutputIntent(intent);
-        		
+        
         return pdDocument;	
 	}
 	
-	private boolean processFields(List<PDField> fields, PDResources resources) {
+	private boolean processFields(List<PDField> fields, PDResources resources, PDFont font) {
+
 		boolean noSignFieldEmpty = true; 
 		for(PDField f : fields) {
 			logger.debug("process :" + f.getFullyQualifiedName() + " : " + f.getFieldType());
@@ -408,7 +419,7 @@ public class PdfService {
 	            if (e.getMessage().matches("Could not find font: /.*")) {
 	                String fontName = e.getMessage().replaceAll("^[^/]*/", "");
 	                System.out.println("Adding fallback font for: " + fontName);
-	                resources.put(COSName.getPDFName(fontName), PDType1Font.HELVETICA);
+	                resources.put(COSName.getPDFName(fontName), font);
 	                try {
 	                    f.setValue(value);
 	                } catch (IOException e1) {
@@ -419,10 +430,10 @@ public class PdfService {
 	            }
 	        }
 	        if (f instanceof PDNonTerminalField) {
-	            processFields(((PDNonTerminalField) f).getChildren(), resources);
+	            processFields(((PDNonTerminalField) f).getChildren(), resources, font);
 	        }
 	    }
-		return noSignFieldEmpty;
+		return true;
 	}
 	
 	public int[] getSignFieldCoord(File pdfFile) {

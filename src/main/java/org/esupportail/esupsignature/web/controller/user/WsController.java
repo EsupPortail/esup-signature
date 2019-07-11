@@ -188,7 +188,7 @@ public class WsController {
 	@RequestMapping(value = "/check-sign-request", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public JsonSignInfoMessage checkSignRequest(@RequestParam String signBookName, @RequestParam String fileToken, HttpServletResponse response, Model model) throws JsonProcessingException {
 		try {
-			if (signBookRepository.countByName(signBookName) > 0) {
+			if (signBookRepository.countByName(signBookName) > 0 && signRequestRepository.countByName(fileToken) > 0) {
 				SignRequest signRequest = signRequestRepository.findByName(fileToken).get(0);
 				JsonSignInfoMessage jsonSignInfoMessage = new JsonSignInfoMessage();
 				jsonSignInfoMessage.setStatus(signRequest.getStatus().toString());

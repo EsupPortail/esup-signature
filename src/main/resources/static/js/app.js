@@ -333,6 +333,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 		});
 	
+		$('.vanilla-rotate').on('click', function(ev) {
+            vanillaCrop.rotate(parseInt($(this).data('deg')));
+        });
+		
 		document.getElementById('vanilla-crop').addEventListener('update', function(ev) {
 			var result = vanillaCrop.result('base64');
 			result.then(saveVanilla);
@@ -353,9 +357,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				var reader = new FileReader();
 
 				reader.onload = function(e) {
-					document
-							.getElementById('vanilla-crop').classList
-							.add('good');
+					document.getElementById('vanilla-crop').classList.add('good');
 					vanillaCrop.bind({
 						url : e.target.result,
 						orientation : 1

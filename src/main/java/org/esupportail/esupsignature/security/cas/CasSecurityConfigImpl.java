@@ -75,7 +75,7 @@ public class CasSecurityConfigImpl implements SecurityConfig {
 	
 
 	public String getName() {
-		return "CAS";
+		return "Compte Université de Rouen Normandie (CAS)";
 	}
 	
 	public String getLoginUrl() {

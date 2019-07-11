@@ -37,7 +37,7 @@ public class OAuthSecurityConfigImpl implements SecurityConfig {
 	private RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
 
 	public String getName() {
-		return "OAuth2";
+		return "France Connect";
 	}
 	
 	public String getLoginUrl() {

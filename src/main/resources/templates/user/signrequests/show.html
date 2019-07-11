@@ -677,15 +677,12 @@
 			</div>
 		</div>
 	</div>
-	<span th:text="${showSignModal}"></span>
 	<script th:if="${showSignModal}" th:inline="javascript">
 
-$(window).on('load',function(){
-    $('#signatureModal').modal('show');
-});
-</script>
-
-
+	$(window).on('load',function(){
+    	$('#signatureModal').modal('show');
+	});
+	</script>
 	<script th:inline="javascript">
 		/*<![CDATA[*/
 	

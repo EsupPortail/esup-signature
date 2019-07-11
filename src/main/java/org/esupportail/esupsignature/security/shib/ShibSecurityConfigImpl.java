@@ -43,7 +43,7 @@ public class ShibSecurityConfigImpl implements SecurityConfig {
 	private ShibAuthenticationSuccessHandler shibAuthenticationSuccessHandler;
 
 	public String getName() {
-		return "Shibboleth";
+		return "Compte d'un autre établissement (Shibboleth)";
 	}
 	
 	public String getLoginUrl() {

@@ -14,6 +14,7 @@ import org.springframework.data.repository.query.Param;
 public interface SignRequestRepository extends CrudRepository<SignRequest, Long>, PagingAndSortingRepository<SignRequest, Long>, SignRequestRepositoryCustom  {
 	Long countById(Long id);
     List<SignRequest> findByName(String title);
+    Long countByName(String title);
     List<SignRequest> findDistinctByStatus(String category);
     Long countByCreateByAndStatus(String createBy, SignRequestStatus status);
     Page<SignRequest> findByCreateBy(String createBy, Pageable pageable);
