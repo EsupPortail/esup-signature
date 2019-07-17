@@ -30,10 +30,16 @@
 					<span id="bar-text">Loading certificates...</span>
 				</div>
 			</div>
-			<div id="error" style="display: none" class="alert alert-danger"
-				role="danger">
-				<strong id="errorText">Oops... an error occurred </strong><span
-					id="errorcontent"></span>
+			<div id="error" style="display: none" class="text-center">
+			<div class="alert alert-danger" role="danger">
+				<strong id="errorText">Une erreur c'est produite lors de la signature</strong>
+				<br>
+				<small>Erreur : <span id="errorcontent"></span></small>
+				</div>
+<br>
+				<a onclick="location.reload();" class="btn btn-danger btnSeccion text-white" id="btnSeccion3">
+				<i class="fas fa-sync-alt fa-2x"></i><br> Relancer
+							</a>
 			</div>
 			<div class="alert alert-success text-center" role="danger"
 				id="success">

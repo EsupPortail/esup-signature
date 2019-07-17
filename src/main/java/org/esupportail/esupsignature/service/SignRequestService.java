@@ -1,10 +1,10 @@
 package org.esupportail.esupsignature.service;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
@@ -364,7 +363,8 @@ public class SignRequestService {
 	
 	public void addSignedFile(SignRequest signRequest, File signedFile, User user) throws EsupSignatureIOException {
 		try {
-			Document document = documentService.createDocument(signedFile, "signed_" + signRequest.getSignRequestParams().getSignType().toString() + "_" + user.getEppn() + "_" + signedFile.getName(), fileService.getContentType(signedFile));
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+			Document document = documentService.createDocument(signedFile, signRequest.getTitle() + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(signedFile), fileService.getContentType(signedFile));
 			signRequest.getSignedDocuments().add(document);
 			document.setParentId(signRequest.getId());
 		} catch (IOException e) {
