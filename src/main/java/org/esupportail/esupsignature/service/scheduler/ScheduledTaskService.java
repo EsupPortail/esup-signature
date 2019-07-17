@@ -34,7 +34,7 @@ public class ScheduledTaskService {
 	@Resource
 	private OJService oJService;
 
-	@Scheduled(fixedRate = 10000)
+	@Scheduled(fixedRate = 100000)
 	@Transactional
 	public void scanAllSignbooksSources() throws EsupStockException {
 		List<SignBook> signBooks = signBookService.getAllSignBooks();
@@ -48,7 +48,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(fixedRate = 10000)
+	@Scheduled(fixedRate = 100000)
 	@Transactional
 	public void scanAllSignbooksTargets() throws EsupSignatureException {
 		logger.info("scan all signbooks target");
@@ -58,7 +58,7 @@ public class ScheduledTaskService {
 		}
 	}
 	
-	@Scheduled(fixedRate = 10000)
+	@Scheduled(fixedRate = 100000)
 	@Transactional
 	public void sendAllEmailAlerts() throws EsupSignatureException {
 		List<User> users = userService.getAllUsers();
@@ -69,7 +69,8 @@ public class ScheduledTaskService {
 			}
 		}
 	}
-	
+						   
+	@Scheduled(initialDelay = 8640000, fixedRate = 8640000)
 	public void refreshOJKeystore() throws MalformedURLException, IOException {
 		oJService.refresh();
 	}

@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.DataToSignParams;
 import org.esupportail.esupsignature.dss.web.model.GetDataToSignResponse;
@@ -151,7 +152,8 @@ public class NexuProcessController {
 			} else {
 				if(signatureDocumentForm.getSignatureForm().equals(SignatureForm.PAdES)) {
 					SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
-					parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), documentForm.getDocumentToSign(), user);
+					PDSignatureField pdSignatureField = pdfService.getPDSignatureFieldName(signRequestService.getLastSignedDocument(signRequest).getJavaIoFile(), signRequest.getNbSign());
+					parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), documentForm.getDocumentToSign(), user, pdSignatureField);
 				} else {
 					parameters = signingService.fillParameters((SignatureDocumentForm) signatureDocumentForm);
 				}

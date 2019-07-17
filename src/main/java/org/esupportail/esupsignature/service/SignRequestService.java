@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
@@ -316,8 +317,15 @@ public class SignRequestService {
 				if(signRequest.countSignOk() == 0) {
 					addPage = true;
 				}
-				File toSignFile = pdfService.formatPdf(toSignFiles.get(0), signRequest.getSignRequestParams(), addPage, user);
-				parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), fileService.toMultipartFile(toSignFile, "pdf"), user);
+				
+				File toSignFile = toSignFiles.get(0);
+				pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage, user);
+				if(signRequest.getNbSign() == 0) {
+					toSignFile = pdfService.writeMetadatas(toSignFile, user);
+				}
+				//toSignFile = pdfService.formatSignFields(toSignFile, getNumberOfSign(signRequest), signRequest.getSignRequestParams());
+				PDSignatureField pdSignatureField = pdfService.getPDSignatureFieldName(toSignFile, signRequest.getNbSign());
+				parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), fileService.toMultipartFile(toSignFile, "pdf"), user, pdSignatureField);
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
 				documentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
 				signatureDocumentForm = documentForm;

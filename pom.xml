@@ -167,6 +167,14 @@
     		<artifactId>freemarker</artifactId>
 		</dependency>
 
+<!-- https://mvnrepository.com/artifact/org.imgscalr/imgscalr-lib -->
+<dependency>
+    <groupId>org.imgscalr</groupId>
+    <artifactId>imgscalr-lib</artifactId>
+    <version>4.2</version>
+</dependency>
+
+
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
@@ -301,19 +309,24 @@
 			<artifactId>thumbnailator</artifactId>
 			<version>0.4.8</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.itextpdf/itextpdf -->
-<dependency>
-    <groupId>com.itextpdf</groupId>
-    <artifactId>itextpdf</artifactId>
-    <version>5.5.13.1</version>
-</dependency>
-		
-		<!-- https://mvnrepository.com/artifact/com.itextpdf/itext-pdfa -->
-<dependency>
-    <groupId>com.itextpdf</groupId>
-    <artifactId>itext-pdfa</artifactId>
-    <version>5.5.13.1</version>
-</dependency>
+
+	<dependency>
+		<groupId>org.ghost4j</groupId>
+		<artifactId>ghost4j</artifactId>
+		<version>1.0.0</version>
+	</dependency>
+	
+	<dependency>
+	    <groupId>org.apache.xmlgraphics</groupId>
+	    <artifactId>xmlgraphics-commons</artifactId>
+	    <version>2.3</version>
+	</dependency>
+	
+	<dependency>
+	    <groupId>net.java.dev.jna</groupId>
+	    <artifactId>jna</artifactId>
+	    <version>4.1.0</version>
+	</dependency>
 		
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>

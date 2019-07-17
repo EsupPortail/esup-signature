@@ -1,5 +1,9 @@
 package org.esupportail.esupsignature.service;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,7 +13,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
 
+import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.esupportail.esupsignature.dss.web.WebAppUtils;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.ExtensionForm;
@@ -19,6 +25,7 @@ import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.imgscalr.Scalr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +54,8 @@ import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters;
+import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureAlignmentHorizontal;
+import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureAlignmentVertical;
 import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureRotation;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
@@ -202,19 +211,68 @@ public class SigningService {
 		return parameters;
 	}
 
-	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user) throws IOException {
+	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user, PDSignatureField pdSignatureField) throws IOException {
 		//TODO get sign field position ?
 		
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		File signImage = user.getSignImage().getJavaIoFile();
+		int[] signSize = pdfService.getSignSize(signImage);
+		
+		int width = (int) pdSignatureField.getWidgets().get(0).getRectangle().getWidth();
+		int height = (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight();
+		Image src = ImageIO.read(signImage);
+		BufferedImage img = ImageIO.read(signImage);
+		/*
+		BufferedImage newImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = newImg.createGraphics();
+		g.setColor(new Color(0, 0, 0, 0));
+		g.fillRect(0, 0, width, height);
+		g.drawImage(src, 0, 0, 0 + width, 0 + height, 0, 0, signSize[0], signSize[1], Color.WHITE, null);
+		g.dispose();
+		
+		BufferedImage dst = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		dst.getGraphics().drawImage(newImg, 0, 0, width, height, null);
+
+		ImageIO.write(dst, "png", signImage);
+		*/
+		/*
+		
+
+		BufferedImage outImage = scaleWithPadding(img, width*4, height*4);
+		ImageIO.write(outImage, "png", signImage);
+		*/
+		System.err.println(img.getWidth());
+		System.err.println(img.getHeight());
+		
+		
+		BufferedImage newImage = Scalr.resize(img, img.getWidth() / 2, img.getHeight() /2, null);
+		/*
+		PDImageXObject pdImage = PDImageXObject.createFromFileByContent(signImage, new PDDocument());
+		Rectangle rect = new Rectangle(width, height);
+		
+		BufferedImage newImage = pdImage.getImage(rect, Integer.MAX_VALUE);
+		*/
+		/*
+		BufferedImage img = ImageIO.read(signImage);
+		
+		BufferedImage newImage = new BufferedImage(width, height, img.getType());
+
+		Graphics2D g = (Graphics2D) newImage.getGraphics();
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+
+		g.drawImage(src, 0, 0, img.getWidth()/2,img.getHeight()/2, null);
+		g.dispose();
+		*/
+		ImageIO.write(newImage, "png", signImage);
+		
 		FileDocument fileDocumentImage = new FileDocument(signImage);
 		fileDocumentImage.setMimeType(MimeType.PNG);
 		imageParameters.setImage(fileDocumentImage);
-
 		imageParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
 		PdfParameters pdfParameters = pdfService.getPdfParameters(fileService.multipartPdfToFile(toSignFile));
-		int[] signSize = pdfService.getSignSize(signImage);
 		if (pdfParameters.getRotation() == 0) {
 			imageParameters.setWidth(signSize[0]);
 			imageParameters.setHeight(signSize[1]);
@@ -226,7 +284,10 @@ public class SigningService {
 			imageParameters.setxAxis(signRequestParams.getXPos() - 50);
 			imageParameters.setyAxis(signRequestParams.getYPos());
 		}
-
+		
+		imageParameters.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.LEFT);
+		imageParameters.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
+		
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		pAdESSignatureParameters.setSignatureImageParameters(imageParameters);
 		//TODO : sign size ?
@@ -234,9 +295,52 @@ public class SigningService {
 		pAdESSignatureParameters.setSignaturePackaging(form.getSignaturePackaging());
 
 		fillParameters(pAdESSignatureParameters, form);
-
+		pAdESSignatureParameters.setSignatureFieldId(signRequestParams.getPdSignatureFieldName());
+		pAdESSignatureParameters.setSignatureName(user.getEppn());
+		
 		return pAdESSignatureParameters;
 	}
+	
+	public static BufferedImage scaleWithPadding(BufferedImage img, int newWidth, int newHeight) {
+        int currentWidth = img.getWidth();
+        int currentHeight = img.getHeight();
+ 
+        int scaledWidth;
+        int scaledHeight;
+        if (currentWidth == 0 || currentHeight == 0
+            || (currentWidth == newWidth && currentHeight == newHeight)) {
+                return img;
+        } else if (currentWidth == currentHeight) {
+                scaledWidth = newWidth;
+                scaledHeight = newHeight;
+        } else if (currentWidth >= currentHeight) {
+                scaledWidth = newWidth;
+                double scale = (double) newWidth / (double) currentWidth;
+                scaledHeight = (int) Math.round(currentHeight * scale);
+        } else {
+                scaledHeight = newHeight;
+                double scale = (double) newHeight / (double) currentHeight;
+                scaledWidth = (int) Math.round(currentWidth * scale);
+        }
+ 
+        int x = (newWidth - scaledWidth) / 2;
+        int y = (newHeight - scaledHeight) / 2;
+ 
+        /*
+         * This is _very_ painful. I've tried a large number of different permutations here trying to
+         * get the white image background to be transparent without success. We've tried different
+         * fills, composite types, image types, etc.. I'm moving on now.
+         */
+        BufferedImage newImg = new BufferedImage(newWidth, newHeight, img.getType());
+        Graphics2D g = newImg.createGraphics();
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, newWidth, newHeight);
+        g.drawImage(img, x, y, x + scaledWidth, y + scaledHeight, 0, 0, currentWidth, currentHeight,
+                    Color.WHITE, null);
+        g.dispose();
+ 
+        return newImg;
+}
 	
 	private void fillParameters(AbstractSignatureParameters parameters, AbstractSignatureForm form) {
 		parameters.setSignatureLevel(form.getSignatureLevel());

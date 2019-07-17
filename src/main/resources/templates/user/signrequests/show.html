@@ -755,7 +755,7 @@
 	function getStep() {
 		console.log("getStep");
 		var xmlHttp = new XMLHttpRequest();
-		xmlHttp.open("GET", "get-step", false);
+		xmlHttp.open("GET", "/user/signrequests/get-step", false);
 		xmlHttp.onreadystatechange = function() {
 			var result = xmlHttp.responseText;
 			if (result == "security_bad_password") {
