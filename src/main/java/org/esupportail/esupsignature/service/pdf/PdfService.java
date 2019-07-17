@@ -5,7 +5,6 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -32,9 +31,8 @@ import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
@@ -108,7 +106,6 @@ public class PdfService {
 			PDImageXObject pdImage;
 					
 			PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
-			contentStream.setStrokingColorSpace(PDColorSpace.create(COSName.DEVICERGB));
 			float height = pdPage.getMediaBox().getHeight();
 			float width = pdPage.getMediaBox().getWidth();
 			
@@ -116,44 +113,44 @@ public class PdfService {
 			int yPos = (int) params.getYPos();
 			//TODO remplace tolocalestring
 			//DateFormat format = new SimpleDateFormat("dd MMM YYYY HH:mm:ss", Locale.FRENCH);
+			File signImage = new File(PdfService.class.getResource("/sceau.png").getFile());
 			if(signType.equals(SignType.visa)) {
 				try {
-					//signImage = fileService.stringToImageFile("Visé par\n " + getInitials(user.getFirstname() + " " + user.getName()), "png");
-					addText(contentStream, "Visé par " + user.getFirstname() + " " + user.getName(), xPos, yPos, null);
+					addText(contentStream, "Visé par " + user.getFirstname() + " " + user.getName(), xPos, yPos, PDType1Font.HELVETICA);
 					if(addDate) {
-						addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos + 20, null);
+						addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos + 20, PDType1Font.HELVETICA);
 					}
 				} catch (IOException e) {
 					logger.error(e.getMessage(), e);
 				}
 			} else {
-				int topHeight = 0;
 				if(addDate) {
 					//TODO add nom prenom ?
-					addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos, null);
+					addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos, PDType1Font.HELVETICA);
 					//topHeight = 20;
 				}
-				File signImage = user.getSignImage().getJavaIoFile();
-				int[] size = getSignSize(signImage);
-				if(pdfParameters.getRotation() == 0) {
-					BufferedImage bufferedImage = ImageIO.read(signImage);
-					AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
-			        tx.translate(0, -bufferedImage.getHeight(null));
-			        AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-			        bufferedImage = op.filter(bufferedImage, null);
-					File flipedSignImage = File.createTempFile("preview", ".png");
-					ImageIO.write(bufferedImage, "png", flipedSignImage);
-					pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
-					contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
-					contentStream.drawImage(pdImage, xPos, yPos + topHeight, size[0], size[1]);
-				} else {
-					AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
-				    contentStream.transform(new Matrix(at));
-				    pdImage = PDImageXObject.createFromFileByContent(signImage, pdDocument);
-				    contentStream.drawImage(pdImage, xPos, yPos + topHeight - 37 , size[0], size[1]);
-				}
+				signImage = user.getSignImage().getJavaIoFile();
 			}
-
+			int topHeight = 0;
+			int[] size = getSignSize(signImage);
+			if(pdfParameters.getRotation() == 0) {
+				BufferedImage bufferedImage = ImageIO.read(signImage);
+				AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+		        tx.translate(0, -bufferedImage.getHeight(null));
+		        AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+		        bufferedImage = op.filter(bufferedImage, null);
+				File flipedSignImage = File.createTempFile("preview", ".png");
+				ImageIO.write(bufferedImage, "png", flipedSignImage);
+				pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
+				contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
+				contentStream.drawImage(pdImage, xPos, yPos + topHeight, size[0], size[1]);
+			} else {
+				AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
+			    contentStream.transform(new Matrix(at));
+			    pdImage = PDImageXObject.createFromFileByContent(signImage, pdDocument);
+			    contentStream.drawImage(pdImage, xPos, yPos + topHeight - 37 , size[0], size[1]);
+			}
+			
 			contentStream.close();
 			pdDocument.save(targetFile);
 			pdDocument.close();

@@ -1,44 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="signmodal">
-	<div aria-expanded="true" class="collapse" id="collapseHelp">
-		<div class="alert alert-info">
-			<c:choose>
-				<c:when test="${documentType eq 'pdf' and signRequest.status eq 'pending'}">
-			Pour signer un document, il faut positionner la signature sur le document à l'aide de la souris puis cliquer sur "Signer".
-			</c:when>
-				<c:otherwise>
-			Ajouter des documents à l'aide du module de droite (ne pas oublié de cliquer sur "Transférer"). Lorsque tous les documents sont transférés cliquer sur "Envoyer pour signature"
-		</c:otherwise>
-			</c:choose>
-			<br /> Selon le type de signature, le lancement de l'application NexU ou un mot de passe peut être demandé.
-		</div>
-	</div>
 	<div th:if="${signable == 'ok'}">
 		<form id="signForm" th:action="'/user/signrequests/sign/' + ${signRequest.id}" method="post">
 							<input id="addDate" type="hidden" name="addDate" value="false">
 			<div th:if="${documentType == 'pdf'}">
 				<div class="row">
-					<div class="col-lg-12">
-						<div class="row">
-							<div class="col-lg-4">
-								<input type="button" class="btn btn-dark" id="previous" onclick="previousImage()" value="Précédent" />
-							</div>
-							<div class="col-lg-4 text-center">
-								<dl class="display-group border-bottom m-0">
-									<dt class="col-lg-5">Afficher la date</dt>
-									<dd>
-										<label class="switch"> <input onclick="activeDate();" type="checkbox" id="_activeDate" /> <span class="slider round">
-												<!--  -->
-										</span>
-										</label>
-									</dd>
-								</dl>
-							</div>
-							<div class="col-lg-4">
-								<input type="button" class="btn btn-dark float-right" id="next" onclick="nextImage()" value="Suivant" />
-							</div>
-						</div>
+					<div class="col-lg-1">
+						<input type="button" class="btn btn-dark" id="previous" onclick="previousImage()" value="<<" />
+					</div>
+					<div class="col-lg-10">
 						<div class="d-flex justify-content-center">
 							<div id="pointer_div" onmousedown="savePosition();" onmouseout="resetPosition();" onmousemove="pointIt(event);" th:style="'background-size: ' + ${pdfWidth} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/' + ${signRequest.signRequestParams.signPageNumber -1} + '\');width:' + ${pdfWidth} + 'px;height:' + ${pdfHeight} + 'px;border:1px solid #CCC;pointer-events: none;'">
 								<th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.signRequestParams.newPageType.name() == 'none' && signRequest.signRequestParams.signType.name() != 'visa'}">
@@ -46,8 +17,18 @@
 										<div id="borders" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
 									</div>
 								</th:block>
+								<th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.signRequestParams.newPageType.name() == 'none' && signRequest.signRequestParams.signType.name() == 'visa'}">
+									<div onclick="dragSignature();" onmouseover="animBorder();" id="cross" th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'/images/sceau.png\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center; left: ' + ${signRequest.signRequestParams.XPos} + 'px;top: ' + ${signRequest.signRequestParams.YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
+										<div id="borders" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'">
+											<span style="font-size: 8px;" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span> 
+										</div>
+									</div>
+								</th:block>
 							</div>
 						</div>
+					</div>
+					<div class="col-lg-1">
+						<input type="button" class="btn btn-dark float-right" id="next" onclick="nextImage()" value=">>" />
 					</div>
 					<script th:inline="javascript">
 					/*<![CDATA[*/
@@ -70,6 +51,16 @@
 					</div>
 				</div>
 			</div>
+			<dl class="display-group border-bottom m-0">
+				<dt class="col-lg-5">Afficher la date</dt>
+				<dd>
+					<label class="switch"> <input onclick="activeDate();" type="checkbox" id="_activeDate" /> <span class="slider round">
+							<!--  -->
+					</span>
+					</label>
+				</dd>
+			</dl>
+
 			<dl class="display-group border-bottom m-0">
 				<dt class="col-lg-5">Commentaire</dt>
 				<dd>

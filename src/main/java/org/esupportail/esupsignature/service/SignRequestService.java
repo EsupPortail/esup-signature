@@ -238,7 +238,11 @@ public class SignRequestService {
 		SignType signType = signRequest.getSignRequestParams().getSignType();		
 		if (signType.equals(SignRequestParams.SignType.pdfImageStamp) || signType.equals(SignType.visa)) {
 			File toSignFile = toSignDocuments.get(0).getJavaIoFile();
-			signedFile = pdfService.stampImage(toSignFile, signRequest.getSignRequestParams(), user, addPage, addDate);
+			if (toSignDocuments.size() == 1 && fileService.getContentType(toSignDocuments.get(0).getJavaIoFile()).equals("application/pdf")) {
+				signedFile = pdfService.stampImage(toSignFile, signRequest.getSignRequestParams(), user, addPage, addDate);
+			} else {
+				signedFile = toSignFile;
+			}
 		} else {
 			if (toSignDocuments.size() == 1 && fileService.getContentType(toSignDocuments.get(0).getJavaIoFile()).equals("application/pdf")) {
 				signedFile = certSign(signRequest, user, password, SignatureForm.PAdES);
@@ -364,7 +368,7 @@ public class SignRequestService {
 	public void addSignedFile(SignRequest signRequest, File signedFile, User user) throws EsupSignatureIOException {
 		try {
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-			Document document = documentService.createDocument(signedFile, signRequest.getTitle() + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(signedFile), fileService.getContentType(signedFile));
+			Document document = documentService.createDocument(signedFile, signRequest.getTitle() + "_" + signRequest.getSignRequestParams().getSignType() + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(signedFile), fileService.getContentType(signedFile));
 			signRequest.getSignedDocuments().add(document);
 			document.setParentId(signRequest.getId());
 		} catch (IOException e) {

@@ -71,20 +71,22 @@ function activeDate() {
 	var addDate = document.getElementById("addDate");
 	var cross = document.getElementById("cross");
 	var borders = document.getElementById("borders");
+	var textDate;
 
 	if(activeDateCheck.checked) {
 		cross.style.width = 200;
 		cross.style.height = cross.offsetHeight + 20;
 		borders.style.width = 200;
 		borders.style.height = borders.offsetHeight + 20;
-		borders.innerHTML = "<span id='textDate' class='align-top' style='font-size:" + 8 * zoom + "px;'>Le XX/XX/XXXX XX:XX</span>";
+		borders.insertAdjacentHTML("beforeend", "<span id='textDate' class='align-top' style='font-size:" + 8 * zoom + "px;'>Le XX/XX/XXXX XX:XX</span>");
 		addDate.value = true;
 	} else {
 		cross.style.width = 100;
 		cross.style.height = cross.offsetHeight - 20;
 		borders.style.width = 100;
 		borders.style.height = borders.offsetHeight - 20;
-		borders.innerHTML = "";
+		textDate = document.getElementById("textDate");
+		textDate.remove();
 		addDate.value = false;
 	}
 }
