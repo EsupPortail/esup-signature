@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -40,6 +41,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureNexuException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
@@ -89,6 +91,9 @@ public class SignRequestService {
 	private DocumentService documentService;
 
 	@Autowired
+	private SignRequestParamsRepository signRequestParamsRepository; 
+	
+	@Autowired
 	private SignBookRepository signBookRepository;
 	
 	@Resource
@@ -100,6 +105,9 @@ public class SignRequestService {
 	@Resource
 	private FileService fileService;
 
+	@Resource
+	private BigFileService bigFileService;
+	
 	@Autowired
 	private UserRepository userRepository;
 	
@@ -185,7 +193,7 @@ public class SignRequestService {
 		signRequest.setCreateBy(user.getEppn());
 		signRequest.setCreateDate(new Date());
 		signRequest.setStatus(SignRequestStatus.draft);
-		signRequest.setSignRequestParams(signRequestParams);
+		signRequest.getSignRequestParamsList().add(signRequestParams);
 		signRequest.setOriginalDocuments(documents);
 		signRequestRepository.save(signRequest);
 		for(Document document : documents) {
@@ -321,11 +329,9 @@ public class SignRequestService {
 				File toSignFile = toSignFiles.get(0);
 				pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage, user);
 				if(signRequest.getNbSign() == 0) {
-					toSignFile = pdfService.writeMetadatas(toSignFile, user);
+					toSignFile = pdfService.convertGS(pdfService.writeMetadatas(toSignFile, user));
 				}
-				//toSignFile = pdfService.formatSignFields(toSignFile, getNumberOfSign(signRequest), signRequest.getSignRequestParams());
-				PDSignatureField pdSignatureField = pdfService.getPDSignatureFieldName(toSignFile, signRequest.getNbSign());
-				parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), fileService.toMultipartFile(toSignFile, "pdf"), user, pdSignatureField);
+				parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), fileService.toMultipartFile(toSignFile, "pdf"), user);
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
 				documentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
 				signatureDocumentForm = documentForm;
@@ -401,6 +407,30 @@ public class SignRequestService {
 			for(String emailRecipient : signBook.getRecipientEmails()) {
 				User recipient = userRepository.findByEmail(emailRecipient).get(0);
 				//TODO : add force email alert
+
+				if(signRequest.getNbSign() == 0 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
+					//TODO scan sign fields
+					int numSign = 0;
+					File toSignFile = signRequest.getOriginalDocuments().get(0).getJavaIoFile();
+					while(true) {
+						int[] pos = pdfService.getSignFieldCoord(toSignFile, numSign);
+						if(pos == null) {
+							break;
+						}
+						SignRequestParams signRequestParams;
+						if(signRequest.getSignRequestParamsList().size() < numSign + 1) {
+							signRequestParams = getEmptySignRequestParams();
+							signRequest.getSignRequestParamsList().add(signRequestParams);
+						} else {
+							signRequestParams = signRequest.getSignRequestParamsList().get(numSign); 
+						}
+						signRequestParams.setXPos(pos[0]);
+						signRequestParams.setYPos(pos[1]);
+						signRequestParams.setPdSignatureFieldName(pdfService.getPDSignatureFieldName(toSignFile, numSign).getPartialName());
+						signRequestParamsRepository.save(signRequestParams);
+						numSign++;
+					}
+				}
 				if(user.getEmailAlertFrequency() == null|| user.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(user)) {
 					userService.sendEmailAlert(recipient);
 				}
@@ -529,6 +559,7 @@ public class SignRequestService {
 		signRequestParams.setSignPageNumber(1);
 		signRequestParams.setNewPageType(NewPageType.none);
 		signRequestParams.setSignType(SignType.visa);
+		signRequestParamsRepository.save(signRequestParams);
 		return signRequestParams;
 	}
 	

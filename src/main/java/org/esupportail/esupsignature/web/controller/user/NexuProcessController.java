@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.DataToSignParams;
@@ -93,7 +94,7 @@ public class NexuProcessController {
 	private AbstractSignatureParameters parameters;
 	
 	@RequestMapping(value = "/{id}", produces = "text/html")
-	public String showSignatureParameters(@PathVariable("id") Long id, Model model, HttpServletRequest request, RedirectAttributes redirectAttrs) {
+	public String showSignatureParameters(@PathVariable("id") Long id, Model model, HttpServletRequest request, RedirectAttributes redirectAttrs) throws InvalidPasswordException, IOException {
     	User user = userService.getUserFromAuthentication();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
@@ -111,6 +112,10 @@ public class NexuProcessController {
 					} catch (IOException e) {
 						logger.error("error on format pdf", e);
 					}
+        			pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage, user);
+        			if(signRequest.getNbSign() == 0) {
+        				toSignFile = pdfService.convertGS(pdfService.writeMetadatas(toSignFile, user));
+        			}
         			signatureDocumentForm = signingService.getSignatureDocumentForm(Arrays.asList(toSignFile), SignatureForm.PAdES);
         		} else {
         			signatureDocumentForm = signingService.getSignatureDocumentForm(Arrays.asList(toSignFile), defaultSignatureForm);
@@ -152,8 +157,7 @@ public class NexuProcessController {
 			} else {
 				if(signatureDocumentForm.getSignatureForm().equals(SignatureForm.PAdES)) {
 					SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
-					PDSignatureField pdSignatureField = pdfService.getPDSignatureFieldName(signRequestService.getLastSignedDocument(signRequest).getJavaIoFile(), signRequest.getNbSign());
-					parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), documentForm.getDocumentToSign(), user, pdSignatureField);
+					parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), documentForm.getDocumentToSign(), user);
 				} else {
 					parameters = signingService.fillParameters((SignatureDocumentForm) signatureDocumentForm);
 				}

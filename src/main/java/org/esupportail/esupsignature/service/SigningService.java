@@ -58,6 +58,7 @@ import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureAlignmen
 import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureAlignmentVertical;
 import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureRotation;
 import eu.europa.esig.dss.pades.signature.PAdESService;
+import eu.europa.esig.dss.pdf.visible.ImageAndResolution;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
@@ -211,64 +212,15 @@ public class SigningService {
 		return parameters;
 	}
 
-	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user, PDSignatureField pdSignatureField) throws IOException {
+	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user) throws IOException {
 		//TODO get sign field position ?
 		
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		File signImage = user.getSignImage().getJavaIoFile();
 		int[] signSize = pdfService.getSignSize(signImage);
-		
-		int width = (int) pdSignatureField.getWidgets().get(0).getRectangle().getWidth();
-		int height = (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight();
-		Image src = ImageIO.read(signImage);
-		BufferedImage img = ImageIO.read(signImage);
-		/*
-		BufferedImage newImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g = newImg.createGraphics();
-		g.setColor(new Color(0, 0, 0, 0));
-		g.fillRect(0, 0, width, height);
-		g.drawImage(src, 0, 0, 0 + width, 0 + height, 0, 0, signSize[0], signSize[1], Color.WHITE, null);
-		g.dispose();
-		
-		BufferedImage dst = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		dst.getGraphics().drawImage(newImg, 0, 0, width, height, null);
-
-		ImageIO.write(dst, "png", signImage);
-		*/
-		/*
-		
-
-		BufferedImage outImage = scaleWithPadding(img, width*4, height*4);
-		ImageIO.write(outImage, "png", signImage);
-		*/
-		System.err.println(img.getWidth());
-		System.err.println(img.getHeight());
-		
-		
-		BufferedImage newImage = Scalr.resize(img, img.getWidth() / 2, img.getHeight() /2, null);
-		/*
-		PDImageXObject pdImage = PDImageXObject.createFromFileByContent(signImage, new PDDocument());
-		Rectangle rect = new Rectangle(width, height);
-		
-		BufferedImage newImage = pdImage.getImage(rect, Integer.MAX_VALUE);
-		*/
-		/*
-		BufferedImage img = ImageIO.read(signImage);
-		
-		BufferedImage newImage = new BufferedImage(width, height, img.getType());
-
-		Graphics2D g = (Graphics2D) newImage.getGraphics();
-		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-
-		g.drawImage(src, 0, 0, img.getWidth()/2,img.getHeight()/2, null);
-		g.dispose();
-		*/
-		ImageIO.write(newImage, "png", signImage);
-		
 		FileDocument fileDocumentImage = new FileDocument(signImage);
 		fileDocumentImage.setMimeType(MimeType.PNG);
+		
 		imageParameters.setImage(fileDocumentImage);
 		imageParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
@@ -291,11 +243,11 @@ public class SigningService {
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		pAdESSignatureParameters.setSignatureImageParameters(imageParameters);
 		//TODO : sign size ?
-		pAdESSignatureParameters.setSignatureSize(100000);
+		pAdESSignatureParameters.setSignatureSize(65536);
 		pAdESSignatureParameters.setSignaturePackaging(form.getSignaturePackaging());
 
 		fillParameters(pAdESSignatureParameters, form);
-		pAdESSignatureParameters.setSignatureFieldId(signRequestParams.getPdSignatureFieldName());
+		//pAdESSignatureParameters.setSignatureFieldId(signRequestParams.getPdSignatureFieldName());
 		pAdESSignatureParameters.setSignatureName(user.getEppn());
 		
 		return pAdESSignatureParameters;

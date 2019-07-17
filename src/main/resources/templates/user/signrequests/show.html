@@ -55,24 +55,30 @@
 			<div th:if="${signable == 'ok'}">
 				<div th:switch="${signRequest.signRequestParams.signType.name()}">
 					<div th:case="'nexuSign'">
-						<script type="text/javascript"
-							src="/resources/js/jsSignatureLevel.js"></script>
+						<script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
 						<script type="text/javascript" src="/js/nexu-deploy.js"></script>
-						<div id="nexu_missing_alert" style="display: none;"
-							class="alert alert-warning">
-							Contrôle de NexU <a
-								href="https://github.com/nowina-solutions/nexu/releases/">NexU</a>
-							<br /> <a onclick="location.reload();"
-								class="btn btn-warning btnSeccion" id="btnSeccion3"> <i
-								class="fas fa-sync-alt"></i> Actualiser
+						<div id="nexu_missing_alert" style="display: none;">
+						<a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left" id="btnSeccion3"> <i
+								class="fas fa-sync-alt fa-2x"></i><br> Actualiser
 							</a>
+							<div class="alert alert-warning float-left">
+							L'application NexU n'a pas été détectée
+							<br>
+							<small>Merci de lancer l'application sur votre poste. 
+							<a href="https://github.com/nowina-solutions/nexu/releases/">Téléchargement</a>
+								</small>
 						</div>
-						<div id="nexu_ready_alert" style="display: none;"
-							class="alert alert-success">
-							NexU OK <br /> <small>Vous pouvez utiliser une clé
-								materielle ou un keystore</small> <br /> Signature
-							<button type="button" class="btn btn-success" data-toggle="modal"
-								data-target="#signatureModal">Signer</button>
+						</div>
+						<div id="nexu_ready_alert" style="display: none;">
+												<button type="button" class="mr-2 btn btn-success float-left" data-toggle="modal" data-target="#signatureModal">
+							<i class="fas fa-signature fa-2x"></i> <br /> 
+							Signer
+						</button>
+						<div class="alert alert-success float-left">
+							L'application NexU est fonctionnelle <br /> <small>Vous pouvez utiliser une clé
+								materielle ou un keystore</small> 
+						</div>
+
 						</div>
 					</div>
 					<div th:case="*">

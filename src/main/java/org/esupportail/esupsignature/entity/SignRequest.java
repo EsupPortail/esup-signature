@@ -15,7 +15,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -58,8 +58,8 @@ public class SignRequest {
     
     private boolean overloadSignBookParams = false;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    private SignRequestParams signRequestParams = new SignRequestParams();
+    @ManyToMany(fetch = FetchType.LAZY)
+    private List<SignRequestParams> signRequestParamsList = new ArrayList<SignRequestParams>();
     
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;	
@@ -200,14 +200,25 @@ public class SignRequest {
         this.overloadSignBookParams = overloadSignBookParams;
     }
 
+	public List<SignRequestParams> getSignRequestParamsList() {
+        return this.signRequestParamsList;
+    }
+
+	public void setSignRequestParamsList(List<SignRequestParams> signRequestParams) {
+        this.signRequestParamsList = signRequestParams;
+    }
+
 	public SignRequestParams getSignRequestParams() {
-        return this.signRequestParams;
+		if(this.signRequestParamsList.size() < nbSign + 1) {
+			return this.signRequestParamsList.get(0);
+		}
+        return this.signRequestParamsList.get(nbSign);
     }
-
-	public void setSignRequestParams(SignRequestParams signRequestParams) {
-        this.signRequestParams = signRequestParams;
+	
+	public SignRequestParams setSignRequestParams(SignRequestParams signRequestParams) {
+        return this.signRequestParamsList.set(nbSign, signRequestParams);
     }
-
+	
 	public SignRequestStatus getStatus() {
         return this.status;
     }

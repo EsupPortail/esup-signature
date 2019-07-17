@@ -212,9 +212,10 @@ public class SignRequestController {
 			uiModel.addAttribute("signBooks", signBookService.getAllSignBooks());
 			List<SignBook> originalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
 			if(originalSignBooks.size() > 0) {
-				SignBook originalSignBook = originalSignBooks.get(0);
 				if(!signRequest.isOverloadSignBookParams()) {
-					signRequest.setSignRequestParams(signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0).getSignRequestParams().get(0));
+					SignRequestParams signBookParams = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0).getSignRequestParams().get(0);
+					signRequest.getSignRequestParams().setNewPageType(signBookParams.getNewPageType());
+					signRequest.getSignRequestParams().setSignType(signBookParams.getSignType());
 				}
 			}
 			Document toDisplayDocument = null;
@@ -227,12 +228,20 @@ public class SignRequestController {
 					uiModel.addAttribute("pdfWidth", pdfParameters.getWidth());
 					uiModel.addAttribute("pdfHeight", pdfParameters.getHeight());
 					uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+					
+					SignRequestParams s =signRequest.getSignRequestParams(); 
+					
+					/*
 					int[] pos = pdfService.getSignFieldCoord(toDisplayFile, signRequest.getNbSign());
 					if(pos != null) {
+						if(signRequest.getSignRequestParamsList().size() < signRequest.getNbSign() + 1) {
+							signRequest.getSignRequestParamsList().add(signRequestService.getEmptySignRequestParams());
+						}
 						signRequest.getSignRequestParams().setXPos(pos[0]);
 						signRequest.getSignRequestParams().setYPos(pos[1]);
 						signRequest.getSignRequestParams().setPdSignatureFieldName(pdfService.getPDSignatureFieldName(toDisplayFile, signRequest.getNbSign()).getPartialName());
 					}
+					*/
 					if(user.getSignImage() != null) {
 						uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 						int[] size = pdfService.getSignSize(user.getSignImage().getJavaIoFile());
@@ -316,7 +325,9 @@ public class SignRequestController {
 			signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
 			signRequestParams.setSignPageNumber(1);
 			signRequestParamsRepository.save(signRequestParams);
-			signRequest.setSignRequestParams(signRequestParams);
+			signRequest.getSignRequestParamsList().add(signRequestParams);
+		} else {
+			signRequest.getSignRequestParamsList().add(signRequestService.getEmptySignRequestParams());
 		}
 		//TODO si signbook type workflow == 1 seul
 		signRequest = signRequestService.createSignRequest(signRequest, user, signRequestParams);
@@ -401,7 +412,7 @@ public class SignRequestController {
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			if(!signRequest.isOverloadSignBookParams()) {
 				SignBook signBook =  signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0);
-				signRequest.setSignRequestParams(signBook.getSignRequestParams().get(0));
+				//signRequest.setSignRequestParams(signBook.getSignRequestParams().get(0));
 				signRequestRepository.save(signRequest);
 			}
 			if(signPageNumber != null && xPos != null && yPos != null) {

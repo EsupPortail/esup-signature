@@ -39,12 +39,12 @@ public class BigFileService {
 		bigFileRepository.addBinaryFileStream(bigFile, inputStream, length);
 	}
 	
-	public void updateArticle(BigFile bigFile) {
-		// TODO Auto-generated method stub
+	public void updateBigFile(BigFile bigFile) {
+		bigFileRepository.save(bigFile);
 		
 	}
 
-	public void deleteArticle(long id) {
+	public void deleteBigFile(long id) {
 		bigFileRepository.deleteById(id);
 	}
 	

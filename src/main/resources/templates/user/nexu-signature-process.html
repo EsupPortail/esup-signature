@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+	<div id="ribbon" class="card">
+		<div class="card-body">
+			<div class="alert alert-primary float-left">
+				Signature NexU en cours <br> <small>L'application Nexu
+					va s'ouvrir, vous pouvez utiliser un keystore ou une clé materielle<br>
+					Vous devez saisir votre mot de passe plusieurs fois pendant la
+					procédure
+				</small>
+			</div>
+		</div>
+	</div>
+
+	<main role="main" class="container"> <script
+		type="text/javascript"
+		src="https://ajax.microsoft.com/ajax/jquery/jquery-1.11.1.min.js">
+	<!-- -->
+		
+	</script>
+	<div class="card">
+	<div class="card-header">Progression de la procédure de signature</div>
+		<div class="card-body">
+			<div class="progress">
+				<div class="progress-bar progress-bar-striped active"
+					style="width: 10%;" id="bar">
+					<span id="bar-text">Loading certificates...</span>
+				</div>
+			</div>
+			<div id="error" style="display: none" class="alert alert-danger"
+				role="danger">
+				<strong id="errorText">Oops... an error occurred </strong><span
+					id="errorcontent"></span>
+			</div>
+			<div class="alert alert-success text-center" role="danger"
+				id="success">
+				<strong>Signature effectuée</strong> <br /> <a
+					th:href="'/user/signrequests/' + ${signRequestId}"
+					class="btn btn-success btnSeccion" id="btnSeccion3"> Retour
+				</a>
+			</div>
+		</div>
+	</div>
+	</main>
+	<script type="text/javascript" th:src="${nexuUrl} + '/nexu.js'">
+	<!-- -->
+		
+	</script>
+	<script type="text/javascript" src="/js/nexuSignature.js">
+	<!-- -->
+		
+	</script>
+</body>
+</html>

@@ -93,6 +93,8 @@ public class PdfService {
 	@Value("${sign.widthThreshold}")
 	private int signWidthThreshold;
 	
+	private int pdfALevel = 2; 
+	
 	public File stampImage(File toSignFile, SignRequestParams params, User user, boolean addPage, boolean addDate) throws InvalidPasswordException, IOException {
 		//TODO add ip ? + date + nom ?
 		SignRequestParams.SignType signType = params.getSignType();
@@ -234,7 +236,7 @@ public class PdfService {
 	        
 	        PDFAIdentificationSchema pdfaid = xmpMetadata.createAndAddPFAIdentificationSchema();
 	    	pdfaid.setConformance("B");
-	        pdfaid.setPart(1);
+	        pdfaid.setPart(pdfALevel);
 	        pdfaid.setAboutAsSimple("");
 	        
 	        XmpSerializer serializer = new XmpSerializer();
@@ -254,14 +256,14 @@ public class PdfService {
 	
 	public File convertGS(File file) throws IOException {
 		
-    	if(!checkPdfA(file) && !checkSignFieldsEmpty(file)) {
+    	if(!checkPdfA(file)) {
 		    File targetFile =  new File(Files.createTempDir(), file.getName());
 		    
 		    String colorProfile = PdfService.class.getResource("/sRGB.icc").getFile();
 		    Ghostscript gs = Ghostscript.getInstance();
 	
 		    String[] gsArgs = new String[10];
-		    gsArgs[1] = "-dPDFA=1";
+		    gsArgs[1] = "-dPDFA=" + pdfALevel;
 		    gsArgs[2] = "-dBATCH";
 			gsArgs[3] = "-dNOPAUSE";
 			gsArgs[4] = "-dHaveTransparency=false";
