@@ -331,11 +331,13 @@
 			<artifactId>pdfbox-tools</artifactId>
 			<version>${pdfbox.version}</version>
 		</dependency>
+		
 		<dependency>
-			<groupId>org.apache.pdfbox</groupId>
-			<artifactId>preflight</artifactId>
-			<version>${pdfbox.version}</version>
+		  <groupId>org.verapdf</groupId>
+		  <artifactId>validation-model</artifactId>
+		  <version>1.14.7-RC</version>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>xmpbox</artifactId>

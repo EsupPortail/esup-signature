@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -42,11 +43,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
-import org.apache.pdfbox.preflight.Format;
-import org.apache.pdfbox.preflight.PreflightDocument;
-import org.apache.pdfbox.preflight.ValidationResult;
-import org.apache.pdfbox.preflight.ValidationResult.ValidationError;
-import org.apache.pdfbox.preflight.parser.PreflightParser;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
@@ -67,6 +63,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.verapdf.pdfa.Foundries;
+import org.verapdf.pdfa.PDFAParser;
+import org.verapdf.pdfa.PDFAValidator;
+import org.verapdf.pdfa.VeraGreenfieldFoundryProvider;
+import org.verapdf.pdfa.results.TestAssertion;
+import org.verapdf.pdfa.results.ValidationResult;
 
 import com.google.common.io.Files;
 
@@ -254,7 +256,7 @@ public class PdfService {
 	
 	public File convertGS(File file) throws IOException {
 		
-    	if(!checkPdfA(file)) {
+    	if(!isPdfAComplient(file)) {
 		    File targetFile =  new File(Files.createTempDir(), file.getName());
 		    String defFile =  PdfService.class.getResource("/PDFA_def.ps").getFile();
 		    String cmd = pathToGS + "gs -dPDFA=" + pdfALevel + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile=" + targetFile.getAbsolutePath() + " " + defFile + " " + file.getAbsolutePath();
@@ -264,13 +266,9 @@ public class PdfService {
 	    	processBuilder.command("bash", "-c", cmd);
 	    	processBuilder.directory(new File("/tmp"));
 	    	try {
-
 	    		Process process = processBuilder.start();
-
 	    		StringBuilder output = new StringBuilder();
-
 	    		BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
 	    		String line;
 	    		while ((line = reader.readLine()) != null) {
 	    			output.append(line + "\n");
@@ -294,37 +292,40 @@ public class PdfService {
     	}
 	}
 	
-	public boolean checkPdfA(File pdfFile) {
-		logger.info("check pdfa validity");
-		try {
-			PreflightParser parser = new PreflightParser(pdfFile);  
-			parser.parse(Format.PDF_A1B);
-			PreflightDocument document = parser.getPreflightDocument();
-	        document.validate();  
-	        ValidationResult result = document.getResult();  
-		    document.close();
-		    if(result.isValid()) {
-		    	logger.info("the pdf is complient to PDFA");
-		    	XMPMetadata xmpMetadata = result.getXmpMetaData();
-		    	if(xmpMetadata != null) {
-		    		PDFAIdentificationSchema id = xmpMetadata.getPDFIdentificationSchema();
-		    		logger.debug(id.getConformance());
-		    	} else {
-		    		logger.warn("no xmp metadata found ?");
-		    	}
-		    	return true;
-		    } else {
-		    	logger.warn("the pdf is not complient to PDFA");
-		        for(ValidationError v : result.getErrorsList()) {
-		        	logger.debug("pdf validation error " + v.getErrorCode() + " : " + v.getDetails());
-		        }
-		    }
-		} catch (Exception e) {
-			logger.error("check error", e);
+	public boolean isPdfAComplient(File pdfFile) {
+		if("success".equals(checkPDFA(pdfFile).get(0))) {
+			return true;
 		}
 		return false;
 	}
 	
+	public List<String> checkPDFA(File pdfFile) {
+		List<String> result = new ArrayList<String>();
+		try {
+			VeraGreenfieldFoundryProvider.initialise();
+			PDFAParser parser = Foundries.defaultInstance().createParser(new FileInputStream(pdfFile));
+			
+			PDFAValidator validator = Foundries.defaultInstance().createValidator(parser.getFlavour(), false);
+		    ValidationResult validationResult = validator.validate(parser);
+		    if (validationResult.isCompliant()) {
+		    	result.add("success");
+		    	result.add("File is complient with PDF/A-" + validationResult.getPDFAFlavour().getId() + " !");
+		    } else {
+		    	result.add("danger");
+		    	result.add("File is not complient with PDF/A-" + validationResult.getPDFAFlavour().getId() + " !");
+		    	for(TestAssertion test : validationResult.getTestAssertions()) {
+		    		result.add(test.getRuleId().getClause() + " : " + test.getMessage());
+		    	}
+		    	
+		    }
+		} catch (Exception e) {
+			logger.error("check error", e);
+		}
+
+		return result;
+	}
+	
+	@Deprecated
 	private PDDocument useNextSignatureField(PDDocument pdDocument) throws Exception {
 		//on verouille le prochain champ signature (par ordre d'apparition)
         PDDocumentCatalog cat = pdDocument.getDocumentCatalog();

@@ -69,11 +69,11 @@ public class FileService {
 		return file;
 	}
 
-	public File multipartPdfToFile(MultipartFile multiPartFile) throws IOException	{
-		File file = File.createTempFile(multiPartFile.getOriginalFilename(), ".pdf");
+	public File multipartPdfToFile(MultipartFile multipartFile) throws IOException	{
+		File file = File.createTempFile(multipartFile.getOriginalFilename(), ".pdf");
 	    file.createNewFile(); 
 	    FileOutputStream fos = new FileOutputStream(file); 
-	    fos.write(multiPartFile.getBytes());
+	    fos.write(multipartFile.getBytes());
 	    fos.close(); 
 	    return file;
 	}

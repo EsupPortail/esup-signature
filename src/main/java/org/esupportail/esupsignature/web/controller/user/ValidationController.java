@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import java.io.IOException;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -86,7 +88,7 @@ public class ValidationController {
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
-	public String validate(@ModelAttribute("multipartFile") @Valid MultipartFile multipartFile, Model model) {
+	public String validate(@ModelAttribute("multipartFile") @Valid MultipartFile multipartFile, Model model) throws IOException {
 		Reports reports = validationService.validate(multipartFile);
 
 		String xmlSimpleReport = reports.getXmlSimpleReport();
@@ -96,7 +98,8 @@ public class ValidationController {
 		model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
 		model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
 		model.addAttribute("diagnosticTree", reports.getXmlDiagnosticData());
-
+		model.addAttribute("pdfaReport", pdfService.checkPDFA(fileService.multipartPdfToFile(multipartFile)));
+		
 		return "user/validation-result";
 	}
 	
@@ -114,7 +117,8 @@ public class ValidationController {
 		model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
 		model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
 		model.addAttribute("diagnosticTree", reports.getXmlDiagnosticData());
-
+		model.addAttribute("pdfaReport", pdfService.checkPDFA(toValideDocument.getJavaIoFile()));
+		
 		return "user/validation-result";
 	}
 	
