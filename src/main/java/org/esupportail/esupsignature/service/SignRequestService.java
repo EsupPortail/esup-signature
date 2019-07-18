@@ -334,13 +334,14 @@ public class SignRequestService {
 				if(signRequest.getNbSign() == 0) {
 					toSignFile = pdfService.convertGS(pdfService.writeMetadatas(toSignFile, user));
 				}
+				
 				parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), fileService.toMultipartFile(toSignFile, "pdf"), user);
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
 				documentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
 				signatureDocumentForm = documentForm;
 			}
 			step = "Signature du/des documents(s)";
-			
+
 			parameters.setSigningCertificate(certificateToken);
 			parameters.setCertificateChain(certificateTokenChain);
 			parameters.setSignatureLevel(signatureDocumentForm.getSignatureLevel());
@@ -360,6 +361,12 @@ public class SignRequestService {
 		}
 		} catch (EsupSignatureKeystoreException e) {
 			step = "security_bad_password";
+			throw new EsupSignatureKeystoreException(e.getMessage(), e);
+		} catch (EsupSignatureException e) {
+			step = "sign_system_error";
+			throw new EsupSignatureKeystoreException(e.getMessage(), e);
+		} catch (Exception e) {
+			step = "sign_system_error";
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
 		}
 		return null;

@@ -17,6 +17,7 @@ import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ValidationService;
+import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +67,9 @@ public class ValidationController {
 	@Resource
 	private FileService fileService;
 
+	@Resource
+	private PdfService pdfService;
+	
 	@Autowired
 	private SignRequestRepository signRequestRepository;
 	

@@ -606,10 +606,13 @@
 					<div style="display: none;" id="passwordError"
 						class="alert alert-danger" role="alert">Mauvais mot de passe
 					</div>
+					<div style="display: none;" id="signError"
+						class="alert alert-danger" role="alert">Erreur du système de signature
+					</div>
 				</div>
 				<div class="modal-footer">
 					<button id="closeModal" type="button"
-						class="btn btn-secondary align-self-center" data-dismiss="modal">Close</button>
+						class="btn btn-secondary align-self-center" data-dismiss="modal">Fermer</button>
 					<button id="validModal" onclick="window.location.reload()"
 						type="button" class="btn btn-success align-self-center"
 						data-dismiss="modal">Terminer</button>
@@ -743,6 +746,7 @@
 	
 	function sendData(signRequestParams) {
 		document.getElementById("passwordError").style.display = "none";
+		document.getElementById("signError").style.display = "none";
 		document.getElementById("closeModal").style.display = "none";
 		document.getElementById("validModal").style.display = "none";
 		document.getElementById("bar").style.display = "none";
@@ -765,6 +769,11 @@
 			var result = xmlHttp.responseText;
 			if (result == "security_bad_password") {
 				document.getElementById("passwordError").style.display = "block";
+				document.getElementById("closeModal").style.display = "block";
+				document.getElementById("bar").classList.remove("progress-bar-animated");
+				clearInterval(getProgressTimer);
+			} else if(result == "sign_system_error") {
+				document.getElementById("signError").style.display = "block";
 				document.getElementById("closeModal").style.display = "block";
 				document.getElementById("bar").classList.remove("progress-bar-animated");
 				clearInterval(getProgressTimer);

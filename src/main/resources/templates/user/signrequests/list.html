@@ -359,6 +359,7 @@
 	
 		function sendData(signRequestParams) {
 			document.getElementById("passwordError").style.display = "none";
+			document.getElementById("signError").style.display = "none";
 			document.getElementById("closeModal").style.display = "none";
 			document.getElementById("bar").style.display = "none";
 			document.getElementById("loader").style.display = "block";
@@ -382,6 +383,11 @@
 					document.getElementById("passwordError").style.display = "block";
 					document.getElementById("closeModal").style.display = "block";
 					document.getElementById("loader").style.display = "none";
+					clearInterval(getProgressTimer);
+				} else if(result == "sign_system_error") {
+					document.getElementById("signError").style.display = "block";
+					document.getElementById("closeModal").style.display = "block";
+					document.getElementById("bar").classList.remove("progress-bar-animated");
 					clearInterval(getProgressTimer);
 				} else if (result == "100") {
 					document.getElementById("closeModal").style.display = "block";
@@ -419,7 +425,7 @@
 					<div style="display: none;" id="passwordError" class="alert alert-danger" role="alert">
 						Mauvais mot de passe
 					</div>
-					<button onclick="javascript:window.location.reload()" id="closeModal" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button onclick="javascript:window.location.reload()" id="closeModal" type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
 				</div>
 			</div>
 		</div>

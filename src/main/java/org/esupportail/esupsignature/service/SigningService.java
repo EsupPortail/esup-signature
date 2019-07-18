@@ -23,6 +23,7 @@ import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.imgscalr.Scalr;
@@ -242,8 +243,9 @@ public class SigningService {
 		
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		pAdESSignatureParameters.setSignatureImageParameters(imageParameters);
-		//TODO : sign size ?
-		pAdESSignatureParameters.setSignatureSize(65536);
+		//TODO : calculer la taille de la signature
+		//size 32767 is max for PDF/A-2B
+		pAdESSignatureParameters.setSignatureSize(32767);
 		pAdESSignatureParameters.setSignaturePackaging(form.getSignaturePackaging());
 
 		fillParameters(pAdESSignatureParameters, form);
@@ -356,17 +358,21 @@ public class SigningService {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
+	public DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) throws EsupSignatureException {
 		logger.info("Start certSignDocument with database keystore");
-		DocumentSignatureService service = getSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
-		DSSDocument signedDocument = null;
-		fillParameters(parameters, signatureDocumentForm);
-		DSSDocument toSignDocument = WebAppUtils.toDSSDocument(signatureDocumentForm.getDocumentToSign());
-		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
-		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
-		signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);
-		logger.info("End certSignDocument with database keystore");
-		return signedDocument;
+		try {
+			DocumentSignatureService service = getSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
+			DSSDocument signedDocument = null;
+			fillParameters(parameters, signatureDocumentForm);
+			DSSDocument toSignDocument = WebAppUtils.toDSSDocument(signatureDocumentForm.getDocumentToSign());
+			ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
+			SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
+			signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);
+			logger.info("End certSignDocument with database keystore");
+			return signedDocument;
+		} catch (Exception e) {
+			throw new EsupSignatureException("certSign error", e);
+		}
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })

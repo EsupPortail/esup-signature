@@ -304,18 +304,19 @@ public class PdfService {
 	        ValidationResult result = document.getResult();  
 		    document.close();
 		    if(result.isValid()) {
-		    	logger.info("complient to PDFA");
+		    	logger.info("the pdf is complient to PDFA");
 		    	XMPMetadata xmpMetadata = result.getXmpMetaData();
 		    	if(xmpMetadata != null) {
 		    		PDFAIdentificationSchema id = xmpMetadata.getPDFIdentificationSchema();
-		    		logger.info(id.getConformance());
+		    		logger.debug(id.getConformance());
 		    	} else {
 		    		logger.warn("no xmp metadata found ?");
 		    	}
 		    	return true;
 		    } else {
+		    	logger.warn("the pdf is not complient to PDFA");
 		        for(ValidationError v : result.getErrorsList()) {
-		        	logger.warn("pdf validation error " + v.getErrorCode() + " : " + v.getDetails());
+		        	logger.debug("pdf validation error " + v.getErrorCode() + " : " + v.getDetails());
 		        }
 		    }
 		} catch (Exception e) {

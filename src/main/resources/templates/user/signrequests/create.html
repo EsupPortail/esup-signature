@@ -26,7 +26,7 @@
 	</div>
 	<div id="ribbon" class="card">
 		<div class="card-body">
-		<button type="button" onclick="document.getElementById('fc_org_esupportail_esupsignature_domain_SignRequest').submit();" class="mr-2 btn btn-outline-dark btn-light float-left">
+		<button type="button" onclick="document.getElementById('register-form-submit').click();" class="mr-2 btn btn-outline-dark btn-light float-left">
 		<p class="text-center">
 		<i class="fas fa-save fa-2x"></i>
 		<br/>
@@ -68,7 +68,7 @@
 				</strong>
 			</label>
 			<div class="col-lg-8">
-				<select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple" >
+				<select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple" required="required" >
 					<th:block th:each="signBook : ${allSignBooks}">
 						<option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
 					</th:block>
@@ -171,6 +171,7 @@
 		</div>
 		</div>
 		</div>
+		<input type="submit" id="register-form-submit" style="display: none;" />
 	</form>
     <script type="text/javascript">
     var signBookNamesSelect = new SlimSelect({
