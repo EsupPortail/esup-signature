@@ -12,6 +12,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
@@ -33,6 +34,7 @@ public class ValidationService {
 	
 	public Reports validate(MultipartFile multipartFile) {
 		
+		try {
 		SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(WebAppUtils.toDSSDocument(multipartFile));
 		logger.info("validate with : " + documentValidator.getClass());
 		documentValidator.setCertificateVerifier(certificateVerifier);
@@ -44,6 +46,10 @@ public class ValidationService {
 			logger.error("Unable to parse policy : " + e.getMessage(), e);
 		}
 		return reports;
+		} catch (DSSException e) {
+			logger.error("Unable to read document : " + e.getMessage(), e);
+		}
+		return null;
 	}
 
 }

@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -90,15 +91,22 @@ public class ValidationController {
 	@RequestMapping(method = RequestMethod.POST)
 	public String validate(@ModelAttribute("multipartFile") @Valid MultipartFile multipartFile, Model model) throws IOException {
 		Reports reports = validationService.validate(multipartFile);
-
+		if(reports != null) {
 		String xmlSimpleReport = reports.getXmlSimpleReport();
-		model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));
-
-		String xmlDetailedReport = reports.getXmlDetailedReport();
-		model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
-		model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
-		model.addAttribute("diagnosticTree", reports.getXmlDiagnosticData());
-		model.addAttribute("pdfaReport", pdfService.checkPDFA(fileService.multipartPdfToFile(multipartFile)));
+			model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));
+			String xmlDetailedReport = reports.getXmlDetailedReport();
+			model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
+			model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
+			model.addAttribute("diagnosticTree", reports.getXmlDiagnosticData());
+		} else {
+			model.addAttribute("simpleReport", "<h2>Impossible de valider ce document</h2>");
+			model.addAttribute("detailedReport", "<h2>Impossible de valider ce document</h2>");
+		}
+		if(multipartFile.getContentType().contains("pdf")) {
+			model.addAttribute("pdfaReport", pdfService.checkPDFA(fileService.multipartPdfToFile(multipartFile)));
+		} else {
+			model.addAttribute("pdfaReport", Arrays.asList("danger", "Impossible de valider ce document"));
+		}
 		
 		return "user/validation-result";
 	}
