@@ -12,7 +12,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 
 @Configuration
-@PropertySources(value = {@PropertySource("classpath:fs.properties")})
 public class FsConfig {
 
 	@Value("${fs.cifs.uri}")

@@ -657,7 +657,7 @@
 						method="get">
 						<div class="input-group">
 							<select onchange="checkNbRecipients();" name="signBookNames"
-								id="signBookNames" size="5" multiple="multiple">
+								id="signBookNames" size="5" multiple="multiple" required="required">
 								<th:block th:each="signBook : ${allSignBooks}">
 									<option th:value="${signBook.name}"
 										th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>

@@ -3,10 +3,12 @@ package org.esupportail.esupsignature.service.pdf;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -60,8 +62,6 @@ import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.UserService;
-import org.ghost4j.Ghostscript;
-import org.ghost4j.GhostscriptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -91,6 +91,7 @@ public class PdfService {
 	@Value("${sign.widthThreshold}")
 	private int signWidthThreshold;
 	
+	private String pathToGS = "/usr/bin/";
 	private int pdfALevel = 2; 
 	
 	public File stampImage(File toSignFile, SignRequestParams params, User user, boolean addPage, boolean addDate) throws InvalidPasswordException, IOException {
@@ -255,31 +256,38 @@ public class PdfService {
 		
     	if(!checkPdfA(file)) {
 		    File targetFile =  new File(Files.createTempDir(), file.getName());
-		    
-		    String colorProfile = PdfService.class.getResource("/sRGB.icc").getFile();
-		    Ghostscript gs = Ghostscript.getInstance();
-	
-		    String[] gsArgs = new String[10];
-		    gsArgs[1] = "-dPDFA=" + pdfALevel;
-		    gsArgs[2] = "-dBATCH";
-			gsArgs[3] = "-dNOPAUSE";
-			gsArgs[4] = "-dHaveTransparency=false";
-			gsArgs[5] = "-sOutputICCProfile=" + colorProfile;
-			gsArgs[6] = "-sDEVICE=pdfwrite";
-			gsArgs[7] = "-dPDFACompatibilityPolicy=1";
-			gsArgs[8] = "-sOutputFile=" + targetFile.getAbsolutePath();
-			gsArgs[9] = file.getAbsolutePath();
-	        		
-			try {
-				gs.setStdOut(System.out);
-				gs.setStdErr(System.err);
-				gs.initialize(gsArgs);
-				gs.exit();
-			} catch (GhostscriptException e) {
-				logger.error("error on GhostScript convertion", e);
-				return null;
-			}
-		    
+		    String defFile =  PdfService.class.getResource("/PDFA_def.ps").getFile();
+		    String cmd = pathToGS + "gs -dPDFA=" + pdfALevel + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile=" + targetFile.getAbsolutePath() + " " + defFile + " " + file.getAbsolutePath();
+	    	logger.info("GhostScript PDF/A convertion : " + cmd);
+	    	
+	    	ProcessBuilder processBuilder = new ProcessBuilder();
+	    	processBuilder.command("bash", "-c", cmd);
+	    	processBuilder.directory(new File("/tmp"));
+	    	try {
+
+	    		Process process = processBuilder.start();
+
+	    		StringBuilder output = new StringBuilder();
+
+	    		BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+	    		String line;
+	    		while ((line = reader.readLine()) != null) {
+	    			output.append(line + "\n");
+	    		}
+
+	    		int exitVal = process.waitFor();
+	    		if (exitVal == 0) {
+	    			logger.info(output.toString());
+	    			logger.info("Convert success");
+	    		} else {
+	    			logger.warn(output.toString());
+	    			logger.warn("Convert fail");
+	    			return null;
+	    		}
+	    	} catch (IOException | InterruptedException e) {
+	    		logger.error("GhostScript launc error", e);
+	    	}
 		    return targetFile;
     	} else {
     		return file;

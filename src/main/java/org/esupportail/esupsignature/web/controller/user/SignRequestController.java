@@ -176,6 +176,8 @@ public class SignRequestController {
 
 		}
 		
+		signRequestsToSign = signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList()); 
+		
 		Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByCreateByAndStatus(user.getEppn(), this.statusFilter,  pageable); 
 	
 		for(SignRequest signRequest : signRequests) {

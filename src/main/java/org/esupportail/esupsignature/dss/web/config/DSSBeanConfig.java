@@ -42,7 +42,6 @@ import eu.europa.esig.dss.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
 @Configuration
-@PropertySources(value = {@PropertySource("classpath:dss.properties")})
 public class DSSBeanConfig {
 	
 	@Value("${cache.datasource.username}")
