@@ -204,7 +204,7 @@ public class SignRequestController {
 	}
 	
 	@RequestMapping(value = "/{id}", produces = "text/html")
-	public String show(@PathVariable("id") Long id, @RequestParam(name = "showSignModal", required = false) Boolean showSignModal , Model uiModel, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
+	public String show(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
 		User user = userService.getUserFromAuthentication();
 		if(!user.isReady()) {
 			return "redirect:/user/users/?form";
@@ -275,8 +275,7 @@ public class SignRequestController {
 			uiModel.addAttribute("originalSignBooks", signBookService.getSignBookBySignRequest(signRequest));
 			uiModel.addAttribute("allSignBooks", signBookRepository.findByNotCreateBy("System"));
 			uiModel.addAttribute("nbSignOk", signRequest.countSignOk());
-			uiModel.addAttribute("showSignModal", showSignModal);
-			
+		
 			return "user/signrequests/show";
 		} else {
 			logger.warn(user.getEppn() + " attempted to access signRequest " + id + " without write access");
@@ -401,9 +400,13 @@ public class SignRequestController {
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
+			if(signRequest.getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
+				return "redirect:/user/nexu-sign/" + id + "?referer=" + referer;
+			}
 			if(!signRequest.isOverloadSignBookParams()) {
 				SignBook signBook =  signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0);
 				//signRequest.setSignRequestParams(signBook.getSignRequestParams().get(0));
+				signRequest.getSignRequestParams().setSignType(signBook.getSignRequestParams().get(0).getSignType());
 				signRequestRepository.save(signRequest);
 			}
 			if(signPageNumber != null && xPos != null && yPos != null) {
@@ -427,10 +430,14 @@ public class SignRequestController {
 				logger.error(e.getMessage(), e);
 			} catch (EsupSignatureSignException e) {
 				logger.error(e.getMessage(), e);
-			} catch (EsupSignatureNexuException e) {
+			}
+			/*
+			catch (EsupSignatureNexuException e) {
 				logger.info(e.getMessage());
 				return "redirect:/user/nexu-sign/" + id;
-			} catch (IOException e) {
+			} 
+			*/
+			catch (IOException e) {
 				logger.error(e.getMessage());
 			}
 			if(signonly != null && signonly) {
@@ -464,7 +471,7 @@ public class SignRequestController {
 				if(originalSignBooks.size() > 0) {
 					SignBook originalSignBook = originalSignBooks.get(0);
 					if(!signRequest.isOverloadSignBookParams()) {
-						signRequest.setSignRequestParams(signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0).getSignRequestParams().get(0));
+						//signRequest.setSignRequestParams(signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0).getSignRequestParams().get(0));
 					}
 				}
 				Document toDisplayDocument = null;
@@ -477,11 +484,6 @@ public class SignRequestController {
 						model.addAttribute("pdfWidth", pdfParameters.getWidth());
 						model.addAttribute("pdfHeight", pdfParameters.getHeight());
 						model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-						int[] pos = pdfService.getSignFieldCoord(toDisplayFile, signRequest.getNbSign());
-						if(pos != null) {
-							signRequest.getSignRequestParams().setXPos(pos[0]);
-							signRequest.getSignRequestParams().setYPos(pos[1]);
-						}
 						if(user.getSignImage() != null) {
 							model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 							int[] size = pdfService.getSignSize(user.getSignImage().getJavaIoFile());

@@ -56,11 +56,39 @@
 						</li>
 					</ul>Navigation
 				</div>
-				<button class="mr-2 btn btn-success float-left"  th:if="${signRequest.signRequestParams.signType.name() == 'nexuSign'}" type="button"  data-toggle="modal" data-target="#signModal" style="height: 100px;">
+				<button class="mr-2 btn btn-success float-left"  th:if="${signRequest.signRequestParams.signType.name() == 'certSign'}" type="button"  data-toggle="modal" data-target="#signModal" style="height: 100px;">
 					<i class="fas fa-signature fa-2x"></i><br/>Valider la signature
 				</button>
+
+				<div th:if="${signRequest.signRequestParams.signType.name() == 'nexuSign'}">
+					<script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
+					<script type="text/javascript" src="/js/nexu-deploy.js"></script>
+					<div id="nexu_missing_alert" style="display: none;">
+						<a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left" id="btnSeccion3">
+							<i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
+						</a>
+						<div class="alert alert-warning float-left">
+						L'application NexU n'a pas été détectée
+						<br>
+						<small>Merci de lancer l'application sur votre poste. 
+						<a href="https://github.com/nowina-solutions/nexu/releases/">Téléchargement</a>
+							</small>
+					</div>
+					</div>
+					<div id="nexu_ready_alert" style="display: none;">
+						<button type="button" onclick="document.getElementById('signForm').submit();" class="mr-2 btn btn-success float-left">
+						<i class="fas fa-signature fa-2x"></i> <br /> 
+						Signer
+					</button>
+					<div class="alert alert-success float-left">
+						L'application NexU est fonctionnelle <br /> <small>Vous pouvez utiliser une clé
+							materielle ou un keystore</small> 
+					</div>
+
+					</div>
+				</div>
 				
-				<button class="mr-2 btn btn-success float-left" th:unless="${signRequest.signRequestParams.signType.name() == 'nexuSign'}" type="button" onclick="document.getElementById('signForm').submit();"  style="height: 100px;">
+				<button class="mr-2 btn btn-success float-left" th:unless="${signRequest.signRequestParams.signType.name() == 'nexuSign' || signRequest.signRequestParams.signType.name() == 'certSign'}" type="button" onclick="document.getElementById('signForm').submit();"  style="height: 100px;">
 					<i class="fas fa-signature fa-2x"></i><br/>Valider la signature
 				</button>
 				
@@ -107,6 +135,7 @@
 							var nbImagePage = [[${imagePagesSize}]];
 							var currentImagePage = [[${signRequest.signRequestParams.signPageNumber}]] - 1;
 							var documentUrl = "/user/documents/[[${documentId}]]/getimagepdfpage/";
+							var signId = [[${signRequest.id}]];
 						/*]]>*/
 					</script>
 				</div>
@@ -136,7 +165,7 @@
 	</div>
 
 	<div id="signModal" class="modal fade" tabindex="-1" role="dialog">
-		<div class="modal-dialog" role="document">
+		<div class="modal-dialog modal-lg" role="document">
 			<div class="modal-content">
 				<div class="modal-body text-center">
 			<textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows=""></textarea>
@@ -146,7 +175,7 @@
 						<div th:if="${keystore != null}">
 							<div class="input-group">
 								<div class="input-group-prepend">
-									<span class="input-group-text">Signature</span>
+									<span class="input-group-text">Mot de passe</span>
 								</div>
 
 								<input class="form-control" required="required" placeholder="Vous allez signer à l'aide d'un certificat, merci d'entrer le mot de passe" id="password" name="password" type="password" />
@@ -194,7 +223,12 @@
 							</strong>
 						</div>
 					</div>
-					<div style="display: none;" id="passwordError" class="alert alert-danger" role="alert">Mauvais mot de passe</div>
+					<div style="display: none;" id="passwordError" class="alert alert-danger" role="alert">
+						Mauvais mot de passe
+					</div>
+					<div style="display: none;" id="signError" class="alert alert-danger" role="alert">
+						Erreur du système de signature
+					</div>
 				</div>
 				<div class="modal-footer">
 					<button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">Fermer</button>
@@ -204,7 +238,6 @@
 		</div>
 	</div>
 	</main>
-</body>
 <script th:inline="javascript">
 /*<![CDATA[*/
 zoom == 2;	
@@ -229,73 +262,7 @@ function toggleZoom() {
 		textDate.style.fontSize = 8 * zoom + "px";
 	}
 }
-
-function submitSignRequest() {
-	var signPageNumber = document.getElementById("signPageNumber");
-	var signRequestParams;
-	if(signPageNumber != null) {
-		signRequestParams = "password=" + document.getElementById("password").value +
-							"&Pos=" + document.getElementById("xPos").value +
-							"&yPos=" + document.getElementById("yPos").value +
-							"&signPageNumber=" + document.getElementById("signPageNumber").value +
-							"&signonly=true"
-							;
-	} else {
-		signRequestParams = "password=" + document.getElementById("password").value;
-	}
-	
-	sendData(signRequestParams);
-
-}
-
-function sendData(signRequestParams) {
-	document.getElementById("passwordError").style.display = "none";
-	document.getElementById("signError").style.display = "none";
-	document.getElementById("closeModal").style.display = "none";
-	document.getElementById("validModal").style.display = "none";
-	document.getElementById("bar").style.display = "none";
-	document.getElementById("bar").classList.add("progress-bar-animated");
-	getProgressTimer = setInterval(function() {
-		getStep();
-	}, 500);
-	var xmlHttp = new XMLHttpRequest();
-	xmlHttp.open('POST', '/user/signrequests/sign/[[${signRequest.id}]]', true);
-	xmlHttp.setRequestHeader('Content-Type',
-			'application/x-www-form-urlencoded');
-	xmlHttp.send(signRequestParams);
-}
-
-function getStep() {
-	console.log("getStep");
-	var xmlHttp = new XMLHttpRequest();
-	xmlHttp.open("GET", "/user/signrequests/get-step", false);
-	xmlHttp.onreadystatechange = function() {
-		var result = xmlHttp.responseText;
-		if (result == "security_bad_password") {
-			document.getElementById("passwordError").style.display = "block";
-			document.getElementById("closeModal").style.display = "block";
-			document.getElementById("bar").classList.remove("progress-bar-animated");
-			clearInterval(getProgressTimer);
-		} else if(result == "sign_system_error") {
-			document.getElementById("signError").style.display = "block";
-			document.getElementById("closeModal").style.display = "block";
-			document.getElementById("bar").classList.remove("progress-bar-animated");
-			clearInterval(getProgressTimer);
-		} else if (result == "end") {
-			clearInterval(getProgressTimer);
-			document.getElementById("validModal").style.display = "block";
-			document.getElementById("bar").classList.remove("progress-bar-animated");
-			document.getElementById("bar-text").innerHTML = "Signature terminée";
-			clearInterval(getProgressTimer);
-		} else {
-			document.getElementById("bar").style.display = "block";
-			document.getElementById("bar").style.width = 100 + "%";
-			document.getElementById("bar-text").innerHTML = result;				
-		}
-	}
-	xmlHttp.send(null);
-	return;
-}
 /*]]>*/
 </script>
+</body>
 </html>

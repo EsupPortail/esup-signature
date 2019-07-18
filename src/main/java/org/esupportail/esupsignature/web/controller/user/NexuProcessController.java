@@ -47,6 +47,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -94,7 +95,7 @@ public class NexuProcessController {
 	private AbstractSignatureParameters parameters;
 	
 	@RequestMapping(value = "/{id}", produces = "text/html")
-	public String showSignatureParameters(@PathVariable("id") Long id, Model model, HttpServletRequest request, RedirectAttributes redirectAttrs) throws InvalidPasswordException, IOException {
+	public String showSignatureParameters(@PathVariable("id") Long id, Model model, @RequestParam(value = "referer", required = false) String referer, HttpServletRequest request, RedirectAttributes redirectAttrs) throws InvalidPasswordException, IOException {
     	User user = userService.getUserFromAuthentication();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
@@ -132,6 +133,7 @@ public class NexuProcessController {
 			model.addAttribute("digestAlgorithm", signatureDocumentForm.getDigestAlgorithm());
 			model.addAttribute("rootUrl", "nexu-sign");
 			model.addAttribute("nexuUrl", nexuUrl);
+			model.addAttribute("referer", referer);
 			return "user/nexu-signature-process";
 		} else {
 			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");

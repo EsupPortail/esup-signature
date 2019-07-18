@@ -52,6 +52,76 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 });
 
+//sign wait
+
+function submitSignRequest() {
+	var signPageNumber = document.getElementById("signPageNumber");
+	var signRequestParams;
+	if(signPageNumber != null) {
+		signRequestParams = "password=" + document.getElementById("password").value +
+							"&xPos=" + document.getElementById("xPos").value +
+							"&yPos=" + document.getElementById("yPos").value +
+							"&signPageNumber=" + document.getElementById("signPageNumber").value
+							;
+	} else {
+		signRequestParams = "password=" + document.getElementById("password").value;
+	}
+	
+	sendData(signRequestParams);
+
+}
+
+function sendData(signRequestParams) {
+	document.getElementById("passwordError").style.display = "none";
+	document.getElementById("signError").style.display = "none";
+	document.getElementById("closeModal").style.display = "none";
+	document.getElementById("validModal").style.display = "none";
+	document.getElementById("bar").style.display = "none";
+	document.getElementById("bar").classList.add("progress-bar-animated");
+	getProgressTimer = setInterval(function() {
+		getStep();
+	}, 500);
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open('POST', '/user/signrequests/sign/' + signId, true);
+	xmlHttp.setRequestHeader('Content-Type',
+			'application/x-www-form-urlencoded');
+	xmlHttp.send(signRequestParams);
+}
+
+function getStep() {
+	console.log("getStep");
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open("GET", "/user/signrequests/get-step", false);
+	xmlHttp.onreadystatechange = function() {
+		var result = xmlHttp.responseText;
+		if (result == "security_bad_password") {
+			document.getElementById("passwordError").style.display = "block";
+			document.getElementById("closeModal").style.display = "block";
+			document.getElementById("bar").classList.remove("progress-bar-animated");
+			clearInterval(getProgressTimer);
+		} else if(result == "sign_system_error") {
+			document.getElementById("signError").style.display = "block";
+			document.getElementById("closeModal").style.display = "block";
+			document.getElementById("bar").classList.remove("progress-bar-animated");
+			clearInterval(getProgressTimer);
+		} else if (result == "end") {
+			clearInterval(getProgressTimer);
+			document.getElementById("validModal").style.display = "block";
+			document.getElementById("bar").classList.remove("progress-bar-animated");
+			document.getElementById("bar-text").innerHTML = "Signature terminée";
+			clearInterval(getProgressTimer);
+		} else {
+			document.getElementById("bar").style.display = "block";
+			document.getElementById("bar").style.width = 100 + "%";
+			document.getElementById("bar-text").innerHTML = result;				
+		}
+	}
+	xmlHttp.send(null);
+	return;
+}
+
+//signature position
+
 var pointerDiv;
 var startPosX;
 var startPosY;
@@ -148,20 +218,8 @@ function dragSignature() {
 	pointItEnable = true;
 }
 
+//pdf navigation
 
-// Paging
-/*
-document.addEventListener('DOMContentLoaded', function() {
-	if(typeof currentImagePage !== 'undefined') {
-		if (currentImagePage == 0) {
-			document.getElementById("previous").classList.add("disabled");
-		}
-		if (currentImagePage == nbImagePage - 1) {
-			document.getElementById("next").classList.add("disabled");
-		}
-	}
-});
-*/
 function nextImage() {
 	currentImagePage++;
 	hideSigns(currentImagePage)

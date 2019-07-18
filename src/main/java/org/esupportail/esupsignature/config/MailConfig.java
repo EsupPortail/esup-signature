@@ -12,7 +12,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 @Configuration
-@PropertySources(value = {@PropertySource("classpath:mail.properties")})
 public class MailConfig {
 
 	@Value("${mail.senderHost}")
