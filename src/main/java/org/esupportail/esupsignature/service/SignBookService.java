@@ -273,7 +273,9 @@ public class SignBookService {
 	public void deleteSignBook(SignBook signBook) {
 		if(signBook.getSignRequests().size() == 0) {
 			for(SignBook signBookStep : signBook.getSignBooks()) {
-				deleteSignBook(signBookStep);
+				if(signBookStep.getExternal()) {
+					deleteSignBook(signBookStep);
+				}
 			}
 			signBook.setSignBooks(null);
 			signBookRepository.delete(signBook);
@@ -409,6 +411,9 @@ public class SignBookService {
 			signRequests.remove(signRequest);
 			signBook.setSignRequests(signRequests);
 			signBookRepository.save(signBook);
+			if(signBook.getExternal()) {
+				deleteSignBook(signBook);
+			}
 		}
 		signRequest.getSignBooks().clear();
 	}
@@ -443,7 +448,11 @@ public class SignBookService {
 		if(signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.user) > 0) {
 			return signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.user).get(0);
 		} else {
-			return signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.system).get(0);
+			if(signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.system) > 0) {
+				return signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.system).get(0);
+			} else {
+				return null;
+			}
 		}
 	}
 	

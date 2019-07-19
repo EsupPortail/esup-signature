@@ -146,7 +146,7 @@ public class SignBookController {
 	
 	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
 	public String create(SignBook signBook, @RequestParam("type") String type, @RequestParam("multipartFile") MultipartFile multipartFile,
-			@RequestParam(name = "signBooksIds", required = false) Long[] signBooksIds, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, RedirectAttributes redirectAttrs) {
+			@RequestParam(name = "signBooksIds", required = true) Long[] signBooksIds, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
 		SignBook signBookToUpdate = null;
 		if(signBook.getId() != null) {
@@ -255,7 +255,6 @@ public class SignBookController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
     public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, Model uiModel, RedirectAttributes redirectAttrs) {
-    	//TODO flash message -> i18n
     	User user = userService.getUserFromAuthentication();
     	SignBook signBook = signBookRepository.findById(id).get();
     		populateEditForm(uiModel, signBook);
@@ -273,7 +272,7 @@ public class SignBookController {
 			redirectAttrs.addFlashAttribute("messageCustom", "Le parapheur n'est pas vide");
 			return "redirect:/manager/signbooks/" + id;
 		}
-		signBookRepository.delete(signBook);
+		signBookService.deleteSignBook(signBook);
         uiModel.asMap().clear();
         uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
         uiModel.addAttribute("size", (size == null) ? "10" : size.toString());

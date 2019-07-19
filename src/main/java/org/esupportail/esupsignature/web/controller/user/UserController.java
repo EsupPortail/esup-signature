@@ -117,7 +117,7 @@ public class UserController {
     @GetMapping
     public String show(Model uiModel) throws Exception {
     	User user = userService.getUserFromAuthentication();
-    	if(!user.isReady()) {
+    	if(!userService.isUserReady(user) || signBookService.getUserSignBook(user) == null) {
 			return "redirect:/user/users/?form";
 		}    	
     	populateEditForm(uiModel, user);
@@ -144,7 +144,7 @@ public class UserController {
         	uiModel.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
         	uiModel.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
 
-        	if(user.isReady()) {
+        	if(userService.isUserReady(user)) {
         		if(user.getSignImage() != null) {
         			uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
         		}
@@ -189,14 +189,17 @@ public class UserController {
         }
 
     	SignBook signBook = signBookService.getUserSignBook(user);
-    	if(signType != null) {
-    		signBook.getSignRequestParams().get(0).setSignType(signType);
-    		signBook.getSignRequestParams().get(0).setNewPageType(newPageType);
+    	if(signBook != null) {
+	    	if(signType != null) {
+	    		signBook.getSignRequestParams().get(0).setSignType(signType);
+	    		signBook.getSignRequestParams().get(0).setNewPageType(newPageType);
+	    	}
+    	}else {
+    		signBookService.createUserSignBook(user);
     	}
     	userToUpdate.setEmailAlertFrequency(emailAlertFrequency);
     	userToUpdate.setEmailAlertHour(emailAlertHour);
     	userToUpdate.setEmailAlertDay(emailAlertDay);
-    	userToUpdate.setReady(true);
     	return "redirect:/user/users/";
     }
     

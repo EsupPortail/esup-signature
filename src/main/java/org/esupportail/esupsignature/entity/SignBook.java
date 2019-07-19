@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -84,7 +85,7 @@ public class SignBook {
     @ElementCollection(targetClass=String.class)
     private List<String> recipientEmails = new ArrayList<String>();
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.MERGE, javax.persistence.CascadeType.PERSIST})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     private List<SignBook> signBooks = new ArrayList<SignBook>();
     
     //TODO renomer autoWorkflow
@@ -98,14 +99,14 @@ public class SignBook {
     
     private String documentsTargetUri;    
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = { javax.persistence.CascadeType.ALL }, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL }, orphanRemoval = true)
     private Document modelFile = new Document();
     
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL })
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL })
     private List<SignRequest> signRequests = new ArrayList<SignRequest>();
 
     //TODO multiple params + steps ou nb signatures
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.MERGE, javax.persistence.CascadeType.PERSIST})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
     private List<SignRequestParams> signRequestParams = new ArrayList<SignRequestParams>();
 	
 	@Enumerated(EnumType.STRING)

@@ -148,7 +148,7 @@ public class SignRequestController {
 			@RequestParam(value = "messageError", required = false) String messageError,
 			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, RedirectAttributes redirectAttrs, Model model) {
 		User user = userService.getUserFromAuthentication();
-		if (user == null || !user.isReady()) {
+		if (user == null || !userService.isUserReady(user)) {
 			return "redirect:/user/users/?form";
 		}
 		
@@ -206,7 +206,7 @@ public class SignRequestController {
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
 		User user = userService.getUserFromAuthentication();
-		if(!user.isReady()) {
+		if(!userService.isUserReady(user)) {
 			return "redirect:/user/users/?form";
 		}
 		SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -461,7 +461,7 @@ public class SignRequestController {
 			Model model, HttpServletRequest request) throws IOException, SQLException {
 
 		User user = userService.getUserFromAuthentication();
-		if(!user.isReady()) {
+		if(!userService.isUserReady(user)) {
 			return "redirect:/user/users/?form";
 		}
 		if(signRequestRepository.countByName(token) > 0) {
@@ -469,9 +469,11 @@ public class SignRequestController {
 			if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
 				List<SignBook> originalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
 				if(originalSignBooks.size() > 0) {
-					SignBook originalSignBook = originalSignBooks.get(0);
 					if(!signRequest.isOverloadSignBookParams()) {
-						//signRequest.setSignRequestParams(signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0).getSignRequestParams().get(0));
+						SignRequestParams signRequestParams = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0).getSignRequestParams().get(0);
+						signRequest.getSignRequestParams().setSignType(signRequestParams.getSignType());
+						signRequest.getSignRequestParams().setNewPageType(signRequestParams.getNewPageType());
+						
 					}
 				}
 				Document toDisplayDocument = null;
@@ -489,6 +491,9 @@ public class SignRequestController {
 							int[] size = pdfService.getSignSize(user.getSignImage().getJavaIoFile());
 							model.addAttribute("signWidth", size[0]);
 							model.addAttribute("signHeight", size[1]);
+						} else {
+							model.addAttribute("signWidth", 100);
+							model.addAttribute("signHeight", 75);
 						}
 					}
 					model.addAttribute("documentType", fileService.getExtension(toDisplayFile));		

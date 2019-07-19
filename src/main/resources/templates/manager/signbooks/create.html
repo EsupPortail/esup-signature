@@ -106,7 +106,7 @@
 								<option th:value="${signBook.id}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
 							</th:block>
 						</select>
-						<select id="select-to" class="form-control" multiple="multiple" name="signBooksIds" size="10">
+						<select id="select-to" class="form-control" multiple="multiple" name="signBooksIds" size="10" required="required">
 						</select>
 						<button type="button" class="btn btn-light" href="JavaScript:void(0);" id="btn-up">
 							<i class="fas fa-sort-up">

@@ -497,6 +497,9 @@ public class PdfService {
 			PDPage pdPage = pdDocument.getPage(0);
 			List<PDSignatureField> pdSignatureFields = pdDocument.getSignatureFields();
 			//pdSignatureFields = pdSignatureFields.stream().sorted(Comparator.comparing(PDSignatureField::getPartialName)).collect(Collectors.toList());
+			if(pdSignatureFields.size() < signNumber + 1) {
+				return null;
+			}
 			PDSignatureField pdSignatureField = pdSignatureFields.get((int) signNumber);
 			if(pdSignatureField.getValue() == null) {
 				int[] pos = new int[2];
@@ -504,7 +507,7 @@ public class PdfService {
 				pos[1] = (int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight();
 	    		return pos;
 			}
-		} catch (Exception e) {
+		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
 		} finally {
 			try {

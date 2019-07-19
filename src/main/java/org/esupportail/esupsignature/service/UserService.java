@@ -56,7 +56,7 @@ public class UserService {
 	}
 	
 	public boolean isUserReady(User user) {
-		return user.isReady();
+		return signBookService.getUserSignBook(user) != null;
 	}
 	
 	public SignBook createUser(String email) {

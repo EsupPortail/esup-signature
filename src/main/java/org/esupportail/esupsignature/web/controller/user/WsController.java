@@ -197,8 +197,10 @@ public class WsController {
 				signRequestService.setSignBooksLabels(signRequest);
 				for (String recipientName : signRequest.getSignBooksLabels().keySet()) {
 					SignBook signBook = signBookRepository.findByName(recipientName).get(0);
-					recipientNames.add(recipientName);
-					recipientEmails.add(signBook.getRecipientEmails().get(0));
+					if(!signRequest.getSignBooks().get(signBook.getId())) {
+						recipientNames.add(recipientName);
+						recipientEmails.add(signBook.getRecipientEmails().get(0));
+					}
 					
 				}
 				jsonSignInfoMessage.setNextRecipientNames(recipientNames);
@@ -235,7 +237,7 @@ public class WsController {
 	public String checkUserStatus(@RequestParam String eppn, HttpServletResponse response, Model model) throws JsonProcessingException {
 		if(userRepository.countByEppn(eppn) > 0) {
 			User user = userRepository.findByEppn(eppn).get(0);
-			return new ObjectMapper().writeValueAsString(user.isReady());
+			return new ObjectMapper().writeValueAsString(userService.isUserReady(user));
 		} else {
 			return new ObjectMapper().writeValueAsString(false);
 		}

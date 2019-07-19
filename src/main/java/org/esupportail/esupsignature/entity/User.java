@@ -54,9 +54,7 @@ public class User {
     
     @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     private Document keystore = new Document();
-	
-    private boolean ready;
-    
+
     @Enumerated(EnumType.STRING)
     private EmailAlertFrequency emailAlertFrequency;
 
@@ -150,14 +148,6 @@ public class User {
 
 	public void setKeystore(Document keystore) {
         this.keystore = keystore;
-    }
-
-	public boolean isReady() {
-        return this.ready;
-    }
-
-	public void setReady(boolean ready) {
-        this.ready = ready;
     }
 
 	public EmailAlertFrequency getEmailAlertFrequency() {

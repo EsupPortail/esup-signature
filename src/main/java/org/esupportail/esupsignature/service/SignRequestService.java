@@ -453,11 +453,13 @@ public class SignRequestService {
 	public void completeSignRequest(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
 		if(signBook.getSignBookType().equals(SignBookType.workflow) && signRequest.getSignBooksWorkflowStep() < signBook.getSignBooks().size()) {
 			signRequest.setSignBooksWorkflowStep(signRequest.getSignBooksWorkflowStep() + 1);
-			signBookService.removeSignRequestFromAllSignBooks(signRequest);
+			signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
 			signBookService.importSignRequestInSignBook(signRequest, signBook, user);	
 		} else {
 			if(signBook.getTargetType().equals(DocumentIOType.none)) {
 				signBookService.removeSignRequestFromAllSignBooks(signRequest);
+			} else {
+				signBookService.exportFilesToTarget(signBook, user);
 			}
 			updateStatus(signRequest, SignRequestStatus.completed, "Terminé automatiquement", user, "SUCCESS", signRequest.getComment());
 		}
@@ -571,7 +573,7 @@ public class SignRequestService {
 		signRequestParams.setSignPageNumber(1);
 		signRequestParams.setNewPageType(NewPageType.none);
 		signRequestParams.setSignType(SignType.visa);
-		signRequestParamsRepository.save(signRequestParams);
+		//signRequestParamsRepository.save(signRequestParams);
 		return signRequestParams;
 	}
 	
