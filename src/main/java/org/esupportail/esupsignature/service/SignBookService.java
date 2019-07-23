@@ -333,37 +333,40 @@ public class SignBookService {
 		}
 	}
 
-	public void exportFilesToTarget(SignBook signBook, User user) {
+	public void exportFilesToTarget(SignBook signBook, User user) throws EsupSignatureException {
 		for (SignRequest signRequest : signBook.getSignRequests()) {
 			if (signRequest.getStatus().equals(SignRequestStatus.completed) && signRequestService.isSignRequestCompleted(signRequest)) {
 				try {
-					exportFileToTarget(signBook, signRequest, user);
-					//TODO : controle avant suppression + clear blobs
-					removeSignRequestFromAllSignBooks(signRequest);
-					signRequestService.updateStatus(signRequest, SignRequestStatus.exported, "Copié vers la destination " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", "");
+					if(exportFileToTarget(signBook, signRequest, user)) {
+						removeSignRequestFromAllSignBooks(signRequest);
+						signRequestService.updateStatus(signRequest, SignRequestStatus.exported, "Copié vers la destination " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", "");
+					} else {
+						throw new EsupSignatureException("error on export to " + signBook.getDocumentsTargetUri());
+					}
 				} catch (EsupSignatureException e) {
-					logger.error("error on file export to target", e);
+					throw e;
 				}
 			}
 		}
 	}
 
-	public void exportFileToTarget(SignBook signBook, SignRequest signRequest, User user) throws EsupSignatureException {
+	public boolean exportFileToTarget(SignBook signBook, SignRequest signRequest, User user) throws EsupSignatureException {
 		if (signBook.getTargetType() != null && !signBook.getTargetType().equals(DocumentIOType.none)) {
 			logger.info("send to " + signBook.getTargetType() + " in /" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri());
-			FsAccessService fsAccessService = getFsAccessService(signBook.getTargetType());
 			try {
+				FsAccessService fsAccessService = getFsAccessService(signBook.getTargetType());
 				File signedFile = signRequestService.getLastSignedDocument(signRequest).getJavaIoFile();
 				InputStream inputStream = new FileInputStream(signedFile);
 				fsAccessService.createFile("/", signBook.getSignBookType().toString(), "folder");
 				fsAccessService.createFile("/" + signBook.getSignBookType().toString(), signBook.getDocumentsTargetUri(), "folder");
-				fsAccessService.putFile("/" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri() + "/", signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
+				return fsAccessService.putFile("/" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri() + "/", signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
 			} catch (Exception e) {
 				throw new EsupSignatureException("write fsaccess error : ", e);
 			}
 		} else {
 			logger.debug("no target type for this signbook");
 		}
+		return false; 
 	}
 
 	public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
@@ -412,6 +415,12 @@ public class SignBookService {
 			signBook.setSignRequests(signRequests);
 			signBookRepository.save(signBook);
 			if(signBook.getExternal()) {
+				List<SignRequestParams> signRequestParamss = signBook.getSignRequestParams();
+				signBook.getSignRequestParams().clear();
+				signBookRepository.save(signBook);
+				for(SignRequestParams signRequestParams : signBook.getSignRequestParams()) {
+					signRequestParamsRepository.delete(signRequestParams);
+				}
 				deleteSignBook(signBook);
 			}
 		}

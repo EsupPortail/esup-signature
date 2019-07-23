@@ -337,7 +337,7 @@
 		  <artifactId>validation-model</artifactId>
 		  <version>1.14.7-RC</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>xmpbox</artifactId>

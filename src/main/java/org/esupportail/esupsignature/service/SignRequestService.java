@@ -376,7 +376,7 @@ public class SignRequestService {
 	public void addSignedFile(SignRequest signRequest, File signedFile, User user) throws EsupSignatureIOException {
 		try {
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-			Document document = documentService.createDocument(signedFile, signRequest.getTitle() + "_" + signRequest.getSignRequestParams().getSignType() + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(signedFile), fileService.getContentType(signedFile));
+			Document document = documentService.createDocument(signedFile, signRequest.getTitle() + "_" + signRequest.getSignRequestParams().getSignType() + "_" + signRequest.getCreateBy() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(signedFile), fileService.getContentType(signedFile));
 			signRequest.getSignedDocuments().add(document);
 			document.setParentId(signRequest.getId());
 		} catch (IOException e) {
@@ -400,7 +400,13 @@ public class SignRequestService {
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
 			}
 			if(signBook.isAutoRemove()) {
-				completeSignRequest(signRequest, signBook, user);
+				if(signBook.getSignBookType().equals(SignBookType.workflow) && signRequest.getSignBooksWorkflowStep() < signBook.getSignBooks().size()) {
+					signRequest.setSignBooksWorkflowStep(signRequest.getSignBooksWorkflowStep() + 1);
+					signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
+						signBookService.importSignRequestInSignBook(signRequest, signBook, user);
+				} else {
+					completeSignRequest(signRequest, signBook, user);
+				}
 			}
 		} else {
 			if(signType.equals(SignType.visa)) {
@@ -421,7 +427,6 @@ public class SignRequestService {
 				//TODO : add force email alert
 
 				if(signRequest.getNbSign() == 0 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
-					//TODO scan sign fields
 					int numSign = 0;
 					File toSignFile = signRequest.getOriginalDocuments().get(0).getJavaIoFile();
 					while(true) {
@@ -450,18 +455,10 @@ public class SignRequestService {
 		}
 	}
 	
-	public void completeSignRequest(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
-		if(signBook.getSignBookType().equals(SignBookType.workflow) && signRequest.getSignBooksWorkflowStep() < signBook.getSignBooks().size()) {
-			signRequest.setSignBooksWorkflowStep(signRequest.getSignBooksWorkflowStep() + 1);
-			signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
-			signBookService.importSignRequestInSignBook(signRequest, signBook, user);	
-		} else {
-			if(signBook.getTargetType().equals(DocumentIOType.none)) {
-				signBookService.removeSignRequestFromAllSignBooks(signRequest);
-			} else {
-				signBookService.exportFilesToTarget(signBook, user);
-			}
-			updateStatus(signRequest, SignRequestStatus.completed, "Terminé automatiquement", user, "SUCCESS", signRequest.getComment());
+	public void completeSignRequest(SignRequest signRequest, SignBook signBook, User user) {
+		updateStatus(signRequest, SignRequestStatus.completed, "Terminé automatiquement", user, "SUCCESS", signRequest.getComment());
+		if(signBook.getTargetType().equals(DocumentIOType.none)) {
+			signBookService.removeSignRequestFromAllSignBooks(signRequest);
 		}
 	}
 	

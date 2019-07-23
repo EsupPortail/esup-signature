@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.controller.user;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,6 +50,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import reactor.core.publisher.SignalType;
 
 @Controller
 @Transactional
@@ -108,16 +111,26 @@ public class WsController {
 
 	@ResponseBody
 	@RequestMapping(value = "/create-sign-book", method = RequestMethod.POST)
-	public ResponseEntity<String> createSignBook(@RequestParam String signBook, @RequestParam String signBookType, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
+	public String createSignBook(@RequestParam String signBookString, @RequestParam String signBookType, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
 		User user = getSystemUser();
 		user.setIp(httpServletRequest.getRemoteAddr());
 		ObjectMapper mapper = new ObjectMapper();
 		if (signBookType.equals("workflow")) {
-			signBookService.createWorkflowSignBook(mapper.readValue(signBook, SignBook.class), user, signRequestService.getEmptySignRequestParams(), null, true);
+			signBookService.createWorkflowSignBook(mapper.readValue(signBookString, SignBook.class), user, signRequestService.getEmptySignRequestParams(), null, true);
 		} else {
-			signBookService.createGroupSignBook(mapper.readValue(signBook, SignBook.class), user, signRequestService.getEmptySignRequestParams(), null, true);
+			SignBook signBook = mapper.readValue(signBookString, SignBook.class);
+			if(signBookRepository.countByRecipientEmailsAndSignBookType(signBook.getRecipientEmails(), SignBookType.user) == 0) {
+				if(signBook.getRecipientEmails().size() == 1 && signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(signBook.getRecipientEmails().get(0)), SignBookType.user) == 0) {
+					userService.createUser(signBook.getRecipientEmails().get(0));
+					return signBookRepository.findByRecipientEmailsAndSignBookType(signBook.getRecipientEmails(), SignBookType.user).get(0).getName(); 
+				}
+				signBookService.createGroupSignBook(signBook, user, signRequestService.getEmptySignRequestParams(), null, true);
+				return signBook.getName();
+			} else {
+				return signBookRepository.findByRecipientEmailsAndSignBookType(signBook.getRecipientEmails(), SignBookType.user).get(0).getName();
+			}
 		}
-		return new ResponseEntity<String>(HttpStatus.OK);
+		return "";
 	}
 
 	@ResponseBody

@@ -177,38 +177,6 @@
 							<div th:case="*">
 								<div th:if="${user.eppn == signRequest.createBy}">
 									<div th:if="${#lists.size(signRequest.originalDocuments) > 0}">
-										<div th:if="${signRequest.status.name() == 'pending'}">
-											<div class="alert alert-info">
-												La demande est en cours de signature par le(s)
-												destinataire(s) suivants :
-												<div class="form-group">
-													<table class="table table-striped table-sm">
-														<thead class="thead-dark">
-															<tr>
-																<th scope="col">Destinataires</th>
-																<th scope="col">Statut de la signature</th>
-															</tr>
-														</thead>
-														<tbody>
-															<th:block
-																th:each="signBooksLabel : ${signRequest.signBooksLabels}">
-																<tr>
-																	<td><i class="fas fa-user"></i> <span
-																		th:text="${signBooksLabel.key}"></span></td>
-																	<td align="center">
-																		<div th:switch="${signBooksLabel.value}">
-																			<i th:case="true" class="fas fa-check text-success"></i>
-																			<i th:case="false" class="fas fa-times text-danger"></i>
-																		</div>
-																		</div>
-																	</td>
-																</tr>
-															</th:block>
-														</tbody>
-													</table>
-												</div>
-											</div>
-										</div>
 									</div>
 									<div
 										th:unless="${#lists.size(signRequest.originalDocuments) > 0}">
@@ -229,6 +197,38 @@
 									</div>
 								</div>
 							</div>
+																	<div th:if="${signRequest.status.name() == 'pending'}">
+											<div class="alert alert-info">
+												La demande est en cours de signature par le(s)
+												destinataire(s) suivants :
+												<div class="form-group">
+													<table class="table table-striped table-sm">
+														<thead class="thead-dark">
+															<tr>
+																<th scope="col">Destinataires</th>
+																<th scope="col">Statut de la signature</th>
+															</tr>
+														</thead>
+														<tbody>
+															<th:block
+																th:each="signBooksLabel : ${signRequest.signBooksLabels}">
+																<tr>
+																	<td align="left"><i class="fas fa-user"></i> <span
+																		th:text="${signBooksLabel.key}"></span></td>
+																	<td align="center">
+																		<div th:switch="${signBooksLabel.value}">
+																			<i th:case="true" class="fas fa-check text-success"></i>
+																			<i th:case="false" class="fas fa-times text-danger"></i>
+																		</div>
+																		</div>
+																	</td>
+																</tr>
+															</th:block>
+														</tbody>
+													</table>
+												</div>
+											</div>
+										</div>
 						</div>
 						<div th:if="${user.eppn == signRequest.createBy}">
 							<div th:switch="${signRequest.status.name()}">

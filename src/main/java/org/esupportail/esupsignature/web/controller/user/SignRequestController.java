@@ -61,6 +61,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -615,7 +616,7 @@ public class SignRequestController {
 		return "redirect:/user/signrequests/";
 	}
 
-	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
+	@DeleteMapping(value = "/{id}", produces = "text/html")
 	public String delete(@PathVariable("id") Long id, Model uiModel) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		
