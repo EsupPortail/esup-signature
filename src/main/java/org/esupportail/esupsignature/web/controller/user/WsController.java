@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -26,6 +28,7 @@ import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.DocumentService;
+import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
@@ -51,8 +54,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import reactor.core.publisher.SignalType;
-
 @Controller
 @Transactional
 @RequestMapping(value = "/ws/")
@@ -77,6 +78,9 @@ public class WsController {
 
 	@Resource
 	private UserService userService;
+	
+	@Resource
+	private FileService fileService;
 	
 	@Resource
 	private DocumentService documentService;
@@ -138,23 +142,25 @@ public class WsController {
 	public ResponseEntity<String> deleteSignBook(@RequestParam String signBookName, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
 		User user = getSystemUser();
 		user.setIp(httpServletRequest.getRemoteAddr());
-		SignBook signBook = signBookRepository.findByName(signBookName).get(0);
-		signBookService.deleteSignBook(signBook);
+		if(signBookRepository.countByName(signBookName) > 0) {
+			SignBook signBook = signBookRepository.findByName(signBookName).get(0);
+			signBookService.deleteSignBook(signBook);
+		}
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
 
 	@Transactional
 	@RequestMapping(value = "/get-signed-file", method = RequestMethod.GET)
-	public ResponseEntity<Void> getSignedFile(@RequestParam String signBookName, @RequestParam String name, HttpServletResponse response, Model model) {
+	public ResponseEntity<Void> getSignedFile(@RequestParam String signBookName, @RequestParam String name, HttpServletResponse response, Model model) throws Exception {
 		try {
 			SignBook signBook = signBookRepository.findByName(signBookName).get(0);
 			SignRequest signRequest = signRequestRepository.findByName(signBookName).get(0);
 			if (signBook.getSignRequests().contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.signed)) {
-				Document document = signRequestService.getLastSignedDocument(signRequest);
+				File file = signRequestService.getLastSignedFile(signRequest);
 				try {
-					response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
-					response.setContentType(document.getContentType());
-					IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+					response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+					response.setContentType(fileService.getContentType(file));
+					IOUtils.copy(new FileInputStream(file), response.getOutputStream());
 					return new ResponseEntity<>(HttpStatus.OK);
 				} catch (Exception e) {
 					logger.error("get file error", e);
@@ -171,18 +177,19 @@ public class WsController {
 
 	@Transactional
 	@RequestMapping(value = "/get-last-file", method = RequestMethod.GET)
-	public ResponseEntity<Void> getLastFile(@RequestParam String signBookName, @RequestParam String name, HttpServletResponse response, Model model) {
+	public ResponseEntity<Void> getLastFile(@RequestParam String signBookName, @RequestParam String name, HttpServletResponse response, Model model) throws Exception {
 		try {
+			//TODO add user to check right
 			SignRequest signRequest = signRequestRepository.findByName(name).get(0);
 			if(signRequest != null) {
-				Document document = signRequestService.getLastSignedDocument(signRequest);
-				if(document == null) {
-					document = signRequest.getOriginalDocuments().get(0);
+				File file = signRequestService.getLastSignedFile(signRequest);
+				if(file == null) {
+					file = signRequest.getOriginalDocuments().get(0).getJavaIoFile();
 				}
 				try {
-					response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
-					response.setContentType(document.getContentType());
-					IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+					response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+					response.setContentType(fileService.getContentType(file));
+					IOUtils.copy(new FileInputStream(file), response.getOutputStream());
 					return new ResponseEntity<>(HttpStatus.OK);
 				} catch (Exception e) {
 					logger.error("get file error", e);
@@ -199,9 +206,9 @@ public class WsController {
 	
 	@ResponseBody
 	@RequestMapping(value = "/check-sign-request", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-	public JsonSignInfoMessage checkSignRequest(@RequestParam String signBookName, @RequestParam String fileToken, HttpServletResponse response, Model model) throws JsonProcessingException {
+	public JsonSignInfoMessage checkSignRequest(@RequestParam String fileToken, HttpServletResponse response, Model model) throws JsonProcessingException {
 		try {
-			if (signBookRepository.countByName(signBookName) > 0 && signRequestRepository.countByName(fileToken) > 0) {
+			if (signRequestRepository.countByName(fileToken) > 0) {
 				SignRequest signRequest = signRequestRepository.findByName(fileToken).get(0);
 				JsonSignInfoMessage jsonSignInfoMessage = new JsonSignInfoMessage();
 				jsonSignInfoMessage.setStatus(signRequest.getStatus().toString());

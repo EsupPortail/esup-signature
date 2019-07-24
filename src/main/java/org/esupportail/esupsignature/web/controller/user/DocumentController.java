@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.repository.BigFileRepository;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -77,6 +78,9 @@ public class DocumentController {
 
 	@Resource
 	private FileService fileService;
+	
+	@Resource
+	private DocumentService documentService;
 	
 	@Resource
 	private SignRequestService signRequestService;
@@ -244,7 +248,7 @@ public class DocumentController {
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
     public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, Model uiModel) {
         Document document = documentRepository.findById(id).get();
-        documentRepository.delete(document);
+        documentService.deleteDocument(document);
         uiModel.asMap().clear();
         uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
         uiModel.addAttribute("size", (size == null) ? "10" : size.toString());

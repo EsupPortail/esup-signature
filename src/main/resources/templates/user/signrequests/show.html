@@ -220,7 +220,6 @@
 																			<i th:case="true" class="fas fa-check text-success"></i>
 																			<i th:case="false" class="fas fa-times text-danger"></i>
 																		</div>
-																		</div>
 																	</td>
 																</tr>
 															</th:block>
@@ -249,9 +248,7 @@
 											</div>
 										</dt>
 										<dd class="col-lg-7">
-											<spring:url value="/user/signrequests/complete/${id}"
-												var="completeUrl" />
-											<form class="form-group" action="${completeUrl}" method="get">
+											<form class="form-group" th:action="'/user/signrequests/complete/' +  ${id}" method="get">
 												<div class="input-group">
 													<button type="submit" class="btn btn-warning">
 														<i class="fas fa-flag-checkered"> </i> Terminer
@@ -300,12 +297,12 @@
 							th:unless="${signRequest.status == 'signed' || signRequest.status == 'completed' || signRequest.status == 'checked'}">
 							<div th:if="${#lists.size(signRequest.signBooks) > 1}">
 								<div class="alert alert-secondary">
-									<small>
-										<div th:switch="${signRequest.allSignToComplete}">
-											<div th:case="true">Oui</div>
-											<div th:case="*">Non</div>
-										</div>
-									</small>
+									<div th:switch="${signRequest.allSignToComplete}">
+										<small>
+											<span th:case="true">Oui</span>
+											<span th:case="*">Non</span>
+										</small>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -370,21 +367,18 @@
 								<a href="#" class="list-group-item list-group-item-action">
 									<div class="d-flex w-100 justify-content-between">
 										<h5 class="mb-1">${comment.eppn}</h5>
-										<small><fmt:formatDate pattern="dd/MM/YYYY HH:mm"
-												value="${comment.logDate}" /></small>
+										<small>
+										<fmt:formatDate pattern="dd/MM/YYYY HH:mm" value="${comment.logDate}" /></small>
 									</div>
 									<p>
 										Action effectuée :
-										<spring:message
-											code="label_org_esupportail_esupsignature_domain_signbook_status_${comment.finalStatus}" />
+										<span th:text="${comment.finalStatus}" />
 									</p>
 									<p class="mb-1">${comment.comment}</p>
 								</a>
 							</th:block>
 						</div>
-						<spring:url value="/user/signrequests/comment/${id}"
-							var="commentUrl" />
-						<form action="${commentUrl}">
+						<form th:action="'/user/signrequests/comment/' + ${id}">
 							<textarea placeholder="Vous pouvez ajouter un commentaire"
 								class="form-control" name="comment" cols="" rows=""></textarea>
 							<button type="submit" class="btn btn-primary">

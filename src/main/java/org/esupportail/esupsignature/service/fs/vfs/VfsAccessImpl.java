@@ -338,4 +338,10 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		this.ftpControlEncoding = ftpControlEncoding;
 	}
 
+	@Override
+	public FsFile getFileFromURI(String uri) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

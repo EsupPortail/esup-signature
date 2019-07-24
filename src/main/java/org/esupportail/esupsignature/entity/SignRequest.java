@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -50,15 +51,17 @@ public class SignRequest {
     @Transient
     private String comment;
     
-    @OneToMany
+    private String exportedDocumentURI;
+    
+    @OneToMany(cascade = CascadeType.REMOVE)
     private List<Document> originalDocuments = new ArrayList<Document>();
     
-    @OneToMany
+    @OneToMany(cascade = CascadeType.REMOVE)
     private List<Document> signedDocuments = new ArrayList<Document>();
     
     private boolean overloadSignBookParams = false;
     
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<SignRequestParams> signRequestParamsList = new ArrayList<SignRequestParams>();
     
     @Enumerated(EnumType.STRING)
@@ -255,4 +258,12 @@ public class SignRequest {
         this.allSignToComplete = allSignToComplete;
     }
 
+	public String getExportedDocumentURI() {
+		return exportedDocumentURI;
+	}
+
+	public void setExportedDocumentURI(String exportedDocumentURI) {
+		this.exportedDocumentURI = exportedDocumentURI;
+	}
+	
 }

@@ -117,7 +117,7 @@ public class SignBook {
 	}
 	
     public enum DocumentIOType {
-		none, cifs, vfs, cmis, mail;
+		none, smb, vfs, cmis, mail;
 	}
     
     public String getRecipientEmailsLabels() {

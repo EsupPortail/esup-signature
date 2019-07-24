@@ -71,4 +71,12 @@ public class DocumentService {
 		return document;
 	}
 	
+	public void deleteDocument(Document document) {
+		BigFile bigFile = document.getBigFile();
+		document.setBigFile(null);
+		documentRepository.save(document);
+		bigFileService.deleteBigFile(bigFile.getId());
+		documentRepository.delete(document);
+	}
+	
 }

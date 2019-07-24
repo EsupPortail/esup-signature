@@ -30,7 +30,6 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
-import org.esupportail.esupsignature.exception.EsupSignatureNexuException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.LogRepository;
@@ -231,14 +230,15 @@ public class SignRequestController {
 					uiModel.addAttribute("pdfWidth", pdfParameters.getWidth());
 					uiModel.addAttribute("pdfHeight", pdfParameters.getHeight());
 					uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-					
-					SignRequestParams s =signRequest.getSignRequestParams(); 
 
 					if(user.getSignImage() != null) {
 						uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 						int[] size = pdfService.getSignSize(user.getSignImage().getJavaIoFile());
 						uiModel.addAttribute("signWidth", size[0]);
 						uiModel.addAttribute("signHeight", size[1]);
+					} else {
+						uiModel.addAttribute("signWidth", 100);
+						uiModel.addAttribute("signHeight", 75);
 					}
 				}
 				uiModel.addAttribute("documentType", fileService.getExtension(toDisplayFile));		
@@ -334,7 +334,6 @@ public class SignRequestController {
 		}
 		//on traite les groups en premier
 		signBooks = signBooks.stream().sorted(Comparator.comparing(SignBook::getSignBookType)).collect(Collectors.toList());
-
 		for(SignBook signBook : signBooks) {
 			signBookService.importSignRequestInSignBook(signRequest, signBook, user);			
 		}
@@ -377,6 +376,7 @@ public class SignRequestController {
 		SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			signRequest.getOriginalDocuments().remove(document);
+			documentService.deleteDocument(document);
 		}
 		String[] ok = {"ok"};
 		return ok;

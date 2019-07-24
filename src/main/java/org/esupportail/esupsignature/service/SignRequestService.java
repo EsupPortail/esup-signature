@@ -21,6 +21,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
+import org.esupportail.esupsignature.entity.BigFile;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignBook;
@@ -37,12 +38,14 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
+import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
+import org.esupportail.esupsignature.service.fs.FsAccessFactory;
+import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,9 +86,6 @@ public class SignRequestService {
 	private PdfService pdfService;
 
 	@Resource
-	private CifsAccessImpl cifsAccessImpl;
-
-	@Resource
 	private DocumentService documentService;
 
 	@Autowired
@@ -93,6 +93,9 @@ public class SignRequestService {
 	
 	@Autowired
 	private SignBookRepository signBookRepository;
+	
+	@Resource
+	private FsAccessFactory fsAccessFactory;
 	
 	@Resource
 	private SignBookService signBookService;
@@ -472,10 +475,22 @@ public class SignRequestService {
 		return documents;
 	}
 	
+	public File getLastSignedFile(SignRequest signRequest) throws Exception {
+		if(signRequest.getStatus().equals(SignRequestStatus.exported)) {
+			FsAccessService fsAccessService = null;
+			if(signRequest.getExportedDocumentURI().startsWith("smb")) {
+				fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.smb);
+			}
+			return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI()).getFile();
+		} else {
+			return getLastSignedDocument(signRequest).getJavaIoFile();
+		}
+	}
+	
 	public Document getLastSignedDocument(SignRequest signRequest) {
 		List<Document> documents = signRequest.getSignedDocuments();
 		if(documents.size() > 0) {
-		return documents.get(documents.size() - 1);
+			return documents.get(documents.size() - 1);
 		}
 		return null;
 	}
@@ -489,6 +504,22 @@ public class SignRequestService {
 		}
 	}
 
+	public void clearAllDocuments(SignRequest signRequest) {
+		List<Document> originalDocuments = new ArrayList<Document>();
+		originalDocuments.addAll(signRequest.getOriginalDocuments());
+		signRequest.getOriginalDocuments().clear();
+		for(Document document : originalDocuments) {
+			documentService.deleteDocument(document);
+		}
+		List<Document> signedDocuments = new ArrayList<Document>();
+		signedDocuments.addAll(signRequest.getSignedDocuments());
+		signRequest.getSignedDocuments().clear();
+		for(Document document : signedDocuments) {
+			documentService.deleteDocument(document);
+		}
+		signRequestRepository.save(signRequest);
+	}
+	
 	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, User user, String returnCode, String comment) {
 		Log log = new Log();
 		log.setSignRequestId(signRequest.getId());
@@ -570,7 +601,7 @@ public class SignRequestService {
 		signRequestParams.setSignPageNumber(1);
 		signRequestParams.setNewPageType(NewPageType.none);
 		signRequestParams.setSignType(SignType.visa);
-		//signRequestParamsRepository.save(signRequestParams);
+		signRequestParamsRepository.save(signRequestParams);
 		return signRequestParams;
 	}
 	

@@ -2,24 +2,22 @@ package org.esupportail.esupsignature.config;
 
 import java.util.Properties;
 
-import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
 import org.esupportail.esupsignature.service.fs.opencmis.CmisAccessImpl;
+import org.esupportail.esupsignature.service.fs.smb.SmbAccessImpl;
 import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
 
 @Configuration
 public class FsConfig {
 
-	@Value("${fs.cifs.uri}")
-	private String cifsUri;
-	@Value("${fs.cifs.login}")
-	private String cifsLogin;
-	@Value("${fs.cifs.password}")
-	private String cifsPassword;
+	@Value("${fs.smb.uri}")
+	private String smbUri;
+	@Value("${fs.smb.login}")
+	private String smbLogin;
+	@Value("${fs.smb.password}")
+	private String smbPassword;
 
 	@Value("${fs.vfs.uri}")
 	private String vfsUri;
@@ -36,23 +34,23 @@ public class FsConfig {
 	private String cmisRootPath;
 	
 	@Bean
-	public CifsAccessImpl cifsAccessImpl(){
-		CifsAccessImpl cifsAccessImpl = new CifsAccessImpl();
-		cifsAccessImpl.setDriveName("CIFS");
-		cifsAccessImpl.setUri(cifsUri);
-		cifsAccessImpl.setJcifsConfigProperties(cifsProperties());
-		cifsAccessImpl.setLogin(cifsLogin);
-		cifsAccessImpl.setPassword(cifsPassword);
-		return cifsAccessImpl;
+	public SmbAccessImpl smbAccessImpl(){
+		SmbAccessImpl smbAccessImpl = new SmbAccessImpl();
+		smbAccessImpl.setDriveName("CIFS");
+		smbAccessImpl.setUri(smbUri);
+		smbAccessImpl.setJcifsConfigProperties(smbProperties());
+		smbAccessImpl.setLogin(smbLogin);
+		smbAccessImpl.setPassword(smbPassword);
+		return smbAccessImpl;
 	}
 
 	@Bean
-	public Properties cifsProperties(){
+	public Properties smbProperties(){
 		Properties properties = new Properties();
-		properties.put("jcifs.resolveOrder", "DNS,BCAST");
-		properties.put("jcifs.encoding", "UTF8");
-		properties.put("jcifs.smb.client.disablePlainTextPasswords", "true");
-		properties.put("jcifs.smb.client.responseTimeout", "40000");
+		properties.put("jsmb.resolveOrder", "DNS,BCAST");
+		properties.put("jsmb.encoding", "UTF8");
+		properties.put("jsmb.smb.client.disablePlainTextPasswords", "true");
+		properties.put("jsmb.smb.client.responseTimeout", "40000");
 		return properties;
 	
 	}
@@ -78,5 +76,5 @@ public class FsConfig {
 		cmisAccessImpl.setRootPath(cmisRootPath);
 		return cmisAccessImpl;
 	}
-	
+
 }

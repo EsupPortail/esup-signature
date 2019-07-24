@@ -28,12 +28,10 @@ import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.fs.EsupStockException;
+import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
-import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
-import org.esupportail.esupsignature.service.fs.opencmis.CmisAccessImpl;
-import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,16 +57,10 @@ public class SignBookService {
 	private SignRequestParamsRepository signRequestParamsRepository; 
 	
 	@Resource
+	private FsAccessFactory fsAccessFactory;
+	
+	@Resource
 	private FileService fileService;
-
-	@Resource
-	private CifsAccessImpl cifsAccessImpl;
-
-	@Resource
-	private VfsAccessImpl vfsAccessImpl;
-
-	@Resource
-	private CmisAccessImpl cmisAccessImpl;
 
 	@Resource
 	private SignRequestService signRequestService;
@@ -89,24 +81,6 @@ public class SignBookService {
 		List<SignBook> list = new ArrayList<SignBook>();
 		signBookRepository.findAll().forEach(e -> list.add(e));
 		return list;
-	}
-	
-	private FsAccessService getFsAccessService(DocumentIOType type) {
-		FsAccessService fsAccessService = null;
-		switch (type) {
-		case cifs:
-			fsAccessService = cifsAccessImpl;
-			break;
-		case vfs:
-			fsAccessService = vfsAccessImpl;
-			break;
-		case cmis:
-			fsAccessService = cmisAccessImpl;
-			break;
-		default:
-			break;
-		}
-		return fsAccessService;
 	}
 	
 	public void creatorSignBook() {
@@ -292,7 +266,7 @@ public class SignBookService {
 	public void importFilesFromSource(SignBook signBook, User user) throws EsupSignatureIOException, EsupStockException {
 		if (signBook.getSourceType() != null && !signBook.getSourceType().equals(DocumentIOType.none)) {
 			logger.info("retrieve from " + signBook.getSourceType() + " in " + signBook.getDocumentsSourceUri());
-			FsAccessService fsAccessService = getFsAccessService(signBook.getSourceType());
+			FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signBook.getSourceType());
 			try {
 				List<FsFile> fsFiles = new ArrayList<FsFile>();
 				try {
@@ -340,6 +314,8 @@ public class SignBookService {
 					if(exportFileToTarget(signBook, signRequest, user)) {
 						removeSignRequestFromAllSignBooks(signRequest);
 						signRequestService.updateStatus(signRequest, SignRequestStatus.exported, "Copié vers la destination " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", "");
+						signRequestService.clearAllDocuments(signRequest);
+						
 					} else {
 						throw new EsupSignatureException("error on export to " + signBook.getDocumentsTargetUri());
 					}
@@ -354,11 +330,12 @@ public class SignBookService {
 		if (signBook.getTargetType() != null && !signBook.getTargetType().equals(DocumentIOType.none)) {
 			logger.info("send to " + signBook.getTargetType() + " in /" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri());
 			try {
-				FsAccessService fsAccessService = getFsAccessService(signBook.getTargetType());
+				FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signBook.getTargetType());
 				File signedFile = signRequestService.getLastSignedDocument(signRequest).getJavaIoFile();
 				InputStream inputStream = new FileInputStream(signedFile);
 				fsAccessService.createFile("/", signBook.getSignBookType().toString(), "folder");
 				fsAccessService.createFile("/" + signBook.getSignBookType().toString(), signBook.getDocumentsTargetUri(), "folder");
+				signRequest.setExportedDocumentURI(fsAccessService.getUri() + "/" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri() + "/" + signedFile.getName());
 				return fsAccessService.putFile("/" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri() + "/", signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
 			} catch (Exception e) {
 				throw new EsupSignatureException("write fsaccess error : ", e);

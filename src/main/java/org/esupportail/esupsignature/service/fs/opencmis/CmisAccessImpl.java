@@ -295,4 +295,10 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 		return true;
 	}
 
+	@Override
+	public FsFile getFileFromURI(String uri) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
