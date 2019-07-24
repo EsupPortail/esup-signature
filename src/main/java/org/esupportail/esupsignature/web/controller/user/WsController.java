@@ -122,19 +122,33 @@ public class WsController {
 		if (signBookType.equals("workflow")) {
 			signBookService.createWorkflowSignBook(mapper.readValue(signBookString, SignBook.class), user, signRequestService.getEmptySignRequestParams(), null, true);
 		} else {
-			SignBook signBook = mapper.readValue(signBookString, SignBook.class);
-			if(signBookRepository.countByRecipientEmailsAndSignBookType(signBook.getRecipientEmails(), SignBookType.user) == 0) {
-				if(signBook.getRecipientEmails().size() == 1 && signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(signBook.getRecipientEmails().get(0)), SignBookType.user) == 0) {
-					userService.createUser(signBook.getRecipientEmails().get(0));
-					return signBookRepository.findByRecipientEmailsAndSignBookType(signBook.getRecipientEmails(), SignBookType.user).get(0).getName(); 
+			SignBook newSignBook = mapper.readValue(signBookString, SignBook.class);
+			
+			if(newSignBook.getRecipientEmails().size() > 1 ) {
+				SignBook signBookCheck = null;
+				for(String recipientEmail : newSignBook.getRecipientEmails()) {
+					if(signBookRepository.countByRecipientEmailsContainAndSignBookType(newSignBook.getRecipientEmails().get(0), SignBookType.group) > 0 && signBookCheck == null) {
+						signBookCheck = signBookRepository.findByRecipientEmailsContainAndSignBookType(newSignBook.getRecipientEmails().get(0), SignBookType.group).get(0);
+					} else {
+						if(!signBookCheck.getRecipientEmails().contains(recipientEmail)) {
+							break;
+						}
+					}
 				}
-				signBookService.createGroupSignBook(signBook, user, signRequestService.getEmptySignRequestParams(), null, true);
-				return signBook.getName();
+				if(signBookCheck.getRecipientEmails().size() == newSignBook.getRecipientEmails().size()) {
+					return signBookCheck.getName();
+				}
 			} else {
-				return signBookRepository.findByRecipientEmailsAndSignBookType(signBook.getRecipientEmails(), SignBookType.user).get(0).getName();
+				if(signBookRepository.countByRecipientEmailsAndSignBookType(newSignBook.getRecipientEmails(), SignBookType.user) > 0) {
+					return signBookRepository.findByRecipientEmailsAndSignBookType(newSignBook.getRecipientEmails(), SignBookType.user).get(0).getName();	
+				}
 			}
+			
+			return newSignBook.getName();
+
 		}
 		return "";
+
 	}
 
 	@ResponseBody
@@ -177,7 +191,7 @@ public class WsController {
 
 	@Transactional
 	@RequestMapping(value = "/get-last-file", method = RequestMethod.GET)
-	public ResponseEntity<Void> getLastFile(@RequestParam String signBookName, @RequestParam String name, HttpServletResponse response, Model model) throws Exception {
+	public ResponseEntity<Void> getLastFile(@RequestParam String name, HttpServletResponse response, Model model) throws Exception {
 		try {
 			//TODO add user to check right
 			SignRequest signRequest = signRequestRepository.findByName(name).get(0);

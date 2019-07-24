@@ -5,7 +5,8 @@
 	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
 	<nav class="nav justify-content-between" aria-label="breadcrumb">
 		<ol class="breadcrumb col-11">
-			<li class="breadcrumb-item"><a href="/user/signrequests">Liste des demandes</a></li>
+			<li class="breadcrumb-item"><a href="/user/signrequests">Liste
+					des demandes</a></li>
 			<li class="breadcrumb-item active" aria-current="page">Demande
 				de signature : <span th:text="${signRequest.name}"></span>
 			</li>
@@ -58,26 +59,27 @@
 						<script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
 						<script type="text/javascript" src="/js/nexu-deploy.js"></script>
 						<div id="nexu_missing_alert" style="display: none;">
-						<a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left" id="btnSeccion3"> <i
-								class="fas fa-sync-alt fa-2x"></i><br> Actualiser
+							<a onclick="location.reload();"
+								class="mr-2 btn btn-warning btnSeccion float-left"
+								id="btnSeccion3"> <i class="fas fa-sync-alt fa-2x"></i><br>
+								Actualiser
 							</a>
 							<div class="alert alert-warning float-left">
-							L'application NexU n'a pas été détectée
-							<br>
-							<small>Merci de lancer l'application sur votre poste. 
-							<a href="https://github.com/nowina-solutions/nexu/releases/">Téléchargement</a>
+								L'application NexU n'a pas été détectée <br> <small>Merci
+									de lancer l'application sur votre poste. <a
+									href="https://github.com/nowina-solutions/nexu/releases/">Téléchargement</a>
 								</small>
-						</div>
+							</div>
 						</div>
 						<div id="nexu_ready_alert" style="display: none;">
-							<button type="button" class="mr-2 btn btn-success float-left" data-toggle="modal" data-target="#signatureModal">
-							<i class="fas fa-signature fa-2x"></i> <br /> 
-							Signer
-						</button>
-						<div class="alert alert-success float-left">
-							L'application NexU est fonctionnelle <br /> <small>Vous pouvez utiliser une clé
-								materielle ou un keystore</small> 
-						</div>
+							<button type="button" class="mr-2 btn btn-success float-left"
+								data-toggle="modal" data-target="#signatureModal">
+								<i class="fas fa-signature fa-2x"></i> <br /> Signer
+							</button>
+							<div class="alert alert-success float-left">
+								L'application NexU est fonctionnelle <br /> <small>Vous
+									pouvez utiliser une clé materielle ou un keystore</small>
+							</div>
 
 						</div>
 					</div>
@@ -176,58 +178,61 @@
 							</div>
 							<div th:case="*">
 								<div th:if="${user.eppn == signRequest.createBy}">
-									<div th:if="${#lists.size(signRequest.originalDocuments) > 0}">
-									</div>
-									<div
-										th:unless="${#lists.size(signRequest.originalDocuments) > 0}">
-										<div th:if="${modelId != null}">
-											<button type="button" class="btn btn-info"
-												onclick="window.open('${modelId}', '_blank')">
-												<i class="fas fa-download"></i> Télécharger le modèle
-											</button>
-										</div>
-										<div class="alert alert-info">Vous devez ajouter des
-											documents</div>
-									</div>
-								</div>
-								<div th:unless="${user.eppn == signRequest.createBy}">
 									<div th:if="${signRequest.status.name() == 'draft'}">
 										<div class="alert alert-info">Demande en cours de
 											création</div>
+										<div
+											th:if="${#lists.size(signRequest.originalDocuments) == 0}">
+											<div th:if="${modelId != null}">
+												<button type="button" class="btn btn-info"
+													onclick="window.open('${modelId}', '_blank')">
+													<i class="fas fa-download"></i> Télécharger le modèle
+												</button>
+											</div>
+
+											<div class="alert alert-info">Vous devez ajouter des
+												documents</div>
+										</div>
 									</div>
 								</div>
 							</div>
-																	<div th:if="${signRequest.status.name() == 'pending'}">
-											<div class="alert alert-info">
-												La demande est en cours de signature par le(s)
-												destinataire(s) suivants :
-												<div class="form-group">
-													<table class="table table-striped table-sm">
-														<thead class="thead-dark">
-															<tr>
-																<th scope="col">Destinataires</th>
-																<th scope="col">Statut de la signature</th>
-															</tr>
-														</thead>
-														<tbody>
-															<th:block
-																th:each="signBooksLabel : ${signRequest.signBooksLabels}">
-																<tr>
-																	<td align="left"><i class="fas fa-user"></i> <span
-																		th:text="${signBooksLabel.key}"></span></td>
-																	<td align="center">
-																		<div th:switch="${signBooksLabel.value}">
-																			<i th:case="true" class="fas fa-check text-success"></i>
-																			<i th:case="false" class="fas fa-times text-danger"></i>
-																		</div>
-																	</td>
-																</tr>
-															</th:block>
-														</tbody>
-													</table>
-												</div>
-											</div>
-										</div>
+							<div th:if="${signRequest.status.name() == 'exported'}" class="alert alert-warning">
+							<small><span th:text="'Emplacement définitif : ' + ${signRequest.exportedDocumentURI}"></span></small>
+							<br>
+							<a class="btn btn-success" th:href="'/ws/get-last-file?name=' + ${signRequest.name}"><i class="fa fa-download"></i> Télécharger le document signé</a>
+								
+							</div>
+							<div th:if="${signRequest.status.name() == 'pending'}">
+								<div class="alert alert-info">
+									La demande est en cours de signature par le(s) destinataire(s)
+									suivants :
+									<div class="form-group">
+										<table class="table table-striped table-sm">
+											<thead class="thead-dark">
+												<tr>
+													<th scope="col">Destinataires</th>
+													<th scope="col">Statut de la signature</th>
+												</tr>
+											</thead>
+											<tbody>
+												<th:block
+													th:each="signBooksLabel : ${signRequest.signBooksLabels}">
+													<tr>
+														<td align="left"><i class="fas fa-user"></i> <span
+															th:text="${signBooksLabel.key}"></span></td>
+														<td align="center">
+															<div th:switch="${signBooksLabel.value}">
+																<i th:case="true" class="fas fa-check text-success"></i>
+																<i th:case="false" class="fas fa-times text-danger"></i>
+															</div>
+														</td>
+													</tr>
+												</th:block>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
 						</div>
 						<div th:if="${user.eppn == signRequest.createBy}">
 							<div th:switch="${signRequest.status.name()}">
@@ -248,7 +253,9 @@
 											</div>
 										</dt>
 										<dd class="col-lg-7">
-											<form class="form-group" th:action="'/user/signrequests/complete/' +  ${id}" method="get">
+											<form class="form-group"
+												th:action="'/user/signrequests/complete/' +  ${id}"
+												method="get">
 												<div class="input-group">
 													<button type="submit" class="btn btn-warning">
 														<i class="fas fa-flag-checkered"> </i> Terminer
@@ -298,9 +305,8 @@
 							<div th:if="${#lists.size(signRequest.signBooks) > 1}">
 								<div class="alert alert-secondary">
 									<div th:switch="${signRequest.allSignToComplete}">
-										<small>
-											<span th:case="true">Oui</span>
-											<span th:case="*">Non</span>
+										<small> <span th:case="true">Oui</span> <span
+											th:case="*">Non</span>
 										</small>
 									</div>
 								</div>
@@ -309,7 +315,7 @@
 					</div>
 				</div>
 			</div>
-			
+
 
 			<div class="card bg-light">
 				<div class="card-header">
@@ -367,12 +373,11 @@
 								<a href="#" class="list-group-item list-group-item-action">
 									<div class="d-flex w-100 justify-content-between">
 										<h5 class="mb-1">${comment.eppn}</h5>
-										<small>
-										<fmt:formatDate pattern="dd/MM/YYYY HH:mm" value="${comment.logDate}" /></small>
+										<small> <fmt:formatDate pattern="dd/MM/YYYY HH:mm"
+												value="${comment.logDate}" /></small>
 									</div>
 									<p>
-										Action effectuée :
-										<span th:text="${comment.finalStatus}" />
+										Action effectuée : <span th:text="${comment.finalStatus}" />
 									</p>
 									<p class="mb-1">${comment.comment}</p>
 								</a>
@@ -568,8 +573,11 @@
 		</div>
 	</div>
 
-	<div class="modal fade" style="width: 100%;" id="signatureModal" tabindex="-1" role="dialog" aria-labelledby="Signature" aria-hidden="true">
-		<div class="modal-dialog modal-lg" style="width: 100%;" role="document">
+	<div class="modal fade" style="width: 100%;" id="signatureModal"
+		tabindex="-1" role="dialog" aria-labelledby="Signature"
+		aria-hidden="true">
+		<div class="modal-dialog modal-lg" style="width: 100%;"
+			role="document">
 			<div class="modal-content" style="height: auto; min-height: 100%;">
 				<div class="modal-body">
 					<div th:replace="user/signrequests/includes/signmodal :: signmodal"></div>
@@ -599,8 +607,8 @@
 						class="alert alert-danger" role="alert">Mauvais mot de passe
 					</div>
 					<div style="display: none;" id="signError"
-						class="alert alert-danger" role="alert">Erreur du système de signature
-					</div>
+						class="alert alert-danger" role="alert">Erreur du système de
+						signature</div>
 				</div>
 				<div class="modal-footer">
 					<button id="closeModal" type="button"
@@ -652,7 +660,8 @@
 						method="get">
 						<div class="input-group">
 							<select onchange="checkNbRecipients();" name="signBookNames"
-								id="signBookNames" size="5" multiple="multiple" required="required">
+								id="signBookNames" size="5" multiple="multiple"
+								required="required">
 								<th:block th:each="signBook : ${allSignBooks}">
 									<option th:value="${signBook.name}"
 										th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>

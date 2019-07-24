@@ -18,8 +18,11 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long>, Sign
     List<SignBook> findBySignRequests(List<SignRequest> signRequests);
     List<SignBook> findByRecipientEmails(List<String> recipientEmails);
     
-    @Query("select s from SignBook s where :recipientEmail in elements(s.recipientEmails)")
-    List<SignBook> findByRecipientEmailsContain(@Param("recipientEmail") String recipientEmail);
+    @Query("select s from SignBook s where :recipientEmail in elements(s.recipientEmails) and :signBookType = s.signBookType")
+    List<SignBook> findByRecipientEmailsContainAndSignBookType(@Param("recipientEmail") String recipientEmail, @Param("signBookType") SignBookType signBookType);
+
+    @Query("select count(s) from SignBook s where :recipientEmail in elements(s.recipientEmails) and :signBookType = s.signBookType")
+    Long countByRecipientEmailsContainAndSignBookType(@Param("recipientEmail") String recipientEmail, @Param("signBookType") SignBookType signBookType);
     
     @Query("select s from SignBook s where :signBook in elements(s.signBooks)")
     List<SignBook> findBySignBookContain(@Param("signBook") SignBook signBook);

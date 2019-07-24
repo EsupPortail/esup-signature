@@ -42,6 +42,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -144,9 +145,9 @@ public class SignBookController {
         return "manager/signbooks/create";
     }
 	
-	@RequestMapping(method = RequestMethod.POST, produces = "text/html")
+	@PostMapping(produces = "text/html")
 	public String create(SignBook signBook, @RequestParam("type") String type, @RequestParam("multipartFile") MultipartFile multipartFile,
-			@RequestParam(name = "signBooksIds", required = true) Long[] signBooksIds, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, RedirectAttributes redirectAttrs) {
+			@RequestParam(name = "signBooksIds", required = false) Long[] signBooksIds, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
 		SignBook signBookToUpdate = null;
 		if(signBook.getId() != null) {

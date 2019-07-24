@@ -23,7 +23,7 @@
 			<p>Vous pouvez rendre l'ajout de documents automatique en précisant une source et une destination</p>
 		</div>
 	</div>
-	<form id="fc_org_esupportail_esupsignature_domain_SignBook" th:object="${signBook}" action="/manager/signbooks" method="post" enctype="multipart/form-data">
+	<form id="fc_org_esupportail_esupsignature_domain_SignBook" action="/manager/signbooks" method="post" enctype="multipart/form-data">
 		<input type="hidden" name="type" th:value="${type}">
 		<div id="ribbon" class="card">
 			<div class="card-body">

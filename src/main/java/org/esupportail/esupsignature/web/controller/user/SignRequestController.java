@@ -161,7 +161,7 @@ public class SignRequestController {
 		}
 
 		List<SignRequest> signRequestsToSign = new ArrayList<>();
-		List<SignBook> signBooksGroup = signBookRepository.findByRecipientEmailsContain(user.getEmail());
+		List<SignBook> signBooksGroup = signBookRepository.findByRecipientEmailsContainAndSignBookType(user.getEmail(), SignBookType.group);
 		SignBook signBook = signBookRepository.findByName(user.getFirstname() + " " + user.getName()).get(0);
 		for(SignBook signBookGroup : signBooksGroup) {
 			signRequestsToSign.addAll(signBookGroup.getSignRequests());
