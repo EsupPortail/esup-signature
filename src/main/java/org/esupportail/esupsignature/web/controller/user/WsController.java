@@ -130,12 +130,12 @@ public class WsController {
 					if(signBookRepository.countByRecipientEmailsContainAndSignBookType(newSignBook.getRecipientEmails().get(0), SignBookType.group) > 0 && signBookCheck == null) {
 						signBookCheck = signBookRepository.findByRecipientEmailsContainAndSignBookType(newSignBook.getRecipientEmails().get(0), SignBookType.group).get(0);
 					} else {
-						if(!signBookCheck.getRecipientEmails().contains(recipientEmail)) {
+						if(signBookCheck != null && !signBookCheck.getRecipientEmails().contains(recipientEmail)) {
 							break;
 						}
 					}
 				}
-				if(signBookCheck.getRecipientEmails().size() == newSignBook.getRecipientEmails().size()) {
+				if(signBookCheck != null && signBookCheck.getRecipientEmails().size() == newSignBook.getRecipientEmails().size()) {
 					return signBookCheck.getName();
 				}
 			} else {
@@ -143,7 +143,7 @@ public class WsController {
 					return signBookRepository.findByRecipientEmailsAndSignBookType(newSignBook.getRecipientEmails(), SignBookType.user).get(0).getName();	
 				}
 			}
-			
+			signBookService.createGroupSignBook(newSignBook, user, signRequestService.getEmptySignRequestParams(), null, true);
 			return newSignBook.getName();
 
 		}
