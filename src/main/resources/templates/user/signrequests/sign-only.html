@@ -62,7 +62,16 @@
 
 				<div th:if="${signRequest.signRequestParams.signType.name() == 'nexuSign'}">
 					<script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
-					<script type="text/javascript" src="/js/nexu-deploy.js"></script>
+					<script type="text/javascript" th:replace="user/signrequests/includes/script :: script"></script>
+					<div id="nexu_version_alert" style="display: none;">
+						<a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left" id="btnSeccion3">
+							<i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
+						</a>
+						<div class="alert alert-warning float-left">
+							L'application NexU n'a pas la bonne version.
+							<span th:text="${nexuVersion} + 'nécessaire'"></span>
+						<br>
+					</div>
 					<div id="nexu_missing_alert" style="display: none;">
 						<a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left" id="btnSeccion3">
 							<i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
@@ -75,16 +84,15 @@
 							</small>
 					</div>
 					</div>
-					<div id="nexu_ready_alert" style="display: none;">
-						<button type="button" onclick="document.getElementById('signForm').submit();" class="mr-2 btn btn-success float-left">
-						<i class="fas fa-signature fa-2x"></i> <br /> 
-						Signer
-					</button>
-					<div class="alert alert-success float-left">
-						L'application NexU est fonctionnelle <br /> <small>Vous pouvez utiliser une clé
-							materielle ou un keystore</small> 
-					</div>
-
+						<div id="nexu_ready_alert" style="display: none;">
+							<button type="button" onclick="document.getElementById('signForm').submit();" class="mr-2 btn btn-success float-left">
+							<i class="fas fa-signature fa-2x"></i> <br /> 
+							Signer
+						</button>
+						<div class="alert alert-success float-left">
+							L'application NexU est fonctionnelle <br /> <small>Vous pouvez utiliser une clé
+								materielle ou un keystore</small> 
+						</div>
 					</div>
 				</div>
 				

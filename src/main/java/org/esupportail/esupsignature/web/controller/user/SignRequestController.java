@@ -82,6 +82,15 @@ public class SignRequestController {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestController.class);
 
+	@Value("${baseUrl}")
+	private String baseUrl;
+
+	@Value("${nexuVersion}")
+	private String nexuVersion;
+
+	@Value("${nexuUrl}")
+	private String nexuUrl;
+	
 	@ModelAttribute("userMenu")
 	public String getActiveMenu() {
 		return "active";
@@ -204,14 +213,14 @@ public class SignRequestController {
 	}
 	
 	@RequestMapping(value = "/{id}", produces = "text/html")
-	public String show(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
+	public String show(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
 		User user = userService.getUserFromAuthentication();
 		if(!userService.isUserReady(user)) {
 			return "redirect:/user/users/?form";
 		}
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
-			uiModel.addAttribute("signBooks", signBookService.getAllSignBooks());
+			model.addAttribute("signBooks", signBookService.getAllSignBooks());
 			List<SignBook> originalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
 			if(originalSignBooks.size() > 0) {
 				if(!signRequest.isOverloadSignBookParams()) {
@@ -227,56 +236,59 @@ public class SignRequestController {
 				toDisplayFile = toDisplayDocument.getJavaIoFile();
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
 					PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayFile);
-					uiModel.addAttribute("pdfWidth", pdfParameters.getWidth());
-					uiModel.addAttribute("pdfHeight", pdfParameters.getHeight());
-					uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+					model.addAttribute("pdfWidth", pdfParameters.getWidth());
+					model.addAttribute("pdfHeight", pdfParameters.getHeight());
+					model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
 
 					if(user.getSignImage() != null) {
-						uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+						model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 						int[] size = pdfService.getSignSize(user.getSignImage().getJavaIoFile());
-						uiModel.addAttribute("signWidth", size[0]);
-						uiModel.addAttribute("signHeight", size[1]);
+						model.addAttribute("signWidth", size[0]);
+						model.addAttribute("signHeight", size[1]);
 					} else {
-						uiModel.addAttribute("signWidth", 100);
-						uiModel.addAttribute("signHeight", 75);
+						model.addAttribute("signWidth", 100);
+						model.addAttribute("signHeight", 75);
 					}
 				}
-				uiModel.addAttribute("documentType", fileService.getExtension(toDisplayFile));		
-				uiModel.addAttribute("documentId", toDisplayDocument.getId());
+				model.addAttribute("documentType", fileService.getExtension(toDisplayFile));		
+				model.addAttribute("documentId", toDisplayDocument.getId());
 			}
 			List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
-			uiModel.addAttribute("logs", logs);
-			uiModel.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
+			model.addAttribute("logs", logs);
+			model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
 			if(user.getSignImage() != null) {
-				uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+				model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 			}
 			if(user.getKeystore() != null) {
-				uiModel.addAttribute("keystore", user.getKeystore().getFileName());
+				model.addAttribute("keystore", user.getKeystore().getFileName());
 			}
 			
 			signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
 
 			signRequestService.setSignBooksLabels(signRequest);
 			
-			uiModel.addAttribute("signRequest", signRequest);
-			uiModel.addAttribute("itemId", id);
+			model.addAttribute("signRequest", signRequest);
+			model.addAttribute("itemId", id);
 			if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
-				uiModel.addAttribute("signable", "ok");
+				model.addAttribute("signable", "ok");
 			}
 			List<SignBook> firstOriginalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
 			if(firstOriginalSignBooks.size() > 0 ) {
 				SignBook firstOriginalSignBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
 				if(firstOriginalSignBook.getSignBookType().equals(SignBookType.workflow)) {
-					uiModel.addAttribute("firstOriginalSignBook", firstOriginalSignBook);
+					model.addAttribute("firstOriginalSignBook", firstOriginalSignBook);
 				}
 				if(firstOriginalSignBook.getModelFile() != null) {
-					uiModel.addAttribute("modelId", firstOriginalSignBook.getModelFile().getUrl());
+					model.addAttribute("modelId", firstOriginalSignBook.getModelFile().getUrl());
 				}
 			}
-			uiModel.addAttribute("originalSignBooks", signBookService.getSignBookBySignRequest(signRequest));
-			uiModel.addAttribute("allSignBooks", signBookRepository.findByNotCreateBy("System"));
-			uiModel.addAttribute("nbSignOk", signRequest.countSignOk());
-		
+			model.addAttribute("originalSignBooks", signBookService.getSignBookBySignRequest(signRequest));
+			model.addAttribute("allSignBooks", signBookRepository.findByNotCreateBy("System"));
+			model.addAttribute("nbSignOk", signRequest.countSignOk());
+			model.addAttribute("baseUrl", baseUrl);
+			model.addAttribute("nexuVersion", nexuVersion);
+			model.addAttribute("nexuUrl", nexuUrl);
+			
 			return "user/signrequests/show";
 		} else {
 			logger.warn(user.getEppn() + " attempted to access signRequest " + id + " without write access");
@@ -286,11 +298,11 @@ public class SignRequestController {
 	}
 	
 	@RequestMapping(params = "form", produces = "text/html")
-	public String createForm(Model uiModel) {
-		populateEditForm(uiModel, new SignRequest());
+	public String createForm(Model model) {
+		populateEditForm(model, new SignRequest());
 		User user = userService.getUserFromAuthentication();
-		uiModel.addAttribute("mySignBook", signBookService.getUserSignBook(user));
-		uiModel.addAttribute("allSignBooks", signBookRepository.findByNotCreateBy("System"));
+		model.addAttribute("mySignBook", signBookService.getUserSignBook(user));
+		model.addAttribute("allSignBooks", signBookRepository.findByNotCreateBy("System"));
 		return "user/signrequests/create";
 	}
 
@@ -299,14 +311,14 @@ public class SignRequestController {
 			@RequestParam(value = "signType", required = false) String signType, 
 			@RequestParam(value = "signBookNames", required = false) String[] signBookNames,
 			@RequestParam(value = "newPageType", required = false) String newPageType, 
-			Model uiModel, HttpServletRequest httpServletRequest,
+			Model model, HttpServletRequest httpServletRequest,
 			HttpServletRequest request, RedirectAttributes redirectAttrs) throws EsupSignatureException {
 		if (bindingResult.hasErrors()) {
-			uiModel.addAttribute("signRequest", signRequest);
+			model.addAttribute("signRequest", signRequest);
 			return "user/signrequests/create";
 		}
 
-		uiModel.asMap().clear();
+		model.asMap().clear();
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequestParams signRequestParams = null;
@@ -617,7 +629,7 @@ public class SignRequestController {
 	}
 
 	@DeleteMapping(value = "/{id}", produces = "text/html")
-	public String delete(@PathVariable("id") Long id, Model uiModel) {
+	public String delete(@PathVariable("id") Long id, Model model) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		
 		signBookService.removeSignRequestFromAllSignBooks(signRequest);
@@ -627,7 +639,7 @@ public class SignRequestController {
 			logRepository.delete(log);
 		}
 		signRequestRepository.delete(signRequest);
-		uiModel.asMap().clear();
+		model.asMap().clear();
 		return "redirect:/user/signrequests/";
 	}
 
@@ -755,16 +767,10 @@ public class SignRequestController {
 		return "redirect:/user/signrequests/" + id;
 	}
 	
-	void populateEditForm(Model uiModel, SignRequest signRequest) {
-		uiModel.addAttribute("signRequest", signRequest);
-		addDateTimeFormatPatterns(uiModel);
-		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
-		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
-	}
-
-	void addDateTimeFormatPatterns(Model uiModel) {
-		uiModel.addAttribute("signRequest_createdate_date_format", "dd/MM/yyyy HH:mm");
-		uiModel.addAttribute("signRequest_updatedate_date_format", "dd/MM/yyyy HH:mm");
+	void populateEditForm(Model model, SignRequest signRequest) {
+		model.addAttribute("signRequest", signRequest);
+		model.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
+		model.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
 	}
 
 	@Scheduled(fixedDelay = 5000)

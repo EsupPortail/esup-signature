@@ -30,8 +30,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-//@RequestMapping("/admin/currentsessions")
-//@Controller
+@RequestMapping("/admin/currentsessions")
+@Controller
 public class CurrentSessionsController {
 	
 	@ModelAttribute("adminMenu")

@@ -161,11 +161,6 @@
 		    <artifactId>webjars-locator</artifactId>
 		    <version>0.30</version>
 		</dependency>
-	
-		<dependency>
-    		<groupId>org.freemarker</groupId>
-    		<artifactId>freemarker</artifactId>
-		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.imgscalr/imgscalr-lib -->
 		<dependency>
@@ -185,6 +180,7 @@
 			<artifactId>bcpkix-jdk15on</artifactId>
 			<version>${bouncycastle.version}</version>
 		</dependency>
+		
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
