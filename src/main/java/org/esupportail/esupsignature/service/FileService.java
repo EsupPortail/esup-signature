@@ -44,8 +44,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.io.Files;
 
-import net.coobird.thumbnailator.Thumbnails;
-
 @Service
 public class FileService {
 	
@@ -85,17 +83,6 @@ public class FileService {
         ImageIO.write(image, "png", fileImage);
         return fileImage;
 	}
-	
-	public File resize(File img, int newW, int newH) throws IOException {
-	    return resize(ImageIO.read(img), newW, newH);
-	}
-	
-	public File resize(BufferedImage img, int newW, int newH) throws IOException {
-		File fileImage = File.createTempFile("img", ".png");
-	    BufferedImage thumbnail = Thumbnails.of(img).height(newH).asBufferedImage();
-	    ImageIO.write(thumbnail, "png", fileImage);	
-	    return fileImage;
-	}  
 
 	public String getContentType(File file) {
 		try {

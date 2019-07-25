@@ -47,7 +47,7 @@ public class EmailService {
 			    message.setSubject("Alerte esup-signature");
 			    message.setFrom("esup-signature@univ-rouen.fr");
 			    message.setTo(recipientEmail);
-			    final String htmlContent = templateEngine.process("mail/email-template.html", ctx);
+			    String htmlContent = templateEngine.process("mail/email-template.html", ctx);
 			    message.setText(htmlContent, true); // true = isHtml
 			    mailSender.send(mimeMessage);
 			} catch (javax.mail.MessagingException e) {
