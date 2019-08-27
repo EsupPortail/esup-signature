@@ -171,6 +171,7 @@ public class SignRequestController {
 
 		List<SignRequest> signRequestsToSign = new ArrayList<>();
 		List<SignBook> signBooksGroup = signBookRepository.findByRecipientEmailsContainAndSignBookType(user.getEmail(), SignBookType.group);
+		signBooksGroup.addAll(signBookRepository.findByRecipientEmailsContainAndSignBookType(user.getEmail(), SignBookType.user));
 		SignBook signBook = signBookRepository.findByName(user.getFirstname() + " " + user.getName()).get(0);
 		for(SignBook signBookGroup : signBooksGroup) {
 			signRequestsToSign.addAll(signBookGroup.getSignRequests());
@@ -202,8 +203,6 @@ public class SignRequestController {
 		model.addAttribute("mydocs", "active");
 		model.addAttribute("signRequestsToSign", signRequestsToSign);
 		model.addAttribute("signBookId", signBookId);
-		model.addAttribute("nbToSignRequests",signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending, pageable).getTotalElements());
-		model.addAttribute("nbPedingSignRequests", signRequestRepository.countByCreateByAndStatus(user.getEppn(), SignRequestStatus.pending));
 		model.addAttribute("signRequests", signRequests);
 		model.addAttribute("statusFilter", this.statusFilter);
 		model.addAttribute("statuses", SignRequest.SignRequestStatus.values());
@@ -544,6 +543,9 @@ public class SignRequestController {
 			redirectAttrs.addAttribute("messageError", "Cette demande de signature n'existe pas");
 			return "redirect:/user/signrequests";
 		}
+		model.addAttribute("baseUrl", baseUrl);
+		model.addAttribute("nexuVersion", nexuVersion);
+		model.addAttribute("nexuUrl", nexuUrl);
 		return "user/signrequests/sign-only";
 	}
 	

@@ -25,7 +25,6 @@
 		<spring-security.version>5.1.4.RELEASE</spring-security.version>
 		<spring-data.version>2.1.5.RELEASE</spring-data.version>
 		<dss.framework.version>5.4</dss.framework.version>
-		<dss.framework.root.directory>${project.parent.basedir}/../dss</dss.framework.root.directory>
 		<jackson-jaxrs-json-provider.version>2.9.7</jackson-jaxrs-json-provider.version>
 		<hsqldb.version>2.4.1</hsqldb.version>
 		<nexu.version>1.22</nexu.version>
@@ -60,7 +59,12 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -415,6 +419,20 @@
 			<artifactId>dss-pades-openpdf</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
+		
+		<dependency>
+		    <groupId>com.sun.xml.bind</groupId>
+		    <artifactId>jaxb-core</artifactId>
+		    <version>2.3.0.1</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>com.sun.xml.bind</groupId>
+		    <artifactId>jaxb-impl</artifactId>
+		    <version>2.3.2</version>
+		</dependency>
+				
+		
 		<dependency>
 			<groupId>eu.agno3.jcifs</groupId>
 			<artifactId>jcifs-ng</artifactId>

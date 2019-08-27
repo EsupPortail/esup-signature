@@ -505,6 +505,7 @@ public class SignRequestService {
 	}
 
 	public void clearAllDocuments(SignRequest signRequest) {
+		logger.info("clear all documents from " + signRequest.getName());
 		List<Document> originalDocuments = new ArrayList<Document>();
 		originalDocuments.addAll(signRequest.getOriginalDocuments());
 		signRequest.getOriginalDocuments().clear();

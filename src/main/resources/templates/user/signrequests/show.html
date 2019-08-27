@@ -66,7 +66,7 @@
 								L'application NexU n'a pas la bonne version.
 								<br>
 								<span th:text="${nexuVersion} + ' nécessaire'"></span>
-							</div>	
+							</div>
 						</div>
 						<div id="nexu_missing_alert" style="display: none;">
 							<a onclick="location.reload();"
@@ -210,7 +210,7 @@
 							<small><span th:text="'Emplacement définitif : ' + ${signRequest.exportedDocumentURI}"></span></small>
 							<br>
 							<a class="btn btn-success" th:href="'/ws/get-last-file?name=' + ${signRequest.name}"><i class="fa fa-download"></i> Télécharger le document signé</a>
-								
+
 							</div>
 							<div th:if="${signRequest.status.name() == 'pending'}">
 								<div class="alert alert-info">
@@ -285,22 +285,20 @@
 											</dt>
 											<dd>
 												<div class="input-group">
-													<spring:url
-														value="/user/signrequests/toggle-need-all-sign/${id}"
-														var="toggleNeedAllSignUrl" />
 													<label class="switch">
-														<div th:if="${signRequest.allSignToComplete == true}">
+														<th:block th:if="${signRequest.allSignToComplete == true}">
 															<input
 																th:onclick="'document.location=\'/user/signrequests/toggle-need-all-sign/' + ${id} + '\''"
 																type="checkbox" name="allSignToComplete"
 																id="_allSignToComplete" checked="checked" />
-														</div>
-														<div th:unless="${signRequest.allSignToComplete == true}">
+														</th:block>
+														<th:block th:unless="${signRequest.allSignToComplete == true}">
 															<input
 																th:onclick="'document.location=\'/user/signrequests/toggle-need-all-sign/' + ${id} + '\''"
 																type="checkbox" name="allSignToComplete"
 																id="_allSignToComplete" />
-														</div> <span class="slider round"></span>
+														</th:block>
+														<span class="slider round"></span>
 													</label>
 												</div>
 											</dd>
@@ -362,10 +360,6 @@
 					</div>
 				</div>
 			</div>
-
-
-
-
 			<div class="card bg-light">
 				<div class="card-header">
 					<button class="btn btn-link" data-toggle="collapse"
@@ -378,21 +372,22 @@
 				<div id="collapseComments" class="collapse"
 					aria-labelledby="headingOne" data-parent="#accordion">
 					<div class="card-body">
-						<div class="list-group">
+						<ul class="list-group">
 							<th:block th:each="comment : ${comments}">
-								<a href="#" class="list-group-item list-group-item-action">
-									<div class="d-flex w-100 justify-content-between">
-										<h5 class="mb-1">${comment.eppn}</h5>
-										<small> <fmt:formatDate pattern="dd/MM/YYYY HH:mm"
-												value="${comment.logDate}" /></small>
-									</div>
-									<p>
-										Action effectuée : <span th:text="${comment.finalStatus}" />
-									</p>
-									<p class="mb-1">${comment.comment}</p>
-								</a>
+								<div class="d-flex w-100 justify-content-between">
+									<li href="#" class="list-group-item list-group-item-action">
+									De : <span class="mb-1" th:text="${comment.eppn}"></span> -
+									<small>
+										le : <span th:text="${#dates.format(comment.logDate, 'dd/MM/yyyy HH:mm')}"></span>
+										<br>
+										Action effectuée : <span th:text="#{'signbook.status.' + ${comment.finalStatus}}" ></span>
+									</small>
+									<p th:text="${comment.comment}"></p>
+
+									</li>
+								</div>
 							</th:block>
-						</div>
+						</ul>
 						<form th:action="'/user/signrequests/comment/' + ${id}">
 							<textarea placeholder="Vous pouvez ajouter un commentaire"
 								class="form-control" name="comment" cols="" rows=""></textarea>
@@ -501,12 +496,12 @@
 										Type de signature :
 										<div
 											class="alert alert-secondary text-center col-12 font-weight-light">
-											<small th:text="${signRequest.signRequestParams.signType}"></small>
+											<small th:text="#{'signbook.signtype.' +  ${signRequest.signRequestParams.signType}}"></small>
 										</div>
 										Ajout d'une page de garde :
 										<div
 											class="alert alert-secondary text-center col-12 font-weight-light">
-											<small th:text="${signRequest.signRequestParams.newPageType}"></small>
+											<small th:text="#{'signbook.newpagetype.' + ${signRequest.signRequestParams.newPageType}}"></small>
 										</div>
 									</div>
 								</dd>
@@ -698,9 +693,9 @@
 	</div>
 	<script th:inline="javascript">
 		/*<![CDATA[*/
-	
+
 	var testSignBookName = document.getElementById("signBookNames");
-	
+
 	if(testSignBookName != null) {
     var signBookNamesSelect = new SlimSelect({
 			select: '#signBookNames',
@@ -732,22 +727,22 @@
 	    		  }
 	  	});
 	}
-	
+
 	$('#multipartFile').on('filebatchuploadcomplete', function(event, file, previewId, index, reader) {
 		location.reload();
 	});
 	$('#multipartFile').on('fileuploaded', function(event, file, previewId, index, reader) {
 		location.reload();
 	});
-	
+
 	$('#multipartFile').on('fileloaded', function(event, file, previewId, index, reader) {
 		$('#multipartFile').fileinput('upload');
 	});
-	
+
 	$('#multipartFile').on('filedeleted', function(event, id, index) {
 		location.reload();
 	});
-	
+
 	$("#multipartFile").fileinput({
     	language: "fr",
         showCaption: false,
@@ -759,7 +754,7 @@
         	dropZoneEnabled: false,
         [/]
         [# th:if="${signRequest.status.name() == 'draft' && user.eppn == signRequest.createBy}"]
-        	browseOnZoneClick: true,        
+        	browseOnZoneClick: true,
         [/]
     	uploadUrl: "/user/signrequests/add-doc/[[${id}]]",
     	uploadAsync: false,
@@ -781,7 +776,7 @@
     		[# th:each="originalDocument : ${signRequest.originalDocuments}"]
        		[# th:switch="${#strings.arraySplit(originalDocument.contentType, '/')[1]}"]
     			[# th:case="'gif'"]
-	      	        {type: "image", size: [[${originalDocument.size}]], downloadUrl: "/user/documents/getfile/[[${originalDocument.id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/user/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},    				
+	      	        {type: "image", size: [[${originalDocument.size}]], downloadUrl: "/user/documents/getfile/[[${originalDocument.id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/user/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},
     			[/]
       	      	[# th:case="'pdf'"]
       	    	  	{type: "pdf", size: [[${originalDocument.size}]], downloadUrl: "/user/documents/getfile/[[${originalDocument.id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: "/user/signrequests/remove-doc/[[${originalDocument.id}]]", key: [[${originalDocument.id}]]},
@@ -811,9 +806,9 @@
             'txt': '<i class="fas fa-file-alt text-info fa-2x"></i>',
             'mov': '<i class="fas fa-file-video text-warning fa-2x"></i>',
             'mp3': '<i class="fas fa-file-audio text-warning  fa-2x"></i>',
-            'jpg': '<i class="fas fa-file-image text-danger fa-2x"></i>', 
-            'gif': '<i class="fas fa-file-image text-muted fa-2x"></i>', 
-            'png': '<i class="fas fa-file-image text-primary fa-2x"></i>'    
+            'jpg': '<i class="fas fa-file-image text-danger fa-2x"></i>',
+            'gif': '<i class="fas fa-file-image text-muted fa-2x"></i>',
+            'png': '<i class="fas fa-file-image text-primary fa-2x"></i>'
         },
         previewFileExtSettings: { // configure the logic for determining icon file extensions
             'doc': function(ext) {
@@ -854,7 +849,7 @@
         	[/]
 
         }
-		
+
     });
 
 	$("#signedFiles").fileinput({
@@ -909,7 +904,7 @@
              },
         	showRemove: false
         }
-		
+
     });
 /*]]>*/
 </script>

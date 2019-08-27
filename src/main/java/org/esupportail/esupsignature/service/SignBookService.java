@@ -384,6 +384,7 @@ public class SignBookService {
 	}
 	
 	public void removeSignRequestFromAllSignBooks(SignRequest signRequest) {
+		logger.info("clean signbooks " + signRequest.getName());
 		List<SignBook> signBooks = getSignBookBySignRequest(signRequest);
 		for(SignBook signBook : signBooks) {
 			List<SignRequest> signRequests = new ArrayList<>();
@@ -398,6 +399,7 @@ public class SignBookService {
 				for(SignRequestParams signRequestParams : signBook.getSignRequestParams()) {
 					signRequestParamsRepository.delete(signRequestParams);
 				}
+				signBook.getSignBooks().clear();
 				deleteSignBook(signBook);
 			}
 		}

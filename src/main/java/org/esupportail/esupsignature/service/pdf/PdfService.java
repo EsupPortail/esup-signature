@@ -182,15 +182,7 @@ public class PdfService {
 	        pdDocument.save(file);
 	        pdDocument.close();
 		}
-		/*
-        try {
-			useNextSignatureField(pdDocument);
-        } catch (Exception e) {
-			logger.error("format PDF error", e);
-			return null;
-		}
-       */
-        
+
     	return file;
 	}
 	
@@ -212,7 +204,9 @@ public class PdfService {
 	        info.setCreator("GhostScript");
 	        info.setProducer("esup-signature");
 	        info.setKeywords("pdf, signed, " + file.getName());
-	        //info.setCreationDate(Calendar.getInstance());
+	        if(info.getCreationDate() == null) {
+				info.setCreationDate(Calendar.getInstance());
+			}
 	        info.setModificationDate(Calendar.getInstance());
 	        pdDocument.setDocumentInformation(info);
 	
@@ -247,7 +241,7 @@ public class PdfService {
 	        metadata.importXMPMetadata(baos.toByteArray());
 	        cat.setMetadata(metadata);
 	        pdDocument.save(file);
-
+			pdDocument.close();
 		} catch (IOException | BadFieldValueException | TransformerException e) {
 			logger.error("error on write metadatas", e);
 		}
@@ -354,7 +348,7 @@ public class PdfService {
 					newPage = defaultNewPageTemplate.getPage(0);
 				}
 			} else {
-				PDDocument defaultNewPageTemplate = PDDocument.load(new ClassPathResource("/templates/defaultnewpage.pdf", PdfService.class).getFile());
+				PDDocument defaultNewPageTemplate = PDDocument.load(new ClassPathResource("/templates/pdf/defaultnewpage.pdf", PdfService.class).getFile());
 				if(defaultNewPageTemplate != null) {
 					newPage = defaultNewPageTemplate.getPage(0);
 				} else {

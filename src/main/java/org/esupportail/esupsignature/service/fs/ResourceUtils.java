@@ -33,6 +33,7 @@ import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
+@SuppressWarnings("unchecked")
 public class ResourceUtils implements InitializingBean, ResourceLoaderAware {
  
 	private static final Logger logger = LoggerFactory.getLogger(ResourceUtils.class);

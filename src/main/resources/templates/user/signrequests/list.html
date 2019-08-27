@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.thymeleaf.org/spring-data">
 <head th:replace="fragments/head :: head"></head>
 <body>
 	<div class="header-fixed fixed-top">
@@ -20,28 +20,33 @@
 				<p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
 				<p>Statut des demandes de signatures :</p>
 				<p>
-					<span class="alert alert-primary"> <i class="fas fa-clock"> <!--  --></i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_pending" />
+					<span class="alert alert-primary">
+					<i class="fas fa-clock"></i> <span th:text="#{'signbook.status.pending'}"></span>
 					</span> La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures
 				</p>
 				<p>
-					<span class="alert alert-success"> <i class="fas fa-file-signature"> <!--  -->
-					</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_signed" />
+					<span class="alert alert-success">
+					<i class="fas fa-file-signature"></i> <span th:text="#{'signbook.status.signed'}"></span>
 					</span> Tous les critères de signatures sont remplis
 				</p>
 				<p>
-					<span class="alert alert-success"> <i class="far fa-check-circle"> <!--  -->
-					</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_checked" />
+					<span class="alert alert-success">
+					<i class="far fa-check-circle"></i> <span th:text="#{'signbook.status.checked'}"></span>
 					</span> Le document à été validé par tous les participants
 				</p>
 				<p>
-					<span class="alert alert-danger"> <i class="fas fa-ban"> <!--  -->
-					</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_refused" />
+					<span class="alert alert-danger">
+					<i class="fas fa-ban"></i> <span th:text="#{'signbook.status.refused'}"></span>
 					</span> La demande à été refusée et retirée des parapheurs
 				</p>
 				<p>
-					<span class="alert alert-warning"> <i class="fas fa-flag-checkered"> <!--  -->
-					</i> <spring:message code="label_org_esupportail_esupsignature_domain_signbook_status_completed" />
-					</span> La demande la demande à été retirée des parapheurs, elle va être supprimée de l'application automatiquement
+					<span class="alert alert-warning">
+					<i class="fas fa-flag-checkered"></i> <span th:text="#{'signbook.status.completed'}"></span>
+					</span> La demande la demande est terminée </p>
+				<p>
+				<span class="alert alert-warning">
+				<i class="fas fa-file-export"></i> <span th:text="#{'signbook.status.exported'}"></span>
+					</span> La demande la demande à été exportée vers un autre système de stockage et retirée des parapheurs
 				</p>
 			</div>
 		</div>
@@ -114,46 +119,41 @@
 
 				<div class="col-lg-12">
 					<form class="" action="" method="get">
-							<div class="card">
-											<div class="input-group">
-												<div class="input-group-prepend">
-													<div class="input-group-text">Statut</div>
-												</div>
-												<select class="form-control" name="statusFilter" id="statusFilter" onchange="submit();">
-													<option value="" disabled="disabled" selected="selected">Choisir un statut</option>
-													<option value="all">Tous</option>
-													<th:block th:each="status : ${statuses}">
-														<option th:if="${status == statusFilter}" th:value="${status}" selected="selected" th:text="#{'signbook.status.' + ${status}}"></option>
-														<option th:unless="${status == statusFilter}" th:value="${status}" th:text="#{'signbook.status.' + ${status}}"></option>
-													</th:block>
-												</select>
-											</div>
-
+						<div class="card">
+							<div class="input-group">
+								<div class="input-group-prepend">
+									<div class="input-group-text">Statut</div>
+								</div>
+								<select class="form-control" name="statusFilter" id="statusFilter" onchange="submit();">
+									<option value="" disabled="disabled" selected="selected">Choisir un statut</option>
+									<option value="all">Tous</option>
+									<th:block th:each="status : ${statuses}">
+										<option th:if="${status == statusFilter}" th:value="${status}" selected="selected" th:text="#{'signbook.status.' + ${status}}"></option>
+										<option th:unless="${status == statusFilter}" th:value="${status}" th:text="#{'signbook.status.' + ${status}}"></option>
+									</th:block>
+								</select>
+							</div>
+						</div>
 					</form>
 				</div>
 				<div class="col-lg-12">
 					<div class="form-inline">
 						<div class="input-group">
-							<button id="opendocs" alt="Open docs" class="btn btn-info" onclick="openCheckedDocs()" title="open docs" style="display: none;">
-								<span class="far fa-eye"> <!--  -->
-								</span>
-								<spring:message code="menu_item_open_docs" />
+							<button id="opendocs" class="btn btn-info" onclick="openCheckedDocs()" title="open docs" style="display: none;">
+								<i class="far fa-eye"></i> Ouvrir les documents
 							</button>
 						</div>
 						<div class="input-group">
 							<input class="form-control" id="passwordField" placeholder="Keystore password" name="password" type="password" style="display: none;" />
 						</div>
 						<div class="input-group">
-							<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Sign docs" class="btn btn-primary" onclick="submitSignRequests()" title="Sign docs" style="display: none;">
-								<span class="fa fa-pencil-alt"> <!--  -->
-								</span>
-								<spring:message code="menu_item_sign_docs" />
+							<button data-toggle="modal" data-target="#wait" id="signdocs" class="btn btn-primary" onclick="submitSignRequests()" title="Sign docs" style="display: none;">
+								<i class="fa fa-pencil-alt"></i> Signer les documents
 							</button>
 						</div>
 						<div class="input-group">
-							<button data-toggle="modal" data-target="#wait" id="signdocs" alt="Passer au statut terminé" class="btn btn-warning" onclick="completeSignRequests()" title="Passer au statut terminé" style="display: none;">
-								<span class="fas fa-flag-checkered"> <!--  -->
-								</span>Passer au statut terminé
+							<button data-toggle="modal" data-target="#wait" id="signdocs" class="btn btn-warning" onclick="completeSignRequests()" title="Passer au statut terminé" style="display: none;">
+								<i class="fas fa-flag-checkered"></i> Passer au statut terminé
 							</button>
 						</div>
 						<div class="mx-auto">
@@ -163,7 +163,7 @@
 					</div>
 				</div>
 			</div>
-			<div style="display: none;" id="alertsigndocs" alt="Sign docs" class="alert alert-danger" role="alert">Impossible de signer en masse la selection actuelle</div>
+			<div style="display: none;" id="alertsigndocs" class="alert alert-danger" role="alert">Impossible de signer en masse la selection actuelle</div>
 		</div>
 	
 		</div>
@@ -228,28 +228,19 @@
 									<div th:replace="user/signrequests/includes/status :: status"></div>
 								</td>
 								<td class="utilbox">
-									<button class="btn btn-info far fa-eye" title="Sign Request" alt="Sign Request" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '\''">
+									<button class="btn btn-info far fa-eye" title="Sign Request" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '\''">
 										<!--  -->
 									</button>
 								</td>
-								<td class="utilbox"><form class="delete" th:action="'/user/signrequests/' + ${signRequest.id}" method="post">
+								<td class="utilbox">
+									<form class="delete" th:action="'/user/signrequests/' + ${signRequest.id}" method="post">
 										<input type="hidden" name="_method" value="DELETE" />
-										<button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" value="Supprimer Sign Request" type="submit" title="Supprimer Sign Request" class="btn btn-danger far fa-trash-alt" alt="Supprimer Sign Request" />
-									</form></td>
+										<button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" value="Supprimer Sign Request" type="submit" title="Supprimer Sign Request" class="btn btn-danger far fa-trash-alt"></button>
+									</form>
+								</td>
 							</tr>
 						</th:block>
 					</tbody>
-					<tfoot>
-						<tr>
-							<td colspan="100%"><c:if test="${not empty maxPages}">
-									<util:pagination numberOfResult="false" maxPages="${maxPages}" page="${param.page}" size="${param.size}" />
-								</c:if> <c:if test="${not empty param.page}">
-									<input name="page" type="hidden" value="1" />
-								</c:if> <c:if test="${not empty param.size}">
-									<input name="size" type="hidden" value="${fn:escapeXml(param.size)}" />
-								</c:if></td>
-						</tr>
-					</tfoot>
 				</table>
 			</div>
 		<div class="card-footer">

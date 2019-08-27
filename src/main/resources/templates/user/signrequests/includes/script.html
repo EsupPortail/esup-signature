@@ -11,8 +11,11 @@ if (!String.prototype.startsWith) {
   };
 }
 
+console.log("Start checking NexU");
+
 $.get("[[${nexuUrl}]]/nexu-info", function(data) {
 	// something responded
+
 	if(data.version.startsWith(nexuVersion)) {
 		// valid version
 		// load nexu script 
@@ -28,14 +31,7 @@ $.get("[[${nexuUrl}]]/nexu-info", function(data) {
 		
 	}
 }).fail(function() {
-	// no response, NexU not installed or not started
-	$("#submit-button").html("Installer NexU");
-	$("#submit-button").on("click", function() {
-		console.log("Install NexU");
-		window.location = "[[${baseUrl}]]";
-		return false;
-	});
-	
+    console.log("NexU not detected or not started ! ");
     $("#warning-text").html("NexU not detected or not started ! ");
     $("#nexu_missing_alert").slideDown();
 });
