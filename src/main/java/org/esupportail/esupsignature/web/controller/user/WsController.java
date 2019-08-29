@@ -191,16 +191,16 @@ public class WsController {
 
 	@Transactional
 	@RequestMapping(value = "/get-last-file", method = RequestMethod.GET)
-	public ResponseEntity<Void> getLastFile(@RequestParam String name, HttpServletResponse response, Model model) throws Exception {
+	public ResponseEntity<Void> getLastFile(@RequestParam String name, HttpServletResponse response, Model model) {
 		try {
 			//TODO add user to check right
 			SignRequest signRequest = signRequestRepository.findByName(name).get(0);
 			if(signRequest != null) {
-				File file = signRequestService.getLastSignedFile(signRequest);
-				if(file == null) {
-					file = signRequest.getOriginalDocuments().get(0).getJavaIoFile();
-				}
 				try {
+					File file = signRequestService.getLastSignedFile(signRequest);
+					if(file == null) {
+						file = signRequest.getOriginalDocuments().get(0).getJavaIoFile();
+					}
 					response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
 					response.setContentType(fileService.getContentType(file));
 					IOUtils.copy(new FileInputStream(file), response.getOutputStream());

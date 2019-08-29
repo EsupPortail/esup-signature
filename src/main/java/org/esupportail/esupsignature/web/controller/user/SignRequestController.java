@@ -174,16 +174,20 @@ public class SignRequestController {
 		signBooksGroup.addAll(signBookRepository.findByRecipientEmailsContainAndSignBookType(user.getEmail(), SignBookType.user));
 		SignBook signBook = signBookRepository.findByName(user.getFirstname() + " " + user.getName()).get(0);
 		for(SignBook signBookGroup : signBooksGroup) {
-			signRequestsToSign.addAll(signBookGroup.getSignRequests());
+			for(SignRequest signRequest : signBookGroup.getSignRequests()) {
+				if(signRequest.getStatus().equals(SignRequestStatus.pending)) {
+					signRequestsToSign.add(signRequest);
+				}
+			}
+
 			List<SignBook> signBooksWorkflows = signBookRepository.findBySignBookContain(signBookGroup);
 			for(SignBook signBookWorkflow : signBooksWorkflows) {
 				for(SignRequest signRequest : signBookWorkflow.getSignRequests()) {
-					if(signRequest.getSignBooks().containsKey(signBook.getId()) && !signRequest.getSignBooks().get(signBook.getId())) {
+					if(signRequest.getStatus().equals(SignRequestStatus.pending) && signRequest.getSignBooks().containsKey(signBook.getId()) && !signRequest.getSignBooks().get(signBook.getId())) {
 						signRequestsToSign.add(signRequest);
 					}
 				}
 			}
-
 		}
 		
 		signRequestsToSign = signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList()); 
@@ -192,14 +196,16 @@ public class SignRequestController {
 	
 		for(SignRequest signRequest : signRequests) {
 			signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
-			
 	    	Map<String, Boolean> signBookNames = new HashMap<>();
 			for(Map.Entry<Long, Boolean> signBookMap : signRequest.getSignBooks().entrySet()) {
 				signBookNames.put(signBookRepository.findById(signBookMap.getKey()).get().getName(), signBookMap.getValue());
 			}
 			signRequest.setSignBooksLabels(signBookNames);
 		}
-		
+		if(user.getKeystore() != null) {
+			model.addAttribute("keystore", user.getKeystore().getFileName());
+		}
+		model.addAttribute("signType", signBookService.getUserSignBook(user).getSignRequestParams().get(0).getSignType());
 		model.addAttribute("mydocs", "active");
 		model.addAttribute("signRequestsToSign", signRequestsToSign);
 		model.addAttribute("signBookId", signBookId);
@@ -661,11 +667,16 @@ public class SignRequestController {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		User user = userService.getUserFromAuthentication();
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
-			Document document = signRequestService.getLastSignedDocument(signRequest);
+			List<Document> documents = signRequestService.getToSignDocuments(signRequest);
 			try {
-				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
-				response.setContentType(document.getContentType());
-				IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+				if(documents.size() > 1) {
+					response.sendRedirect("/user/signrequests/" + id);
+				} else {
+					Document document = documents.get(0);
+					response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+					response.setContentType(document.getContentType());
+					IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+				}
 			} catch (Exception e) {
 				logger.error("get file error", e);
 			}

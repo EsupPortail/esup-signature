@@ -20,7 +20,7 @@ public class ShibAuthenticationSuccessHandler implements AuthenticationSuccessHa
 
 	//private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 	
-	//pas de rediretion ici !
+	//pas de redirection ici !
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 		String eppn = authentication.getName();

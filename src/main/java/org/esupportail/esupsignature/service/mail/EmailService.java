@@ -27,10 +27,10 @@ public class EmailService {
 	
 	@Value("${root.url}")
 	private String rootUrl;
-	
+
 	@Autowired
 	private TemplateEngine templateEngine;
-	
+
 	public void sendSignRequestAlert(final String recipientName, final String recipientEmail, List<SignRequest> signRequests) {
 
 		    final Context ctx = new Context(Locale.FRENCH);

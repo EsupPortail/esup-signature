@@ -6,33 +6,96 @@ import org.esupportail.esupsignature.service.fs.opencmis.CmisAccessImpl;
 import org.esupportail.esupsignature.service.fs.smb.SmbAccessImpl;
 import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@ConfigurationProperties(prefix="fs")
 public class FsConfig {
 
-	@Value("${fs.smb.uri}")
 	private String smbUri;
-	@Value("${fs.smb.login}")
 	private String smbLogin;
-	@Value("${fs.smb.password}")
 	private String smbPassword;
-
-	@Value("${fs.vfs.uri}")
 	private String vfsUri;
-
-	@Value("${fs.cmis.uri}")
 	private String cmisUri;
-	@Value("${fs.cmis.login}")
 	private String cmisLogin;
-	@Value("${fs.cmis.password}")
 	private String cmisPassword;
-	@Value("${fs.cmis.respositoryId}")
 	private String cmisRespositoryId;
-	@Value("${fs.cmis.rootPath}")
 	private String cmisRootPath;
-	
+
+	public String getSmbUri() {
+		return smbUri;
+	}
+
+	public void setSmbUri(String smbUri) {
+		this.smbUri = smbUri;
+	}
+
+	public String getSmbLogin() {
+		return smbLogin;
+	}
+
+	public void setSmbLogin(String smbLogin) {
+		this.smbLogin = smbLogin;
+	}
+
+	public String getSmbPassword() {
+		return smbPassword;
+	}
+
+	public void setSmbPassword(String smbPassword) {
+		this.smbPassword = smbPassword;
+	}
+
+	public String getVfsUri() {
+		return vfsUri;
+	}
+
+	public void setVfsUri(String vfsUri) {
+		this.vfsUri = vfsUri;
+	}
+
+	public String getCmisUri() {
+		return cmisUri;
+	}
+
+	public void setCmisUri(String cmisUri) {
+		this.cmisUri = cmisUri;
+	}
+
+	public String getCmisLogin() {
+		return cmisLogin;
+	}
+
+	public void setCmisLogin(String cmisLogin) {
+		this.cmisLogin = cmisLogin;
+	}
+
+	public String getCmisPassword() {
+		return cmisPassword;
+	}
+
+	public void setCmisPassword(String cmisPassword) {
+		this.cmisPassword = cmisPassword;
+	}
+
+	public String getCmisRespositoryId() {
+		return cmisRespositoryId;
+	}
+
+	public void setCmisRespositoryId(String cmisRespositoryId) {
+		this.cmisRespositoryId = cmisRespositoryId;
+	}
+
+	public String getCmisRootPath() {
+		return cmisRootPath;
+	}
+
+	public void setCmisRootPath(String cmisRootPath) {
+		this.cmisRootPath = cmisRootPath;
+	}
+
 	@Bean
 	public SmbAccessImpl smbAccessImpl(){
 		SmbAccessImpl smbAccessImpl = new SmbAccessImpl();

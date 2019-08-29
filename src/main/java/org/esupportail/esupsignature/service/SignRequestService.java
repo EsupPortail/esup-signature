@@ -1,49 +1,26 @@
 package org.esupportail.esupsignature.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
+import eu.europa.esig.dss.*;
+import eu.europa.esig.dss.asic.ASiCWithCAdESSignatureParameters;
+import eu.europa.esig.dss.asic.ASiCWithXAdESSignatureParameters;
+import eu.europa.esig.dss.token.SignatureTokenConnection;
+import eu.europa.esig.dss.x509.CertificateToken;
 import org.apache.commons.codec.binary.Base64;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
-import org.esupportail.esupsignature.entity.BigFile;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.Log;
-import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
-import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
-import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
-import org.esupportail.esupsignature.repository.DocumentRepository;
-import org.esupportail.esupsignature.repository.LogRepository;
-import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
@@ -56,17 +33,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import eu.europa.esig.dss.ASiCContainerType;
-import eu.europa.esig.dss.AbstractSignatureParameters;
-import eu.europa.esig.dss.DSSDocument;
-import eu.europa.esig.dss.DSSUtils;
-import eu.europa.esig.dss.EncryptionAlgorithm;
-import eu.europa.esig.dss.InMemoryDocument;
-import eu.europa.esig.dss.SignatureForm;
-import eu.europa.esig.dss.asic.ASiCWithCAdESSignatureParameters;
-import eu.europa.esig.dss.asic.ASiCWithXAdESSignatureParameters;
-import eu.europa.esig.dss.token.SignatureTokenConnection;
-import eu.europa.esig.dss.x509.CertificateToken;
+import javax.annotation.Resource;
+import java.io.File;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class SignRequestService {
@@ -389,7 +363,8 @@ public class SignRequestService {
 
 	public void applySignBookRules(SignRequest signRequest, User user) throws EsupSignatureException {
 		SignBook recipientSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
-		SignBook signBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
+		List<SignBook> signBooks = signBookService.getSignBookBySignRequest(signRequest);
+		SignBook signBook = signBooks.get(0);
 		//SignBook originalSignBook = SignBook.findSignBooksByNameEquals(signRequest.getOriginalSignBookNames().get(0)).getSingleResult();
 		SignRequestParams.SignType signType = signRequest.getSignRequestParams().getSignType();
 		signRequest.getSignBooks().put(recipientSignBook.getId(), true);

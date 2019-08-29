@@ -16,27 +16,27 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 
-@ConfigurationProperties(prefix="security")
+@ConfigurationProperties(prefix="security.shib")
 public class ShibSecurityConfigImpl implements SecurityConfig {
 
 
-	private String shibPrincipalRequestHeader;	
-	private String shibCredentialsRequestHeader;	
+	private String principalRequestHeader;
+	private String credentialsRequestHeader;
 
-	public String getShibPrincipalRequestHeader() {
-		return shibPrincipalRequestHeader;
+	public String getPrincipalRequestHeader() {
+		return principalRequestHeader;
 	}
 
-	public void setShibPrincipalRequestHeader(String shibPrincipalRequestHeader) {
-		this.shibPrincipalRequestHeader = shibPrincipalRequestHeader;
+	public void setPrincipalRequestHeader(String principalRequestHeader) {
+		this.principalRequestHeader = principalRequestHeader;
 	}
 
-	public String getShibCredentialsRequestHeader() {
-		return shibCredentialsRequestHeader;
+	public String getCredentialsRequestHeader() {
+		return credentialsRequestHeader;
 	}
 
-	public void setShibCredentialsRequestHeader(String shibCredentialsRequestHeader) {
-		this.shibCredentialsRequestHeader = shibCredentialsRequestHeader;
+	public void setCredentialsRequestHeader(String credentialsRequestHeader) {
+		this.credentialsRequestHeader = credentialsRequestHeader;
 	}
 
 	@Autowired
@@ -56,8 +56,8 @@ public class ShibSecurityConfigImpl implements SecurityConfig {
 
 	public ShibRequestHeaderAuthenticationFilter getAuthenticationProcessingFilter() {
 		ShibRequestHeaderAuthenticationFilter authenticationFilter = new ShibRequestHeaderAuthenticationFilter();
-		authenticationFilter.setPrincipalRequestHeader(shibPrincipalRequestHeader);
-		authenticationFilter.setCredentialsRequestHeader(shibCredentialsRequestHeader);
+		authenticationFilter.setPrincipalRequestHeader(principalRequestHeader);
+		authenticationFilter.setCredentialsRequestHeader(credentialsRequestHeader);
 		authenticationFilter.setAuthenticationManager(shibAuthenticationManager());
 		authenticationFilter.setExceptionIfHeaderMissing(false);
 		authenticationFilter.setAuthenticationSuccessHandler(shibAuthenticationSuccessHandler);

@@ -1,15 +1,11 @@
 package org.esupportail.esupsignature.security.cas;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.esupportail.esupsignature.security.SecurityConfig;
 import org.jasig.cas.client.session.SingleSignOutFilter;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -27,41 +23,34 @@ import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-@ConfigurationProperties(prefix="security")
+@Configuration
+@ConfigurationProperties(prefix="security.cas")
 public class CasSecurityConfigImpl implements SecurityConfig {
 	
-	private String casKey;
-	private String casUrl;
-	private String casService;
+	private String key;
+	private String url;
+	private String service;
 
-	public String getCasKey() {
-		return casKey;
+	public String getKey() {
+		return key;
 	}
-
-
-	public void setCasKey(String casKey) {
-		this.casKey = casKey;
+	public void setKey(String key) { this.key = key; }
+	public String getUrl() {
+		return url;
 	}
-
-
-	public String getCasUrl() {
-		return casUrl;
+	public void setUrl(String url) {
+		this.url = url;
 	}
-
-
-	public void setCasUrl(String casUrl) {
-		this.casUrl = casUrl;
+	public String getService() {
+		return service;
 	}
-
-
-	public String getCasService() {
-		return casService;
-	}
-
-
-	public void setCasService(String casService) {
-		this.casService = casService;
+	public void setService(String service) {
+		this.service = service;
 	}
 
 	@Autowired
@@ -84,7 +73,7 @@ public class CasSecurityConfigImpl implements SecurityConfig {
 	
 	public CasAuthenticationEntryPoint getAuthenticationEntryPoint() {
 		CasAuthenticationEntryPoint authenticationEntryPoint = new CasAuthenticationEntryPoint();
-		authenticationEntryPoint.setLoginUrl(casUrl + "/login");
+		authenticationEntryPoint.setLoginUrl(url + "/login");
 		authenticationEntryPoint.setServiceProperties(serviceProperties());
 		return authenticationEntryPoint;
 	}
@@ -92,7 +81,7 @@ public class CasSecurityConfigImpl implements SecurityConfig {
 	
 	public ServiceProperties serviceProperties() {
 		ServiceProperties serviceProperties = new ServiceProperties();
-		serviceProperties.setService(casService);
+		serviceProperties.setService(service);
 		serviceProperties.setSendRenew(false);
 		return serviceProperties;
 	}
@@ -120,13 +109,13 @@ public class CasSecurityConfigImpl implements SecurityConfig {
 		authenticationProvider.setAuthenticationUserDetailsService(casAuthUserDetailsService());
 		authenticationProvider.setServiceProperties(serviceProperties());
 		authenticationProvider.setTicketValidator(cas20ServiceTicketValidator());
-		authenticationProvider.setKey(casKey);
+		authenticationProvider.setKey(key);
 		return authenticationProvider;
 	}
 	
 	
 	public Cas20ServiceTicketValidator cas20ServiceTicketValidator() {
-		return new Cas20ServiceTicketValidator(casUrl);
+		return new Cas20ServiceTicketValidator(url);
 	}
 	
 	
@@ -161,13 +150,13 @@ public class CasSecurityConfigImpl implements SecurityConfig {
 	
 	public SingleSignOutFilter singleLogoutFilter() {
 		SingleSignOutFilter singleSignOutFilter = new SingleSignOutFilter();
-		singleSignOutFilter.setCasServerUrlPrefix(casUrl + "/logout");
+		singleSignOutFilter.setCasServerUrlPrefix(url + "/logout");
 		return singleSignOutFilter;
 	}
 
 	public LogoutFilter requestSingleLogoutFilter() {
 		SecurityContextLogoutHandler securityContextLogoutHandler = new SecurityContextLogoutHandler();
-		LogoutFilter logoutFilter = new LogoutFilter(casUrl + "/logout", securityContextLogoutHandler);
+		LogoutFilter logoutFilter = new LogoutFilter(url + "/logout", securityContextLogoutHandler);
 		logoutFilter.setFilterProcessesUrl("/logout");
 		return logoutFilter;
 	}

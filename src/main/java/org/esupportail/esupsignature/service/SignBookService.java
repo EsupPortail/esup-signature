@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -101,7 +102,8 @@ public class SignBookService {
 		}
 		
 	}
-	
+
+	@Transactional
 	public SignBook createUserSignBook(User user) {
 		SignBook signBook = new SignBook();
 		signBook.setName(user.getFirstname() + " " + user.getName());
@@ -109,12 +111,10 @@ public class SignBookService {
 		signBook.setCreateBy(user.getEppn());
 		signBook.setCreateDate(new Date());
 		signBook.getRecipientEmails().add(user.getEmail());
-		signBook.setSignRequestParams(null);
 		signBook.setModelFile(null);
 		signBook.setSignBookType(SignBookType.user);
 		signBook.setSourceType(DocumentIOType.none);
 		signBook.setTargetType(DocumentIOType.none);
-		signBook.setSignRequestParams(new ArrayList<SignRequestParams>());
 		signBook.getSignRequestParams().add(signRequestService.getEmptySignRequestParams());
 		signBookRepository.save(signBook);
 		return signBook;
@@ -260,7 +260,7 @@ public class SignBookService {
 		signBook.getSignRequestParams().get(0).setSignPageNumber(1);
 		signBook.getSignRequestParams().get(0).setXPos(defaultPositionX);
 		signBook.getSignRequestParams().get(0).setYPos(defaultPositionY);
-		signBookRepository.save(signBook);
+		//signBookRepository.save(signBook);
 	}
 	
 	public void importFilesFromSource(SignBook signBook, User user) throws EsupSignatureIOException, EsupStockException {
@@ -387,19 +387,14 @@ public class SignBookService {
 		logger.info("clean signbooks " + signRequest.getName());
 		List<SignBook> signBooks = getSignBookBySignRequest(signRequest);
 		for(SignBook signBook : signBooks) {
-			List<SignRequest> signRequests = new ArrayList<>();
-			signRequests.addAll(signBook.getSignRequests());
-			signRequests.remove(signRequest);
-			signBook.setSignRequests(signRequests);
-			signBookRepository.save(signBook);
 			if(signBook.getExternal()) {
-				List<SignRequestParams> signRequestParamss = signBook.getSignRequestParams();
 				signBook.getSignRequestParams().clear();
 				signBookRepository.save(signBook);
 				for(SignRequestParams signRequestParams : signBook.getSignRequestParams()) {
 					signRequestParamsRepository.delete(signRequestParams);
 				}
 				signBook.getSignBooks().clear();
+				signBookRepository.save(signBook);
 				deleteSignBook(signBook);
 			}
 		}
@@ -445,7 +440,7 @@ public class SignBookService {
 	}
 	
 	public List<SignBook> getSignBookBySignRequest(SignRequest signRequest) {
-		List<SignBook> signBooks = signBookRepository.findBySignRequests(Arrays.asList(signRequest));
+		List<SignBook> signBooks = signBookRepository.findBySignRequests(Collections.singletonList(signRequest));
 		return signBooks;
 	}
 	

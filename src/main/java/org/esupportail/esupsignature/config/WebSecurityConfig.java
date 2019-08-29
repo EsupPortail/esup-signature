@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.config;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,26 +27,23 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @ConfigurationProperties(prefix="security")
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	
-	boolean enableCas;
-	boolean enableShib;
-	boolean enableOAuth;
-	String[] nfcWsAccessAuthorizeIps;
-	
-	public void setEnableCas(boolean enableCas) {
-		this.enableCas = enableCas;
-	}
+	private boolean enableCas;
+	private boolean enableShib;
+	private boolean enableOAuth;
+	private String[] nfcWsAccessAuthorizeIps;
 
+	public boolean isEnableCas() { return enableCas; }
+	public void setEnableCas(boolean enableCas) { this.enableCas = enableCas; }
+	public boolean isEnableShib() { return enableShib; }
 	public void setEnableShib(boolean enableShib) {
 		this.enableShib = enableShib;
 	}
-
+	public boolean isEnableOAuth() { return enableOAuth; }
 	public void setEnableOAuth(boolean enableOAuth) {
 		this.enableOAuth = enableOAuth;
 	}
-	
-	public void setNfcWsAccessAuthorizeIps(String[] nfcWsAccessAuthorizeIps) {
-		this.nfcWsAccessAuthorizeIps = nfcWsAccessAuthorizeIps;
-	}
+	public String[] getNfcWsAccessAuthorizeIps() { return nfcWsAccessAuthorizeIps; }
+	public void setNfcWsAccessAuthorizeIps(String[] nfcWsAccessAuthorizeIps) { this.nfcWsAccessAuthorizeIps = nfcWsAccessAuthorizeIps; }
 
 	@Autowired
     private AutowireCapableBeanFactory beanFactory;
