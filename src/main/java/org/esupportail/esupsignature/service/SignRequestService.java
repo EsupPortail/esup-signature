@@ -466,8 +466,9 @@ public class SignRequestService {
 		List<Document> documents = signRequest.getSignedDocuments();
 		if(documents.size() > 0) {
 			return documents.get(documents.size() - 1);
+		} else {
+			return getLastOriginalDocument(signRequest);
 		}
-		return null;
 	}
 
 	public Document getLastOriginalDocument(SignRequest signRequest) {

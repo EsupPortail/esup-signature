@@ -68,7 +68,12 @@ public class UserService {
 	}
 	
 	public SignBook createUser(Authentication authentication) {
-		String uid = authentication.getName().substring(0, authentication.getName().indexOf("@"));
+		String uid;
+		if(authentication.getName().contains("@")) {
+			uid = authentication.getName().substring(0, authentication.getName().indexOf("@"));
+		} else {
+			uid = authentication.getName();
+		}
 		List<PersonLdap> persons =  personDao.getPersonNamesByUid(uid);
 		String eppn = persons.get(0).getEduPersonPrincipalName();
         String email = persons.get(0).getMail();

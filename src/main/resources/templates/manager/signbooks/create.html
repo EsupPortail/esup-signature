@@ -46,7 +46,7 @@
 						</label> <input id="name" name="name" class="form-control" type="text" value="" required="required">
 					</div>
 					<input type="hidden" id="_signBookType_id" name="signBookType" value="group" />
-					
+
 					<div th:if="${type == 'group'}" class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_recipientemails">
 						<label for="recipientemailsSelect"> <strong> Destinataires </strong>
 							<button class="btn btn-sm btn-info" data-target="#collapseHelp2" data-toggle="collapse" type="button">
@@ -58,36 +58,36 @@
 						</label> <select id="recipientemailsSelect" multiple="multiple" name="recipientEmails" required="required"></select>
 						<script type="text/javascript">
 						new SlimSelect({
-    	  select: '#recipientemailsSelect',
-    	  placeholder: 'Choisir un ou plusieurs utilisateurs',
-    	  searchText: 'Aucun résultat',
-    	  searchPlaceholder: 'Rechercher',
-    	  searchHighlight: true,
-    	  searchFilter: (option, search) => {
-  		    return true;
-  		  },
-    	  ajax: function (search, callback) {
-    		    if (search.length < 3) {
-    		      callback('Merci de saisir au moins 3 caractères')
-    		      return
-    		    }
-    		    fetch('/ws/searchLdap?searchString=' + search)
-    		    .then(function (response) {
-    		      return response.json()
-    		    })
-    		    .then(function (json) {
-    		      let data = []
-    		      for (let i = 0; i < json.length; i++) {
-    		    	  data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
-    		      }
-    		      callback(data)
-    		    })
-    		    .catch(function(error) {
-    		      callback(false)
-    		    })
-    		  }
-    	  
-    	});
+                            select: '#recipientemailsSelect',
+                            placeholder: 'Choisir un ou plusieurs utilisateurs',
+                            searchText: 'Aucun résultat',
+                            searchPlaceholder: 'Rechercher',
+                            searchHighlight: true,
+                            searchFilter: (option, search) => {
+                            return true;
+                            },
+                            ajax: function (search, callback) {
+                            if (search.length < 3) {
+                            callback('Merci de saisir au moins 3 caractères')
+                            return
+                            }
+                            fetch('/ws/searchLdap?searchString=' + search)
+                            .then(function (response) {
+                            return response.json()
+                            })
+                            .then(function (json) {
+                            let data = []
+                            for (let i = 0; i < json.length; i++) {
+                            data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
+                            }
+                            callback(data)
+                            })
+                            .catch(function(error) {
+                            callback(false)
+                            })
+                            }
+
+                            });
 						</script>
 					</div>
 
@@ -133,10 +133,10 @@
 						</label> <select id="moderatoremailsSelect" multiple="multiple" name="moderatorEmails"></select>
 					</div>
 					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
-						<label for="newPageType"> <strong> Protocole pour la source des documents </strong>
+						<label for="_sourceType_id"> <strong> Protocole pour la source des documents </strong>
 						</label> <select class="form-control" id="_sourceType_id" name="sourceType" size="1">
 							<th:block th:each="sourceType : ${sourceTypes}">
-								<option th:value="${sourceType}" th:text="${sourceType}"></option>
+								<option th:value="${sourceType}" th:text="#{'signbook.documentiotype.' + ${sourceType}}" ></option>
 							</th:block>
 						</select>
 					</div>
@@ -145,10 +145,10 @@
 						</label> <input id="documentsSourceUri" name="documentsSourceUri" placeholder="A saisir si autre que la valeur par défaut" class="form-control" type="text" value="" autocomplete="on">
 					</div>
 					<div class="form-group" id="c_org_esupportail_esupsignature_domain_SignBook_targetType">
-						<label for="targetType"> <strong> Protocole pour la destination des documents </strong>
+						<label for="_targetType_id"> <strong> Protocole pour la destination des documents </strong>
 						</label> <select class="form-control" id="_targetType_id" name="targetType" size="1">
 							<th:block th:each="targetType : ${targetTypes}">
-								<option th:value="${targetType}" th:text="${targetType}"></option>
+								<option th:value="${targetType}" th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
 							</th:block>
 						</select>
 					</div>
@@ -163,29 +163,29 @@
 						</label>
 					</div>
 					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signType_id">
-						<label for="signType"> <strong> Type de signature par défaut </strong>
+						<label for="_signType_id"> <strong> Type de signature par défaut </strong>
 						</label>
 						<select class="form-control" id="_signType_id" name="signType" size="1">
 							<th:block th:each="signType : ${signTypes}">
-								<option th:value="${signType}" th:text="${signType}"></option>
+								<option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
 							</th:block>
 						</select>
 					</div>
 					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
-						<label class="col-lg-3  col-form-label" for="newPageType"> <strong> Insérer une page de garde </strong>
+						<label class="col-lg-3  col-form-label" for="_newPageType_id"> <strong> Insérer une page de garde </strong>
 						</label> <select class="form-control" id="_newPageType_id" name="newPageType" size="1">
 							<th:block th:each="newPageType : ${newPageTypes}">
-								<option th:value="${newPageType}" th:text="${newPageType}"></option>
+								<option th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}"></option>
 							</th:block>
 						</select>
 					</div>
 					<div class="form-group">
-						<label for="newPageType"> <strong> Ajouter un modèle </strong>
+						<label> <strong> Ajouter un modèle </strong>
 						</label>
 						<div class="input-group">
 							<div class="custom-file">
 								<input aria-describedby="inputGroupFileAddon01" class="custom-file-input" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file" />
-								<label class="custom-file-label" for="upload" id="inputGroupLabel01">
+								<label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01">
 									Choisir un fichier
 								</label>
 							</div>
@@ -209,21 +209,21 @@
 		targetUri.style.display = "none";
 		sourceSelector.onchange = function() {
 			if(sourceSelector.value != "none") {
-				sourceUri.style.display = "block";		
+				sourceUri.style.display = "block";
 			} else {
 				sourceUri.style.display = "none";
 			}
 		};
 		targetSelector.onchange = function() {
 			if(targetSelector.value != "none") {
-				targetUri.style.display = "block";		
+				targetUri.style.display = "block";
 			} else {
 				targetUri.style.display = "none";
 			}
 		};
-		
-    	
-    	
+
+
+
     	new SlimSelect({
       	  select: '#moderatoremailsSelect',
       	  placeholder: 'Choisir un ou plusieurs utilisateurs',
@@ -253,9 +253,9 @@
       		      callback(false)
       		    })
       		  }
-      	  
+
       	});
-    	
+
 	</script> </main>
 	</form>
 	<footer th:replace="fragments/footer :: footer"></footer>

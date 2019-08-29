@@ -94,7 +94,8 @@ public class WsController {
 	@RequestMapping(value = "/create-sign-request", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public String createSignRequest(@RequestParam("file") MultipartFile file, @RequestParam String signBookName, @RequestParam String creatorEmail, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
 		SignRequest signRequest = new SignRequest();
-		SignBook signBook = signBookRepository.findByName(signBookName).get(0);
+		List<SignBook> signBooks = signBookRepository.findByName(signBookName);
+		SignBook signBook = signBooks.get(0);
 		User user = userRepository.findByEmail(creatorEmail).get(0);
 		user.setIp(httpServletRequest.getRemoteAddr());
 		if (file != null) {

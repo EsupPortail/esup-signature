@@ -119,7 +119,7 @@
 					</dl>
 					<dl class="row border-bottom m-0">
 						<dt class="col-lg-5">Protocole pour la source des documents</dt>
-						<dd th:text="${signBook.sourceType}"></dd>
+						<dd th:text="#{'signbook.documentiotype.' + ${signBook.sourceType}}" ></dd>
 					</dl>
 					<div th:if="${signBook.sourceType.name() != 'none'}">
 						<dl class="row border-bottom m-0">
@@ -135,7 +135,7 @@
 					<dl class="row border-bottom m-0">
 						<dt class="col-lg-5">Protocole pour la destination des
 							documents</dt>
-						<dd th:text="${signBook.targetType}"></dd>
+						<dd th:text="#{'signbook.documentiotype.' + ${signBook.targetType}}" ></dd>
 					</dl>
 					<div th:if="${signBook.targetType.name() != 'none'}">
 						<dl class="row border-bottom m-0">
