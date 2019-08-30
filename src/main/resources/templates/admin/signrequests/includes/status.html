@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="status">
+	<div th:switch="${signRequest.status.name()}">
+		<div th:case="'draft'" class="alert alert-secondary text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+			<small>
+			<i class="fab fa-firstdraft"></i>
+				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
+			</small>
+		</div>
+		<div th:case="'pending'" class="alert alert-primary text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+			<small>
+			<i class="fas fa-clock"></i>
+				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
+			</small>
+		</div>
+		<div th:case="'signed'" class="alert alert-success text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+			<small>
+			<i class="fas fa-file-signature"></i>
+				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
+			</small>
+		</div>
+		<div th:case="'refused'" class="alert alert-danger text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+			<small>
+			<i class="fas fa-ban"></i>
+				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
+			</small>
+		</div>
+		<div th:case="'checked'" class="alert alert-success text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+			<small>
+			<i class="far fa-check-circle"></i>
+				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
+			</small>
+		</div>
+		<div th:case="'exported'" class="alert alert-warning text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+			<small>
+			<i class="fas fa-file-export"></i>
+				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
+			</small>
+		</div>
+		<div th:case="'completed'" class="alert alert-warning text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+			<small>	
+			<i class="fas fa-flag-checkered"></i>
+				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
+			</small>
+		</div>
+		<div th:case="*">
+			Unknow
+		</div>
+	</div>
+</div>
+</html>

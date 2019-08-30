@@ -9,5 +9,6 @@ public interface SignRequestRepositoryCustom {
 
     Page<SignRequest> findBySignResquestByCreateBy(String createBy, Pageable pageable);
     Page<SignRequest> findBySignResquestByCreateByAndStatus(String createBy, SignRequestStatus status, Pageable pageable);
+    Page<SignRequest> findBySignResquestByStatus(SignRequestStatus status, Pageable pageable);
    
 }
