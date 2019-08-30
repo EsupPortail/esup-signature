@@ -280,7 +280,7 @@ public class SignBook {
         return this.signBookType;
     }
 
-	public Boolean getExternal() {
+	public Boolean isExternal() {
 		return external;
 	}
 

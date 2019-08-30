@@ -639,13 +639,14 @@ public class SignRequestController {
 	@DeleteMapping(value = "/{id}", produces = "text/html")
 	public String delete(@PathVariable("id") Long id, Model model) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		
 		signBookService.removeSignRequestFromAllSignBooks(signRequest);
-		
 		List<Log> logs = logRepository.findBySignRequestId(id);
 		for(Log log : logs) {
 			logRepository.delete(log);
 		}
+		signRequest.getSignRequestParamsList().clear();
+
+		signRequestRepository.save(signRequest);
 		signRequestRepository.delete(signRequest);
 		model.asMap().clear();
 		return "redirect:/user/signrequests/";
