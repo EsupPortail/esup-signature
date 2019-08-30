@@ -706,7 +706,7 @@ public class SignRequestController {
 				for(String signBookName : signBookNames) {
 					SignBook signBook;
 					if(signBookRepository.countByName(signBookName) == 0 && signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user) == 0) {
-						signBook = userService.createUser(signBookName);
+						signBook = userService.createUserWithSignBook(signBookName);
 						//recipientEmails.add(signBookName);
 					} else {
 						if(signBookRepository.countByName(signBookName) > 0) {

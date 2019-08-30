@@ -27,7 +27,7 @@ public class ShibAuthenticationSuccessHandler implements AuthenticationSuccessHa
         String email = request.getHeader("mail");
         String name = request.getHeader("sn");
         String firstName = request.getHeader("givenName");
-        userService.createUser(eppn, name, firstName, email);
+        userService.createUser(eppn, name, firstName, email, false);
         /*
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		String targetURL = defaultSavedRequest.getRedirectUrl();

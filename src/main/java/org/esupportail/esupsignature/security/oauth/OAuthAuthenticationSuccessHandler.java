@@ -31,7 +31,7 @@ public class OAuthAuthenticationSuccessHandler implements AuthenticationSuccessH
 		String name = defaultOidcUser.getAttributes().get("family_name").toString();
 		String prenom = defaultOidcUser.getAttributes().get("given_name").toString();
 		String email = defaultOidcUser.getAttributes().get("email").toString();
-		userService.createUser(id, name, prenom, email); 
+		userService.createUser(id, name, prenom, email, false);
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		String targetURL = defaultSavedRequest.getRedirectUrl();
         redirectStrategy.sendRedirect(request, response, targetURL);

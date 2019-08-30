@@ -58,16 +58,24 @@ public class UserService {
 	public boolean isUserReady(User user) {
 		return signBookService.getUserSignBook(user) != null;
 	}
-	
-	public SignBook createUser(String email) {
+
+	public SignBook createUserWithSignBook(String email) {
+		List<PersonLdap> persons =  personDao.getPersonLdaps("mail", email);
+		String eppn = persons.get(0).getEduPersonPrincipalName();
+		String name = persons.get(0).getSn();
+		String firstName = persons.get(0).getGivenName();
+		return createUser(eppn, name, firstName, email, true);
+	}
+
+	public void createUser(String email) {
 		List<PersonLdap> persons =  personDao.getPersonLdaps("mail", email);
 		String eppn = persons.get(0).getEduPersonPrincipalName();
         String name = persons.get(0).getSn();
         String firstName = persons.get(0).getGivenName();
-        return createUser(eppn, name, firstName, email);
+        createUser(eppn, name, firstName, email, false);
 	}
 	
-	public SignBook createUser(Authentication authentication) {
+	public void createUser(Authentication authentication) {
 		String uid;
 		if(authentication.getName().contains("@")) {
 			uid = authentication.getName().substring(0, authentication.getName().indexOf("@"));
@@ -79,10 +87,10 @@ public class UserService {
         String email = persons.get(0).getMail();
         String name = persons.get(0).getSn();
         String firstName = persons.get(0).getGivenName();
-        return createUser(eppn, name, firstName, email);
+        createUser(eppn, name, firstName, email, false);
 	}
 	
-	public SignBook createUser(String eppn, String name, String firstName, String email) {
+	public SignBook createUser(String eppn, String name, String firstName, String email, boolean withSignBook) {
 		User user;
 		if(userRepository.countByEppn(eppn) > 0) {
     		user = userRepository.findByEppn(eppn).get(0);
@@ -99,11 +107,14 @@ public class UserService {
 		userRepository.save(user);
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
-		if(signBookRepository.countByRecipientEmailsAndSignBookType(recipientEmails, SignBookType.user) == 0) {
-			return signBookService.createUserSignBook(user);
-		} else {
-			return signBookService.getUserSignBook(user);
+		if(withSignBook) {
+			if (signBookRepository.countByRecipientEmailsAndSignBookType(recipientEmails, SignBookType.user) == 0) {
+				return signBookService.createUserSignBook(user);
+			} else {
+				return signBookService.getUserSignBook(user);
+			}
 		}
+		return null;
 	}
 	
 	public boolean checkEmailAlert(User user) {
