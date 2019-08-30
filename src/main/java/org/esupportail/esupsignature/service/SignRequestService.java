@@ -28,9 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -40,7 +37,6 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class SignRequestService {
@@ -103,27 +99,7 @@ public class SignRequestService {
 		signRequestRepository.findAll().forEach(e -> list.add(e));
 		return list;
 	}
-	
-	public Page<SignRequest> getAllSignRequests(Pageable pageable) {
-		List<SignRequest> signRequests = new ArrayList<SignRequest>();
-		signRequestRepository.findAll().forEach(e -> signRequests.add(e));
-		Page<SignRequest> page = new PageImpl<>(signRequests, pageable, signRequests.size());
-		return page;
-	}
-	
-	public Page<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status, Pageable pageable) {
-		List<SignRequest> signRequests = findSignRequestByUserAndStatusEquals(user, true, status);
-		Page<SignRequest> page = new PageImpl<>(signRequests, pageable, signRequests.size());
-		return page;
-	}
 
-	public Page<SignRequest> findSignRequestByUserAndStatusEquals(User user, Boolean toSign, SignRequestStatus status, Pageable pageable) {
-		List<SignRequest> signRequests = findSignRequestByUserAndStatusEquals(user, toSign, status);
-		signRequests = signRequests.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
-		Page<SignRequest> page = new PageImpl<SignRequest>(signRequests.subList((int) pageable.getOffset(), (int) (pageable.getPageSize() + pageable.getOffset())) , pageable, signRequests.size());
-		return page;
-	}
-	
 	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status) {
 		return findSignRequestByUserAndStatusEquals(user, true, status);
 	}
@@ -183,23 +159,13 @@ public class SignRequestService {
 			document.setParentId(signRequest.getId());
 		}
 	}
-	
-	public void addOriginalDocuments(SignRequest signRequest, Document document) {
-		signRequest.getOriginalDocuments().add(document);
-		document.setParentId(signRequest.getId());
-	}
-	
+
 	public void sign(SignRequest signRequest, User user, String password, boolean addDate) throws EsupSignatureIOException, EsupSignatureSignException, EsupSignatureKeystoreException, IOException {
 		step = "Demarrage de la signature";
 		SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		if(!signRequest.isOverloadSignBookParams()) {
 			signRequest.getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().get(0).getSignType());
 		}
-		/*
-		if(signRequest.getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
-			throw new EsupSignatureNexuException("redirect to nexuSign");
-		}
-		*/
 		boolean addPage = false;
 		if(!SignRequestParams.NewPageType.none.equals(signRequest.getSignRequestParams().getNewPageType())) {
 			int nbSignOk = signRequest.countSignOk();
@@ -365,7 +331,6 @@ public class SignRequestService {
 		SignBook recipientSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		List<SignBook> signBooks = signBookService.getSignBookBySignRequest(signRequest);
 		SignBook signBook = signBooks.get(0);
-		//SignBook originalSignBook = SignBook.findSignBooksByNameEquals(signRequest.getOriginalSignBookNames().get(0)).getSingleResult();
 		SignRequestParams.SignType signType = signRequest.getSignRequestParams().getSignType();
 		signRequest.getSignBooks().put(recipientSignBook.getId(), true);
 		if (isSignRequestCompleted(signRequest)) {
@@ -515,7 +480,6 @@ public class SignRequestService {
 			log.setFinalStatus(signRequest.getStatus().toString());
 		}
 		logRepository.save(log);
-		//signRequest.merge();
 	}
 
 	public boolean isSignRequestCompleted(SignRequest signRequest) {
@@ -609,4 +573,3 @@ public class SignRequestService {
 	}
 	
 }
-
