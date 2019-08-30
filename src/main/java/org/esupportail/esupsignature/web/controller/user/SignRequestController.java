@@ -439,7 +439,6 @@ public class SignRequestController {
 			try {
 				signRequest.setComment(comment);
 				signRequestService.sign(signRequest, user, this.password, addDate);
-				signRequestRepository.save(signRequest);
 			} catch (EsupSignatureKeystoreException e) {
 				logger.error("keystore error", e);
 				redirectAttrs.addFlashAttribute("messageError", "security_bad_password");

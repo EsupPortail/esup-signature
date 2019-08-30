@@ -381,7 +381,7 @@ public class SignRequestService {
 				if(signBook.getSignBookType().equals(SignBookType.workflow) && signRequest.getSignBooksWorkflowStep() < signBook.getSignBooks().size()) {
 					signRequest.setSignBooksWorkflowStep(signRequest.getSignBooksWorkflowStep() + 1);
 					signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
-						signBookService.importSignRequestInSignBook(signRequest, signBook, user);
+					signBookService.importSignRequestInSignBook(signRequest, signBook, user);
 				} else {
 					completeSignRequest(signRequest, signBook, user);
 				}
@@ -435,8 +435,9 @@ public class SignRequestService {
 	
 	public void completeSignRequest(SignRequest signRequest, SignBook signBook, User user) {
 		updateStatus(signRequest, SignRequestStatus.completed, "Terminé automatiquement", user, "SUCCESS", signRequest.getComment());
-		if(signBook.getTargetType().equals(DocumentIOType.none)) {
-			signBookService.removeSignRequestFromAllSignBooks(signRequest);
+		signBookService.removeSignRequestFromAllSignBooks(signRequest);
+		if(signBook.isExternal()) {
+			signBookService.deleteSignBook(signBook);
 		}
 	}
 	

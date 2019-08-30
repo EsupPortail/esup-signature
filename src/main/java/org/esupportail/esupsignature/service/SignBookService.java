@@ -249,12 +249,15 @@ public class SignBookService {
             List<SignBook> signBooks = new ArrayList<>();
             signBooks.addAll(signBook.getSignBooks());
             signBook.getSignBooks().clear();
+            signBook.getSignRequestParams().clear();
             signBookRepository.save(signBook);
             for (SignBook signBookStep : signBooks) {
-                if (signBook.isExternal()) {
+                if (signBookStep.isExternal()) {
                     deleteSignBook(signBookStep);
                 }
             }
+
+            signBookRepository.delete(signBook);
         }
     }
 
