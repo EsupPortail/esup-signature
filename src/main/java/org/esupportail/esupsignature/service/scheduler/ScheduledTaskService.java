@@ -48,7 +48,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	//@Scheduled(fixedRate = 10000)
+	@Scheduled(fixedRate = 100000)
 	@Transactional
 	public void scanAllSignbooksTargets() throws EsupSignatureException {
 		logger.debug("scan all signbooks target");
@@ -58,7 +58,7 @@ public class ScheduledTaskService {
 		}
 	}
 	
-	//@Scheduled(fixedRate = 100000)
+	@Scheduled(fixedRate = 100000)
 	@Transactional
 	public void sendAllEmailAlerts() throws EsupSignatureException {
 		List<User> users = userService.getAllUsers();
