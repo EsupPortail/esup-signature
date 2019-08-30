@@ -397,15 +397,11 @@ public class SignRequestService {
 			}
 		}
 	}
-	
-	public void completeSignRequest(SignRequest signRequest, SignBook signBook, User user) {
+
+	public void completeSignRequest(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
 		updateStatus(signRequest, SignRequestStatus.completed, "Terminé automatiquement", user, "SUCCESS", signRequest.getComment());
-		signBookService.removeSignRequestFromAllSignBooks(signRequest);
-		if(signBook.isExternal()) {
-			signBookService.deleteSignBook(signBook);
-		}
 	}
-	
+
 	public List<Document> getToSignDocuments(SignRequest signRequest) {
 		List<Document> documents = new ArrayList<>();
 		if(signRequest.getSignedDocuments() != null && signRequest.getSignedDocuments().size() > 0 ) {
