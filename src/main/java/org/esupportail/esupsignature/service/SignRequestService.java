@@ -183,7 +183,7 @@ public class SignRequestService {
 		if (signType.equals(SignRequestParams.SignType.pdfImageStamp) || signType.equals(SignType.visa)) {
 			File toSignFile = toSignDocuments.get(0).getJavaIoFile();
 			if (toSignDocuments.size() == 1 && fileService.getContentType(toSignDocuments.get(0).getJavaIoFile()).equals("application/pdf")) {
-				signedFile = pdfService.stampImage(toSignFile, signRequest.getSignRequestParams(), user, addPage, addDate);
+				signedFile = pdfService.stampImage(toSignFile, signRequest, user, addPage, addDate);
 			} else {
 				signedFile = toSignFile;
 			}
@@ -276,7 +276,7 @@ public class SignRequestService {
 				File toSignFile = toSignFiles.get(0);
 				pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage, user);
 				if(signRequest.getNbSign() == 0) {
-					toSignFile = pdfService.convertGS(pdfService.writeMetadatas(toSignFile, user));
+					toSignFile = pdfService.convertGS(pdfService.writeMetadatas(toSignFile, signRequest));
 				}
 				
 				parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), fileService.toMultipartFile(toSignFile, "pdf"), user);
@@ -319,7 +319,7 @@ public class SignRequestService {
 	public void addSignedFile(SignRequest signRequest, File signedFile, User user) throws EsupSignatureIOException {
 		try {
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-			Document document = documentService.createDocument(signedFile, signRequest.getTitle() + "_" + signRequest.getSignRequestParams().getSignType() + "_" + signRequest.getCreateBy() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(signedFile), fileService.getContentType(signedFile));
+			Document document = documentService.createDocument(signedFile, signRequest.getTitle() + "_" + signRequest.getSignRequestParams().getSignType() + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(signedFile), fileService.getContentType(signedFile));
 			signRequest.getSignedDocuments().add(document);
 			document.setParentId(signRequest.getId());
 		} catch (IOException e) {

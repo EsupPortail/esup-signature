@@ -60,7 +60,7 @@ public class ScheduledTaskService {
 	
 	@Scheduled(fixedRate = 100000)
 	@Transactional
-	public void sendAllEmailAlerts() throws EsupSignatureException {
+	public void sendAllEmailAlerts() {
 		List<User> users = userService.getAllUsers();
 		for(User user : users) {
 			logger.debug("check email alert for " + user.getEppn());
@@ -71,7 +71,7 @@ public class ScheduledTaskService {
 	}
 						   
 	@Scheduled(initialDelay = 8640000, fixedRate = 8640000)
-	public void refreshOJKeystore() throws MalformedURLException, IOException {
+	public void refreshOJKeystore() {
 		oJService.refresh();
 	}
 	

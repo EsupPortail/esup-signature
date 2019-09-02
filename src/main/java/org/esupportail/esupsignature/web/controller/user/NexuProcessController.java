@@ -115,7 +115,7 @@ public class NexuProcessController {
 					}
         			pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage, user);
         			if(signRequest.getNbSign() == 0) {
-        				toSignFile = pdfService.convertGS(pdfService.writeMetadatas(toSignFile, user));
+        				toSignFile = pdfService.convertGS(pdfService.writeMetadatas(toSignFile, signRequest));
         			}
         			signatureDocumentForm = signingService.getSignatureDocumentForm(Arrays.asList(toSignFile), SignatureForm.PAdES);
         		} else {

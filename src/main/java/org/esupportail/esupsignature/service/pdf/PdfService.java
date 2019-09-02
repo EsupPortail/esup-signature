@@ -53,6 +53,7 @@ import org.apache.xmpbox.schema.PDFAIdentificationSchema;
 import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.type.BadFieldValueException;
 import org.apache.xmpbox.xml.XmpSerializer;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
 import org.esupportail.esupsignature.entity.User;
@@ -96,8 +97,9 @@ public class PdfService {
 	private String pathToGS = "/usr/bin/";
 	private int pdfALevel = 2; 
 	
-	public File stampImage(File toSignFile, SignRequestParams params, User user, boolean addPage, boolean addDate) throws InvalidPasswordException, IOException {
+	public File stampImage(File toSignFile, SignRequest signRequest, User user, boolean addPage, boolean addDate) throws InvalidPasswordException, IOException {
 		//TODO add ip ? + date + nom ?
+		SignRequestParams params = signRequest.getSignRequestParams();
 		SignRequestParams.SignType signType = params.getSignType();
     	PdfParameters pdfParameters = getPdfParameters(toSignFile);
 		toSignFile = formatPdf(toSignFile, params, addPage, user);
@@ -158,7 +160,7 @@ public class PdfService {
 			pdDocument.save(targetFile);
 			pdDocument.close();
 		    try {
-	    		return writeMetadatas(convertGS(targetFile), user);
+	    		return writeMetadatas(convertGS(targetFile), signRequest);
 			} catch (Exception e) {
 				logger.error("enable to convert to pdf A", e);
 			}
@@ -186,7 +188,7 @@ public class PdfService {
     	return file;
 	}
 	
-	public File writeMetadatas(File file, User user){
+	public File writeMetadatas(File file, SignRequest signRequest){
 		
 		try {
 			PDDocument pdDocument = PDDocument.load(file);
@@ -200,7 +202,7 @@ public class PdfService {
 			PDDocumentInformation info = pdDocument.getDocumentInformation();
 	        info.setTitle(file.getName());
 	        info.setSubject(file.getName());
-	        info.setAuthor(user.getEmail());
+	        info.setAuthor(signRequest.getCreateBy());
 	        info.setCreator("GhostScript");
 	        info.setProducer("esup-signature");
 	        info.setKeywords("pdf, signed, " + file.getName());
@@ -253,7 +255,7 @@ public class PdfService {
     	if(!isPdfAComplient(file)) {
 		    File targetFile =  new File(Files.createTempDir(), file.getName());
 		    String defFile =  PdfService.class.getResource("/PDFA_def.ps").getFile();
-		    String cmd = pathToGS + "gs -dPDFA=" + pdfALevel + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile=" + targetFile.getAbsolutePath() + " " + defFile + " " + file.getAbsolutePath();
+		    String cmd = pathToGS + "gs -dPDFA=" + pdfALevel + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
 	    	logger.info("GhostScript PDF/A convertion : " + cmd);
 	    	
 	    	ProcessBuilder processBuilder = new ProcessBuilder();

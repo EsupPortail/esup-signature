@@ -93,7 +93,7 @@ public class WsController {
 	@ResponseBody
 	@RequestMapping(value = "/create-sign-request", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public String createSignRequest(@RequestParam("file") MultipartFile file, @RequestParam String signBookName, @RequestParam String creatorEmail, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
-		SignRequest signRequest = new SignRequest();
+		SignRequest signRequest;
 		List<SignBook> signBooks = signBookRepository.findByName(signBookName);
 		SignBook signBook = signBooks.get(0);
 		User user = userRepository.findByEmail(creatorEmail).get(0);
@@ -103,7 +103,7 @@ public class WsController {
 			Document documentToAdd = documentService.createDocument(file, file.getOriginalFilename());
 			signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams().get(0));
 			signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-			signRequest.setTitle(file.getOriginalFilename());
+			signRequest.setTitle(fileService.getNameOnly(documentToAdd.getJavaIoFile()));
 			logger.info(file.getOriginalFilename() + " was added into signbook" + signBookName + " with id " + signRequest.getName());
 			signRequestService.pendingSignRequest(signRequest, user);
 			signRequestRepository.save(signRequest);
