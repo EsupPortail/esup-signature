@@ -245,7 +245,6 @@ public class SignBookService {
     }
 
     public void deleteSignBook(SignBook signBook) {
-        if (signBook.getSignRequests().size() == 0) {
             List<SignBook> signBooks = new ArrayList<>();
             signBooks.addAll(signBook.getSignBooks());
             signBook.getSignBooks().clear();
@@ -253,12 +252,16 @@ public class SignBookService {
             signBookRepository.save(signBook);
             for (SignBook signBookStep : signBooks) {
                 if (signBookStep.isExternal()) {
+                    List<SignBook> parentSignBooks = signBookRepository.findBySignBooks(Arrays.asList(signBookStep));
+                    for (SignBook parentSignBook : parentSignBooks) {
+                        parentSignBook.getSignBooks().remove(signBookStep);
+                        signBookRepository.save(parentSignBook);
+                    }
                     deleteSignBook(signBookStep);
                 }
             }
 
             signBookRepository.delete(signBook);
-        }
     }
 
     public void resetSignBookParams(SignBook signBook) {
@@ -317,7 +320,7 @@ public class SignBookService {
         List<SignRequest> signRequests = new ArrayList<>();
         signRequests.addAll(signBook.getSignRequests());
         for (SignRequest signRequest : signRequests) {
-            if (signRequest.getStatus().equals(SignRequestStatus.completed) && signRequestService.isSignRequestCompleted(signRequest)) {
+            if (signRequest.getStatus().equals(SignRequestStatus.completed) /* && signRequestService.isSignRequestCompleted(signRequest)*/) {
                 try {
                     if (exportFileToTarget(signBook, signRequest, user)) {
                         removeSignRequestFromAllSignBooks(signRequest);
@@ -331,7 +334,8 @@ public class SignBookService {
                 }
             }
         }
-        if (signBook.isExternal() && signBook.getSignRequests().size() == 0) {
+
+        if (signBook.isExternal() && signBook.getSignRequests().size() == 0 && signBookRepository.findBySignBooks(Arrays.asList(signBook)).size() == 0) {
             deleteSignBook(signBook);
         }
     }
@@ -410,6 +414,8 @@ public class SignBookService {
     public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook, User user) {
         signRequest.getSignBooks().remove(signBook.getId());
         signBook.getSignRequests().remove(signRequest);
+        signRequest.getSignBooks().clear();
+        signRequestRepository.save(signRequest);
         signBookRepository.save(signBook);
     }
 

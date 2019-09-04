@@ -13,6 +13,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long>, Sign
 	Long countById(Long id);
     List<SignBook> findByName(String name);
     Long countByName(String name);
+    List<SignBook> findBySignBooks(List<SignBook> signBooks);
     List<SignBook> findByRecipientEmailsAndSignBookType(List<String> recipientEmails, SignBookType signBookType);
     Long countByRecipientEmailsAndSignBookType(List<String> recipientEmails, SignBookType signBookType);
     List<SignBook> findBySignRequests(List<SignRequest> signRequests);

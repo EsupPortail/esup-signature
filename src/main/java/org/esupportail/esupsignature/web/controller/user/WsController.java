@@ -128,8 +128,9 @@ public class WsController {
 			if(newSignBook.getRecipientEmails().size() > 1 ) {
 				SignBook signBookCheck = null;
 				for(String recipientEmail : newSignBook.getRecipientEmails()) {
-					if(signBookRepository.countByRecipientEmailsContainAndSignBookType(newSignBook.getRecipientEmails().get(0), SignBookType.group) > 0 && signBookCheck == null) {
-						signBookCheck = signBookRepository.findByRecipientEmailsContainAndSignBookType(newSignBook.getRecipientEmails().get(0), SignBookType.group).get(0);
+					if(signBookRepository.countByRecipientEmailsContainAndSignBookType(newSignBook.getRecipientEmails().get(0), SignBookType.user) > 0 && signBookCheck == null) {
+						signBookCheck = signBookRepository.findByRecipientEmailsContainAndSignBookType(newSignBook.getRecipientEmails().get(0), SignBookType.user).get(0);
+
 					} else {
 						if(signBookCheck != null && !signBookCheck.getRecipientEmails().contains(recipientEmail)) {
 							break;
