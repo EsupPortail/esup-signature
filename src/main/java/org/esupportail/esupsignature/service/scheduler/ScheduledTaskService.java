@@ -50,11 +50,15 @@ public class ScheduledTaskService {
 
 	@Scheduled(fixedRate = 10000)
 	@Transactional
-	public void scanAllSignbooksTargets() throws EsupSignatureException {
+	public void scanAllSignbooksTargets() {
 		logger.debug("scan all signbooks target");
 		List<SignBook> signBooks = signBookService.getAllSignBooks();
 		for(SignBook signBook : signBooks) {
-			signBookService.exportFilesToTarget(signBook, getSchedulerUser());
+			try {
+				signBookService.exportFilesToTarget(signBook, getSchedulerUser());
+			} catch (EsupSignatureException e) {
+				logger.error(e.getMessage());
+			}
 		}
 	}
 	

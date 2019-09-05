@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<style>
+
+tr:nth-child(even) {
+  background-color: #f2f2f2
+}
+
+table {
+  border-collapse: collapse;
+}
+
+table, td, th {
+  border: 1px solid black;
+}
+</style>
+</head>
+<body>
+<p>Bonjour</p>
+<p>En pièce jointe, un nouveau document signé : </p>
+<span th:text="'Titre du document : ' + ${signRequest.title}"></span>
+<span th:text="'Auteur : ' + ${user.firstname} + ' ' + ${user.name}"></span>
+</body>
+</html>

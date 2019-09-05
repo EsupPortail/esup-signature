@@ -540,11 +540,11 @@
 							<tbody>
 								<th:block th:each="log : ${logs}">
 									<tr>
-										<td><span th:text=${log.logDate}></span></td>
-										<td><span th:text=${log.eppn}></span></td>
-										<td><span th:text=${log.action}></span></td>
-										<td><span th:text=${log.initialStatus}></span></td>
-										<td><span th:text=${log.finalStatus}></span></td>
+										<td><span th:text="${log.logDate}"></span></td>
+										<td><span th:text="${log.eppn}"></span></td>
+										<td><span th:text="${log.action}"></span></td>
+										<td><span th:text="${log.initialStatus}"></span></td>
+										<td><span th:text="${log.finalStatus}"></span></td>
 									</tr>
 								</th:block>
 							</tbody>
@@ -560,7 +560,7 @@
 		<div class="modal-dialog modal-lg" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="exampleModalLabel">Refus</h5>
+					<h5 class="modal-title">Refus</h5>
 					<button type="button" class="close" data-dismiss="modal"
 						aria-label="Close">
 						<i class="fas fa-times"></i>
@@ -656,8 +656,7 @@
 		<div class="modal-dialog modal-lg" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="exampleModalLabel">Envoyer dans le
-						parapheur</h5>
+					<h5 class="modal-title">Envoyer dans le	parapheur</h5>
 				</div>
 				<div class="modal-body">
 					<form class="form-group"

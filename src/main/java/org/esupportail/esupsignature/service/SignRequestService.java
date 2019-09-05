@@ -37,6 +37,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class SignRequestService {
@@ -405,7 +406,8 @@ public class SignRequestService {
 	public List<Document> getToSignDocuments(SignRequest signRequest) {
 		List<Document> documents = new ArrayList<>();
 		if(signRequest.getSignedDocuments() != null && signRequest.getSignedDocuments().size() > 0 ) {
-			documents.add(signRequest.getSignedDocuments().get(signRequest.getSignedDocuments().size() - 1));
+			signRequest.setSignedDocuments(signRequest.getSignedDocuments().stream().sorted(Comparator.comparing(Document::getCreateDate).reversed()).collect(Collectors.toList()));
+			documents.add(signRequest.getSignedDocuments().get(0));
 		} else {
 			documents.addAll(signRequest.getOriginalDocuments());
 		}
@@ -415,19 +417,23 @@ public class SignRequestService {
 	public File getLastSignedFile(SignRequest signRequest) throws Exception {
 		if(signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			FsAccessService fsAccessService = null;
-			if(signRequest.getExportedDocumentURI().startsWith("smb")) {
-				fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.smb);
+			if(signRequest.getExportedDocumentURI().startsWith("mail")) {
+				return getLastSignedDocument(signRequest).getJavaIoFile();
+			} else {
+				if (signRequest.getExportedDocumentURI().startsWith("smb")) {
+					fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.smb);
+				}
+				return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI()).getFile();
 			}
-			return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI()).getFile();
 		} else {
 			return getLastSignedDocument(signRequest).getJavaIoFile();
 		}
 	}
 	
 	public Document getLastSignedDocument(SignRequest signRequest) {
-		List<Document> documents = signRequest.getSignedDocuments();
-		if(documents.size() > 0) {
-			return documents.get(documents.size() - 1);
+		if(signRequest.getSignedDocuments().size() > 0) {
+			signRequest.setSignedDocuments(signRequest.getSignedDocuments().stream().sorted(Comparator.comparing(Document::getCreateDate).reversed()).collect(Collectors.toList()));
+			return signRequest.getSignedDocuments().get(0);
 		} else {
 			return getLastOriginalDocument(signRequest);
 		}

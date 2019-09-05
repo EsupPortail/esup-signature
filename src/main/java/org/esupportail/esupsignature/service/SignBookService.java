@@ -29,6 +29,7 @@ import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
+import org.esupportail.esupsignature.service.mail.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,9 @@ public class SignBookService {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private EmailService emailService;
 
     @Value("${sign.defaultPositionX}")
     private int defaultPositionX;
@@ -321,16 +325,14 @@ public class SignBookService {
         signRequests.addAll(signBook.getSignRequests());
         for (SignRequest signRequest : signRequests) {
             if (signRequest.getStatus().equals(SignRequestStatus.completed) /* && signRequestService.isSignRequestCompleted(signRequest)*/) {
-                try {
-                    if (exportFileToTarget(signBook, signRequest, user)) {
-                        removeSignRequestFromAllSignBooks(signRequest);
-                        signRequestService.updateStatus(signRequest, SignRequestStatus.exported, "Copié vers la destination " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", "");
+                if (exportFileToTarget(signBook, signRequest, user)) {
+                    removeSignRequestFromAllSignBooks(signRequest);
+                    signRequestService.updateStatus(signRequest, SignRequestStatus.exported, "Copié vers la destination " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", "");
+                    if(!signBook.getTargetType().equals(DocumentIOType.mail)) {
                         signRequestService.clearAllDocuments(signRequest);
-                    } else {
-                        throw new EsupSignatureException("error on export to " + signBook.getDocumentsTargetUri());
                     }
-                } catch (EsupSignatureException e) {
-                    throw e;
+                } else {
+                    throw new EsupSignatureException("error on export to " + signBook.getDocumentsTargetUri());
                 }
             }
         }
@@ -342,17 +344,24 @@ public class SignBookService {
 
     public boolean exportFileToTarget(SignBook signBook, SignRequest signRequest, User user) throws EsupSignatureException {
         if (signBook.getTargetType() != null && !signBook.getTargetType().equals(DocumentIOType.none)) {
-            logger.info("send to " + signBook.getTargetType() + " in /" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri());
-            try {
-                FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signBook.getTargetType());
-                File signedFile = signRequestService.getLastSignedDocument(signRequest).getJavaIoFile();
-                InputStream inputStream = new FileInputStream(signedFile);
-                fsAccessService.createFile("/", signBook.getSignBookType().toString(), "folder");
-                fsAccessService.createFile("/" + signBook.getSignBookType().toString(), signBook.getDocumentsTargetUri(), "folder");
-                signRequest.setExportedDocumentURI(fsAccessService.getUri() + "/" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri() + "/" + signedFile.getName());
-                return fsAccessService.putFile("/" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri() + "/", signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
-            } catch (Exception e) {
-                throw new EsupSignatureException("write fsaccess error : ", e);
+            File signedFile = signRequestService.getLastSignedDocument(signRequest).getJavaIoFile();
+            if(signBook.getTargetType().equals(DocumentIOType.mail)) {
+                logger.info("send by email to " + signBook.getDocumentsTargetUri());
+                emailService.sendFile(signBook.getDocumentsTargetUri(), signedFile, signRequest);
+                signRequest.setExportedDocumentURI("mail://" + signBook.getDocumentsTargetUri());
+                return true;
+            } else {
+                try {
+                    logger.info("send to " + signBook.getTargetType() + " in /" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri());
+                    FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signBook.getTargetType());
+                    InputStream inputStream = new FileInputStream(signedFile);
+                    fsAccessService.createFile("/", signBook.getSignBookType().toString(), "folder");
+                    fsAccessService.createFile("/" + signBook.getSignBookType().toString(), signBook.getDocumentsTargetUri(), "folder");
+                    signRequest.setExportedDocumentURI(fsAccessService.getUri() + "/" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri() + "/" + signedFile.getName());
+                    return fsAccessService.putFile("/" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri() + "/", signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
+                } catch (Exception e) {
+                    throw new EsupSignatureException("write fsaccess error : ", e);
+                }
             }
         } else {
             logger.debug("no target type for this signbook");
