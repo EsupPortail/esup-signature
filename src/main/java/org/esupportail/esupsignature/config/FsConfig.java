@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.service.fs.smb.SmbAccessImpl;
 import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

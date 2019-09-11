@@ -26,18 +26,14 @@ public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
+    @Resource
     private UserRepository userRepository;
 
+    @Resource
     private JavaMailSender mailSender;
 
+    @Resource
     private TemplateEngine templateEngine;
-
-    @Autowired
-    public EmailService(UserRepository userRepository, JavaMailSender mailSender, TemplateEngine templateEngine) {
-        this.userRepository = userRepository;
-        this.mailSender = mailSender;
-        this.templateEngine = templateEngine;
-    }
 
     @Value("${root.url}")
     private String rootUrl;

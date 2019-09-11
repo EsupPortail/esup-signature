@@ -23,6 +23,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
@@ -52,21 +53,25 @@ public class SignRequest {
     private String comment;
     
     private String exportedDocumentURI;
-    
+
+    @JsonIgnore
     @OneToMany(cascade = CascadeType.REMOVE)
     private List<Document> originalDocuments = new ArrayList<Document>();
-    
+
+    @JsonIgnore
     @OneToMany(cascade = CascadeType.REMOVE)
     private List<Document> signedDocuments = new ArrayList<Document>();
     
     private boolean overloadSignBookParams = false;
-    
+
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     private List<SignRequestParams> signRequestParamsList = new ArrayList<SignRequestParams>();
     
     @Enumerated(EnumType.STRING)
-    private SignRequestStatus status;	
-    
+    private SignRequestStatus status;
+
+    @JsonIgnore
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<Long, Boolean> signBooks = new HashMap<Long, Boolean>();
     
@@ -79,7 +84,8 @@ public class SignRequest {
     public enum SignRequestStatus {
 		draft, pending, canceled, checked, signed, refused, deleted, exported, completed;
 	}
-    
+
+    @JsonIgnore
     transient List<SignBook> originalSignBooks = new ArrayList<SignBook>();
 
     public List<SignBook> getOriginalSignBooks() {

@@ -175,7 +175,7 @@ public class SignRequestController {
 		SignBook signBook = signBookRepository.findByName(user.getFirstname() + " " + user.getName()).get(0);
 		for(SignBook signBookGroup : signBooksGroup) {
 			for(SignRequest signRequest : signBookGroup.getSignRequests()) {
-				if(signRequest.getStatus().equals(SignRequestStatus.pending)) {
+				if(!signRequestsToSign.contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.pending)) {
 					signRequestsToSign.add(signRequest);
 				}
 			}
@@ -183,7 +183,7 @@ public class SignRequestController {
 			List<SignBook> signBooksWorkflows = signBookRepository.findBySignBookContain(signBookGroup);
 			for(SignBook signBookWorkflow : signBooksWorkflows) {
 				for(SignRequest signRequest : signBookWorkflow.getSignRequests()) {
-					if(signRequest.getStatus().equals(SignRequestStatus.pending) && signRequest.getSignBooks().containsKey(signBook.getId()) && !signRequest.getSignBooks().get(signBook.getId())) {
+					if(!signRequestsToSign.contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.pending) && signRequest.getSignBooks().containsKey(signBook.getId()) && !signRequest.getSignBooks().get(signBook.getId())) {
 						signRequestsToSign.add(signRequest);
 					}
 				}
