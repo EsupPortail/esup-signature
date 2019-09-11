@@ -325,14 +325,13 @@ public class SignBookService {
         signRequests.addAll(signBook.getSignRequests());
         for (SignRequest signRequest : signRequests) {
             if (signRequest.getStatus().equals(SignRequestStatus.completed) /* && signRequestService.isSignRequestCompleted(signRequest)*/) {
-                if (exportFileToTarget(signBook, signRequest, user)) {
+                boolean exportOk = exportFileToTarget(signBook, signRequest, user);
+                if(exportOk) {
                     removeSignRequestFromAllSignBooks(signRequest);
                     signRequestService.updateStatus(signRequest, SignRequestStatus.exported, "Copié vers la destination " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", "");
-                    if(!signBook.getTargetType().equals(DocumentIOType.mail)) {
+                    if (!signBook.getTargetType().equals(DocumentIOType.mail)) {
                         signRequestService.clearAllDocuments(signRequest);
                     }
-                } else {
-                    throw new EsupSignatureException("error on export to " + signBook.getDocumentsTargetUri());
                 }
             }
         }

@@ -184,7 +184,9 @@ public class WsController {
         user.setIp(httpServletRequest.getRemoteAddr());
         if (signBookRepository.countByName(signBookName) > 0) {
             SignBook signBook = signBookRepository.findByName(signBookName).get(0);
-            signBookService.deleteSignBook(signBook);
+            if(signBook.isExternal()) {
+                signBookService.deleteSignBook(signBook);
+            }
         }
         return new ResponseEntity<String>(HttpStatus.OK);
     }
