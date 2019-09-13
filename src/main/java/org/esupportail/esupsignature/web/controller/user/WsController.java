@@ -122,6 +122,7 @@ public class WsController {
         logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.signed.name()));
 		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.checked.name()));
         for (Log log : logs) {
+            logger.debug("find log : " + log.getSignRequestId() + ", " + log.getFinalStatus());
             try {
                 SignRequest signRequest = signRequestRepository.findById(log.getSignRequestId()).get();
                 if (!signedFiles.contains(signRequest)) {
