@@ -47,7 +47,6 @@ public class Log {
 	
 	private Long signRequestId;
 
-
 	public Date getLogDate() {
         return this.logDate;
     }
@@ -112,7 +111,7 @@ public class Log {
         this.comment = comment;
     }
 
-	public long getSignRequestId() {
+	public Long getSignRequestId() {
         return this.signRequestId;
     }
 
