@@ -38,7 +38,30 @@ public class EmailService {
     @Value("${root.url}")
     private String rootUrl;
 
-    public void sendSignRequestAlert(final String recipientName, final String recipientEmail, List<SignRequest> signRequests) {
+    public void sendCompletedMail(SignRequest signRequest) {
+        User user = userRepository.findByEppn(signRequest.getCreateBy()).get(0);
+        final Context ctx = new Context(Locale.FRENCH);
+        ctx.setVariable("name", user.getFirstname() + " " + user.getName());
+        ctx.setVariable("signRequest", signRequest);
+        ctx.setVariable("rootUrl", rootUrl);
+
+        final MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper message;
+        try {
+            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            message.setSubject("Esup-Signature : demande signature complète");
+            message.setFrom("esup-signature@univ-rouen.fr");
+            message.setTo(user.getEmail());
+            String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
+            message.setText(htmlContent, true); // true = isHtml
+            mailSender.send(mimeMessage);
+        } catch (javax.mail.MessagingException e) {
+            logger.error("enable to sens email", e);
+        }
+
+    }
+
+    public void sendSignRequestAlert(String recipientName, String recipientEmail, List<SignRequest> signRequests) {
 
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("name", recipientName);
@@ -49,7 +72,7 @@ public class EmailService {
         MimeMessageHelper message;
         try {
             message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            message.setSubject("Alerte esup-signature");
+            message.setSubject("Esup-Signature : nouveau document à signer");
             message.setFrom("esup-signature@univ-rouen.fr");
             message.setTo(recipientEmail);
             String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
@@ -61,7 +84,7 @@ public class EmailService {
 
     }
 
-	public void sendFile(final String recipientEmail, File file,  SignRequest signRequest) {
+	public void sendFile(String recipientEmail, File file,  SignRequest signRequest) {
 
 		final Context ctx = new Context(Locale.FRENCH);
 		ctx.setVariable("rootUrl", rootUrl);
@@ -73,7 +96,7 @@ public class EmailService {
 		MimeMessageHelper message;
 		try {
 			message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-			message.setSubject("[Esup-signature] Nouveau document " + signRequest.getTitle());
+			message.setSubject("Esup-Signature : nouveau document  " + signRequest.getTitle());
 			message.setFrom("esup-signature@univ-rouen.fr");
 			message.setTo(recipientEmail);
 			message.addAttachment(file.getName(), file);

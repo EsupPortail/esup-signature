@@ -10,11 +10,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -116,22 +114,22 @@ public class PdfService {
 			
 			int xPos = (int) params.getXPos();
 			int yPos = (int) params.getYPos();
-			//TODO remplace tolocalestring
-			//DateFormat format = new SimpleDateFormat("dd MMM YYYY HH:mm:ss", Locale.FRENCH);
+			DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
 			File signImage = new File(PdfService.class.getResource("/sceau.png").getFile());
 			if(signType.equals(SignType.visa)) {
 				try {
 					addText(contentStream, "Visé par " + user.getFirstname() + " " + user.getName(), xPos, yPos, PDType1Font.HELVETICA);
 					if(addDate) {
-						addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos + 20, PDType1Font.HELVETICA);
+						addText(contentStream, "Le " + dateFormat.format(new Date()), xPos, yPos + 20, PDType1Font.HELVETICA);
 					}
 				} catch (IOException e) {
 					logger.error(e.getMessage(), e);
 				}
 			} else {
+				//TODO add nom prenom ?
+				//addText(contentStream, "Signé par " + user.getFirstname() + " " + user.getName(), xPos, yPos, PDType1Font.HELVETICA);
 				if(addDate) {
-					//TODO add nom prenom ?
-					addText(contentStream, "Le " + new Date().toLocaleString(), xPos, yPos, PDType1Font.HELVETICA);
+					addText(contentStream, "Le " + dateFormat.format(new Date()), xPos, yPos, PDType1Font.HELVETICA);
 					//topHeight = 20;
 				}
 				signImage = user.getSignImage().getJavaIoFile();

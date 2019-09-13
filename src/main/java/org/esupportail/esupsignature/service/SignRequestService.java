@@ -23,6 +23,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
+import org.esupportail.esupsignature.service.mail.EmailService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +45,10 @@ public class SignRequestService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestService.class);
 
-	@Autowired
+	@Resource
 	private SignRequestRepository signRequestRepository;
 
-	@Autowired
+	@Resource
 	private LogRepository logRepository;
 	
 	@Resource
@@ -59,10 +60,10 @@ public class SignRequestService {
 	@Resource
 	private DocumentService documentService;
 
-	@Autowired
+	@Resource
 	private SignRequestParamsRepository signRequestParamsRepository; 
 	
-	@Autowired
+	@Resource
 	private SignBookRepository signBookRepository;
 	
 	@Resource
@@ -71,20 +72,20 @@ public class SignRequestService {
 	@Resource
 	private SignBookService signBookService;
 	
-	@Autowired
+	@Resource
 	private SigningService signingService;
 
 	@Resource
 	private FileService fileService;
 
 	@Resource
-	private BigFileService bigFileService;
-	
-	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Resource
 	private UserService userService;
+
+	@Resource
+	private EmailService emailService;
 	
 	@Value("${sign.defaultSignatureForm}")
 	private SignatureForm defaultSignatureForm;
@@ -350,6 +351,7 @@ public class SignRequestService {
 					signBookService.importSignRequestInSignBook(signRequest, signBook, user);
 				} else {
 					completeSignRequest(signRequest, signBook, user);
+					emailService.sendCompletedMail(signRequest);
 				}
 			}
 		} else {
@@ -368,8 +370,6 @@ public class SignRequestService {
 			SignBook signBook = signBookRepository.findById(signBookId).get();
 			for(String emailRecipient : signBook.getRecipientEmails()) {
 				User recipient = userRepository.findByEmail(emailRecipient).get(0);
-				//TODO : add force email alert
-
 				if(signRequest.getNbSign() == 0 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
 					int numSign = 0;
 					File toSignFile = signRequest.getOriginalDocuments().get(0).getJavaIoFile();

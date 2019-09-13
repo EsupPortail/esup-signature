@@ -1,52 +1,6 @@
 package org.esupportail.esupsignature.service;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.annotation.Resource;
-import javax.imageio.ImageIO;
-
-import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
-import org.esupportail.esupsignature.dss.web.WebAppUtils;
-import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
-import org.esupportail.esupsignature.dss.web.model.ExtensionForm;
-import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
-import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
-import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.service.pdf.PdfParameters;
-import org.esupportail.esupsignature.service.pdf.PdfService;
-import org.imgscalr.Scalr;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import eu.europa.esig.dss.ASiCContainerType;
-import eu.europa.esig.dss.AbstractSignatureParameters;
-import eu.europa.esig.dss.DSSDocument;
-import eu.europa.esig.dss.DSSUtils;
-import eu.europa.esig.dss.DigestAlgorithm;
-import eu.europa.esig.dss.FileDocument;
-import eu.europa.esig.dss.MimeType;
-import eu.europa.esig.dss.SignatureAlgorithm;
-import eu.europa.esig.dss.SignatureForm;
-import eu.europa.esig.dss.SignatureLevel;
-import eu.europa.esig.dss.SignaturePackaging;
-import eu.europa.esig.dss.SignatureValue;
-import eu.europa.esig.dss.ToBeSigned;
+import eu.europa.esig.dss.*;
 import eu.europa.esig.dss.asic.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.asic.signature.ASiCWithCAdESService;
@@ -58,8 +12,8 @@ import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureAlignmentHorizontal;
 import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureAlignmentVertical;
 import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureRotation;
+import eu.europa.esig.dss.pades.SignatureImageTextParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
-import eu.europa.esig.dss.pdf.visible.ImageAndResolution;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
@@ -68,6 +22,30 @@ import eu.europa.esig.dss.validation.TimestampToken;
 import eu.europa.esig.dss.x509.CertificateToken;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+import org.esupportail.esupsignature.dss.web.WebAppUtils;
+import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
+import org.esupportail.esupsignature.dss.web.model.ExtensionForm;
+import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
+import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
+import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.service.pdf.PdfParameters;
+import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Resource;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.*;
 
 @Service
 public class SigningService {
@@ -214,14 +192,15 @@ public class SigningService {
 	}
 
 	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user) throws IOException {
-		//TODO get sign field position ?
-		
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		File signImage = user.getSignImage().getJavaIoFile();
 		int[] signSize = pdfService.getSignSize(signImage);
 		FileDocument fileDocumentImage = new FileDocument(signImage);
 		fileDocumentImage.setMimeType(MimeType.PNG);
-		
+		SignatureImageTextParameters signatureImageTextParameters = new SignatureImageTextParameters();
+		signatureImageTextParameters.setFont(new Font("Helvetica", Font.PLAIN, 12));
+		signatureImageTextParameters.setText("TEST");
+		imageParameters.setTextParameters(signatureImageTextParameters);
 		imageParameters.setImage(fileDocumentImage);
 		imageParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
