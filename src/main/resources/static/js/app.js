@@ -223,7 +223,7 @@ function dragSignature() {
 function nextImage() {
 	currentImagePage++;
 	hideSigns(currentImagePage)
-	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "/" + currentImagePage + "')";
+	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
 	if (currentImagePage == nbImagePage - 1) {
 		document.getElementById("next").classList.add("disabled");
 	}
@@ -236,7 +236,7 @@ function nextImage() {
 function previousImage() {
 	currentImagePage--;
 	hideSigns(currentImagePage)
-	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "/" + currentImagePage + "')";
+	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
 	if (currentImagePage == 0) {
 		document.getElementById("previous").classList.add("disabled");
 	}

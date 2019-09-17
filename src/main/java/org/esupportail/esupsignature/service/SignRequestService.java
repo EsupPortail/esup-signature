@@ -102,6 +102,32 @@ public class SignRequestService {
 		return list;
 	}
 
+	public List<SignRequest> getTosignRequests(User user) {
+		List<SignRequest> signRequestsToSign = new ArrayList<>();
+		List<SignBook> signBooksGroup = signBookRepository.findByRecipientEmailsContainAndSignBookType(user.getEmail(), SignBookType.group);
+		signBooksGroup.addAll(signBookRepository.findByRecipientEmailsContainAndSignBookType(user.getEmail(), SignBookType.user));
+		SignBook signBook = signBookRepository.findByName(user.getFirstname() + " " + user.getName()).get(0);
+		for(SignBook signBookGroup : signBooksGroup) {
+			for(SignRequest signRequest : signBookGroup.getSignRequests()) {
+				if(!signRequestsToSign.contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.pending)) {
+					signRequestsToSign.add(signRequest);
+				}
+			}
+
+			List<SignBook> signBooksWorkflows = signBookRepository.findBySignBookContain(signBookGroup);
+			for(SignBook signBookWorkflow : signBooksWorkflows) {
+				for(SignRequest signRequest : signBookWorkflow.getSignRequests()) {
+					if(!signRequestsToSign.contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.pending) && signRequest.getSignBooks().containsKey(signBook.getId()) && !signRequest.getSignBooks().get(signBook.getId())) {
+						signRequestsToSign.add(signRequest);
+					}
+				}
+			}
+		}
+
+		return signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
+
+	}
+
 	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status) {
 		return findSignRequestByUserAndStatusEquals(user, true, status);
 	}

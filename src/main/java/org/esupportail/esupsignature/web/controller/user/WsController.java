@@ -114,8 +114,8 @@ public class WsController {
 
     @ResponseBody
     @RequestMapping(value = "/list-sign-requests", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Map<String, String>> listSignedFiles(@RequestParam("recipientEmail") String recipientEmail, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureException {
-        List<Map<String, String>> signedFiles = new ArrayList<>();
+    public List<Doc> listSignedFiles(@RequestParam("recipientEmail") String recipientEmail, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureException {
+        List<Doc> signedFiles = new ArrayList<>();
         User user = userRepository.findByEmail(recipientEmail).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
         List<Log> logs = new ArrayList<>();
@@ -126,15 +126,23 @@ public class WsController {
             try {
                 SignRequest signRequest = signRequestRepository.findById(log.getSignRequestId()).get();
                 if (!signedFiles.contains(signRequest)) {
-                    Map<String, String> signedFile = new HashMap<>();
-                    signedFile.put("token", signRequest.getName());
-                    signedFile.put("title", signRequest.getTitle());
-                    signedFile.put("type", signRequest.getSignedDocuments().get(0).getContentType());
-                    signedFiles.add(signedFile);
+                    signedFiles.add(new Doc(signRequest.getTitle(), signRequest.getSignedDocuments().get(0).getContentType(), signRequest.getName(), signRequest.getStatus().name()));
                 }
             } catch (Exception e) {
                 logger.debug(e.getMessage());
             }
+        }
+        return signedFiles;
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/list-to-sign-requests", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Doc> listToSignedFiles(@RequestParam("recipientEmail") String recipientEmail, HttpServletRequest httpServletRequest) {
+        List<Doc> signedFiles = new ArrayList<>();
+        User user = userRepository.findByEmail(recipientEmail).get(0);
+        user.setIp(httpServletRequest.getRemoteAddr());
+        for (SignRequest signRequest : signRequestService.getTosignRequests(user)) {
+            signedFiles.add(new Doc(signRequest.getTitle(), signRequestService.getToSignDocuments(signRequest).get(0).getContentType(), signRequest.getName(), signRequest.getStatus().name()));
         }
         return signedFiles;
     }

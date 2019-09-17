@@ -169,26 +169,7 @@ public class SignRequestController {
 			}
 		}
 
-		List<SignRequest> signRequestsToSign = new ArrayList<>();
-		List<SignBook> signBooksGroup = signBookRepository.findByRecipientEmailsContainAndSignBookType(user.getEmail(), SignBookType.group);
-		signBooksGroup.addAll(signBookRepository.findByRecipientEmailsContainAndSignBookType(user.getEmail(), SignBookType.user));
-		SignBook signBook = signBookRepository.findByName(user.getFirstname() + " " + user.getName()).get(0);
-		for(SignBook signBookGroup : signBooksGroup) {
-			for(SignRequest signRequest : signBookGroup.getSignRequests()) {
-				if(!signRequestsToSign.contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.pending)) {
-					signRequestsToSign.add(signRequest);
-				}
-			}
-
-			List<SignBook> signBooksWorkflows = signBookRepository.findBySignBookContain(signBookGroup);
-			for(SignBook signBookWorkflow : signBooksWorkflows) {
-				for(SignRequest signRequest : signBookWorkflow.getSignRequests()) {
-					if(!signRequestsToSign.contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.pending) && signRequest.getSignBooks().containsKey(signBook.getId()) && !signRequest.getSignBooks().get(signBook.getId())) {
-						signRequestsToSign.add(signRequest);
-					}
-				}
-			}
-		}
+		List<SignRequest> signRequestsToSign = signRequestService.getTosignRequests(user);
 		
 		signRequestsToSign = signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList()); 
 		
@@ -474,7 +455,7 @@ public class SignRequestController {
 		}
 	}
 
-	@RequestMapping(value = "/sign-by-token/{token}")
+		@RequestMapping(value = "/sign-by-token/{token}")
 	public String signByToken(@PathVariable("token") String token, RedirectAttributes redirectAttrs, HttpServletResponse response,
 			Model model, HttpServletRequest request) throws IOException, SQLException {
 
