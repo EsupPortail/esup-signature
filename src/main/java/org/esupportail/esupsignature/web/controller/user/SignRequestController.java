@@ -443,7 +443,7 @@ public class SignRequestController {
 				if(referer.isEmpty()) {
 					return "redirect:/user/signrequests/sign-by-token/" + signRequest.getName();
 				} else {
-					return "redirect:" + referer;					
+					return "redirect:" + referer;
 				}
 			} else {
 				return "redirect:/user/signrequests/" + id;				
@@ -455,8 +455,10 @@ public class SignRequestController {
 		}
 	}
 
-		@RequestMapping(value = "/sign-by-token/{token}")
-	public String signByToken(@PathVariable("token") String token, RedirectAttributes redirectAttrs, HttpServletResponse response,
+	@RequestMapping(value = "/sign-by-token/{token}")
+	public String signByToken(
+			@PathVariable(name = "referer", required = false) String referer,
+			@PathVariable("token") String token, RedirectAttributes redirectAttrs, HttpServletResponse response,
 			Model model, HttpServletRequest request) throws IOException, SQLException {
 
 		User user = userService.getUserFromAuthentication();
@@ -508,8 +510,10 @@ public class SignRequestController {
 				signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
 	
 				signRequestService.setSignBooksLabels(signRequest);
-				
-				model.addAttribute("referer", request.getHeader("referer"));
+
+				if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
+					model.addAttribute("referer", request.getHeader("referer"));
+				}
 				model.addAttribute("signRequest", signRequest);
 				if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
 					model.addAttribute("signable", "ok");

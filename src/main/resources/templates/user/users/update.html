@@ -3,19 +3,23 @@
 <head th:replace="fragments/head :: head"></head>
 <body>
 	<div class="header-fixed fixed-top">
-
-		<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-				<nav class="nav justify-content-between" aria-label="breadcrumb">
-			<ol class="breadcrumb col-11">
-				<li class="breadcrumb-item active">Paramètres utilisateur</li>
-			</ol>
-			<div class="navbar-nav align-self-center">
-				<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+		<th:block th:if="${referer == null}">
+			<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+			<nav class="nav justify-content-between" aria-label="breadcrumb">
+				<ol class="breadcrumb col-11">
+					<li class="breadcrumb-item active">Paramètres utilisateur</li>
+				</ol>
+				<div class="navbar-nav align-self-center">
+					<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
 					<span class="fas fa-info-circle"> <!--  -->
 					</span>
-				</button>
-			</div>
-		</nav>
+					</button>
+				</div>
+			</nav>
+		</th:block>
+		<th:block th:unless="${referer == null}">
+			<nav th:replace="fragments/emptyBar :: emptyBar"></nav>
+		</th:block>
 		<div id="ribbon" class="card">
 			<div class="card-body">
 				<button type="button" onclick="document.getElementById('fu_org_esupportail_esupsignature_domain_User').submit();" class="mr-2 btn btn-outline-dark btn-light float-left">
@@ -23,8 +27,11 @@
 						<i class="fas fa-save fa-2x"></i> <br /> Enregistrer
 					</p>
 				</button>
-				<button type="button" class="btn  btn-danger float-right" value="Retour" onclick="location.href='/user/users'">
-					<i class="fas fa-times fa-1x"></i>
+				<button th:if="${referer != null}" type="button" class="btn  btn-danger float-right" value="Retour" th:onclick="@{'location.href=\'' + ${referer} + '\''}">
+					<i class="fas fa-times fa-2x"></i><br/>Abandonner
+				</button>
+				<button th:unless="${referer != null}" type="button" class="btn  btn-danger float-right" value="Retour" onclick="location.href='/user/users'">
+					<i class="fas fa-times fa-2x"></i><br/>Abandonner
 				</button>
 			</div>
 		</div>
@@ -32,6 +39,8 @@
 	<main role="main" class="container">
 	<form id="fu_org_esupportail_esupsignature_domain_User" th:object="${user}" action="/user/users" enctype="multipart/form-data" method="post">
 		<input type="hidden" th:field=*{id} />
+		<input type="hidden" name="referer" th:value="${referer}"/>
+
 		<div id="accordion" role="tablist" aria-multiselectable="true">
 			<div class="card">
 				<div class="card-header" role="tab" id="headingOne">
@@ -45,19 +54,19 @@
 					<div class="card-body">
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_name">
 							<label class="col-form-label" for="name"><strong>Nom</strong></label>
-							<input class="form-control" readonly="readonly" type="text" th:field="*{name}">
+							<input id="name" class="form-control" readonly="readonly" type="text" th:field="*{name}">
 						</div>
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_firstname">
 							<label class="col-form-label" for="firstname"><strong>Prénom</strong></label>
-							<input class="form-control" readonly="readonly" type="text" th:field="*{firstname}">
+							<input id="firstname" class="form-control" readonly="readonly" type="text" th:field="*{firstname}">
 						</div>
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_eppn">
 							<label class="col-form-label" for="eppn"><strong>Identifiant</strong></label>
-							<input class="form-control" readonly="readonly" type="text" th:field="*{eppn}">
+							<input id="eppn" class="form-control" readonly="readonly" type="text" th:field="*{eppn}">
 						</div>
 						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_email">
 							<label class="col-form-label" for="email"><strong>Email</strong></label>
-							<input class="form-control" readonly="readonly" type="text" th:field="*{email}">
+							<input id="email" class="form-control" readonly="readonly" type="text" th:field="*{email}">
 						</div>
 					</div>
 				</div>

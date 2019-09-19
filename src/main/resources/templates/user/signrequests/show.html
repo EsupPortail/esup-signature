@@ -94,12 +94,11 @@
 						</div>
 					</div>
 					<div th:case="*">
-						<button type="button" class="mr-2 btn btn-success float-left"
-							data-toggle="modal" data-target="#signatureModal">
+						<a class="btn btn-success" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
 							<p class="text-center">
 								<i class="fas fa-signature fa-2x"></i> <br />Signer
 							</p>
-						</button>
+						</a>
 
 						<button type="button" class="mr-2 btn btn-danger float-left"
 							data-toggle="modal" data-target="#refuseModal">

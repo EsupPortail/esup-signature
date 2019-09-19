@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
@@ -133,20 +134,23 @@ public class UserController {
     }
     
     @GetMapping(params = "form")
-    public String createForm(Model uiModel) throws IOException, SQLException {
+    public String createForm(Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) throws IOException, SQLException {
     	//TODO : choix automatique du mode de signature
 		User user = userService.getUserFromAuthentication();
 		if(user != null) {
-	        uiModel.addAttribute("user", user);
-        	uiModel.addAttribute("signBook", signBookService.getUserSignBook(user));
-        	uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
-        	uiModel.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
-        	uiModel.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
-        	uiModel.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
+	        model.addAttribute("user", user);
+        	model.addAttribute("signBook", signBookService.getUserSignBook(user));
+        	model.addAttribute("signTypes", Arrays.asList(SignType.values()));
+        	model.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
+        	model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
+        	model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
+        	if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
+				model.addAttribute("referer", request.getHeader("referer"));
+			}
 
         	if(userService.isUserReady(user)) {
         		if(user.getSignImage() != null) {
-        			uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+        			model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
         		}
 	        	return "user/users/update";
 	        } else {
@@ -154,13 +158,15 @@ public class UserController {
 	        }
 		} else {
 			user = new User();
+			model.addAttribute("user", user);
 			return "user/users/create";
 		}
 
     }
     
     @PostMapping
-    public String create(Long id, 
+    public String create(Long id,
+		    @RequestParam(value = "referer", required=false) String referer,
     		@RequestParam(value = "signImageBase64", required=false) String signImageBase64, 
     		@RequestParam(value = "newPageType", required=false) NewPageType newPageType, 
     		@RequestParam(value = "signType", required=false) SignType signType,
@@ -200,7 +206,11 @@ public class UserController {
     	userToUpdate.setEmailAlertFrequency(emailAlertFrequency);
     	userToUpdate.setEmailAlertHour(emailAlertHour);
     	userToUpdate.setEmailAlertDay(emailAlertDay);
-    	return "redirect:/user/users/";
+    	if(!"".equals(referer)) {
+			return "redirect:" + referer;
+		} else {
+			return "redirect:/user/users/";
+		}
     }
     
     @RequestMapping(value = "/viewCert", method = RequestMethod.GET, produces = "text/html")

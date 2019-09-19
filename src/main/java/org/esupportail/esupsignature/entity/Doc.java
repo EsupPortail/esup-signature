@@ -3,6 +3,8 @@ package org.esupportail.esupsignature.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Date;
+
 @JsonIgnoreProperties
 public class Doc {
 
@@ -10,12 +12,14 @@ public class Doc {
     String type;
     String token;
     String status;
+    Date date;
 
-    public Doc(@JsonProperty("title") String title, @JsonProperty("type") String type, @JsonProperty("token") String token, @JsonProperty("status") String status) {
+    public Doc(@JsonProperty("title") String title, @JsonProperty("type") String type, @JsonProperty("token") String token, @JsonProperty("status") String status, @JsonProperty("date") Date date) {
         this.title = title;
         this.type = type;
         this.token = token;
         this.status = status;
+        this.date = date;
     }
 
     public String getToken() {
@@ -48,5 +52,13 @@ public class Doc {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 }

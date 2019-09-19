@@ -3,19 +3,24 @@
 <head th:replace="fragments/head :: head"></head>
 <body>
 <div class="header-fixed fixed-top">
-    <nav th:replace="fragments/emptyBar :: emptyBar"></nav>
-    <nav class="nav justify-content-between bg-white d-none" aria-label="breadcrumb">
-        <ol class="breadcrumb col-11">
-            <li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.name}"></span></li>
-        </ol>
-        <div class="navbar-nav align-self-center">
-            <button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+    <th:block th:if="${referer == null}">
+        <nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+        <nav class="nav justify-content-between bg-white" aria-label="breadcrumb">
+            <ol class="breadcrumb col-11">
+                <li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.name}"></span></li>
+            </ol>
+            <div class="navbar-nav align-self-center">
+                <button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
 					<span class="fas fa-info-circle"> <!--  -->
 					</span>
-            </button>
-        </div>
-    </nav>
+                </button>
+            </div>
+        </nav>
+    </th:block>
+    <th:block th:unless="${referer == null}">
+        <nav th:replace="fragments/emptyBar :: emptyBar"></nav>
+    </th:block>
     <div id="ribbon" class="card" th:if="${signable == 'ok'}">
         <div class="card-body">
             <div th:if="${user.signImage == null && documentType == 'pdf' && signRequest.signRequestParams.signType.name() != 'visa'}">
@@ -103,9 +108,12 @@
             </button>
 
             <button th:if="${referer != null}" type="button" class="btn  btn-danger float-right" value="Retour" th:onclick="@{'location.href=\'' + ${referer} + '\''}">
-                <i class="fas fa-times fa-1x"></i>
+                <i class="fas fa-times fa-2x"></i><br/>Abandonner
             </button>
 
+            <button th:unless="${referer != null}" type="button" class="btn  btn-danger float-right" value="Retour" onclick="window.history.back()">
+                <i class="fas fa-times fa-2x"></i><br/>Abandonner
+            </button>
         </div>
     </div>
 </div>
