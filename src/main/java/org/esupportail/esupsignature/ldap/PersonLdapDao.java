@@ -23,24 +23,20 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.filter.LikeFilter;
 
+import javax.annotation.Resource;
+
 public class PersonLdapDao {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
+	@Resource
 	private LdapTemplate ldapTemplate;
-
-	public void setLdapTemplate(LdapTemplate ldapTemplate) {
-		this.ldapTemplate = ldapTemplate;
-	}
-	
-	public LdapTemplate getLdapTemplate() {
-		return this.ldapTemplate;
-	}
 
 	public List<PersonLdap> getPersonNamesByUid(String uid) {
 		AndFilter filter = new AndFilter();
