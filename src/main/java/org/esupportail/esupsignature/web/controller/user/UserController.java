@@ -206,7 +206,7 @@ public class UserController {
     	userToUpdate.setEmailAlertFrequency(emailAlertFrequency);
     	userToUpdate.setEmailAlertHour(emailAlertHour);
     	userToUpdate.setEmailAlertDay(emailAlertDay);
-    	if(!"".equals(referer)) {
+    	if(referer != null && !"".equals(referer)) {
 			return "redirect:" + referer;
 		} else {
 			return "redirect:/user/users/";

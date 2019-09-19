@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.esupportail.esupsignature.security.Group2UserRoleService;
+import org.esupportail.esupsignature.service.FileService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -36,7 +39,8 @@ import org.springframework.util.StringUtils;
 public class ShibAuthenticatedUserDetailsService
 implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
 
-	
+	private static final Logger logger = LoggerFactory.getLogger(ShibAuthenticatedUserDetailsService.class);
+
 	protected Map<String, String> mappingGroupesRoles;
 	
 	protected Group2UserRoleService group2UserRoleService;
@@ -52,11 +56,15 @@ implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken>
 	
 	public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
 		List<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>();
-		String credentials = (String)token.getCredentials();
-		for(String credential : StringUtils.split(credentials, ";")) {
-			if(mappingGroupesRoles != null && mappingGroupesRoles.containsKey(credential)){ 
-				authorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(credential)));
+		String credentials = (String) token.getCredentials();
+		try {
+			for (String credential : StringUtils.split(credentials, ";")) {
+				if (mappingGroupesRoles != null && mappingGroupesRoles.containsKey(credential)) {
+					authorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(credential)));
+				}
 			}
+		} catch (Exception e) {
+			logger.warn("unable to find credentials");
 		}
 		for(String roleFromLdap : group2UserRoleService.getRoles(token.getName())) {
 			authorities.add(new SimpleGrantedAuthority(roleFromLdap));

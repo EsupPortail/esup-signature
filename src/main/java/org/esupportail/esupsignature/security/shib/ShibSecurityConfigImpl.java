@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.security.SecurityConfig;
 import org.esupportail.esupsignature.security.SpelGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;

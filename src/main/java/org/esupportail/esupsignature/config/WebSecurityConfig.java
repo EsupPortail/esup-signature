@@ -33,7 +33,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	private String[] nfcWsAccessAuthorizeIps;
 
 	public boolean isEnableCas() { return enableCas; }
-	public void setEnableCas(boolean enableCas) { this.enableCas = enableCas; }
+	public void setEnableCas(boolean enableCas) {
+		this.enableCas = enableCas;
+	}
 	public boolean isEnableShib() { return enableShib; }
 	public void setEnableShib(boolean enableShib) {
 		this.enableShib = enableShib;
@@ -42,7 +44,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public void setEnableOAuth(boolean enableOAuth) {
 		this.enableOAuth = enableOAuth;
 	}
-	public String[] getNfcWsAccessAuthorizeIps() { return nfcWsAccessAuthorizeIps; }
+	public String[] getNfcWsAccessAuthorizeIps() {
+		return nfcWsAccessAuthorizeIps;
+	}
 	public void setNfcWsAccessAuthorizeIps(String[] nfcWsAccessAuthorizeIps) { this.nfcWsAccessAuthorizeIps = nfcWsAccessAuthorizeIps; }
 
 	@Autowired

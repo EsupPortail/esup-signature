@@ -3,12 +3,10 @@ package org.esupportail.esupsignature.service.mail;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -17,7 +15,6 @@ import org.thymeleaf.context.Context;
 import javax.annotation.Resource;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -30,7 +27,7 @@ public class EmailService {
     private UserRepository userRepository;
 
     @Resource
-    private JavaMailSender mailSender;
+    private JavaMailSenderImpl mailSender;
 
     @Resource
     private TemplateEngine templateEngine;
@@ -50,7 +47,7 @@ public class EmailService {
         try {
             message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             message.setSubject("Esup-Signature : demande signature complète");
-            message.setFrom("esup-signature@univ-rouen.fr");
+            message.setFrom(mailSender.getJavaMailProperties().getProperty("from"));
             message.setTo(user.getEmail());
             String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
             message.setText(htmlContent, true); // true = isHtml
@@ -73,7 +70,7 @@ public class EmailService {
         try {
             message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             message.setSubject("Esup-Signature : nouveau document à signer");
-            message.setFrom("esup-signature@univ-rouen.fr");
+            message.setFrom(mailSender.getJavaMailProperties().getProperty("from"));
             message.setTo(recipientEmail);
             String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
             message.setText(htmlContent, true); // true = isHtml
@@ -97,7 +94,7 @@ public class EmailService {
 		try {
 			message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 			message.setSubject("Esup-Signature : nouveau document  " + signRequest.getTitle());
-			message.setFrom("esup-signature@univ-rouen.fr");
+            message.setFrom(mailSender.getJavaMailProperties().getProperty("from"));
 			message.setTo(recipientEmail);
 			message.addAttachment(file.getName(), file);
 			String htmlContent = templateEngine.process("mail/email-file.html", ctx);

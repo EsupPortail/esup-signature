@@ -16,7 +16,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Component;
 
-@Component
 public class OAuthAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
 	@Resource

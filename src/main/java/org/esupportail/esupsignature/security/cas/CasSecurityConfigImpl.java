@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Configuration
 @ConfigurationProperties(prefix="security.cas")
 public class CasSecurityConfigImpl implements SecurityConfig {
 	
