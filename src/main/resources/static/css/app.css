@@ -1,0 +1,211 @@
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 60px;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+  line-height: 60px; /* Vertically center the text there */
+  background-color: #f5f5f5;
+}
+
+.footer > .container {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+
+code {
+  font-size: 80%;
+}
+
+.entry:not(:first-of-type) {
+    margin-top: 10px;
+}
+
+
+.loader {
+    border: 5px solid #f3f3f3;
+    -webkit-animation: spin 1s linear infinite;
+    animation: spin 1s linear infinite;
+    border-top: 5px solid #555;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+}
+
+.div-disable {
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.custom-file-input:lang(fr) ~ .custom-file-label::after {
+	content: "Parcourir" !important;
+}
+
+.custom-file-input:lang(en) ~ .custom-file-label::after {
+	content: "Parcourir" !important;
+}
+
+.anim-border {
+	border: 2px dotted red; 
+}
+
+.alert {
+    margin-bottom: 0rem;
+ }
+/*
+.btn-default,.btn-primary,.btn-success,.btn-info,.btn-warning,.btn-danger,.btn-dark,.btn-light {
+    -webkit-box-shadow: 0px 3px 0px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow:    0px 3px 0px rgba(0, 0, 0, 0.3);
+    box-shadow:         0px 3px 0px rgba(0, 0, 0, 0.3);
+}
+
+.btn-default:active,.btn-primary:active,.btn-success:active,.btn-info:active,.btn-warning:active,.btn-dark:active.btn-light:active {
+    margin-top: 3px;
+    margin-bottom: -3px;
+}
+*/
+.carousel-control-prev, .carousel-control-next {
+    position: relative;
+    display: block;
+    -ms-flex-align: center;
+    align-items: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    width: 15%;
+    color: #fff;
+    text-align: center;
+    opacity: 1;
+    clear: both;
+}
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #212530;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #28a645;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 2px #218737;
+}
+
+input:hover + .slider {
+  box-shadow: 0 0 2px #218737;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.slider.roundoff {
+  border-radius: 34px;
+  padding-top: 5px;
+}
+
+.slider.roundoff:before {
+  border-radius: 50%;
+  display: none;
+}
+
+/* select slim */
+.ss-main .ss-multi-selected .ss-values .ss-value {
+    font-size: 16px;
+    background-color: #28a645;
+
+}
+
+.ss-main .ss-multi-selected {
+    border: 1px solid #ced4da;	
+}
+	
+.ss-value-text {
+	cursor: auto;	
+}
+
+.breadcrumb {
+    margin: 0;
+    font-weight: normal;
+}
+
+.text-left {
+  text-align: left !important;
+  justify-content: left !important;
+}
+
+.step-trigger {
+	cursor: default !important;
+	background-color: rgba(0,0,0,.12) !important;
+}
+
+.truncate {
+  width: 500px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-item.disabled a {
+	background-color: #CCC !important
+}

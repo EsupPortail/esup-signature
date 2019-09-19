@@ -17,14 +17,13 @@
  */
 package org.esupportail.esupsignature.batch;
 
-import java.util.List;
+import org.esupportail.esupsignature.entity.AppliVersion;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
-
-import org.esupportail.esupsignature.domain.AppliVersion;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 
 @Service

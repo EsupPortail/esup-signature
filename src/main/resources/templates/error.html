@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+<main role="main" class="container-full">
+    <div class="card">
+        <div class="card-header">
+            <h1>Une erreur c'est produite</h1>
+            Merci de contacter le gestionnaire de cette application
+            <a class="btn btn-success" href="javascript:window.history.back();">Retour</a>
+            <h5 class="mb-0">
+                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseError" aria-expanded="true" aria-controls="collapseOne">
+                    Details de l'erreur
+                </button>
+            </h5>
+        </div>
+        <div>
+            <div id="collapseError" class="card-body collapse">
+                <table class="table table-striped">
+                    <tr class="row rowDesign">
+                        <td class="col-md-4 ml-auto">
+                            <span class="legend">Date</span>
+                        </td>
+                        <td class="col-md-8">
+                            <span th:text="${timestamp}"></span>
+                        </td>
+                    </tr>
+                    <tr class="row rowDesign">
+                        <td class="col-md-4 ml-auto">
+                            <span class="legend">Path</span>
+                        </td>
+                        <td class="col-md-8">
+                            <span th:text="${path}"></span>
+                        </td>
+                    </tr>
+                    <tr class="row rowDesign">
+                        <td class="col-md-4 ml-auto">
+                            <span class="legend">Error</span>
+                        </td>
+                        <td class="col-md-8">
+                            <span th:text="${error}"></span>
+                        </td>
+                    </tr>
+                    <tr class="row rowDesign">
+                        <td class="col-md-4 ml-auto">
+                            <span class="legend">Status</span>
+                        </td>
+                        <td class="col-md-8">
+                            <span th:text="${status}"></span>
+                        </td>
+                    </tr>
+                    <tr class="row rowDesign">
+                        <td class="col-md-4 ml-auto">
+                            <span class="legend">Message</span>
+                        </td>
+                        <td class="col-md-8">
+                            <span th:text="${message}"></span>
+                        </td>
+                    </tr>
+                    <tr class="row rowDesign">
+                        <td class="col-md-4 ml-auto">
+                            <span class="legend">Exception</span>
+                        </td>
+                        <td class="col-md-8">
+                            <span th:text="${exception}"></span>
+                        </td>
+                    </tr>
+                    <tr class="row rowDesign">
+                        <td class="col-md-4 ml-auto">
+                            <span class="legend">Trace</span>
+                        </td>
+                        <td class="col-md-8">
+                            <span th:text="${trace}"></span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

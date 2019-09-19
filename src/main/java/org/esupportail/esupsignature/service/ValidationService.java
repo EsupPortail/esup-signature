@@ -1,21 +1,20 @@
 package org.esupportail.esupsignature.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.esupportail.esupsignature.dss.web.WebAppUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
+import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
+import org.esupportail.esupsignature.dss.web.WebAppUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 @Service
 public class ValidationService {
@@ -27,16 +26,14 @@ public class ValidationService {
 
 	@Autowired
 	private Resource defaultPolicy;
-	
-	@Value("${validation.level}")
-	private String validationLevel;
-	
+
 	public Reports validate(MultipartFile multipartFile) {
 		
+		try {
 		SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(WebAppUtils.toDSSDocument(multipartFile));
 		logger.info("validate with : " + documentValidator.getClass());
 		documentValidator.setCertificateVerifier(certificateVerifier);
-		documentValidator.setValidationLevel(ValidationLevel.valueOf(validationLevel));
+		documentValidator.setValidationLevel(ValidationLevel.ARCHIVAL_DATA);
 		Reports reports = null;
 		try (InputStream is = defaultPolicy.getInputStream()) {
 			reports = documentValidator.validateDocument(is);
@@ -44,6 +41,10 @@ public class ValidationService {
 			logger.error("Unable to parse policy : " + e.getMessage(), e);
 		}
 		return reports;
+		} catch (DSSException e) {
+			logger.error("Unable to read document : " + e.getMessage(), e);
+		}
+		return null;
 	}
 
 }

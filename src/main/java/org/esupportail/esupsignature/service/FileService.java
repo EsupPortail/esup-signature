@@ -1,37 +1,27 @@
 package org.esupportail.esupsignature.service;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.font.FontRenderContext;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.sql.SQLException;
-import java.util.Base64;
-
-import javax.imageio.ImageIO;
-import javax.xml.bind.DatatypeConverter;
-
+import com.google.common.io.Files;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.domain.Document;
+import org.esupportail.esupsignature.entity.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.google.common.io.Files;
-
-import net.coobird.thumbnailator.Thumbnails;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.xml.bind.DatatypeConverter;
+import java.awt.*;
+import java.awt.font.TextAttribute;
+import java.awt.image.*;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
+import java.util.Base64;
+import java.util.Hashtable;
+import java.util.Map;
 
 @Service
 public class FileService {
@@ -52,9 +42,19 @@ public class FileService {
 		OutputStream outputStream = new FileOutputStream(file);
 		IOUtils.copy(inputStream, outputStream);
 		outputStream.close();
+		inputStream.close();
 		return file;
 	}
 
+	public File multipartPdfToFile(MultipartFile multipartFile) throws IOException	{
+		File file = File.createTempFile(multipartFile.getOriginalFilename(), ".pdf");
+	    file.createNewFile(); 
+	    FileOutputStream fos = new FileOutputStream(file); 
+	    fos.write(multipartFile.getBytes());
+	    fos.close(); 
+	    return file;
+	}
+	
 	public File fromBase64Image(String base64Image, String name) throws IOException {
 		File fileImage = File.createTempFile(name, ".png");
 		ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(base64Image.substring(base64Image.lastIndexOf(',') + 1).trim()));
@@ -62,17 +62,6 @@ public class FileService {
         ImageIO.write(image, "png", fileImage);
         return fileImage;
 	}
-	
-	public File resize(File img, int newW, int newH) throws IOException {
-	    return resize(ImageIO.read(img), newW, newH);
-	}
-	
-	public File resize(BufferedImage img, int newW, int newH) throws IOException {
-		File fileImage = File.createTempFile("img", ".png");
-	    BufferedImage thumbnail = Thumbnails.of(img).height(newH).asBufferedImage();
-	    ImageIO.write(thumbnail, "png", fileImage);	
-	    return fileImage;
-	}  
 
 	public String getContentType(File file) {
 		try {
@@ -112,27 +101,57 @@ public class FileService {
 	}
 
 	public File notFoundImageToInputStream(String type) throws IOException {
-		return stringToImageFile("PAGE NOT FOUND", type);
+		return stringToImageFile("PAGE NOT\n FOUND", type);
 	}
 	
 	public File stringToImageFile(String text, String type) throws IOException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-        BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = (Graphics2D) image.getGraphics();
-        FontRenderContext fc = g2d.getFontRenderContext();
-        Font font = new Font("Courier", Font.PLAIN, 14);
-        Rectangle2D bounds = font.getStringBounds(text, fc);
-        image = new BufferedImage(100, 75, BufferedImage.TYPE_INT_RGB);
-        g2d = (Graphics2D) image.getGraphics();
-        g2d.setColor(Color.white);
-	    g2d.fillRect(0, 0, 100, 75);
-	    g2d.setColor(Color.black);
-		g2d.drawString(text, 0, (int)-bounds.getY());
-	    g2d.dispose();
+        BufferedImage  image = new BufferedImage(200, 150, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics2D = (Graphics2D) image.getGraphics();
+        Font font = new Font("Helvetica", Font.PLAIN, 40); 
+        graphics2D.setColor(Color.white);
+	    graphics2D.fillRect(0, 0, 200, 150);
+	    graphics2D.setColor(Color.black);
+	    Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
+	    map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+	    font = font.deriveFont(map);
+	    graphics2D.setFont(font);
+	    graphics2D.setRenderingHint(
+	            RenderingHints.KEY_TEXT_ANTIALIASING,
+	            RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+	    int lineWeight = 15;
+	    for (String line : text.split("\n")) {
+	    	graphics2D.drawString(line, 5, lineWeight += graphics2D.getFontMetrics().getHeight());
+	        //graphics2D.drawString(text, 0, 40);
+	    }
+	    graphics2D.dispose();
 	    ImageIO.write(image, type, os);
 		return inputStreamToFile(new ByteArrayInputStream(os.toByteArray()), "paraphe." + type);
 	}
 	
+	/*
+	 * 	public File stringToImageFile(String text, String type) throws IOException {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+        BufferedImage image = new BufferedImage(100, 75, BufferedImage.TYPE_INT_RGB);
+        Font font = new Font("Courier", Font.PLAIN, 14);
+		FontRenderContext frc = new FontRenderContext(null, true, true);
+		GlyphVector gv = font.createGlyphVector(frc, codes);	
+        Graphics2D g2d = (Graphics2D) image.getGraphics();
+        g2d.setColor(Color.white);
+	    g2d.fillRect(0, 0, 100, 75);
+	    g2d.setColor(Color.black);
+	    g2d.drawGlyphVector(gv, 5,200);
+	    g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                            RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+	    g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
+                            RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		g2d.drawString(text, 0, 100);
+	    g2d.dispose();
+	    ImageIO.write(image, type, os);
+		return inputStreamToFile(new ByteArrayInputStream(os.toByteArray()), "paraphe." + type);
+	}
+	*/
+	 
 	public File renameFile(File file, String name) {
 		File newfile = new File(Files.createTempDir(), name);
 		boolean result = file.renameTo(newfile);
@@ -160,4 +179,86 @@ public class FileService {
 	    }
 	}
 	
+	public String base64Transparence(String base64Image) {
+		BufferedImage image = makeColorTransparent(base64StringToImg(base64Image));
+		return imgToBase64String(image, "png");
+	}
+	
+	
+	public static boolean colorsAreSimilar(final Color c1, final Color c2, final int tolerance) {
+		int r1 = c1.getRed();
+		int g1 = c1.getGreen();
+		int b1 = c1.getBlue();
+		int r2 = c2.getRed();
+		int g2 = c2.getGreen();
+		int b2 = c2.getBlue();
+
+		return ((r2 - tolerance <= r1) && (r1 <= r2 + tolerance) &&
+				(g2 - tolerance <= g1) && (g1 <= g2 + tolerance) &&
+				(b2 - tolerance <= b1) && (b1 <= b2 + tolerance));
+	}
+	
+	public BufferedImage makeColorTransparent(BufferedImage im)
+	   {
+		final ImageFilter filter = new RGBImageFilter() {
+
+			@Override
+			public int filterRGB(int x, int y, int rgb) {
+				final Color filterColor = new Color(rgb);
+
+				if(colorsAreSimilar(filterColor, Color.WHITE, 40)) {
+					return 0x00FFFFFF & rgb;
+				} else {
+					return rgb;
+				}
+			}
+		};
+
+	      final ImageProducer ip = new FilteredImageSource(im.getSource(), filter);
+	      return toBufferedImage(Toolkit.getDefaultToolkit().createImage(ip));
+	      
+	   }
+	
+	public static BufferedImage toBufferedImage(Image image) 
+	  { 
+	  if (image instanceof BufferedImage) return (BufferedImage) image; 
+	 
+	  // This code ensures that all the pixels in the image are loaded 
+	  image = new ImageIcon(image).getImage(); 
+	 
+	  BufferedImage bimage = new BufferedImage(image.getWidth(null),image.getHeight(null), 
+	    BufferedImage.TYPE_INT_ARGB); 
+	  Graphics g = bimage.createGraphics(); 
+	  g.drawImage(image,0,0,null); 
+	  g.dispose(); 
+	  return bimage; 
+	  } 
+	
+	public static String imgToBase64String(RenderedImage img, String formatName) {
+	    final ByteArrayOutputStream os = new ByteArrayOutputStream();
+	    try {
+	        ImageIO.write(img, formatName, Base64.getEncoder().wrap(os));
+	        return os.toString(StandardCharsets.ISO_8859_1.name());
+	    } catch (final IOException ioe) {
+	        throw new UncheckedIOException(ioe);
+	    }
+	}
+
+	public static BufferedImage base64StringToImg(String base64Image) {
+	    try {
+	        return ImageIO.read(new ByteArrayInputStream(Base64.getDecoder().decode(base64Image.substring(base64Image.lastIndexOf(',') + 1).trim())));
+	    } catch (final IOException ioe) {
+	        throw new UncheckedIOException(ioe);
+	    }
+	}
+	
+	public BufferedImage imageToBufferedImage(final Image image)
+	   {
+	      final BufferedImage bufferedImage =
+	         new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+	      final Graphics2D g2 = bufferedImage.createGraphics();
+	      g2.drawImage(image, 0, 0, null);
+	      g2.dispose();
+	      return bufferedImage;
+	    }
 }

@@ -1,12 +1,10 @@
 package org.esupportail.esupsignature.dss.web.model;
 
-import java.util.List;
-
-import javax.validation.constraints.AssertTrue;
-
+import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import org.springframework.web.multipart.MultipartFile;
 
-import eu.europa.esig.dss.validation.executor.ValidationLevel;
+import javax.validation.constraints.AssertTrue;
+import java.util.List;
 
 public class ValidationForm {
 

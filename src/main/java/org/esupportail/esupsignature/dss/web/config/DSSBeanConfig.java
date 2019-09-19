@@ -1,21 +1,6 @@
 package org.esupportail.esupsignature.dss.web.config;
 
-import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.util.List;
-
-import javax.annotation.Resource;
-import javax.sql.DataSource;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
-
+import com.zaxxer.hikari.HikariDataSource;
 import eu.europa.esig.dss.asic.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
@@ -37,10 +22,34 @@ import eu.europa.esig.dss.validation.RemoteDocumentValidationService;
 import eu.europa.esig.dss.x509.crl.CRLSource;
 import eu.europa.esig.dss.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 public class DSSBeanConfig {
+	
+	@Value("${cache.datasource.username}")
+	private String cacheUsername;
+
+	@Value("${cache.datasource.password}")
+	private String cachePassword;
+
+	@Value("${cache.datasource.url}")
+	private String cacheDataSourceUrl;
+
+	@Value("${cache.datasource.driver.class}")
+	private String cacheDataSourceDriverClassName;
 	
 	@Value("${default.validation.policy}")
 	private String defaultValidationPolicy;
@@ -66,20 +75,18 @@ public class DSSBeanConfig {
 	@Value("${dss.server.signing.keystore.password}")
 	private String serverSigningKeystorePassword;
 
-	@Autowired
-	@Qualifier(value="cacheDataSource")
-	private DataSource cacheDataSource;
-	
-	@Autowired
-	@Qualifier(value="dataSource")
-	private DataSource dataSource;
-
 	// can be null
 	@Autowired(required = false)
 	private ProxyConfig proxyConfig;
 	
-	@Resource(name="trustedCertificatUrlList")
-	private List<String> trustedCertificatUrlList;
+	@Bean
+	public List<String> trustedCertificatUrlList() {
+		List<String> trustedCertificatUrlList = new ArrayList<String>();
+		trustedCertificatUrlList.add("https://dl.cacerts.digicert.com/DigiCertAssuredIDRootCA.crt");
+		trustedCertificatUrlList.add("https://www.certinomis.fr/publi/cer/AC_Racine_G3.cer");
+		return trustedCertificatUrlList;
+		
+	}
 	
 	@Bean
 	public CommonsDataLoader dataLoader() {
@@ -105,7 +112,7 @@ public class DSSBeanConfig {
 	@Bean
 	public CRLSource cachedCRLSource() throws Exception {
 		JdbcCacheCRLSource jdbcCacheCRLSource = new JdbcCacheCRLSource();
-		jdbcCacheCRLSource.setDataSource(cacheDataSource);
+		jdbcCacheCRLSource.setDataSource(cacheDataSource());
 		jdbcCacheCRLSource.setCachedSource(onlineCRLSource());
 		return jdbcCacheCRLSource;
 	}
@@ -233,6 +240,15 @@ public class DSSBeanConfig {
 		return tslRepository;
 	}
 	
-
+	public DataSource cacheDataSource() {
+		HikariDataSource ds = new HikariDataSource();
+		ds.setPoolName("DSS-Hikari-Pool");
+		ds.setJdbcUrl(cacheDataSourceUrl);
+		ds.setDriverClassName(cacheDataSourceDriverClassName);
+		ds.setUsername(cacheUsername);
+		ds.setPassword(cachePassword);
+		ds.setAutoCommit(false);
+		return ds;
+	}
 
 }

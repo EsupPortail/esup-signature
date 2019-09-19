@@ -17,13 +17,6 @@
  */
 package org.esupportail.esupsignature.service.fs;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileNotFoundException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.slf4j.Logger;
@@ -33,6 +26,14 @@ import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+@SuppressWarnings("unchecked")
 public class ResourceUtils implements InitializingBean, ResourceLoaderAware {
  
 	private static final Logger logger = LoggerFactory.getLogger(ResourceUtils.class);

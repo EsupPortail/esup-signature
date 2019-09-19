@@ -17,15 +17,14 @@
  */
 package org.esupportail.esupsignature.ldap;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.ldap.core.AttributesMapper;
 
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.springframework.ldap.core.AttributesMapper;
-
-public class PersonAttributMapper implements AttributesMapper {
+public class PersonAttributMapper implements AttributesMapper<PersonLdap> {
 	
 	public PersonLdap mapFromAttributes(Attributes attrs)
 			throws javax.naming.NamingException {

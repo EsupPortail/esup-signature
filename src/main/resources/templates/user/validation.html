@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+	<div class="card card-header">
+		<nav class="nav justify-content-between" aria-label="breadcrumb">
+			<div class="navbar-nav">
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
+					<li class="breadcrumb-item active">Outil de validation</li>
+				</ol>
+			</div>
+			<div class="navbar-nav align-self-center">
+				<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+					<span class="fas fa-info-circle"><!--  --></span>
+				</button>
+			</div>
+		</nav>
+	</div>
+	
+	<div id="collapseHelp" class="collapse" aria-expanded="true" style="">
+		<div class="alert alert-info">
+	        Le service de validation est fourni par l'outil DSS.
+	        <br/>
+   			Légende :
+   			<ul>
+	   			<li><button class="btn btn-success">&amp;nbsp;</button> : Succès</li>
+   				<li><button class="btn btn-warning">&amp;nbsp;</button> : Alerte</li>
+   				<li><button class="btn btn-danger">&amp;nbsp;</button> : Erreur</li>
+   			</ul>
+		</div>
+	</div>
+	<div class="card">
+		<div class="card-body">
+			<form method="post" class="form-inline" enctype="multipart/form-data" action="/user/validation">
+				<div class="form-group col-4">
+					<div class="custom-file">
+						<input required="required" class="custom-file-input" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01" />
+						<label class="custom-file-label" id="inputGroupLabel01" for="upload">
+							Choisir un fichier signé
+						</label>
+					</div>
+				</div>
+				<input alt="Upload" class="btn btn-success" id="Upload" title="Upload" type="submit" value="Envoyer" />
+			</form>
+		</div>
+	</div>
+	<footer th:replace="fragments/footer :: footer"></footer>
+</body></html>

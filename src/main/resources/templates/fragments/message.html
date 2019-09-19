@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="message" id="messageModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3>Message</h3>
+			</div>
+			<div class="modal-body">
+			<div th:if="${messageError != null}">
+				<div id="dialog" title="Information" class="text-danger">
+					<div class="alert alert-danger" th:text="${messageError}"></div>
+				</div>
+			</div>
+
+			<div th:if="${messageInfo != null}">
+				<div id="dialog" title="Information" class="text-danger">
+					<div class="alert alert-info" th:text="${messageInfo}"></div>
+				</div>
+			</div>
+
+			<div th:if="${messageCustom != null}">
+				<!-- div class="alert alert-info" data-dismiss="alert"-->
+				<div id="dialog" title="Information" class="text-danger">
+					<div class="alert alert-info">
+						<pre th:text="${messageCustom}"></pre>
+					</div>
+				</div>
+			</div>
+			</div>
+			<div class="modal-footer">
+        		<button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+         	</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

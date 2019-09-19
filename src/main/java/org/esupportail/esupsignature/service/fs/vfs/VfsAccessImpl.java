@@ -17,35 +17,22 @@
  */
 package org.esupportail.esupsignature.service.fs.vfs;
 
+import org.apache.commons.vfs2.*;
+import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
+import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
+import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.fs.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.util.FileCopyUtils;
+
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Resource;
-
-import org.apache.commons.vfs2.FileContent;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystem;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileSystemManager;
-import org.apache.commons.vfs2.FileSystemOptions;
-import org.apache.commons.vfs2.Selectors;
-import org.apache.commons.vfs2.VFS;
-import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
-import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
-import org.esupportail.esupsignature.service.FileService;
-import org.esupportail.esupsignature.service.fs.EsupStockException;
-import org.esupportail.esupsignature.service.fs.EsupStockFileExistException;
-import org.esupportail.esupsignature.service.fs.FsAccessService;
-import org.esupportail.esupsignature.service.fs.FsFile;
-import org.esupportail.esupsignature.service.fs.ResourceUtils;
-import org.esupportail.esupsignature.service.fs.UploadActionType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.util.FileCopyUtils;
 
 public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 
@@ -336,6 +323,12 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	 */
 	public void setFtpControlEncoding(String ftpControlEncoding) {
 		this.ftpControlEncoding = ftpControlEncoding;
+	}
+
+	@Override
+	public FsFile getFileFromURI(String uri) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -1,10 +1,12 @@
 package org.esupportail.esupsignature.dss.web.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
+import eu.europa.esig.dss.DSSXmlErrorListener;
+import eu.europa.esig.dss.DomUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.w3c.dom.Document;
 
 import javax.annotation.PostConstruct;
 import javax.xml.transform.Templates;
@@ -14,15 +16,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
-
-import eu.europa.esig.dss.DSSXmlErrorListener;
-import eu.europa.esig.dss.DomUtils;
+import java.io.*;
 
 @Component
 public class XSLTService {

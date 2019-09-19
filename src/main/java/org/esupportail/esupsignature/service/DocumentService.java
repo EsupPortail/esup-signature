@@ -1,25 +1,26 @@
 package org.esupportail.esupsignature.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import org.esupportail.esupsignature.entity.BigFile;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.repository.DocumentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Resource;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.annotation.Resource;
-
-import org.esupportail.esupsignature.domain.BigFile;
-import org.esupportail.esupsignature.domain.Document;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
 @Service
 public class DocumentService {
+	
+	@Autowired
+	private DocumentRepository documentRepository;
+	
+	@Resource
+	private BigFileService bigFileService;
 	
 	@Resource
 	private FileService fileService;
@@ -51,38 +52,26 @@ public class DocumentService {
         return persistDocument(inputStream, name, size, contentType);
     }
 	
-	public Document persistDocument(InputStream inputStream, String name, long size, String contentType) throws IOException {
+	public Document persistDocument(InputStream inputStream, String name, long size, String contentType)
+			throws IOException {
 		Document document = new Document();
 		document.setCreateDate(new Date());
-        document.setFileName(name);
-        BigFile bigFile = new BigFile();
-        bigFile.setBinaryFileStream(inputStream, size);
-        bigFile.persist();
-        document.setBigFile(bigFile);
-        document.setSize(size);
-        document.setContentType(contentType);
-        document.persist();
-        return document;
+		document.setFileName(name);
+		BigFile bigFile = new BigFile();
+		bigFileService.setBinaryFileStream(bigFile, inputStream, size);
+		document.setBigFile(bigFile);
+		document.setSize(size);
+		document.setContentType(contentType);
+		documentRepository.save(document);
+		return document;
 	}
 	
-	/* copy and close inputstream */  
-	public static InputStream clone(final InputStream inputStream) {
-        try {
-            inputStream.mark(0);
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int readLength = 0;
-            while ((readLength = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, readLength);
-            }
-            outputStream.flush();
-            inputStream.close();
-            return new ByteArrayInputStream(outputStream.toByteArray());
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
+	public void deleteDocument(Document document) {
+		BigFile bigFile = document.getBigFile();
+		document.setBigFile(null);
+		documentRepository.save(document);
+		bigFileService.deleteBigFile(bigFile.getId());
+		documentRepository.delete(document);
+	}
 	
 }

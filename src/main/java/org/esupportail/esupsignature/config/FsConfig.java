@@ -1,56 +1,118 @@
 package org.esupportail.esupsignature.config;
 
-import java.util.Properties;
-
-import org.esupportail.esupsignature.service.fs.cifs.CifsAccessImpl;
 import org.esupportail.esupsignature.service.fs.opencmis.CmisAccessImpl;
+import org.esupportail.esupsignature.service.fs.smb.SmbAccessImpl;
 import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Properties;
+
 @Configuration
+@ConfigurationProperties(prefix="fs")
 public class FsConfig {
 
-	@Value("${fs.cifs.uri}")
-	private String cifsUri;
-	@Value("${fs.cifs.login}")
-	private String cifsLogin;
-	@Value("${fs.cifs.password}")
-	private String cifsPassword;
-
-	@Value("${fs.vfs.uri}")
+	private String smbUri;
+	private String smbLogin;
+	private String smbPassword;
 	private String vfsUri;
-
-	@Value("${fs.cmis.uri}")
 	private String cmisUri;
-	@Value("${fs.cmis.login}")
 	private String cmisLogin;
-	@Value("${fs.cmis.password}")
 	private String cmisPassword;
-	@Value("${fs.cmis.respositoryId}")
 	private String cmisRespositoryId;
-	@Value("${fs.cmis.rootPath}")
 	private String cmisRootPath;
-	
-	@Bean
-	public CifsAccessImpl cifsAccessImpl(){
-		CifsAccessImpl cifsAccessImpl = new CifsAccessImpl();
-		cifsAccessImpl.setDriveName("CIFS");
-		cifsAccessImpl.setUri(cifsUri);
-		cifsAccessImpl.setJcifsConfigProperties(cifsProperties());
-		cifsAccessImpl.setLogin(cifsLogin);
-		cifsAccessImpl.setPassword(cifsPassword);
-		return cifsAccessImpl;
+
+	public String getSmbUri() {
+		return smbUri;
+	}
+
+	public void setSmbUri(String smbUri) {
+		this.smbUri = smbUri;
+	}
+
+	public String getSmbLogin() {
+		return smbLogin;
+	}
+
+	public void setSmbLogin(String smbLogin) {
+		this.smbLogin = smbLogin;
+	}
+
+	public String getSmbPassword() {
+		return smbPassword;
+	}
+
+	public void setSmbPassword(String smbPassword) {
+		this.smbPassword = smbPassword;
+	}
+
+	public String getVfsUri() {
+		return vfsUri;
+	}
+
+	public void setVfsUri(String vfsUri) {
+		this.vfsUri = vfsUri;
+	}
+
+	public String getCmisUri() {
+		return cmisUri;
+	}
+
+	public void setCmisUri(String cmisUri) {
+		this.cmisUri = cmisUri;
+	}
+
+	public String getCmisLogin() {
+		return cmisLogin;
+	}
+
+	public void setCmisLogin(String cmisLogin) {
+		this.cmisLogin = cmisLogin;
+	}
+
+	public String getCmisPassword() {
+		return cmisPassword;
+	}
+
+	public void setCmisPassword(String cmisPassword) {
+		this.cmisPassword = cmisPassword;
+	}
+
+	public String getCmisRespositoryId() {
+		return cmisRespositoryId;
+	}
+
+	public void setCmisRespositoryId(String cmisRespositoryId) {
+		this.cmisRespositoryId = cmisRespositoryId;
+	}
+
+	public String getCmisRootPath() {
+		return cmisRootPath;
+	}
+
+	public void setCmisRootPath(String cmisRootPath) {
+		this.cmisRootPath = cmisRootPath;
 	}
 
 	@Bean
-	public Properties cifsProperties(){
+	public SmbAccessImpl smbAccessImpl(){
+		SmbAccessImpl smbAccessImpl = new SmbAccessImpl();
+		smbAccessImpl.setDriveName("CIFS");
+		smbAccessImpl.setUri(smbUri);
+		smbAccessImpl.setJcifsConfigProperties(smbProperties());
+		smbAccessImpl.setLogin(smbLogin);
+		smbAccessImpl.setPassword(smbPassword);
+		return smbAccessImpl;
+	}
+
+	@Bean
+	public Properties smbProperties(){
 		Properties properties = new Properties();
-		properties.put("jcifs.resolveOrder", "DNS,BCAST");
-		properties.put("jcifs.encoding", "UTF8");
-		properties.put("jcifs.smb.client.disablePlainTextPasswords", "true");
-		properties.put("jcifs.smb.client.responseTimeout", "40000");
+		properties.put("jsmb.resolveOrder", "DNS,BCAST");
+		properties.put("jsmb.encoding", "UTF8");
+		properties.put("jsmb.smb.client.disablePlainTextPasswords", "true");
+		properties.put("jsmb.smb.client.responseTimeout", "40000");
 		return properties;
 	
 	}
@@ -76,5 +138,5 @@ public class FsConfig {
 		cmisAccessImpl.setRootPath(cmisRootPath);
 		return cmisAccessImpl;
 	}
-	
+
 }

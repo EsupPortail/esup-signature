@@ -17,22 +17,17 @@
  */
 package org.esupportail.esupsignature.service.fs;
 
+import org.esupportail.esupsignature.service.fs.uri.UriManipulateService;
+
+import javax.mail.Quota;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import javax.mail.Quota;
-
-import org.esupportail.esupsignature.service.fs.uri.UriManipulateService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public abstract class FsAccessService {
-
-	private static final Logger logger = LoggerFactory.getLogger(FsAccessService.class);
-
+	
 	protected static String TOKEN_SPECIAL_CHAR =  "@";
 
 	protected static String TOKEN_FORM_USERNAME =  "@form_username@";
@@ -107,6 +102,8 @@ public abstract class FsAccessService {
 
 	public abstract FsFile getFile(String dir) throws Exception;
 
+	public abstract FsFile getFileFromURI(String uri) throws Exception;
+	
 	public abstract boolean putFile(String dir, String filename,InputStream inputStream, UploadActionType uploadOption) throws EsupStockException;
 
 	public boolean supportIntraCopyPast() {
@@ -123,4 +120,5 @@ public abstract class FsAccessService {
 	public boolean isSupportQuota(String path) {
 		return false;
 	}
+
 }
