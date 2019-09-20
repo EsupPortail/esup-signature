@@ -15,7 +15,9 @@ import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
+@Service
 public class OAuthAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
 	@Resource

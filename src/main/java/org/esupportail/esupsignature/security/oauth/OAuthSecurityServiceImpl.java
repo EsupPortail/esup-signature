@@ -3,8 +3,7 @@ package org.esupportail.esupsignature.security.oauth;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.esupportail.esupsignature.security.SecurityConfig;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.esupportail.esupsignature.security.SecurityService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -28,12 +27,14 @@ import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-public class OAuthSecurityConfigImpl implements SecurityConfig {
+import javax.annotation.Resource;
+
+public class OAuthSecurityServiceImpl implements SecurityService {
 	
-	@Autowired
+	@Resource
 	private OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler;
 	
-	@Autowired
+	@Resource
 	private RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
 
 	public String getName() {
@@ -44,7 +45,7 @@ public class OAuthSecurityConfigImpl implements SecurityConfig {
 		return "/login/oauth2entry";
 	}
 	
-	@Autowired
+	@Resource
 	private ClientRegistrationRepository clientRegistrationRepository;
 	
 	/* A GARDER POUR MULTIPLE AUTH OU FRANCE CONNECT

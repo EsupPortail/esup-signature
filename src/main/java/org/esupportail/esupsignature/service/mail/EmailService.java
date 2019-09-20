@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.mail;
 
+import org.esupportail.esupsignature.config.mail.MailConfig;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.UserRepository;
@@ -22,6 +23,9 @@ import java.util.Locale;
 public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
+
+    @Resource
+    private MailConfig mailConfig;
 
     @Resource
     private UserRepository userRepository;
@@ -47,7 +51,7 @@ public class EmailService {
         try {
             message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             message.setSubject("Esup-Signature : demande signature complète");
-            message.setFrom(mailSender.getJavaMailProperties().getProperty("from"));
+            message.setFrom(mailConfig.getMailFrom());
             message.setTo(user.getEmail());
             String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
             message.setText(htmlContent, true); // true = isHtml
@@ -70,7 +74,7 @@ public class EmailService {
         try {
             message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             message.setSubject("Esup-Signature : nouveau document à signer");
-            message.setFrom(mailSender.getJavaMailProperties().getProperty("from"));
+            message.setFrom(mailConfig.getMailFrom());
             message.setTo(recipientEmail);
             String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
             message.setText(htmlContent, true); // true = isHtml
@@ -94,7 +98,7 @@ public class EmailService {
 		try {
 			message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 			message.setSubject("Esup-Signature : nouveau document  " + signRequest.getTitle());
-            message.setFrom(mailSender.getJavaMailProperties().getProperty("from"));
+            message.setFrom(mailConfig.getMailFrom());
 			message.setTo(recipientEmail);
 			message.addAttachment(file.getName(), file);
 			String htmlContent = templateEngine.process("mail/email-file.html", ctx);

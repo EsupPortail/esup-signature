@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.security.shib;
+package org.esupportail.esupsignature.config.security.shib;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.esupportail.esupsignature.security.Group2UserRoleService;
-import org.esupportail.esupsignature.security.SecurityConfig;
+import org.esupportail.esupsignature.security.SecurityService;
 import org.esupportail.esupsignature.security.SpelGroupService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.esupportail.esupsignature.security.shib.ShibAuthenticatedUserDetailsService;
+import org.esupportail.esupsignature.security.shib.ShibAuthenticationSuccessHandler;
+import org.esupportail.esupsignature.security.shib.ShibRequestHeaderAuthenticationFilter;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -17,30 +19,19 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 
-@ConfigurationProperties(prefix="security.shib")
-public class ShibSecurityConfigImpl implements SecurityConfig {
+import javax.annotation.Resource;
 
+@Configuration
+@EnableConfigurationProperties(ShibProperties.class)
+public class ShibSecurityConfigImpl implements SecurityService {
 
-	private String principalRequestHeader;
-	private String credentialsRequestHeader;
+	private ShibProperties shibProperties;
 
-	public String getPrincipalRequestHeader() {
-		return principalRequestHeader;
+	public ShibSecurityConfigImpl(ShibProperties shibProperties) {
+		this.shibProperties = shibProperties;
 	}
 
-	public void setPrincipalRequestHeader(String principalRequestHeader) {
-		this.principalRequestHeader = principalRequestHeader;
-	}
-
-	public String getCredentialsRequestHeader() {
-		return credentialsRequestHeader;
-	}
-
-	public void setCredentialsRequestHeader(String credentialsRequestHeader) {
-		this.credentialsRequestHeader = credentialsRequestHeader;
-	}
-
-	@Autowired
+	@Resource
 	private ShibAuthenticationSuccessHandler shibAuthenticationSuccessHandler;
 
 	public String getName() {
@@ -57,8 +48,8 @@ public class ShibSecurityConfigImpl implements SecurityConfig {
 
 	public ShibRequestHeaderAuthenticationFilter getAuthenticationProcessingFilter() {
 		ShibRequestHeaderAuthenticationFilter authenticationFilter = new ShibRequestHeaderAuthenticationFilter();
-		authenticationFilter.setPrincipalRequestHeader(principalRequestHeader);
-		authenticationFilter.setCredentialsRequestHeader(credentialsRequestHeader);
+		authenticationFilter.setPrincipalRequestHeader(shibProperties.getPrincipalRequestHeader());
+		authenticationFilter.setCredentialsRequestHeader(shibProperties.getCredentialsRequestHeader());
 		authenticationFilter.setAuthenticationManager(shibAuthenticationManager());
 		authenticationFilter.setExceptionIfHeaderMissing(false);
 		authenticationFilter.setAuthenticationSuccessHandler(shibAuthenticationSuccessHandler);

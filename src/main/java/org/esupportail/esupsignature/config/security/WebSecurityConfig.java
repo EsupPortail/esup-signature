@@ -1,16 +1,11 @@
-package org.esupportail.esupsignature.config;
+package org.esupportail.esupsignature.config.security;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.esupportail.esupsignature.security.AuthorizeRequestsHelper;
-import org.esupportail.esupsignature.security.SecurityConfig;
-import org.esupportail.esupsignature.security.cas.CasSecurityConfigImpl;
-import org.esupportail.esupsignature.security.oauth.OAuthSecurityConfigImpl;
-import org.esupportail.esupsignature.security.shib.ShibSecurityConfigImpl;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.esupportail.esupsignature.security.SecurityService;
+import org.esupportail.esupsignature.security.oauth.OAuthSecurityServiceImpl;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,61 +17,51 @@ import org.springframework.security.web.authentication.session.RegisterSessionAu
 import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import javax.annotation.Resource;
+
 @Configuration
 @EnableWebSecurity(debug = false)
-@ConfigurationProperties(prefix="security")
+@EnableConfigurationProperties(WebSecurityProperties.class)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-	
-	private boolean enableCas;
-	private boolean enableShib;
-	private boolean enableOAuth;
-	private String[] nfcWsAccessAuthorizeIps;
 
-	public boolean isEnableCas() { return enableCas; }
-	public void setEnableCas(boolean enableCas) {
-		this.enableCas = enableCas;
-	}
-	public boolean isEnableShib() { return enableShib; }
-	public void setEnableShib(boolean enableShib) {
-		this.enableShib = enableShib;
-	}
-	public boolean isEnableOAuth() { return enableOAuth; }
-	public void setEnableOAuth(boolean enableOAuth) {
-		this.enableOAuth = enableOAuth;
-	}
-	public String[] getNfcWsAccessAuthorizeIps() {
-		return nfcWsAccessAuthorizeIps;
-	}
-	public void setNfcWsAccessAuthorizeIps(String[] nfcWsAccessAuthorizeIps) { this.nfcWsAccessAuthorizeIps = nfcWsAccessAuthorizeIps; }
+	private WebSecurityProperties webSecurityProperties;
 
+	public WebSecurityConfig(WebSecurityProperties webSecurityProperties) {
+		this.webSecurityProperties = webSecurityProperties;
+	}
+
+	@Resource
+	List<SecurityService> securityServices;
+
+	/*
 	@Autowired
     private AutowireCapableBeanFactory beanFactory;
 	
 	@Bean
 	public List<SecurityConfig> securityConfigs() {
-		List<SecurityConfig> securityConfigs = new ArrayList<SecurityConfig>();
-		if(enableCas) {
-	    	securityConfigs.add(beanFactory.createBean(CasSecurityConfigImpl.class));
+		List<SecurityConfig> securityConfigs = new ArrayList<>();
+		if(webSecurityProperties.isEnableCas()) {
+	    	securityConfigs.add(beanFactory.createBean(CasConfig.class));
 	    }
-	    if(enableShib) {
+	    if(webSecurityProperties.isEnableShib()) {
 	    	securityConfigs.add(beanFactory.createBean(ShibSecurityConfigImpl.class));
 	    }
-	    if(enableOAuth) {
+	    if(webSecurityProperties.isEnableOAuth()) {
 	    	securityConfigs.add(beanFactory.createBean(OAuthSecurityConfigImpl.class));
 	    }
 	    return securityConfigs;
 	}
-
+*/
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		AuthorizeRequestsHelper.setAuthorizeRequests(http, nfcWsAccessAuthorizeIps);
-		for(SecurityConfig securityConfig : securityConfigs()) {
-			http.antMatcher("/**").authorizeRequests().antMatchers(securityConfig.getLoginUrl()).authenticated();
-			http.exceptionHandling().defaultAuthenticationEntryPointFor(securityConfig.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityConfig.getLoginUrl()));
-			http.addFilterBefore(securityConfig.getAuthenticationProcessingFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
-		}
-		if(enableOAuth) {
-			http.oauth2Client();
+		AuthorizeRequestsHelper.setAuthorizeRequests(http, webSecurityProperties.getNfcWsAccessAuthorizeIps());
+		for(SecurityService securityService : securityServices) {
+			http.antMatcher("/**").authorizeRequests().antMatchers(securityService.getLoginUrl()).authenticated();
+			http.exceptionHandling().defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityService.getLoginUrl()));
+			http.addFilterBefore(securityService.getAuthenticationProcessingFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
+			if(securityService.getClass().equals(OAuthSecurityServiceImpl.class)) {
+				http.oauth2Client();
+			}
 		}
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy());
 		http.csrf().disable();

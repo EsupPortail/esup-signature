@@ -1,11 +1,8 @@
 package org.esupportail.esupsignature.security.cas;
 
-import org.esupportail.esupsignature.security.SecurityConfig;
+import org.esupportail.esupsignature.security.SecurityService;
 import org.jasig.cas.client.session.SingleSignOutFilter;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -23,42 +20,32 @@ import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
+
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@ConfigurationProperties(prefix="security.cas")
-public class CasSecurityConfigImpl implements SecurityConfig {
-	
-	private String key;
+public class CasSecurityServiceImpl implements SecurityService {
+
 	private String url;
 	private String service;
+	private String key;
 
-	public String getKey() {
-		return key;
-	}
-	public void setKey(String key) { this.key = key; }
-	public String getUrl() {
-		return url;
-	}
-	public void setUrl(String url) {
+	public CasSecurityServiceImpl(String url, String service, String key) {
 		this.url = url;
-	}
-	public String getService() {
-		return service;
-	}
-	public void setService(String service) {
 		this.service = service;
+		this.key = key;
 	}
 
-	@Autowired
+	@Resource
 	private CasAuthenticationSuccessHandler casAuthenticationSuccessHandler;
 	
-	@Autowired
+	@Resource
 	private RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
 
-	@Autowired
+	@Resource
 	private LdapContextSource ldapContextSource;
 	
 
