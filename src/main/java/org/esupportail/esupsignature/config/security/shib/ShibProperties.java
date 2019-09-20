@@ -8,6 +8,8 @@ public class ShibProperties {
 
     private String principalRequestHeader;
     private String credentialsRequestHeader;
+    private String groupMappingRoleAdmin;
+    private String groupMappingRoleManager;
 
     public String getPrincipalRequestHeader() {
         return principalRequestHeader;
@@ -23,5 +25,21 @@ public class ShibProperties {
 
     public void setCredentialsRequestHeader(String credentialsRequestHeader) {
         this.credentialsRequestHeader = credentialsRequestHeader;
+    }
+
+    public String getGroupMappingRoleAdmin() {
+        return groupMappingRoleAdmin;
+    }
+
+    public void setGroupMappingRoleAdmin(String groupMappingRoleAdmin) {
+        this.groupMappingRoleAdmin = groupMappingRoleAdmin;
+    }
+
+    public String getGroupMappingRoleManager() {
+        return groupMappingRoleManager;
+    }
+
+    public void setGroupMappingRoleManager(String groupMappingRoleManager) {
+        this.groupMappingRoleManager = groupMappingRoleManager;
     }
 }

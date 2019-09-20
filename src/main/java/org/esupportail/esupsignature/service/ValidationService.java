@@ -28,17 +28,14 @@ public class ValidationService {
 
 	@Autowired
 	private Resource defaultPolicy;
-	
-	@Value("${validation.level}")
-	private String validationLevel;
-	
+
 	public Reports validate(MultipartFile multipartFile) {
 		
 		try {
 		SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(WebAppUtils.toDSSDocument(multipartFile));
 		logger.info("validate with : " + documentValidator.getClass());
 		documentValidator.setCertificateVerifier(certificateVerifier);
-		documentValidator.setValidationLevel(ValidationLevel.valueOf(validationLevel));
+		documentValidator.setValidationLevel(ValidationLevel.ARCHIVAL_DATA);
 		Reports reports = null;
 		try (InputStream is = defaultPolicy.getInputStream()) {
 			reports = documentValidator.validateDocument(is);

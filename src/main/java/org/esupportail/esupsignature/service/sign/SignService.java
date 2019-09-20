@@ -189,10 +189,12 @@ public class SignService {
 		int[] signSize = pdfService.getSignSize(signImage);
 		FileDocument fileDocumentImage = new FileDocument(signImage);
 		fileDocumentImage.setMimeType(MimeType.PNG);
+		/*
 		SignatureImageTextParameters signatureImageTextParameters = new SignatureImageTextParameters();
 		signatureImageTextParameters.setFont(new Font("Helvetica", Font.PLAIN, 12));
 		signatureImageTextParameters.setText("TEST");
 		imageParameters.setTextParameters(signatureImageTextParameters);
+		*/
 		imageParameters.setImage(fileDocumentImage);
 		imageParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);

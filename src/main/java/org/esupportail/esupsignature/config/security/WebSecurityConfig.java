@@ -33,25 +33,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Resource
 	List<SecurityService> securityServices;
 
-	/*
-	@Autowired
-    private AutowireCapableBeanFactory beanFactory;
-	
-	@Bean
-	public List<SecurityConfig> securityConfigs() {
-		List<SecurityConfig> securityConfigs = new ArrayList<>();
-		if(webSecurityProperties.isEnableCas()) {
-	    	securityConfigs.add(beanFactory.createBean(CasConfig.class));
-	    }
-	    if(webSecurityProperties.isEnableShib()) {
-	    	securityConfigs.add(beanFactory.createBean(ShibSecurityConfigImpl.class));
-	    }
-	    if(webSecurityProperties.isEnableOAuth()) {
-	    	securityConfigs.add(beanFactory.createBean(OAuthSecurityConfigImpl.class));
-	    }
-	    return securityConfigs;
-	}
-*/
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		AuthorizeRequestsHelper.setAuthorizeRequests(http, webSecurityProperties.getNfcWsAccessAuthorizeIps());

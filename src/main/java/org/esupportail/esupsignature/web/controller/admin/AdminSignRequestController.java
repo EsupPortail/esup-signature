@@ -45,7 +45,6 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 @RequestMapping("/admin/signrequests")
 @Controller
-@Transactional
 @Scope(value = "session")
 public class AdminSignRequestController {
 
@@ -65,9 +64,6 @@ public class AdminSignRequestController {
 		return "active";
 	}
 
-	@Value("${sign.passwordTimeout}")
-	private long passwordTimeout;
-	
 	@ModelAttribute("user")
 	public User getUser() {
 		return userService.getUserFromAuthentication();

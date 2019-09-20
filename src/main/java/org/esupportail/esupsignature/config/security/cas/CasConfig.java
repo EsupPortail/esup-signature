@@ -11,15 +11,9 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(CasProperties.class)
 public class CasConfig {
 
-	private CasProperties casProperties;
-
-	public CasConfig(CasProperties casProperties) {
-		this.casProperties = casProperties;
-	}
-
 	@Bean
 	public CasSecurityServiceImpl CasSecurityServiceImpl() {
-		return new CasSecurityServiceImpl(casProperties.getUrl(), casProperties.getService(), casProperties.getKey());
+		return new CasSecurityServiceImpl();
 	}
 
 }

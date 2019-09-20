@@ -1,16 +1,9 @@
-package org.esupportail.esupsignature.config.security.shib;
+package org.esupportail.esupsignature.service.security.shib;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
-import org.esupportail.esupsignature.service.security.shib.ShibAuthenticatedUserDetailsService;
-import org.esupportail.esupsignature.service.security.shib.ShibAuthenticationSuccessHandler;
-import org.esupportail.esupsignature.service.security.shib.ShibRequestHeaderAuthenticationFilter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,16 +13,15 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-@Configuration
-@EnableConfigurationProperties(ShibProperties.class)
-public class ShibSecurityConfigImpl implements SecurityService {
+public class ShibSecurityServiceImpl implements SecurityService {
 
+	@Resource
 	private ShibProperties shibProperties;
-
-	public ShibSecurityConfigImpl(ShibProperties shibProperties) {
-		this.shibProperties = shibProperties;
-	}
 
 	@Resource
 	private ShibAuthenticationSuccessHandler shibAuthenticationSuccessHandler;
@@ -73,13 +65,13 @@ public class ShibSecurityConfigImpl implements SecurityService {
 	public ShibAuthenticatedUserDetailsService shibAuthenticatedUserDetailsService() {
 		ShibAuthenticatedUserDetailsService shibAuthenticatedUserDetailsService = new ShibAuthenticatedUserDetailsService();
 		Map<String, String> mappingGroupesRoles = new HashMap<String, String>();
-		mappingGroupesRoles.put("cn=for.esup-signature.admin,ou=groups,dc=univ-rouen", "ROLE_ADMIN");
-		mappingGroupesRoles.put("cn=for.esup-signature.manager,ou=groups,dc=univ-rouen", "ROLE_MANAGER");
+		mappingGroupesRoles.put(shibProperties.getGroupMappingRoleAdmin(), "ROLE_ADMIN");
+		mappingGroupesRoles.put(shibProperties.getGroupMappingRoleManager(), "ROLE_MANAGER");
 		
 		SpelGroupService groupService = new SpelGroupService();
 		Map<String, String> groups4eppnSpel = new HashMap<String, String>();
-		groups4eppnSpel.put("cn=for.esup-signature.admin,ou=groups,dc=univ-rouen", "true");
-		groups4eppnSpel.put("cn=for.esup-signature.manager,ou=groups,dc=univ-rouen", "true");
+		groups4eppnSpel.put(shibProperties.getGroupMappingRoleAdmin(), "true");
+		groups4eppnSpel.put(shibProperties.getGroupMappingRoleManager(), "true");
 		groupService.setGroups4eppnSpel(groups4eppnSpel);
 		
 		Group2UserRoleService group2UserRoleService = new Group2UserRoleService();

@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.security.cas;
 
+import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.jasig.cas.client.session.SingleSignOutFilter;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
@@ -29,15 +30,8 @@ import java.util.Map;
 
 public class CasSecurityServiceImpl implements SecurityService {
 
-	private String url;
-	private String service;
-	private String key;
-
-	public CasSecurityServiceImpl(String url, String service, String key) {
-		this.url = url;
-		this.service = service;
-		this.key = key;
-	}
+	@Resource
+	private CasProperties casProperties;
 
 	@Resource
 	private CasAuthenticationSuccessHandler casAuthenticationSuccessHandler;
@@ -59,7 +53,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 	
 	public CasAuthenticationEntryPoint getAuthenticationEntryPoint() {
 		CasAuthenticationEntryPoint authenticationEntryPoint = new CasAuthenticationEntryPoint();
-		authenticationEntryPoint.setLoginUrl(url + "/login");
+		authenticationEntryPoint.setLoginUrl(casProperties.getUrl() + "/login");
 		authenticationEntryPoint.setServiceProperties(serviceProperties());
 		return authenticationEntryPoint;
 	}
@@ -67,7 +61,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 	
 	public ServiceProperties serviceProperties() {
 		ServiceProperties serviceProperties = new ServiceProperties();
-		serviceProperties.setService(service);
+		serviceProperties.setService(casProperties.getService());
 		serviceProperties.setSendRenew(false);
 		return serviceProperties;
 	}
@@ -95,13 +89,13 @@ public class CasSecurityServiceImpl implements SecurityService {
 		authenticationProvider.setAuthenticationUserDetailsService(casAuthUserDetailsService());
 		authenticationProvider.setServiceProperties(serviceProperties());
 		authenticationProvider.setTicketValidator(cas20ServiceTicketValidator());
-		authenticationProvider.setKey(key);
+		authenticationProvider.setKey(casProperties.getKey());
 		return authenticationProvider;
 	}
 	
 	
 	public Cas20ServiceTicketValidator cas20ServiceTicketValidator() {
-		return new Cas20ServiceTicketValidator(url);
+		return new Cas20ServiceTicketValidator(casProperties.getUrl());
 	}
 	
 	
@@ -119,8 +113,8 @@ public class CasSecurityServiceImpl implements SecurityService {
 				"ou=groups");
 
 		Map<String, String> mappingGroupesRoles = new HashMap<String, String>();
-		mappingGroupesRoles.put("ROLE_FOR.ESUP-SIGNATURE.ADMIN", "ROLE_ADMIN");
-		mappingGroupesRoles.put("ROLE_FOR.ESUP-SIGNATURE.MANAGER", "ROLE_MANAGER");
+		mappingGroupesRoles.put(casProperties.getGroupMappingRoleAdmin(), "ROLE_ADMIN");
+		mappingGroupesRoles.put(casProperties.getGroupMappingRoleManager(), "ROLE_MANAGER");
 		casLdapAuthoritiesPopulator.setMappingGroupesRoles(mappingGroupesRoles);
 
 		LdapUserDetailsService ldapUserDetailsService = new LdapUserDetailsService(ldapUserSearch,
@@ -136,13 +130,13 @@ public class CasSecurityServiceImpl implements SecurityService {
 	
 	public SingleSignOutFilter singleLogoutFilter() {
 		SingleSignOutFilter singleSignOutFilter = new SingleSignOutFilter();
-		singleSignOutFilter.setCasServerUrlPrefix(url + "/logout");
+		singleSignOutFilter.setCasServerUrlPrefix(casProperties.getUrl() + "/logout");
 		return singleSignOutFilter;
 	}
 
 	public LogoutFilter requestSingleLogoutFilter() {
 		SecurityContextLogoutHandler securityContextLogoutHandler = new SecurityContextLogoutHandler();
-		LogoutFilter logoutFilter = new LogoutFilter(url + "/logout", securityContextLogoutHandler);
+		LogoutFilter logoutFilter = new LogoutFilter(casProperties.getUrl() + "/logout", securityContextLogoutHandler);
 		logoutFilter.setFilterProcessesUrl("/logout");
 		return logoutFilter;
 	}
