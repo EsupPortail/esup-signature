@@ -1,9 +1,9 @@
 package org.esupportail.esupsignature.repository;
 
-import java.util.List;
-
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
+
+import java.util.List;
 
 public interface SignBookRepositoryCustom {
 

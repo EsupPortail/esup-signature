@@ -1,11 +1,10 @@
 package org.esupportail.esupsignature.dss.web.model;
 
-import java.io.Serializable;
-import java.util.List;
+import eu.europa.esig.dss.EncryptionAlgorithm;
 
 import javax.validation.constraints.NotNull;
-
-import eu.europa.esig.dss.EncryptionAlgorithm;
+import java.io.Serializable;
+import java.util.List;
 
 @SuppressWarnings("serial")
 public class DataToSignParams implements Serializable {

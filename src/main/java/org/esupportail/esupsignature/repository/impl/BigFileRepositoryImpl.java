@@ -1,15 +1,14 @@
 package org.esupportail.esupsignature.repository.impl;
 
-import java.io.InputStream;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import org.esupportail.esupsignature.entity.BigFile;
 import org.esupportail.esupsignature.repository.BigFileRepositoryCustom;
 import org.hibernate.LobHelper;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.io.InputStream;
 
 @Repository
 public class BigFileRepositoryImpl implements BigFileRepositoryCustom {

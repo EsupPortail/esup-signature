@@ -17,15 +17,14 @@
  */
 package org.esupportail.esupsignature.ldap;
 
-import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.List;
-
+import flexjson.JSONDeserializer;
+import flexjson.JSONSerializer;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import flexjson.JSONDeserializer;
-import flexjson.JSONSerializer;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.List;
 
 public class PersonLdap {
 	

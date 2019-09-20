@@ -1,7 +1,5 @@
 package org.esupportail.esupsignature.config.security;
 
-import java.util.List;
-
 import org.esupportail.esupsignature.service.security.AuthorizeRequestsHelper;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
@@ -18,6 +16,7 @@ import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity(debug = false)

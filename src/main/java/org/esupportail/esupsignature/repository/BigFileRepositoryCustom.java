@@ -1,8 +1,8 @@
 package org.esupportail.esupsignature.repository;
 
-import java.io.InputStream;
-
 import org.esupportail.esupsignature.entity.BigFile;
+
+import java.io.InputStream;
 
 public interface BigFileRepositoryCustom {
 

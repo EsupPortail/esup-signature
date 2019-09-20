@@ -1,7 +1,5 @@
 package org.esupportail.esupsignature.web.controller.manager;
 
-import javax.annotation.Resource;
-
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.service.UserService;
@@ -12,6 +10,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.annotation.Resource;
 
 @RequestMapping("/manager/logs")
 @Controller

@@ -1,11 +1,5 @@
 package org.esupportail.esupsignature.service.scheduler;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.List;
-
-import javax.annotation.Resource;
-
 import org.esupportail.esupsignature.dss.web.service.OJService;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
@@ -19,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.List;
 
 @Component
 public class ScheduledTaskService {

@@ -1,15 +1,14 @@
 package org.esupportail.esupsignature.dss.web.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.esupportail.esupsignature.dss.web.model.CertificateDTO;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import eu.europa.esig.dss.DigestAlgorithm;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.x509.CertificateToken;
 import eu.europa.esig.dss.x509.KeyStoreCertificateSource;
+import org.esupportail.esupsignature.dss.web.model.CertificateDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.List;
 
 //@Component
 public class KeystoreService {

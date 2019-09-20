@@ -1,13 +1,13 @@
 package org.esupportail.esupsignature.service;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.esupportail.esupsignature.entity.BigFile;
 import org.esupportail.esupsignature.repository.BigFileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class BigFileService {

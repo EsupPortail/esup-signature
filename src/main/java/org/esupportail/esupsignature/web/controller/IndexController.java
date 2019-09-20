@@ -17,14 +17,9 @@
  */
 package org.esupportail.esupsignature.web.controller;
 
-import java.util.List;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.security.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,6 +27,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @RequestMapping("/")
 @Controller

@@ -1,10 +1,5 @@
 package org.esupportail.esupsignature.service.ldap;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.esupportail.esupsignature.ldap.PersonAttributMapper;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.slf4j.Logger;
@@ -17,6 +12,11 @@ import org.springframework.ldap.filter.LikeFilter;
 import org.springframework.ldap.filter.OrFilter;
 import org.springframework.ldap.support.LdapUtils;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class LdapPersonService {

@@ -1,9 +1,11 @@
 package org.esupportail.esupsignature.dss.web.service;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringReader;
+import eu.europa.esig.dss.DSSXmlErrorListener;
+import eu.europa.esig.dss.DomUtils;
+import eu.europa.esig.dss.utils.Utils;
+import org.apache.fop.apps.*;
+import org.springframework.stereotype.Component;
+import org.w3c.dom.Document;
 
 import javax.annotation.PostConstruct;
 import javax.xml.transform.Result;
@@ -13,18 +15,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
-
-import org.apache.fop.apps.FOUserAgent;
-import org.apache.fop.apps.Fop;
-import org.apache.fop.apps.FopFactory;
-import org.apache.fop.apps.FopFactoryBuilder;
-import org.apache.fop.apps.MimeConstants;
-import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
-
-import eu.europa.esig.dss.DSSXmlErrorListener;
-import eu.europa.esig.dss.DomUtils;
-import eu.europa.esig.dss.utils.Utils;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringReader;
 
 @Component
 public class FOPService {

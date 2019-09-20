@@ -1,8 +1,5 @@
 package org.esupportail.esupsignature.config;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +16,9 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.thymeleaf.dialect.springdata.SpringDataDialect;
 import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 @Configuration 
 @ComponentScan

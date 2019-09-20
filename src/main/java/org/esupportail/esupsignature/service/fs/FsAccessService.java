@@ -17,15 +17,14 @@
  */
 package org.esupportail.esupsignature.service.fs;
 
+import org.esupportail.esupsignature.service.fs.uri.UriManipulateService;
+
+import javax.mail.Quota;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-
-import javax.mail.Quota;
-
-import org.esupportail.esupsignature.service.fs.uri.UriManipulateService;
 
 public abstract class FsAccessService {
 	

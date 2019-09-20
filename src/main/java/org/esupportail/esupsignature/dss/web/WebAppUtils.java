@@ -1,20 +1,19 @@
 package org.esupportail.esupsignature.dss.web;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.esupportail.esupsignature.dss.web.model.TimestampDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.multipart.MultipartFile;
-
 import eu.europa.esig.dss.DSSDocument;
 import eu.europa.esig.dss.DSSException;
 import eu.europa.esig.dss.InMemoryDocument;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.TimestampToken;
 import eu.europa.esig.dss.x509.CertificatePool;
+import org.esupportail.esupsignature.dss.web.model.TimestampDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class WebAppUtils {
 

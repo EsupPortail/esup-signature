@@ -17,14 +17,14 @@
  */
 package org.esupportail.esupsignature.postgres;
 
-import java.util.List;
-
 import org.hibernate.QueryException;
-import org.hibernate.type.Type;
 import org.hibernate.dialect.function.SQLFunction;
 import org.hibernate.engine.spi.Mapping;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.type.BooleanType;
+import org.hibernate.type.Type;
+
+import java.util.List;
 
 public class PgFullTextFunction implements SQLFunction {
 

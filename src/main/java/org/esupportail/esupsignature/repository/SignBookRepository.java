@@ -1,13 +1,13 @@
 package org.esupportail.esupsignature.repository;
 
-import java.util.List;
-
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 public interface SignBookRepository extends CrudRepository<SignBook, Long>, SignBookRepositoryCustom  {
 	Long countById(Long id);

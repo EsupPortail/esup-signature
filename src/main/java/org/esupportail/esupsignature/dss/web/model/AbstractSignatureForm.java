@@ -1,16 +1,10 @@
 package org.esupportail.esupsignature.dss.web.model;
 
-import java.util.Date;
-import java.util.List;
+import eu.europa.esig.dss.*;
 
 import javax.validation.constraints.NotNull;
-
-import eu.europa.esig.dss.ASiCContainerType;
-import eu.europa.esig.dss.DigestAlgorithm;
-import eu.europa.esig.dss.EncryptionAlgorithm;
-import eu.europa.esig.dss.SignatureForm;
-import eu.europa.esig.dss.SignatureLevel;
-import eu.europa.esig.dss.SignaturePackaging;
+import java.util.Date;
+import java.util.List;
 
 public abstract class AbstractSignatureForm {
 

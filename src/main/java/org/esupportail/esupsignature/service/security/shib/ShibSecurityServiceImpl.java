@@ -4,8 +4,6 @@ import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -67,7 +65,8 @@ public class ShibSecurityServiceImpl implements SecurityService {
 		Map<String, String> mappingGroupesRoles = new HashMap<String, String>();
 		mappingGroupesRoles.put(shibProperties.getGroupMappingRoleAdmin(), "ROLE_ADMIN");
 		mappingGroupesRoles.put(shibProperties.getGroupMappingRoleManager(), "ROLE_MANAGER");
-		
+
+		//TODO : tous admin...
 		SpelGroupService groupService = new SpelGroupService();
 		Map<String, String> groups4eppnSpel = new HashMap<String, String>();
 		groups4eppnSpel.put(shibProperties.getGroupMappingRoleAdmin(), "true");

@@ -17,19 +17,17 @@
  */
 package org.esupportail.esupsignature.ldap;
 
-import static org.springframework.ldap.query.LdapQueryBuilder.query;
-
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.filter.LikeFilter;
 
 import javax.annotation.Resource;
+import java.util.List;
+
+import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
 public class PersonLdapDao {
 

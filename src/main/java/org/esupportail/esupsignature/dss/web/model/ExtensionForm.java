@@ -1,15 +1,13 @@
 package org.esupportail.esupsignature.dss.web.model;
 
-import java.util.List;
-
-import javax.validation.constraints.AssertTrue;
-import javax.validation.constraints.NotNull;
-
-import org.springframework.web.multipart.MultipartFile;
-
 import eu.europa.esig.dss.ASiCContainerType;
 import eu.europa.esig.dss.SignatureForm;
 import eu.europa.esig.dss.SignatureLevel;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
 public class ExtensionForm {
 

@@ -18,20 +18,11 @@
 
 package org.esupportail.esupsignature.entity;
 
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
 import java.sql.Blob;
 import java.util.List;
-
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-import javax.persistence.Version;
-
-import org.hibernate.annotations.Type;
 
 @Entity
 public class BigFile {

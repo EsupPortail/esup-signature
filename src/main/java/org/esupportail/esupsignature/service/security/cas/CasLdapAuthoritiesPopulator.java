@@ -1,14 +1,14 @@
 package org.esupportail.esupsignature.service.security.cas;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.springframework.ldap.core.ContextSource;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class CasLdapAuthoritiesPopulator extends DefaultLdapAuthoritiesPopulator {
 	
