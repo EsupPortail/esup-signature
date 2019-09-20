@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.esupportail.esupsignature.security.shib;
+package org.esupportail.esupsignature.service.security.shib;
 
 import java.util.ArrayList;
 import java.util.List;

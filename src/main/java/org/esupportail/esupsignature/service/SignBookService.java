@@ -29,7 +29,7 @@ import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
-import org.esupportail.esupsignature.service.mail.EmailService;
+import org.esupportail.esupsignature.service.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,9 +62,6 @@ public class SignBookService {
     private FsAccessFactory fsAccessFactory;
 
     @Resource
-    private FileService fileService;
-
-    @Resource
     private SignRequestService signRequestService;
 
     @Resource
@@ -74,13 +71,7 @@ public class SignBookService {
     private UserService userService;
 
     @Resource
-    private EmailService emailService;
-
-    @Value("${sign.defaultPositionX}")
-    private int defaultPositionX;
-    @Value("${sign.defaultPositionY}")
-    private int defaultPositionY;
-
+    private MailService mailService;
 
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<SignBook>();
@@ -270,8 +261,8 @@ public class SignBookService {
 
     public void resetSignBookParams(SignBook signBook) {
         signBook.getSignRequestParams().get(0).setSignPageNumber(1);
-        signBook.getSignRequestParams().get(0).setXPos(defaultPositionX);
-        signBook.getSignRequestParams().get(0).setYPos(defaultPositionY);
+        signBook.getSignRequestParams().get(0).setXPos(0);
+        signBook.getSignRequestParams().get(0).setYPos(0);
         //signBookRepository.save(signBook);
     }
 
@@ -346,7 +337,7 @@ public class SignBookService {
             File signedFile = signRequestService.getLastSignedDocument(signRequest).getJavaIoFile();
             if(signBook.getTargetType().equals(DocumentIOType.mail)) {
                 logger.info("send by email to " + signBook.getDocumentsTargetUri());
-                emailService.sendFile(signBook.getDocumentsTargetUri(), signedFile, signRequest);
+                mailService.sendFile(signBook.getDocumentsTargetUri(), signedFile, signRequest);
                 signRequest.setExportedDocumentURI("mail://" + signBook.getDocumentsTargetUri());
                 return true;
             } else {

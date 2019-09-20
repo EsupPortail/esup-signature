@@ -12,7 +12,6 @@ import javax.validation.Valid;
 import javax.xml.bind.DatatypeConverter;
 
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
-import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.DataToSignParams;
 import org.esupportail.esupsignature.dss.web.model.GetDataToSignResponse;
@@ -29,7 +28,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.SigningService;
+import org.esupportail.esupsignature.service.sign.SignService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
@@ -72,7 +71,7 @@ public class NexuProcessController {
 	private String downloadNexuUrl;
 
 	@Autowired
-	private SigningService signingService;
+	private SignService signService;
 
 	@Autowired
 	private SignRequestRepository signRequestRepository;
@@ -89,9 +88,6 @@ public class NexuProcessController {
 	@Resource
 	private SignRequestService signRequestService;
 
-	@Value("${sign.defaultSignatureForm}")
-	private SignatureForm defaultSignatureForm;
-	
 	private AbstractSignatureParameters parameters;
 	
 	@RequestMapping(value = "/{id}", produces = "text/html")
@@ -117,16 +113,16 @@ public class NexuProcessController {
         			if(signRequest.getNbSign() == 0) {
         				toSignFile = pdfService.convertGS(pdfService.writeMetadatas(toSignFile, signRequest));
         			}
-        			signatureDocumentForm = signingService.getSignatureDocumentForm(Arrays.asList(toSignFile), SignatureForm.PAdES);
+        			signatureDocumentForm = signService.getSignatureDocumentForm(Arrays.asList(toSignFile), SignatureForm.PAdES);
         		} else {
-        			signatureDocumentForm = signingService.getSignatureDocumentForm(Arrays.asList(toSignFile), defaultSignatureForm);
+        			signatureDocumentForm = signService.getSignatureDocumentForm(Arrays.asList(toSignFile));
         		}
     		} else {
     			List<File> toSignFiles = new ArrayList<>();
     			for(Document document : signRequestService.getToSignDocuments(signRequest)) {
     				toSignFiles.add(document.getJavaIoFile());
     			}
-				signatureDocumentForm = signingService.getSignatureDocumentForm(toSignFiles, defaultSignatureForm);
+				signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles);
     		}
 			model.addAttribute("signRequestId", signRequest.getId());
 			model.addAttribute("signatureDocumentForm", signatureDocumentForm);
@@ -154,16 +150,16 @@ public class NexuProcessController {
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			ToBeSigned dataToSign;
 			if(signatureDocumentForm.getClass().equals(SignatureMultipleDocumentsForm.class)) {
-				parameters = signingService.fillParameters((SignatureMultipleDocumentsForm) signatureDocumentForm);
-				dataToSign = signingService.getDataToSign((SignatureMultipleDocumentsForm) signatureDocumentForm);
+				parameters = signService.fillParameters((SignatureMultipleDocumentsForm) signatureDocumentForm);
+				dataToSign = signService.getDataToSign((SignatureMultipleDocumentsForm) signatureDocumentForm);
 			} else {
 				if(signatureDocumentForm.getSignatureForm().equals(SignatureForm.PAdES)) {
 					SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
-					parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), documentForm.getDocumentToSign(), user);
+					parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), documentForm.getDocumentToSign(), user);
 				} else {
-					parameters = signingService.fillParameters((SignatureDocumentForm) signatureDocumentForm);
+					parameters = signService.fillParameters((SignatureDocumentForm) signatureDocumentForm);
 				}
-				dataToSign = signingService.getDataToSign((SignatureDocumentForm) signatureDocumentForm, parameters);
+				dataToSign = signService.getDataToSign((SignatureDocumentForm) signatureDocumentForm, parameters);
 			}
 				
 			if (dataToSign == null) {

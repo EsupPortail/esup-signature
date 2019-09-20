@@ -23,7 +23,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.security.SecurityService;
+import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;

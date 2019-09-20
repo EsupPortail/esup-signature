@@ -2,9 +2,9 @@ package org.esupportail.esupsignature.config.security;
 
 import java.util.List;
 
-import org.esupportail.esupsignature.security.AuthorizeRequestsHelper;
-import org.esupportail.esupsignature.security.SecurityService;
-import org.esupportail.esupsignature.security.oauth.OAuthSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.AuthorizeRequestsHelper;
+import org.esupportail.esupsignature.service.security.SecurityService;
+import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

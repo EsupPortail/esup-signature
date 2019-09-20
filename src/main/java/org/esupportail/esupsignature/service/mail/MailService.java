@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -14,24 +15,33 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import javax.annotation.Resource;
+import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
 @Service
-public class EmailService {
+public class MailService {
 
-    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
+    private static final Logger logger = LoggerFactory.getLogger(MailService.class);
 
-    @Resource
     private MailConfig mailConfig;
+    private JavaMailSenderImpl mailSender;
+
+
+    @Autowired(required = false)
+    public void setMailConfig(MailConfig mailConfig) {
+        this.mailConfig = mailConfig;
+    }
+
+    @Autowired(required = false)
+    public void setMailConfig(JavaMailSenderImpl mailSender) {
+        this.mailSender = mailSender;
+    }
 
     @Resource
     private UserRepository userRepository;
-
-    @Resource
-    private JavaMailSenderImpl mailSender;
 
     @Resource
     private TemplateEngine templateEngine;
@@ -40,6 +50,9 @@ public class EmailService {
     private String rootUrl;
 
     public void sendCompletedMail(SignRequest signRequest) {
+        if(!checkMailSender()){
+            return;
+        }
         User user = userRepository.findByEppn(signRequest.getCreateBy()).get(0);
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("name", user.getFirstname() + " " + user.getName());
@@ -56,14 +69,16 @@ public class EmailService {
             String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
             message.setText(htmlContent, true); // true = isHtml
             mailSender.send(mimeMessage);
-        } catch (javax.mail.MessagingException e) {
+        } catch (MessagingException e) {
             logger.error("enable to sens email", e);
         }
 
     }
 
     public void sendSignRequestAlert(String recipientName, String recipientEmail, List<SignRequest> signRequests) {
-
+        if(!checkMailSender()){
+            return;
+        }
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("name", recipientName);
         ctx.setVariable("signRequests", signRequests);
@@ -79,14 +94,16 @@ public class EmailService {
             String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
             message.setText(htmlContent, true); // true = isHtml
             mailSender.send(mimeMessage);
-        } catch (javax.mail.MessagingException e) {
+        } catch (MessagingException e) {
             logger.error("enable to sens email", e);
         }
 
     }
 
 	public void sendFile(String recipientEmail, File file,  SignRequest signRequest) {
-
+        if(!checkMailSender()){
+            return;
+        }
 		final Context ctx = new Context(Locale.FRENCH);
 		ctx.setVariable("rootUrl", rootUrl);
         ctx.setVariable("signRequest", signRequest);
@@ -103,11 +120,18 @@ public class EmailService {
 			message.addAttachment(file.getName(), file);
 			String htmlContent = templateEngine.process("mail/email-file.html", ctx);
 			message.setText(htmlContent, true); // true = isHtml
-			mailSender.send(mimeMessage);
-		} catch (javax.mail.MessagingException e) {
+            mailSender.send(mimeMessage);
+		} catch (MessagingException e) {
 			logger.error("enable to sens email", e);
 		}
-
 	}
+
+    private boolean checkMailSender() {
+        if(mailSender == null){
+            logger.warn("message not sended : mail host not configured");
+            return false;
+        }
+        return true;
+    }
 
 }

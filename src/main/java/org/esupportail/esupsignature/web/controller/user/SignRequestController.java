@@ -43,6 +43,7 @@ import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,9 +97,6 @@ public class SignRequestController {
 		return "active";
 	}
 
-	@Value("${sign.passwordTimeout}")
-	private long passwordTimeout;
-	
 	@ModelAttribute("user")
 	public User getUser() {
 		return userService.getUserFromAuthentication();
@@ -120,25 +118,25 @@ public class SignRequestController {
 	@Resource
 	private UserService userService;
 
-	@Autowired
+	@Resource
 	private SignRequestRepository signRequestRepository;
 	
 	@Resource
 	private SignRequestService signRequestService;
 
-	@Autowired
+	@Resource
 	private SignRequestParamsRepository signRequestParamsRepository; 
 	
-	@Autowired
+	@Resource
 	private SignBookRepository signBookRepository;
 	
 	@Resource
 	private SignBookService signBookService;
 
-	@Autowired
+	@Resource
 	private LogRepository logRepository;
 
-	@Autowired
+	@Resource
 	private DocumentRepository documentRepository;
 	
 	@Resource
@@ -146,9 +144,12 @@ public class SignRequestController {
 
 	@Resource
 	private PdfService pdfService;
-	
+
 	@Resource
 	private FileService fileService;
+
+	@Resource
+	private SignService signService;
 
 	@RequestMapping(produces = "text/html")
 	public String list(
@@ -776,7 +777,7 @@ public class SignRequestController {
 	public void clearPassword() {
 		password = "";
 		if (startTime > 0) {
-			if (System.currentTimeMillis() - startTime > passwordTimeout) {
+			if (System.currentTimeMillis() - startTime > signService.getPasswordTimeout()) {
 				password = "";
 				startTime = 0;
 			}

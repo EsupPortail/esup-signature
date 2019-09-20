@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.security.shib;
+package org.esupportail.esupsignature.service.security.cas;
 
 import java.io.IOException;
 
@@ -9,31 +9,26 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.web.DefaultRedirectStrategy;
+import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.stereotype.Component;
+import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ShibAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+public class CasAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
 	@Resource
 	private UserService userService;
-
-	//private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 	
-	//pas de redirection ici !
+	private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+	
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-		String eppn = authentication.getName();
-        String email = request.getHeader("mail");
-        String name = request.getHeader("sn");
-        String firstName = request.getHeader("givenName");
-        userService.createUser(eppn, name, firstName, email, false);
-        /*
+        userService.createUser(authentication);
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		String targetURL = defaultSavedRequest.getRedirectUrl();
         redirectStrategy.sendRedirect(request, response, targetURL);
-        */
 	}
-	
+
 }

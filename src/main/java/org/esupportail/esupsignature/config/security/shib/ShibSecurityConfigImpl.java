@@ -5,12 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.esupportail.esupsignature.security.Group2UserRoleService;
-import org.esupportail.esupsignature.security.SecurityService;
-import org.esupportail.esupsignature.security.SpelGroupService;
-import org.esupportail.esupsignature.security.shib.ShibAuthenticatedUserDetailsService;
-import org.esupportail.esupsignature.security.shib.ShibAuthenticationSuccessHandler;
-import org.esupportail.esupsignature.security.shib.ShibRequestHeaderAuthenticationFilter;
+import org.esupportail.esupsignature.service.security.Group2UserRoleService;
+import org.esupportail.esupsignature.service.security.SecurityService;
+import org.esupportail.esupsignature.service.security.SpelGroupService;
+import org.esupportail.esupsignature.service.security.shib.ShibAuthenticatedUserDetailsService;
+import org.esupportail.esupsignature.service.security.shib.ShibAuthenticationSuccessHandler;
+import org.esupportail.esupsignature.service.security.shib.ShibRequestHeaderAuthenticationFilter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

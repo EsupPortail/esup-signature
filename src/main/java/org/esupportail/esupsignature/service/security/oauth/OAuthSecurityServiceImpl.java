@@ -1,9 +1,9 @@
-package org.esupportail.esupsignature.security.oauth;
+package org.esupportail.esupsignature.service.security.oauth;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.esupportail.esupsignature.security.SecurityService;
+import org.esupportail.esupsignature.service.security.SecurityService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;

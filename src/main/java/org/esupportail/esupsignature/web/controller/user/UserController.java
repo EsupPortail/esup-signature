@@ -32,6 +32,7 @@ import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
+import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +59,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @Scope(value="session")
 @Transactional
-//@EnableScheduling
 public class UserController {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
@@ -67,25 +67,20 @@ public class UserController {
 	public String getActiveMenu() {
 		return "user/users";
 	}
-	/*
-	@ModelAttribute("user")
-	public User getUser() {
-		return userService.getUserFromAuthentication();
-	}
-	*/
-	@Autowired
+
+	@Resource
 	private UserRepository userRepository;
 	
-	@Autowired
+	@Resource
 	private LdapPersonService ldapPersonService;
 
-	@Autowired
+	@Resource
 	private DocumentRepository documentRepository;
 	
 	@Resource
 	private DocumentService documentService;
 	
-	@Autowired
+	@Resource
 	private BigFileRepository bigFileRepository;
 	
 	@Resource
@@ -96,16 +91,16 @@ public class UserController {
 	
 	@Resource
 	private UserService userService;
-	
-	@Autowired
+
+	@Resource
+	private SignService signService;
+
+	@Resource
 	private SignBookRepository signBookRepository;
 	
 	@Resource
 	private SignBookService signBookService;
-	
-	@Value("${sign.passwordTimeout}")
-	private long passwordTimeout;
-	
+
 	private String password;
 	
 	long startTime;
@@ -278,7 +273,7 @@ public class UserController {
 	@Scheduled(fixedDelay = 5000)
 	public void clearPassword () {
 		if(startTime > 0) {
-			if(System.currentTimeMillis() - startTime > passwordTimeout) {
+			if(System.currentTimeMillis() - startTime > signService.getPasswordTimeout()) {
 				password = "";
 				startTime = 0;
 			}

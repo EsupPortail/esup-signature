@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.security.shib;
+package org.esupportail.esupsignature.service.security.shib;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;

@@ -19,7 +19,7 @@ import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.service.mail.EmailService;
+import org.esupportail.esupsignature.service.mail.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,16 +28,20 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
 
-	@Autowired
-	private UserRepository userRepository;
-	
-	@Autowired(required = false)
 	private PersonLdapDao personDao;
-    	
+
+	@Autowired(required = false)
+	public void setPersonDao(PersonLdapDao personDao) {
+		this.personDao = personDao;
+	}
+
+	@Resource
+	private UserRepository userRepository;
+
 	@Resource
 	private DocumentService documentService;
 
-	@Autowired
+	@Resource
 	private SignBookRepository signBookRepository;
 	
 	@Resource
@@ -47,7 +51,7 @@ public class UserService {
 	private SignRequestService signRequestService;
 
 	@Resource
-	private EmailService emailService;
+	private MailService mailService;
 	
 	public List<User> getAllUsers() {
 		List<User> list = new ArrayList<User>();
@@ -135,7 +139,7 @@ public class UserService {
 		Date date = new Date();
 		List<SignRequest> signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending);
 		if(signRequests.size() > 0) {
-			emailService.sendSignRequestAlert("test", user.getEmail(), signRequests);
+			mailService.sendSignRequestAlert("test", user.getEmail(), signRequests);
 		}
 		user.setLastSendAlertDate(date);
 		userRepository.save(user);

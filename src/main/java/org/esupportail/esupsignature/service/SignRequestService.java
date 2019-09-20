@@ -23,11 +23,11 @@ import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
-import org.esupportail.esupsignature.service.mail.EmailService;
+import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -73,7 +73,7 @@ public class SignRequestService {
 	private SignBookService signBookService;
 	
 	@Resource
-	private SigningService signingService;
+	private SignService signService;
 
 	@Resource
 	private FileService fileService;
@@ -85,15 +85,8 @@ public class SignRequestService {
 	private UserService userService;
 
 	@Resource
-	private EmailService emailService;
-	
-	@Value("${sign.defaultSignatureForm}")
-	private SignatureForm defaultSignatureForm;
-	@Value("${sign.firstPosX}")
-	private int firstPosX;
-	@Value("${sign.firstPosY}")
-	private int firstPosY;	
-	
+	private MailService mailService;
+
 	private String step = "";
 	
 	public List<SignRequest> getAllSignRequests() {
@@ -198,8 +191,8 @@ public class SignRequestService {
 		if(!SignRequestParams.NewPageType.none.equals(signRequest.getSignRequestParams().getNewPageType())) {
 			int nbSignOk = signRequest.countSignOk();
 			//TODO or get next signature field
-			signRequest.getSignRequestParams().setXPos(firstPosX + ((nbSignOk - (Math.abs(nbSignOk / 3) * 3)) * 150));
-			signRequest.getSignRequestParams().setYPos(firstPosY +(Math.abs(nbSignOk / 3) * 100));
+			signRequest.getSignRequestParams().setXPos(95 + ((nbSignOk - (Math.abs(nbSignOk / 3) * 3)) * 150));
+			signRequest.getSignRequestParams().setYPos(188 +(Math.abs(nbSignOk / 3) * 100));
 			if(nbSignOk == 0) {
 				addPage = true;
 			}
@@ -219,7 +212,7 @@ public class SignRequestService {
 			if (toSignDocuments.size() == 1 && fileService.getContentType(toSignDocuments.get(0).getJavaIoFile()).equals("application/pdf")) {
 				signedFile = certSign(signRequest, user, password, SignatureForm.PAdES);
 			} else {
-				signedFile = certSign(signRequest, user, password, defaultSignatureForm);
+				signedFile = certSign(signRequest, user, password, signService.getDefaultSignatureForm());
 			}
 		}
 		
@@ -241,9 +234,9 @@ public class SignRequestService {
 		DSSDocument dssDocument;
 		
 		if(signatureDocumentForm.getClass().equals(SignatureMultipleDocumentsForm.class)) {
-			dssDocument = signingService.signDocument((SignatureMultipleDocumentsForm) signatureDocumentForm);
+			dssDocument = signService.signDocument((SignatureMultipleDocumentsForm) signatureDocumentForm);
 		} else {
-			dssDocument = signingService.nexuSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters);
+			dssDocument = signService.nexuSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters);
 		}
 		
 		InMemoryDocument signedDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
@@ -270,7 +263,7 @@ public class SignRequestService {
 		}
 		step = "Préparation de la signature";
 		try {
-			AbstractSignatureForm signatureDocumentForm = signingService.getSignatureDocumentForm(toSignFiles, signatureForm);
+			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signatureForm);
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 			
 			File keyStoreFile = user.getKeystore().getJavaIoFile();
@@ -307,7 +300,7 @@ public class SignRequestService {
 					toSignFile = pdfService.convertGS(pdfService.writeMetadatas(toSignFile, signRequest));
 				}
 				
-				parameters = signingService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), fileService.toMultipartFile(toSignFile, "pdf"), user);
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), fileService.toMultipartFile(toSignFile, "pdf"), user);
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
 				documentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
 				signatureDocumentForm = documentForm;
@@ -319,9 +312,9 @@ public class SignRequestService {
 			parameters.setSignatureLevel(signatureDocumentForm.getSignatureLevel());
 			DSSDocument dssDocument;
 			if(toSignFiles.size() > 1) {
-				dssDocument = signingService.certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, signatureTokenConnection);
+				dssDocument = signService.certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, signatureTokenConnection);
 			} else {
-				dssDocument = signingService.certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, signatureTokenConnection);
+				dssDocument = signService.certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, signatureTokenConnection);
 			}
 			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 	
@@ -377,7 +370,7 @@ public class SignRequestService {
 					signBookService.importSignRequestInSignBook(signRequest, signBook, user);
 				} else {
 					completeSignRequest(signRequest, signBook, user);
-					emailService.sendCompletedMail(signRequest);
+					mailService.sendCompletedMail(signRequest);
 				}
 			}
 		} else {
@@ -595,7 +588,7 @@ public class SignRequestService {
 		}
 		signRequest.setSignBooksLabels(signBookNames);
 	}
-	
+
 	public String getStep() {
 		return step;
 	}

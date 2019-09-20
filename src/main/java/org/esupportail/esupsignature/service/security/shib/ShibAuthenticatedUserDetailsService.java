@@ -15,15 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.esupportail.esupsignature.security.shib;
+package org.esupportail.esupsignature.service.security.shib;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.esupportail.esupsignature.security.Group2UserRoleService;
-import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;

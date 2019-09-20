@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.config.security.cas;
 
-import org.esupportail.esupsignature.security.cas.CasSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

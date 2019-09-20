@@ -1,6 +1,6 @@
-package org.esupportail.esupsignature.security.cas;
+package org.esupportail.esupsignature.service.security.cas;
 
-import org.esupportail.esupsignature.security.SecurityService;
+import org.esupportail.esupsignature.service.security.SecurityService;
 import org.jasig.cas.client.session.SingleSignOutFilter;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.springframework.ldap.core.support.LdapContextSource;

@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.security;
+package org.esupportail.esupsignature.service.security;
 
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.web.filter.GenericFilterBean;

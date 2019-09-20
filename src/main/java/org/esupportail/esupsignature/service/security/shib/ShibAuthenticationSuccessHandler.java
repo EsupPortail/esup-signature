@@ -1,39 +1,38 @@
-package org.esupportail.esupsignature.security.cas;
+package org.esupportail.esupsignature.service.security.shib;
 
 import java.io.IOException;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.esupportail.esupsignature.ldap.PersonLdapDao;
 import org.esupportail.esupsignature.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.DefaultRedirectStrategy;
-import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.savedrequest.DefaultSavedRequest;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CasAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+public class ShibAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
-	@Autowired(required = false)
-	PersonLdapDao personDao;
-	
-	@Autowired
+	@Resource
 	private UserService userService;
+
+	//private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 	
-	private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
-	
+	//pas de redirection ici !
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        userService.createUser(authentication);
+		String eppn = authentication.getName();
+        String email = request.getHeader("mail");
+        String name = request.getHeader("sn");
+        String firstName = request.getHeader("givenName");
+        userService.createUser(eppn, name, firstName, email, false);
+        /*
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		String targetURL = defaultSavedRequest.getRedirectUrl();
         redirectStrategy.sendRedirect(request, response, targetURL);
+        */
 	}
-
+	
 }

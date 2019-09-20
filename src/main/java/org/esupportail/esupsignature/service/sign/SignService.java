@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.service;
+package org.esupportail.esupsignature.service.sign;
 
 import eu.europa.esig.dss.*;
 import eu.europa.esig.dss.asic.ASiCWithCAdESSignatureParameters;
@@ -22,6 +22,7 @@ import eu.europa.esig.dss.validation.TimestampToken;
 import eu.europa.esig.dss.x509.CertificateToken;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.dss.web.WebAppUtils;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.ExtensionForm;
@@ -30,12 +31,14 @@ import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsFor
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -48,42 +51,31 @@ import java.util.List;
 import java.util.*;
 
 @Service
-public class SigningService {
+@Configuration
+@EnableConfigurationProperties(SignProperties.class)
+public class SignService {
 
-	private static final Logger logger = LoggerFactory.getLogger(SigningService.class);
+	private static final Logger logger = LoggerFactory.getLogger(SignService.class);
 
-	@Value("${sign.pades.digestAlgorithm}")
-	private String padesDigestAlgorithm;
-	@Value("${sign.pades.signatureLevel}")
-	private String padesSignatureLevel;
-	@Value("${sign.pades.signaturePackaging}")
-	private String padesSignaturePackaging;
-	@Value("${sign.xades.digestAlgorithm}")
-	private String xadesDigestAlgorithm;
-	@Value("${sign.xades.signatureLevel}")
-	private String xadesSignatureLevel;
-	@Value("${sign.xades.containerType}")
-	private String xadesContainerType;
-	@Value("${sign.cades.digestAlgorithm}")
-	private String cadesDigestAlgorithm;
-	@Value("${sign.cades.signatureLevel}")
-	private String cadesSignatureLevel;
-	@Value("${sign.cades.containerType}")
-	private String cadesContainerType;
-	
-	@Autowired
+	private SignProperties signProperties;
+
+	public SignService(SignProperties signProperties) {
+		this.signProperties = signProperties;
+	}
+
+	@Resource
 	private CAdESService cadesService;
 
-	@Autowired
+	@Resource
 	private PAdESService padesService;
 
-	@Autowired
+	@Resource
 	private XAdESService xadesService;
 
-	@Autowired
+	@Resource
 	private ASiCWithCAdESService asicWithCAdESService;
 
-	@Autowired
+	@Resource
 	private ASiCWithXAdESService asicWithXAdESService;
 	
 	@Resource
@@ -298,6 +290,10 @@ public class SigningService {
 		}
 	}
 
+	public AbstractSignatureForm getSignatureDocumentForm(List<File> toSignFiles) {
+		return getSignatureDocumentForm(toSignFiles, signProperties.getDefaultSignatureForm());
+	}
+
 	public AbstractSignatureForm getSignatureDocumentForm(List<File> toSignFiles, SignatureForm signatureForm) {
 		AbstractSignatureForm abstractSignatureForm;
 		if(toSignFiles.size() > 1) {
@@ -307,30 +303,30 @@ public class SigningService {
 				multipartFiles.add(fileService.toMultipartFile(toSignFile, fileService.getContentType(toSignFile)));
 			}
 			signatureMultipleDocumentsForm.setDocumentsToSign(multipartFiles);
-			signatureMultipleDocumentsForm.setContainerType(ASiCContainerType.ASiC_E);
+			signatureMultipleDocumentsForm.setContainerType(signProperties.getContainerType());
 			abstractSignatureForm = signatureMultipleDocumentsForm;
 		} else {
 			SignatureDocumentForm signatureDocumentForm = new SignatureDocumentForm();
 			signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFiles.get(0), fileService.getContentType(toSignFiles.get(0))));
 			if(!signatureForm.equals(SignatureForm.PAdES)) {	
-				signatureDocumentForm.setContainerType(ASiCContainerType.ASiC_E);
+				signatureDocumentForm.setContainerType(signProperties.getContainerType());
 			}
 			abstractSignatureForm = signatureDocumentForm;
 		}
 		abstractSignatureForm.setSignWithExpiredCertificate(false);
 		abstractSignatureForm.setSignatureForm(signatureForm);
 		if(signatureForm.equals(SignatureForm.PAdES)) {
-			abstractSignatureForm.setSignatureLevel(SignatureLevel.valueOf(padesSignatureLevel));
-			abstractSignatureForm.setDigestAlgorithm(DigestAlgorithm.valueOf(padesDigestAlgorithm));
-			abstractSignatureForm.setSignaturePackaging(SignaturePackaging.valueOf(padesSignaturePackaging));
+			abstractSignatureForm.setSignatureLevel(signProperties.getPadesSignatureLevel());
+			abstractSignatureForm.setDigestAlgorithm(signProperties.getPadesDigestAlgorithm());
+			abstractSignatureForm.setSignaturePackaging(signProperties.getSignaturePackaging());
 		} else if(signatureForm.equals(SignatureForm.CAdES)) {
-			abstractSignatureForm.setSignatureLevel(SignatureLevel.valueOf(cadesSignatureLevel));
-			abstractSignatureForm.setDigestAlgorithm(DigestAlgorithm.valueOf(cadesDigestAlgorithm));
-			abstractSignatureForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
+			abstractSignatureForm.setSignatureLevel(signProperties.getCadesSignatureLevel());
+			abstractSignatureForm.setDigestAlgorithm(signProperties.getCadesDigestAlgorithm());
+			abstractSignatureForm.setSignaturePackaging(signProperties.getSignaturePackaging());
 		} else if(signatureForm.equals(SignatureForm.XAdES)) {
-			abstractSignatureForm.setSignatureLevel(SignatureLevel.valueOf(xadesSignatureLevel));
-			abstractSignatureForm.setDigestAlgorithm(DigestAlgorithm.valueOf(xadesDigestAlgorithm));
-			abstractSignatureForm.setSignaturePackaging(SignaturePackaging.ENVELOPED);
+			abstractSignatureForm.setSignatureLevel(signProperties.getXadesSignatureLevel());
+			abstractSignatureForm.setDigestAlgorithm(signProperties.getXadesDigestAlgorithm());
+			abstractSignatureForm.setSignaturePackaging(signProperties.getSignaturePackaging());
 		}
 		abstractSignatureForm.setSigningDate(new Date());
 		return abstractSignatureForm;
@@ -488,4 +484,11 @@ public class SigningService {
 		return parameters;
 	}
 
+	public SignatureForm getDefaultSignatureForm() {
+		return signProperties.getDefaultSignatureForm();
+	}
+
+	public Long getPasswordTimeout() {
+		return signProperties.getPasswordTimeout();
+	}
 }

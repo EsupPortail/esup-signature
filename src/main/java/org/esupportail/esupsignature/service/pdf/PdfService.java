@@ -1,33 +1,10 @@
 package org.esupportail.esupsignature.service.pdf;
 
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-import javax.imageio.ImageIO;
-import javax.xml.transform.TransformerException;
-
+import com.google.common.io.Files;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
-import org.apache.pdfbox.pdmodel.PDDocumentInformation;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
-import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
@@ -35,12 +12,7 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
-import org.apache.pdfbox.pdmodel.interactive.form.PDField;
-import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
-import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
-import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
+import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
@@ -51,15 +23,16 @@ import org.apache.xmpbox.schema.PDFAIdentificationSchema;
 import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.type.BadFieldValueException;
 import org.apache.xmpbox.xml.XmpSerializer;
+import org.esupportail.esupsignature.config.pdf.PdfProperties;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.FileService;
-import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.verapdf.pdfa.Foundries;
@@ -69,32 +42,36 @@ import org.verapdf.pdfa.VeraGreenfieldFoundryProvider;
 import org.verapdf.pdfa.results.TestAssertion;
 import org.verapdf.pdfa.results.ValidationResult;
 
-import com.google.common.io.Files;
+import javax.annotation.Resource;
+import javax.imageio.ImageIO;
+import javax.xml.transform.TransformerException;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
+@Configuration
+@EnableConfigurationProperties(PdfProperties.class)
 public class PdfService {
 
 	private static final Logger logger = LoggerFactory.getLogger(PdfService.class);
 
+	private PdfProperties pdfProperties;
+
+	public PdfService(PdfProperties pdfProperties) {
+		this.pdfProperties = pdfProperties;
+	}
+
 	@Resource
 	private FileService fileService;
 
-	@Resource
-	private UserService userService;
-	
-	@Value("${pdf.width}")
-	private int pdfWidth;
-	@Value("${pdf.height}")
-	private int pdfHeight;
-	@Value("${pdf.pdfToImageDpi}")
-	private int pdfToImageDpi;
-	@Value("${sign.widthThreshold}")
-	private int signWidthThreshold;
-	
-	private String pathToGS = "/usr/bin/";
-	private int pdfALevel = 2; 
-	
+
 	public File stampImage(File toSignFile, SignRequest signRequest, User user, boolean addPage, boolean addDate) throws InvalidPasswordException, IOException {
 		//TODO add ip ? + date + nom ?
 		SignRequestParams params = signRequest.getSignRequestParams();
@@ -230,7 +207,7 @@ public class PdfService {
 	        
 	        PDFAIdentificationSchema pdfaid = xmpMetadata.createAndAddPFAIdentificationSchema();
 	    	pdfaid.setConformance("B");
-	        pdfaid.setPart(pdfALevel);
+	        pdfaid.setPart(pdfProperties.getPdfALevel());
 	        pdfaid.setAboutAsSimple("");
 	        
 	        XmpSerializer serializer = new XmpSerializer();
@@ -253,7 +230,7 @@ public class PdfService {
     	if(!isPdfAComplient(file)) {
 		    File targetFile =  new File(Files.createTempDir(), file.getName());
 		    String defFile =  PdfService.class.getResource("/PDFA_def.ps").getFile();
-		    String cmd = pathToGS + "gs -dPDFA=" + pdfALevel + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
+		    String cmd = pdfProperties.getPathToGS() + "gs -dPDFA=" + pdfProperties.getPdfALevel() + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
 	    	logger.info("GhostScript PDF/A convertion : " + cmd);
 	    	
 	    	ProcessBuilder processBuilder = new ProcessBuilder();
@@ -454,12 +431,12 @@ public class PdfService {
 		BufferedImage bimg = ImageIO.read(signFile);
 		int signWidth;
 		int signHeight;
-		if(bimg.getWidth() <= signWidthThreshold * 2) {
+		if(bimg.getWidth() <= pdfProperties.getSignWidthThreshold() * 2) {
 			signWidth = bimg.getWidth() / 2;
 			signHeight = bimg.getHeight() / 2;
 		} else {
-			signWidth =  signWidthThreshold;
-			double percent = ((double)signWidthThreshold / (double)bimg.getWidth());
+			signWidth =  pdfProperties.getSignWidthThreshold();
+			double percent = ((double) pdfProperties.getSignWidthThreshold() / (double)bimg.getWidth());
 			signHeight = (int) (percent * bimg.getHeight());
 		}
 		return new int[]{signWidth, signHeight};
@@ -538,7 +515,7 @@ public class PdfService {
 			pdDocument = PDDocument.load(pdfFile);
 		  PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
 	        for(int i = 0; i < (pdDocument.getNumberOfPages()); i++) {
-		        BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(i, pdfToImageDpi, ImageType.RGB);
+		        BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(i, pdfProperties.getPdfToImageDpi(), ImageType.RGB);
 		        imagePages.add(fileService.getBase64Image(bufferedImage, pdfFile.getName()));
 	        }
 		} catch (IOException e) {
@@ -582,7 +559,7 @@ public class PdfService {
 		try {
 			pdDocument = PDDocument.load(pdfFile);
 	        PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
-	        BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfToImageDpi, ImageType.RGB);
+	        BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfProperties.getPdfToImageDpi(), ImageType.RGB);
 	        imagePage = fileService.getBase64Image(bufferedImage, pdfFile.getName());
 		} catch (IOException e) {
 			logger.error("error on convert page to base 64 image", e);
@@ -604,7 +581,7 @@ public class PdfService {
 		try {
 			pdDocument = PDDocument.load(pdfFile);
 			PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
-			bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfToImageDpi, ImageType.RGB);
+			bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfProperties.getPdfToImageDpi(), ImageType.RGB);
 		} catch (IOException e) {
 			logger.error("error on convert page to image", e);
 		} finally {

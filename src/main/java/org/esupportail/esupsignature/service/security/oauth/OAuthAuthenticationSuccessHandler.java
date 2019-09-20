@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.security.oauth;
+package org.esupportail.esupsignature.service.security.oauth;
 
 import java.io.IOException;
 
@@ -14,7 +14,6 @@ import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 @Service
