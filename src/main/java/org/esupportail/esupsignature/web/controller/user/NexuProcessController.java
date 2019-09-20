@@ -49,6 +49,9 @@ public class NexuProcessController {
 
 	private static final Logger logger = LoggerFactory.getLogger(NexuProcessController.class);
 
+	@Value("${root.url}")
+	private String rootUrl;
+
 	@Value("${nexuUrl}")
 	private String nexuUrl;
 
@@ -112,7 +115,7 @@ public class NexuProcessController {
 			model.addAttribute("signRequestId", signRequest.getId());
 			model.addAttribute("signatureDocumentForm", signatureDocumentForm);
 			model.addAttribute("digestAlgorithm", signatureDocumentForm.getDigestAlgorithm());
-			model.addAttribute("rootUrl", "nexu-sign");
+			model.addAttribute("rootUrl", rootUrl);
 			model.addAttribute("nexuUrl", nexuUrl);
 			model.addAttribute("referer", referer);
 			return "user/nexu-signature-process";
