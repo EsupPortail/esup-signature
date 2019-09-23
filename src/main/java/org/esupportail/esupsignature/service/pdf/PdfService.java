@@ -230,7 +230,7 @@ public class PdfService {
 	
 	public File convertGS(File file) throws IOException {
 		
-    	if(!isPdfAComplient(new FileInputStream(file))) {
+    	if(!isPdfAComplient(file)) {
 		    File targetFile =  File.createTempFile(fileService.getNameOnly(file.getName()), "." + fileService.getExtension(file.getName()));
 		    String defFile =  PdfService.class.getResource("/PDFA_def.ps").getFile();
 		    String cmd = pdfProperties.getPathToGS() + "gs -dPDFA=" + pdfProperties.getPdfALevel() + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
@@ -267,19 +267,19 @@ public class PdfService {
     	}
 	}
 	
-	public boolean isPdfAComplient(InputStream pdfFile) {
-		if("success".equals(checkPDFA(pdfFile).get(0))) {
+	public boolean isPdfAComplient(File pdfFile) {
+		if("success".equals(checkPDFA(pdfFile, false).get(0))) {
 			return true;
 		}
 		return false;
 	}
 	
-	public List<String> checkPDFA(InputStream pdfFile) {
-		List<String> result = new ArrayList<String>();
+	public List<String> checkPDFA(File pdfFile, boolean fillResults) {
+		List<String> result = new ArrayList<>();
+		VeraGreenfieldFoundryProvider.initialise();
+
 		try {
-			VeraGreenfieldFoundryProvider.initialise();
 			PDFAParser parser = Foundries.defaultInstance().createParser(pdfFile);
-			
 			PDFAValidator validator = Foundries.defaultInstance().createValidator(parser.getFlavour(), false);
 		    ValidationResult validationResult = validator.validate(parser);
 		    if (validationResult.isCompliant()) {
@@ -288,9 +288,11 @@ public class PdfService {
 		    } else {
 		    	result.add("danger");
 		    	result.add("File is not complient with PDF/A-" + validationResult.getPDFAFlavour().getId() + " !");
-		    	for(TestAssertion test : validationResult.getTestAssertions()) {
-		    		result.add(test.getRuleId().getClause() + " : " + test.getMessage());
-		    	}
+		    	if(fillResults) {
+					for (TestAssertion test : validationResult.getTestAssertions()) {
+						result.add(test.getRuleId().getClause() + " : " + test.getMessage());
+					}
+				}
 		    }
 			validator.close();
 		    parser.close();

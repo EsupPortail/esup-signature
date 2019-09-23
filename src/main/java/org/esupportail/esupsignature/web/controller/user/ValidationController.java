@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -98,7 +99,9 @@ public class ValidationController {
 			model.addAttribute("detailedReport", "<h2>Impossible de valider ce document</h2>");
 		}
 		if(multipartFile.getContentType().contains("pdf")) {
-			model.addAttribute("pdfaReport", pdfService.checkPDFA(multipartFile.getInputStream()));
+			File file = fileService.multipartPdfToFile(multipartFile);
+			model.addAttribute("pdfaReport", pdfService.checkPDFA(file, true));
+			file.delete();
 		} else {
 			model.addAttribute("pdfaReport", Arrays.asList("danger", "Impossible de valider ce document"));
 		}
@@ -120,8 +123,9 @@ public class ValidationController {
 		model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
 		model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
 		model.addAttribute("diagnosticTree", reports.getXmlDiagnosticData());
-		model.addAttribute("pdfaReport", pdfService.checkPDFA(toValideDocument.getInputStream()));
-		
+		File file = toValideDocument.getJavaIoFile();
+		model.addAttribute("pdfaReport", pdfService.checkPDFA(file, true));
+		file.delete();
 		return "user/validation-result";
 	}
 	
