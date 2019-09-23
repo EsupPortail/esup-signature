@@ -76,10 +76,9 @@ public class PdfService {
 		//TODO add ip ? + date + nom ?
 		SignRequestParams params = signRequest.getSignRequestParams();
 		SignRequestParams.SignType signType = params.getSignType();
-    	PdfParameters pdfParameters = getPdfParameters(toSignFile);
-		toSignFile = formatPdf(toSignFile, params, addPage, user);
+    	PdfParameters pdfParameters = getPdfParameters(new FileInputStream(toSignFile));
+		toSignFile = formatPdf(toSignFile, params, addPage);
 		try {
-			File targetFile =  new File(Files.createTempDir(), toSignFile.getName());
 			PDDocument pdDocument = PDDocument.load(toSignFile);
 
 			PDPage pdPage = pdDocument.getPage(params.getSignPageNumber() - 1);
@@ -92,7 +91,7 @@ public class PdfService {
 			int xPos = (int) params.getXPos();
 			int yPos = (int) params.getYPos();
 			DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
-			File signImage = new File(PdfService.class.getResource("/sceau.png").getFile());
+			InputStream signImage = new FileInputStream(PdfService.class.getResource("/sceau.png").getFile());
 			if(signType.equals(SignType.visa)) {
 				try {
 					addText(contentStream, "Visé par " + user.getFirstname() + " " + user.getName(), xPos, yPos, PDType1Font.HELVETICA);
@@ -109,33 +108,37 @@ public class PdfService {
 					addText(contentStream, "Le " + dateFormat.format(new Date()), xPos, yPos, PDType1Font.HELVETICA);
 					//topHeight = 20;
 				}
-				signImage = user.getSignImage().getJavaIoFile();
+				signImage = user.getSignImage().getInputStream();
 			}
 			int topHeight = 0;
-			int[] size = getSignSize(signImage);
+            BufferedImage bufferedImage = ImageIO.read(signImage);
+			int[] size = getSignSize(bufferedImage);
 			if(pdfParameters.getRotation() == 0) {
-				BufferedImage bufferedImage = ImageIO.read(signImage);
 				AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
-		        tx.translate(0, -bufferedImage.getHeight(null));
+		        tx.translate(0, - bufferedImage.getHeight(null));
 		        AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 		        bufferedImage = op.filter(bufferedImage, null);
 				File flipedSignImage = File.createTempFile("preview", ".png");
 				ImageIO.write(bufferedImage, "png", flipedSignImage);
 				pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
+				flipedSignImage.delete();
 				contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
 				contentStream.drawImage(pdImage, xPos, yPos + topHeight, size[0], size[1]);
 			} else {
 				AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
 			    contentStream.transform(new Matrix(at));
-			    pdImage = PDImageXObject.createFromFileByContent(signImage, pdDocument);
+				File flipedSignImage = File.createTempFile("preview", ".png");
+				ImageIO.write(bufferedImage, "png", flipedSignImage);
+				pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
+				flipedSignImage.delete();
 			    contentStream.drawImage(pdImage, xPos, yPos + topHeight - 37 , size[0], size[1]);
 			}
 			
 			contentStream.close();
-			pdDocument.save(targetFile);
+			pdDocument.save(toSignFile);
 			pdDocument.close();
 		    try {
-	    		return writeMetadatas(convertGS(targetFile), signRequest);
+	    		return writeMetadatas(convertGS(toSignFile), signRequest);
 			} catch (Exception e) {
 				logger.error("enable to convert to pdf A", e);
 			}
@@ -145,7 +148,7 @@ public class PdfService {
 		return null;
 	}
 	
-	public File formatPdf(File file, SignRequestParams params, boolean addPage, User user) throws InvalidPasswordException, IOException {
+	public File formatPdf(File file, SignRequestParams params, boolean addPage) throws InvalidPasswordException, IOException {
         
 		if(!SignRequestParams.NewPageType.none.equals(params.getNewPageType()) && addPage) {
 			PDDocument pdDocument = PDDocument.load(file);
@@ -154,7 +157,7 @@ public class PdfService {
     			params.setSignPageNumber(1);
     		} else {
     			pdDocument = addNewPage(pdDocument, null, -1);
-    			params.setSignPageNumber(getPdfParameters(file).getTotalNumberOfPages());
+    			params.setSignPageNumber(getPdfParameters(new FileInputStream(file)).getTotalNumberOfPages());
     		}
 	        pdDocument.save(file);
 	        pdDocument.close();
@@ -227,8 +230,8 @@ public class PdfService {
 	
 	public File convertGS(File file) throws IOException {
 		
-    	if(!isPdfAComplient(file)) {
-		    File targetFile =  new File(Files.createTempDir(), file.getName());
+    	if(!isPdfAComplient(new FileInputStream(file))) {
+		    File targetFile =  File.createTempFile(fileService.getNameOnly(file.getName()), "." + fileService.getExtension(file.getName()));
 		    String defFile =  PdfService.class.getResource("/PDFA_def.ps").getFile();
 		    String cmd = pdfProperties.getPathToGS() + "gs -dPDFA=" + pdfProperties.getPdfALevel() + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
 	    	logger.info("GhostScript PDF/A convertion : " + cmd);
@@ -257,24 +260,25 @@ public class PdfService {
 	    	} catch (IOException | InterruptedException e) {
 	    		logger.error("GhostScript launc error", e);
 	    	}
+	    	file.delete();
 		    return targetFile;
     	} else {
     		return file;
     	}
 	}
 	
-	public boolean isPdfAComplient(File pdfFile) {
+	public boolean isPdfAComplient(InputStream pdfFile) {
 		if("success".equals(checkPDFA(pdfFile).get(0))) {
 			return true;
 		}
 		return false;
 	}
 	
-	public List<String> checkPDFA(File pdfFile) {
+	public List<String> checkPDFA(InputStream pdfFile) {
 		List<String> result = new ArrayList<String>();
 		try {
 			VeraGreenfieldFoundryProvider.initialise();
-			PDFAParser parser = Foundries.defaultInstance().createParser(new FileInputStream(pdfFile));
+			PDFAParser parser = Foundries.defaultInstance().createParser(pdfFile);
 			
 			PDFAValidator validator = Foundries.defaultInstance().createValidator(parser.getFlavour(), false);
 		    ValidationResult validationResult = validator.validate(parser);
@@ -287,12 +291,12 @@ public class PdfService {
 		    	for(TestAssertion test : validationResult.getTestAssertions()) {
 		    		result.add(test.getRuleId().getClause() + " : " + test.getMessage());
 		    	}
-		    	
 		    }
+			validator.close();
+		    parser.close();
 		} catch (Exception e) {
 			logger.error("check error", e);
 		}
-
 		return result;
 	}
 	
@@ -426,9 +430,8 @@ public class PdfService {
 		contentStream.showText(text);
 		contentStream.endText();
 	}
-	
-	public int[] getSignSize(File signFile) throws IOException {
-		BufferedImage bimg = ImageIO.read(signFile);
+
+	public int[] getSignSize(BufferedImage bimg) throws IOException {
 		int signWidth;
 		int signHeight;
 		if(bimg.getWidth() <= pdfProperties.getSignWidthThreshold() * 2) {
@@ -440,6 +443,11 @@ public class PdfService {
 			signHeight = (int) (percent * bimg.getHeight());
 		}
 		return new int[]{signWidth, signHeight};
+	}
+
+	public int[] getSignSize(InputStream signFile) throws IOException {
+		BufferedImage bimg = ImageIO.read(signFile);
+		return getSignSize(bimg);
 	}
 	
 	/*
@@ -461,7 +469,7 @@ public class PdfService {
 		return file;
 	}
 	*/
-	public int[] getSignFieldCoord(File pdfFile, long signNumber) {
+	public int[] getSignFieldCoord(InputStream pdfFile, long signNumber) {
 		PDDocument pdDocument = null;
 		try {
 			pdDocument = PDDocument.load(pdfFile);
@@ -490,7 +498,7 @@ public class PdfService {
 		return null;
 	}
 	
-	public PDSignatureField getPDSignatureFieldName(File pdfFile, long signNumber) {
+	public PDSignatureField getPDSignatureFieldName(InputStream pdfFile, long signNumber) {
 		PDDocument pdDocument = null;
 		try {
 			pdDocument = PDDocument.load(pdfFile);
@@ -532,7 +540,7 @@ public class PdfService {
         return imagePages;
 	}
 	
-	public PdfParameters getPdfParameters(File pdfFile) {
+	public PdfParameters getPdfParameters(InputStream pdfFile) {
 		PDDocument pdDocument = null;
 		try {
 			pdDocument = PDDocument.load(pdfFile);
@@ -575,7 +583,7 @@ public class PdfService {
         return imagePage;
 	}
 	
-	public BufferedImage pageAsBufferedImage(File pdfFile, int page) {
+	public BufferedImage pageAsBufferedImage(InputStream pdfFile, int page) {
 		BufferedImage bufferedImage = null;
 		PDDocument pdDocument = null;
 		try {
@@ -596,7 +604,7 @@ public class PdfService {
 		return bufferedImage;
 	}
 
-	public InputStream pageAsInputStream(File pdfFile, int page) throws Exception {
+	public InputStream pageAsInputStream(InputStream pdfFile, int page) throws Exception {
 		BufferedImage bufferedImage = pageAsBufferedImage(pdfFile, page);
 		InputStream inputStream = fileService.bufferedImageToInputStream(bufferedImage, "png");
 		bufferedImage.flush();

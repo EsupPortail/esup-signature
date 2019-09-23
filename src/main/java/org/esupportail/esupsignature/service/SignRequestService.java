@@ -32,9 +32,12 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -196,13 +199,15 @@ public class SignRequestService {
 				addPage = true;
 			}
 		}
-		File signedFile = null;
+
+		File signedFile;
+
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
-		
-		SignType signType = signRequest.getSignRequestParams().getSignType();		
+
+		SignType signType = signRequest.getSignRequestParams().getSignType();
 		if (signType.equals(SignRequestParams.SignType.pdfImageStamp) || signType.equals(SignType.visa)) {
 			File toSignFile = toSignDocuments.get(0).getJavaIoFile();
-			if (toSignDocuments.size() == 1 && fileService.getContentType(toSignDocuments.get(0).getJavaIoFile()).equals("application/pdf")) {
+			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				signedFile = pdfService.stampImage(toSignFile, signRequest, user, addPage, addDate);
 			} else {
 				signedFile = toSignFile;
@@ -217,6 +222,7 @@ public class SignRequestService {
 		
 		if (signedFile != null) {
 			addSignedFile(signRequest, signedFile, user);
+			signedFile.delete();
 			try {
 				applySignBookRules(signRequest, user);
 			} catch (EsupSignatureException e) {
@@ -294,7 +300,7 @@ public class SignRequestService {
 				}
 				
 				File toSignFile = toSignFiles.get(0);
-				pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage, user);
+				pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage);
 				if(signRequest.getNbSign() == 0) {
 					toSignFile = pdfService.convertGS(pdfService.writeMetadatas(toSignFile, signRequest));
 				}
@@ -338,8 +344,9 @@ public class SignRequestService {
 	
 	public void addSignedFile(SignRequest signRequest, File signedFile, User user) throws EsupSignatureIOException {
 		try {
+			InputStream signedInputStream = new FileInputStream(signedFile);
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-			Document document = documentService.createDocument(signedFile, signRequest.getTitle() + "_" + signRequest.getSignRequestParams().getSignType() + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(signedFile), fileService.getContentType(signedFile));
+			Document document = documentService.createDocument(signedInputStream, signRequest.getTitle() + "_" + signRequest.getSignRequestParams().getSignType() + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(signedFile.getName()), signedInputStream.available() ,fileService.getContentType(signedFile));
 			signRequest.getSignedDocuments().add(document);
 			document.setParentId(signRequest.getId());
 		} catch (IOException e) {
@@ -390,9 +397,9 @@ public class SignRequestService {
 				User recipient = userRepository.findByEmail(emailRecipient).get(0);
 				if(signRequest.getNbSign() == 0 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
 					int numSign = 0;
-					File toSignFile = signRequest.getOriginalDocuments().get(0).getJavaIoFile();
+					Document toSignDocument = signRequest.getOriginalDocuments().get(0);
 					while(true) {
-						int[] pos = pdfService.getSignFieldCoord(toSignFile, numSign);
+						int[] pos = pdfService.getSignFieldCoord(toSignDocument.getInputStream(), numSign);
 						if(pos == null) {
 							break;
 						}
@@ -405,7 +412,7 @@ public class SignRequestService {
 						}
 						signRequestParams.setXPos(pos[0]);
 						signRequestParams.setYPos(pos[1]);
-						signRequestParams.setPdSignatureFieldName(pdfService.getPDSignatureFieldName(toSignFile, numSign).getPartialName());
+						signRequestParams.setPdSignatureFieldName(pdfService.getPDSignatureFieldName(toSignDocument.getInputStream(), numSign).getPartialName());
 						signRequestParamsRepository.save(signRequestParams);
 						numSign++;
 					}

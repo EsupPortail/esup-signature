@@ -107,13 +107,13 @@ public class AdminDocumentController {
 		if((signRequest != null && signRequestService.checkUserViewRights(user, signRequest)) 
 		|| (signBook != null && signBookService.checkUserManageRights(user, signBook))) {
 			try {
-				in = pdfService.pageAsInputStream(document.getJavaIoFile(), page);
+				in = pdfService.pageAsInputStream(document.getInputStream(), page);
 			} catch (Exception e) {
 				logger.error("page " + page + " not found in this document");
 			}
 			if(in == null) {
 				try {
-					in = pdfService.pageAsInputStream(document.getJavaIoFile(), 0);
+					in = pdfService.pageAsInputStream(document.getInputStream(), 0);
 				} catch (Exception e) {
 					logger.error("page " + page + " not found in this document");
 				}

@@ -18,6 +18,7 @@ import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -97,7 +98,7 @@ public class ValidationController {
 			model.addAttribute("detailedReport", "<h2>Impossible de valider ce document</h2>");
 		}
 		if(multipartFile.getContentType().contains("pdf")) {
-			model.addAttribute("pdfaReport", pdfService.checkPDFA(fileService.multipartPdfToFile(multipartFile)));
+			model.addAttribute("pdfaReport", pdfService.checkPDFA(multipartFile.getInputStream()));
 		} else {
 			model.addAttribute("pdfaReport", Arrays.asList("danger", "Impossible de valider ce document"));
 		}
@@ -107,10 +108,10 @@ public class ValidationController {
 	
 	@Transactional
 	@RequestMapping(value = "/document/{id}")
-	public String validateDocument(@PathVariable(name="id") long id, Model model) {
+	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		Document toValideDocument = signRequestService.getLastSignedDocument(signRequest);
-		Reports reports = validationService.validate(fileService.toMultipartFile(toValideDocument.getJavaIoFile(), toValideDocument.getContentType()));
+		Reports reports = validationService.validate(new MockMultipartFile(toValideDocument.getFileName(), toValideDocument.getInputStream()));
 		
 		String xmlSimpleReport = reports.getXmlSimpleReport();
 		model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));
@@ -119,7 +120,7 @@ public class ValidationController {
 		model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
 		model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
 		model.addAttribute("diagnosticTree", reports.getXmlDiagnosticData());
-		model.addAttribute("pdfaReport", pdfService.checkPDFA(toValideDocument.getJavaIoFile()));
+		model.addAttribute("pdfaReport", pdfService.checkPDFA(toValideDocument.getInputStream()));
 		
 		return "user/validation-result";
 	}

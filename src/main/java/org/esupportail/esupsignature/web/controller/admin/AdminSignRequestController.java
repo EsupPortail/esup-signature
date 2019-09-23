@@ -149,19 +149,17 @@ public class AdminSignRequestController {
 				}
 			}
 			Document toDisplayDocument = null;
-			File toDisplayFile = null;
 			if(signRequestService.getToSignDocuments(signRequest).size() == 1) {
 				toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
-				toDisplayFile = toDisplayDocument.getJavaIoFile();
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
-					PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayFile);
+					PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
 					model.addAttribute("pdfWidth", pdfParameters.getWidth());
 					model.addAttribute("pdfHeight", pdfParameters.getHeight());
 					model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
 
 					if(user.getSignImage() != null) {
 						model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-						int[] size = pdfService.getSignSize(user.getSignImage().getJavaIoFile());
+						int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
 						model.addAttribute("signWidth", size[0]);
 						model.addAttribute("signHeight", size[1]);
 					} else {
@@ -169,7 +167,7 @@ public class AdminSignRequestController {
 						model.addAttribute("signHeight", 75);
 					}
 				}
-				model.addAttribute("documentType", fileService.getExtension(toDisplayFile));
+				model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
 				model.addAttribute("documentId", toDisplayDocument.getId());
 			}
 			List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());

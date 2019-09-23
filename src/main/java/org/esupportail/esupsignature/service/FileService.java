@@ -72,16 +72,16 @@ public class FileService {
 		return null;
 	}
 	
-	public String getExtension(File file) {
-		return FilenameUtils.getExtension(file.getName());
+	public String getExtension(String name) {
+		return FilenameUtils.getExtension(name);
 	}
 	
-	public String getNameOnly(File file) {
-		return FilenameUtils.getBaseName(file.getName());
+	public String getNameOnly(String name) {
+		return FilenameUtils.getBaseName(name);
 	}
 	
 	public String getBase64Image(Document file) throws IOException, SQLException {
-		BufferedImage imBuff = ImageIO.read(file.getBigFile().getBinaryFile().getBinaryStream());
+		BufferedImage imBuff = ImageIO.read(file.getInputStream());
 		return getBase64Image(imBuff, file.getFileName());
 	}
 	
@@ -93,7 +93,14 @@ public class FileService {
         baos.close();
         return out;
 	}
-	
+
+
+	public InputStream copyInputStream(InputStream inputStream) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		inputStream.transferTo(baos);
+		return new ByteArrayInputStream(baos.toByteArray());
+	}
+
 	public InputStream bufferedImageToInputStream(BufferedImage image, String type) throws IOException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		ImageIO.write(image, type, os);

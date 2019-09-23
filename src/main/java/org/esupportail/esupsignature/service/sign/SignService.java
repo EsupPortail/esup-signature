@@ -44,6 +44,7 @@ import javax.annotation.Resource;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.*;
@@ -183,7 +184,7 @@ public class SignService {
 	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user) throws IOException {
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		File signImage = user.getSignImage().getJavaIoFile();
-		int[] signSize = pdfService.getSignSize(signImage);
+		int[] signSize = pdfService.getSignSize(new FileInputStream(signImage));
 		FileDocument fileDocumentImage = new FileDocument(signImage);
 		fileDocumentImage.setMimeType(MimeType.PNG);
 		/*
@@ -195,7 +196,7 @@ public class SignService {
 		imageParameters.setImage(fileDocumentImage);
 		imageParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
-		PdfParameters pdfParameters = pdfService.getPdfParameters(fileService.multipartPdfToFile(toSignFile));
+		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile.getInputStream());
 		if (pdfParameters.getRotation() == 0) {
 			imageParameters.setWidth(signSize[0]);
 			imageParameters.setHeight(signSize[1]);

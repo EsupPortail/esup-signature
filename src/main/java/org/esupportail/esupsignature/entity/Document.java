@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
 import com.google.common.io.Files;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,18 +49,34 @@ public class Document {
  
     public File getJavaIoFile() {
     	try {
-			InputStream inputStream = bigFile.getBinaryFile().getBinaryStream();
-		    File targetFile = new File(Files.createTempDir(), fileName);
-		    OutputStream outputStream = new FileOutputStream(targetFile);
-		    IOUtils.copy(inputStream, outputStream);
-		    outputStream.close();
-		    inputStream.close();
-			return targetFile;
+			InputStream inputStream = this.bigFile.getBinaryFile().getBinaryStream();
+            final File tempFile = File.createTempFile(getPrefix(), "." + getSuffix());
+            try (FileOutputStream fileOutputStream = new FileOutputStream(tempFile)) {
+                IOUtils.copy(inputStream, fileOutputStream);
+            }
+			return tempFile;
     	} catch (SQLException | IOException e) {
     		logger.error("error to convert BigFile to java.io.File", e);
 		}
     	return null;
 	}
+
+    public String getSuffix() {
+        return FilenameUtils.getExtension(this.fileName);
+    }
+
+    public String getPrefix() {
+        return FilenameUtils.getBaseName(this.fileName);
+    }
+
+    public InputStream getInputStream() {
+        try {
+            return this.bigFile.getBinaryFile().getBinaryStream();
+        } catch (SQLException e) {
+            logger.error("error get inputStream", e);
+        }
+        return null;
+    }
 
 	public String getFileName() {
         return this.fileName;

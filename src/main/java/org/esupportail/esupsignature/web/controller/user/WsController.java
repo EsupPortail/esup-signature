@@ -93,7 +93,7 @@ public class WsController {
             Document documentToAdd = documentService.createDocument(file, file.getOriginalFilename());
             signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams().get(0));
             signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-            signRequest.setTitle(fileService.getNameOnly(documentToAdd.getJavaIoFile()));
+            signRequest.setTitle(fileService.getNameOnly(documentToAdd.getFileName()));
             logger.info(file.getOriginalFilename() + " was added into signbook" + signBookName + " with id " + signRequest.getName());
             signRequestService.pendingSignRequest(signRequest, user);
             signRequestRepository.save(signRequest);

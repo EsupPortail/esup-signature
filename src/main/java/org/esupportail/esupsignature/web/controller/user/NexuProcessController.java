@@ -93,11 +93,11 @@ public class NexuProcessController {
     					addPage = true;
     				}
         			try {
-						toSignFile = pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage, user);
+						toSignFile = pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage);
 					} catch (IOException e) {
 						logger.error("error on format pdf", e);
 					}
-        			pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage, user);
+        			pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage);
         			if(signRequest.getNbSign() == 0) {
         				toSignFile = pdfService.convertGS(pdfService.writeMetadatas(toSignFile, signRequest));
         			}
