@@ -37,16 +37,16 @@
 				<small>Erreur : <span id="errorcontent"></span></small>
 				</div>
 <br>
-				<a onclick="location.reload();" class="btn btn-danger btnSeccion text-white" id="btnSeccion3">
+				<a onclick="location.reload();" class="btn btn-danger btnSeccion text-white" id="btnSeccion4">
 				<i class="fas fa-sync-alt fa-2x"></i><br> Relancer
 							</a>
 			</div>
 			<div class="alert alert-success text-center" role="danger"
 				id="success">
-				<strong>Signature effectuée</strong> <br /> <a
-					th:href="${referer}"
-					class="btn btn-success btnSeccion" id="btnSeccion3"> Retour
-				</a>
+				<strong>Signature effectuée</strong>
+				<br />
+				<a th:if="${referer != 'null'}" th:href="${referer}" class="btn btn-success btnSeccion" id="return1">Retour</a>
+				<a th:unless="${referer != 'null'}" th:href="'/user/signrequests/' + ${signRequestId}" class="btn btn-success btnSeccion" id="return2">Retour</a>
 			</div>
 		</div>
 	</div>

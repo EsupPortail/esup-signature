@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.*;
 
 @Service
-@Configuration
 @EnableConfigurationProperties(SignProperties.class)
 public class SignService {
 
