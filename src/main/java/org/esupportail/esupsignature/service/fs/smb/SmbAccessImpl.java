@@ -25,7 +25,7 @@ import jcifs.CIFSException;
 import jcifs.config.PropertyConfiguration;
 import jcifs.context.BaseContext;
 import jcifs.smb.*;
-import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

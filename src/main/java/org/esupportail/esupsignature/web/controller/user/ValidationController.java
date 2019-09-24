@@ -10,7 +10,7 @@ import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ValidationService;
@@ -99,9 +99,7 @@ public class ValidationController {
 			model.addAttribute("detailedReport", "<h2>Impossible de valider ce document</h2>");
 		}
 		if(multipartFile.getContentType().contains("pdf")) {
-			File file = fileService.multipartPdfToFile(multipartFile);
-			model.addAttribute("pdfaReport", pdfService.checkPDFA(file, true));
-			file.delete();
+			model.addAttribute("pdfaReport", pdfService.checkPDFA(multipartFile.getInputStream(), true));
 		} else {
 			model.addAttribute("pdfaReport", Arrays.asList("danger", "Impossible de valider ce document"));
 		}
@@ -123,9 +121,7 @@ public class ValidationController {
 		model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
 		model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
 		model.addAttribute("diagnosticTree", reports.getXmlDiagnosticData());
-		File file = toValideDocument.getJavaIoFile();
-		model.addAttribute("pdfaReport", pdfService.checkPDFA(file, true));
-		file.delete();
+		model.addAttribute("pdfaReport", pdfService.checkPDFA(toValideDocument.getInputStream(), true));
 		return "user/validation-result";
 	}
 	

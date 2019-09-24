@@ -1,6 +1,5 @@
-package org.esupportail.esupsignature.service;
+package org.esupportail.esupsignature.service.file;
 
-import com.google.common.io.Files;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
@@ -27,15 +26,6 @@ import java.util.Map;
 public class FileService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
-	
-	public MultipartFile toMultipartFile(File file, String mimeType) {
-		try {
-			return new MockMultipartFile(file.getName(), file.getName(), mimeType, new FileInputStream(file));
-		} catch (IOException e) {
-			logger.error("enable to convert to multipartfile", e);
-		}
-		return null;
-	}
 
 	public MultipartFile toMultipartFile(InputStream file, String name, String mimeType) {
 		try {
@@ -46,7 +36,6 @@ public class FileService {
 		return null;
 	}
 
-
 	public File inputStreamToFile(InputStream inputStream) throws IOException {
 		File file = File.createTempFile("tmp", ".pdf");
 		OutputStream outputStream = new FileOutputStream(file);
@@ -56,15 +45,6 @@ public class FileService {
 		return file;
 	}
 
-	public File multipartPdfToFile(MultipartFile multipartFile) throws IOException	{
-		File file = File.createTempFile(multipartFile.getOriginalFilename(), ".pdf");
-	    file.createNewFile(); 
-	    FileOutputStream fos = new FileOutputStream(file); 
-	    fos.write(multipartFile.getBytes());
-	    fos.close(); 
-	    return file;
-	}
-	
 	public File fromBase64Image(String base64Image, String name) throws IOException {
 		File fileImage = File.createTempFile(name, ".png");
 		ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(base64Image.substring(base64Image.lastIndexOf(',') + 1).trim()));
@@ -104,13 +84,6 @@ public class FileService {
         return out;
 	}
 
-
-	public InputStream copyInputStream(InputStream inputStream) throws IOException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		inputStream.transferTo(baos);
-		return new ByteArrayInputStream(baos.toByteArray());
-	}
-
 	public InputStream bufferedImageToInputStream(BufferedImage image, String type) throws IOException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		ImageIO.write(image, type, os);
@@ -145,40 +118,7 @@ public class FileService {
 	    ImageIO.write(image, type, os);
 		return new ByteArrayInputStream(os.toByteArray());
 	}
-	
-	/*
-	 * 	public File stringToImageFile(String text, String type) throws IOException {
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-        BufferedImage image = new BufferedImage(100, 75, BufferedImage.TYPE_INT_RGB);
-        Font font = new Font("Courier", Font.PLAIN, 14);
-		FontRenderContext frc = new FontRenderContext(null, true, true);
-		GlyphVector gv = font.createGlyphVector(frc, codes);	
-        Graphics2D g2d = (Graphics2D) image.getGraphics();
-        g2d.setColor(Color.white);
-	    g2d.fillRect(0, 0, 100, 75);
-	    g2d.setColor(Color.black);
-	    g2d.drawGlyphVector(gv, 5,200);
-	    g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                            RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-	    g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
-                            RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-		g2d.drawString(text, 0, 100);
-	    g2d.dispose();
-	    ImageIO.write(image, type, os);
-		return inputStreamToFile(new ByteArrayInputStream(os.toByteArray()), "paraphe." + type);
-	}
-	*/
-	 
-	public File renameFile(File file, String name) {
-		File newfile = new File(Files.createTempDir(), name);
-		boolean result = file.renameTo(newfile);
-		if (result) {
-			return newfile;
-		} else {
-			return null;
-		}
-	}
-	
+
 	public void copyFile(File source, File dest) throws IOException {
 	    InputStream is = null;
 	    OutputStream os = null;
@@ -268,7 +208,7 @@ public class FileService {
 	        throw new UncheckedIOException(ioe);
 	    }
 	}
-	
+
 	public BufferedImage imageToBufferedImage(final Image image)
 	   {
 	      final BufferedImage bufferedImage =

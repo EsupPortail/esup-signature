@@ -29,7 +29,7 @@ import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.DocumentService;
-import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -50,7 +50,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -241,7 +240,7 @@ public class PdfService {
 	
 	public InputStream convertGS(InputStream inputStream) throws IOException {
 		File file = fileService.inputStreamToFile(inputStream);
-    	if(!isPdfAComplient(file)) {
+    	if(!isPdfAComplient(new FileInputStream(file))) {
 		    File targetFile =  File.createTempFile("afterconvert_tmp", ".pdf");
 		    String defFile =  PdfService.class.getResource("/PDFA_def.ps").getFile();
 		    String cmd = pdfProperties.getPathToGS() + "gs -dPDFA=" + pdfProperties.getPdfALevel() + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
@@ -280,14 +279,14 @@ public class PdfService {
     	}
 	}
 	
-	public boolean isPdfAComplient(File pdfFile) {
+	public boolean isPdfAComplient(InputStream pdfFile) {
 		if("success".equals(checkPDFA(pdfFile, false).get(0))) {
 			return true;
 		}
 		return false;
 	}
 	
-	public List<String> checkPDFA(File pdfFile, boolean fillResults) {
+	public List<String> checkPDFA(InputStream pdfFile, boolean fillResults) {
 		List<String> result = new ArrayList<>();
 		VeraGreenfieldFoundryProvider.initialise();
 
