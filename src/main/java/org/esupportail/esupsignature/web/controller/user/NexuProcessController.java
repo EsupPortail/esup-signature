@@ -102,6 +102,7 @@ public class NexuProcessController {
         				toSignFile = pdfService.convertGS(pdfService.writeMetadatas(toSignFile, signRequest));
         			}
         			signatureDocumentForm = signService.getSignatureDocumentForm(Arrays.asList(toSignFile), SignatureForm.PAdES);
+        			toSignFile.delete();
         		} else {
         			signatureDocumentForm = signService.getSignatureDocumentForm(Arrays.asList(toSignFile));
         		}
@@ -111,6 +112,9 @@ public class NexuProcessController {
     				toSignFiles.add(document.getJavaIoFile());
     			}
 				signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles);
+    			for(File file : toSignFiles) {
+    				file.delete();
+				}
     		}
 			model.addAttribute("signRequestId", signRequest.getId());
 			model.addAttribute("signatureDocumentForm", signatureDocumentForm);

@@ -251,7 +251,7 @@ public class SignRequestService {
 
 		addSignedFile(signRequest, signedDocument.openStream(), signedDocument.getName(), signedDocument.getMimeType().getMimeTypeString(), user);
 		try {
-		applySignBookRules(signRequest, user);
+			applySignBookRules(signRequest, user);
 		} catch (EsupSignatureException e) {
 			throw new EsupSignatureSignException("error on apply signBook rules", e);
 		}
