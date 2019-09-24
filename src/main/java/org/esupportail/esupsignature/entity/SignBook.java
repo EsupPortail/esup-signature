@@ -64,13 +64,14 @@ public class SignBook {
     private String documentsSourceUri;
     
     @ElementCollection(targetClass=String.class)
-    private List<String> moderatorEmails = new ArrayList<String>();
+    private List<String> moderatorEmails = new ArrayList<>();
 
     @ElementCollection(targetClass=String.class)
-    private List<String> recipientEmails = new ArrayList<String>();
+    private List<String> recipientEmails = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-    private List<SignBook> signBooks = new ArrayList<SignBook>();
+    @OrderColumn
+    private List<SignBook> signBooks = new ArrayList<>();
     
     //TODO renomer autoWorkflow
     private boolean autoRemove = true;
@@ -87,11 +88,11 @@ public class SignBook {
     private Document modelFile = new Document();
     
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL })
-    private List<SignRequest> signRequests = new ArrayList<SignRequest>();
+    private List<SignRequest> signRequests = new ArrayList<>();
 
     //TODO multiple params + steps ou nb signatures
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
-    private List<SignRequestParams> signRequestParams = new ArrayList<SignRequestParams>();
+    private List<SignRequestParams> signRequestParams = new ArrayList<>();
 	
 	@Enumerated(EnumType.STRING)
 	private SignBookType signBookType;
