@@ -90,8 +90,7 @@ public class DocumentController {
 		    response.setContentType(MediaType.IMAGE_PNG_VALUE);
 		    IOUtils.copy(in, response.getOutputStream());
 		}else {
-			in = new FileInputStream(fileService.notFoundImageToInputStream("png"));
-			IOUtils.copy(in, response.getOutputStream());
+			IOUtils.copy(fileService.notFoundImageToInputStream("png"), response.getOutputStream());
 		    in.close();
 		}
 	}
@@ -127,8 +126,7 @@ public class DocumentController {
 		    IOUtils.copy(in, response.getOutputStream());
 		    in.close();
 		} else {
-			in = new FileInputStream(fileService.notFoundImageToInputStream("png"));
-			IOUtils.copy(in, response.getOutputStream());
+			IOUtils.copy(fileService.notFoundImageToInputStream("png"), response.getOutputStream());
 		    in.close();
 		}
 	}
@@ -167,11 +165,10 @@ public class DocumentController {
     
     @RequestMapping(value = "/test", method = RequestMethod.GET)
 	public ResponseEntity<Void> test(HttpServletResponse response, Model model) throws IOException {
-		File file = fileService.stringToImageFile("test\nok", "png");
 		try {
 			response.setHeader("Content-Disposition", "inline;filename=\"test.png\"");
 			response.setContentType("image/png");
-			IOUtils.copy(new FileInputStream(file), response.getOutputStream());
+			IOUtils.copy(fileService.stringToImageFile("test\nok", "png"), response.getOutputStream());
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (Exception e) {
 			logger.error("get file error", e);

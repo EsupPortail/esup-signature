@@ -85,8 +85,7 @@ public class AdminDocumentController {
 		    response.setContentType(MediaType.IMAGE_PNG_VALUE);
 		    IOUtils.copy(in, response.getOutputStream());
 		}else {
-			in = new FileInputStream(fileService.notFoundImageToInputStream("png"));
-			IOUtils.copy(in, response.getOutputStream());
+			IOUtils.copy(fileService.notFoundImageToInputStream("png"), response.getOutputStream());
 		    in.close();
 		}
 	}
@@ -122,8 +121,7 @@ public class AdminDocumentController {
 		    IOUtils.copy(in, response.getOutputStream());
 		    in.close();
 		} else {
-			in = new FileInputStream(fileService.notFoundImageToInputStream("png"));
-			IOUtils.copy(in, response.getOutputStream());
+			IOUtils.copy(fileService.notFoundImageToInputStream("png"), response.getOutputStream());
 		    in.close();
 		}
 	}

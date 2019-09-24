@@ -213,7 +213,7 @@ public class SignRequestService {
 				signedFile = toSignFile;
 			}
 		} else {
-			if (toSignDocuments.size() == 1 && fileService.getContentType(toSignDocuments.get(0).getJavaIoFile()).equals("application/pdf")) {
+			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				signedFile = certSign(signRequest, user, password, SignatureForm.PAdES);
 			} else {
 				signedFile = certSign(signRequest, user, password, signService.getDefaultSignatureForm());
@@ -271,10 +271,9 @@ public class SignRequestService {
 			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signatureForm);
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 			
-			File keyStoreFile = user.getKeystore().getJavaIoFile();
-			SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(keyStoreFile, password);
-			CertificateToken certificateToken = userKeystoreService.getCertificateToken(keyStoreFile, password);
-			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(keyStoreFile, password);
+			SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(user.getKeystore().getInputStream(), password);
+			CertificateToken certificateToken = userKeystoreService.getCertificateToken(user.getKeystore().getInputStream(), password);
+			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(user.getKeystore().getInputStream(), password);
 	
 			signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
 			List<String> base64CertificateChain = new ArrayList<>();
@@ -322,7 +321,9 @@ public class SignRequestService {
 				dssDocument = signService.certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, signatureTokenConnection);
 			}
 			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
-	
+			for(File file : toSignFiles) {
+				file.delete();
+			}
 			try {
 				step = "Enregistrement du/des documents(s)";
 				return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName());

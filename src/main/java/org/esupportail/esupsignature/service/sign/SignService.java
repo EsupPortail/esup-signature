@@ -183,9 +183,8 @@ public class SignService {
 
 	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user) throws IOException {
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
-		File signImage = user.getSignImage().getJavaIoFile();
-		int[] signSize = pdfService.getSignSize(new FileInputStream(signImage));
-		FileDocument fileDocumentImage = new FileDocument(signImage);
+		int[] signSize = pdfService.getSignSize(user.getSignImage().getInputStream());
+		InMemoryDocument fileDocumentImage = new InMemoryDocument(user.getSignImage().getInputStream());
 		fileDocumentImage.setMimeType(MimeType.PNG);
 		/*
 		SignatureImageTextParameters signatureImageTextParameters = new SignatureImageTextParameters();
@@ -222,7 +221,6 @@ public class SignService {
 		fillParameters(pAdESSignatureParameters, form);
 		//pAdESSignatureParameters.setSignatureFieldId(signRequestParams.getPdSignatureFieldName());
 		pAdESSignatureParameters.setSignatureName(user.getEppn());
-		
 		return pAdESSignatureParameters;
 	}
 	

@@ -36,7 +36,8 @@ public class FileService {
 		}
 		return null;
 	}
-	
+
+
 	public File inputStreamToFile(InputStream inputStream, String name) throws IOException {
 		File file = new File(Files.createTempDir(), name);
 		OutputStream outputStream = new FileOutputStream(file);
@@ -107,11 +108,11 @@ public class FileService {
 		return new ByteArrayInputStream(os.toByteArray());
 	}
 
-	public File notFoundImageToInputStream(String type) throws IOException {
+	public InputStream notFoundImageToInputStream(String type) throws IOException {
 		return stringToImageFile("PAGE NOT\n FOUND", type);
 	}
 	
-	public File stringToImageFile(String text, String type) throws IOException {
+	public InputStream stringToImageFile(String text, String type) throws IOException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
         BufferedImage  image = new BufferedImage(200, 150, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics2D = (Graphics2D) image.getGraphics();
@@ -133,7 +134,7 @@ public class FileService {
 	    }
 	    graphics2D.dispose();
 	    ImageIO.write(image, type, os);
-		return inputStreamToFile(new ByteArrayInputStream(os.toByteArray()), "paraphe." + type);
+		return new ByteArrayInputStream(os.toByteArray());
 	}
 	
 	/*

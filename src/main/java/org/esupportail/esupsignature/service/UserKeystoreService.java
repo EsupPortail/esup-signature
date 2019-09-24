@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyStore.PasswordProtection;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -27,7 +28,7 @@ public class UserKeystoreService {
 	private static String keystoreType = "PKCS12";
 
 	
-	public String getPemCertificat(File keyStoreFile, String password)  {
+	public String getPemCertificat(InputStream keyStoreFile, String password)  {
 		try {
 			CertificateToken certificateToken = getCertificateToken(keyStoreFile, password);
 			X509Certificate cert = certificateToken.getCertificate();
@@ -40,7 +41,7 @@ public class UserKeystoreService {
 		return null;
 	}
 	
-	public SignatureTokenConnection getSignatureTokenConnection(File keyStoreFile, String password) throws EsupSignatureKeystoreException {
+	public SignatureTokenConnection getSignatureTokenConnection(InputStream keyStoreFile, String password) throws EsupSignatureKeystoreException {
 		try {
 			Pkcs12SignatureToken token = new Pkcs12SignatureToken(keyStoreFile, new PasswordProtection(password.toCharArray()));
 			return token;
@@ -50,7 +51,7 @@ public class UserKeystoreService {
 		}
 	}
 	
-	public CertificateToken getCertificateToken(File keyStoreFile, String password) throws EsupSignatureKeystoreException {
+	public CertificateToken getCertificateToken(InputStream keyStoreFile, String password) throws EsupSignatureKeystoreException {
 		try {
 			Pkcs12SignatureToken token = new Pkcs12SignatureToken(keyStoreFile, new PasswordProtection(password.toCharArray()));
 			KSPrivateKeyEntry ksPrivateKeyEntry = (KSPrivateKeyEntry) token.getKeys().get(0);
@@ -62,21 +63,15 @@ public class UserKeystoreService {
 		}
 	}
 	
-	public CertificateToken[] getCertificateTokenChain(File keyStoreFile, String password)throws EsupSignatureKeystoreException   {
-		try {
+	public CertificateToken[] getCertificateTokenChain(InputStream keyStoreFile, String password) {
 			KeyStoreSignatureTokenConnection token = new KeyStoreSignatureTokenConnection(keyStoreFile, keystoreType, new PasswordProtection(password.toCharArray()));
 			KSPrivateKeyEntry ksPrivateKeyEntry = (KSPrivateKeyEntry) token.getKeys().get(0);
 			CertificateToken[] certificateTokens = ksPrivateKeyEntry.getCertificateChain();
 			token.close();
 			return certificateTokens;
-		} catch (IOException e) {
-			logger.error("open keystore fail", e);
-			throw new EsupSignatureKeystoreException("get certificat chain fail", e);
-		}
-		
 	}
 	
-	public String checkKeystore(File keyStoreFile, String password) throws Exception {
+	public String checkKeystore(InputStream keyStoreFile, String password) {
 		String certInfo = "";		
 		CertificateToken[] certificateTokens = getCertificateTokenChain(keyStoreFile, password);
 		for(CertificateToken token : certificateTokens) {
@@ -99,7 +94,7 @@ public class UserKeystoreService {
 		 return pemCert.replaceAll("-----(BEGIN|END) CERTIFICATE-----", "").replaceAll("-----(BEGIN|END) PRIVATE KEY-----", "").replaceAll("\r\n", "").replaceAll(" ", "").trim();
 	}
 	
-	public String getBase64PemCertificat(File keyStoreFile, String password) {
+	public String getBase64PemCertificat(InputStream keyStoreFile, String password) {
 		 return pemToBase64String(getPemCertificat(keyStoreFile, password));
 	}
 	
