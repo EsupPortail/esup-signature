@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,12 +26,12 @@ public class DocumentService {
 	@Resource
 	private FileService fileService;
 
-	public Document createDocument(String base64File, String name, String contentType) throws IOException {
-		return createDocument(fileService.fromBase64Image(base64File, name), name, contentType);
+	public Document createDocument(String base64File, String name) throws IOException {
+		return createDocument(fileService.fromBase64Image(base64File, name), name);
     }
 
-	public Document createDocument(File file, String name, String contentType) throws FileNotFoundException, IOException {
-		return createDocument(new FileInputStream(file), name, file.length(), contentType);
+	public Document createDocument(File file, String name) throws IOException {
+		return createDocument(new FileInputStream(file), name, Files.probeContentType(file.toPath()));
     }
 	
 	public List<Document> createDocuments(MultipartFile[] multipartFiles) throws IOException {
@@ -43,17 +44,16 @@ public class DocumentService {
 	
 	public Document createDocument(MultipartFile multipartFile, String name) throws IOException {
 		if ((multipartFile != null) && !multipartFile.isEmpty()) {
-			return createDocument(multipartFile.getInputStream(), name, multipartFile.getSize(), multipartFile.getContentType());
+			return createDocument(multipartFile.getInputStream(), name, multipartFile.getContentType());
 		}
 		return null;
     }
 	
-	public Document createDocument(InputStream inputStream, String name, long size, String contentType) throws IOException {
-        return persistDocument(inputStream, name, size, contentType);
+	public Document createDocument(InputStream inputStream, String name, String contentType) throws IOException {
+        return persistDocument(inputStream, name, inputStream.available(), contentType);
     }
 	
-	public Document persistDocument(InputStream inputStream, String name, long size, String contentType)
-			throws IOException {
+	public Document persistDocument(InputStream inputStream, String name, long size, String contentType) {
 		Document document = new Document();
 		document.setCreateDate(new Date());
 		document.setFileName(name);

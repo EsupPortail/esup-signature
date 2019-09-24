@@ -52,16 +52,16 @@ public class DocumentController {
 		return userService.getUserFromAuthentication();
 	}
 	
-	@Autowired
+	@Resource
 	private SignRequestRepository signRequestRepository;
 
-	@Autowired
+	@Resource
 	private SignBookRepository signBookRepository;
 	
-	@Autowired
+	@Resource
 	private DocumentRepository documentRepository;
 	
-	@Autowired
+	@Resource
 	private BigFileRepository bigFileRepository;
 	
 	@Resource
@@ -145,13 +145,12 @@ public class DocumentController {
 		Document document = documentRepository.findById(id).get();
 		SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
 		User user = userService.getUserFromAuthentication();
-		//TODO les modèle ne sont pas protégés
+		//TODO les modèles ne sont pas protégés
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
 			try {
-				File fileToDownload = document.getJavaIoFile();
 				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
 				response.setContentType(document.getContentType());
-				IOUtils.copy(new FileInputStream(fileToDownload), response.getOutputStream());
+				IOUtils.copy(document.getInputStream(), response.getOutputStream());
 				return new ResponseEntity<>(HttpStatus.OK);
 			} catch (Exception e) {
 				logger.error("get file error", e);

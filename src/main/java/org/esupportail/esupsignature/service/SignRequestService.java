@@ -200,7 +200,7 @@ public class SignRequestService {
 			}
 		}
 
-		File signedFile;
+		Document signedFile;
 
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
 
@@ -210,8 +210,9 @@ public class SignRequestService {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				signedFile = pdfService.stampImage(toSignFile, signRequest, user, addPage, addDate);
 			} else {
-				signedFile = toSignFile;
+				signedFile = documentService.createDocument(toSignFile, toSignFile.getName());
 			}
+			toSignFile.delete();
 		} else {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				signedFile = certSign(signRequest, user, password, SignatureForm.PAdES);
@@ -221,8 +222,10 @@ public class SignRequestService {
 		}
 		
 		if (signedFile != null) {
-			addSignedFile(signRequest, signedFile, user);
-			signedFile.delete();
+			//addSignedFile(signRequest, signedFile, signedFile.getName(), Files.probeContentType(signedFile.toPath()) , user);
+			signRequest.getSignedDocuments().add(signedFile);
+			signedFile.setParentId(signRequest.getId());
+			//signedFile.delete();
 			try {
 				applySignBookRules(signRequest, user);
 			} catch (EsupSignatureException e) {
@@ -246,22 +249,15 @@ public class SignRequestService {
 		
 		InMemoryDocument signedDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 
+		addSignedFile(signRequest, signedDocument.openStream(), signedDocument.getName(), signedDocument.getMimeType().getMimeTypeString(), user);
 		try {
-			File signedFile = fileService.inputStreamToFile(signedDocument.openStream(), signedDocument.getName());
-			if (signedFile != null) {
-				addSignedFile(signRequest, signedFile, user);
-				try {
-				applySignBookRules(signRequest, user);
-				} catch (EsupSignatureException e) {
-					throw new EsupSignatureSignException("error on apply signBook rules", e);
-				}
-			}
-		} catch (IOException e) {
-			logger.error("error to read signed file", e);
+		applySignBookRules(signRequest, user);
+		} catch (EsupSignatureException e) {
+			throw new EsupSignatureSignException("error on apply signBook rules", e);
 		}
 	}
 
-	public File certSign(SignRequest signRequest, User user, String password, SignatureForm signatureForm) throws EsupSignatureKeystoreException, IOException {
+	public Document certSign(SignRequest signRequest, User user, String password, SignatureForm signatureForm) throws EsupSignatureKeystoreException, IOException {
 		List<File> toSignFiles = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest)) {
 			toSignFiles.add(document.getJavaIoFile());
@@ -307,6 +303,7 @@ public class SignRequestService {
 				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), fileService.toMultipartFile(toSignFile, "pdf"), user);
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
 				documentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
+				toSignFile.delete();
 				signatureDocumentForm = documentForm;
 			}
 			step = "Signature du/des documents(s)";
@@ -324,12 +321,8 @@ public class SignRequestService {
 			for(File file : toSignFiles) {
 				file.delete();
 			}
-			try {
-				step = "Enregistrement du/des documents(s)";
-				return fileService.inputStreamToFile(signedPdfDocument.openStream(), signedPdfDocument.getName());
-			} catch (IOException e) {
-				logger.error("error to read signed file", e);
-		}
+			step = "Enregistrement du/des documents(s)";
+			return documentService.createDocument(signedPdfDocument.openStream(), signedPdfDocument.getName(), signedPdfDocument.getMimeType().getMimeTypeString());
 		} catch (EsupSignatureKeystoreException e) {
 			step = "security_bad_password";
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
@@ -340,14 +333,12 @@ public class SignRequestService {
 			step = "sign_system_error";
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
 		}
-		return null;
 	}
 	
-	public void addSignedFile(SignRequest signRequest, File signedFile, User user) throws EsupSignatureIOException {
+	public void addSignedFile(SignRequest signRequest, InputStream signedInputStream, String fileName, String mimeType, User user) throws EsupSignatureIOException {
 		try {
-			InputStream signedInputStream = new FileInputStream(signedFile);
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-			Document document = documentService.createDocument(signedInputStream, signRequest.getTitle() + "_" + signRequest.getSignRequestParams().getSignType() + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(signedFile.getName()), signedInputStream.available() ,fileService.getContentType(signedFile));
+			Document document = documentService.createDocument(signedInputStream, signRequest.getTitle() + "_" + signRequest.getSignRequestParams().getSignType() + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(fileName), mimeType);
 			signRequest.getSignedDocuments().add(document);
 			document.setParentId(signRequest.getId());
 		} catch (IOException e) {

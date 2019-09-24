@@ -72,7 +72,7 @@ public class FileService {
 		}
 		return null;
 	}
-	
+
 	public String getExtension(String name) {
 		return FilenameUtils.getExtension(name);
 	}

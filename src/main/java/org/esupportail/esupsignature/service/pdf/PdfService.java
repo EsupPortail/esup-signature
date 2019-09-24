@@ -24,10 +24,12 @@ import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.type.BadFieldValueException;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.pdf.PdfProperties;
+import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,8 +73,10 @@ public class PdfService {
 	@Resource
 	private FileService fileService;
 
+	@Resource
+	private DocumentService documentService;
 
-	public File stampImage(File toSignFile, SignRequest signRequest, User user, boolean addPage, boolean addDate) throws InvalidPasswordException, IOException {
+	public Document stampImage(File toSignFile, SignRequest signRequest, User user, boolean addPage, boolean addDate) throws InvalidPasswordException, IOException {
 		//TODO add ip ? + date + nom ?
 		SignRequestParams params = signRequest.getSignRequestParams();
 		SignRequestParams.SignType signType = params.getSignType();
@@ -138,7 +142,8 @@ public class PdfService {
 			pdDocument.save(toSignFile);
 			pdDocument.close();
 		    try {
-	    		return writeMetadatas(convertGS(toSignFile), signRequest);
+		    	File file = convertGS(writeMetadatas(toSignFile, signRequest));
+	    		return documentService.createDocument(file, file.getName());
 			} catch (Exception e) {
 				logger.error("enable to convert to pdf A", e);
 			}
