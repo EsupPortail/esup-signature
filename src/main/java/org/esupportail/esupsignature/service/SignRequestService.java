@@ -297,7 +297,7 @@ public class SignRequestService {
 				File toSignFile = toSignFiles.get(0);
 				pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage);
 				if(signRequest.getNbSign() == 0) {
-					toSignFile = pdfService.convertGS(pdfService.writeMetadatas(toSignFile, signRequest));
+					toSignFile = fileService.inputStreamToFile(pdfService.convertGS(pdfService.writeMetadatas(new FileInputStream(toSignFile), toSignFile.getName(), signRequest)), toSignFile.getName());
 				}
 				
 				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), fileService.toMultipartFile(toSignFile, "pdf"), user);

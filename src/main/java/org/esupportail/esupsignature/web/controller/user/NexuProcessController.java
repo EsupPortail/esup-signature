@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.xml.bind.DatatypeConverter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -99,7 +100,7 @@ public class NexuProcessController {
 					}
         			pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage);
         			if(signRequest.getNbSign() == 0) {
-        				toSignFile = pdfService.convertGS(pdfService.writeMetadatas(toSignFile, signRequest));
+        				toSignFile = fileService.inputStreamToFile(pdfService.convertGS(pdfService.writeMetadatas(new FileInputStream(toSignFile), toSignFile.getName(), signRequest)), toSignFile.getName());
         			}
         			signatureDocumentForm = signService.getSignatureDocumentForm(Arrays.asList(toSignFile), SignatureForm.PAdES);
         			toSignFile.delete();

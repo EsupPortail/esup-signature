@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service.pdf;
 
-import com.google.common.io.Files;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.*;
@@ -51,6 +50,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -142,8 +142,8 @@ public class PdfService {
 			pdDocument.save(toSignFile);
 			pdDocument.close();
 		    try {
-		    	File file = convertGS(writeMetadatas(toSignFile, signRequest));
-	    		return documentService.createDocument(file, file.getName());
+		    	InputStream file = convertGS(writeMetadatas(new FileInputStream(toSignFile), toSignFile.getName(), signRequest));
+	    		return documentService.createDocument(file, toSignFile.getName(), Files.probeContentType(toSignFile.toPath()));
 			} catch (Exception e) {
 				logger.error("enable to convert to pdf A", e);
 			}
@@ -171,7 +171,7 @@ public class PdfService {
     	return file;
 	}
 	
-	public File writeMetadatas(File file, SignRequest signRequest){
+	public InputStream writeMetadatas(InputStream file, String fileName, SignRequest signRequest){
 		
 		try {
 			PDDocument pdDocument = PDDocument.load(file);
@@ -183,12 +183,12 @@ public class PdfService {
 			rootDictionary.setItem(COSName.VERSION, COSName.getPDFName("1.7"));
 			
 			PDDocumentInformation info = pdDocument.getDocumentInformation();
-	        info.setTitle(file.getName());
-	        info.setSubject(file.getName());
+	        info.setTitle(fileName);
+	        info.setSubject(fileName);
 	        info.setAuthor(signRequest.getCreateBy());
 	        info.setCreator("GhostScript");
 	        info.setProducer("esup-signature");
-	        info.setKeywords("pdf, signed, " + file.getName());
+	        info.setKeywords("pdf, signed, " + fileName);
 	        if(info.getCreationDate() == null) {
 				info.setCreationDate(Calendar.getInstance());
 			}
@@ -225,16 +225,18 @@ public class PdfService {
 	        PDMetadata metadata = new PDMetadata(pdDocument);
 	        metadata.importXMPMetadata(baos.toByteArray());
 	        cat.setMetadata(metadata);
-	        pdDocument.save(file);
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			pdDocument.save(out);
 			pdDocument.close();
+			return new ByteArrayInputStream(out.toByteArray());
 		} catch (IOException | BadFieldValueException | TransformerException e) {
 			logger.error("error on write metadatas", e);
 		}
-        return file;	
+        return file;
 	}
 	
-	public File convertGS(File file) throws IOException {
-		
+	public InputStream convertGS(InputStream inputStream) throws IOException {
+		File file = fileService.inputStreamToFile(inputStream, "tmpconvert.pdf");
     	if(!isPdfAComplient(file)) {
 		    File targetFile =  File.createTempFile(fileService.getNameOnly(file.getName()), "." + fileService.getExtension(file.getName()));
 		    String defFile =  PdfService.class.getResource("/PDFA_def.ps").getFile();
@@ -265,10 +267,12 @@ public class PdfService {
 	    	} catch (IOException | InterruptedException e) {
 	    		logger.error("GhostScript launc error", e);
 	    	}
+	    	InputStream convertedInputStream = new FileInputStream(targetFile);
 	    	file.delete();
-		    return targetFile;
+	    	targetFile.delete();
+		    return convertedInputStream;
     	} else {
-    		return file;
+    		return inputStream;
     	}
 	}
 	
