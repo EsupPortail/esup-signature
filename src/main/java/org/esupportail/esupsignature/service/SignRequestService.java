@@ -29,6 +29,7 @@ import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -208,17 +209,13 @@ public class SignRequestService {
 		if (signType.equals(SignRequestParams.SignType.pdfImageStamp) || signType.equals(SignType.visa)) {
 			File toSignFile = toSignDocuments.get(0).getJavaIoFile();
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-				signedFile = pdfService.stampImage(toSignFile, signRequest, user, addPage, addDate);
+				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, user, addPage, addDate);
 			} else {
 				signedFile = documentService.createDocument(toSignFile, toSignFile.getName());
 			}
 			toSignFile.delete();
 		} else {
-			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-				signedFile = certSign(signRequest, user, password, SignatureForm.PAdES);
-			} else {
-				signedFile = certSign(signRequest, user, password, signService.getDefaultSignatureForm());
-			}
+			signedFile = certSign(signRequest, user, password);
 		}
 		
 		if (signedFile != null) {
@@ -257,14 +254,16 @@ public class SignRequestService {
 		}
 	}
 
-	public Document certSign(SignRequest signRequest, User user, String password, SignatureForm signatureForm) throws EsupSignatureKeystoreException, IOException {
-		List<File> toSignFiles = new ArrayList<>();
+	public Document certSign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException, IOException {
+		SignatureForm signatureForm;
+		List<Document> toSignFiles = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest)) {
-			toSignFiles.add(document.getJavaIoFile());
+			toSignFiles.add(document);
 		}
 		step = "Préparation de la signature";
 		try {
-			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signatureForm);
+			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest);
+			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 			
 			SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(user.getKeystore().getInputStream(), password);
@@ -293,17 +292,16 @@ public class SignRequestService {
 				if(signRequest.countSignOk() == 0) {
 					addPage = true;
 				}
-				
-				File toSignFile = toSignFiles.get(0);
-				pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage);
+				InputStream toSignInputStream;
+				Document toSignFile = toSignFiles.get(0);
+				toSignInputStream = pdfService.formatPdf(toSignFile.getInputStream(), signRequest.getSignRequestParams(), addPage);
 				if(signRequest.getNbSign() == 0) {
-					toSignFile = fileService.inputStreamToFile(pdfService.convertGS(pdfService.writeMetadatas(new FileInputStream(toSignFile), toSignFile.getName(), signRequest)), toSignFile.getName());
+					toSignInputStream = pdfService.convertGS(pdfService.writeMetadatas(toSignFile.getInputStream(), toSignFile.getFileName(), signRequest));
 				}
-				
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), fileService.toMultipartFile(toSignFile, "pdf"), user);
+				MultipartFile multipartFile = fileService.toMultipartFile(toSignInputStream, toSignFile.getFileName(), "application/pdf");
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), multipartFile, user);
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
-				documentForm.setDocumentToSign(fileService.toMultipartFile(toSignFile, "application/pdf"));
-				toSignFile.delete();
+				documentForm.setDocumentToSign(multipartFile);
 				signatureDocumentForm = documentForm;
 			}
 			step = "Signature du/des documents(s)";
@@ -318,9 +316,6 @@ public class SignRequestService {
 				dssDocument = signService.certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, signatureTokenConnection);
 			}
 			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
-			for(File file : toSignFiles) {
-				file.delete();
-			}
 			step = "Enregistrement du/des documents(s)";
 			return documentService.createDocument(signedPdfDocument.openStream(), signedPdfDocument.getName(), signedPdfDocument.getMimeType().getMimeTypeString());
 		} catch (EsupSignatureKeystoreException e) {

@@ -37,6 +37,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -84,39 +85,12 @@ public class NexuProcessController {
     	User user = userService.getUserFromAuthentication();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
-			AbstractSignatureForm signatureDocumentForm = null;
-    		List<Document> documents = signRequestService.getToSignDocuments(signRequest);
-    		if(documents.size() == 1){
-        		File toSignFile = documents.get(0).getJavaIoFile();
-        		if(fileService.getContentType(toSignFile).equals("application/pdf")) {
-    				boolean addPage = false;
-    				if(signRequest.countSignOk() == 0) {
-    					addPage = true;
-    				}
-        			try {
-						toSignFile = pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage);
-					} catch (IOException e) {
-						logger.error("error on format pdf", e);
-					}
-        			pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage);
-        			if(signRequest.getNbSign() == 0) {
-        				toSignFile = fileService.inputStreamToFile(pdfService.convertGS(pdfService.writeMetadatas(new FileInputStream(toSignFile), toSignFile.getName(), signRequest)), toSignFile.getName());
-        			}
-        			signatureDocumentForm = signService.getSignatureDocumentForm(Arrays.asList(toSignFile), SignatureForm.PAdES);
-        			toSignFile.delete();
-        		} else {
-        			signatureDocumentForm = signService.getSignatureDocumentForm(Arrays.asList(toSignFile));
-        		}
-    		} else {
-    			List<File> toSignFiles = new ArrayList<>();
-    			for(Document document : signRequestService.getToSignDocuments(signRequest)) {
-    				toSignFiles.add(document.getJavaIoFile());
-    			}
-				signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles);
-    			for(File file : toSignFiles) {
-    				file.delete();
-				}
-    		}
+			AbstractSignatureForm signatureDocumentForm;
+			List<Document> toSignFiles = new ArrayList<>();
+			for(Document document : signRequestService.getToSignDocuments(signRequest)) {
+				toSignFiles.add(document);
+			}
+			signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest);
 			model.addAttribute("signRequestId", signRequest.getId());
 			model.addAttribute("signatureDocumentForm", signatureDocumentForm);
 			model.addAttribute("digestAlgorithm", signatureDocumentForm.getDigestAlgorithm());

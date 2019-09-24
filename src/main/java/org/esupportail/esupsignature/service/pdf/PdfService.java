@@ -76,14 +76,14 @@ public class PdfService {
 	@Resource
 	private DocumentService documentService;
 
-	public Document stampImage(File toSignFile, SignRequest signRequest, User user, boolean addPage, boolean addDate) throws InvalidPasswordException, IOException {
+	public Document stampImage(Document toSignFile, SignRequest signRequest, User user, boolean addPage, boolean addDate) throws InvalidPasswordException, IOException {
 		//TODO add ip ? + date + nom ?
 		SignRequestParams params = signRequest.getSignRequestParams();
 		SignRequestParams.SignType signType = params.getSignType();
-    	PdfParameters pdfParameters = getPdfParameters(new FileInputStream(toSignFile));
-		toSignFile = formatPdf(toSignFile, params, addPage);
+    	PdfParameters pdfParameters = getPdfParameters(toSignFile.getInputStream());
+		InputStream toSignInputStream = formatPdf(toSignFile.getInputStream(), params, addPage);
 		try {
-			PDDocument pdDocument = PDDocument.load(toSignFile);
+			PDDocument pdDocument = PDDocument.load(toSignInputStream);
 
 			PDPage pdPage = pdDocument.getPage(params.getSignPageNumber() - 1);
 			PDImageXObject pdImage;
@@ -139,11 +139,13 @@ public class PdfService {
 			}
 			
 			contentStream.close();
-			pdDocument.save(toSignFile);
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			pdDocument.save(out);
+			ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 			pdDocument.close();
 		    try {
-		    	InputStream file = convertGS(writeMetadatas(new FileInputStream(toSignFile), toSignFile.getName(), signRequest));
-	    		return documentService.createDocument(file, toSignFile.getName(), Files.probeContentType(toSignFile.toPath()));
+		    	InputStream file = convertGS(writeMetadatas(in, toSignFile.getFileName(), signRequest));
+	    		return documentService.createDocument(file, toSignFile.getFileName(), toSignFile.getContentType());
 			} catch (Exception e) {
 				logger.error("enable to convert to pdf A", e);
 			}
@@ -153,7 +155,7 @@ public class PdfService {
 		return null;
 	}
 	
-	public File formatPdf(File file, SignRequestParams params, boolean addPage) throws InvalidPasswordException, IOException {
+	public InputStream formatPdf(InputStream file, SignRequestParams params, boolean addPage) throws IOException {
         
 		if(!SignRequestParams.NewPageType.none.equals(params.getNewPageType()) && addPage) {
 			PDDocument pdDocument = PDDocument.load(file);
@@ -162,19 +164,21 @@ public class PdfService {
     			params.setSignPageNumber(1);
     		} else {
     			pdDocument = addNewPage(pdDocument, null, -1);
-    			params.setSignPageNumber(getPdfParameters(new FileInputStream(file)).getTotalNumberOfPages());
+    			params.setSignPageNumber(getPdfParameters(file).getTotalNumberOfPages());
     		}
-	        pdDocument.save(file);
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			pdDocument.save(out);
 	        pdDocument.close();
+	        return new ByteArrayInputStream(out.toByteArray());
+		} else {
+			return file;
 		}
-
-    	return file;
 	}
 	
-	public InputStream writeMetadatas(InputStream file, String fileName, SignRequest signRequest){
+	public InputStream writeMetadatas(InputStream inputStream, String fileName, SignRequest signRequest){
 		
 		try {
-			PDDocument pdDocument = PDDocument.load(file);
+			PDDocument pdDocument = PDDocument.load(inputStream);
 			pdDocument.setVersion(1.7f);
 			
 			COSDictionary trailer = pdDocument.getDocument().getTrailer();
@@ -232,13 +236,13 @@ public class PdfService {
 		} catch (IOException | BadFieldValueException | TransformerException e) {
 			logger.error("error on write metadatas", e);
 		}
-        return file;
+        return inputStream;
 	}
 	
 	public InputStream convertGS(InputStream inputStream) throws IOException {
-		File file = fileService.inputStreamToFile(inputStream, "tmpconvert.pdf");
+		File file = fileService.inputStreamToFile(inputStream);
     	if(!isPdfAComplient(file)) {
-		    File targetFile =  File.createTempFile(fileService.getNameOnly(file.getName()), "." + fileService.getExtension(file.getName()));
+		    File targetFile =  File.createTempFile("afterconvert_tmp", ".pdf");
 		    String defFile =  PdfService.class.getResource("/PDFA_def.ps").getFile();
 		    String cmd = pdfProperties.getPathToGS() + "gs -dPDFA=" + pdfProperties.getPdfALevel() + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
 	    	logger.info("GhostScript PDF/A convertion : " + cmd);

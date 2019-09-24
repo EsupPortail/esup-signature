@@ -37,9 +37,18 @@ public class FileService {
 		return null;
 	}
 
+	public MultipartFile toMultipartFile(InputStream file, String name, String mimeType) {
+		try {
+			return new MockMultipartFile(name, name, mimeType, file);
+		} catch (IOException e) {
+			logger.error("enable to convert to multipartfile", e);
+		}
+		return null;
+	}
 
-	public File inputStreamToFile(InputStream inputStream, String name) throws IOException {
-		File file = new File(Files.createTempDir(), name);
+
+	public File inputStreamToFile(InputStream inputStream) throws IOException {
+		File file = File.createTempFile("tmp", ".pdf");
 		OutputStream outputStream = new FileOutputStream(file);
 		IOUtils.copy(inputStream, outputStream);
 		outputStream.close();

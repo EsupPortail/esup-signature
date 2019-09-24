@@ -27,6 +27,8 @@ import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.ExtensionForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -46,6 +48,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.*;
 
@@ -287,25 +290,43 @@ public class SignService {
 			parameters.setCertificateChain(certificateChain);
 		}
 	}
-
-	public AbstractSignatureForm getSignatureDocumentForm(List<File> toSignFiles) {
+/*
+	public AbstractSignatureForm getSignatureDocumentForm(List<Document> toSignFiles) {
 		return getSignatureDocumentForm(toSignFiles, signProperties.getDefaultSignatureForm());
 	}
-
-	public AbstractSignatureForm getSignatureDocumentForm(List<File> toSignFiles, SignatureForm signatureForm) {
+*/
+	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest) throws IOException {
+		SignatureForm signatureForm;
 		AbstractSignatureForm abstractSignatureForm;
-		if(toSignFiles.size() > 1) {
+		if(documents.size() > 1) {
+			signatureForm = signProperties.getDefaultSignatureForm();
 			SignatureMultipleDocumentsForm signatureMultipleDocumentsForm = new SignatureMultipleDocumentsForm();
 			List<MultipartFile> multipartFiles = new ArrayList<>();
-			for(File toSignFile : toSignFiles) {
-				multipartFiles.add(fileService.toMultipartFile(toSignFile, fileService.getContentType(toSignFile)));
+			for(Document toSignFile : documents) {
+				multipartFiles.add(fileService.toMultipartFile(toSignFile.getInputStream(), toSignFile.getFileName(), toSignFile.getContentType()));
 			}
 			signatureMultipleDocumentsForm.setDocumentsToSign(multipartFiles);
 			signatureMultipleDocumentsForm.setContainerType(signProperties.getContainerType());
 			abstractSignatureForm = signatureMultipleDocumentsForm;
 		} else {
+			InputStream inputStream;
+			Document toSignFile = documents.get(0);
+			if(toSignFile.getContentType().equals("application/pdf")) {
+				signatureForm = SignatureForm.PAdES;
+				boolean addPage = false;
+				if(signRequest.countSignOk() == 0) {
+					addPage = true;
+				}
+				inputStream = pdfService.formatPdf(toSignFile.getInputStream(), signRequest.getSignRequestParams(), addPage);
+				if(signRequest.getNbSign() == 0) {
+					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest));
+				}
+			} else {
+				signatureForm = signProperties.getDefaultSignatureForm();
+				inputStream = toSignFile.getInputStream();
+			}
 			SignatureDocumentForm signatureDocumentForm = new SignatureDocumentForm();
-			signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFiles.get(0), fileService.getContentType(toSignFiles.get(0))));
+			signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(inputStream, documents.get(0).getFileName(), documents.get(0).getContentType()));
 			if(!signatureForm.equals(SignatureForm.PAdES)) {	
 				signatureDocumentForm.setContainerType(signProperties.getContainerType());
 			}

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,18 @@ public final class WebAppUtils {
 	private static final Logger logger = LoggerFactory.getLogger(WebAppUtils.class);
 
 	private WebAppUtils() {
+	}
+
+	public static DSSDocument toDSSDocument(InputStream inputStream) {
+		try {
+			if ((inputStream != null) && inputStream.available() > 0) {
+				DSSDocument document = new InMemoryDocument(inputStream);
+				return document;
+			}
+		} catch (IOException e) {
+			logger.error("Cannot read  file : " + e.getMessage(), e);
+		}
+		return null;
 	}
 
 	public static DSSDocument toDSSDocument(MultipartFile multipartFile) {
