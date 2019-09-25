@@ -207,13 +207,12 @@ public class SignRequestService {
 
 		SignType signType = signRequest.getSignRequestParams().getSignType();
 		if (signType.equals(SignRequestParams.SignType.pdfImageStamp) || signType.equals(SignType.visa)) {
-			File toSignFile = toSignDocuments.get(0).getJavaIoFile();
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, user, addPage, addDate);
 			} else {
-				signedFile = documentService.createDocument(toSignFile, toSignFile.getName());
+				logger.error("no visual sign for non pdf file");
+				throw new EsupSignatureSignException("no visual sign for non pdf file");
 			}
-			toSignFile.delete();
 		} else {
 			signedFile = certSign(signRequest, user, password);
 		}

@@ -92,10 +92,10 @@ public class PdfService {
 			float height = pdPage.getMediaBox().getHeight();
 			float width = pdPage.getMediaBox().getWidth();
 			
-			int xPos = (int) params.getXPos();
-			int yPos = (int) params.getYPos();
+			int xPos = params.getXPos();
+			int yPos = params.getYPos();
 			DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
-			InputStream signImage = new FileInputStream(PdfService.class.getResource("/sceau.png").getFile());
+			InputStream signImage = PdfService.class.getResourceAsStream("/sceau.png");
 			if(signType.equals(SignType.visa)) {
 				try {
 					addText(contentStream, "Visé par " + user.getFirstname() + " " + user.getName(), xPos, yPos, PDType1Font.HELVETICA);
@@ -239,7 +239,7 @@ public class PdfService {
 	
 	public InputStream convertGS(InputStream inputStream) throws IOException {
 		File file = inputStreamToPdfTempFile(inputStream);
-    	if(!isPdfAComplient(new FileInputStream(file))) {
+    	if(!isPdfAComplient(file)) {
 		    File targetFile =  File.createTempFile("afterconvert_tmp", ".pdf");
 		    String defFile =  PdfService.class.getResource("/PDFA_def.ps").getFile();
 		    String cmd = pdfProperties.getPathToGS() + "gs -dPDFA=" + pdfProperties.getPdfALevel() + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
@@ -247,7 +247,7 @@ public class PdfService {
 	    	
 	    	ProcessBuilder processBuilder = new ProcessBuilder();
 	    	processBuilder.command("bash", "-c", cmd);
-	    	processBuilder.directory(new File("/tmp"));
+	    	//processBuilder.directory(new File("/tmp"));
 	    	try {
 	    		Process process = processBuilder.start();
 	    		StringBuilder output = new StringBuilder();
@@ -259,11 +259,11 @@ public class PdfService {
 
 	    		int exitVal = process.waitFor();
 	    		if (exitVal == 0) {
-	    			logger.info(output.toString());
 	    			logger.info("Convert success");
+					logger.debug(output.toString());
 	    		} else {
-	    			logger.warn(output.toString());
 	    			logger.warn("Convert fail");
+					logger.debug(output.toString());
 	    			return null;
 	    		}
 	    	} catch (IOException | InterruptedException e) {
@@ -278,14 +278,21 @@ public class PdfService {
     	}
 	}
 	
-	public boolean isPdfAComplient(InputStream pdfFile) {
+	public boolean isPdfAComplient(File pdfFile) {
 		if("success".equals(checkPDFA(pdfFile, false).get(0))) {
 			return true;
 		}
 		return false;
 	}
-	
-	public List<String> checkPDFA(InputStream pdfFile, boolean fillResults) {
+
+	public List<String> checkPDFA(InputStream inputStream, boolean fillResults) throws IOException {
+		File file = inputStreamToPdfTempFile(inputStream);
+		List<String> checkResult = checkPDFA(file, fillResults);
+		file.delete();
+		return checkResult;
+	}
+
+	public List<String> checkPDFA(File pdfFile, boolean fillResults) {
 		List<String> result = new ArrayList<>();
 		VeraGreenfieldFoundryProvider.initialise();
 
