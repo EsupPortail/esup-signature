@@ -295,7 +295,6 @@ public class PdfService {
 	public List<String> checkPDFA(File pdfFile, boolean fillResults) {
 		List<String> result = new ArrayList<>();
 		VeraGreenfieldFoundryProvider.initialise();
-
 		try {
 			PDFAParser parser = Foundries.defaultInstance().createParser(pdfFile);
 			PDFAValidator validator = Foundries.defaultInstance().createValidator(parser.getFlavour(), false);

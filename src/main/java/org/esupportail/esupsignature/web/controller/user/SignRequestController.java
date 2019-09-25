@@ -426,7 +426,8 @@ public class SignRequestController {
 			model.addAttribute("nexuVersion", nexuVersion);
 			model.addAttribute("nexuUrl", nexuUrl);
 			if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
-				model.addAttribute("referer", request.getHeader("referer"));
+				String ref = request.getHeader("referer");
+				model.addAttribute("referer", ref);
 			}
 			return "user/signrequests/sign-only";
 		} else {
@@ -489,7 +490,7 @@ public class SignRequestController {
 			}
 			if(signonly != null && signonly) {
 				if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
-					return "redirect:/user/signrequests/" + id;
+					return "redirect:"+ referer;
 				} else {
 					return "redirect:/user/signrequests/sign-by-token/" + signRequest.getName();
 				}

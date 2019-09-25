@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.mail;
 
 import org.esupportail.esupsignature.config.mail.MailConfig;
+import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.UserRepository;
@@ -8,16 +9,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import javax.activation.DataSource;
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
 
@@ -100,7 +105,7 @@ public class MailService {
 
     }
 
-	public void sendFile(String recipientEmail, File file,  SignRequest signRequest) {
+	public void sendFile(String recipientEmail, Document file, SignRequest signRequest) {
         if(!checkMailSender()){
             return;
         }
@@ -117,7 +122,7 @@ public class MailService {
 			message.setSubject("Esup-Signature : nouveau document  " + signRequest.getTitle());
             message.setFrom(mailConfig.getMailFrom());
 			message.setTo(recipientEmail);
-			message.addAttachment(file.getName(), file);
+			message.addAttachment(file.getFileName(), new InputStreamResource(file.getInputStream()));
 			String htmlContent = templateEngine.process("mail/email-file.html", ctx);
 			message.setText(htmlContent, true); // true = isHtml
             mailSender.send(mimeMessage);

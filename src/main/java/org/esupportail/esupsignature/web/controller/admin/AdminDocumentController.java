@@ -131,13 +131,13 @@ public class AdminDocumentController {
     @RequestMapping(value = "/getfile/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		Document document = documentRepository.findById(id).get();
+		//TODO check rights
 		SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
 		User user = userService.getUserFromAuthentication();
 		try {
-			File fileToDownload = document.getJavaIoFile();
 			response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
 			response.setContentType(document.getContentType());
-			IOUtils.copy(new FileInputStream(fileToDownload), response.getOutputStream());
+			IOUtils.copy(document.getInputStream(), response.getOutputStream());
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (Exception e) {
 			logger.error("get file error", e);

@@ -107,11 +107,11 @@
                 <i class="fas fa-signature fa-2x"></i><br/>Valider la signature
             </button>
 
-            <button th:if="${referer != null}" type="button" class="btn  btn-danger float-right" value="Retour" th:onclick="@{'location.href=\'' + ${referer} + '\''}">
+            <button th:if="${referer != null}" type="button" class="btn btn-danger float-right" value="Retour" th:onclick="@{'location.href=\'' + ${referer} + '\''}">
                 <i class="fas fa-times fa-2x"></i><br/>Abandonner
             </button>
 
-            <button th:unless="${referer != null}" type="button" class="btn  btn-danger float-right" value="Retour" onclick="window.history.back()">
+            <button th:unless="${referer != null}" type="button" class="btn btn-danger float-right" value="Retour" onclick="window.history.back()">
                 <i class="fas fa-times fa-2x"></i><br/>Abandonner
             </button>
         </div>

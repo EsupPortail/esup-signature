@@ -319,7 +319,7 @@ public class SignBookService {
 
     public boolean exportFileToTarget(SignBook signBook, SignRequest signRequest, User user) throws EsupSignatureException {
         if (signBook.getTargetType() != null && !signBook.getTargetType().equals(DocumentIOType.none)) {
-            File signedFile = signRequestService.getLastSignedDocument(signRequest).getJavaIoFile();
+            Document signedFile = signRequestService.getLastSignedDocument(signRequest);
             if(signBook.getTargetType().equals(DocumentIOType.mail)) {
                 logger.info("send by email to " + signBook.getDocumentsTargetUri());
                 mailService.sendFile(signBook.getDocumentsTargetUri(), signedFile, signRequest);
@@ -329,11 +329,11 @@ public class SignBookService {
                 try {
                     logger.info("send to " + signBook.getTargetType() + " in /" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri());
                     FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signBook.getTargetType());
-                    InputStream inputStream = new FileInputStream(signedFile);
+                    InputStream inputStream = signedFile.getInputStream();
                     fsAccessService.createFile("/", signBook.getSignBookType().toString(), "folder");
                     fsAccessService.createFile("/" + signBook.getSignBookType().toString(), signBook.getDocumentsTargetUri(), "folder");
-                    signRequest.setExportedDocumentURI(fsAccessService.getUri() + "/" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri() + "/" + signedFile.getName());
-                    return fsAccessService.putFile("/" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri() + "/", signedFile.getName(), inputStream, UploadActionType.OVERRIDE);
+                    signRequest.setExportedDocumentURI(fsAccessService.getUri() + "/" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri() + "/" + signedFile.getFileName());
+                    return fsAccessService.putFile("/" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri() + "/", signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE);
                 } catch (Exception e) {
                     throw new EsupSignatureException("write fsaccess error : ", e);
                 }

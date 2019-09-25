@@ -46,28 +46,6 @@ public class Document {
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST}, orphanRemoval = true)
     private BigFile bigFile = new BigFile();
- 
-    public File getJavaIoFile() {
-    	try {
-			InputStream inputStream = this.bigFile.getBinaryFile().getBinaryStream();
-            final File tempFile = File.createTempFile(getPrefix(), "." + getSuffix());
-            try (FileOutputStream fileOutputStream = new FileOutputStream(tempFile)) {
-                IOUtils.copy(inputStream, fileOutputStream);
-            }
-			return tempFile;
-    	} catch (SQLException | IOException e) {
-    		logger.error("error to convert BigFile to java.io.File", e);
-		}
-    	return null;
-	}
-
-    public String getSuffix() {
-        return FilenameUtils.getExtension(this.fileName);
-    }
-
-    public String getPrefix() {
-        return FilenameUtils.getBaseName(this.fileName);
-    }
 
     public InputStream getInputStream() {
         try {
