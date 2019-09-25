@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- default configuration from springboot -->
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${LOGS}/esup-signature.log</file>
+        <append>true</append>
+        <immediateFlush>true</immediateFlush>
+        <encoder>
+            <pattern>[%-5level] %date{dd/MM/yyyy HH:mm:ss} %logger{35} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="EMAIL" class="ch.qos.logback.classic.net.SMTPAppender">
+        <smtpHost>smtp</smtpHost>
+        <smtpPort>25</smtpPort>
+        <to>david.lemaignent@univ-rouen.fr</to>
+        <from>esup-signature@univ-rouen.fr</from>
+        <subject>%-5level - esup-signature %date{dd/MM/yyyy HH:mm:ss}
+        </subject>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>[%-5level] %date{dd/MM/yyyy HH:mm:ss} [%-20thread] %logger{36} - %msg%n</pattern>
+        </layout>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+    </appender>
+
+    <logger name="org.esupportail.esupsignature" level="error" additivity="false">
+        <appender-ref ref="EMAIL"/>
+    </logger>
+
+    <logger name="org.esupportail.esupsignature" level="info" additivity="false">
+        <appender-ref ref="FILE"/>
+    </logger>
+
+    <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="info" additivity="false">
+        <appender-ref ref="FILE"/>
+    </logger>
+
+    <root level="info">
+        <appender-ref ref="FILE"/>
+    </root>
+
+</configuration>
