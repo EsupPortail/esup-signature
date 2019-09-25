@@ -48,7 +48,7 @@ public class ScheduledTaskService {
 	@Scheduled(fixedRate = 10000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
-		logger.debug("scan all signbooks target");
+		logger.trace("scan all signbooks target");
 		List<SignBook> signBooks = signBookService.getAllSignBooks();
 		for(SignBook signBook : signBooks) {
 			try {
@@ -64,7 +64,7 @@ public class ScheduledTaskService {
 	public void sendAllEmailAlerts() {
 		List<User> users = userService.getAllUsers();
 		for(User user : users) {
-			logger.debug("check email alert for " + user.getEppn());
+			logger.trace("check email alert for " + user.getEppn());
 			if(userService.checkEmailAlert(user)) {
 				userService.sendEmailAlert(user);
 			}

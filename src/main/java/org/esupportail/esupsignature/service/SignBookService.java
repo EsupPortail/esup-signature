@@ -291,7 +291,7 @@ public class SignBookService {
                 logger.error("import in signBook error", e);
             }
         } else {
-            logger.debug("no source type for signbook : " + signBook.getName());
+            logger.trace("no source type for signbook : " + signBook.getName());
         }
     }
 
