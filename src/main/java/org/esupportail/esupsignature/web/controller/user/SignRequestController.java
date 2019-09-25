@@ -305,7 +305,7 @@ public class SignRequestController {
 		//on traite les groups en premier
 		signBooks = signBooks.stream().sorted(Comparator.comparing(SignBook::getSignBookType)).collect(Collectors.toList());
 		for(SignBook signBook : signBooks) {
-			signBookService.importSignRequestInSignBook(signRequest, signBook, user);			
+			signBookService.importSignRequestInSignBook(signRequest, signBook, user);
 		}
 		
 		return "redirect:/user/signrequests/" + signRequest.getId();

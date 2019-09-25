@@ -267,9 +267,9 @@ public class SignBookService {
                 }
                 if (fsFiles.size() > 0) {
                     for (FsFile fsFile : fsFiles) {
-                        logger.info("adding file : " + fsFile.getFile().getName());
+                        logger.info("adding file : " + fsFile.getName());
                         fsFile.setPath(signBook.getDocumentsSourceUri());
-                        Document documentToAdd = documentService.createDocument(fsFile.getFile(), fsFile.getName());
+                        Document documentToAdd = documentService.createDocument(fsFile.getFile(), fsFile.getName(), fsFile.getContentType());
                         if (fsFile.getCreateBy() != null && userRepository.countByEppn(fsFile.getCreateBy()) > 0) {
                             user = userRepository.findByEppn(fsFile.getCreateBy()).get(0);
                             user.setIp("127.0.0.1");

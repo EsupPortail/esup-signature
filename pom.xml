@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.1.8.RELEASE</version>
+		<version>2.1.6.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.esupportail</groupId>
@@ -17,10 +17,13 @@
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
 		<bouncycastle.version>1.60</bouncycastle.version>
+		<aspectj.version>1.9.3</aspectj.version>
+		<java.version>1.8</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring.version>5.1.9.RELEASE</spring.version>
-		<spring-security.version>5.1.6.RELEASE</spring-security.version>
-		<spring-data.version>2.1.10.RELEASE</spring-data.version>
+		<slf4j.version>1.7.5</slf4j.version>
+		<spring.version>5.1.4.RELEASE</spring.version>
+		<spring-security.version>5.1.4.RELEASE</spring-security.version>
+		<spring-data.version>2.1.5.RELEASE</spring-data.version>
 		<dss.framework.version>5.4.3</dss.framework.version>
 		<jackson-jaxrs-json-provider.version>2.9.7</jackson-jaxrs-json-provider.version>
 		<hsqldb.version>2.4.1</hsqldb.version>

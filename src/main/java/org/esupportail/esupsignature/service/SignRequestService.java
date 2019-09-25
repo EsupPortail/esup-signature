@@ -24,6 +24,7 @@ import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
+import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.sign.SignService;
@@ -425,20 +426,16 @@ public class SignRequestService {
 		return documents;
 	}
 	
-	public File getLastSignedFile(SignRequest signRequest) throws Exception {
+	public FsFile getLastSignedFile(SignRequest signRequest) throws Exception {
 		if(signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			FsAccessService fsAccessService = null;
-			if(signRequest.getExportedDocumentURI().startsWith("mail")) {
-				return getLastSignedDocument(signRequest).getJavaIoFile();
-			} else {
-				if (signRequest.getExportedDocumentURI().startsWith("smb")) {
-					fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.smb);
-				}
-				return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI()).getFile();
+			if (signRequest.getExportedDocumentURI().startsWith("smb")) {
+				fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.smb);
+				return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI());
 			}
-		} else {
-			return getLastSignedDocument(signRequest).getJavaIoFile();
 		}
+		Document lastSignedDocument = getLastSignedDocument(signRequest);
+		return new FsFile(lastSignedDocument.getInputStream(), lastSignedDocument.getFileName(), lastSignedDocument.getContentType());
 	}
 	
 	public Document getLastSignedDocument(SignRequest signRequest) {

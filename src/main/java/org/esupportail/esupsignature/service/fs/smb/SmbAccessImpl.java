@@ -220,7 +220,8 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 				} else {
 					fileToCopy.copyTo(newFile);
 					FsFile fsFileToRemove = new FsFile();
-					fsFileToRemove.setFile(fileService.inputStreamToFile(fileToCopy.getInputStream()));
+					fsFileToRemove.setName(fileToCopy.getName());
+					fsFileToRemove.setPath(fileToCopy.getPath());
 					this.remove(fsFileToRemove);
 				}
 
@@ -352,10 +353,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 	private FsFile toFsFile(SmbFile smbFile) throws IOException {
-		FsFile fsFile = new FsFile();
-		fsFile.setName(smbFile.getName());
-		fsFile.setContentType(URLConnection.guessContentTypeFromName(smbFile.getName()));
-		fsFile.setFile(fileService.inputStreamToFile(smbFile.getInputStream()));
+		FsFile fsFile = new FsFile(smbFile.getInputStream(), smbFile.getName(), URLConnection.guessContentTypeFromName(smbFile.getName()));
 		/*
 		if(smbFile.getOwnerUser() != null) {
 			fsFile.setCreateBy(smbFile.getOwnerUser().getAccountName());

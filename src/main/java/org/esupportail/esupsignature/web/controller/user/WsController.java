@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.web.JsonSignInfoMessage;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -200,11 +202,17 @@ public class WsController {
             SignBook signBook = signBookRepository.findByName(signBookName).get(0);
             SignRequest signRequest = signRequestRepository.findByName(signBookName).get(0);
             if (signBook.getSignRequests().contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.signed)) {
-                File file = signRequestService.getLastSignedFile(signRequest);
                 try {
-                    response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
-                    response.setContentType(fileService.getContentType(file));
-                    IOUtils.copy(new FileInputStream(file), response.getOutputStream());
+                    FsFile file = signRequestService.getLastSignedFile(signRequest);
+                    if (file == null) {
+                        response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+                        response.setContentType(signRequest.getOriginalDocuments().get(0).getContentType());
+                        IOUtils.copy(signRequest.getOriginalDocuments().get(0).getInputStream(), response.getOutputStream());
+                    } else {
+                        response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+                        response.setContentType(file.getContentType());
+                        IOUtils.copy(file.getFile(), response.getOutputStream());
+                    }
                     return new ResponseEntity<>(HttpStatus.OK);
                 } catch (Exception e) {
                     logger.error("get file error", e);
@@ -227,13 +235,16 @@ public class WsController {
             SignRequest signRequest = signRequestRepository.findByName(name).get(0);
             if (signRequest != null) {
                 try {
-                    File file = signRequestService.getLastSignedFile(signRequest);
+                    FsFile file = signRequestService.getLastSignedFile(signRequest);
                     if (file == null) {
-                        file = signRequest.getOriginalDocuments().get(0).getJavaIoFile();
+                        response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+                        response.setContentType(signRequest.getOriginalDocuments().get(0).getContentType());
+                        IOUtils.copy(signRequest.getOriginalDocuments().get(0).getInputStream(), response.getOutputStream());
+                    } else {
+                        response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+                        response.setContentType(file.getContentType());
+                        IOUtils.copy(file.getFile(), response.getOutputStream());
                     }
-                    response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
-                    response.setContentType(fileService.getContentType(file));
-                    IOUtils.copy(new FileInputStream(file), response.getOutputStream());
                     return new ResponseEntity<>(HttpStatus.OK);
                 } catch (Exception e) {
                     logger.error("get file error", e);

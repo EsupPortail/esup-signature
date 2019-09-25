@@ -36,15 +36,6 @@ public class FileService {
 		return null;
 	}
 
-	public File inputStreamToFile(InputStream inputStream) throws IOException {
-		File file = File.createTempFile("tmp", ".pdf");
-		OutputStream outputStream = new FileOutputStream(file);
-		IOUtils.copy(inputStream, outputStream);
-		outputStream.close();
-		inputStream.close();
-		return file;
-	}
-
 	public File fromBase64Image(String base64Image, String name) throws IOException {
 		File fileImage = File.createTempFile(name, ".png");
 		ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(base64Image.substring(base64Image.lastIndexOf(',') + 1).trim()));
@@ -209,13 +200,4 @@ public class FileService {
 	    }
 	}
 
-	public BufferedImage imageToBufferedImage(final Image image)
-	   {
-	      final BufferedImage bufferedImage =
-	         new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-	      final Graphics2D g2 = bufferedImage.createGraphics();
-	      g2.drawImage(image, 0, 0, null);
-	      g2.dispose();
-	      return bufferedImage;
-	    }
 }

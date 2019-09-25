@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.pdf;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.*;
@@ -69,8 +70,8 @@ public class PdfService {
 		this.pdfProperties = pdfProperties;
 	}
 
-	@Resource
-	private FileService fileService;
+	//@Resource
+	//private FileService fileService;
 
 	@Resource
 	private DocumentService documentService;
@@ -121,19 +122,17 @@ public class PdfService {
 		        tx.translate(0, - bufferedImage.getHeight(null));
 		        AffineTransformOp op = new AffineTransformOp(tx,AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 		        bufferedImage = op.filter(bufferedImage, null);
-				File flipedSignImage = File.createTempFile("preview", ".png");
+				ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
 				ImageIO.write(bufferedImage, "png", flipedSignImage);
-				pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
-				flipedSignImage.delete();
+				pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
 				contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
 				contentStream.drawImage(pdImage, xPos, yPos + topHeight, size[0], size[1]);
 			} else {
 				AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
 			    contentStream.transform(new Matrix(at));
-				File flipedSignImage = File.createTempFile("preview", ".png");
+				ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
 				ImageIO.write(bufferedImage, "png", flipedSignImage);
-				pdImage = PDImageXObject.createFromFileByContent(flipedSignImage, pdDocument);
-				flipedSignImage.delete();
+				pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
 			    contentStream.drawImage(pdImage, xPos, yPos + topHeight - 37 , size[0], size[1]);
 			}
 			
@@ -239,7 +238,7 @@ public class PdfService {
 	}
 	
 	public InputStream convertGS(InputStream inputStream) throws IOException {
-		File file = fileService.inputStreamToFile(inputStream);
+		File file = inputStreamToPdfTempFile(inputStream);
     	if(!isPdfAComplient(new FileInputStream(file))) {
 		    File targetFile =  File.createTempFile("afterconvert_tmp", ".pdf");
 		    String defFile =  PdfService.class.getResource("/PDFA_def.ps").getFile();
@@ -529,7 +528,8 @@ public class PdfService {
 		}
 		return null;
 	}
-	
+
+	/*
 	public List<String> pagesAsBase64Images(File pdfFile) {
 		List<String> imagePages = new ArrayList<String>();
 		PDDocument pdDocument = null;
@@ -553,7 +553,8 @@ public class PdfService {
 		}
         return imagePages;
 	}
-	
+	*/
+
 	public PdfParameters getPdfParameters(InputStream pdfFile) {
 		PDDocument pdDocument = null;
 		try {
@@ -561,7 +562,7 @@ public class PdfService {
 			PDPage pdPage = pdDocument.getPage(0);
 			PdfParameters pdfParameters = new PdfParameters((int) pdPage.getMediaBox().getWidth(), (int) pdPage.getMediaBox().getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
 			return pdfParameters;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logger.error("error on get pdf parameters", e);
 		} finally {
 			if (pdDocument != null) {
@@ -574,7 +575,16 @@ public class PdfService {
 		}
 		return null;
 	}
-	
+
+	public File inputStreamToPdfTempFile(InputStream inputStream) throws IOException {
+		File file = File.createTempFile("tmp", ".pdf");
+		OutputStream outputStream = new FileOutputStream(file);
+		IOUtils.copy(inputStream, outputStream);
+		outputStream.close();
+		inputStream.close();
+		return file;
+	}
+/*
 	public String pageAsBase64Image(File pdfFile, int page) {
 		String imagePage = "";
 		PDDocument pdDocument = null;
@@ -596,8 +606,8 @@ public class PdfService {
 		}
         return imagePage;
 	}
-	
-	public BufferedImage pageAsBufferedImage(InputStream pdfFile, int page) {
+*/
+	public InputStream pageAsImageInputStream(InputStream pdfFile, int page) throws Exception {
 		BufferedImage bufferedImage = null;
 		PDDocument pdDocument = null;
 		try {
@@ -613,16 +623,11 @@ public class PdfService {
 				} catch (IOException e) {
 					logger.error("enable to close document", e);
 				}
-	          }
+			}
 		}
-		return bufferedImage;
-	}
-
-	public InputStream pageAsInputStream(InputStream pdfFile, int page) throws Exception {
-		BufferedImage bufferedImage = pageAsBufferedImage(pdfFile, page);
-		InputStream inputStream = fileService.bufferedImageToInputStream(bufferedImage, "png");
-		bufferedImage.flush();
-		return inputStream; 
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		ImageIO.write(bufferedImage, "png", os);
+		return new ByteArrayInputStream(os.toByteArray());
 
 	}
 	

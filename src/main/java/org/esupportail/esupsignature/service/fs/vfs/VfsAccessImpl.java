@@ -169,13 +169,13 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		boolean success = false;
 		FileObject file;
 		try {
-			file = cd(fsFile.getPath() + "/" + fsFile.getFile().getName());
+			file = cd(fsFile.getPath() + "/" + fsFile.getName());
 			success = file.delete();
 		} catch (FileSystemException e) {
 			logger.info("can't delete file because of FileSystemException : "
 					+ e.getMessage(), e);
 		}
-		logger.debug("remove file " + fsFile.getPath() + fsFile.getFile().getName() + ": " + success);
+		logger.debug("remove file " + fsFile.getPath() + fsFile.getName() + ": " + success);
 		return success;
 	}
 
@@ -261,7 +261,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		FsFile fsFile = new FsFile();
 		fsFile.setName(fileObject.getName().getBaseName());
 		fsFile.setContentType(fileObject.getContent().getContentInfo().getContentType());
-		fsFile.setFile(fileService.inputStreamToFile(inputStream));
+		fsFile.setFile(inputStream);
 		//TODO recup creator + date
 		//System.err.println(fileContent.getAttributes());
 		return fsFile;
