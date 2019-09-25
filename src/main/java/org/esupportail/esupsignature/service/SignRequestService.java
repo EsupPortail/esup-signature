@@ -403,7 +403,7 @@ public class SignRequestService {
 						numSign++;
 					}
 				}
-				if(user.getEmailAlertFrequency() == null|| user.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(user)) {
+				if(recipient.getEmailAlertFrequency() == null|| recipient.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipient)) {
 					userService.sendEmailAlert(recipient);
 				}
 			}

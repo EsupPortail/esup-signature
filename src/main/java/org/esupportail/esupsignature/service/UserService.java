@@ -136,7 +136,7 @@ public class UserService {
 
 	public void sendEmailAlert(User user) {
 		Date date = new Date();
-		List<SignRequest> signRequests = signRequestService.findSignRequestByUserAndStatusEquals(user, SignRequestStatus.pending);
+		List<SignRequest> signRequests = signRequestService.getTosignRequests(user);
 		if(signRequests.size() > 0) {
 			mailService.sendSignRequestAlert("test", user.getEmail(), signRequests);
 		}
