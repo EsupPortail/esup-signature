@@ -82,10 +82,9 @@
 							</div>
 						</div>
 						<div id="nexu_ready_alert" style="display: none;">
-							<button type="button" class="mr-2 btn btn-success float-left"
-								data-toggle="modal" data-target="#signatureModal">
+							<a th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}" class="mr-2 btn btn-success float-left">
 								<i class="fas fa-signature fa-2x"></i> <br /> Signer
-							</button>
+							</a>
 							<div class="alert alert-success float-left">
 								L'application NexU est fonctionnelle <br /> <small>Vous
 									pouvez utiliser une clé materielle ou un keystore</small>
@@ -140,7 +139,7 @@
 			<button type="button" title="Retour"
 				class="btn  btn-danger float-right" value="Retour"
 				onclick="window.history.back();">
-				<i class="fas fa-times fa-1x"></i>
+				<i class="fas fa-door-open fa-2x"></i><br/>Retour
 			</button>
 
 		</div>

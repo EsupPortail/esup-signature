@@ -3,7 +3,7 @@
 <head th:replace="fragments/head :: head"></head>
 <body>
 <div class="header-fixed fixed-top">
-    <th:block th:if="${referer == null}">
+    <th:block th:if="${referer == 'null'}">
         <nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
         <nav class="nav justify-content-between bg-white" aria-label="breadcrumb">
             <ol class="breadcrumb col-11">
@@ -18,7 +18,7 @@
             </div>
         </nav>
     </th:block>
-    <th:block th:unless="${referer == null}">
+    <th:block th:unless="${referer == 'null'}">
         <nav th:replace="fragments/emptyBar :: emptyBar"></nav>
     </th:block>
     <div id="ribbon" class="card" th:if="${signable == 'ok'}">
@@ -179,11 +179,8 @@
         <div class="alert alert-danger">
             Vous n'avez plus d'ation à effectuer sur cette demande, merci de fermer cette fenetre
             <br/>
-
             <input class="btn btn-danger text-center d-none" id="signe" title="Signe" type="submit" value="Fermer" onclick="window.close();"/>
-
         </div>
-
     </div>
 
     <div id="signModal" class="modal fade" tabindex="-1" role="dialog">
@@ -254,7 +251,8 @@
                 </div>
                 <div class="modal-footer">
                     <button id="closeModal" type="button"
-                            class="btn btn-secondary align-self-center" data-dismiss="modal">Fermer</button>
+                            class="btn btn-secondary align-self-center" data-dismiss="modal">Fermer
+                    </button>
                     <button type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">Fermer</button>
                     <a id="validModal" th:href="${referer}" class="btn btn-success align-self-center">Terminer</a>
                 </div>

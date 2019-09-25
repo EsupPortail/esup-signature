@@ -428,7 +428,7 @@ public class SignRequestController {
 
 	@RequestMapping(value = "/sign-by-token/{token}")
 	public String signByToken(
-			@PathVariable(name = "referer", required = false) String referer,
+			@RequestParam(value = "referer", required=false) String referer,
 			@PathVariable("token") String token, RedirectAttributes redirectAttrs, HttpServletResponse response,
 			Model model, HttpServletRequest request) throws IOException, SQLException {
 

@@ -21,19 +21,19 @@ $.get("[[${nexuUrl}]]/nexu-info", function(data) {
 		// load nexu script 
 		console.log("Loading script...");
 		loadScript();
-	    $("#nexu_ready_alert").slideDown();
+	    $("#nexu_ready_alert").show();
 	    console.log("???");
 	    $("#submit-button").prop('disabled', false);
 	} else {
 		// need update
-		$("#nexu_version_alert").slideDown();
+		$("#nexu_version_alert").show();
 		console.log("Bad NexU version " + data.version + " instead of " + nexuVersion);
 		
 	}
 }).fail(function() {
     console.log("NexU not detected or not started ! ");
     $("#warning-text").html("NexU not detected or not started ! ");
-    $("#nexu_missing_alert").slideDown();
+    $("#nexu_missing_alert").show();
 });
 
 function loadScript() {
