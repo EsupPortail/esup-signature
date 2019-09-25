@@ -296,7 +296,7 @@ public class SignBookService {
     }
 
     public void exportFilesToTarget(SignBook signBook, User user) throws EsupSignatureException {
-        logger.debug("export signRequest from " + signBook.getName());
+        logger.trace("export signRequest from " + signBook.getName());
         List<SignRequest> signRequests = new ArrayList<>();
         signRequests.addAll(signBook.getSignRequests());
         for (SignRequest signRequest : signRequests) {
