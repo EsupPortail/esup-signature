@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.mail;
 
+import org.apache.commons.compress.utils.IOUtils;
 import org.esupportail.esupsignature.config.mail.MailConfig;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -22,6 +24,7 @@ import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
@@ -122,11 +125,11 @@ public class MailService {
 			message.setSubject("Esup-Signature : nouveau document  " + signRequest.getTitle());
             message.setFrom(mailConfig.getMailFrom());
 			message.setTo(recipientEmail);
-			message.addAttachment(file.getFileName(), new InputStreamResource(file.getInputStream()));
+			message.addAttachment(file.getFileName(), new ByteArrayResource(IOUtils.toByteArray(file.getInputStream())));
 			String htmlContent = templateEngine.process("mail/email-file.html", ctx);
 			message.setText(htmlContent, true); // true = isHtml
             mailSender.send(mimeMessage);
-		} catch (MessagingException e) {
+		} catch (MessagingException | IOException e) {
 			logger.error("enable to sens email", e);
 		}
 	}

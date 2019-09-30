@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
 <div class="header-fixed fixed-top">
@@ -143,7 +143,7 @@
                                     <div onclick="dragSignature();" onmouseover="animBorder();" id="cross"
                                          th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth * 2} + 'px;background-image: url(\'/images/sceau.png\'); width: ' + ${signWidth * 2} + 'px; height: ' + ${signHeight * 2} + 'px; line-height: ' + ${signHeight * 2} + 'px; text-align: center; left: ' + ${signRequest.signRequestParams.XPos * 2} + 'px;top: ' + ${signRequest.signRequestParams.YPos * 2} + 'px;position:relative;pointer-events: auto;cursor: move;'">
                                         <div id="borders" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth * 2} + 'px; height: ' + ${signHeight * 2} + 'px;'">
-                                            <span style="font-size: 16px;" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span>
+                                            <span id="textVisa" style="font-size: 16px;" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span>
                                             <br>
                                         </div>
                                     </div>
@@ -284,6 +284,11 @@
         if (textDate != null) {
             textDate.style.fontSize = 8 * zoom + "px";
         }
+        var textVisa = document.getElementById("textVisa");
+        if (textVisa != null) {
+            textVisa.style.fontSize = 8 * zoom + "px";
+        }
+
     }
 
     /*]]>*/

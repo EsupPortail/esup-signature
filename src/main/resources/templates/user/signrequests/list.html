@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.thymeleaf.org/spring-data">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.thymeleaf.org/spring-data">
 <head th:replace="fragments/head :: head"></head>
 <body>
 <div class="header-fixed fixed-top">
@@ -124,7 +124,7 @@
                                 </a>
                             </td>
                             <td class="utilbox">
-                                <a role="button" class="btn btn-success fas fa-signature" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
+                                <a role="button" class="btn btn-success fas fa-signature" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name} + '?referer=true'">
                                     <!--  -->
                                 </a>
                             </td>

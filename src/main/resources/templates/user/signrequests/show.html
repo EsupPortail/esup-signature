@@ -1,14 +1,12 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
 	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
 	<nav class="nav justify-content-between" aria-label="breadcrumb">
 		<ol class="breadcrumb col-11">
-			<li class="breadcrumb-item"><a href="/user/signrequests">Liste
-					des demandes</a></li>
-			<li class="breadcrumb-item active" aria-current="page">Demande
-				de signature : <span th:text="${signRequest.name}"></span>
+			<li class="breadcrumb-item"><a href="/user/signrequests">Liste des demandes</a></li>
+			<li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.name}"></span>
 			</li>
 		</ol>
 		<div class="navbar-nav align-self-center">
@@ -53,8 +51,8 @@
 			</th:block>
 
 			<th:block th:if="${signable == 'ok'}">
-				<div th:switch="${signRequest.signRequestParams.signType.name()}">
-					<div th:case="'nexuSign'">
+				<th:block th:switch="${signRequest.signRequestParams.signType.name()}">
+					<th:block th:case="'nexuSign'">
 						<script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
 						<script type="text/javascript" th:replace="user/signrequests/includes/script :: script"></script>
 						<div id="nexu_version_alert" style="display: none;">
@@ -90,35 +88,31 @@
 							</div>
 
 						</div>
-					</div>
-					<div th:case="*">
+					</th:block>
+					<th:block th:case="*">
 						<button type="button" class="btn btn-danger" data-toggle="modal" data-target="#refuseModal">
 							<i class="fas fa-ban fa-2x"></i><br />Refuser
 						</button>
 						<a class="btn btn-success" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name} + '?referer=true'">
 							<i class="fas fa-signature fa-2x"></i> <br />Signer
 						</a>
-
-
-				</div>
+					</th:block>
+				</th:block>
 			</th:block>
 
 			<th:block th:if="${user.eppn == signRequest.createBy}">
-				<div th:if="${#lists.size(signRequest.originalDocuments) > 0}">
+				<th:block th:if="${#lists.size(signRequest.originalDocuments) > 0}">
 					<div th:if="${signRequest.status.name() == 'draft'}">
-						<button type="button"
-							class="mr-2 btn btn-outline-dark btn-light float-left"
-							data-toggle="modal" data-target="#sendModal">
+						<button type="button" class="mr-2 btn btn-outline-dark btn-light float-left" data-toggle="modal" data-target="#sendModal">
 							<p class="text-center">
-								<i class="fa fa-paper-plane fa-2x" aria-hidden="true"></i><br />
-								Envoyer pour signature
+								<i class="fa fa-paper-plane fa-2x" aria-hidden="true"></i><br />Envoyer pour signature
 							</p>
 						</button>
 					</div>
-				</div>
+				</th:block>
 			</th:block>
 
-			<div th:if="${user.eppn == signRequest.createBy && signRequest.status.name() == 'completed'}">
+			<th:block th:if="${user.eppn == signRequest.createBy && signRequest.status.name() == 'completed'}">
 				<button type="button" class="mr-2 btn btn-outline-dark btn-light float-left"
 					data-toggle="modal" data-target="#reSendModal">
 					<p class="text-center">
@@ -126,10 +120,8 @@
 						Envoyer dans le parapheur
 					</p>
 				</button>
-			</div>
-		</div>
-		<div>
-			<button type="button" title="Retour" class="btn btn-danger" value="Retour" onclick="location.href='/user/signrequests'">
+			</th:block>
+			<button type="button" title="Retour" class="btn btn-light btn-outline-dark float-right" value="Retour" onclick="location.href='/user/signrequests'">
 				<i class="fas fa-door-open fa-2x"></i><br/>Retour
 			</button>
 		</div>
