@@ -6,6 +6,11 @@ import eu.europa.esig.dss.asic.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.x509.CertificateToken;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageTree;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
@@ -398,7 +403,11 @@ public class SignRequestService {
 						}
 						signRequestParams.setXPos(pos[0]);
 						signRequestParams.setYPos(pos[1]);
-						signRequestParams.setPdSignatureFieldName(pdfService.getPDSignatureFieldName(toSignDocument.getInputStream(), numSign).getPartialName());
+						PDSignatureField pdSignatureField = pdfService.getPDSignatureFieldName(toSignDocument.getInputStream(), numSign);
+						Integer pageNumber = pdfService.getSignatureFieldPageNumber(toSignDocument.getInputStream(), pdSignatureField);
+						signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
+						signRequestParams.setSignPageNumber(pageNumber);
+
 						signRequestParamsRepository.save(signRequestParams);
 						numSign++;
 					}

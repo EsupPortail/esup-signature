@@ -11,6 +11,8 @@ import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.apache.pdfbox.rendering.ImageType;
@@ -138,6 +140,7 @@ public class PdfService {
 			
 			contentStream.close();
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			pdDocument.setAllSecurityToBeRemoved(true);
 			pdDocument.save(out);
 			ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 			pdDocument.close();
@@ -516,7 +519,36 @@ public class PdfService {
 		}
 		return null;
 	}
-	
+
+	public int getSignatureFieldPageNumber(InputStream pdfFile, PDSignatureField pdSignatureField) {
+		PDDocument pdDocument = null;
+		try {
+			pdDocument = PDDocument.load(pdfFile);
+			for (PDAnnotationWidget widget : pdSignatureField.getWidgets()) {
+				COSDictionary widgetObject = widget.getCOSObject();
+				PDPageTree pages = pdDocument.getPages();
+				for (int i = 0; i < pages.getCount(); i++)
+				{
+					for (PDAnnotation annotation : pages.get(i).getAnnotations())
+					{
+						COSDictionary annotationObject = annotation.getCOSObject();
+						if (annotationObject.equals(widgetObject))
+							return i + 1;
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		} finally {
+			try {
+				pdDocument.close();
+			} catch (IOException e) {
+				logger.error(e.getMessage(), e);
+			}
+		}
+		return 1;
+	}
+
 	public PDSignatureField getPDSignatureFieldName(InputStream pdfFile, long signNumber) {
 		PDDocument pdDocument = null;
 		try {

@@ -360,6 +360,7 @@ public class SignBookService {
             }
             //signRequest.getOriginalSignBookNames().add(signBook.getName());
         } else {
+            signRequest.getSignBooks().put(signBook.getId(), false);
             logger.warn(signRequest.getId() + " is already in signbook" + signBook.getName());
         }
     }
