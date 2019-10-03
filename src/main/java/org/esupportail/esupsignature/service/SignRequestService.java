@@ -403,8 +403,10 @@ public class SignRequestService {
 						}
 						signRequestParams.setXPos(pos[0]);
 						signRequestParams.setYPos(pos[1]);
-						PDSignatureField pdSignatureField = pdfService.getPDSignatureFieldName(toSignDocument.getInputStream(), numSign);
-						Integer pageNumber = pdfService.getSignatureFieldPageNumber(toSignDocument.getInputStream(), pdSignatureField);
+						LinkedHashMap<PDSignatureField, Integer> pdSignatureFields = pdfService.getPDSignatureFieldName(toSignDocument.getInputStream());
+						PDSignatureField pdSignatureField = (new ArrayList<>(pdSignatureFields.keySet())).get(numSign);
+						int pageNumber = (new ArrayList<>(pdSignatureFields.values())).get(numSign);
+
 						signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
 						signRequestParams.setSignPageNumber(pageNumber);
 
