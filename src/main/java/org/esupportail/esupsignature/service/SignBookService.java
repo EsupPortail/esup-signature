@@ -83,7 +83,7 @@ public class SignBookService {
 
     }
 
-    @Transactional
+    //@Transactional
     public SignBook createUserSignBook(User user) {
         SignBook signBook = new SignBook();
         signBook.setName(user.getFirstname() + " " + user.getName());
@@ -371,7 +371,8 @@ public class SignBookService {
             recipientEmailsList.add(recipientEmail);
             SignBook signBook = getUserSignBookByRecipientEmail(recipientEmail);
             if (signBook == null) {
-                signBook = userService.createUserWithSignBook(recipientEmail);
+                User recipientUser = userService.createUser(recipientEmail);
+                signBook = getUserSignBook(recipientUser);
             }
             if (signBook.getRecipientEmails().contains("creator")) {
                 signBook = getUserSignBook(user);
@@ -379,7 +380,6 @@ public class SignBookService {
             if (!signRequest.getSignBooks().containsKey(signBook.getId())) {
                 signRequest.getSignBooks().put(signBook.getId(), false);
             } else {
-                //throw new EsupSignatureException(signRequest.getId() + " is already in signbook" + signBook.getName());
                 logger.warn(signRequest.getId() + " is already in signbook" + signBook.getName());
             }
         }

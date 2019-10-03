@@ -385,7 +385,13 @@ public class SignRequestService {
 		for(Long signBookId : signRequest.getSignBooks().keySet()) {
 			SignBook signBook = signBookRepository.findById(signBookId).get();
 			for(String emailRecipient : signBook.getRecipientEmails()) {
-				User recipient = userRepository.findByEmail(emailRecipient).get(0);
+				User recipient;
+				List<User> recipients = userRepository.findByEmail(emailRecipient);
+				if(recipients.size() > 0) {
+					recipient = recipients.get(0);
+				} else {
+					recipient = userService.createUser(emailRecipient);
+				}
 				if(signRequest.getNbSign() == 0 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
 					int numSign = 0;
 					Document toSignDocument = signRequest.getOriginalDocuments().get(0);

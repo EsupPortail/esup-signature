@@ -321,7 +321,8 @@ public class AdminSignRequestController {
 				for(String signBookName : signBookNames) {
 					SignBook signBook;
 					if(signBookRepository.countByName(signBookName) == 0 && signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user) == 0) {
-						signBook = userService.createUserWithSignBook(signBookName);
+						User recipientUser = userService.createUser(signBookName);
+						signBook = signBookService.getUserSignBook(recipientUser);
 						//recipientEmails.add(signBookName);
 					} else {
 						if(signBookRepository.countByName(signBookName) > 0) {

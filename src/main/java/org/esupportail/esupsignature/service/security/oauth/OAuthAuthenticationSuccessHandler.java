@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.service.security.oauth;
 
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
@@ -21,6 +23,9 @@ public class OAuthAuthenticationSuccessHandler implements AuthenticationSuccessH
 	@Resource
 	private UserService userService;
 
+	@Resource
+	private SignBookService signBookService;
+
 	private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 	
 	@Override
@@ -30,7 +35,8 @@ public class OAuthAuthenticationSuccessHandler implements AuthenticationSuccessH
 		String name = defaultOidcUser.getAttributes().get("family_name").toString();
 		String prenom = defaultOidcUser.getAttributes().get("given_name").toString();
 		String email = defaultOidcUser.getAttributes().get("email").toString();
-		userService.createUser(id, name, prenom, email, false);
+		User user = userService.createUser(id, name, prenom, email);
+		signBookService.createUserSignBook(user);
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		String targetURL = defaultSavedRequest.getRedirectUrl();
         redirectStrategy.sendRedirect(request, response, targetURL);

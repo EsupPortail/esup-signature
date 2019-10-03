@@ -111,18 +111,28 @@ public class WsController {
     @RequestMapping(value = "/list-sign-requests", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Doc> listSignedFiles(@RequestParam("recipientEmail") String recipientEmail, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureException {
         List<Doc> signedFiles = new ArrayList<>();
-        User user = userRepository.findByEmail(recipientEmail).get(0);
+        List<User> users = userRepository.findByEmail(recipientEmail);
+        User user;
+        if(users.size() > 0){
+            user = users.get(0);
+        } else {
+            user = userService.createUser(recipientEmail);
+        }
         user.setIp(httpServletRequest.getRemoteAddr());
         List<Log> logs = new ArrayList<>();
         logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.signed.name()));
 		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.checked.name()));
-        for (Log log : logs) {
+        logs:
+		for (Log log : logs) {
             logger.debug("find log : " + log.getSignRequestId() + ", " + log.getFinalStatus());
             try {
                 SignRequest signRequest = signRequestRepository.findById(log.getSignRequestId()).get();
-                if (!signedFiles.contains(signRequest)) {
-                    signedFiles.add(new Doc(signRequest.getTitle(), signRequest.getSignedDocuments().get(0).getContentType(), signRequest.getName(), signRequest.getStatus().name(), log.getLogDate()));
+                for(Doc doc : signedFiles) {
+                    if (doc.getToken().equals(signRequest.getName())) {
+                        continue logs;
+                    }
                 }
+                signedFiles.add(new Doc(signRequest.getTitle(), signRequest.getSignedDocuments().get(0).getContentType(), signRequest.getName(), signRequest.getStatus().name(), log.getLogDate()));
             } catch (Exception e) {
                 logger.debug(e.getMessage());
             }
