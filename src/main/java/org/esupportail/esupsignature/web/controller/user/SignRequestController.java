@@ -270,7 +270,7 @@ public class SignRequestController {
 			@RequestParam(value = "signBookNames", required = false) String[] signBookNames,
 			@RequestParam(value = "newPageType", required = false) String newPageType, 
 			Model model, HttpServletRequest httpServletRequest,
-			HttpServletRequest request, RedirectAttributes redirectAttrs) throws EsupSignatureException {
+			HttpServletRequest request, RedirectAttributes redirectAttrs) throws EsupSignatureException, IOException {
 		if (bindingResult.hasErrors()) {
 			model.addAttribute("signRequest", signRequest);
 			return "user/signrequests/create";
@@ -669,7 +669,7 @@ public class SignRequestController {
 					try {
 						signBookService.importSignRequestInSignBook(signRequest, signBook, user);
 						signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé au parapheur " + signBook.getName(), user, "SUCCESS", comment);
-					} catch (EsupSignatureException e) {
+					} catch (EsupSignatureException | IOException e) {
 						logger.warn(e.getMessage());
 						redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
 			
@@ -703,7 +703,7 @@ public class SignRequestController {
 	@RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
 	public String pending(@PathVariable("id") Long id, 
 			@RequestParam(value = "comment", required = false) String comment,
-			HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
+			HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) throws IOException {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();

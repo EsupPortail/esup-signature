@@ -4,8 +4,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.multipdf.PageExtractor;
-import org.apache.pdfbox.multipdf.Splitter;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
@@ -17,7 +15,6 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
@@ -59,7 +56,6 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -75,9 +71,6 @@ public class PdfService {
         this.pdfProperties = pdfProperties;
     }
 
-    //@Resource
-    //private FileService fileService;
-
     @Resource
     private DocumentService documentService;
 
@@ -85,11 +78,11 @@ public class PdfService {
         //TODO add ip ? + date + nom ?
         SignRequestParams params = signRequest.getSignRequestParams();
         SignRequestParams.SignType signType = params.getSignType();
-        PdfParameters pdfParameters = getPdfParameters(toSignFile.getInputStream());
+        PdfParameters pdfParameters;
         InputStream toSignInputStream = formatPdf(toSignFile.getInputStream(), params, addPage);
         try {
             PDDocument pdDocument = PDDocument.load(toSignInputStream);
-
+            pdfParameters = getPdfParameters(pdDocument);
             PDPage pdPage = pdDocument.getPage(params.getSignPageNumber() - 1);
             PDImageXObject pdImage;
 
@@ -168,7 +161,7 @@ public class PdfService {
                 params.setSignPageNumber(1);
             } else {
                 pdDocument = addNewPage(pdDocument, null, -1);
-                params.setSignPageNumber(getPdfParameters(file).getTotalNumberOfPages());
+                params.setSignPageNumber(getPdfParameters(pdDocument).getTotalNumberOfPages());
             }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdDocument.save(out);
@@ -325,25 +318,6 @@ public class PdfService {
         return result;
     }
 
-    @Deprecated
-    private PDDocument useNextSignatureField(PDDocument pdDocument) throws Exception {
-        //on verouille le prochain champ signature (par ordre d'apparition)
-        PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
-        PDAcroForm pdAcroForm = cat.getAcroForm();
-        if (pdAcroForm != null) {
-            pdAcroForm.setNeedAppearances(false);
-            List<PDSignatureField> signatureFields = pdDocument.getSignatureFields();
-            signatureFields = signatureFields.stream().sorted(Comparator.comparing(PDSignatureField::getPartialName)).collect(Collectors.toList());
-            for (PDSignatureField pdSignatureField : signatureFields) {
-                if (pdSignatureField.getSignature() == null) {
-                    pdSignatureField.setValue(new PDSignature());
-                    break;
-                }
-            }
-        }
-        return pdDocument;
-    }
-
     public PDDocument addNewPage(PDDocument pdDocument, String template, int position) {
         try {
             PDDocument targetPDDocument = new PDDocument();
@@ -377,24 +351,6 @@ public class PdfService {
             logger.error("error to add blank page", e);
         }
         return null;
-    }
-
-    private boolean checkSignFieldsEmpty(File file) throws InvalidPasswordException, IOException {
-        PDDocument pdDocument = PDDocument.load(file);
-        PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
-        List<PDField> fields = cat.getAcroForm().getFields();
-        boolean signFieldEmpty = false;
-        for (PDField f : fields) {
-            logger.debug("process :" + f.getFullyQualifiedName() + " : " + f.getFieldType());
-            if (f instanceof PDSignatureField) {
-                if (((PDSignatureField) f).getSignature() == null) {
-                    signFieldEmpty = true;
-                }
-            }
-        }
-        pdDocument.close();
-        logger.info("sign field empty : " + signFieldEmpty);
-        return signFieldEmpty;
     }
 
     @Deprecated
@@ -494,10 +450,9 @@ public class PdfService {
         return file;
     }
     */
-    public int[] getSignFieldCoord(InputStream pdfFile, long signNumber) {
-        PDDocument pdDocument = null;
+
+    public int[] getSignFieldCoord(PDDocument pdDocument, long signNumber) {
         try {
-            pdDocument = PDDocument.load(pdfFile);
             PDPage pdPage = pdDocument.getPage(0);
             List<PDSignatureField> pdSignatureFields = pdDocument.getSignatureFields();
             //pdSignatureFields = pdSignatureFields.stream().sorted(Comparator.comparing(PDSignatureField::getPartialName)).collect(Collectors.toList());
@@ -523,21 +478,9 @@ public class PdfService {
         return null;
     }
 
-    public int getSignatureFieldPageNumber(InputStream pdfFile, PDSignatureField pdSignatureField) {
-        try {
-            PDDocument pdDocument = PDDocument.load(pdfFile);
-            PDDocumentCatalog catalog = pdDocument.getDocumentCatalog();
-            return catalog.getPages().indexOf(pdSignatureField.getWidgets().get(0).getPage());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
-    public LinkedHashMap<PDSignatureField, Integer> getPDSignatureFieldName(InputStream pdfFile) {
+    public LinkedHashMap<PDSignatureField, Integer> getPDSignatureFieldName(PDDocument pdDocument) {
 		try {
 			LinkedHashMap<PDSignatureField, Integer> pdSignatureFieldIntegerMap = new LinkedHashMap<>();
-			PDDocument pdDocument = PDDocument.load(pdfFile);
 			PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
 			Iterator<PDPage> pages = docCatalog.getPages().iterator();
 			Map<COSDictionary, Integer> pageNrByAnnotDict = new HashMap<>();
@@ -563,8 +506,6 @@ public class PdfService {
 								annotationPages.add(pageNrByAnnotDict.get(kidObject));
 						}
 					}
-
-					//Integer mergedPage = pageNrByAnnotDict.get(fieldDict);
 					pdSignatureFieldIntegerMap.put((PDSignatureField) pdField, annotationPages.get(0));
 				}
 			}
@@ -606,9 +547,7 @@ public class PdfService {
         PDDocument pdDocument = null;
         try {
             pdDocument = PDDocument.load(pdfFile);
-            PDPage pdPage = pdDocument.getPage(0);
-            PdfParameters pdfParameters = new PdfParameters((int) pdPage.getMediaBox().getWidth(), (int) pdPage.getMediaBox().getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
-            return pdfParameters;
+            return getPdfParameters(pdDocument);
         } catch (Exception e) {
             logger.error("error on get pdf parameters", e);
         } finally {
@@ -621,6 +560,12 @@ public class PdfService {
             }
         }
         return null;
+    }
+
+    public PdfParameters getPdfParameters(PDDocument pdDocument) {
+        PDPage pdPage = pdDocument.getPage(0);
+        PdfParameters pdfParameters = new PdfParameters((int) pdPage.getMediaBox().getWidth(), (int) pdPage.getMediaBox().getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
+        return pdfParameters;
     }
 
     public File inputStreamToPdfTempFile(InputStream inputStream) throws IOException {

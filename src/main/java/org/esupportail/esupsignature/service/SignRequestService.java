@@ -129,10 +129,6 @@ public class SignRequestService {
 
 	}
 
-	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, SignRequestStatus status) {
-		return findSignRequestByUserAndStatusEquals(user, true, status);
-	}
-	
 	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, Boolean toSign, SignRequestStatus status) {
 		List<SignBook> signBooks = signBookRepository.findByRecipientEmails(Arrays.asList(user.getEmail()));
 		List<SignRequest> signRequests = new ArrayList<>();
@@ -253,7 +249,7 @@ public class SignRequestService {
 		addSignedFile(signRequest, signedDocument.openStream(), signedDocument.getName(), signedDocument.getMimeType().getMimeTypeString(), user);
 		try {
 			applySignBookRules(signRequest, user);
-		} catch (EsupSignatureException e) {
+		} catch (EsupSignatureException | IOException e) {
 			throw new EsupSignatureSignException("error on apply signBook rules", e);
 		}
 	}
@@ -345,7 +341,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void applySignBookRules(SignRequest signRequest, User user) throws EsupSignatureException {
+	public void applySignBookRules(SignRequest signRequest, User user) throws EsupSignatureException, IOException {
 		SignBook recipientSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		List<SignBook> signBooks = signBookService.getSignBookBySignRequest(signRequest);
 		SignBook signBook = signBooks.get(0);
@@ -395,8 +391,14 @@ public class SignRequestService {
 				if(signRequest.getNbSign() == 0 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
 					int numSign = 0;
 					Document toSignDocument = signRequest.getOriginalDocuments().get(0);
+					PDDocument pdDocument = null;
+					try {
+						pdDocument = PDDocument.load(toSignDocument.getInputStream());
+					} catch (IOException e) {
+						logger.error("unable to get pdf document", e);
+					}
 					while(true) {
-						int[] pos = pdfService.getSignFieldCoord(toSignDocument.getInputStream(), numSign);
+						int[] pos = pdfService.getSignFieldCoord(pdDocument, numSign);
 						if(pos == null) {
 							break;
 						}
@@ -409,7 +411,7 @@ public class SignRequestService {
 						}
 						signRequestParams.setXPos(pos[0]);
 						signRequestParams.setYPos(pos[1]);
-						LinkedHashMap<PDSignatureField, Integer> pdSignatureFields = pdfService.getPDSignatureFieldName(toSignDocument.getInputStream());
+						LinkedHashMap<PDSignatureField, Integer> pdSignatureFields = pdfService.getPDSignatureFieldName(pdDocument);
 						PDSignatureField pdSignatureField = (new ArrayList<>(pdSignatureFields.keySet())).get(numSign);
 						int pageNumber = (new ArrayList<>(pdSignatureFields.values())).get(numSign);
 

@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.manager;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignBook.DocumentIOType;
@@ -225,9 +226,10 @@ public class SignBookController {
 		if (modelFile != null && modelFile.getSize() > 0) {
 			uiModel.addAttribute("documentId", modelFile.getId());
 			if(modelFile.getContentType().equals("application/pdf")) {
-				PdfParameters pdfParameters = pdfService.getPdfParameters(modelFile.getInputStream());
+				PDDocument pdDocument = PDDocument.load(modelFile.getInputStream());
+				PdfParameters pdfParameters = pdfService.getPdfParameters(pdDocument);
 				uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-				int[] signFieldCoord = pdfService.getSignFieldCoord(modelFile.getInputStream(), 0);
+				int[] signFieldCoord = pdfService.getSignFieldCoord(pdDocument, 0);
 				if(signFieldCoord != null && signFieldCoord.length > 0) {
 					uiModel.addAttribute("containsSignatureFields", true);			
 				} else {

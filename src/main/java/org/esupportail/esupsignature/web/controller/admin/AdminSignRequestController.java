@@ -334,7 +334,7 @@ public class AdminSignRequestController {
 					try {
 						signBookService.importSignRequestInSignBook(signRequest, signBook, user);
 						signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé au parapheur " + signBook.getName(), user, "SUCCESS", comment);
-					} catch (EsupSignatureException e) {
+					} catch (EsupSignatureException | IOException e) {
 						logger.warn(e.getMessage());
 						redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
 
@@ -367,8 +367,7 @@ public class AdminSignRequestController {
 
 	@RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
 	public String pending(@PathVariable("id") Long id,
-			@RequestParam(value = "comment", required = false) String comment,
-			HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
+			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) throws IOException {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();

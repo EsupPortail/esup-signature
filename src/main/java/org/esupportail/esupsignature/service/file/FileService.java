@@ -61,7 +61,7 @@ public class FileService {
 		return FilenameUtils.getBaseName(name);
 	}
 	
-	public String getBase64Image(Document file) throws IOException, SQLException {
+	public String getBase64Image(Document file) throws IOException {
 		BufferedImage imBuff = ImageIO.read(file.getInputStream());
 		return getBase64Image(imBuff, file.getFileName());
 	}

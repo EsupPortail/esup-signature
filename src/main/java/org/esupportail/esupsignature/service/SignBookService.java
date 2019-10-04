@@ -344,7 +344,7 @@ public class SignBookService {
         return false;
     }
 
-    public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
+    public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException, IOException {
         if (!signBook.getSignRequests().contains(signRequest)) {
             signBook.getSignRequests().add(signRequest);
             if (signBook.getSignBookType().equals(SignBookType.workflow)) {
