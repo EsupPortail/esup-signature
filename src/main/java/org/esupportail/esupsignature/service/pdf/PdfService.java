@@ -353,56 +353,6 @@ public class PdfService {
         return null;
     }
 
-    @Deprecated
-    private boolean processFields(List<PDField> fields, PDResources resources, PDFont font) {
-
-        boolean noSignFieldEmpty = true;
-        for (PDField f : fields) {
-            logger.debug("process :" + f.getFullyQualifiedName() + " : " + f.getFieldType());
-            if (f instanceof PDSignatureField) {
-                if (((PDSignatureField) f).getSignature() == null) {
-                    noSignFieldEmpty = false;
-                }
-            }
-            f.setReadOnly(true);
-            String value = "";
-            try {
-                if (f instanceof PDTextField) {
-                    value = f.getValueAsString();
-                }
-                if (f instanceof PDCheckBox) {
-                    PDCheckBox box = (PDCheckBox) f;
-                    if (box.isChecked()) {
-                        value = "Yes";
-                    } else {
-                        value = "Off";
-                    }
-                }
-                if (f instanceof PDSignatureField) {
-                    continue;
-                }
-                f.setValue(value);
-            } catch (IOException e) {
-                if (e.getMessage().matches("Could not find font: /.*")) {
-                    String fontName = e.getMessage().replaceAll("^[^/]*/", "");
-                    System.out.println("Adding fallback font for: " + fontName);
-                    resources.put(COSName.getPDFName(fontName), font);
-                    try {
-                        f.setValue(value);
-                    } catch (IOException e1) {
-                        logger.error("process fields error", e1);
-                    }
-                } else {
-                    logger.error("process fields error", e);
-                }
-            }
-            if (f instanceof PDNonTerminalField) {
-                processFields(((PDNonTerminalField) f).getChildren(), resources, font);
-            }
-        }
-        return noSignFieldEmpty;
-    }
-
     public void addText(PDPageContentStream contentStream, String text, int xPos, int yPos, PDFont font) throws IOException {
         int fontSize = 8;
         contentStream.beginText();
@@ -478,23 +428,26 @@ public class PdfService {
         return null;
     }
 
+    private Map<COSDictionary, Integer> getPageNrByAnnotDict(PDDocumentCatalog docCatalog) throws IOException {
+        Iterator<PDPage> pages = docCatalog.getPages().iterator();
+        Map<COSDictionary, Integer> pageNrByAnnotDict = new HashMap<>();
+        int i = 0;
+        for (Iterator<PDPage> it = pages; it.hasNext(); ) {
+            PDPage pdPage = it.next();
+            for (PDAnnotation annotation : pdPage.getAnnotations()) {
+                pageNrByAnnotDict.put(annotation.getCOSObject(), i + 1);
+            }
+            i++;
+        }
+        return pageNrByAnnotDict;
+    }
+
     public LinkedHashMap<PDSignatureField, Integer> getPDSignatureFieldName(PDDocument pdDocument) {
 		try {
 			LinkedHashMap<PDSignatureField, Integer> pdSignatureFieldIntegerMap = new LinkedHashMap<>();
 			PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
-			Iterator<PDPage> pages = docCatalog.getPages().iterator();
-			Map<COSDictionary, Integer> pageNrByAnnotDict = new HashMap<>();
-			int i = 0;
-			for (Iterator<PDPage> it = pages; it.hasNext(); ) {
-				PDPage pdPage = it.next();
-				for (PDAnnotation annotation : pdPage.getAnnotations()) {
-					pageNrByAnnotDict.put(annotation.getCOSObject(), i + 1);
-				}
-				i++;
-			}
-
+			Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNrByAnnotDict(docCatalog);
 			PDAcroForm acroForm = docCatalog.getAcroForm();
-
 			for (PDField pdField : acroForm.getFields()) {
 				if (pdField instanceof PDSignatureField) {
 					List<Integer> annotationPages = new ArrayList<>();
