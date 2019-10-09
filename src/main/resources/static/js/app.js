@@ -467,6 +467,8 @@ function changeSignBookForm() {
 }
 
 //create user
+var signImageForm;
+var keyForm;
 var signImageInput;
 var keystoreInput;
 var emailAlertFrequencySelect;
@@ -476,9 +478,12 @@ var emailAlertHour;
 document.addEventListener('DOMContentLoaded', function() {
 	signImageInput = document.getElementById("inputGroupFile01");
 	keystoreInput = document.getElementById("inputGroupFile02");
+	signImageForm = document.getElementById("signImageForm");
+	keyForm = document.getElementById("keyForm");
 	emailAlertFrequencySelect = document.getElementById("_emailAlertFrequency_id");
 	emailAlertDay = document.getElementById("_c_org_esupportail_esupsignature_domain_user_emailAlertDay");
 	emailAlertHour = document.getElementById("_c_org_esupportail_esupsignature_domain_user_emailAlertHour");
+	checkRequirement();
 	if(emailAlertFrequencySelect != null) {
 		checkAlertFrequency();
 	}
@@ -486,14 +491,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function checkRequirement() {
 	var signTypeSelect = document.getElementById("_signType_id");
-	var selectedValue = signTypeSelect.options[signTypeSelect.selectedIndex].value; 
+	var selectedValue = signTypeSelect.options[signTypeSelect.selectedIndex].value;
+	console.log(selectedValue);
 	if(selectedValue == 'certSign') {
+		signImageForm.style.display = 'block';
+		keyForm.style.display = 'block';
 		signImageInput.required = true;
 		keystoreInput.required = true;
-	} else if(selectedValue == 'imageStamp' || selectedValue == 'nexuSign') {
+	} else if(selectedValue == 'pdfImageStamp' || selectedValue == 'nexuSign') {
+		signImageForm.style.display = 'block';
+		keyForm.style.display = 'none';
 		signImageInput.required = true;
 		keystoreInput.required = false;
 	} else {
+		keyForm.style.display = 'none';
+		signImageForm.style.display = 'none';
 		signImageInput.required = false;
 		keystoreInput.required = false;
 	}

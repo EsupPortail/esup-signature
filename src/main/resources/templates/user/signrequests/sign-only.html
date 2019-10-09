@@ -28,7 +28,7 @@
 </div>
 <main role="main" class="container-fluid">
     <div class="row bg-white">
-    <div class="nav flex-column nav-pills col-2" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+    <div class="nav flex-column nav-pills col-2 position-fixed" style="z-index: 1;" id="v-pills-tab" role="tablist" aria-orientation="vertical">
         <div class="card-body">
             <div th:if="${user.signImage == null && documentType == 'pdf' && signRequest.signRequestParams.signType.name() != 'visa'}">
                 <div class="card card-body bg-danger text-white">
@@ -119,7 +119,8 @@
             </button>
         </div>
     </div>
-    <div th:if="${signable == 'ok'}" class="tab-content col-10 align-content-center" id="v-pills-tabContent">
+        <div class="col-2"></div>
+    <div th:if="${signable == 'ok'}" class="col-10 tab-content align-content-center" id="v-pills-tabContent">
         <form id="signForm" th:action="'/user/signrequests/sign/' + ${signRequest.id}" method="post">
             <input type="hidden" name="signonly" value="true">
             <input id="addDate" type="hidden" name="addDate" value="false">
