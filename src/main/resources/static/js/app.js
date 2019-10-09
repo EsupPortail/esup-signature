@@ -230,9 +230,11 @@ function nextImage() {
 	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
 	if (currentImagePage == nbImagePage - 1) {
 		document.getElementById("next").classList.add("disabled");
+		document.getElementById("next").disabled = true;
 	}
 	if (currentImagePage > 0) {
 		document.getElementById("previous").classList.remove("disabled");
+		document.getElementById("previous").disabled = false
 	}
 	document.getElementById("signPageNumber").value = currentImagePage + 1;
 }
@@ -243,9 +245,11 @@ function previousImage() {
 	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
 	if (currentImagePage == 0) {
 		document.getElementById("previous").classList.add("disabled");
+		document.getElementById("previous").disabled = true;
 	}
 	if (nbImagePage - 1 > currentImagePage) {
 		document.getElementById("next").classList.remove("disabled");
+		document.getElementById("next").disabled = false;
 	}
 	document.getElementById("signPageNumber").value = currentImagePage + 1;
 }
@@ -474,6 +478,8 @@ var keystoreInput;
 var emailAlertFrequencySelect;
 var emailAlertDay;
 var emailAlertHour;
+var signTypeSelect;
+var selectedValue;
 
 document.addEventListener('DOMContentLoaded', function() {
 	signImageInput = document.getElementById("inputGroupFile01");
@@ -483,14 +489,16 @@ document.addEventListener('DOMContentLoaded', function() {
 	emailAlertFrequencySelect = document.getElementById("_emailAlertFrequency_id");
 	emailAlertDay = document.getElementById("_c_org_esupportail_esupsignature_domain_user_emailAlertDay");
 	emailAlertHour = document.getElementById("_c_org_esupportail_esupsignature_domain_user_emailAlertHour");
-	checkRequirement();
+	signTypeSelect = document.getElementById("_signType_id");
+	if(signTypeSelect != null) {
+		checkRequirement();
+	}
 	if(emailAlertFrequencySelect != null) {
 		checkAlertFrequency();
 	}
 });
 
 function checkRequirement() {
-	var signTypeSelect = document.getElementById("_signType_id");
 	var selectedValue = signTypeSelect.options[signTypeSelect.selectedIndex].value;
 	console.log(selectedValue);
 	if(selectedValue == 'certSign') {

@@ -40,31 +40,31 @@
                 <label class="control-label col-7" for="_zoom">Zoom</label>
                 <label class="switch">
                     <input onclick="toggleZoom();" type="checkbox" name="zoom" id="_zoom"/>
-                    <span class="slider round"> <!--  --></span>
+                    <span class="slider round"></span>
                 </label>
             </div>
 
             <div class="alert alert-secondary col-12 mb-2 float-left">
                 <label class="control-label col-7" for="_activeDate">Afficher la date</label>
-                <label class="switch"> <input onclick="activeDate();" type="checkbox" id="_activeDate"/> <span class="slider round"> <!--  -->
-					</span>
+                <label class="switch"> <input onclick="activeDate();" type="checkbox" id="_activeDate"/>
+                    <span class="slider round"></span>
                 </label>
             </div>
 
-            <div th:if="${imagePagesSize > 1}" class="alert alert-secondary col-12 mb-2 float-left" style="height: 100px;">
-                <ul class="pagination">
-                    <li id="previous" class="page-item">
-                        <a onclick="previousImage();" class="page-link" aria-label="Précédent">
-                            <span aria-hidden="true">‹</span>
-                        </a>
+            <div th:if="${imagePagesSize > 1}" class="alert alert-secondary col-12 mb-2 float-left">
+                <label class="control-label col-12" for="_zoom">Navigation</label>
+                <ul class="pagination float-right">
+                    <li class="page-item">
+                        <button id="previous" type="button" onclick="previousImage();" class="btn btn-outline-dark mr-2 disabled" aria-label="Précédent" disabled>
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
                     </li>
-                    <li id="next" class="page-item">
-                        <a onclick="nextImage();" class="page-link" aria-label="Prochain">
-                            <span aria-hidden="true">›</span>
-                        </a>
+                    <li class="page-item">
+                        <button id="next" onclick="nextImage();" class="btn btn-outline-dark mr-2" aria-label="Prochain">
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
                     </li>
                 </ul>
-                Navigation
             </div>
             <button class="btn btn-success col-12 mb-2 float-left" th:if="${signRequest.signRequestParams.signType.name() == 'certSign'}" type="button" data-toggle="modal" data-target="#signModal">
                 <i class="fas fa-signature fa-2x"></i> Valider la signature
