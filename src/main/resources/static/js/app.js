@@ -126,6 +126,7 @@ var pointerDiv;
 var startPosX;
 var startPosY;
 var pointItEnable = false;
+var pointItMove = false;
 
 document.addEventListener('DOMContentLoaded', function() {
 	pointerDiv = document.getElementById("pointer_div");
@@ -162,21 +163,23 @@ function activeDate() {
 }
 
 function pointIt(event) {
-	posX = event.offsetX ? (event.offsetX)
+	if(pointItEnable) {
+		pointItMove = true;
+		posX = event.offsetX ? (event.offsetX)
 			: event.pageX
-					- document
-							.getElementById("pointer_div").offsetLeft;
-	posY = event.offsetY ? (event.offsetY)
+			- document
+				.getElementById("pointer_div").offsetLeft;
+		posY = event.offsetY ? (event.offsetY)
 			: event.pageY
-					- document
-							.getElementById("pointer_div").offsetTop;
-	var cross = document.getElementById("cross");
-	if(cross != null && posX > 0 && posY > 0 && pointItEnable) {
-		cross.style.left = posX + "px";
-		cross.style.top = posY + "px";
-		document.getElementById("xPos").value = Math.round(posX / zoom);
-		document.getElementById("yPos").value = Math.round(posY / zoom);
-		document.getElementById("borders").classList.add("anim-border");
+			- document
+				.getElementById("pointer_div").offsetTop;
+		if (cross != null && posX > 0 && posY > 0 && pointItEnable) {
+			cross.style.backgroundColor= 'rgba(0, 255, 0, .5)';
+			cross.style.left = posX + "px";
+			cross.style.top = posY + "px";
+			document.getElementById("xPos").value = Math.round(posX / zoom);
+			document.getElementById("yPos").value = Math.round(posY / zoom);
+		}
 	}
 }
 
@@ -185,33 +188,34 @@ function animBorder() {
 }
 
 function resetPosition() {
+	console.log("out");
 	var cross = document.getElementById("cross");
 	if(cross != null) {
 		cross.style.left = (startPosX * zoom) + "px";
 		cross.style.top = (startPosY * zoom)  + "px";
 		document.getElementById("xPos").value = startPosX;
 		document.getElementById("yPos").value = startPosY;
-		document.getElementById("borders").classList.remove("anim-border");
+		cross.style.pointerEvents = "auto";
+		document.body.style.cursor = "default";
+		pointItEnable = false;
+		pointItMove = false
 	}
 }
 
 function savePosition() {
-	console.log("save");
-	if(pointItEnable) {
-		var borders = document.getElementById("borders");
+	if(pointItEnable && pointItMove) {
+		console.log("save");
 		startPosX = Math.round(posX / zoom);
 		startPosY = Math.round(posY / zoom);
-		pointItEnable = false;
-		borders.classList.remove("anim-border");
-		cross.style.pointerEvents = "auto";
-		document.body.style.cursor = "default";
 	}
+	cross.style.pointerEvents = "auto";
+	document.body.style.cursor = "default";
+	pointItEnable = false;
+	pointItMove = false
 }
 
 function dragSignature() {
 	console.log("drag");
-	var borders = document.getElementById("borders");
-	borders.classList.add("anim-border");
 	cross.style.pointerEvents = "none";
 	pointerDiv.style.pointerEvents = "auto";
 	document.body.style.cursor = "move";
