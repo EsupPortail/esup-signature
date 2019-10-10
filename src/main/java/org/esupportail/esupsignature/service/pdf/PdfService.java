@@ -273,7 +273,9 @@ public class PdfService {
             targetFile.delete();
             return convertedInputStream;
         } else {
-            return inputStream;
+            FileInputStream fileInputStream = new FileInputStream(file);
+            file.delete();
+            return fileInputStream;
         }
     }
 
