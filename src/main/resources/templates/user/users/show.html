@@ -55,10 +55,9 @@
 			<dt class="col-lg-5">KeyStore</dt>
 			<dd>
 				<div th:if="${keystore != null}">
-					<button type="button" class="btn btn-warning" th:onclick="'location.href=/user/users/get-keystore-file/' + ${user.id}">
-						<i class="fas fa-download"> <!--  -->
-						</i> Télécharger le keystore
-					</button>
+					<a class="btn btn-warning" href="/user/users/get-keystore-file">
+						<i class="fas fa-download"></i> Télécharger le keystore
+					</a>
 					<br /> <br />
 					<form action="/user/users/viewCert" method="get">
 						<div class="input-group mb-2">

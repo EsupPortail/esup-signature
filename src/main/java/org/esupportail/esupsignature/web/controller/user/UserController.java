@@ -215,11 +215,11 @@ public class UserController {
 	@RequestMapping(value = "/get-keystore-file", method = RequestMethod.GET)
 	public void getSignedFile(HttpServletResponse response, Model model) {
 		User user = userService.getUserFromAuthentication();
-		Document file = user.getKeystore();
+		Document userKeystore = user.getKeystore();
 		try {
-			response.setHeader("Content-Disposition", "inline;filename=\"" + file.getFileName() + "\"");
-			response.setContentType(file.getContentType());
-			IOUtils.copy(file.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+			response.setHeader("Content-Disposition", "inline;filename=\"" + userKeystore.getFileName() + "\"");
+			response.setContentType(userKeystore.getContentType());
+			IOUtils.copy(userKeystore.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
 		} catch (Exception e) {
 			logger.error("get file error", e);
 		}
