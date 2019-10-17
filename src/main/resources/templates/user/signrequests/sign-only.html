@@ -147,15 +147,6 @@
                             </div>
                         </th:block>
                     </div>
-                    <script th:inline="javascript">
-                        /*<![CDATA[*/
-                        var zoom = 1;
-                        var nbImagePage = [[${imagePagesSize}]];
-                        var currentImagePage = [[${signRequest.signRequestParams.signPageNumber}]] - 1;
-                        var documentUrl = "/user/documents/[[${documentId}]]/getimagepdfpage/";
-                        var signId = [[${signRequest.id}]];
-                        /*]]>*/
-                    </script>
                     <div class="d-none">
                         <div class="col-lg-4">
                             Page : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" th:value="${signRequest.signRequestParams.signPageNumber}" id="signPageNumber" type="text" name="signPageNumber"/>
@@ -169,6 +160,15 @@
                     </div>
                 </div>
             </form>
+            <script th:inline="javascript">
+                /*<![CDATA[*/
+                var zoom = 1;
+                var nbImagePage = [[${imagePagesSize}]];
+                var currentImagePage = [[${signRequest.signRequestParams.signPageNumber}]] - 1;
+                var documentUrl = "/user/documents/[[${documentId}]]/getimagepdfpage/";
+                var signId = [[${signRequest.id}]];
+                /*]]>*/
+            </script>
         </div>
         <div th:unless="${signable == 'ok'}">
             <div class="alert alert-danger">

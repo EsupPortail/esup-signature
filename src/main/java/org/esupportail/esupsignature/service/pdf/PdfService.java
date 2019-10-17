@@ -136,7 +136,6 @@ public class PdfService {
 
             contentStream.close();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            pdDocument.setAllSecurityToBeRemoved(true);
             pdDocument.save(out);
             ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
             pdDocument.close();
@@ -156,6 +155,7 @@ public class PdfService {
 
         if (!SignRequestParams.NewPageType.none.equals(params.getNewPageType()) && addPage) {
             PDDocument pdDocument = PDDocument.load(file);
+            pdDocument.setAllSecurityToBeRemoved(true);
             if (SignRequestParams.NewPageType.onBegin.equals(params.getNewPageType())) {
                 pdDocument = addNewPage(pdDocument, null, 0);
                 params.setSignPageNumber(1);
@@ -176,6 +176,7 @@ public class PdfService {
 
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
+            pdDocument.setAllSecurityToBeRemoved(true);
             pdDocument.setVersion(1.7f);
 
             COSDictionary trailer = pdDocument.getDocument().getTrailer();
