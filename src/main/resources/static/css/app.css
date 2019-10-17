@@ -214,3 +214,11 @@ input:checked + .slider:before {
 .page-item.disabled a {
 	background-color: #CCC !important
 }
+
+.nav-item {
+    margin-right: 5px;
+}
+
+.nav-pills > .nav-link {
+    margin-bottom: 5px;
+}

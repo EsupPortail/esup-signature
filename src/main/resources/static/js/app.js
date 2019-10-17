@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 document.addEventListener('DOMContentLoaded', function() {
-	
+
 	//input type file
 	var inputFile = document.getElementById("inputGroupFile01");
 	if(inputFile != null) {
@@ -162,17 +162,25 @@ function activeDate() {
 	}
 }
 
-function pointIt(event) {
+function pointIt(e) {
 	if(pointItEnable) {
 		pointItMove = true;
-		posX = event.offsetX ? (event.offsetX)
-			: event.pageX
-			- document
-				.getElementById("pointer_div").offsetLeft;
-		posY = event.offsetY ? (event.offsetY)
-			: event.pageY
-			- document
-				.getElementById("pointer_div").offsetTop;
+
+		if(e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel'){
+			e.preventDefault();
+			var rect = pointerDiv.getBoundingClientRect();
+			console.log("touch" + rect.top +" "+ window.scrollY);
+			var touch = e.touches[0] || e.changedTouches[0];
+			posX = touch.pageX - rect.left;
+			posY = touch.pageY - rect.top - window.scrollY;
+		} else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover'|| e.type=='mouseout' || e.type=='mouseenter' || e.type=='mouseleave') {
+			console.log("mouse");
+			posX = e.offsetX ? (e.offsetX)
+				: e.clientX - pointerDiv.offsetLeft;
+			posY = e.offsetY ? (e.offsetY)
+				: e.clientY - pointerDiv.offsetTop;
+		}
+
 		if (cross != null && posX > 0 && posY > 0 && pointItEnable) {
 			cross.style.backgroundColor= 'rgba(0, 255, 0, .5)';
 			cross.style.left = posX + "px";
@@ -208,6 +216,7 @@ function savePosition() {
 		startPosX = Math.round(posX / zoom);
 		startPosY = Math.round(posY / zoom);
 	}
+	cross.style.backgroundColor= 'rgba(0, 255, 0, 0)';
 	cross.style.pointerEvents = "auto";
 	document.body.style.cursor = "default";
 	pointItEnable = false;
