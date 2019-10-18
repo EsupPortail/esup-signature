@@ -367,8 +367,6 @@ public class SignBookService {
 
     private void importSignRequestByRecipients(SignRequest signRequest, List<String> recipientEmails, User user) {
         for (String recipientEmail : recipientEmails) {
-            List<String> recipientEmailsList = new ArrayList<>();
-            recipientEmailsList.add(recipientEmail);
             SignBook signBook = getUserSignBookByRecipientEmail(recipientEmail);
             if (signBook == null) {
                 User recipientUser = userService.createUser(recipientEmail);
@@ -389,7 +387,7 @@ public class SignBookService {
         logger.info("remove from all signBook " + signRequest.getName());
         List<SignBook> signBooks = getSignBookBySignRequest(signRequest);
         for (SignBook signBook : signBooks) {
-                signBook.getSignRequests().clear();
+                signBook.getSignRequests().remove(signRequest);
 				signBookRepository.save(signBook);
         }
         signRequest.getSignBooks().clear();
@@ -430,10 +428,9 @@ public class SignBookService {
         } else {
             if (signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.system) > 0) {
                 return signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.system).get(0);
-            } else {
-                return null;
             }
         }
+        return null;
     }
 
     public List<SignBook> getSignBookBySignRequest(SignRequest signRequest) {

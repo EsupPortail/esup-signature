@@ -422,12 +422,12 @@
 										Type de signature :
 										<div
 											class="alert alert-secondary text-center col-12 font-weight-light">
-											<small th:text="#{'signbook.signtype.' +  ${signRequest.signRequestParams.signType}}"></small>
+											<small th:if="${signRequest.signRequestParams != null}" th:text="#{'signbook.signtype.' +  ${signRequest.signRequestParams.signType}}"></small>
 										</div>
 										Ajout d'une page de garde :
 										<div
 											class="alert alert-secondary text-center col-12 font-weight-light">
-											<small th:text="#{'signbook.newpagetype.' + ${signRequest.signRequestParams.newPageType}}"></small>
+											<small th:if="${signRequest.signRequestParams != null}" th:text="#{'signbook.newpagetype.' + ${signRequest.signRequestParams.newPageType}}"></small>
 										</div>
 									</div>
 								</dd>

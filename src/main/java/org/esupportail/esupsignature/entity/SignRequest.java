@@ -198,16 +198,19 @@ public class SignRequest {
     }
 
 	public SignRequestParams getSignRequestParams() {
-		if(this.signRequestParamsList.size() < nbSign + 1) {
-			return this.signRequestParamsList.get(0);
-		}
-        return this.signRequestParamsList.get(nbSign);
+        if(signRequestParamsList != null && signRequestParamsList.size() > 0) {
+            if (signRequestParamsList.size() < nbSign + 1) {
+                return signRequestParamsList.get(0);
+            }
+            return signRequestParamsList.get(nbSign);
+        }
+        return null;
     }
 	
 	public SignRequestParams setSignRequestParams(SignRequestParams signRequestParams) {
         return this.signRequestParamsList.set(nbSign, signRequestParams);
     }
-	
+
 	public SignRequestStatus getStatus() {
         return this.status;
     }

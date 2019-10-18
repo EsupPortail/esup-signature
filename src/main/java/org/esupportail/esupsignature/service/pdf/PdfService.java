@@ -445,33 +445,41 @@ public class PdfService {
         return pageNrByAnnotDict;
     }
 
-    public LinkedHashMap<PDSignatureField, Integer> getPDSignatureFieldName(PDDocument pdDocument) {
+    public LinkedList<SignRequestParams> pdSignatureFieldsToSignRequestParams(PDDocument pdDocument) {
+        LinkedList<SignRequestParams> signRequestParamsList = new LinkedList<>();
 		try {
-			LinkedHashMap<PDSignatureField, Integer> pdSignatureFieldIntegerMap = new LinkedHashMap<>();
 			PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
 			Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNrByAnnotDict(docCatalog);
 			PDAcroForm acroForm = docCatalog.getAcroForm();
-			for (PDField pdField : acroForm.getFields()) {
-				if (pdField instanceof PDSignatureField) {
-					List<Integer> annotationPages = new ArrayList<>();
-					List<PDAnnotationWidget> kids = pdField.getWidgets();
-					if (kids != null) {
-						for (COSObjectable kid : kids) {
-							COSBase kidObject = kid.getCOSObject();
-							if (kidObject instanceof COSDictionary)
-								annotationPages.add(pageNrByAnnotDict.get(kidObject));
-						}
-					}
-					pdSignatureFieldIntegerMap.put((PDSignatureField) pdField, annotationPages.get(0));
-				}
-			}
+			if(acroForm != null) {
+                for (PDField pdField : acroForm.getFields()) {
+                    if (pdField instanceof PDSignatureField) {
+                        PDSignatureField pdSignatureField = (PDSignatureField) pdField;
+                        SignRequestParams signRequestParams = new SignRequestParams();
+                        List<Integer> annotationPages = new ArrayList<>();
+                        List<PDAnnotationWidget> kids = pdField.getWidgets();
+                        if (kids != null) {
+                            for (COSObjectable kid : kids) {
+                                COSBase kidObject = kid.getCOSObject();
+                                if (kidObject instanceof COSDictionary)
+                                    annotationPages.add(pageNrByAnnotDict.get(kidObject));
+                            }
+                        }
+                        PDPage pdPage = pdDocument.getPage(annotationPages.get(0) - 1);
+                        signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
+                        signRequestParams.setXPos((int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX());
+                        signRequestParams.setYPos((int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight());
+                        signRequestParams.setSignPageNumber(annotationPages.get(0));
+                        signRequestParamsList.add(signRequestParams);
+                    }
+                }
+            }
 			pdDocument.close();
-			return pdSignatureFieldIntegerMap;
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
-		return null;
-}
+        return signRequestParamsList;
+    }
 
 	/*
 	public List<String> pagesAsBase64Images(File pdfFile) {

@@ -79,9 +79,9 @@
 			<dt class="col-lg-5">Paramètres</dt>
 			<dd>
 				Type de signature :
-				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" th:text="#{'signbook.signtype.' + ${defaultSignBook.signRequestParams[0].signType}}"></div>
+				<div class="alert alert-dark text-center" th:text="#{'signbook.signtype.' + ${defaultSignBook.signRequestParams[0].signType}}"></div>
 				Page de garde :
-				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" th:text="#{'signbook.newpagetype.' + ${defaultSignBook.signRequestParams[0].newPageType}}"></div>
+				<div class="alert alert-dark text-center" th:text="#{'signbook.newpagetype.' + ${defaultSignBook.signRequestParams[0].newPageType}}"></div>
 			</dd>
 		</dl>
 		<dl class="row border-bottom m-0" th:if="${user.emailAlertFrequency == null}">

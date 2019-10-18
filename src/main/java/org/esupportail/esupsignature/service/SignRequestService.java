@@ -7,10 +7,6 @@ import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.x509.CertificateToken;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageTree;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
-import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
@@ -39,7 +35,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -169,7 +164,6 @@ public class SignRequestService {
 		signRequest.setCreateBy(user.getEppn());
 		signRequest.setCreateDate(new Date());
 		signRequest.setStatus(SignRequestStatus.draft);
-		signRequest.getSignRequestParamsList().add(signRequestParams);
 		signRequest.setOriginalDocuments(documents);
 		signRequestRepository.save(signRequest);
 		for(Document document : documents) {
@@ -377,7 +371,6 @@ public class SignRequestService {
 	}
 	
 	public void pendingSignRequest(SignRequest signRequest, User user) {
-		updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 		for(Long signBookId : signRequest.getSignBooks().keySet()) {
 			SignBook signBook = signBookRepository.findById(signBookId).get();
 			for(String emailRecipient : signBook.getRecipientEmails()) {
@@ -389,43 +382,32 @@ public class SignRequestService {
 					recipient = userService.createUser(emailRecipient);
 				}
 				if(signRequest.getNbSign() == 0 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
-					int numSign = 0;
 					Document toSignDocument = signRequest.getOriginalDocuments().get(0);
-					PDDocument pdDocument = null;
 					try {
-						pdDocument = PDDocument.load(toSignDocument.getInputStream());
+						scanSignatureFields(signRequest, PDDocument.load(toSignDocument.getInputStream()));
 					} catch (IOException e) {
-						logger.error("unable to get pdf document", e);
-					}
-					while(true) {
-						int[] pos = pdfService.getSignFieldCoord(pdDocument, numSign);
-						if(pos == null) {
-							break;
-						}
-						SignRequestParams signRequestParams;
-						if(signRequest.getSignRequestParamsList().size() < numSign + 1) {
-							signRequestParams = getEmptySignRequestParams();
-							signRequest.getSignRequestParamsList().add(signRequestParams);
-						} else {
-							signRequestParams = signRequest.getSignRequestParamsList().get(numSign); 
-						}
-						signRequestParams.setXPos(pos[0]);
-						signRequestParams.setYPos(pos[1]);
-						LinkedHashMap<PDSignatureField, Integer> pdSignatureFields = pdfService.getPDSignatureFieldName(pdDocument);
-						PDSignatureField pdSignatureField = (new ArrayList<>(pdSignatureFields.keySet())).get(numSign);
-						int pageNumber = (new ArrayList<>(pdSignatureFields.values())).get(numSign);
-
-						signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
-						signRequestParams.setSignPageNumber(pageNumber);
-
-						signRequestParamsRepository.save(signRequestParams);
-						numSign++;
+						logger.error("unable to scan the pdf document", e);
 					}
 				}
 				if(recipient.getEmailAlertFrequency() == null|| recipient.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipient)) {
 					userService.sendEmailAlert(recipient);
 				}
 			}
+		}
+		updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
+	}
+
+	private void scanSignatureFields(SignRequest signRequest, PDDocument pdDocument) {
+		LinkedList<SignRequestParams> signRequestParamsList = pdfService.pdSignatureFieldsToSignRequestParams(pdDocument);
+		if(signRequestParamsList.size() > 0) {
+			for (SignRequestParams signRequestParams : signRequestParamsList) {
+				signRequestParams.setNewPageType(NewPageType.none);
+				signRequestParams.setSignType(SignType.visa);
+				signRequestParamsRepository.save(signRequestParams);
+				signRequest.getSignRequestParamsList().add(signRequestParams);
+			}
+		} else {
+			signRequest.getSignRequestParamsList().add(getEmptySignRequestParams());
 		}
 	}
 
@@ -571,7 +553,7 @@ public class SignRequestService {
 		signRequestParams.setSignPageNumber(1);
 		signRequestParams.setNewPageType(NewPageType.none);
 		signRequestParams.setSignType(SignType.visa);
-		signRequestParamsRepository.save(signRequestParams);
+		//signRequestParamsRepository.save(signRequestParams);
 		return signRequestParams;
 	}
 	

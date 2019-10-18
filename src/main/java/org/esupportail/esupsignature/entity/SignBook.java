@@ -91,7 +91,7 @@ public class SignBook {
     private List<SignRequest> signRequests = new ArrayList<>();
 
     //TODO multiple params + steps ou nb signatures
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 	
 	@Enumerated(EnumType.STRING)

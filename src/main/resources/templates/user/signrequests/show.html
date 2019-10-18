@@ -535,76 +535,6 @@
 		</div>
 	</div>
 	</main>
-	<div class="modal fade" id="refuseModal" tabindex="-1" role="dialog"
-		aria-labelledby="Refus" aria-hidden="true">
-		<div class="modal-dialog modal-lg" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">Refus</h5>
-					<button type="button" class="close" data-dismiss="modal"
-						aria-label="Close">
-						<i class="fas fa-times"></i>
-					</button>
-				</div>
-				<div class="modal-body">
-					<div
-						th:replace="user/signrequests/includes/refusemodal :: refusemodal"></div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary"
-						data-dismiss="modal">Annuler</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<div class="modal fade" style="width: 100%;" id="signatureModal"
-		tabindex="-1" role="dialog" aria-labelledby="Signature"
-		aria-hidden="true">
-		<div class="modal-dialog modal-lg" style="width: 100%;"
-			role="document">
-			<div class="modal-content" style="height: auto; min-height: 100%;">
-				<div class="modal-body">
-					<div th:replace="user/signrequests/includes/signmodal :: signmodal"></div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary"
-						data-dismiss="modal">Annuler</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<div id="wait" class="modal fade" tabindex="-1" role="dialog">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-body text-center">
-					<h5>Signature en cours</h5>
-					<div class="progress">
-						<div
-							class="progress-bar progress-bar-striped progress-bar-animated active"
-							style="width: 100%;" id="bar">
-							<strong> <span id="bar-text"></span>
-							</strong>
-						</div>
-					</div>
-					<div style="display: none;" id="passwordError"
-						class="alert alert-danger" role="alert">Mauvais mot de passe
-					</div>
-					<div style="display: none;" id="signError"
-						class="alert alert-danger" role="alert">Erreur du système de
-						signature</div>
-				</div>
-				<div class="modal-footer">
-					<button id="closeModal" type="button"
-						class="btn btn-secondary align-self-center" data-dismiss="modal">Fermer</button>
-					<button id="validModal" onclick="window.location.reload()"
-						type="button" class="btn btn-success align-self-center"
-						data-dismiss="modal">Terminer</button>
-				</div>
-			</div>
-		</div>
-	</div>
 
 	<div class="modal fade" id="sendModal" tabindex="-1" role="dialog"
 		aria-labelledby="Refus" aria-hidden="true">
@@ -737,13 +667,7 @@
         [/]
     	uploadUrl: "/user/signrequests/add-doc/[[${id}]]",
     	uploadAsync: false,
-    	[# th:if="${signRequest.signRequestParams.signType.name() == 'pdfImageStamp' || signRequest.signRequestParams.signType.name() == 'visa'}"]
-        maxFileCount: 1,
-        validateInitialCount: true,
-		[/]
-    	[# th:unless="${signRequest.signRequestParams.signType.name() == 'pdfImageStamp' || signRequest.signRequestParams.signType.name() == 'visa'}"]
     	overwriteInitial: false,
-    	[/]
         theme: 'explorer-fas',
         pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
     	initialPreview: [

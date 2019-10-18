@@ -202,12 +202,13 @@ public class UserController {
         	setPassword(password);
         }
 		try {
+			logger.info(user.getKeystore().getInputStream().read() + "");
         	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getInputStream(), this.password));
         } catch (Exception e) {
         	logger.error("open keystore fail", e);
         	this.password = "";
 			startTime = 0;
-        	redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
+        	redirectAttrs.addFlashAttribute("messageError", "Mauvais mot de passe");
 		}
         return "redirect:/user/users/";
     }
@@ -219,7 +220,7 @@ public class UserController {
 		try {
 			response.setHeader("Content-Disposition", "inline;filename=\"" + userKeystore.getFileName() + "\"");
 			response.setContentType(userKeystore.getContentType());
-			IOUtils.copy(userKeystore.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+			IOUtils.copy(userKeystore.getInputStream(), response.getOutputStream());
 		} catch (Exception e) {
 			logger.error("get file error", e);
 		}

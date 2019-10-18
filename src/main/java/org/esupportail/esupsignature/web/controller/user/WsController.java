@@ -86,15 +86,21 @@ public class WsController {
     @ResponseBody
     @RequestMapping(value = "/create-sign-request", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public String createSignRequest(@RequestParam("file") MultipartFile file, @RequestParam String signBookName, @RequestParam String creatorEmail, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
-        SignRequest signRequest;
-        List<SignBook> signBooks = signBookRepository.findByName(signBookName);
-        SignBook signBook = signBooks.get(0);
-        User user = userRepository.findByEmail(creatorEmail).get(0);
+        User user;
+        if(userRepository.findByEmail(creatorEmail).size() > 0) {
+            user = userRepository.findByEmail(creatorEmail).get(0);
+        } else {
+            user = userService.createUser(creatorEmail);
+        }
         user.setIp(httpServletRequest.getRemoteAddr());
+        SignBook signBook = null;
+        if(signBookRepository.countByName(signBookName) > 0) {
+            signBook = signBookRepository.findByName(signBookName).get(0);
+        }
         if (file != null) {
             logger.info("adding new file into signbook" + signBookName);
             Document documentToAdd = documentService.createDocument(file, file.getOriginalFilename());
-            signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams().get(0));
+            SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams().get(0));
             signBookService.importSignRequestInSignBook(signRequest, signBook, user);
             signRequest.setTitle(fileService.getNameOnly(documentToAdd.getFileName()));
             logger.info(file.getOriginalFilename() + " was added into signbook" + signBookName + " with id " + signRequest.getName());
@@ -162,7 +168,6 @@ public class WsController {
             signBookService.createWorkflowSignBook(mapper.readValue(signBookString, SignBook.class), user, signRequestService.getEmptySignRequestParams(), null, true);
         } else {
             SignBook newSignBook = mapper.readValue(signBookString, SignBook.class);
-
             if (newSignBook.getRecipientEmails().size() > 1) {
                 SignBook signBookCheck = null;
                 for (String recipientEmail : newSignBook.getRecipientEmails()) {
@@ -181,6 +186,9 @@ public class WsController {
             } else {
                 if (signBookRepository.countByRecipientEmailsAndSignBookType(newSignBook.getRecipientEmails(), SignBookType.user) > 0) {
                     return signBookRepository.findByRecipientEmailsAndSignBookType(newSignBook.getRecipientEmails(), SignBookType.user).get(0).getName();
+                } else if(newSignBook.getRecipientEmails().size() == 1) {
+                    User newUser = userService.createUser(newSignBook.getRecipientEmails().get(0));
+                    return newUser.getFirstname() + " " + newUser.getName();
                 }
             }
             signBookService.createGroupSignBook(newSignBook, user, signRequestService.getEmptySignRequestParams(), null, true);

@@ -99,12 +99,12 @@ public class UserService {
 		user.setFirstname(firstName);
 		user.setEppn(eppn);
 		user.setEmail(email);
-		userRepository.save(user);
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
 		if (signBookRepository.countByRecipientEmailsAndSignBookType(recipientEmails, SignBookType.user) == 0) {
 			signBookService.createUserSignBook(user);
 		}
+		userRepository.save(user);
 		return user;
 	}
 	
@@ -142,8 +142,7 @@ public class UserService {
     		}
     	}
 		if (userRepository.countByEppn(eppn) > 0) {
-			User user = userRepository.findByEppn(eppn).get(0);
-			return user;
+			return userRepository.findByEppn(eppn).get(0);
 		} else {
 			return null;
 		}

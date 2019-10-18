@@ -108,14 +108,6 @@
                         <tr>
                             <td class="none"><input th:value="${signRequest.id}" name="check" type="checkbox" class="check"/></td>
                             <td class="none"><p class="truncate" th:title="${signRequest.title}" th:text="${signRequest.title}"></p></td>
-                            <td class="type d-none">
-                                <input type="hidden" th:id="'signbook_' + ${signRequest.id}" th:value="${signRequest.signBooksJson}"/>
-                                <div th:if="${signRequest.signRequestParams != null}">
-                                    <div class="alert alert-secondary text-center" th:id="'type_' + ${signRequest.id}" th:title="${signType}">
-                                        <small><span th:text="${signRequest.signRequestParams.signType}"></span></small>
-                                    </div>
-                                </div>
-                            </td>
                             <td class="none"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                             <td class="none"><span th:text="${signRequest.createBy}"></span></td>
                             <td class="utilbox">
@@ -212,14 +204,6 @@
                                     </th:block>
                                     </tbody>
                                 </table>
-                            </td>
-                            <td class="type d-none">
-                                <input type="hidden" th:id="'signbook_' + ${signRequest.id}" th:value="${signRequest.signBooksJson}"/>
-                                <div th:if="${signRequest.signRequestParams != null}">
-                                    <div class="alert alert-secondary text-center" title="${signRequest.signRequestParams.signType}">
-                                        <small><span th:text="${signRequest.signRequestParams.signType}"></span></small>
-                                    </div>
-                                </div>
                             </td>
                             <td class="status" style="width: 150px;">
                                 <div th:replace="user/signrequests/includes/status :: status"></div>
