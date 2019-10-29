@@ -11,11 +11,9 @@ public class SignRequest {
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
     private Long id;
 
 	@Version
-    @Column(name = "version")
     private Integer version;
 	
 	@Column(unique=true)
@@ -28,45 +26,55 @@ public class SignRequest {
     private Date createDate;
 
     private String createBy;
-    
+
+    @JsonIgnore
     @Transient
-    private String comment;
+    transient String comment;
     
     private String exportedDocumentURI;
 
     @JsonIgnore
     @OneToMany(cascade = CascadeType.REMOVE)
-    private List<Document> originalDocuments = new ArrayList<Document>();
+    private List<Document> originalDocuments = new ArrayList<>();
 
     @JsonIgnore
     @OneToMany(cascade = CascadeType.REMOVE)
-    private List<Document> signedDocuments = new ArrayList<Document>();
+    private List<Document> signedDocuments = new ArrayList<>();
     
     private boolean overloadSignBookParams = false;
 
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.REMOVE})
-    private List<SignRequestParams> signRequestParamsList = new ArrayList<SignRequestParams>();
+    private List<SignRequestParams> signRequestParamsList = new ArrayList<>();
     
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
+    @OneToMany
+    @OrderColumn
+    private List<WorkflowStep> workflowSteps = new ArrayList<>();
+
+    private Integer signBooksWorkflowStep = 1;
+
+    /*
     @JsonIgnore
     @ElementCollection(fetch = FetchType.EAGER)
-    private Map<Long, Boolean> signBooks = new HashMap<Long, Boolean>();
-    
-    private Integer signBooksWorkflowStep = 1;
-    
+    private Map<Long, Boolean> signBooks = new HashMap<>();
+
+
+
     private Integer nbSign = 0;
-    
+
     private boolean allSignToComplete = false;
-    
+    */
+
     public enum SignRequestStatus {
 		draft, pending, canceled, checked, signed, refused, deleted, exported, completed;
 	}
 
     @JsonIgnore
-    transient List<SignBook> originalSignBooks = new ArrayList<SignBook>();
+    @Transient
+    transient List<SignBook> originalSignBooks = new ArrayList<>();
 
     public List<SignBook> getOriginalSignBooks() {
     	return originalSignBooks;
@@ -89,18 +97,18 @@ public class SignRequest {
 	public void setStatus(SignRequestStatus status) {
         this.status = status;
     }
-    
+
     public int countSignOk() {
     	int nbSign = 0;
-		for(Map.Entry<Long, Boolean> signBookId : signBooks.entrySet()) {
-			if(signBookId.getValue()) {
+		for(WorkflowStep workflowStep : workflowSteps) {
+			if(workflowStep.isCompleted()) {
 				nbSign++;
 			}
 		}
 		nbSign += signedDocuments.size();
 		return nbSign;
     }
-    
+    /*
     public List<String> getSignBooksJson() {
     	List<String> result = new ArrayList<>();
     	for(Map.Entry<Long, Boolean> signBookId : signBooks.entrySet()) {
@@ -108,7 +116,7 @@ public class SignRequest {
 		}
     	return result;
     }
-
+*/
     public Long getId() {
         return this.id;
     }
@@ -165,7 +173,11 @@ public class SignRequest {
         this.comment = comment;
     }
 
-	public List<Document> getOriginalDocuments() {
+    public SignRequestStatus getStatus() {
+        return status;
+    }
+
+    public List<Document> getOriginalDocuments() {
         return this.originalDocuments;
     }
 
@@ -196,7 +208,7 @@ public class SignRequest {
 	public void setSignRequestParamsList(List<SignRequestParams> signRequestParams) {
         this.signRequestParamsList = signRequestParams;
     }
-
+/*
 	public SignRequestParams getSignRequestParams() {
         if(signRequestParamsList != null && signRequestParamsList.size() > 0) {
             if (signRequestParamsList.size() < nbSign + 1) {
@@ -211,24 +223,12 @@ public class SignRequest {
         return this.signRequestParamsList.set(nbSign, signRequestParams);
     }
 
-	public SignRequestStatus getStatus() {
-        return this.status;
-    }
-
 	public Map<Long, Boolean> getSignBooks() {
         return this.signBooks;
     }
 
 	public void setSignBooks(Map<Long, Boolean> signBooks) {
         this.signBooks = signBooks;
-    }
-
-	public Integer getSignBooksWorkflowStep() {
-        return this.signBooksWorkflowStep;
-    }
-
-	public void setSignBooksWorkflowStep(Integer signBooksWorkflowStep) {
-        this.signBooksWorkflowStep = signBooksWorkflowStep;
     }
 
 	public Integer getNbSign() {
@@ -246,6 +246,15 @@ public class SignRequest {
 	public void setAllSignToComplete(boolean allSignToComplete) {
         this.allSignToComplete = allSignToComplete;
     }
+*/
+
+    public Integer getSignBooksWorkflowStep() {
+        return this.signBooksWorkflowStep;
+    }
+
+    public void setSignBooksWorkflowStep(Integer signBooksWorkflowStep) {
+        this.signBooksWorkflowStep = signBooksWorkflowStep;
+    }
 
 	public String getExportedDocumentURI() {
 		return exportedDocumentURI;
@@ -254,5 +263,20 @@ public class SignRequest {
 	public void setExportedDocumentURI(String exportedDocumentURI) {
 		this.exportedDocumentURI = exportedDocumentURI;
 	}
-	
+
+    public List<WorkflowStep> getWorkflowSteps() {
+        return workflowSteps;
+    }
+
+    public void setWorkflowSteps(List<WorkflowStep> workflowSteps) {
+        this.workflowSteps = workflowSteps;
+    }
+
+    public WorkflowStep getCurrentWorkflowStep() {
+        if(workflowSteps.size() >=  signBooksWorkflowStep) {
+            return workflowSteps.get(signBooksWorkflowStep - 1);
+        } else {
+            return new WorkflowStep();
+        }
+    }
 }

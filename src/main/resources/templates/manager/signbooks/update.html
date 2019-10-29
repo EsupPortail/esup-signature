@@ -174,8 +174,8 @@
 					</label>
                      <select class="form-control" id="_signType_id" name="signType" size="1">
                          <th:block th:each="signType : ${signTypes}">
-  	                     	<option th:if="${signBook.signRequestParams[0].signType == signType}" selected="selected" th:value="${signType}" th:text="${signType}"></option>
-                            <option th:unless="${signBook.signRequestParams[0].signType == signType}" th:value="${signType}" th:text="${signType}"></option>
+  	                     	<option th:if="${signBook.signRequestParams.signType == signType}" selected="selected" th:value="${signType}" th:text="${signType}"></option>
+                            <option th:unless="${signBook.signRequestParams.signType == signType}" th:value="${signType}" th:text="${signType}"></option>
                          </th:block>
                      </select>
 
@@ -184,8 +184,8 @@
 					<label for="newPageType"> <strong> Insérer une page de garde </strong></label>
 		            <select class="form-control" id="_newPageType_id" name="newPageType" size="1">
 		                <th:block th:each="newPageType : ${newPageTypes}">
-	                        <option th:if="${signBook.signRequestParams[0].newPageType.name() ==  newPageType}" selected="selected" value="${newPageType}" th:text="${newPageType}"></option>
-	                        <option th:unless="${signBook.signRequestParams[0].newPageType.name() ==  newPageType}" value="${newPageType}" th:text="${newPageType}"></option>
+	                        <option th:if="${signBook.signRequestParams.newPageType.name() ==  newPageType}" selected="selected" value="${newPageType}" th:text="${newPageType}"></option>
+	                        <option th:unless="${signBook.signRequestParams.newPageType.name() ==  newPageType}" value="${newPageType}" th:text="${newPageType}"></option>
 		                </th:block>
 		            </select>
                 </div>

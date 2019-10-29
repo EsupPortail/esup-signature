@@ -103,12 +103,12 @@
                                 </label>
                                 <select class="form-control" id="_signType_id" name="signType" onchange="checkRequirement();" size="1">
                                     <th:block th:each="signType : ${signTypes}">
-                                        <option th:if="${signBook != null && signType == signBook.signRequestParams[0].signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:value="${signType}" selected="selected"></option>
-                                        <option th:if="${signBook == null || signType != signBook.signRequestParams[0].signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:value="${signType}"></option>
+                                        <option th:if="${signBook != null && signType == signBook.signRequestParams.signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:value="${signType}" selected="selected"></option>
+                                        <option th:if="${signBook == null || signType != signBook.signRequestParams.signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:value="${signType}"></option>
                                     </th:block>
                                 </select>
                             </div>
-                            <div id="signImageForm" class="form-group" th:classappend="${signBook.signRequestParams[0].signType == 'visa'} ? 'd-none'">
+                            <div id="signImageForm" class="form-group" th:classappend="${signBook.signRequestParams.signType == 'visa'} ? 'd-none'">
                                 <label class="col-form-label" for="inputGroupFile01">
                                     <strong>Image de la signature</strong>
                                     <button data-target="#collapseHelpSignImage" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
@@ -171,8 +171,8 @@
                                 <label class="col-form-label" for="_newPageType_id"><strong>Ajout d'une page de garde</strong></label>
                                 <select class="form-control" id="_newPageType_id" name="newPageType" size="1">
                                     <th:block th:each="newPageType : ${newPageTypes}">
-                                        <option th:if="${signBook != null && newPageType == signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}" selected="selected"></option>
-                                        <option th:if="${signBook == null || newPageType != signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}"></option>
+                                        <option th:if="${signBook != null && newPageType == signBook.signRequestParams.newPageType}" th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}" selected="selected"></option>
+                                        <option th:if="${signBook == null || newPageType != signBook.signRequestParams.newPageType}" th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}"></option>
                                     </th:block>
                                 </select>
                             </div>

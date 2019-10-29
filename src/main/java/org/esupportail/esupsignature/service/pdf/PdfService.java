@@ -76,7 +76,7 @@ public class PdfService {
 
     public Document stampImage(Document toSignFile, SignRequest signRequest, User user, boolean addPage, boolean addDate) throws InvalidPasswordException, IOException {
         //TODO add ip ? + date + nom ?
-        SignRequestParams params = signRequest.getSignRequestParams();
+        SignRequestParams params = signRequest.getCurrentWorkflowStep().getSignRequestParams();
         SignRequestParams.SignType signType = params.getSignType();
         PdfParameters pdfParameters;
         InputStream toSignInputStream = formatPdf(toSignFile.getInputStream(), params, addPage);

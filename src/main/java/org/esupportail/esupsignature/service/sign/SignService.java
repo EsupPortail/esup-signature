@@ -312,8 +312,8 @@ public class SignService {
 				if(signRequest.countSignOk() == 0) {
 					addPage = true;
 				}
-				inputStream = pdfService.formatPdf(toSignFile.getInputStream(), signRequest.getSignRequestParams(), addPage);
-				if(signRequest.getNbSign() == 0) {
+				inputStream = pdfService.formatPdf(toSignFile.getInputStream(), signRequest.getWorkflowSteps().get(signRequest.getSignBooksWorkflowStep() - 1).getSignRequestParams(), addPage);
+				if(signRequest.getSignBooksWorkflowStep() == 1) {
 					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest));
 				}
 			} else {

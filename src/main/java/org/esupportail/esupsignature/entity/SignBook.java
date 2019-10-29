@@ -15,11 +15,9 @@ public class SignBook {
 
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
     private Long id;
 
 	@Version
-    @Column(name = "version")
     private Integer version;
     
     public Long getId() {
@@ -90,9 +88,8 @@ public class SignBook {
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL })
     private List<SignRequest> signRequests = new ArrayList<>();
 
-    //TODO multiple params + steps ou nb signatures
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
-    private List<SignRequestParams> signRequestParams = new ArrayList<>();
+    @ManyToOne
+    private SignRequestParams signRequestParams;
 	
 	@Enumerated(EnumType.STRING)
 	private SignBookType signBookType;
@@ -253,11 +250,11 @@ public class SignBook {
         this.signRequests = signRequests;
     }
     
-    public List<SignRequestParams> getSignRequestParams() {
+    public SignRequestParams getSignRequestParams() {
         return this.signRequestParams;
     }
     
-    public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
+    public void setSignRequestParams(SignRequestParams signRequestParams) {
         this.signRequestParams = signRequestParams;
     }
     

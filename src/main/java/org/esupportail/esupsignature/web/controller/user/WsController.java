@@ -100,7 +100,7 @@ public class WsController {
         if (file != null) {
             logger.info("adding new file into signbook" + signBookName);
             Document documentToAdd = documentService.createDocument(file, file.getOriginalFilename());
-            SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams().get(0));
+            SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams());
             signBookService.importSignRequestInSignBook(signRequest, signBook, user);
             signRequest.setTitle(fileService.getNameOnly(documentToAdd.getFileName()));
             logger.info(file.getOriginalFilename() + " was added into signbook" + signBookName + " with id " + signRequest.getName());
@@ -290,7 +290,7 @@ public class WsController {
                 signRequestService.setSignBooksLabels(signRequest);
                 for (String recipientName : signRequest.getSignBooksLabels().keySet()) {
                     SignBook signBook = signBookRepository.findByName(recipientName).get(0);
-                    if (!signRequest.getSignBooks().get(signBook.getId())) {
+                    if (!signRequest.getCurrentWorkflowStep().getSignBooks().get(signBook.getId())) {
                         recipientNames.add(recipientName);
                         recipientEmails.add(signBook.getRecipientEmails().get(0));
                     }

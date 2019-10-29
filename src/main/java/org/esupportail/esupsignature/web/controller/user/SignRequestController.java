@@ -151,7 +151,7 @@ public class SignRequestController {
         for (SignRequest signRequest : signRequests) {
             signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
             Map<String, Boolean> signBookNames = new HashMap<>();
-            for (Map.Entry<Long, Boolean> signBookMap : signRequest.getSignBooks().entrySet()) {
+            for (Map.Entry<Long, Boolean> signBookMap : signRequest.getCurrentWorkflowStep().getSignBooks().entrySet()) {
                 signBookNames.put(signBookRepository.findById(signBookMap.getKey()).get().getName(), signBookMap.getValue());
             }
             signRequest.setSignBooksLabels(signBookNames);
@@ -159,7 +159,7 @@ public class SignRequestController {
         if (user.getKeystore() != null) {
             model.addAttribute("keystore", user.getKeystore().getFileName());
         }
-        model.addAttribute("signType", signBookService.getUserSignBook(user).getSignRequestParams().get(0).getSignType());
+        model.addAttribute("signType", signBookService.getUserSignBook(user).getSignRequestParams().getSignType());
         model.addAttribute("mydocs", "active");
         model.addAttribute("signRequestsToSign", signRequestsToSign);
         model.addAttribute("signBookId", signBookId);
@@ -316,7 +316,7 @@ public class SignRequestController {
                 if (signRequest.isOverloadSignBookParams()) {
                     if (signRequest.getOriginalDocuments().size() > 0
 						&&
-                        (signRequest.getSignRequestParams().getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignRequestParams().getSignType().equals(SignType.visa)))
+                        (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.pdfImageStamp) || signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.visa)))
                     {
                         signRequest.getOriginalDocuments().remove(signRequest.getOriginalDocuments().get(0));
                     }
@@ -363,9 +363,9 @@ public class SignRequestController {
                 List<SignBook> originalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
                 if (originalSignBooks.size() > 0) {
                     if (!signRequest.isOverloadSignBookParams()) {
-                        SignRequestParams signRequestParams = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0).getSignRequestParams().get(0);
-                        signRequest.getSignRequestParams().setSignType(signRequestParams.getSignType());
-                        signRequest.getSignRequestParams().setNewPageType(signRequestParams.getNewPageType());
+                        SignRequestParams signRequestParams = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0).getSignRequestParams();
+                        signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignType(signRequestParams.getSignType());
+                        signRequest.getCurrentWorkflowStep().getSignRequestParams().setNewPageType(signRequestParams.getNewPageType());
                     }
                 }
                 Document toDisplayDocument;
@@ -450,19 +450,19 @@ public class SignRequestController {
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserSignRights(user, signRequest)) {
-            if (signRequest.getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
+            if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
                 return "redirect:/user/nexu-sign/" + id + "?referer=" + referer;
             }
             if (!signRequest.isOverloadSignBookParams()) {
                 SignBook signBook = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0);
                 //signRequest.setSignRequestParams(signBook.getSignRequestParams().get(0));
-                signRequest.getSignRequestParams().setSignType(signBook.getSignRequestParams().get(0).getSignType());
+                signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignType(signBook.getSignRequestParams().getSignType());
                 signRequestRepository.save(signRequest);
             }
             if (signPageNumber != null && xPos != null && yPos != null) {
-                signRequest.getSignRequestParams().setSignPageNumber(signPageNumber);
-                signRequest.getSignRequestParams().setXPos(xPos);
-                signRequest.getSignRequestParams().setYPos(yPos);
+                signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignPageNumber(signPageNumber);
+                signRequest.getCurrentWorkflowStep().getSignRequestParams().setXPos(xPos);
+                signRequest.getCurrentWorkflowStep().getSignRequestParams().setYPos(yPos);
                 signRequestRepository.save(signRequest);
             }
             if (!"".equals(password)) {
@@ -518,11 +518,11 @@ public class SignRequestController {
                 }
                 try {
                     if (!signRequest.isOverloadSignBookParams()) {
-                        signRequest.getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().get(0).getSignType());
+                        signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().getSignType());
                     }
-                    if (signRequest.getSignRequestParams().getSignType().equals(SignRequestParams.SignType.visa)) {
+                    if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignRequestParams.SignType.visa)) {
                         signRequestService.updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", comment);
-                    } else if (signRequest.getSignRequestParams().getSignType().equals(SignRequestParams.SignType.nexuSign)) {
+                    } else if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignRequestParams.SignType.nexuSign)) {
                         logger.error("no multiple nexu sign");
                         progress = "not_autorized";
                     } else {

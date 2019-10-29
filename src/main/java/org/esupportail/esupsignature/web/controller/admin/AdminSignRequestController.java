@@ -121,7 +121,7 @@ public class AdminSignRequestController {
 
 		Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByStatus(this.statusFilter,  pageable);
 
-		model.addAttribute("signType", signBookService.getUserSignBook(user).getSignRequestParams().get(0).getSignType());
+		model.addAttribute("signType", signBookService.getUserSignBook(user).getSignRequestParams().getSignType());
 		model.addAttribute("mydocs", "active");
 		model.addAttribute("signBookId", signBookId);
 		model.addAttribute("signRequests", signRequests);
@@ -143,9 +143,9 @@ public class AdminSignRequestController {
 			List<SignBook> originalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
 			if(originalSignBooks.size() > 0) {
 				if(!signRequest.isOverloadSignBookParams()) {
-					SignRequestParams signBookParams = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0).getSignRequestParams().get(0);
-					signRequest.getSignRequestParams().setNewPageType(signBookParams.getNewPageType());
-					signRequest.getSignRequestParams().setSignType(signBookParams.getSignType());
+					SignRequestParams signBookParams = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0).getSignRequestParams();
+					signRequest.getCurrentWorkflowStep().getSignRequestParams().setNewPageType(signBookParams.getNewPageType());
+					signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignType(signBookParams.getSignType());
 				}
 			}
 			Document toDisplayDocument = null;
@@ -221,7 +221,7 @@ public class AdminSignRequestController {
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
 			try {
 				if(signRequest.getOriginalDocuments().size() > 0 &&
-				(signRequest.getSignRequestParams().getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignRequestParams().getSignType().equals(SignType.visa))
+				(signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.pdfImageStamp) || signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.visa))
 				) {
 					signRequest.getOriginalDocuments().remove(signRequest.getOriginalDocuments().get(0));
 				}

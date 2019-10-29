@@ -179,8 +179,8 @@ public class UserController {
     	SignBook signBook = signBookService.getUserSignBook(user);
     	if(signBook != null) {
 	    	if(signType != null) {
-	    		signBook.getSignRequestParams().get(0).setSignType(signType);
-	    		signBook.getSignRequestParams().get(0).setNewPageType(newPageType);
+	    		signBook.getSignRequestParams().setSignType(signType);
+	    		signBook.getSignRequestParams().setNewPageType(newPageType);
 	    	}
     	}else {
     		signBookService.createUserSignBook(user);

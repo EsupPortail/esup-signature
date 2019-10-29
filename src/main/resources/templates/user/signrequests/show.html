@@ -51,7 +51,7 @@
 			</th:block>
 
 			<th:block th:if="${signable == 'ok'}">
-				<th:block th:switch="${signRequest.signRequestParams.signType.name()}">
+				<th:block th:switch="${signRequest.currentWorkflowStep.signRequestParams.signType.name()}">
 					<th:block th:case="'nexuSign'">
 						<script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
 						<script type="text/javascript" th:replace="user/signrequests/includes/script :: script"></script>
@@ -257,7 +257,7 @@
 								</div>
 								<div th:case="*">
 									<div
-										th:if="${#lists.size(signRequest.signBooks) > 1 && nbSignOk == 0}">
+										th:if="${#lists.size(signRequest.currentWorkflowStep.signBooks) > 1 && nbSignOk == 0}">
 										<dl class="display-group border-bottom m-0">
 											<dt class="col-lg-6">
 												Toutes les signatures sont nécessaires
@@ -270,13 +270,13 @@
 															<input
 																th:onclick="'document.location=\'/user/signrequests/toggle-need-all-sign/' + ${id} + '\''"
 																type="checkbox" name="allSignToComplete"
-																id="_allSignToComplete" checked="checked" />
+																checked="checked" />
 														</th:block>
 														<th:block th:unless="${signRequest.allSignToComplete == true}">
 															<input
 																th:onclick="'document.location=\'/user/signrequests/toggle-need-all-sign/' + ${id} + '\''"
 																type="checkbox" name="allSignToComplete"
-																id="_allSignToComplete" />
+																/>
 														</th:block>
 														<span class="slider round"></span>
 													</label>
@@ -290,7 +290,7 @@
 
 						<div
 							th:unless="${signRequest.status == 'signed' || signRequest.status == 'completed' || signRequest.status == 'checked'}">
-							<div th:if="${#lists.size(signRequest.signBooks) > 1}">
+							<div th:if="${#lists.size(signRequest.currentWorkflowStep.signBooks) > 1}">
 								<div class="alert alert-secondary">
 									<div th:switch="${signRequest.allSignToComplete}">
 										<small> <span th:case="true">Oui</span> <span
@@ -476,12 +476,12 @@
 										Type de signature :
 										<div
 											class="alert alert-secondary text-center col-12 font-weight-light">
-											<small th:text="#{'signbook.signtype.' +  ${signRequest.signRequestParams.signType}}"></small>
+											<small th:text="#{'signbook.signtype.' +  ${signRequest.currentWorkflowStep.signRequestParams.signType}}"></small>
 										</div>
 										Ajout d'une page de garde :
 										<div
 											class="alert alert-secondary text-center col-12 font-weight-light">
-											<small th:text="#{'signbook.newpagetype.' + ${signRequest.signRequestParams.newPageType}}"></small>
+											<small th:text="#{'signbook.newpagetype.' + ${signRequest.currentWorkflowStep.signRequestParams.newPageType}}"></small>
 										</div>
 									</div>
 								</dd>
@@ -601,7 +601,7 @@
 		</div>
 	</div>
 	<script th:inline="javascript">
-		/*<![CDATA[*/
+	/*<![CDATA[*/
 
 	var testSignBookName = document.getElementById("signBookNames");
 

@@ -237,8 +237,6 @@ public class WorkflowController {
 				}
 			}
 		}
-		
-		uiModel.addAttribute("lastSignRequestParam", signBook.getSignRequestParams().get(signBook.getSignRequestParams().size() - 1));
 		uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());
 		uiModel.addAttribute("signRequests", signBook.getSignRequests());
 		uiModel.addAttribute("signBook", signBook);
@@ -285,9 +283,9 @@ public class WorkflowController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/workflows/" + id;
 		}
-		signBook.getSignRequestParams().get(signBook.getSignRequestParams().size() - 1).setSignPageNumber(signPageNumber);
-		signBook.getSignRequestParams().get(signBook.getSignRequestParams().size() - 1).setXPos(xPos);
-		signBook.getSignRequestParams().get(signBook.getSignRequestParams().size() - 1).setYPos(yPos);
+		signBook.getSignRequestParams().setSignPageNumber(signPageNumber);
+		signBook.getSignRequestParams().setXPos(xPos);
+		signBook.getSignRequestParams().setYPos(yPos);
 		signBook.setUpdateBy(user.getEppn());
 		signBook.setUpdateDate(new Date());
 
@@ -305,8 +303,8 @@ public class WorkflowController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/workflows/" + id;
 		}
-		if(!signBook.getSignRequestParams().get(0).equals(signRequestParams)) {
-			signBook.getSignRequestParams().remove(signRequestParams);
+		if(!signBook.getSignRequestParams().equals(signRequestParams)) {
+			signBook.setSignRequestParams(null);
 			signBook.setUpdateBy(user.getEppn());
 			signBook.setUpdateDate(new Date());
 			signBookRepository.save(signBook);
@@ -326,7 +324,7 @@ public class WorkflowController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/workflows/" + id;
 		}
-		signBook.getSignRequestParams().add(signRequestService.getEmptySignRequestParams());
+		signBook.setSignRequestParams(signRequestService.getEmptySignRequestParams());
 		signBook.setUpdateBy(user.getEppn());
 		signBook.setUpdateDate(new Date());
 
