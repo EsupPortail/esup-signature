@@ -389,12 +389,10 @@ public class SignBookService {
             if (signBook.getRecipientEmails().contains("creator")) {
                 signBook = getUserSignBook(user);
             }
-            if (signRequest.getCurrentWorkflowStep() == null) {
-                WorkflowStep workflowStep = new WorkflowStep();
-                workflowStep.setSignRequestParams(signBook.getSignRequestParams());
-                workflowStepRepository.save(workflowStep);
-                signRequest.getWorkflowSteps().add(workflowStep);
-            }
+            WorkflowStep workflowStep = new WorkflowStep();
+            workflowStep.setSignRequestParams(signBook.getSignRequestParams());
+            workflowStepRepository.save(workflowStep);
+            signRequest.getWorkflowSteps().add(workflowStep);
             if (!signRequest.getCurrentWorkflowStep().getSignBooks().containsKey(signBook.getId())) {
                 signRequest.getCurrentWorkflowStep().getSignBooks().put(signBook.getId(), false);
             } else {
