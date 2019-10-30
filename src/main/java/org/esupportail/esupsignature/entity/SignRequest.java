@@ -84,16 +84,6 @@ public class SignRequest {
     	originalSignBooks = signBooks;
     }
 
-    transient Map<String, Boolean> signBooksLabels;
-    
-    public Map<String, Boolean> getSignBooksLabels() {
-		return signBooksLabels;
-	}
-
-	public void setSignBooksLabels(Map<String, Boolean> signBooksLabels) {
-		this.signBooksLabels = signBooksLabels;
-	}
-
 	public void setStatus(SignRequestStatus status) {
         this.status = status;
     }

@@ -24,6 +24,8 @@ public class WorkflowStep {
 
     private Boolean completed = false;
 
+    transient Map<String, Boolean> signBooksLabels;
+
     public Long getId() {
         return id;
     }
@@ -71,4 +73,13 @@ public class WorkflowStep {
     public void setCompleted(Boolean completed) {
         this.completed = completed;
     }
+
+    public Map<String, Boolean> getSignBooksLabels() {
+        return signBooksLabels;
+    }
+
+    public void setSignBooksLabels(Map<String, Boolean> signBooksLabels) {
+        this.signBooksLabels = signBooksLabels;
+    }
+
 }

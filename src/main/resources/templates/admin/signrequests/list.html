@@ -118,7 +118,7 @@
                             <td class="signbook" style="display: block;">
                                 <table class="table table-sm">
                                     <tbody>
-                                    <th:block th:each="signBooksLabel : ${signRequest.signBooksLabels}">
+                                    <th:block th:each="signBooksLabel : ${signRequest.currentWorkflowStep.signBooksLabels}">
                                         <tr>
                                             <td width="100%" th:text="${signBooksLabel.key}"></td>
                                             <td align="center">

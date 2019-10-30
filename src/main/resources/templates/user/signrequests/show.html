@@ -99,25 +99,19 @@
 					</th:block>
 				</th:block>
 			</th:block>
-
-			<th:block th:if="${user.eppn == signRequest.createBy}">
-				<th:block th:if="${#lists.size(signRequest.originalDocuments) > 0}">
-					<div th:if="${signRequest.status.name() == 'draft'}">
-						<button type="button" class="mr-2 btn btn-outline-dark btn-light float-left" data-toggle="modal" data-target="#sendModal">
-							<p class="text-center">
-								<i class="fa fa-paper-plane fa-2x" aria-hidden="true"></i><br />Envoyer pour signature
-							</p>
-						</button>
-					</div>
-				</th:block>
-			</th:block>
-
-			<th:block th:if="${user.eppn == signRequest.createBy && signRequest.status.name() == 'completed'}">
+			<th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'draft')}">
 				<button type="button" class="mr-2 btn btn-outline-dark btn-light float-left"
-					data-toggle="modal" data-target="#reSendModal">
+						data-toggle="modal" data-target="#reSendModal">
 					<p class="text-center">
-						<i class="fa fa-paper-plane fa-2x" aria-hidden="true"></i><br />
-						Envoyer dans le parapheur
+						<i class="fa fa-book-medical fa-2x" aria-hidden="true"></i><br />
+						Envoyer dans un parapheur
+					</p>
+				</button>
+			</th:block>
+			<th:block th:if="${signRequest.status.name() == 'draft' && #lists.size(originalSignBooks) > 0 && user.eppn == signRequest.createBy && #lists.size(signRequest.originalDocuments) > 0}">
+				<button type="button" class="mr-2 btn btn-success float-left" data-toggle="modal" data-target="#sendModal">
+					<p class="text-center">
+						<i class="fa fa-paper-plane fa-2x" aria-hidden="true"></i><br />Lancer la procedure de signature
 					</p>
 				</button>
 			</th:block>
@@ -131,211 +125,222 @@
 		<div class="card card-body">
 			<div class="card bg-light">
 				<div class="card-header">
-					<button class="btn btn-link" data-toggle="collapse"
-						data-target="#collapseTools" aria-expanded="true"
-						aria-controls="collapseTools">
-						Statut <i class="fas fa-caret-down"></i>
-					</button>
+					<div class="row">
+					<div class="col-lg-1">Statut</div> <div class="col-lg-2"><div th:replace="user/signrequests/includes/status :: status"></div></div>
+					</div>
 				</div>
-				<div id="collapseTools" class="collapse show"
-					aria-labelledby="headingOne" data-parent="#accordion">
-					<div class="card-body text-center">
-						<div th:replace="user/signrequests/includes/status :: status"></div>
-						<div th:switch="${signable}">
-							<div th:case="'ok'">
-								<dl class="display-group border-bottom m-0 d-none">
-									<dt class="col-lg-6">
-										Parapheur courant
-										<button data-target="#collapseHelpCurrent"
-											data-toggle="collapse" type="button"
-											class="btn btn-sm btn-info">
+				<div class="card-body">
+					<div th:switch="${signable}">
+						<div th:case="'ok'">
+							<dl class="display-group border-bottom m-0 d-none">
+								<dt class="col-lg-6">
+									Parapheur courant
+									<button data-target="#collapseHelpCurrent"
+										data-toggle="collapse" type="button"
+										class="btn btn-sm btn-info">
+										<span class="fas fa-info-circle"></span>
+									</button>
+									<div class="collapse" id="collapseHelpCurrent">
+										<div class="alert alert-info">
+											<small> Les paramètres du parapheur courant sont
+												appliqués par défaut. Vous pouvez modifier la position
+												manuellement à l'aide de la prévisualisation. </small>
+										</div>
+									</div>
+								</dt>
+								<dd>
+									<span class="alert alert-secondary"> <i
+										class="fas fa-book"></i> ${currentSignBook.name}
+									</span>
+								</dd>
+							</dl>
+						</div>
+						<div th:case="*">
+							<div th:if="${user.eppn == signRequest.createBy}">
+								<div th:if="${signRequest.status.name() == 'draft'}">
+									<div class="alert alert-info">
+									<h4 class="alert-heading">
+										Demande en cours de création
+									</h4>
+									<div th:if="${#lists.size(signRequest.originalDocuments) == 0}">
+										<div th:if="${modelId != null}">
+											<button type="button" class="btn btn-info"
+												onclick="window.open('${modelId}', '_blank')">
+												<i class="fas fa-download"></i> Télécharger le modèle
+											</button>
+										</div>
+										<p>Vous devez ajouter des documents</p>
+									</div>
+									<p th:if="${#lists.size(originalSignBooks) == 0}">
+										Vous devez envoyer la demande dans un ou plusieurs parapheurs
+									</p>
+										<p th:unless="${#lists.size(originalSignBooks) == 0}">
+										<dt class="col-lg-5">La demande se trouve dans les parapheurs suivants</dt>
+										<ul class="list-group">
+											<th:block th:each="originalSignBook : ${originalSignBooks}">
+												<li class="list-group-item"><i class="fas fa-book"></i><span
+														th:text="${originalSignBook.name}"></span></li>
+											</th:block>
+										</ul>
+									</p>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div th:if="${signRequest.status.name() == 'exported'}" class="alert alert-warning">
+						<small><span th:text="'Emplacement définitif : ' + ${signRequest.exportedDocumentURI}"></span></small>
+						<br>
+						<a class="btn btn-success" th:href="'/ws/get-last-file?name=' + ${signRequest.name}"><i class="fa fa-download"></i> Télécharger le document signé</a>
+
+						</div>
+						<div th:if="${signRequest.status.name() == 'pending'}">
+							<div class="alert alert-info">
+								La demande est en cours de signature par le(s) destinataire(s)
+								suivants :
+								<div class="form-group">
+									<table class="table table-striped table-sm">
+										<thead class="thead-dark">
+											<tr>
+												<th scope="col">Destinataires</th>
+												<th scope="col">Statut de la signature</th>
+											</tr>
+										</thead>
+										<tbody>
+											<th:block
+												th:each="signBooksLabel : ${signRequest.currentWorkflowStep.signBooksLabels}">
+												<tr>
+													<td align="left"><i class="fas fa-user"></i> <span
+														th:text="${signBooksLabel.key}"></span></td>
+													<td align="center">
+														<div th:switch="${signBooksLabel.value}">
+															<i th:case="true" class="fas fa-check text-success"></i>
+															<i th:case="false" class="fas fa-times text-danger"></i>
+														</div>
+													</td>
+												</tr>
+											</th:block>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div th:if="${user.eppn == signRequest.createBy}">
+						<div th:switch="${signRequest.status.name()}">
+							<div th:case="'signed'">
+								<dl class="display-group border-bottom m-0">
+									<dt class="col-lg-5">
+										Terminer
+										<button data-target="#collapseHelp1" data-toggle="collapse"
+											type="button" class="btn btn-sm btn-info">
 											<span class="fas fa-info-circle"></span>
 										</button>
-										<div class="collapse" id="collapseHelpCurrent">
+										<div class="collapse" id="collapseHelp1">
 											<div class="alert alert-info">
-												<small> Les paramètres du parapheur courant sont
-													appliqués par défaut. Vous pouvez modifier la position
-													manuellement à l'aide de la prévisualisation. </small>
+												<small> La cloture de la demande permet de liberer
+													le parapheur. La demande sera supprimée dans un délai
+													défini par l'administrateur. </small>
 											</div>
 										</div>
 									</dt>
-									<dd>
-										<span class="alert alert-secondary"> <i
-											class="fas fa-book"></i> ${currentSignBook.name}
-										</span>
+									<dd class="col-lg-7">
+										<form class="form-group"
+											th:action="'/user/signrequests/complete/' +  ${id}"
+											method="get">
+											<div class="input-group">
+												<button type="submit" class="btn btn-warning">
+													<i class="fas fa-flag-checkered"> </i> Terminer
+												</button>
+											</div>
+										</form>
 									</dd>
 								</dl>
 							</div>
 							<div th:case="*">
-								<div th:if="${user.eppn == signRequest.createBy}">
-									<div th:if="${signRequest.status.name() == 'draft'}">
-										<div class="alert alert-info">Demande en cours de
-											création</div>
-										<div
-											th:if="${#lists.size(signRequest.originalDocuments) == 0}">
-											<div th:if="${modelId != null}">
-												<button type="button" class="btn btn-info"
-													onclick="window.open('${modelId}', '_blank')">
-													<i class="fas fa-download"></i> Télécharger le modèle
-												</button>
-											</div>
-
-											<div class="alert alert-info">Vous devez ajouter des
-												documents</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div th:if="${signRequest.status.name() == 'exported'}" class="alert alert-warning">
-							<small><span th:text="'Emplacement définitif : ' + ${signRequest.exportedDocumentURI}"></span></small>
-							<br>
-							<a class="btn btn-success" th:href="'/ws/get-last-file?name=' + ${signRequest.name}"><i class="fa fa-download"></i> Télécharger le document signé</a>
-
-							</div>
-							<div th:if="${signRequest.status.name() == 'pending'}">
-								<div class="alert alert-info">
-									La demande est en cours de signature par le(s) destinataire(s)
-									suivants :
-									<div class="form-group">
-										<table class="table table-striped table-sm">
-											<thead class="thead-dark">
-												<tr>
-													<th scope="col">Destinataires</th>
-													<th scope="col">Statut de la signature</th>
-												</tr>
-											</thead>
-											<tbody>
-												<th:block
-													th:each="signBooksLabel : ${signRequest.signBooksLabels}">
-													<tr>
-														<td align="left"><i class="fas fa-user"></i> <span
-															th:text="${signBooksLabel.key}"></span></td>
-														<td align="center">
-															<div th:switch="${signBooksLabel.value}">
-																<i th:case="true" class="fas fa-check text-success"></i>
-																<i th:case="false" class="fas fa-times text-danger"></i>
-															</div>
-														</td>
-													</tr>
-												</th:block>
-											</tbody>
-										</table>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div th:if="${user.eppn == signRequest.createBy}">
-							<div th:switch="${signRequest.status.name()}">
-								<div th:case="'signed'">
-									<dl class="display-group border-bottom m-0">
-										<dt class="col-lg-5">
-											Terminer
-											<button data-target="#collapseHelp1" data-toggle="collapse"
-												type="button" class="btn btn-sm btn-info">
+								<div th:if="${#lists.size(originalSignBooks) > 1}">
+										<label for="_allSignToComplete">
+											<strong>
+											Tous les participants doivent-ils signer ?
+											<button data-target="#collapseHelpAllSign" data-toggle="collapse"
+													type="button" class="btn btn-sm btn-info">
 												<span class="fas fa-info-circle"></span>
 											</button>
-											<div class="collapse" id="collapseHelp1">
+											<div class="collapse" id="collapseHelpAllSign">
 												<div class="alert alert-info">
-													<small> La cloture de la demande permet de liberer
-														le parapheur. La demande sera supprimée dans un délai
-														défini par l'administrateur. </small>
+													<small>
+														<ul>
+															<li>
+																Oui : Tous les participants doivent signer pour que la demande passe au status "Signé"
+															</li>
+															<li>
+																Non : Une seule signature suffit
+															</li>
+														</ul>
+													</small>
 												</div>
 											</div>
-										</dt>
-										<dd class="col-lg-7">
-											<form class="form-group"
-												th:action="'/user/signrequests/complete/' +  ${id}"
-												method="get">
-												<div class="input-group">
-													<button type="submit" class="btn btn-warning">
-														<i class="fas fa-flag-checkered"> </i> Terminer
-													</button>
-												</div>
-											</form>
-										</dd>
-									</dl>
-								</div>
-								<div th:case="*">
-									<div
-										th:if="${#lists.size(signRequest.currentWorkflowStep.signBooks) > 1 && nbSignOk == 0}">
-										<dl class="display-group border-bottom m-0">
-											<dt class="col-lg-6">
-												Toutes les signatures sont nécessaires
-												<!-- Si la demande se trouve dans plusieurs parapheurs vous pouvez choisir si toutes les signatures sont exigées pour passer au status signé -->
-											</dt>
-											<dd>
-												<div class="input-group">
-													<label class="switch">
-														<th:block th:if="${signRequest.allSignToComplete == true}">
-															<input
-																th:onclick="'document.location=\'/user/signrequests/toggle-need-all-sign/' + ${id} + '\''"
-																type="checkbox" name="allSignToComplete"
-																checked="checked" />
-														</th:block>
-														<th:block th:unless="${signRequest.allSignToComplete == true}">
-															<input
-																th:onclick="'document.location=\'/user/signrequests/toggle-need-all-sign/' + ${id} + '\''"
-																type="checkbox" name="allSignToComplete"
-																/>
-														</th:block>
-														<span class="slider round"></span>
-													</label>
-												</div>
-											</dd>
-										</dl>
-									</div>
+											</strong>
+											<div class="input-group">
+												<label class="switch">
+													<th:block th:if="${signRequest.currentWorkflowStep.allSignToComplete == true}">
+														<input id="_allSignToComplete"
+															th:onclick="'document.location=\'/user/signrequests/toggle-need-all-sign/' + ${id} + '\''"
+															type="checkbox" name="allSignToComplete"
+															checked="checked" /> Oui
+													</th:block>
+													<th:block th:unless="${signRequest.currentWorkflowStep.allSignToComplete == true}">
+														<input id="_allSignToComplete"
+															th:onclick="'document.location=\'/user/signrequests/toggle-need-all-sign/' + ${id} + '\''"
+															type="checkbox" name="allSignToComplete"
+															/> Non
+													</th:block>
+													<span class="slider round"></span>
+												</label>
+											</div>
+										</label>
+
 								</div>
 							</div>
 						</div>
+					</div>
 
-						<div
-							th:unless="${signRequest.status == 'signed' || signRequest.status == 'completed' || signRequest.status == 'checked'}">
-							<div th:if="${#lists.size(signRequest.currentWorkflowStep.signBooks) > 1}">
-								<div class="alert alert-secondary">
-									<div th:switch="${signRequest.allSignToComplete}">
-										<small> <span th:case="true">Oui</span> <span
-											th:case="*">Non</span>
-										</small>
-									</div>
+					<div
+						th:unless="${signRequest.status == 'signed' || signRequest.status == 'completed' || signRequest.status == 'checked'}">
+						<div th:if="${#lists.size(signRequest.currentWorkflowStep.signBooks) > 1}">
+							<div class="alert alert-secondary">
+								<div th:switch="${signRequest.allSignToComplete}">
+									<small> <span th:case="true">Oui</span> <span
+										th:case="*">Non</span>
+									</small>
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-
-
-			<div class="card bg-light">
-				<div class="card-header">
-					<button class="btn btn-link" data-toggle="collapse"
-						data-target="#collapseOriginals" aria-expanded="true"
-						aria-controls="collapseOriginals">
-						Liste des documents originaux <i class="fas fa-caret-down"></i>
-					</button>
-				</div>
-				<div id="collapseOriginals" class="collapse show"
-					aria-labelledby="headingOne" data-parent="">
-					<div class="card-body">
-						<div class="file-loading">
-							<input id="multipartFile" name="multipartFiles" type="file"
-								multiple="multiple" />
+			<div class="row">
+				<div class="col-lg-6">
+					<div class="card bg-light">
+						<div class="card-header">
+							Liste des documents originaux
+						</div>
+						<div class="card-body">
+							<div class="file-loading">
+								<input id="multipartFile" name="multipartFiles" type="file"
+									multiple="multiple" />
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-			<div class="card bg-light">
-				<div class="card-header">
-					<button class="btn btn-link" data-toggle="collapse"
-						data-target="#collapseSigned" aria-expanded="true"
-						aria-controls="collapseSigned">
-						Liste des documents signés <i class="fas fa-caret-down"></i>
-					</button>
-				</div>
-				<div id="collapseSigned" class="collapse show"
-					aria-labelledby="headingOne" data-parent="">
-					<div class="card-body">
-						<div class="file-loading">
-							<input id="signedFiles" type="file" multiple="multiple" />
+				<div class="col-lg-6">
+					<div class="card bg-light">
+						<div class="card-header">
+							Liste des documents signés
+						</div>
+						<div class="card-body">
+							<div class="file-loading">
+								<input id="signedFiles" type="file" multiple="multiple" />
+							</div>
 						</div>
 					</div>
 				</div>
@@ -386,7 +391,7 @@
 					<button class="btn btn-link" data-toggle="collapse"
 						data-target="#collapseSignBook" aria-expanded="true"
 						aria-controls="collapseTools">
-						Parapheurs (<span th:text="${#lists.size(originalSignBooks)}"></span>)
+						Workflow
 						<i class="fas fa-caret-down"></i>
 					</button>
 				</div>
@@ -394,104 +399,36 @@
 					aria-labelledby="headingOne" data-parent="#accordion">
 					<div class="card-body">
 						<dl class="display-group border-bottom m-0">
-							<dt class="col-lg-5">Parapheur(s) d'origine(s)</dt>
 							<dd>
-								<ul class="list-group">
-									<th:block th:each="originalSignBook : ${originalSignBooks}">
-										<li class="list-group-item"><i class="fas fa-book"></i><span
-											th:text="${originalSignBook.name}"></span></li>
-									</th:block>
-								</ul>
-								<div th:if="${firstOriginalSignBook != null}">
-									Etapes du workflow : <span
-										th:text="${signRequest.signBooksWorkflowStep}"></span>
+								<div th:if="${signRequest.workflowSteps != null}">
+									Etapes du workflow : <span th:text="${signRequest.signBooksWorkflowStep}"></span>
 									<div class="bs-stepper vertical linear">
 										<div class="bs-stepper-header" role="tablist">
-											<th:block
-												th:each="signBookSteps,iterator : ${firstOriginalSignBook.signBooks}">
-												<div
-													th:if="${iterator.index + 1 == signRequest.signBooksWorkflowStep && signRequest.status != 'completed'}">
-													<div class="step active" data-target="#test-vl-1">
-														<button type="button"
-															class="step-trigger col-12 text-left" role="tab"
-															aria-selected="false">
-															<span class="bs-stepper-circle bg-danger"
-																th:text="${iterator.index + 1}"></span> <span
-																class="bs-stepper-label" th:text="${signBookSteps.name}"></span>
-														</button>
+											<th:block th:each="workflowStep,iterator : ${signRequest.workflowSteps}">
+												<div class="step">
+													<div class="step-trigger col-12 text-left" role="tab" aria-selected="false">
+														<div th:if="${iterator.index + 1 == signRequest.signBooksWorkflowStep && signRequest.status != 'completed'}">
+															<span class="bs-stepper-circle bg-danger" th:text="${iterator.index + 1}"></span>
+														</div>
+														<div th:if="${iterator.index + 1 > signRequest.signBooksWorkflowStep}">
+															<span class="bs-stepper-circle" th:text="${iterator.index + 1}"></span>
+														</div>
+														<div th:unless="${iterator.index + 1 > signRequest.signBooksWorkflowStep || iterator.index + 1 == signRequest.signBooksWorkflowStep}">
+															<span class="bs-stepper-circle bg-success" th:text="${iterator.index + 1}"></span>
+														</div>
+														<span th:if="${workflowStep.allSignToComplete}"> Tous les <span class="bs-stepper-label" th:text="${workflowStep.signRequestParams.signType}"></span> de : </span>
+														<span th:unless="${workflowStep.allSignToComplete}"> Une des signatures de : </span>
+														<span class="bs-stepper-label" th:text="${workflowStep.signBooksLabels.keySet()}"></span>
+
 													</div>
 												</div>
-												<div
-													th:if="${iterator.index + 1 > signRequest.signBooksWorkflowStep}">
-													<div class="step" data-target="#test-vl-1">
-														<button type="button"
-															class="step-trigger col-12 text-left" role="tab"
-															aria-selected="false" disabled="disabled">
-															<span class="bs-stepper-circle"
-																th:text="${iterator.index + 1}"></span> <span
-																class="bs-stepper-label" th:text="${signBookSteps.name}"></span>
-														</button>
-													</div>
-												</div>
-												<div
-													th:unless="${iterator.index + 1 > signRequest.signBooksWorkflowStep || iterator.index + 1 == signRequest.signBooksWorkflowStep}">
-													<div class="step" data-target="#test-vl-1">
-														<button type="button"
-															class="step-trigger col-12 text-left" role="tab"
-															aria-selected="false" disabled="disabled">
-															<span class="bs-stepper-circle bg-success"
-																th:text="${iterator.index + 1}"></span> <span
-																class="bs-stepper-label" th:text="${signBookSteps.name}"></span>
-														</button>
-													</div>
-												</div>
-												<div
-													th:if="${#lists.size(firstOriginalSignBook.signBooks) > iterator.index + 1}"
-													class="line"></div>
+												<div th:if="${#lists.size(signRequest.workflowSteps) > iterator.index + 1}" class="line"></div>
 											</th:block>
 										</div>
 									</div>
 								</div>
 							</dd>
 						</dl>
-					</div>
-				</div>
-			</div>
-			<div class="card bg-light">
-				<div class="card-header">
-					<button class="btn btn-link" data-toggle="collapse"
-						data-target="#collapseInfos" aria-expanded="true"
-						aria-controls="collapseInfos">
-						Informations <i class="fas fa-caret-down"> </i>
-					</button>
-				</div>
-				<div id="collapseInfos" class="collapse"
-					aria-labelledby="headingOne" data-parent="#accordion">
-					<div class="card-body">
-						<div th:if="${signRequest.overloadSignBookParams}">
-							<dl class="display-group border-bottom m-0">
-								<dt class="col-lg-5">Paramètres de signature</dt>
-								<dd class="col-lg-7">
-									<div class="form-group">
-										Type de signature :
-										<div
-											class="alert alert-secondary text-center col-12 font-weight-light">
-											<small th:text="#{'signbook.signtype.' +  ${signRequest.currentWorkflowStep.signRequestParams.signType}}"></small>
-										</div>
-										Ajout d'une page de garde :
-										<div
-											class="alert alert-secondary text-center col-12 font-weight-light">
-											<small th:text="#{'signbook.newpagetype.' + ${signRequest.currentWorkflowStep.signRequestParams.newPageType}}"></small>
-										</div>
-									</div>
-								</dd>
-							</dl>
-						</div>
-						<div th:unless="${signRequest.overloadSignBookParams}">
-							<div
-								class="alert alert-secondary text-center col-12 font-weight-light">Les
-								paramètres de l'utilisateur seront utilisés</div>
-						</div>
 					</div>
 				</div>
 			</div>
@@ -566,7 +503,7 @@
 		<div class="modal-dialog modal-lg" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title">Envoyer dans le	parapheur</h5>
+					<h5 class="modal-title">Envoyer dans un	parapheur</h5>
 				</div>
 				<div class="modal-body">
 					<form class="form-group"

@@ -288,7 +288,7 @@ public class WsController {
                 List<String> recipientNames = new ArrayList<String>();
                 List<String> recipientEmails = new ArrayList<String>();
                 signRequestService.setSignBooksLabels(signRequest);
-                for (String recipientName : signRequest.getSignBooksLabels().keySet()) {
+                for (String recipientName : signRequest.getCurrentWorkflowStep().getSignBooksLabels().keySet()) {
                     SignBook signBook = signBookRepository.findByName(recipientName).get(0);
                     if (!signRequest.getCurrentWorkflowStep().getSignBooks().get(signBook.getId())) {
                         recipientNames.add(recipientName);
@@ -346,7 +346,7 @@ public class WsController {
             user.setIp(httpServletRequest.getRemoteAddr());
             if (signBook.getSignRequests().contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.signed)) {
                 try {
-                    signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
+                    signBookService.removeSignRequestFromSignBook(signRequest, signBook);
                     return new ResponseEntity<>(HttpStatus.OK);
                 } catch (Exception e) {
                     logger.error("get file error", e);

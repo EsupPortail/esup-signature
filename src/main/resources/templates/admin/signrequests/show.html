@@ -152,7 +152,7 @@
 											</thead>
 											<tbody>
 												<th:block
-													th:each="signBooksLabel : ${signRequest.signBooksLabels}">
+													th:each="signBooksLabel : ${signRequest.currentWorkflowStep.signBooksLabels}">
 													<tr>
 														<td align="left"><i class="fas fa-user"></i> <span
 															th:text="${signBooksLabel.key}"></span></td>

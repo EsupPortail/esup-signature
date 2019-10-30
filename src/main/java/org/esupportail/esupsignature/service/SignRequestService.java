@@ -127,31 +127,6 @@ public class SignRequestService {
 
 	}
 
-	public List<SignRequest> findSignRequestByUserAndStatusEquals(User user, Boolean toSign, SignRequestStatus status) {
-		List<SignBook> signBooks = signBookRepository.findByRecipientEmails(Arrays.asList(user.getEmail()));
-		List<SignRequest> signRequests = new ArrayList<>();
-		for(SignBook signBook : signBooks) {
-			for(SignRequest signRequest : getAllSignRequests()) {
-				if(signRequest.getCurrentWorkflowStep().getSignBooks().containsKey(signBook.getId()) && (status == null || signRequest.getStatus().equals(status))) {
-					signRequests.add(signRequest);							
-				}
-			}
-		}
-		List<Log> logs;
-		if(toSign) {
-			logs = logRepository.findByEppnAndAction(user.getEppn(), "sign");
-		} else {
-			logs = logRepository.findByEppn(user.getEppn());
-		}
-		for(Log log : logs) {
-			SignRequest signRequest = signRequestRepository.findById(log.getSignRequestId()).get();
-			if(signRequest != null && !signRequests.contains(signRequest) && (status == null || signRequest.getStatus().equals(status))) {
-				signRequests.add(signRequest);
-			}
-		}
-		return signRequests;
-	}
-	
 	public SignRequest createSignRequest(SignRequest signRequest, User user, SignRequestParams signRequestParams) {
 			return createSignRequest(signRequest, user, new ArrayList<>(), signRequestParams);
 	}
@@ -169,6 +144,7 @@ public class SignRequestService {
 		signRequest.setStatus(SignRequestStatus.draft);
 		signRequest.setOriginalDocuments(documents);
 		signRequestRepository.save(signRequest);
+		updateStatus(signRequest, SignRequestStatus.draft, "Création de la demande", user, "SUCCESS", "");
 		for(Document document : documents) {
 			document.setParentId(signRequest.getId());
 		}
@@ -354,7 +330,7 @@ public class SignRequestService {
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
 			}
 			if(signBook.isAutoRemove()) {
-				signBookService.removeSignRequestFromSignBook(signRequest, signBook, user);
+				signBookService.removeSignRequestFromSignBook(signRequest, signBook);
 				signRequest.setSignBooksWorkflowStep(signRequest.getSignBooksWorkflowStep() + 1);
 				if(signBook.getSignBookType().equals(SignBookType.workflow) && signRequest.getSignBooksWorkflowStep() < signBook.getSignBooks().size()) {
 					signBookService.importSignRequestInSignBook(signRequest, signBook, user);
@@ -426,6 +402,7 @@ public class SignRequestService {
 	}
 
 	public void completeSignRequest(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
+		signBookService.removeSignRequestFromAllSignBooks(signRequest);
 		updateStatus(signRequest, SignRequestStatus.completed, "Terminé automatiquement", user, "SUCCESS", signRequest.getComment());
 	}
 
@@ -585,11 +562,13 @@ public class SignRequestService {
     }
 	
 	public void setSignBooksLabels(SignRequest signRequest) {
-		Map<String, Boolean> signBookNames = new HashMap<>();
-		for (Map.Entry<Long, Boolean> signBookMap : signRequest.getCurrentWorkflowStep().getSignBooks().entrySet()) {
-			signBookNames.put(signBookRepository.findById(signBookMap.getKey()).get().getName(), signBookMap.getValue());
+		for(WorkflowStep workflowStep : signRequest.getWorkflowSteps()) {
+			Map<String, Boolean> signBookNames = new HashMap<>();
+			for (Map.Entry<Long, Boolean> signBookMap : workflowStep.getSignBooks().entrySet()) {
+				signBookNames.put(signBookRepository.findById(signBookMap.getKey()).get().getName(), signBookMap.getValue());
+			}
+			workflowStep.setSignBooksLabels(signBookNames);
 		}
-		signRequest.setSignBooksLabels(signBookNames);
 	}
 
 	public String getStep() {

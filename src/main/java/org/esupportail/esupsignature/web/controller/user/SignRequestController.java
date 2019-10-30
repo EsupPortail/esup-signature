@@ -149,12 +149,7 @@ public class SignRequestController {
         Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByCreateByAndStatus(user.getEppn(), this.statusFilter, pageable);
 
         for (SignRequest signRequest : signRequests) {
-            signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
-            Map<String, Boolean> signBookNames = new HashMap<>();
-            for (Map.Entry<Long, Boolean> signBookMap : signRequest.getCurrentWorkflowStep().getSignBooks().entrySet()) {
-                signBookNames.put(signBookRepository.findById(signBookMap.getKey()).get().getName(), signBookMap.getValue());
-            }
-            signRequest.setSignBooksLabels(signBookNames);
+            signRequestService.setSignBooksLabels(signRequest);
         }
         if (user.getKeystore() != null) {
             model.addAttribute("keystore", user.getKeystore().getFileName());
@@ -263,8 +258,7 @@ public class SignRequestController {
                          @RequestParam(value = "signType", required = false) String signType,
                          @RequestParam(value = "signBookNames", required = false) String[] signBookNames,
                          @RequestParam(value = "newPageType", required = false) String newPageType,
-                         Model model, HttpServletRequest httpServletRequest,
-                         HttpServletRequest request, RedirectAttributes redirectAttrs) throws EsupSignatureException, IOException {
+                         Model model, HttpServletRequest request, RedirectAttributes redirectAttrs) throws EsupSignatureException, IOException {
         if (bindingResult.hasErrors()) {
             model.addAttribute("signRequest", signRequest);
             return "user/signrequests/create";
@@ -284,6 +278,7 @@ public class SignRequestController {
         }
         //TODO si signbook type workflow == 1 seul
         signRequest = signRequestService.createSignRequest(signRequest, user, signRequestParams);
+        /*
         List<SignBook> signBooks = new ArrayList<>();
         if (signBookNames != null && signBookNames.length > 0) {
             for (String signBookName : signBookNames) {
@@ -299,7 +294,7 @@ public class SignRequestController {
         for (SignBook signBook : signBooks) {
             signBookService.importSignRequestInSignBook(signRequest, signBook, user);
         }
-
+        */
         return "redirect:/user/signrequests/" + signRequest.getId();
     }
 
@@ -315,9 +310,8 @@ public class SignRequestController {
             try {
                 if (signRequest.isOverloadSignBookParams()) {
                     if (signRequest.getOriginalDocuments().size() > 0
-						&&
-                        (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.pdfImageStamp) || signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.visa)))
-                    {
+                            &&
+                            (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.pdfImageStamp) || signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.visa))) {
                         signRequest.getOriginalDocuments().remove(signRequest.getOriginalDocuments().get(0));
                     }
                 }
@@ -339,7 +333,7 @@ public class SignRequestController {
         user.setIp(request.getRemoteAddr());
         Document document = documentRepository.findById(id).get();
         SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
-        if (signRequestService.checkUserSignRights(user, signRequest)) {
+        if (signRequest.getCreateBy().equals(user.getEppn())) {
             signRequest.getOriginalDocuments().remove(document);
             documentService.deleteDocument(document);
         }
@@ -415,15 +409,19 @@ public class SignRequestController {
                     }
                 }
 
+
+                model.addAttribute("baseUrl", baseUrl);
+                model.addAttribute("nexuVersion", nexuVersion);
+                model.addAttribute("nexuUrl", nexuUrl);
+                if (referer != null && !"".equals(referer) && !"null".equals(referer)) {
+                    String ref = request.getHeader("referer");
+                    model.addAttribute("referer", ref);
+                }
+                return "user/signrequests/sign-only";
+            } else {
+                redirectAttrs.addAttribute("messageError", "Vous n'avez pas d'action à effectuer sur cette demande");
+                return "redirect:/user/signrequests";
             }
-            model.addAttribute("baseUrl", baseUrl);
-            model.addAttribute("nexuVersion", nexuVersion);
-            model.addAttribute("nexuUrl", nexuUrl);
-            if (referer != null && !"".equals(referer) && !"null".equals(referer)) {
-                String ref = request.getHeader("referer");
-                model.addAttribute("referer", ref);
-            }
-            return "user/signrequests/sign-only";
         } else {
             redirectAttrs.addAttribute("messageError", "Cette demande de signature n'existe pas");
             return "redirect:/user/signrequests";
@@ -644,14 +642,13 @@ public class SignRequestController {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signRequest.getCreateBy().equals(user.getEppn())) {
+        if (signRequestService.checkUserViewRights(user, signRequest)) {
             if (signBookNames != null && signBookNames.length > 0) {
                 for (String signBookName : signBookNames) {
                     SignBook signBook;
                     if (signBookRepository.countByName(signBookName) == 0 && signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user) == 0) {
                         User recipientUser = userService.createUser(signBookName);
                         signBook = signBookService.getUserSignBook(recipientUser);
-                        //recipientEmails.add(signBookName);
                     } else {
                         if (signBookRepository.countByName(signBookName) > 0) {
                             signBook = signBookRepository.findByName(signBookName).get(0);

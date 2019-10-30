@@ -78,7 +78,7 @@
                         </strong>
                         </label>
                         <div class="col-lg-8">
-                            <select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple" required>
+                            <select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple">
                                 <th:block th:each="signBook : ${allSignBooks}">
                                     <option th:value="${signBook.name}"
                                             th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
@@ -98,18 +98,19 @@
                                 <div class="alert alert-info">
                                     <small>
                                         <ul>
-                                            <li>Oui : Tous les participants doivent signer pour que
-                                                la demande passe au status "Signé"
+                                            <li>
+                                                Oui : Tous les participants doivent signer pour que la demande passe au status "Signé"
                                             </li>
-                                            <li>Non : Une seule signature suffit</li>
+                                            <li>
+                                                Non : Une seule signature suffit
+                                            </li>
                                         </ul>
                                     </small>
                                 </div>
                             </div>
                         </label>
                         <div class="col-lg-8">
-                            <label class="switch"> <input type="checkbox"
-                                                          name="allSignToComplete" id="_allSignToComplete"/> <span
+                            <label class="switch"> <input type="checkbox" name="allSignToComplete" id="_allSignToComplete"/> <span
                                     class="slider round">
 									<!--  -->
 							</span>
