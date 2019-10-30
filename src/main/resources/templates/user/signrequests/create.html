@@ -47,15 +47,12 @@
         <form id="fc_org_esupportail_esupsignature_domain_SignRequest"
               action="/user/signrequests" method="post"
               enctype="multipart/form-data">
-            <div class="row">
                 <div class="col-lg-12">
-                    <div class="form-group"
-                         id="_c_org_esupportail_esupsignature_domain_SignRequest_title">
+                    <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_title">
                         <label for="title"><strong>Titre de la demande</strong></label>
-                        <div class="col-lg-8">
-                            <input id="title" name="title" class="form-control" required="required" type="text" value="" autocomplete="on">
-                        </div>
+                        <input id="title" name="title" class="form-control" required="required" type="text" value="" autocomplete="on">
                     </div>
+                    <!--
                     <div class="form-group"
                          id="_c_org_esupportail_esupsignature_domain_SignRequest_signBook_id">
                         <label for="signBookNames"> <strong> Envoyer dans
@@ -110,10 +107,9 @@
                             </div>
                         </label>
                         <div class="col-lg-8">
-                            <label class="switch"> <input type="checkbox" name="allSignToComplete" id="_allSignToComplete"/> <span
-                                    class="slider round">
-									<!--  -->
-							</span>
+                            <label class="switch">
+                                <input type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
+                                <spanclass="slider round"></span>
                             </label>
                         </div>
                     </div>
@@ -142,11 +138,9 @@
                             </div>
                         </label>
                         <div class="col-lg-8">
-                            <label class="switch"> <input id="_overloadSignParams"
-                                                          type="checkbox" name="overloadSignBookParams"
-                                                          onclick="toggleOverload();"/> <span class="slider round">
-									<!--  -->
-							</span>
+                            <label class="switch">
+                                <input id="_overloadSignParams" type="checkbox" name="overloadSignBookParams" onclick="toggleOverload();"/>
+                                <span class="slider round"></span>
                             </label>
                         </div>
                     </div>
@@ -202,7 +196,9 @@
                     </div>
                 </div>
             </div>
-            <input type="submit" id="register-form-submit" style="display: none;"/>
+            -->
+            <input type="submit" id="register-form-submit" class="btn btn-success float-right" value="Suivant"/>
+            </div>
         </form>
     </div>
     <script type="text/javascript">
