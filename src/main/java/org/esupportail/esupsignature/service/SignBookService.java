@@ -136,10 +136,9 @@ public class SignBookService {
 
     }
 
-    public void createGroupSignBook(SignBook signBook, User user, SignRequestParams signRequestParams, MultipartFile multipartFile, boolean external) throws EsupSignatureException {
+    public void createSignBook(SignBook signBook, User user, SignRequestParams signRequestParams, MultipartFile multipartFile, boolean external) throws EsupSignatureException {
         if (signBookRepository.countByName(signBook.getName()) == 0) {
             signRequestParamsRepository.save(signRequestParams);
-            signBook.setSignBookType(SignBookType.group);
             signBook.setCreateBy(user.getEppn());
             signBook.setCreateDate(new Date());
             signBook.getRecipientEmails().removeAll(Collections.singleton(""));
@@ -179,66 +178,12 @@ public class SignBookService {
         }
     }
 
-    public void createWorkflowSignBook(SignBook signBook, User user, SignRequestParams signRequestParams, MultipartFile multipartFile, boolean external) throws EsupSignatureException {
-        if (signBookRepository.countByName(signBook.getName()) == 0) {
-            signRequestParamsRepository.save(signRequestParams);
-            signBook.setSignBookType(SignBookType.workflow);
-            signBook.setCreateBy(user.getEppn());
-            signBook.setCreateDate(new Date());
-            List<String> signBookStepNames = new ArrayList<String>();
-            signBook.getRecipientEmails().removeAll(Collections.singleton(""));
-            signBookStepNames.addAll(signBook.getRecipientEmails());
-            signBook.setRecipientEmails(null);
-            signBook.setExternal(external);
-            for (String signBookStepName : signBookStepNames) {
-                SignBook signBookStep = signBookRepository.findByName(signBookStepName).get(0);
-                signBook.getSignBooks().add(signBookStep);
-            }
-			/*
-			signBook.getModeratorEmails().removeAll(Collections.singleton(""));
-			for(String moderatorEmail : signBook.getModeratorEmails()) {
-				if(SignBook.countFindSignBooksByRecipientEmailsEquals(Arrays.asList(moderatorEmail)) == 0) {
-					userService.createUser(moderatorEmail);
-				}
-			}
-			*/
-            Document model = null;
-            if (multipartFile != null) {
-                try {
-                    model = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-                } catch (IOException e) {
-                    logger.error("enable to add model", e);
-                    throw new EsupSignatureException(e.getMessage(), e);
-                }
-                signBook.setModelFile(model);
-            } else {
-                signBook.setModelFile(null);
-            }
-            signBook.setSignRequestParams(signRequestParams);
-            //TODO manage target
-            signBook.setSourceType(DocumentIOType.none);
-            signBookRepository.save(signBook);
-            if (model != null) {
-                model.setParentId(signBook.getId());
-            }
-        } else {
-            throw new EsupSignatureException("all ready exist");
-        }
-    }
-
     public void deleteSignBook(SignBook signBook) {
             List<SignBook> signBooks = new ArrayList<>();
-            signBooks.addAll(signBook.getSignBooks());
-            signBook.getSignBooks().clear();
             signBook.setSignRequestParams(null);
             signBookRepository.save(signBook);
             for (SignBook signBookStep : signBooks) {
                 if (signBookStep.isExternal()) {
-                    List<SignBook> parentSignBooks = signBookRepository.findBySignBooks(Arrays.asList(signBookStep));
-                    for (SignBook parentSignBook : parentSignBooks) {
-                        parentSignBook.getSignBooks().remove(signBookStep);
-                        signBookRepository.save(parentSignBook);
-                    }
                     deleteSignBook(signBookStep);
                 }
             }
@@ -314,7 +259,7 @@ public class SignBookService {
             }
         }
 
-        if (signBook.isExternal() && signBook.getSignRequests().size() == 0 && signBookRepository.findBySignBooks(Arrays.asList(signBook)).size() == 0) {
+        if (signBook.isExternal() && signBook.getSignRequests().size() == 0) {
             deleteSignBook(signBook);
         }
     }
@@ -351,8 +296,12 @@ public class SignBookService {
             signBook.getSignRequests().add(signRequest);
             if (signBook.getSignBookType().equals(SignBookType.workflow)) {
                 //TODO a réparer
-                importSignRequestByRecipients(signRequest, signBook.getSignBooks().get(signRequest.getSignBooksWorkflowStep() - 1).getRecipientEmails(), user);
-                signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé dans le parapheur " + signBook.getSignBooks().get(signRequest.getSignBooksWorkflowStep() - 1).getName(), user, "SUCCESS", "");
+                List<String> recipients = new ArrayList<>();
+                for(Long signBookId : signRequest.getCurrentWorkflowStep().getSignBooks().keySet()){
+                    recipients.addAll(signBookRepository.findById(signBookId).get().getRecipientEmails());
+                }
+                importSignRequestByRecipients(signRequest, recipients, user);
+                signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé dans le parapheur " + signRequest.getCurrentWorkflowStep().getSignBooks().toString(), user, "SUCCESS", "");
                 if (signRequest.getSignBooksWorkflowStep() > 1) {
                     signRequestService.pendingSignRequest(signRequest, user);
                 }

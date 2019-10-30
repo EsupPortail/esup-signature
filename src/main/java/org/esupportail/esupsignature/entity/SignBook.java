@@ -67,9 +67,13 @@ public class SignBook {
     @ElementCollection(targetClass=String.class)
     private List<String> recipientEmails = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToMany
     @OrderColumn
-    private List<SignBook> signBooks = new ArrayList<>();
+    private List<WorkflowStep> workflowSteps = new ArrayList<>();
+
+//    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+//    @OrderColumn
+//    private List<SignBook> signBooks = new ArrayList<>();
     
     //TODO renomer autoWorkflow
     private boolean autoRemove = true;
@@ -205,7 +209,7 @@ public class SignBook {
     public void setRecipientEmails(List<String> recipientEmails) {
         this.recipientEmails = recipientEmails;
     }
-    
+/*
     public List<SignBook> getSignBooks() {
         return this.signBooks;
     }
@@ -213,7 +217,16 @@ public class SignBook {
     public void setSignBooks(List<SignBook> SignBooks) {
         this.signBooks = SignBooks;
     }
-    
+  */
+
+    public List<WorkflowStep> getWorkflowSteps() {
+        return workflowSteps;
+    }
+
+    public void setWorkflowSteps(List<WorkflowStep> workflowSteps) {
+        this.workflowSteps = workflowSteps;
+    }
+
     public boolean isAutoRemove() {
         return this.autoRemove;
     }

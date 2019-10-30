@@ -34,10 +34,7 @@ import javax.annotation.Resource;
 import javax.persistence.NoResultException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -164,10 +161,12 @@ public class WsController {
         User user = getSystemUser();
         user.setIp(httpServletRequest.getRemoteAddr());
         ObjectMapper mapper = new ObjectMapper();
+        SignBook newSignBook = mapper.readValue(signBookString, SignBook.class);
         if (signBookType.equals("workflow")) {
-            signBookService.createWorkflowSignBook(mapper.readValue(signBookString, SignBook.class), user, signRequestService.getEmptySignRequestParams(), null, true);
+            newSignBook.setSignBookType(SignBookType.workflow);
+            signBookService.createSignBook(mapper.readValue(signBookString, SignBook.class), user, signRequestService.getEmptySignRequestParams(), null, true);
         } else {
-            SignBook newSignBook = mapper.readValue(signBookString, SignBook.class);
+            newSignBook.setSignBookType(SignBookType.group);
             if (newSignBook.getRecipientEmails().size() > 1) {
                 SignBook signBookCheck = null;
                 for (String recipientEmail : newSignBook.getRecipientEmails()) {
@@ -191,7 +190,7 @@ public class WsController {
                     return newUser.getFirstname() + " " + newUser.getName();
                 }
             }
-            signBookService.createGroupSignBook(newSignBook, user, signRequestService.getEmptySignRequestParams(), null, true);
+            signBookService.createSignBook(newSignBook, user, signRequestService.getEmptySignRequestParams(), null, true);
             return newSignBook.getName();
 
         }
@@ -287,7 +286,7 @@ public class WsController {
                 jsonSignInfoMessage.setStatus(signRequest.getStatus().toString());
                 List<String> recipientNames = new ArrayList<String>();
                 List<String> recipientEmails = new ArrayList<String>();
-                signRequestService.setSignBooksLabels(signRequest);
+                signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
                 for (String recipientName : signRequest.getCurrentWorkflowStep().getSignBooksLabels().keySet()) {
                     SignBook signBook = signBookRepository.findByName(recipientName).get(0);
                     if (!signRequest.getCurrentWorkflowStep().getSignBooks().get(signBook.getId())) {

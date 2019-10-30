@@ -183,7 +183,7 @@ public class AdminSignRequestController {
 
 			//signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
 
-			signRequestService.setSignBooksLabels(signRequest);
+			signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
 
 			model.addAttribute("signRequest", signRequest);
 			model.addAttribute("itemId", id);

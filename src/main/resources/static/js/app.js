@@ -290,7 +290,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	newPageTypeDiv = document.getElementById("_newPageType_div_id");
 	
 	if(signTypeDiv != null) {
-		signTypeSelector.disabled = true;
 		newPageTypeSelector.disabled = true;
 		signTypeDiv.classList.add("d-none");
 		newPageTypeDiv.classList.add("d-none");

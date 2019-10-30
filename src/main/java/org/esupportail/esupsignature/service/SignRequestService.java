@@ -112,7 +112,7 @@ public class SignRequestService {
 					signRequestsToSign.add(signRequest);
 				}
 			}
-
+/*
 			List<SignBook> signBooksWorkflows = signBookRepository.findBySignBookContain(signBookGroup);
 			for(SignBook signBookWorkflow : signBooksWorkflows) {
 				for(SignRequest signRequest : signBookWorkflow.getSignRequests()) {
@@ -121,6 +121,8 @@ public class SignRequestService {
 					}
 				}
 			}
+
+ */
 		}
 
 		return signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
@@ -332,7 +334,7 @@ public class SignRequestService {
 			if(signBook.isAutoRemove()) {
 				signBookService.removeSignRequestFromSignBook(signRequest, signBook);
 				signRequest.setSignBooksWorkflowStep(signRequest.getSignBooksWorkflowStep() + 1);
-				if(signBook.getSignBookType().equals(SignBookType.workflow) && signRequest.getSignBooksWorkflowStep() < signBook.getSignBooks().size()) {
+				if(signBook.getSignBookType().equals(SignBookType.workflow) && signRequest.getSignBooksWorkflowStep() < signRequest.getWorkflowSteps().size()) {
 					signBookService.importSignRequestInSignBook(signRequest, signBook, user);
 				} else {
 					completeSignRequest(signRequest, signBook, user);
@@ -561,8 +563,8 @@ public class SignRequestService {
         return val;
     }
 	
-	public void setSignBooksLabels(SignRequest signRequest) {
-		for(WorkflowStep workflowStep : signRequest.getWorkflowSteps()) {
+	public void setSignBooksLabels(List<WorkflowStep> workflowSteps) {
+		for(WorkflowStep workflowStep : workflowSteps) {
 			Map<String, Boolean> signBookNames = new HashMap<>();
 			for (Map.Entry<Long, Boolean> signBookMap : workflowStep.getSignBooks().entrySet()) {
 				signBookNames.put(signBookRepository.findById(signBookMap.getKey()).get().getName(), signBookMap.getValue());

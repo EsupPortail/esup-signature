@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
@@ -65,9 +66,9 @@
 							</td>
 							<td th:unless="${#lists.size(signBook.recipientEmails) > 0}" class="none">
 							<div class="alert alert-secondary">
-								<th:block th:each="workflowSignBooks : ${signBook.signBooks}">
+								<th:block th:each="workflowSignBooks : ${signBook.workflowSteps}">
 									<i class="fas fa-book"></i>
-									<span th:text="${workflowSignBooks.name}"></span>
+									<span th:text="${workflowSignBooks.signBooksLabels}"></span>
 									<br/>
 								</th:block>
 								</div>

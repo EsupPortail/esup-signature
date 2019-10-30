@@ -1,20 +1,14 @@
 package org.esupportail.esupsignature.web.controller.manager;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
-import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -53,37 +47,40 @@ public class SignBookController {
 	public String getActiveMenu() {
 		return "active";
 	}
-	@Autowired
+
+	@Resource
 	private UserRepository userRepository;
 	
 	@Resource
 	private UserService userService;
 	
-	@ModelAttribute("user")
-	public User getUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@Autowired
+	@Resource
 	private SignBookRepository signBookRepository;
-	
+
+	@Resource
+	private WorkflowStepRepository workflowStepRepository;
+
 	@Resource
 	private SignBookService signBookService;
 
-	@Autowired
+	@Resource
 	private SignRequestRepository signRequestRepository;
 	
 	@Resource
 	private SignRequestService signRequestService;
 	
-	@Autowired
-	private SignRequestParamsRepository signRequestParamsRepository; 
-	
 	@Resource
-	private DocumentService documentService;
+	private SignRequestParamsRepository signRequestParamsRepository; 
 
 	@Resource
 	private PdfService pdfService;
+
+	@ModelAttribute("user")
+	public User getUser() {
+		return userService.getUserFromAuthentication();
+	}
+
+
 
 	void populateEditForm(Model uiModel, SignBook signBook) {
 		uiModel.addAttribute("signBook", signBook);
@@ -166,19 +163,11 @@ public class SignBookController {
 			} else {
 				if("workflow".equals(type)) {
 					signBook.setSignBookType(SignBookType.workflow);
-					List<SignBook> signBooks = new ArrayList<>();
-					for(long signBookId : signBooksIds) {
-						SignBook signBook2 = signBookRepository.findById(signBookId).get();
-						if(!signBooks.contains(signBook2)) {
-							signBooks.add(signBook2);
-						}
-					}
-					signBook.setSignBooks(signBooks);
-					signBookService.createWorkflowSignBook(signBook, user, signRequestParams, multipartFile, false);
 				} else {
 					signBook.setSignBookType(SignBookType.group);
-					signBookService.createGroupSignBook(signBook, user, signRequestParams, multipartFile, false);
 				}
+				signBookService.createSignBook(signBook, user, signRequestParams, multipartFile, false);
+
 			}
 		} catch (EsupSignatureException e) {
 			logger.error("enable to create signBookGroup", e);
@@ -222,6 +211,7 @@ public class SignBookController {
 	public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
 		addDateTimeFormatPatterns(uiModel);
 		SignBook signBook = signBookRepository.findById(id).get();
+		signRequestService.setSignBooksLabels(signBook.getWorkflowSteps());
 		Document modelFile = signBook.getModelFile();
 		if (modelFile != null && modelFile.getSize() > 0) {
 			uiModel.addAttribute("documentId", modelFile.getId());
@@ -240,6 +230,7 @@ public class SignBookController {
 		uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());
 		uiModel.addAttribute("signRequests", signBook.getSignRequests());
 		uiModel.addAttribute("signBook", signBook);
+		uiModel.addAttribute("signTypes", SignType.values());
 		uiModel.addAttribute("itemId", id);
 		return "manager/signbooks/show";
 	}
@@ -270,7 +261,7 @@ public class SignBookController {
         return "redirect:/manager/signbooks";
     }
 	
-	@RequestMapping(value = "/updateParams/{id}", method = RequestMethod.POST)
+	@RequestMapping(value = "/update-params/{id}", method = RequestMethod.POST)
 	public String updateParams(@PathVariable("id") Long id, @RequestParam(value = "xPos", required = true) int xPos,
 			@RequestParam(value = "yPos", required = true) int yPos,
 			@RequestParam(value = "signPageNumber", required = true) int signPageNumber,
@@ -291,7 +282,7 @@ public class SignBookController {
 		return "redirect:/manager/signbooks/" + id;
 	}
 
-	@RequestMapping(value = "/deleteParams/{id}", method = RequestMethod.POST)
+	@RequestMapping(value = "/delete-params/{id}", method = RequestMethod.POST)
 	public String deleteParams(@PathVariable("id") Long id,
 			@RequestParam(value = "signBookId", required = true) Long signBookId,
 			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
@@ -312,8 +303,33 @@ public class SignBookController {
 		
 		return "redirect:/manager/signbooks/" + signBookId;
 	}
-	
-	@RequestMapping(value = "/addParams/{id}", method = RequestMethod.POST)
+
+	@PostMapping(value = "/add-step/{id}")
+	public String addStep(@PathVariable("id") Long id,
+						  @RequestParam("signBookNames") List<String> singBookNames,
+						  @RequestParam(name="allSignToComplete", required = false) String allSignToComplete,
+						  @RequestParam("signType") String signType,
+						  RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
+		User user = userService.getUserFromAuthentication();
+		SignBook signBook = signBookRepository.findById(id).get();
+		if (!signBook.getCreateBy().equals(user.getEppn())) {
+			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+			return "redirect:/manager/signbooks/" + id;
+		}
+		WorkflowStep workflowStep = new WorkflowStep();
+		for(String signBookName : singBookNames) {
+			SignBook signBook1 = signBookRepository.findByRecipientEmails(Arrays.asList(signBookName)).get(0);
+			workflowStep.getSignBooks().put(signBook1.getId(), false);
+		}
+		workflowStep.setAllSignToComplete(Boolean.valueOf(allSignToComplete));
+		workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
+		workflowStep.getSignRequestParams().setSignType(SignType.valueOf(signType));
+		workflowStepRepository.save(workflowStep);
+		signBook.getWorkflowSteps().add(workflowStep);
+		return "redirect:/manager/signbooks/" + id;
+	}
+
+	@RequestMapping(value = "/add-params/{id}", method = RequestMethod.POST)
 	public String addParams(@PathVariable("id") Long id, 
 			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
 		User user = userService.getUserFromAuthentication();

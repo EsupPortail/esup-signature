@@ -149,7 +149,7 @@ public class SignRequestController {
         Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByCreateByAndStatus(user.getEppn(), this.statusFilter, pageable);
 
         for (SignRequest signRequest : signRequests) {
-            signRequestService.setSignBooksLabels(signRequest);
+            signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
         }
         if (user.getKeystore() != null) {
             model.addAttribute("keystore", user.getKeystore().getFileName());
@@ -211,7 +211,7 @@ public class SignRequestController {
 
            // signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
 
-            signRequestService.setSignBooksLabels(signRequest);
+            signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
 
             model.addAttribute("signRequest", signRequest);
             model.addAttribute("itemId", id);
@@ -390,7 +390,7 @@ public class SignRequestController {
 
                 //signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
 
-                signRequestService.setSignBooksLabels(signRequest);
+                signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
 
                 model.addAttribute("signRequest", signRequest);
                 if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
