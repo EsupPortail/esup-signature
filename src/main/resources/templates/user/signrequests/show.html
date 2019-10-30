@@ -107,7 +107,7 @@
                 </p>
             </button>
         </th:block>
-        <th:block th:if="${signRequest.status.name() == 'draft' && #lists.size(originalSignBooks) > 0 && user.eppn == signRequest.createBy && #lists.size(signRequest.originalDocuments) > 0}">
+        <th:block th:if="${signRequest.status.name() == 'draft' && signRequest.currentWorkflowStep.signBooks.size() > 0 && user.eppn == signRequest.createBy && #lists.size(signRequest.originalDocuments) > 0}">
             <button type="button" class="mr-2 btn btn-success float-left" data-toggle="modal" data-target="#sendModal">
                 <p class="text-center">
                     <i class="fa fa-paper-plane fa-2x" aria-hidden="true"></i><br/>Lancer la procedure de signature
@@ -183,9 +183,9 @@
 										<p>
 											<dt class="col-lg-5">La demande se trouve dans les parapheurs suivants</dt>
 											<ul class="list-group">
-												<th:block th:each="originalSignBook : ${originalSignBooks}">
+												<th:block th:each="inSignBook : ${signRequest.currentWorkflowStep.signBooksLabels}">
 													<li class="list-group-item"><i class="fas fa-book"></i>
-														<span th:text="${originalSignBook.name}"></span>
+														<span th:text="${inSignBook.key}"></span>
 													</li>
 												</th:block>
 											</ul>
@@ -264,7 +264,7 @@
 							</dl>
 						</div>
 						<div th:case="*">
-							<div th:if="${#lists.size(originalSignBooks) > 1}">
+							<div th:if="${#lists.size(signRequest.currentWorkflowStep.signBooks.size()) > 1}">
 								<label>
 									<strong>
 										Tous les participants doivent-ils signer ?

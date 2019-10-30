@@ -22,8 +22,6 @@ public class WorkflowStep {
     @OneToOne
     private SignRequestParams signRequestParams;
 
-    private Boolean completed = false;
-
     transient Map<String, Boolean> signBooksLabels;
 
     public Long getId() {
@@ -67,11 +65,20 @@ public class WorkflowStep {
     }
 
     public Boolean isCompleted() {
-        return completed;
-    }
-
-    public void setCompleted(Boolean completed) {
-        this.completed = completed;
+        int nbSign = 0;
+        for (Map.Entry<Long, Boolean> signBookEntry : signBooks.entrySet()) {
+            if(!allSignToComplete && signBookEntry.getValue()) {
+                return true;
+            }
+            if(signBookEntry.getValue()) {
+                nbSign++;
+            }
+        }
+        if(nbSign == signBooks.size()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public Map<String, Boolean> getSignBooksLabels() {

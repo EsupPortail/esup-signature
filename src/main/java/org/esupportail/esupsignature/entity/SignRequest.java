@@ -56,33 +56,9 @@ public class SignRequest {
 
     private Integer signBooksWorkflowStep = 1;
 
-    /*
-    @JsonIgnore
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Map<Long, Boolean> signBooks = new HashMap<>();
-
-
-
-    private Integer nbSign = 0;
-
-    private boolean allSignToComplete = false;
-    */
-
     public enum SignRequestStatus {
 		draft, pending, canceled, checked, signed, refused, deleted, exported, completed;
 	}
-
-    @JsonIgnore
-    @Transient
-    transient List<SignBook> originalSignBooks = new ArrayList<>();
-
-    public List<SignBook> getOriginalSignBooks() {
-    	return originalSignBooks;
-    }
-
-    public void setOriginalSignBooks(List<SignBook> signBooks) {
-    	originalSignBooks = signBooks;
-    }
 
 	public void setStatus(SignRequestStatus status) {
         this.status = status;
@@ -98,15 +74,7 @@ public class SignRequest {
 		nbSign += signedDocuments.size();
 		return nbSign;
     }
-    /*
-    public List<String> getSignBooksJson() {
-    	List<String> result = new ArrayList<>();
-    	for(Map.Entry<Long, Boolean> signBookId : signBooks.entrySet()) {
-			result.add(signBookId.getKey().toString());
-		}
-    	return result;
-    }
-*/
+
     public Long getId() {
         return this.id;
     }
@@ -198,45 +166,6 @@ public class SignRequest {
 	public void setSignRequestParamsList(List<SignRequestParams> signRequestParams) {
         this.signRequestParamsList = signRequestParams;
     }
-/*
-	public SignRequestParams getSignRequestParams() {
-        if(signRequestParamsList != null && signRequestParamsList.size() > 0) {
-            if (signRequestParamsList.size() < nbSign + 1) {
-                return signRequestParamsList.get(0);
-            }
-            return signRequestParamsList.get(nbSign);
-        }
-        return null;
-    }
-	
-	public SignRequestParams setSignRequestParams(SignRequestParams signRequestParams) {
-        return this.signRequestParamsList.set(nbSign, signRequestParams);
-    }
-
-	public Map<Long, Boolean> getSignBooks() {
-        return this.signBooks;
-    }
-
-	public void setSignBooks(Map<Long, Boolean> signBooks) {
-        this.signBooks = signBooks;
-    }
-
-	public Integer getNbSign() {
-        return this.nbSign;
-    }
-
-	public void setNbSign(Integer nbSign) {
-        this.nbSign = nbSign;
-    }
-
-	public boolean isAllSignToComplete() {
-        return this.allSignToComplete;
-    }
-
-	public void setAllSignToComplete(boolean allSignToComplete) {
-        this.allSignToComplete = allSignToComplete;
-    }
-*/
 
     public Integer getSignBooksWorkflowStep() {
         return this.signBooksWorkflowStep;

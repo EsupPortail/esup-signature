@@ -181,7 +181,7 @@ public class AdminSignRequestController {
 				model.addAttribute("keystore", user.getKeystore().getFileName());
 			}
 
-			signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
+			//signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
 
 			signRequestService.setSignBooksLabels(signRequest);
 

@@ -183,8 +183,11 @@
                             <td class="none"><span th:text="${signRequest.createBy}"></span></td>
                             <td class="none d-none">
                                 <ul class="list-group">
-                                    <th:block th:each="originalSignBook : ${signRequest.originalSignBooks}">
-                                        <li class="list-group-item truncate" th:title="${originalSignBook.name}"><i class="fas fa-book"></i><span th:text="${originalSignBook.name}"></span></li>
+                                    <th:block th:each="inSignBook : ${signRequest.currentWorkflowStep.signBooks}">
+                                        <li class="list-group-item truncate" th:title="${inSignBook.key}">
+                                            <i class="fas fa-book"></i>
+                                            <span th:text="${inSignBook.key}"></span>
+                                        </li>
                                     </th:block>
                                 </ul>
                             </td>

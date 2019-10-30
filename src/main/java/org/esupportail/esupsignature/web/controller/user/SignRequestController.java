@@ -176,7 +176,6 @@ public class SignRequestController {
         signRequest.setSignedDocuments(signRequest.getSignedDocuments().stream().sorted(Comparator.comparing(Document::getCreateDate)).collect(Collectors.toList()));
         if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
             model.addAttribute("signBooks", signBookService.getAllSignBooks());
-            List<SignBook> originalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
             Document toDisplayDocument = null;
             if (signRequestService.getToSignDocuments(signRequest).size() == 1) {
                 toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
@@ -210,7 +209,7 @@ public class SignRequestController {
                 model.addAttribute("keystore", user.getKeystore().getFileName());
             }
 
-            signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
+           // signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
 
             signRequestService.setSignBooksLabels(signRequest);
 
@@ -229,7 +228,6 @@ public class SignRequestController {
                     model.addAttribute("modelId", firstOriginalSignBook.getModelFile().getUrl());
                 }
             }
-            model.addAttribute("originalSignBooks", signBookService.getSignBookBySignRequest(signRequest));
             model.addAttribute("allSignBooks", signBookRepository.findByNotCreateBy("System"));
             model.addAttribute("nbSignOk", signRequest.countSignOk());
             model.addAttribute("baseUrl", baseUrl);
@@ -390,7 +388,7 @@ public class SignRequestController {
                     model.addAttribute("keystore", user.getKeystore().getFileName());
                 }
 
-                signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
+                //signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
 
                 signRequestService.setSignBooksLabels(signRequest);
 

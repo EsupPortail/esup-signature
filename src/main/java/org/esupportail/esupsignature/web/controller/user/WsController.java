@@ -313,7 +313,6 @@ public class WsController {
         if (signBookRepository.countByName(signBookName) > 0) {
             SignRequest signRequest = signRequestRepository.findByName(fileToken).get(0);
             SignBook signBook = signBookRepository.findByName(signBookName).get(0);
-            signRequest.getOriginalSignBooks().remove(signBook);
             signBook.getSignRequests().remove(signRequest);
             signRequestRepository.delete(signRequest);
             signBookService.deleteSignBook(signBook);
