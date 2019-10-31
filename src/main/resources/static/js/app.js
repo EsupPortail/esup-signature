@@ -288,12 +288,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	signTypeDiv = document.getElementById("_signType_div_id");
 	newPageTypeSelector = document.getElementById("_newPageType_id");
 	newPageTypeDiv = document.getElementById("_newPageType_div_id");
-	
-	if(signTypeDiv != null) {
-		newPageTypeSelector.disabled = true;
-		signTypeDiv.classList.add("d-none");
-		newPageTypeDiv.classList.add("d-none");
-	}
 });
 
 function toggleOverload() {
@@ -499,7 +493,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	emailAlertHour = document.getElementById("_c_org_esupportail_esupsignature_domain_user_emailAlertHour");
 	signTypeSelect = document.getElementById("_signType_id");
 	if(signTypeSelect != null) {
-		checkRequirement();
+		//checkRequirement();
 	}
 	if(emailAlertFrequencySelect != null) {
 		checkAlertFrequency();

@@ -93,7 +93,6 @@ public class SignBookController {
 		uiModel.addAttribute("signBookTypes", signBookTypes);
 		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
 		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
-		addDateTimeFormatPatterns(uiModel);
 		uiModel.addAttribute("signrequests", signRequestRepository.findAll());
 	}
 
@@ -109,16 +108,13 @@ public class SignBookController {
     	if(sortFieldName == null) {
     		sortFieldName = "signBookType";
     	}
-		if (page != null || size != null) {
-			int sizeNo = size == null ? 10 : size.intValue();
-			//final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
-			uiModel.addAttribute("signBooks", signBookRepository.findByNotCreateBy("System"));
-			float nrOfPages = (float) signBookRepository.count() / sizeNo;
-			uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
-		} else {
-			uiModel.addAttribute("signBooks", signBookRepository.findByNotCreateBy("System"));
+
+    	List<SignBook> signBooks = signBookRepository.findByNotCreateBy("System");
+
+		for (SignBook signBook : signBooks) {
+			signRequestService.setSignBooksLabels(signBook.getWorkflowSteps());
 		}
-		addDateTimeFormatPatterns(uiModel);
+		uiModel.addAttribute("signBooks", signBooks);
 		return "manager/signbooks/list";
 	}
 	
@@ -209,7 +205,6 @@ public class SignBookController {
 	
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
-		addDateTimeFormatPatterns(uiModel);
 		SignBook signBook = signBookRepository.findById(id).get();
 		signRequestService.setSignBooksLabels(signBook.getWorkflowSteps());
 		Document modelFile = signBook.getModelFile();
@@ -309,7 +304,7 @@ public class SignBookController {
 						  @RequestParam("signBookNames") List<String> singBookNames,
 						  @RequestParam(name="allSignToComplete", required = false) String allSignToComplete,
 						  @RequestParam("signType") String signType,
-						  RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
+						  RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
 		SignBook signBook = signBookRepository.findById(id).get();
 		if (!signBook.getCreateBy().equals(user.getEppn())) {
@@ -326,6 +321,44 @@ public class SignBookController {
 		workflowStep.getSignRequestParams().setSignType(SignType.valueOf(signType));
 		workflowStepRepository.save(workflowStep);
 		signBook.getWorkflowSteps().add(workflowStep);
+		return "redirect:/manager/signbooks/" + id;
+	}
+
+	@PutMapping(value = "/update-step/{id}/{stepNumber}")
+	public String updateStep(@PathVariable("id") Long id,
+						 @PathVariable("stepNumber") Integer stepNumber,
+						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
+						  @RequestParam("signType") String signType,
+						  RedirectAttributes redirectAttrs) {
+		User user = userService.getUserFromAuthentication();
+		SignBook signBook = signBookRepository.findById(id).get();
+		if (!signBook.getCreateBy().equals(user.getEppn())) {
+			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+			return "redirect:/manager/signbooks/" + id;
+		}
+		WorkflowStep workflowStep = signBook.getWorkflowSteps().get(stepNumber);
+		workflowStep.getSignRequestParams().setSignType(SignType.valueOf(signType));
+		if(allSignToComplete ==null) {
+			workflowStep.setAllSignToComplete(false);
+		} else {
+			workflowStep.setAllSignToComplete(allSignToComplete);
+		}
+		workflowStepRepository.save(workflowStep);
+		return "redirect:/manager/signbooks/" + id;
+	}
+
+	@DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
+	public String addStep(@PathVariable("id") Long id, @PathVariable("stepNumber") Integer stepNumber, RedirectAttributes redirectAttrs) {
+		User user = userService.getUserFromAuthentication();
+		SignBook signBook = signBookRepository.findById(id).get();
+		if (!signBook.getCreateBy().equals(user.getEppn())) {
+			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+			return "redirect:/manager/signbooks/" + id;
+		}
+		WorkflowStep workflowStep = signBook.getWorkflowSteps().get(stepNumber);
+		signBook.getWorkflowSteps().remove(workflowStep);
+		signBookRepository.save(signBook);
+		workflowStepRepository.delete(workflowStep);
 		return "redirect:/manager/signbooks/" + id;
 	}
 
@@ -387,11 +420,5 @@ public class SignBookController {
         }
         pathSegment = UriUtils.encodePathSegment(pathSegment, enc);
         return pathSegment;
-    }
-
-
-	void addDateTimeFormatPatterns(Model uiModel) {
-        uiModel.addAttribute("signBook_createdate_date_format", "dd/MM/yyyy HH:mm");
-        uiModel.addAttribute("signBook_updatedate_date_format", "dd/MM/yyyy HH:mm");
     }
 }

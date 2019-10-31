@@ -30,15 +30,7 @@
                 <i class="far fa-edit fa-2x"></i> <br/> Modifier
             </p>
         </button>
-        <button type="button" th:onclick="'location.href=\'/manager/signbooks/' + ${signBook.id} + '?form\''"
-                class="mr-2 btn btn-outline-dark btn-light float-left">
-            <p class="text-center">
-                <i class="far fa-edit fa-2x"></i> <br/> Modifier
-            </p>
-        </button>
-        <form th:action="'/manager/signbooks/' + ${signBook.id}"
-              th:method="delete">
-
+        <form th:action="'/manager/signbooks/' + ${signBook.id}" th:method="delete">
             <button type="submit"
                     class="mr-2 btn btn-outline-dark btn-light float-left">
                 <p class="text-center">
@@ -60,7 +52,7 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-lg-6">
+    <div class="col-lg-12">
         <div class="card bg-light">
             <div class="card-header">Infos</div>
             <div class="card-body">
@@ -78,17 +70,72 @@
                         <dd>
                             <div class="bs-stepper vertical linear">
                                 <div class="bs-stepper-header" role="tablist">
-                                    <th:block
-                                            th:each="workflowSignbook,iterator : ${signBook.workflowSteps}">
-                                        <div class="step" data-target="#test-vl-1">
-												<span class="step-trigger col-12 text-left" role="tab">
-													<span class="bs-stepper-circle" th:text="${iterator.index + 1}"></span>
-                                                    <span class="bs-stepper-label" th:text="${workflowSignbook.signBooksLabels.keySet()}"></span>
-												</span>
+                                    <th:block th:each="workflowStep,iterator : ${signBook.workflowSteps}">
+                                        <div class="step">
+                                            <span class="step-trigger col-12 text-left">
+                                                <div class="bs-stepper-circle" th:text="${iterator.index + 1}"></div>
+                                                <div class="bs-stepper-label">
+                                                    <span th:text="${workflowStep.signBooksLabels.keySet()}"></span>
+                                                    <br>
+                                                    <b>Type de signature : </b><span class="bs-stepper-label" th:text="${workflowStep.signRequestParams.signType}"></span>
+                                                    <br>
+                                                    <b>Signatures requises : </b><span class="bs-stepper-label" th:text="${workflowStep.isAllSignToComplete()}"></span>
+                                                    <br>
+                                                    <form class="float-right" th:action="'/manager/signbooks/remove-step/' + ${signBook.id} + '/' + ${iterator.index}" th:method="'delete'">
+                                                        <button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" type="submit" class="btn btn-danger"><i class="fa fa-trash"></i></button>
+                                                    </form>
+                                                    <button data-toggle="modal" th:data-target="'#editStep_' + ${workflowStep.id}" type="button" class="btn btn-warning float-right mr-2"><i class="fa fa-pen"></i></button>
+
+                                                </div>
+
+                                            </span>
                                         </div>
-                                        <div
-                                                th:if="${signBook.workflowSteps.size() > iterator.index + 1}"
-                                                class="line"></div>
+                                        <div th:if="${signBook.workflowSteps.size() > iterator.index + 1}" class="line"></div>
+                                        <div class="modal fade" th:id="'editStep_' + ${workflowStep.id}" tabindex="-1" role="dialog" th:aria-labelledby="'editStep_' + ${workflowStep.id}" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Modifier une étape</h5>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <form th:action="'/manager/signbooks/update-step/' + ${id} + '/' + ${iterator.index}" th:method="'put'">
+                                                            <div class="form-group">
+                                                                <label>
+                                                                    <strong> Tous les participants doivent-ils signer ? </strong>
+                                                                </label>
+                                                                <div class="col-lg-8">
+                                                                    <label class="switch">
+                                                                        <input th:if="${workflowStep.isAllSignToComplete()}" type="checkbox" name="allSignToComplete" checked />
+                                                                        <input th:unless="${workflowStep.isAllSignToComplete()}" type="checkbox" name="allSignToComplete" />
+                                                                        <span class="slider round"></span>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="form-group">
+                                                                <label>
+                                                                    <strong> Type de signature pour cette étape </strong>
+                                                                </label>
+                                                                <div class="col-lg-8">
+                                                                    <select name="signType" class="form-control" size="1">
+                                                                        <th:block th:each="signType : ${signTypes}">
+                                                                            <option th:if="${signType == workflowStep.signRequestParams.signType}" th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" selected></option>
+                                                                            <option th:unless="${signType == workflowStep.signRequestParams.signType}"  th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                                                                        </th:block>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <button type="submit" class="btn btn-success">
+                                                                <i class="fa fa-paper-plane" aria-hidden="true"></i> Envoyer
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </th:block>
                                 </div>
                             </div>
@@ -326,7 +373,7 @@
                         </label>
                         <div class="col-lg-8">
                             <label class="switch">
-                                <input type="checkbox" name="allSignToComplete" id="_allSignToComplete" />
+                                <input type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
                                 <span class="slider round"></span>
                             </label>
                         </div>
@@ -368,7 +415,19 @@
                             </select>
                         </div>
                     </div>
-
+                    <div class="form-group" id="_newPageType_div_id">
+                        <label for="_newPageType_id">
+                            <strong> Insérer unepage de garde </strong>
+                        </label>
+                        <div class="col-lg-8">
+                            <select id="_newPageType_id" name="newPageType"
+                                    class="form-control" size="1">
+                                <th:block th:each="newPageType : ${newPageTypes}">
+                                    <option th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </div>
                     <button type="submit" class="btn btn-success">
                         <i class="fa fa-paper-plane" aria-hidden="true"></i> Envoyer
                     </button>
@@ -384,7 +443,7 @@
 <script language="JavaScript">
     var testSignBookName = document.getElementById("signBookNames");
 
-    if(testSignBookName != null) {
+    if (testSignBookName != null) {
         var signBookNamesSelect = new SlimSelect({
             select: '#signBookNames',
             placeholder: 'Choisir un ou plusieurs parapheur(s)',
@@ -404,12 +463,12 @@
                     })
                     .then(function (json) {
                         let data = []
-                        for (let i = 0; i< json.length; i++) {
+                        for (let i = 0; i < json.length; i++) {
                             data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
                         }
                         callback(data)
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         callback(false)
                     })
             }

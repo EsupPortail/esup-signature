@@ -38,7 +38,7 @@
 	<div class="card">
 		<div class="card-body">
 
-			<table class="table table-sm table-striped table-hover">
+			<table class="table table-bordered table-sm table-striped table-hover">
 				<thead>
 					<tr>
 						<th class="none">Nom</th>
@@ -68,7 +68,7 @@
 							<div class="alert alert-secondary">
 								<th:block th:each="workflowSignBooks : ${signBook.workflowSteps}">
 									<i class="fas fa-book"></i>
-									<span th:text="${workflowSignBooks.signBooksLabels}"></span>
+									<span th:text="${workflowSignBooks.signBooksLabels.keySet()}"></span>
 									<br/>
 								</th:block>
 								</div>
