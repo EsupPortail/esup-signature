@@ -258,7 +258,7 @@ public class SignBook {
     public List<SignRequest> getSignRequests() {
         return this.signRequests;
     }
-    
+
     public void setSignRequests(List<SignRequest> signRequests) {
         this.signRequests = signRequests;
     }

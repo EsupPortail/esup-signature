@@ -264,7 +264,7 @@
 							</dl>
 						</div>
 						<div th:case="*">
-							<div th:if="${#lists.size(signRequest.currentWorkflowStep.signBooks.size()) > 1}">
+							<div th:if="${signRequest.currentWorkflowStep.signBooks.size() > 1}">
 								<label>
 									<strong>
 										Tous les participants doivent-ils signer ?
@@ -397,25 +397,25 @@
                 <dl class="display-group border-bottom m-0">
                     <dd>
                         <div th:if="${signRequest.workflowSteps != null}">
-                            Etapes du workflow : <span th:text="${signRequest.signBooksWorkflowStep}"></span>
+                            Etapes du workflow : <span th:text="${signRequest.currentWorkflowStepNumber}"></span>
                             <div class="bs-stepper vertical linear">
                                 <div class="bs-stepper-header" role="tablist">
                                     <th:block th:each="workflowStep,iterator : ${signRequest.workflowSteps}">
                                         <div class="step">
                                             <div class="step-trigger col-12 text-left" role="tab" aria-selected="false">
-                                                <div th:if="${iterator.index + 1 == signRequest.signBooksWorkflowStep && signRequest.status != 'completed'}">
+                                                <div th:if="${iterator.index + 1 == signRequest.currentWorkflowStepNumber && signRequest.status != 'completed'}">
                                                     <span class="bs-stepper-circle bg-danger" th:text="${iterator.index + 1}"></span>
                                                 </div>
-                                                <div th:if="${iterator.index + 1 > signRequest.signBooksWorkflowStep}">
+                                                <div th:if="${iterator.index + 1 > signRequest.currentWorkflowStepNumber}">
                                                     <span class="bs-stepper-circle" th:text="${iterator.index + 1}"></span>
                                                 </div>
-                                                <div th:unless="${iterator.index + 1 > signRequest.signBooksWorkflowStep || iterator.index + 1 == signRequest.signBooksWorkflowStep}">
+                                                <div th:unless="${iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
                                                     <span class="bs-stepper-circle bg-success" th:text="${iterator.index + 1}"></span>
                                                 </div>
                                                 <span th:if="${workflowStep.allSignToComplete}"> Tous les <span class="bs-stepper-label" th:text="${workflowStep.signRequestParams.signType}"></span> de : </span>
                                                 <span th:unless="${workflowStep.allSignToComplete}"> Une des signatures de : </span>
                                                 <span class="bs-stepper-label" th:text="${workflowStep.signBooksLabels.keySet()}"></span>
-
+                                                <span th:text="${workflowStep.signRequestParams.signType}"></span>
                                             </div>
                                         </div>
                                         <div th:if="${#lists.size(signRequest.workflowSteps) > iterator.index + 1}" class="line"></div>

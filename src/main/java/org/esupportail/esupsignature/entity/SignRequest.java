@@ -54,7 +54,7 @@ public class SignRequest {
     @OrderColumn
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
-    private Integer signBooksWorkflowStep = 1;
+    private Integer currentWorkflowStepNumber = 1;
 
     public enum SignRequestStatus {
 		draft, pending, canceled, checked, signed, refused, deleted, exported, completed;
@@ -167,12 +167,12 @@ public class SignRequest {
         this.signRequestParamsList = signRequestParams;
     }
 
-    public Integer getSignBooksWorkflowStep() {
-        return this.signBooksWorkflowStep;
+    public Integer getCurrentWorkflowStepNumber() {
+        return this.currentWorkflowStepNumber;
     }
 
-    public void setSignBooksWorkflowStep(Integer signBooksWorkflowStep) {
-        this.signBooksWorkflowStep = signBooksWorkflowStep;
+    public void setCurrentWorkflowStepNumber(Integer signBooksWorkflowStep) {
+        this.currentWorkflowStepNumber = signBooksWorkflowStep;
     }
 
 	public String getExportedDocumentURI() {
@@ -192,8 +192,8 @@ public class SignRequest {
     }
 
     public WorkflowStep getCurrentWorkflowStep() {
-        if(workflowSteps.size() >=  signBooksWorkflowStep) {
-            return workflowSteps.get(signBooksWorkflowStep - 1);
+        if(workflowSteps.size() >= currentWorkflowStepNumber) {
+            return workflowSteps.get(currentWorkflowStepNumber - 1);
         } else {
             return new WorkflowStep();
         }

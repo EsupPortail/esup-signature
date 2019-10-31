@@ -354,7 +354,7 @@ public class SignRequestController {
             if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
                 List<SignBook> originalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
                 if (originalSignBooks.size() > 0) {
-                    if (!signRequest.isOverloadSignBookParams()) {
+                    if (signRequest.isOverloadSignBookParams()) {
                         SignRequestParams signRequestParams = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0).getSignRequestParams();
                         signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignType(signRequestParams.getSignType());
                         signRequest.getCurrentWorkflowStep().getSignRequestParams().setNewPageType(signRequestParams.getNewPageType());
@@ -449,7 +449,7 @@ public class SignRequestController {
             if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
                 return "redirect:/user/nexu-sign/" + id + "?referer=" + referer;
             }
-            if (!signRequest.isOverloadSignBookParams()) {
+            if (signRequest.isOverloadSignBookParams()) {
                 SignBook signBook = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0);
                 //signRequest.setSignRequestParams(signBook.getSignRequestParams().get(0));
                 signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignType(signBook.getSignRequestParams().getSignType());
@@ -652,15 +652,8 @@ public class SignRequestController {
                             signBook = signBookService.getUserSignBookByRecipientEmail(signBookName);
                         }
                     }
-                    try {
-                        signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-                        signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé au parapheur " + signBook.getName(), user, "SUCCESS", comment);
-                    } catch (EsupSignatureException | IOException e) {
-                        logger.warn(e.getMessage());
-                        redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
-
-                    }
-
+                    signBookService.importSignRequestInSignBook(signRequest, signBook, user);
+                    signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé au parapheur " + signBook.getName(), user, "SUCCESS", comment);
                 }
             }
         } else {
@@ -679,7 +672,7 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
             SignBook originalSignBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
-            signRequestService.completeSignRequest(signRequest, originalSignBook, user);
+            signRequestService.completeSignRequest(signRequest, user);
         } else {
             logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
         }

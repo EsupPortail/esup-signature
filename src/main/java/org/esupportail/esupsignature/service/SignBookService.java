@@ -11,14 +11,10 @@ import org.esupportail.esupsignature.service.fs.*;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -234,8 +230,6 @@ public class SignBookService {
                 }
             } catch (IOException e) {
                 logger.error("read fsaccess error : ", e);
-            } catch (EsupSignatureException e) {
-                logger.error("import in signBook error", e);
             }
         } else {
             logger.trace("no source type for signbook : " + signBook.getName());
@@ -291,21 +285,22 @@ public class SignBookService {
         return false;
     }
 
-    public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException, IOException {
+    public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) {
         if (!signBook.getSignRequests().contains(signRequest)) {
             signBook.getSignRequests().add(signRequest);
             if (signBook.getSignBookType().equals(SignBookType.workflow)) {
-                //TODO a réparer
-                List<String> recipients = new ArrayList<>();
-                for(Long signBookId : signRequest.getCurrentWorkflowStep().getSignBooks().keySet()){
-                    recipients.addAll(signBookRepository.findById(signBookId).get().getRecipientEmails());
-                }
-                importSignRequestByRecipients(signRequest, recipients, user);
-                signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé dans le parapheur " + signRequest.getCurrentWorkflowStep().getSignBooks().toString(), user, "SUCCESS", "");
-                if (signRequest.getSignBooksWorkflowStep() > 1) {
+                signRequestService.initWorkFlow(signRequest, signBook, user);
+                if (signRequest.getCurrentWorkflowStepNumber() > 1) {
                     signRequestService.pendingSignRequest(signRequest, user);
                 }
             } else {
+                if(signRequest.getWorkflowSteps().size() < signRequest.getCurrentWorkflowStepNumber()) {
+                    WorkflowStep workflowStep = new WorkflowStep();
+                    workflowStep.setSignRequestParams(signBook.getSignRequestParams());
+                    workflowStepRepository.save(workflowStep);
+                    signRequest.getWorkflowSteps().add(workflowStep);
+                    //signRequest.setCurrentWorkflowStepNumber(signRequest.getCurrentWorkflowStepNumber() + 1);
+                }
                 importSignRequestByRecipients(signRequest, signBook.getRecipientEmails(), user);
                 signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé dans le parapheur " + signBook.getName(), user, "SUCCESS", "");
             }
@@ -314,17 +309,11 @@ public class SignBookService {
         }
     }
 
-    private void importSignRequestByRecipients(SignRequest signRequest, List<String> recipientEmails, User user) {
+    public void importSignRequestByRecipients(SignRequest signRequest, List<String> recipientEmails, User user) {
         for (String recipientEmail : recipientEmails) {
             SignBook signBook = getUserSignBookByRecipientEmail(recipientEmail);
             if (signBook.getRecipientEmails().contains("creator")) {
                 signBook = getUserSignBook(user);
-            }
-            if(signRequest.getWorkflowSteps().size() < signRequest.getSignBooksWorkflowStep()) {
-                WorkflowStep workflowStep = new WorkflowStep();
-                workflowStep.setSignRequestParams(signBook.getSignRequestParams());
-                workflowStepRepository.save(workflowStep);
-                signRequest.getWorkflowSteps().add(workflowStep);
             }
             if (!signRequest.getCurrentWorkflowStep().getSignBooks().containsKey(signBook.getId())) {
                 signRequest.getCurrentWorkflowStep().getSignBooks().put(signBook.getId(), false);
@@ -341,14 +330,11 @@ public class SignBookService {
                 signBook.getSignRequests().remove(signRequest);
 				signBookRepository.save(signBook);
         }
-        //signRequest.getCurrentWorkflowStep().getSignBooks().clear();
         signRequestRepository.save(signRequest);
     }
 
     public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook) {
-        //signRequest.getCurrentWorkflowStep().getSignBooks().remove(signBook.getId());
         signBook.getSignRequests().remove(signRequest);
-        //signRequest.getCurrentWorkflowStep().getSignBooks().clear();
         signRequestRepository.save(signRequest);
         signBookRepository.save(signBook);
     }
@@ -377,11 +363,6 @@ public class SignBookService {
         if (signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.user) > 0) {
             return signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.user).get(0);
         } else {
-            /*
-            if (signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.system) > 0) {
-                return signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.system).get(0);
-            }
-             */
             User user;
             if(userRepository.findByEmail(recipientEmail).size() > 0) {
                 user = userRepository.findByEmail(recipientEmail).get(0);

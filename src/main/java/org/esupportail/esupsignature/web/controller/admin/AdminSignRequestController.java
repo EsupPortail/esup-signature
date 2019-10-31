@@ -142,7 +142,7 @@ public class AdminSignRequestController {
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
 			List<SignBook> originalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
 			if(originalSignBooks.size() > 0) {
-				if(!signRequest.isOverloadSignBookParams()) {
+				if(signRequest.isOverloadSignBookParams()) {
 					SignRequestParams signBookParams = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0).getSignRequestParams();
 					signRequest.getCurrentWorkflowStep().getSignRequestParams().setNewPageType(signBookParams.getNewPageType());
 					signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignType(signBookParams.getSignType());
@@ -332,15 +332,8 @@ public class AdminSignRequestController {
 							signBook = signBookService.getUserSignBookByRecipientEmail(signBookName);
 						}
 					}
-					try {
-						signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-						signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé au parapheur " + signBook.getName(), user, "SUCCESS", comment);
-					} catch (EsupSignatureException | IOException e) {
-						logger.warn(e.getMessage());
-						redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
-
-					}
-
+					signBookService.importSignRequestInSignBook(signRequest, signBook, user);
+					signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé au parapheur " + signBook.getName(), user, "SUCCESS", comment);
 				}
 			}
 		} else {
@@ -359,7 +352,7 @@ public class AdminSignRequestController {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
 			SignBook originalSignBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
-			signRequestService.completeSignRequest(signRequest, originalSignBook, user);
+			signRequestService.completeSignRequest(signRequest, user);
 		} else {
 			logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
 		}

@@ -353,10 +353,9 @@
 										th:text="${signRequest.signBooksWorkflowStep}"></span>
 									<div class="bs-stepper vertical linear">
 										<div class="bs-stepper-header" role="tablist">
-											<th:block
-												th:each="signBookSteps,iterator : ${firstOriginalSignBook.signBooks}">
+											<th:block th:each="signBookSteps,iterator : ${firstOriginalSignBook.signBooks}">
 												<div
-													th:if="${iterator.index + 1 == signRequest.signBooksWorkflowStep && signRequest.status != 'completed'}">
+													th:if="${iterator.index + 1 == signRequest.currentWorkflowStepNumber && signRequest.status != 'completed'}">
 													<div class="step active" data-target="#test-vl-1">
 														<button type="button"
 															class="step-trigger col-12 text-left" role="tab"
@@ -380,7 +379,7 @@
 													</div>
 												</div>
 												<div
-													th:unless="${iterator.index + 1 > signRequest.signBooksWorkflowStep || iterator.index + 1 == signRequest.signBooksWorkflowStep}">
+													th:unless="${iterator.index + 1 > signRequest.signBooksWorkflowStep || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
 													<div class="step" data-target="#test-vl-1">
 														<button type="button"
 															class="step-trigger col-12 text-left" role="tab"

@@ -163,7 +163,7 @@ public class SignRequestService {
 	public void sign(SignRequest signRequest, User user, String password, boolean addDate) throws EsupSignatureIOException, EsupSignatureSignException, EsupSignatureKeystoreException, IOException {
 		step = "Demarrage de la signature";
 		SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
-		if(!signRequest.isOverloadSignBookParams()) {
+		if(signRequest.isOverloadSignBookParams()) {
 			signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().getSignType());
 		}
 		boolean addPage = false;
@@ -270,7 +270,7 @@ public class SignRequestService {
 				InputStream toSignInputStream;
 				Document toSignFile = toSignFiles.get(0);
 				toSignInputStream = pdfService.formatPdf(toSignFile.getInputStream(), signRequest.getCurrentWorkflowStep().getSignRequestParams(), addPage);
-				if(signRequest.getSignBooksWorkflowStep() == 1) {
+				if(signRequest.getCurrentWorkflowStepNumber() == 1) {
 					toSignInputStream = pdfService.convertGS(pdfService.writeMetadatas(toSignFile.getInputStream(), toSignFile.getFileName(), signRequest));
 				}
 				MultipartFile multipartFile = fileService.toMultipartFile(toSignInputStream, toSignFile.getFileName(), "application/pdf");
@@ -319,7 +319,7 @@ public class SignRequestService {
 	public void applySignBookRules(SignRequest signRequest, User user) throws EsupSignatureException, IOException {
 		SignBook recipientSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		List<SignBook> signBooks = signBookService.getSignBookBySignRequest(signRequest);
-		SignBook signBook = signBooks.get(0);
+		//SignBook signBook = signBooks.get(0);
 		SignRequestParams.SignType signType = signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType();
 		signRequest.getCurrentWorkflowStep().getSignBooks().put(recipientSignBook.getId(), true);
 		if (isSignRequestCompleted(signRequest)) {
@@ -331,16 +331,15 @@ public class SignRequestService {
 			} else {
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
 			}
-			if(signBook.isAutoRemove()) {
-				signBookService.removeSignRequestFromSignBook(signRequest, signBook);
-				signRequest.setSignBooksWorkflowStep(signRequest.getSignBooksWorkflowStep() + 1);
-				if(signBook.getSignBookType().equals(SignBookType.workflow) && signRequest.getSignBooksWorkflowStep() < signRequest.getWorkflowSteps().size()) {
-					signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-				} else {
-					completeSignRequest(signRequest, signBook, user);
+			//if(signBook.isAutoRemove()) {
+				signBookService.removeSignRequestFromSignBook(signRequest, recipientSignBook);
+				if(signRequest.getCurrentWorkflowStepNumber() == signRequest.getWorkflowSteps().size()) {
+					completeSignRequest(signRequest, user);
 					mailService.sendCompletedMail(signRequest);
+				} else {
+					nextWorkFlowStep(signRequest, user);
 				}
-			}
+			//}
 		} else {
 			if(signType.equals(SignType.visa)) {
 				updateStatus(signRequest, SignRequestStatus.pending, "Visa", user, "SUCCESS", signRequest.getComment());
@@ -350,7 +349,37 @@ public class SignRequestService {
 		}
 		//signRequest.setNbSign(signRequest.getNbSign() + 1);
 	}
-	
+
+	public void nextWorkFlowStep(SignRequest signRequest, User user) {
+		signRequest.setCurrentWorkflowStepNumber(signRequest.getCurrentWorkflowStepNumber() + 1);
+		List<String> recipients = new ArrayList<>();
+		for(Long signBookId : signRequest.getCurrentWorkflowStep().getSignBooks().keySet()){
+			recipients.addAll(signBookRepository.findById(signBookId).get().getRecipientEmails());
+		}
+		signBookService.importSignRequestByRecipients(signRequest, recipients, user);
+		updateStatus(signRequest, SignRequestStatus.draft, "Envoyé dans le parapheur " + signRequest.getCurrentWorkflowStep().getSignBooks().toString(), user, "SUCCESS", "");
+	}
+
+
+	public void initWorkFlow(SignRequest signRequest, SignBook signBook, User user) {
+		for(WorkflowStep modelWorkflowStep : signBook.getWorkflowSteps()) {
+			WorkflowStep workflowStep = new WorkflowStep();
+			workflowStep.setAllSignToComplete(modelWorkflowStep.isAllSignToComplete());
+			workflowStep.setSignRequestParams(getEmptySignRequestParams());
+			workflowStep.getSignRequestParams().setSignType(modelWorkflowStep.getSignRequestParams().getSignType());
+			workflowStep.getSignRequestParams().setNewPageType(modelWorkflowStep.getSignRequestParams().getNewPageType());
+			workflowStep.getSignBooks().putAll(modelWorkflowStep.getSignBooks());
+			workflowStepRepository.save(workflowStep);
+			signRequest.getWorkflowSteps().add(workflowStep);
+		}
+		List<String> recipients = new ArrayList<>();
+		for(Long signBookId : signRequest.getCurrentWorkflowStep().getSignBooks().keySet()){
+			recipients.addAll(signBookRepository.findById(signBookId).get().getRecipientEmails());
+		}
+		signBookService.importSignRequestByRecipients(signRequest, recipients, user);
+		updateStatus(signRequest, SignRequestStatus.draft, "Envoyé dans le parapheur " + signRequest.getCurrentWorkflowStep().getSignBooks().toString(), user, "SUCCESS", "");
+	}
+
 	public void pendingSignRequest(SignRequest signRequest, User user) {
 		for(Long signBookId : signRequest.getCurrentWorkflowStep().getSignBooks().keySet()) {
 			SignBook signBook = signBookRepository.findById(signBookId).get();
@@ -362,7 +391,7 @@ public class SignRequestService {
 				} else {
 					recipient = userService.createUser(emailRecipient);
 				}
-				if(signRequest.getSignBooksWorkflowStep() == 1 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
+				if(signRequest.getCurrentWorkflowStepNumber() == 1 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
 					Document toSignDocument = signRequest.getOriginalDocuments().get(0);
 					try {
 						scanSignatureFields(signRequest, PDDocument.load(toSignDocument.getInputStream()));
@@ -387,7 +416,8 @@ public class SignRequestService {
 				signRequestParams.setSignType(SignType.visa);
 				signRequestParamsRepository.save(signRequestParams);
 				if(signRequest.getWorkflowSteps().size() > stepNumber){
-					signRequest.getWorkflowSteps().get(stepNumber).setSignRequestParams(signRequestParams);
+					signRequest.getWorkflowSteps().get(stepNumber).getSignRequestParams().setXPos(signRequestParams.getXPos());
+					signRequest.getWorkflowSteps().get(stepNumber).getSignRequestParams().setYPos(signRequestParams.getYPos());
 				} else {
 					addWorkflowStep(signRequest, signRequestParams);
 				}
@@ -403,7 +433,8 @@ public class SignRequestService {
 		signRequest.getWorkflowSteps().add(workflowStep);
 	}
 
-	public void completeSignRequest(SignRequest signRequest, SignBook signBook, User user) throws EsupSignatureException {
+	public void completeSignRequest(SignRequest signRequest, User user) throws EsupSignatureException {
+		signRequest.setCurrentWorkflowStepNumber(signRequest.getCurrentWorkflowStepNumber() + 1);
 		signBookService.removeSignRequestFromAllSignBooks(signRequest);
 		updateStatus(signRequest, SignRequestStatus.completed, "Terminé automatiquement", user, "SUCCESS", signRequest.getComment());
 	}
