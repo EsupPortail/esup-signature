@@ -545,16 +545,14 @@ public class SignRequestController {
 
     @ResponseBody
     @RequestMapping(value = "/get-step")
-    public String getStep(RedirectAttributes redirectAttrs, HttpServletResponse response,
-                          Model model, HttpServletRequest request) {
+    public String getStep() {
         logger.debug("getStep : " + signRequestService.getStep());
         return signRequestService.getStep();
     }
 
     @ResponseBody
     @RequestMapping(value = "/get-progress", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getProgress(RedirectAttributes redirectAttrs, HttpServletResponse response,
-                              Model model, HttpServletRequest request) {
+    public String getProgress() {
         logger.debug("getProgress : " + progress);
         return progress;
     }
