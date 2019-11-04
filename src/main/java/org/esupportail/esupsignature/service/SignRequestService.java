@@ -160,7 +160,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void sign(SignRequest signRequest, User user, String password, boolean addDate) throws EsupSignatureIOException, EsupSignatureSignException, EsupSignatureKeystoreException, IOException {
+	public void sign(SignRequest signRequest, User user, String password, boolean addDate) throws EsupSignatureSignException, EsupSignatureKeystoreException, IOException {
 		step = "Demarrage de la signature";
 		SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		if(signRequest.isOverloadSignBookParams()) {

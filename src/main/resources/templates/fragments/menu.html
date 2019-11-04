@@ -14,10 +14,17 @@
 			</th:block>
 		</ul>
 		<ul class="navbar-nav">
-			<li class="nav-item"><a href="/user/users/?form" class="nav-link  "> <span th:if="${user != null}" th:text="${user.firstname} + ' ' + ${user.name}"></span>
-			</a></li>
-			<li class="nav-item"><a title=" " href="/user/users/?form" class="nav-link  "> <i aria-hidden="true" class="fa fa-cog"></i>&nbsp;
-			</a></li>
+			<li class="nav-item">
+				<a href="/user/users/?form" class="nav-link  "> <span th:if="${user != null}" th:text="${user.firstname} + ' ' + ${user.name}"></span></a>
+			</li>
+			<li class="nav-item">
+				<a title="Paramètres" href="/user/users/?form" class="nav-link  "><i aria-hidden="true" class="fa fa-cog"></i></a>
+			</li>
+			<li class="nav-item">
+				<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
+					<i class="fas fa-info-circle"></i>
+				</button>
+			</li>
 		</ul>
 	</div>
 </nav>

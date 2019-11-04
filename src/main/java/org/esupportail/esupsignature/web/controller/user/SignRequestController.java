@@ -210,7 +210,8 @@ public class SignRequestController {
             }
 
            // signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
-
+            //TODO choix signType
+            //			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
             signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
 
             model.addAttribute("signRequest", signRequest);
@@ -471,9 +472,8 @@ public class SignRequestController {
                 logger.error("keystore error", e);
                 redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
                 progress = "security_bad_password";
-            } catch (EsupSignatureIOException e) {
-                logger.error(e.getMessage(), e);
             } catch (EsupSignatureSignException e) {
+                redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
                 logger.error(e.getMessage(), e);
             } catch (IOException e) {
                 logger.error(e.getMessage());
@@ -528,8 +528,6 @@ public class SignRequestController {
                     logger.error("keystore error", e);
                     progress = "security_bad_password";
                     break;
-                } catch (EsupSignatureIOException e) {
-                    logger.error(e.getMessage(), e);
                 } catch (EsupSignatureException e) {
                     logger.error(e.getMessage(), e);
                 }
@@ -653,7 +651,6 @@ public class SignRequestController {
                         }
                     }
                     signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-                    signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé au parapheur " + signBook.getName(), user, "SUCCESS", comment);
                 }
             }
         } else {
@@ -685,6 +682,8 @@ public class SignRequestController {
                           HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) throws IOException {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
+        //TODO controle signType
+        ////			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
         if (signRequestService.checkUserViewRights(user, signRequest) && signRequest.getStatus().equals(SignRequestStatus.draft)) {

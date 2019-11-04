@@ -30,12 +30,12 @@
                         <i class="fas fa-save fa-2x"></i> <br/> Enregistrer
                     </p>
                 </button>
-                <button th:if="${referer != null}" type="button" class="col-12 m-2 btn btn-danger float-right" value="Retour" th:onclick="@{'location.href=\'' + ${referer} + '\''}">
+                <a th:if="${referer != null}" class="col-12 m-2 btn btn-danger float-right" value="Retour" th:href="${referer}">
                     <i class="fas fa-times fa-2x"></i><br/>Abandonner
-                </button>
-                <button th:unless="${referer != null}" type="button" class="col-12 m-2 btn btn-danger float-right" value="Retour" onclick="location.href='/user/users'">
+                </a>
+                <a th:unless="${referer != null}" class="col-12 m-2 btn btn-danger float-right" value="Retour" href="/user/users">
                     <i class="fas fa-times fa-2x"></i><br/>Abandonner
-                </button>
+                </a>
             </div>
         </div>
         <div class="tab-content col-lg-10">
@@ -226,3 +226,5 @@
     </div>
 </main>
 </body>
+<div th:replace="fragments/footer :: footer"></div>
+</html>

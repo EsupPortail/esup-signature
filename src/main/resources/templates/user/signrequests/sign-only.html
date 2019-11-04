@@ -31,41 +31,43 @@
         <div class="col-lg-2">
             <div class="nav flex-column nav-pills" style="z-index: 1;" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                 <div class="row">
-                    <div th:if="${user.signImage == null && documentType == 'pdf' && signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'visa'}">
-                        <div class="card card-body bg-danger text-white">
-                            <a href="/user/users/" class="text-white">Pas d'image de signature</a>
+                    <div th:if="${documentType == 'pdf'}">
+                        <div th:if="${user.signImage == null && documentType == 'pdf' && signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'visa'}">
+                            <div class="card card-body bg-danger text-white">
+                                <a href="/user/users/" class="text-white">Pas d'image de signature</a>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="alert alert-secondary col-12 col-sm-2 col-lg-12 m-2">
-                        <label class="control-label col-7" for="_zoom">Zoom</label>
-                        <label class="switch">
-                            <input onclick="toggleZoom();" type="checkbox" name="zoom" id="_zoom"/>
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
+                        <div class="alert alert-secondary col-12 col-sm-2 col-lg-12 m-2">
+                            <label class="control-label col-7" for="_zoom">Zoom</label>
+                            <label class="switch">
+                                <input onclick="toggleZoom();" type="checkbox" name="zoom" id="_zoom"/>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
 
-                    <div class="alert alert-secondary col-12 col-sm-2 col-lg-12 m-2">
-                        <label class="control-label col-7" for="_activeDate">Afficher la date</label>
-                        <label class="switch"> <input onclick="activeDate();" type="checkbox" id="_activeDate"/>
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
+                        <div class="alert alert-secondary col-12 col-sm-2 col-lg-12 m-2">
+                            <label class="control-label col-7" for="_activeDate">Afficher la date</label>
+                            <label class="switch"> <input onclick="activeDate();" type="checkbox" id="_activeDate"/>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
 
-                    <div th:if="${imagePagesSize > 1}" class="alert alert-secondary col-12 col-sm-2 col-lg-12 m-2">
-                        <label class="control-label col-12" for="_zoom">Navigation</label>
-                        <ul class="pagination float-right">
-                            <li class="page-item">
-                                <button id="previous" type="button" onclick="previousImage();" class="btn btn-outline-dark mr-2 disabled" aria-label="Précédent" disabled>
-                                    <i class="fas fa-arrow-left"></i>
-                                </button>
-                            </li>
-                            <li class="page-item">
-                                <button id="next" onclick="nextImage();" class="btn btn-outline-dark mr-2" aria-label="Prochain">
-                                    <i class="fas fa-arrow-right"></i>
-                                </button>
-                            </li>
-                        </ul>
+                        <div th:if="${imagePagesSize > 1}" class="alert alert-secondary col-12 col-sm-2 col-lg-12 m-2">
+                            <label class="control-label col-12" for="_zoom">Navigation</label>
+                            <ul class="pagination float-right">
+                                <li class="page-item">
+                                    <button id="previous" type="button" onclick="previousImage();" class="btn btn-outline-dark mr-2 disabled" aria-label="Précédent" disabled>
+                                        <i class="fas fa-arrow-left"></i>
+                                    </button>
+                                </li>
+                                <li class="page-item">
+                                    <button id="next" onclick="nextImage();" class="btn btn-outline-dark mr-2" aria-label="Prochain">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                     <button class="btn btn-success col-12 col-sm-2 col-lg-12 m-2" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}" type="button" data-toggle="modal" data-target="#signModal">
                         <i class="fas fa-signature fa-2x"></i> Valider la signature
@@ -159,6 +161,15 @@
                         </div>
                     </div>
                 </div>
+                <div th:unless="${documentType == 'pdf'}">
+                    <div class="alert alert-warning" role="alert">
+                        <h4 class="alert-heading">Signature d'un document autre que PDF</h4>
+                        <p>Vous allez signer un document qui n'est pas un PDF. Dans ce cas la signature visuelle n'est pas possible/</p>
+                        <hr>
+                        <p class="mb-0">Si vous signez à m'aide d'un certificat, le fichier sera encapsulé dans un zip au format ASIC-E</p>
+                    </div>
+                </div>
+
             </form>
             <script th:inline="javascript">
                 /*<![CDATA[*/
