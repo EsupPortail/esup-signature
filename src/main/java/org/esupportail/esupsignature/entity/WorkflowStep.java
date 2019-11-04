@@ -14,6 +14,8 @@ public class WorkflowStep {
     @Version
     private Integer version;
 
+    private String name;
+
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<Long, Boolean> signBooks = new HashMap<>();
 
@@ -34,6 +36,14 @@ public class WorkflowStep {
 
     public Integer getVersion() {
         return version;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setVersion(Integer version) {

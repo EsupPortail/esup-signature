@@ -284,14 +284,11 @@
             <div class="card rounded-0 mb-1">
                 <div class="card-header">
                     Etapes de signature
-                    <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'draft')}">
-                        <button type="button" class="mr-2 btn btn-outline-dark btn-light float-right" data-toggle="modal" data-target="#reSendModal">
-                            Ajouter une étape <i class="fa fa-plus" aria-hidden="true"></i>
-                        </button>
-                    </th:block>
+                    <button type="button" class="btn btn-primary float-right" data-toggle="modal" data-target="#addStep">
+                        <i class="fa fa-plus"></i> Ajouter une étape
+                    </button>
                 </div>
-                <div id="collapseSignBook" class="show"
-                     aria-labelledby="headingOne" data-parent="#accordion">
+                <div id="collapseSignBook" class="show" aria-labelledby="headingOne" data-parent="#accordion">
                     <div class="card-body">
                         <dl class="display-group border-bottom m-0">
                             <dd>
@@ -300,7 +297,7 @@
                                         <div class="bs-stepper-header" role="tablist">
                                             <th:block th:each="workflowStep,iterator : ${signRequest.workflowSteps}">
                                                 <div class="step">
-                                                    <div class="step-trigger col-12 text-left" role="tab" aria-selected="false">
+                                                    <span class="step-trigger col-12 text-left" role="tab" aria-selected="false">
                                                         <div th:if="${iterator.index + 1 == signRequest.currentWorkflowStepNumber && signRequest.status != 'completed'}">
                                                             <span class="bs-stepper-circle bg-danger" th:text="${iterator.index + 1}"></span>
                                                         </div>
@@ -310,11 +307,90 @@
                                                         <div th:unless="${iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
                                                             <span class="bs-stepper-circle bg-success" th:text="${iterator.index + 1}"></span>
                                                         </div>
-                                                        <span th:if="${workflowStep.allSignToComplete}"> Tous les <span class="bs-stepper-label" th:text="${workflowStep.signRequestParams.signType}"></span> de : </span>
-                                                        <span th:unless="${workflowStep.allSignToComplete}"> Une des signatures de : </span>
-                                                        <span class="bs-stepper-label" th:text="${workflowStep.signBooksLabels.keySet()}"></span>
-                                                        <span th:text="${workflowStep.signRequestParams.signType}"></span>
-                                                    </div>
+                                                        <span class="bs-stepper-label">
+                                                            <div th:if="${workflowStep.allSignToComplete}">
+                                                                Type de signature : <span th:text="${workflowStep.signRequestParams.signType}"></span>
+                                                                <br/>
+                                                                Tous les destinataires suivants :
+                                                                <th:block th:each="recipient : ${workflowStep.signBooksLabels}">
+                                                                    <span th:text="${recipient.key}"></span>
+                                                                </th:block>
+                                                            </div>
+                                                            <div th:unless="${workflowStep.allSignToComplete}">
+                                                                Type de signature : <span th:text="${workflowStep.signRequestParams.signType}"></span>
+                                                                <br/>
+                                                                Un des déstinataires suivants :
+                                                                <th:block th:each="recipient : ${workflowStep.signBooksLabels}">
+                                                                    <span th:text="${recipient.key}"></span>
+                                                                </th:block>
+                                                            </div>
+                                                        </span>
+                                                        <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'draft')}">
+                                                            <button type="button" class="mr-2 btn btn-primary float-right" data-toggle="modal" th:data-target="'#reSendModal' + ${workflowStep.id}">
+                                                                <i class="fa fa-plus" aria-hidden="true"></i> Ajouter un destinataire
+                                                            </button>
+                                                            <div class="modal fade" th:id="'reSendModal' + ${workflowStep.id}" tabindex="-1" role="dialog" th:aria-labelledby="'reSendModal' + ${workflowStep.id}" aria-hidden="true">
+                                                            <div class="modal-dialog modal-lg" role="document">
+                                                                <div class="modal-content">
+                                                                    <form class="form-group" th:action="'/user/signrequests/send-to-signbook/' + ${id} + '/' + ${workflowStep.id}" method="get">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title">Envoyer dans un parapheur</h5>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                            <div class="input-group">
+                                                                                <select onchange="checkNbRecipients();" name="signBookNames" th:id="'signBookNames' + ${workflowStep.id}" size="5" multiple="multiple" required="required">
+                                                                                    <th:block th:each="signBook : ${allSignBooks}">
+                                                                                        <option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
+                                                                                    </th:block>
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="input-group">
+                                                                                <textarea class="form-control" name="comment" placeholder="Commentaire"></textarea>
+                                                                            </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
+                                                                        <button type="submit" class="btn btn-primary float-right">
+                                                                            <i class="fas fa-share-square"></i>Envoyer
+                                                                        </button>
+                                                                    </div>
+                                                                    </form>
+                                                                </div>
+                                                                <script language="JavaScript">
+                                                                    		var signBookNamesSelect = new SlimSelect({
+                                                                                select: "#[['signBookNames' + ${workflowStep.id}]]",
+                                                                                placeholder: 'Choisir un ou plusieurs parapheur(s)',
+                                                                                searchText: 'Aucun résultat',
+                                                                                searchPlaceholder: 'Rechercher',
+                                                                                searchHighlight: true,
+                                                                                searchFilter: (option, search) => {
+                                                                                    return true;
+                                                                                },
+                                                                                ajax: function (search, callback) {
+                                                                                    if (search.length < 3) {
+                                                                                        callback('Merci de saisir au moins 3 caractères')
+                                                                                    }
+                                                                                    fetch('/user/users/searchLdap?searchString=' + search)
+                                                                                        .then(function (response) {
+                                                                                            return response.json()
+                                                                                        })
+                                                                                        .then(function (json) {
+                                                                                            let data = []
+                                                                                            for (let i = 0; i< json.length; i++) {
+                                                                                                data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
+                                                                                            }
+                                                                                            callback(data)
+                                                                                        })
+                                                                                        .catch(function(error) {
+                                                                                            callback(false)
+                                                                                        })
+                                                                                }
+                                                                            });
+                                                                </script>
+                                                            </div>
+                                                        </div>
+                                                        </th:block>
+                                                    </span>
                                                 </div>
                                                 <div th:if="${#lists.size(signRequest.workflowSteps) > iterator.index + 1}" class="line"></div>
                                             </th:block>
@@ -421,73 +497,109 @@
     </div>
 </div>
 
-<div class="modal fade" id="reSendModal" tabindex="-1" role="dialog" aria-labelledby="reSendModal" aria-hidden="true">
+<div class="modal fade" id="addStep" tabindex="-1" role="dialog" aria-labelledby="addStep" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form class="form-group" th:action="'/user/signrequests/send-to-signbook/' + ${id}" method="get">
             <div class="modal-header">
-                <h5 class="modal-title">Envoyer dans un parapheur</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Ajouter une étape</h5>
             </div>
             <div class="modal-body">
-                    <div class="input-group">
-                        <select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple" required="required">
-                            <th:block th:each="signBook : ${allSignBooks}">
-                                <option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
-                            </th:block>
-                        </select>
+                <form th:action="'/user/signrequests/add-step/' + ${id}" method="post">
+                    <div class="form-group" id="_allSignToComplete_div_id">
+                        <label for="_allSignToComplete"> <strong> Tous
+                            les participants doivent-ils signer ? </strong>
+                            <button data-target="#collapseHelpAllSign" data-toggle="collapse"
+                                    type="button" class="btn btn-sm btn-info">
+                                <span class="fas fa-info-circle"></span>
+                            </button>
+                            <div class="collapse" id="collapseHelpAllSign">
+                                <div class="alert alert-info">
+                                    <small>
+                                        <ul>
+                                            <li>
+                                                Oui : Tous les participants doivent signer pour que la demande passe au status "Signé"
+                                            </li>
+                                            <li>
+                                                Non : Une seule signature suffit
+                                            </li>
+                                        </ul>
+                                    </small>
+                                </div>
+                            </div>
+                        </label>
+                        <div class="col-lg-8">
+                            <label class="switch">
+                                <input type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
                     </div>
-                    <div class="input-group">
-                        <textarea class="form-control" name="comment" placeholder="Commentaire"></textarea>
+
+                    <div class="form-group" id="_signType_div_id">
+                        <label for="_signType_id"> <strong> Type de signature
+                            par défaut
+                            <button data-target="#collapseHelpSignType"
+                                    data-toggle="collapse" type="button"
+                                    class="btn btn-sm btn-info">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        </strong>
+                            <div class="collapse" id="collapseHelpSignType">
+                                <div class="alert alert-info">
+                                    <ul>
+                                        <li>PAdES/XAdES : s'appuie sur le certificat P12
+                                            uploader au niveau de vos paramètres
+                                        </li>
+                                        <li>Apposition de la signature : ajoute simplement
+                                            l'image de votre signature sur un PDF à l'endroit voulu
+                                        </li>
+                                        <li>PAdES/XAdES avec NexU : s'appuie l'application NexU
+                                            qui permet l'utilisation d'un certificat matériel
+                                        </li>
+                                        <li>Confirmation de lecture : permet de valider la
+                                            lecture d'un document
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </label>
+                        <div class="col-lg-8">
+                            <select id="_signType_id" name="signType" class="form-control" size="1">
+                                <th:block th:each="signType : ${signTypes}">
+                                    <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
                     </div>
+                    <div class="form-group" id="_newPageType_div_id">
+                        <label for="_newPageType_id">
+                            <strong> Insérer unepage de garde </strong>
+                        </label>
+                        <div class="col-lg-8">
+                            <select id="_newPageType_id" name="newPageType"
+                                    class="form-control" size="1">
+                                <th:block th:each="newPageType : ${newPageTypes}">
+                                    <option th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-paper-plane" aria-hidden="true"></i> Envoyer
+                    </button>
+                </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
-                <button type="submit" class="btn btn-primary float-right">
-                    <i class="fas fa-share-square"></i>Envoyer
-                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
             </div>
-            </form>
         </div>
     </div>
 </div>
+
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 <script th:inline="javascript">
 	/*<![CDATA[*/
-
-	var testSignBookName = document.getElementById("signBookNames");
-
-	if(testSignBookName != null) {
-		var signBookNamesSelect = new SlimSelect({
-			select: '#signBookNames',
-			placeholder: 'Choisir un ou plusieurs parapheur(s)',
-			searchText: 'Aucun résultat',
-			searchPlaceholder: 'Rechercher',
-			searchHighlight: true,
-			searchFilter: (option, search) => {
-				return true;
-			},
-			ajax: function (search, callback) {
-				if (search.length < 3) {
-					callback('Merci de saisir au moins 3 caractères')
-				}
-				fetch('/user/users/searchLdap?searchString=' + search)
-						.then(function (response) {
-							return response.json()
-						})
-						.then(function (json) {
-							let data = []
-							for (let i = 0; i< json.length; i++) {
-								data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
-							}
-							callback(data)
-						})
-						.catch(function(error) {
-							callback(false)
-						})
-			}
-		});
-	}
 
 	$('#multipartFile').on('filebatchuploadcomplete', function(event, file, previewId, index, reader) {
 		location.reload();

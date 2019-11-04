@@ -97,6 +97,9 @@ public class SignRequestController {
     private SignRequestService signRequestService;
 
     @Resource
+    private WorkflowStepRepository workflowStepRepository;
+
+    @Resource
     private SignRequestParamsRepository signRequestParamsRepository;
 
     @Resource
@@ -229,6 +232,8 @@ public class SignRequestController {
                     model.addAttribute("modelId", firstOriginalSignBook.getModelFile().getUrl());
                 }
             }
+            model.addAttribute("signTypes", SignType.values());
+            model.addAttribute("newPageTypes", NewPageType.values());
             model.addAttribute("allSignBooks", signBookRepository.findByNotCreateBy("System"));
             model.addAttribute("nbSignOk", signRequest.countSignOk());
             model.addAttribute("baseUrl", baseUrl);
@@ -627,8 +632,33 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @RequestMapping(value = "/send-to-signbook/{id}", method = RequestMethod.GET)
+    @PostMapping(value = "/add-step/{id}")
+    public String addStep(@PathVariable("id") Long id,
+                          @RequestParam(value = "name", required = false) String name,
+                          @RequestParam(name="allSignToComplete", required = false) String allSignToComplete,
+                          @RequestParam("signType") String signType,
+                          RedirectAttributes redirectAttrs) {
+        User user = userService.getUserFromAuthentication();
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        if (signRequestService.checkUserViewRights(user, signRequest)) {
+
+            WorkflowStep workflowStep = new WorkflowStep();
+            if(name != null) {
+                workflowStep.setName(name);
+            }
+            workflowStep.setAllSignToComplete(Boolean.valueOf(allSignToComplete));
+            workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
+            workflowStep.getSignRequestParams().setSignType(SignType.valueOf(signType));
+            workflowStepRepository.save(workflowStep);
+            signRequest.getWorkflowSteps().add(workflowStep);
+        }
+        return "redirect:/user/signrequests/" + id;
+    }
+
+
+    @RequestMapping(value = "/send-to-signbook/{id}/{workflowStepId}", method = RequestMethod.GET)
     public String sendToSignBook(@PathVariable("id") Long id,
+                                 @PathVariable("workflowStepId") Long workflowStepId,
                                  @RequestParam(value = "signBookNames", required = true) String[] signBookNames,
                                  @RequestParam(value = "comment", required = false) String comment,
                                  HttpServletResponse response,
