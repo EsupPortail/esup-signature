@@ -207,19 +207,6 @@
                         <i class="fas fa-file-export"></i> Export to source
                     </button>
                 </div>
-                <dl class="row border-bottom m-0">
-                    <dt class="col-lg-5">
-                        Gérer automatiquement l'avancement du workflow
-                    </dt>
-                    <dd>
-                        <div th:if="${signBook.autoRemove}">
-                            <i class="fas fa-check fa-2x text-success"></i>
-                        </div>
-                        <div th:unless="${signBook.autoRemove}">
-                            <i class="fas fa-times fa-2x text-danger"></i>
-                        </div>
-                    </dd>
-                </dl>
             </div>
         </div>
         <div th:if="${documentId != null}">

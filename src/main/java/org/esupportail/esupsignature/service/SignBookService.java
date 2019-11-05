@@ -110,7 +110,6 @@ public class SignBookService {
         signBookToUpdate.setTargetType(signBook.getTargetType());
         signBookToUpdate.getSignRequestParams().setSignType(signRequestParams.getSignType());
         signBookToUpdate.getSignRequestParams().setNewPageType(signRequestParams.getNewPageType());
-        signBookToUpdate.setAutoRemove(signBook.isAutoRemove());
         if (!multipartFile.isEmpty()) {
             Document newModel;
             try {

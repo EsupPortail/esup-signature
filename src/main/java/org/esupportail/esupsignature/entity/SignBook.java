@@ -71,11 +71,7 @@ public class SignBook {
     @OrderColumn
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
-    //TODO renomer autoWorkflow
-    private boolean autoRemove = true;
-    
     //TODO alerte au moment de la cloture
-    
     //TODO alerte + validation de la demande par le gestionnaire
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;
@@ -98,23 +94,7 @@ public class SignBook {
     public enum DocumentIOType {
 		none, smb, vfs, cmis, mail;
 	}
-    
-    public String getRecipientEmailsLabels() {
-    	String recipientEmailsLabels = "";
-		for(String recipientEmail : recipientEmails) {
-			recipientEmailsLabels += "<li>" + recipientEmail + "</li>";
-		}
-		return recipientEmailsLabels;
-    }
-    
-    public String getModeratorEmailsLabels() {
-    	String modetatorEmailsLabels = "";
-		for(String modetatorEmail : moderatorEmails) {
-			modetatorEmailsLabels += "<li>" + modetatorEmail + "</li>";
-		}
-		return modetatorEmailsLabels;
-    }
-    
+
     public void setSourceType(DocumentIOType sourceType) {
         this.sourceType = sourceType;
     }
@@ -211,14 +191,6 @@ public class SignBook {
         this.workflowSteps = workflowSteps;
     }
 
-    public boolean isAutoRemove() {
-        return this.autoRemove;
-    }
-    
-    public void setAutoRemove(boolean autoRemove) {
-        this.autoRemove = autoRemove;
-    }
-    
     public DocumentIOType getTargetType() {
         return this.targetType;
     }
@@ -239,6 +211,7 @@ public class SignBook {
         this.modelFile = modelFile;
     }
 
+
     public SignRequestParams getSignRequestParams() {
         return this.signRequestParams;
     }
@@ -246,7 +219,7 @@ public class SignBook {
     public void setSignRequestParams(SignRequestParams signRequestParams) {
         this.signRequestParams = signRequestParams;
     }
-    
+
     public SignBookType getSignBookType() {
         return this.signBookType;
     }

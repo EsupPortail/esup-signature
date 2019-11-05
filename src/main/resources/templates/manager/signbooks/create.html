@@ -24,7 +24,7 @@
 		</div>
 	</div>
 	<form id="fc_org_esupportail_esupsignature_domain_SignBook" action="/manager/signbooks" method="post" enctype="multipart/form-data">
-		<input type="hidden" name="type" th:value="${type}">
+		<input type="hidden" name="type" value="group">
 		<div id="ribbon" class="card">
 			<div class="card-body">
 				<button type="submit" class="mr-2 btn btn-outline-dark btn-light float-left">
@@ -47,7 +47,7 @@
 					</div>
 					<input type="hidden" id="_signBookType_id" name="signBookType" value="group" />
 
-					<div th:if="${type == 'group'}" class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_recipientemails">
+					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_recipientemails">
 						<label for="recipientemailsSelect"> <strong> Destinataires </strong>
 							<button class="btn btn-sm btn-info" data-target="#collapseHelp2" data-toggle="collapse" type="button">
 								<i class="fas fa-info-circle"></i>
@@ -90,36 +90,6 @@
                             });
 						</script>
 					</div>
-
-					<div th:if="${type == 'workflow'}" class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signBooksIds">
-						<label for="recipientemailsSelect"> <strong> Parapheurs
-								<button class="btn btn-sm btn-info" data-target="#collapseHelp3" data-toggle="collapse" type="button">
-									<i class="fas fa-info-circle"></i>
-								</button>
-								<div class="collapse" id="collapseHelp3">
-									<div class="alert alert-info"></div>
-								</div>
-						</strong>
-						</label>
-						<select id="select-from" class="form-control" multiple="multiple" size="10">
-							<th:block th:each="signBook : ${allSignBooks}">
-								<option th:value="${signBook.id}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
-							</th:block>
-						</select>
-						<select id="select-to" class="form-control" multiple="multiple" name="signBooksIds" size="10" required="required">
-						</select>
-						<button type="button" class="btn btn-dark" id="btn-up">
-							<i class="fas fa-sort-up">
-								<!--  -->
-							</i>
-						</button>
-						<button type="button" class="btn btn-dark" id="btn-down">
-							<i class="fas fa-sort-down">
-								<!--  -->
-							</i>
-						</button>
-					</div>
-
 					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_moderatoremails">
 						<label for="moderatoremailsSelect"> <strong>Gestionnaire(s) du parapheur</strong>
 							<button class="btn btn-sm btn-info" data-target="#collapseHelp4" data-toggle="collapse" type="button">

@@ -126,12 +126,21 @@ public class SignBookController {
 		signBooks.addAll(signBookRepository.findByExternal(false));
 		uiModel.addAttribute("allSignBooks", signBooks);
 		uiModel.addAttribute("type", type);
-        return "manager/signbooks/create";
+		if(type.equals("workflow")) {
+			return "manager/signbooks/create-workflow";
+		} else {
+			return "manager/signbooks/create";
+		}
+
     }
 	
 	@PostMapping(produces = "text/html")
-	public String create(SignBook signBook, @RequestParam("type") String type, @RequestParam("multipartFile") MultipartFile multipartFile,
-			@RequestParam(name = "signBooksIds", required = false) Long[] signBooksIds, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, RedirectAttributes redirectAttrs) {
+	public String create(SignBook signBook, @RequestParam("type") String type,
+						 @RequestParam("multipartFile") MultipartFile multipartFile,
+						 @RequestParam(name = "signBooksIds", required = false) Long[] signBooksIds,
+						 @RequestParam("signType") String signType,
+						 @RequestParam("newPageType") String newPageType,
+						 Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
 		SignBook signBookToUpdate = null;
 		if(signBook.getId() != null) {
@@ -304,7 +313,7 @@ public class SignBookController {
 	@PostMapping(value = "/add-step/{id}")
 	public String addStep(@PathVariable("id") Long id,
 						  @RequestParam("signBookNames") List<String> singBookNames,
-						  @RequestParam(name="allSignToComplete", required = false) String allSignToComplete,
+						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
 						  @RequestParam("signType") String signType,
 						  RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
@@ -318,7 +327,11 @@ public class SignBookController {
 			SignBook signBook1 = signBookRepository.findByRecipientEmails(Arrays.asList(signBookName)).get(0);
 			workflowStep.getSignBooks().put(signBook1.getId(), false);
 		}
-		workflowStep.setAllSignToComplete(Boolean.valueOf(allSignToComplete));
+		if(allSignToComplete ==null) {
+			workflowStep.setAllSignToComplete(false);
+		} else {
+			workflowStep.setAllSignToComplete(allSignToComplete);
+		}
 		workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
 		workflowStep.getSignRequestParams().setSignType(SignType.valueOf(signType));
 		workflowStepRepository.save(workflowStep);

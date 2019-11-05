@@ -636,9 +636,8 @@ public class SignRequestController {
     @PostMapping(value = "/add-step/{id}")
     public String addStep(@PathVariable("id") Long id,
                           @RequestParam(value = "name", required = false) String name,
-                          @RequestParam(name="allSignToComplete", required = false) String allSignToComplete,
-                          @RequestParam("signType") String signType,
-                          RedirectAttributes redirectAttrs) {
+                          @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
+                          @RequestParam("signType") String signType) {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
@@ -647,7 +646,11 @@ public class SignRequestController {
             if(name != null) {
                 workflowStep.setName(name);
             }
-            workflowStep.setAllSignToComplete(Boolean.valueOf(allSignToComplete));
+            if(allSignToComplete ==null) {
+                workflowStep.setAllSignToComplete(false);
+            } else {
+                workflowStep.setAllSignToComplete(allSignToComplete);
+            }
             workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
             workflowStep.getSignRequestParams().setSignType(SignType.valueOf(signType));
             workflowStepRepository.save(workflowStep);
