@@ -222,8 +222,8 @@ public class SignBookController {
 				}
 			}
 		}
-		uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());
-		uiModel.addAttribute("signRequests", signBook.getSignRequests());
+//		uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());
+//		uiModel.addAttribute("signRequests", signBook.getSignRequests());
 		uiModel.addAttribute("signBook", signBook);
 		uiModel.addAttribute("signTypes", SignType.values());
 		uiModel.addAttribute("itemId", id);
@@ -245,10 +245,12 @@ public class SignBookController {
 				return "redirect:/manager/signbooks/" + id;
 			}    
 		}
-		if(signBook.getSignRequests().size() > 0) {
-			redirectAttrs.addFlashAttribute("messageCustom", "Le parapheur n'est pas vide");
-			return "redirect:/manager/signbooks/" + id;
-		}
+
+//		if(signBook.getSignRequests().size() > 0) {
+//			redirectAttrs.addFlashAttribute("messageCustom", "Le parapheur n'est pas vide");
+//			return "redirect:/manager/signbooks/" + id;
+//		}
+
 		signBookService.deleteSignBook(signBook);
         uiModel.asMap().clear();
         uiModel.addAttribute("page", (page == null) ? "1" : page.toString());

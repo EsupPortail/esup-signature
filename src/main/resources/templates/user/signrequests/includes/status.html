@@ -14,7 +14,7 @@
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
 			</small>
 		</div>
-		<div th:case="'signed'" class="alert alert-success text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+		<div th:case="'signed'" class="alert alert-warning text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
 			<small>
 			<i class="fas fa-file-signature"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
@@ -26,19 +26,19 @@
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
 			</small>
 		</div>
-		<div th:case="'checked'" class="alert alert-success text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+		<div th:case="'checked'" class="alert alert-warning text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
 			<small>
 			<i class="far fa-check-circle"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
 			</small>
 		</div>
-		<div th:case="'exported'" class="alert alert-warning text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+		<div th:case="'exported'" class="alert alert-light text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
 			<small>
 			<i class="fas fa-file-export"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
 			</small>
 		</div>
-		<div th:case="'completed'" class="alert alert-warning text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+		<div th:case="'completed'" class="alert alert-success text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
 			<small>	
 			<i class="fas fa-flag-checkered"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>

@@ -103,28 +103,15 @@ public class SignRequestService {
 
 	public List<SignRequest> getTosignRequests(User user) {
 		List<SignRequest> signRequestsToSign = new ArrayList<>();
-		List<SignBook> signBooksGroup = signBookRepository.findByRecipientEmailsContainAndSignBookType(user.getEmail(), SignBookType.group);
-		signBooksGroup.addAll(signBookRepository.findByRecipientEmailsContainAndSignBookType(user.getEmail(), SignBookType.user));
-		SignBook signBook = signBookRepository.findByName(user.getFirstname() + " " + user.getName()).get(0);
-		for(SignBook signBookGroup : signBooksGroup) {
-			for(SignRequest signRequest : signBookGroup.getSignRequests()) {
-				if(!signRequestsToSign.contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.pending)) {
-					signRequestsToSign.add(signRequest);
-				}
+		SignBook signBook = signBookRepository.findByRecipientEmails(Arrays.asList(user.getEmail())).get(0);
+		Map<Long, Boolean> longBooleanMap = new HashMap<>();
+		longBooleanMap.put(signBook.getId(), Boolean.FALSE);
+		List<WorkflowStep> workflowSteps = workflowStepRepository.findBySignBooks(signBook.getId());
+		for(WorkflowStep workflowStep : workflowSteps) {
+			if(!workflowStep.getSignBooks().get(signBook.getId()) && signRequestRepository.findByWorkflowSteps(Arrays.asList(workflowStep)).size() > 0) {
+				signRequestsToSign.add(signRequestRepository.findByWorkflowSteps(Arrays.asList(workflowStep)).get(0));
 			}
-/*
-			List<SignBook> signBooksWorkflows = signBookRepository.findBySignBookContain(signBookGroup);
-			for(SignBook signBookWorkflow : signBooksWorkflows) {
-				for(SignRequest signRequest : signBookWorkflow.getSignRequests()) {
-					if(!signRequestsToSign.contains(signRequest) && signRequest.getStatus().equals(SignRequestStatus.pending) && signRequest.getCurrentWorkflowStep().getSignBooks().containsKey(signBook.getId()) && !signRequest.getCurrentWorkflowStep().getSignBooks().get(signBook.getId())) {
-						signRequestsToSign.add(signRequest);
-					}
-				}
-			}
-
- */
 		}
-
 		return signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 
 	}
@@ -356,7 +343,7 @@ public class SignRequestService {
 		for(Long signBookId : signRequest.getCurrentWorkflowStep().getSignBooks().keySet()){
 			recipients.addAll(signBookRepository.findById(signBookId).get().getRecipientEmails());
 		}
-		signBookService.importSignRequestByRecipients(signRequest, recipients, user);
+		signBookService.importSignRequestByRecipients(signRequest, recipients, signRequest.getCurrentWorkflowStep(), user);
 		updateStatus(signRequest, SignRequestStatus.draft, "Envoyé dans le parapheur " + signRequest.getCurrentWorkflowStep().getSignBooks().toString(), user, "SUCCESS", "");
 	}
 
@@ -376,7 +363,7 @@ public class SignRequestService {
 		for(Long signBookId : signRequest.getCurrentWorkflowStep().getSignBooks().keySet()){
 			recipients.addAll(signBookRepository.findById(signBookId).get().getRecipientEmails());
 		}
-		signBookService.importSignRequestByRecipients(signRequest, recipients, user);
+		signBookService.importSignRequestByRecipients(signRequest, recipients, signRequest.getCurrentWorkflowStep(), user);
 		updateStatus(signRequest, SignRequestStatus.draft, "Envoyé dans le parapheur " + signRequest.getCurrentWorkflowStep().getSignBooks().toString(), user, "SUCCESS", "");
 	}
 

@@ -221,7 +221,7 @@ public class SignBookService {
                         signBookRecipientsEmails.add(user.getEmail());
                         SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams());
                         signRequest.setTitle("Import depuis " + signBook.getSourceType() + " : " + signBook.getDocumentsSourceUri());
-                        importSignRequestInSignBook(signRequest, signBook, user);
+                        //importSignRequestInSignBook(signRequest, signBook, user);
                         signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Import depuis " + signBook.getSourceType() + " : " + signBook.getDocumentsSourceUri(), user, "SUCCESS", null);
                         fsAccessService.remove(fsFile);
                     }
@@ -239,7 +239,7 @@ public class SignBookService {
     public void exportFilesToTarget(SignBook signBook, User user) throws EsupSignatureException {
         logger.trace("export signRequest from " + signBook.getName());
         List<SignRequest> signRequests = new ArrayList<>();
-        signRequests.addAll(signBook.getSignRequests());
+        //signRequests.addAll(signBook.getSignRequests());
         for (SignRequest signRequest : signRequests) {
             if (signRequest.getStatus().equals(SignRequestStatus.completed) /* && signRequestService.isSignRequestCompleted(signRequest)*/) {
                 boolean exportOk = exportFileToTarget(signBook, signRequest, user);
@@ -253,7 +253,7 @@ public class SignBookService {
             }
         }
 
-        if (signBook.isExternal() && signBook.getSignRequests().size() == 0) {
+        if (signBook.isExternal()) {
             deleteSignBook(signBook);
         }
     }
@@ -285,6 +285,13 @@ public class SignBookService {
         return false;
     }
 
+    public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, WorkflowStep workflowStep, User user) {
+        importSignRequestByRecipients(signRequest, signBook.getRecipientEmails(), workflowStep, user);
+        signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé dans le parapheur " + signBook.getName(), user, "SUCCESS", "");
+
+    }
+
+    /*
     public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) {
         if (!signBook.getSignRequests().contains(signRequest)) {
             signBook.getSignRequests().add(signRequest);
@@ -308,15 +315,16 @@ public class SignBookService {
             logger.warn(signRequest.getId() + " is already in signbook" + signBook.getName());
         }
     }
+    */
 
-    public void importSignRequestByRecipients(SignRequest signRequest, List<String> recipientEmails, User user) {
+    public void importSignRequestByRecipients(SignRequest signRequest, List<String> recipientEmails, WorkflowStep workflowStep, User user) {
         for (String recipientEmail : recipientEmails) {
             SignBook signBook = getUserSignBookByRecipientEmail(recipientEmail);
             if (signBook.getRecipientEmails().contains("creator")) {
                 signBook = getUserSignBook(user);
             }
-            if (!signRequest.getCurrentWorkflowStep().getSignBooks().containsKey(signBook.getId())) {
-                signRequest.getCurrentWorkflowStep().getSignBooks().put(signBook.getId(), false);
+            if (!workflowStep.getSignBooks().containsKey(signBook.getId())) {
+                workflowStep.getSignBooks().put(signBook.getId(), false);
             } else {
                 logger.warn(signRequest.getId() + " is already in signbook" + signBook.getName());
             }
@@ -327,14 +335,14 @@ public class SignBookService {
         logger.info("remove from all signBook " + signRequest.getName());
         List<SignBook> signBooks = getSignBookBySignRequest(signRequest);
         for (SignBook signBook : signBooks) {
-                signBook.getSignRequests().remove(signRequest);
+                //signBook.getSignRequests().remove(signRequest);
 				signBookRepository.save(signBook);
         }
         signRequestRepository.save(signRequest);
     }
 
     public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook) {
-        signBook.getSignRequests().remove(signRequest);
+        //signBook.getSignRequests().remove(signRequest);
         signRequestRepository.save(signRequest);
         signBookRepository.save(signBook);
     }
@@ -349,10 +357,6 @@ public class SignBookService {
             }
         }
         return null;
-    }
-
-    public List<SignBook> getOriginalSignBook(SignRequest signRequest) {
-        return signBookRepository.findBySignRequests(Arrays.asList(signRequest));
     }
 
     public SignBook getUserSignBook(User user) {
@@ -374,7 +378,7 @@ public class SignBookService {
     }
 
     public List<SignBook> getSignBookBySignRequest(SignRequest signRequest) {
-        List<SignBook> signBooks = signBookRepository.findBySignRequests(Collections.singletonList(signRequest));
+        List<SignBook> signBooks = new ArrayList<>();
         return signBooks;
     }
 

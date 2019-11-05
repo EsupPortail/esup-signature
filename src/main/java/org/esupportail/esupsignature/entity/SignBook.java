@@ -71,10 +71,6 @@ public class SignBook {
     @OrderColumn
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
-//    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-//    @OrderColumn
-//    private List<SignBook> signBooks = new ArrayList<>();
-    
     //TODO renomer autoWorkflow
     private boolean autoRemove = true;
     
@@ -88,9 +84,6 @@ public class SignBook {
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL }, orphanRemoval = true)
     private Document modelFile = new Document();
-    
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL })
-    private List<SignRequest> signRequests = new ArrayList<>();
 
     @ManyToOne
     private SignRequestParams signRequestParams;
@@ -209,15 +202,6 @@ public class SignBook {
     public void setRecipientEmails(List<String> recipientEmails) {
         this.recipientEmails = recipientEmails;
     }
-/*
-    public List<SignBook> getSignBooks() {
-        return this.signBooks;
-    }
-    
-    public void setSignBooks(List<SignBook> SignBooks) {
-        this.signBooks = SignBooks;
-    }
-  */
 
     public List<WorkflowStep> getWorkflowSteps() {
         return workflowSteps;
@@ -254,15 +238,7 @@ public class SignBook {
     public void setModelFile(Document modelFile) {
         this.modelFile = modelFile;
     }
-    
-    public List<SignRequest> getSignRequests() {
-        return this.signRequests;
-    }
 
-    public void setSignRequests(List<SignRequest> signRequests) {
-        this.signRequests = signRequests;
-    }
-    
     public SignRequestParams getSignRequestParams() {
         return this.signRequestParams;
     }

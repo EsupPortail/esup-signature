@@ -332,7 +332,7 @@ public class AdminSignRequestController {
 							signBook = signBookService.getUserSignBookByRecipientEmail(signBookName);
 						}
 					}
-					signBookService.importSignRequestInSignBook(signRequest, signBook, user);
+					//signBookService.importSignRequestInSignBook(signRequest, signBook, user);
 					signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé au parapheur " + signBook.getName(), user, "SUCCESS", comment);
 				}
 			}

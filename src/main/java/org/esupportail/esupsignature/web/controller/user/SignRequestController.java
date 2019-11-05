@@ -219,6 +219,7 @@ public class SignRequestController {
 
             model.addAttribute("signRequest", signRequest);
             model.addAttribute("itemId", id);
+            SignBook signBook = signBookRepository.findByRecipientEmails(Arrays.asList(user.getEmail())).get(0);
             if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                 model.addAttribute("signable", "ok");
             }
@@ -667,6 +668,7 @@ public class SignRequestController {
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
+            WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
             if (signBookNames != null && signBookNames.length > 0) {
                 for (String signBookName : signBookNames) {
                     SignBook signBook;
@@ -680,7 +682,7 @@ public class SignRequestController {
                             signBook = signBookService.getUserSignBookByRecipientEmail(signBookName);
                         }
                     }
-                    signBookService.importSignRequestInSignBook(signRequest, signBook, user);
+                    signBookService.importSignRequestInSignBook(signRequest, signBook, workflowStep, user);
                 }
             }
         } else {

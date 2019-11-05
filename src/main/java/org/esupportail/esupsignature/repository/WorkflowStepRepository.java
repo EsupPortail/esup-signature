@@ -1,8 +1,14 @@
 package org.esupportail.esupsignature.repository;
 
+import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.WorkflowStep;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
-public interface WorkflowStepRepository extends CrudRepository<WorkflowStep, Long>  {
+import java.util.List;
+import java.util.Map;
 
+public interface WorkflowStepRepository extends CrudRepository<WorkflowStep, Long>  {
+    @Query("select w from WorkflowStep w where :signBookId = key(w.signBooks)")
+    List<WorkflowStep> findBySignBooks(Long signBookId);
 }

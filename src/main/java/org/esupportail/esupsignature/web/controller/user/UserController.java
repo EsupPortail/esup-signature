@@ -225,7 +225,8 @@ public class UserController {
 			logger.error("get file error", e);
 		}
 	}
-    
+
+	//TODO refactor with WsController
 	@RequestMapping(value="/searchLdap")
 	@ResponseBody
 	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString, @RequestParam(required=false) String ldapTemplateName) {
@@ -243,8 +244,7 @@ public class UserController {
 			ldapList.add(personLdap);
 		}
 		if(ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
-			List<PersonLdap> ldapSearchList = new ArrayList<PersonLdap>();
-			ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
+			List<PersonLdap> ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
 			ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
 
 		}
