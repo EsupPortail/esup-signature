@@ -173,20 +173,12 @@
                             <div class="alert alert-success">
                                 <h4 class="alert-heading">Toutes les étapes de la demande sont effectuées</h4>
                                 <hr/>
-                                <button type="button"
-                                        class="mr-2 btn btn-outline-dark btn-light"
-                                        th:onclick="'window.open(\'/user/signrequests/get-last-file/' + ${id} + '\', \'_blank\')'">
-                                    <p class="text-center">
-                                        <i class="fas fa-save fa-2x"></i> <br/> Enregistrer le document signé sous
-                                    </p>
-                                </button>
-                                <button type="button"
-                                        class="mr-2 btn btn-outline-dark btn-light"
-                                        th:onclick="'location.href=\'/user/validation/document/' + ${id} +'\''">
-                                    <p class="text-center">
-                                        <i class="fas fa-shield-alt fa-2x"></i> <br> Contrôler le document
-                                    </p>
-                                </button>
+                                <a class="m-1 btn btn-warning" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank">
+                                    <i class="fas fa-save "></i> Enregistrer le document signé sous
+                                </a>
+                                <a class="m-1 btn btn-warning" th:href="'/user/validation/document/' + ${id}">
+                                    <i class="fas fa-shield-alt "></i> Contrôler le document
+                                </a>
                             </div>
                         </th:block>
                     </div>

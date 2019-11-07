@@ -162,18 +162,23 @@ public class SignRequestService {
 				addPage = true;
 			}
 		}
-
-		Document signedFile;
-
+		Document signedFile = null;
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
-
 		SignType signType = signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType();
 		if (signType.equals(SignRequestParams.SignType.pdfImageStamp) || signType.equals(SignType.visa)) {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, user, addPage, addDate);
 			} else {
-				logger.error("no visual sign for non pdf file");
-				throw new EsupSignatureSignException("no visual sign for non pdf file");
+				if(signType.equals(SignType.visa)) {
+					try {
+						applyEndOfStepRules(signRequest, user);
+					} catch (EsupSignatureException e) {
+						throw new EsupSignatureSignException("error on apply signBook rules", e);
+					}
+				} else {
+					logger.error("no visual sign for non pdf file");
+					throw new EsupSignatureSignException("no visual sign for non pdf file");
+				}
 			}
 		} else {
 			signedFile = certSign(signRequest, user, password);
@@ -184,14 +189,7 @@ public class SignRequestService {
 			signRequest.getSignedDocuments().add(signedFile);
 			signedFile.setParentId(signRequest.getId());
 			//signedFile.delete();
-			try {
-				applySignBookRules(signRequest, user);
-			} catch (EsupSignatureException e) {
-				throw new EsupSignatureSignException("error on apply signBook rules", e);
-			}
 			step = "end";
-		} else {
-			throw new EsupSignatureSignException("enable to sign document");
 		}
 	}
 
@@ -209,7 +207,7 @@ public class SignRequestService {
 
 		addSignedFile(signRequest, signedDocument.openStream(), signedDocument.getName(), signedDocument.getMimeType().getMimeTypeString(), user);
 		try {
-			applySignBookRules(signRequest, user);
+			applyEndOfStepRules(signRequest, user);
 		} catch (EsupSignatureException | IOException e) {
 			throw new EsupSignatureSignException("error on apply signBook rules", e);
 		}
@@ -302,10 +300,8 @@ public class SignRequestService {
 		}
 	}
 
-	public void applySignBookRules(SignRequest signRequest, User user) throws EsupSignatureException, IOException {
+	public void applyEndOfStepRules(SignRequest signRequest, User user) throws EsupSignatureException, IOException {
 		SignBook recipientSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
-		List<SignBook> signBooks = signBookService.getSignBookBySignRequest(signRequest);
-		//SignBook signBook = signBooks.get(0);
 		SignRequestParams.SignType signType = signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType();
 		signRequest.getCurrentWorkflowStep().getSignBooks().put(recipientSignBook.getId(), true);
 		if (isSignRequestCompleted(signRequest)) {
