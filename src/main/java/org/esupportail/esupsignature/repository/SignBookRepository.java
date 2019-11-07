@@ -15,7 +15,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long>, Sign
     Long countByName(String name);
     List<SignBook> findByRecipientEmailsAndSignBookType(List<String> recipientEmails, SignBookType signBookType);
     Long countByRecipientEmailsAndSignBookType(List<String> recipientEmails, SignBookType signBookType);
-    List<SignBook> findByRecipientEmails(List<String> recipientEmails);
+    //List<SignBook> findByRecipientEmails(List<String> recipientEmails);
     @Query("select s from SignBook s where :recipientEmail in elements(s.recipientEmails) and :signBookType = s.signBookType")
     List<SignBook> findByRecipientEmailsContainAndSignBookType(@Param("recipientEmail") String recipientEmail, @Param("signBookType") SignBookType signBookType);
     @Query("select count(s) from SignBook s where :recipientEmail in elements(s.recipientEmails) and :signBookType = s.signBookType")

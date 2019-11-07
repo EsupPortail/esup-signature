@@ -293,13 +293,6 @@ public class AdminSignRequestController {
 		}
 	}
 
-	@RequestMapping(value = "/toggle-need-all-sign/{id}", method = RequestMethod.GET)
-	public String toggleNeedAllSign(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
-		SignRequest signRequest = signRequestRepository.findById(id).get();
-		signRequestService.toggleNeedAllSign(signRequest);
-		return "redirect:/admin/signrequests/" + id;
-	}
-
 	@RequestMapping(value = "/send-to-signbook/{id}", method = RequestMethod.GET)
 	public String sendToSignBook(@PathVariable("id") Long id,
 			@RequestParam(value = "signBookNames", required = true) String[] signBookNames,

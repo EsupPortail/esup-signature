@@ -277,52 +277,6 @@ public class SignBookService {
         return false;
     }
 
-    public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, WorkflowStep workflowStep, User user) {
-        importSignRequestByRecipients(signRequest, signBook.getRecipientEmails(), workflowStep, user);
-        signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé dans le parapheur " + signBook.getName(), user, "SUCCESS", "");
-
-    }
-
-    /*
-    public void importSignRequestInSignBook(SignRequest signRequest, SignBook signBook, User user) {
-        if (!signBook.getSignRequests().contains(signRequest)) {
-            signBook.getSignRequests().add(signRequest);
-            if (signBook.getSignBookType().equals(SignBookType.workflow)) {
-                signRequestService.initWorkFlow(signRequest, signBook, user);
-                if (signRequest.getCurrentWorkflowStepNumber() > 1) {
-                    signRequestService.pendingSignRequest(signRequest, user);
-                }
-            } else {
-                if(signRequest.getWorkflowSteps().size() < signRequest.getCurrentWorkflowStepNumber()) {
-                    WorkflowStep workflowStep = new WorkflowStep();
-                    workflowStep.setSignRequestParams(signBook.getSignRequestParams());
-                    workflowStepRepository.save(workflowStep);
-                    signRequest.getWorkflowSteps().add(workflowStep);
-                    //signRequest.setCurrentWorkflowStepNumber(signRequest.getCurrentWorkflowStepNumber() + 1);
-                }
-                importSignRequestByRecipients(signRequest, signBook.getRecipientEmails(), user);
-                signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé dans le parapheur " + signBook.getName(), user, "SUCCESS", "");
-            }
-        } else {
-            logger.warn(signRequest.getId() + " is already in signbook" + signBook.getName());
-        }
-    }
-    */
-
-    public void importSignRequestByRecipients(SignRequest signRequest, List<String> recipientEmails, WorkflowStep workflowStep, User user) {
-        for (String recipientEmail : recipientEmails) {
-            SignBook signBook = getUserSignBookByRecipientEmail(recipientEmail);
-            if (signBook.getRecipientEmails().contains("creator")) {
-                signBook = getUserSignBook(user);
-            }
-            if (!workflowStep.getSignBooks().containsKey(signBook.getId())) {
-                workflowStep.getSignBooks().put(signBook.getId(), false);
-            } else {
-                logger.warn(signRequest.getId() + " is already in signbook" + signBook.getName());
-            }
-        }
-    }
-
     public void removeSignRequestFromAllSignBooks(SignRequest signRequest) {
         logger.info("remove from all signBook " + signRequest.getName());
         List<SignBook> signBooks = getSignBookBySignRequest(signRequest);

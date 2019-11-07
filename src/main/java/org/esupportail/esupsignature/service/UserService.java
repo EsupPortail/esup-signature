@@ -165,10 +165,10 @@ public class UserService {
     	}
     	return null;
     }
-    
-    public User addKeystore(User user) {
-    	
-    	return user;
-    	
-    }
+
+	public User getSystemUser() {
+		User user = new User();
+		user.setEppn("System");
+		return user;
+	}
 }

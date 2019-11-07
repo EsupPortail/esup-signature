@@ -293,8 +293,8 @@ public class SignBookController {
 		}
 		WorkflowStep workflowStep = new WorkflowStep();
 		for(String signBookName : singBookNames) {
-			if(signBookRepository.findByRecipientEmails(Arrays.asList(signBookName)).size() > 0) {
-				SignBook signBookToAdd = signBookRepository.findByRecipientEmails(Arrays.asList(signBookName)).get(0);
+			if(signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user).size() > 0) {
+				SignBook signBookToAdd = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user).get(0);
 				workflowStep.getSignBooks().put(signBookToAdd.getId(), false);
 			} else {
 				if(signBookRepository.findByName(signBookName).size() > 0 ) {
