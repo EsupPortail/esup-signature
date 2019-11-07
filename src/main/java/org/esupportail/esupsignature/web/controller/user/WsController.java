@@ -90,14 +90,10 @@ public class WsController {
             user = userService.createUser(creatorEmail);
         }
         user.setIp(httpServletRequest.getRemoteAddr());
-        SignBook signBook = null;
-        if(signBookRepository.countByName(signBookName) > 0) {
-            signBook = signBookRepository.findByName(signBookName).get(0);
-        }
         if (file != null) {
             logger.info("adding new file into signbook" + signBookName);
             Document documentToAdd = documentService.createDocument(file, file.getOriginalFilename());
-            SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams());
+            SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd);
             //signBookService.importSignRequestInSignBook(signRequest, signBook, user);
             signRequest.setTitle(fileService.getNameOnly(documentToAdd.getFileName()));
             logger.info(file.getOriginalFilename() + " was added into signbook" + signBookName + " with id " + signRequest.getName());
@@ -164,7 +160,7 @@ public class WsController {
         SignBook newSignBook = mapper.readValue(signBookString, SignBook.class);
         if (signBookType.equals("workflow")) {
             newSignBook.setSignBookType(SignBookType.workflow);
-            signBookService.createSignBook(mapper.readValue(signBookString, SignBook.class), user, signRequestService.getEmptySignRequestParams(), null, true);
+            signBookService.createSignBook(mapper.readValue(signBookString, SignBook.class), user, null, true);
         } else {
             newSignBook.setSignBookType(SignBookType.group);
             if (newSignBook.getRecipientEmails().size() > 1) {
@@ -190,7 +186,7 @@ public class WsController {
                     return newUser.getFirstname() + " " + newUser.getName();
                 }
             }
-            signBookService.createSignBook(newSignBook, user, signRequestService.getEmptySignRequestParams(), null, true);
+            signBookService.createSignBook(newSignBook, user,null, true);
             return newSignBook.getName();
 
         }

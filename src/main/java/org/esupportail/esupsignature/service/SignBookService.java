@@ -70,18 +70,14 @@ public class SignBookService {
             signBook.setName("Créateur de la demande");
             signBook.setRecipientEmails(Arrays.asList("creator"));
             signBook.setCreateDate(new Date());
-            signBook.setSignRequestParams(null);
             signBook.setModelFile(null);
             signBook.setSignBookType(SignBookType.system);
             signBook.setSourceType(DocumentIOType.none);
             signBook.setTargetType(DocumentIOType.none);
-            signBook.setSignRequestParams(signRequestService.getEmptySignRequestParams());
             signBookRepository.save(signBook);
         }
-
     }
 
-    //@Transactional
     public SignBook createUserSignBook(User user) {
         SignBook signBook = new SignBook();
         signBook.setName(user.getFirstname() + " " + user.getName());
@@ -93,12 +89,11 @@ public class SignBookService {
         signBook.setSignBookType(SignBookType.user);
         signBook.setSourceType(DocumentIOType.none);
         signBook.setTargetType(DocumentIOType.none);
-        signBook.setSignRequestParams(signRequestService.getEmptySignRequestParams());
         signBookRepository.save(signBook);
         return signBook;
     }
 
-    public void updateSignBook(SignBook signBook, SignBook signBookToUpdate, SignRequestParams signRequestParams, MultipartFile multipartFile) throws EsupSignatureException {
+    public void updateSignBook(SignBook signBook, SignBook signBookToUpdate, MultipartFile multipartFile) throws EsupSignatureException {
         signBookToUpdate.getRecipientEmails().removeAll(signBook.getRecipientEmails());
         signBookToUpdate.getRecipientEmails().addAll(signBook.getRecipientEmails());
         signBookToUpdate.getModeratorEmails().removeAll(signBook.getModeratorEmails());
@@ -108,9 +103,7 @@ public class SignBookService {
         signBookToUpdate.setSourceType(signBook.getSourceType());
         signBookToUpdate.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
         signBookToUpdate.setTargetType(signBook.getTargetType());
-        signBookToUpdate.getSignRequestParams().setSignType(signRequestParams.getSignType());
-        signBookToUpdate.getSignRequestParams().setNewPageType(signRequestParams.getNewPageType());
-        if (!multipartFile.isEmpty()) {
+        if (multipartFile != null && !multipartFile.isEmpty()) {
             Document newModel;
             try {
                 newModel = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
@@ -131,9 +124,17 @@ public class SignBookService {
 
     }
 
-    public void createSignBook(SignBook signBook, User user, SignRequestParams signRequestParams, MultipartFile multipartFile, boolean external) throws EsupSignatureException {
+    public void addRecipient(SignBook signBook, List<String> recipientEmails) {
+        for (String recipientEmail : recipientEmails) {
+            if (signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.user) == 0) {
+                userService.createUser(recipientEmail);
+            }
+            signBook.getRecipientEmails().add(recipientEmail);
+        }
+    }
+
+    public SignBook createSignBook(SignBook signBook, User user, MultipartFile multipartFile, boolean external) throws EsupSignatureException {
         if (signBookRepository.countByName(signBook.getName()) == 0) {
-            signRequestParamsRepository.save(signRequestParams);
             signBook.setCreateBy(user.getEppn());
             signBook.setCreateDate(new Date());
             signBook.getRecipientEmails().removeAll(Collections.singleton(""));
@@ -161,13 +162,13 @@ public class SignBookService {
             } else {
                 signBook.setModelFile(null);
             }
-            signBook.setSignRequestParams(signRequestParams);
             signBook.setSourceType(DocumentIOType.none);
             signBook.setTargetType(DocumentIOType.none);
             signBookRepository.save(signBook);
             if (model != null) {
                 model.setParentId(signBook.getId());
             }
+            return signBook;
         } else {
             throw new EsupSignatureException("all ready exist");
         }
@@ -175,7 +176,6 @@ public class SignBookService {
 
     public void deleteSignBook(SignBook signBook) {
             List<SignBook> signBooks = new ArrayList<>();
-            signBook.setSignRequestParams(null);
             signBookRepository.save(signBook);
             for (SignBook signBookStep : signBooks) {
                 if (signBookStep.isExternal()) {
@@ -184,13 +184,6 @@ public class SignBookService {
             }
 
             signBookRepository.delete(signBook);
-    }
-
-    public void resetSignBookParams(SignBook signBook) {
-        signBook.getSignRequestParams().setSignPageNumber(1);
-        signBook.getSignRequestParams().setXPos(0);
-        signBook.getSignRequestParams().setYPos(0);
-        //signBookRepository.save(signBook);
     }
 
     public void importFilesFromSource(SignBook signBook, User user) throws EsupSignatureIOException, EsupStockException {
@@ -218,7 +211,7 @@ public class SignBookService {
                         }
                         List<String> signBookRecipientsEmails = new ArrayList<>();
                         signBookRecipientsEmails.add(user.getEmail());
-                        SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd, signBook.getSignRequestParams());
+                        SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd);
                         signRequest.setTitle("Import depuis " + signBook.getSourceType() + " : " + signBook.getDocumentsSourceUri());
                         //importSignRequestInSignBook(signRequest, signBook, user);
                         signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Import depuis " + signBook.getSourceType() + " : " + signBook.getDocumentsSourceUri(), user, "SUCCESS", null);

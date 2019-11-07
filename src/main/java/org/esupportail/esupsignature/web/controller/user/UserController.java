@@ -175,14 +175,7 @@ public class UserController {
             	documentRepository.delete(oldSignImage);
         	}
         }
-
-    	SignBook signBook = signBookService.getUserSignBook(user);
-    	if(signBook != null) {
-	    	if(signType != null) {
-	    		signBook.getSignRequestParams().setSignType(signType);
-	    		signBook.getSignRequestParams().setNewPageType(newPageType);
-	    	}
-    	}else {
+    	if(signBookService.getUserSignBook(user) == null) {
     		signBookService.createUserSignBook(user);
     	}
     	userToUpdate.setEmailAlertFrequency(emailAlertFrequency);
@@ -191,7 +184,7 @@ public class UserController {
     	if(referer != null && !"".equals(referer)) {
 			return "redirect:" + referer;
 		} else {
-			return "redirect:/user/users/";
+			return "redirect:/user/users/?form";
 		}
     }
     

@@ -157,7 +157,6 @@ public class SignRequestController {
         if (user.getKeystore() != null) {
             model.addAttribute("keystore", user.getKeystore().getFileName());
         }
-        model.addAttribute("signType", signBookService.getUserSignBook(user).getSignRequestParams().getSignType());
         model.addAttribute("mydocs", "active");
         model.addAttribute("signRequestsToSign", signRequestsToSign);
         model.addAttribute("signBookId", signBookId);
@@ -236,6 +235,7 @@ public class SignRequestController {
             model.addAttribute("signTypes", SignType.values());
             model.addAttribute("newPageTypes", NewPageType.values());
             model.addAttribute("allSignBooks", signBookRepository.findByNotCreateBy("System"));
+            model.addAttribute("workflowSignBooks", signBookRepository.findBySignBookType(SignBookType.workflow));
             model.addAttribute("nbSignOk", signRequest.countSignOk());
             model.addAttribute("baseUrl", baseUrl);
             model.addAttribute("nexuVersion", nexuVersion);
@@ -282,24 +282,7 @@ public class SignRequestController {
             signRequest.getSignRequestParamsList().add(signRequestParams);
         }
         //TODO si signbook type workflow == 1 seul
-        signRequest = signRequestService.createSignRequest(signRequest, user, signRequestParams);
-        /*
-        List<SignBook> signBooks = new ArrayList<>();
-        if (signBookNames != null && signBookNames.length > 0) {
-            for (String signBookName : signBookNames) {
-                if (signBookRepository.countByName(signBookName) > 0) {
-                    signBooks.add(signBookRepository.findByName(signBookName).get(0));
-                } else {
-                    signBooks.add(signBookService.getUserSignBookByRecipientEmail(signBookName));
-                }
-            }
-        }
-        //on traite les groups en premier
-        signBooks = signBooks.stream().sorted(Comparator.comparing(SignBook::getSignBookType)).collect(Collectors.toList());
-        for (SignBook signBook : signBooks) {
-            signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-        }
-        */
+        signRequest = signRequestService.createSignRequest(signRequest, user);
         return "redirect:/user/signrequests/" + signRequest.getId();
     }
 
@@ -360,13 +343,6 @@ public class SignRequestController {
             SignRequest signRequest = signRequestRepository.findByName(token).get(0);
             if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
                 List<SignBook> originalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
-                if (originalSignBooks.size() > 0) {
-                    if (signRequest.isOverloadSignBookParams()) {
-                        SignRequestParams signRequestParams = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0).getSignRequestParams();
-                        signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignType(signRequestParams.getSignType());
-                        signRequest.getCurrentWorkflowStep().getSignRequestParams().setNewPageType(signRequestParams.getNewPageType());
-                    }
-                }
                 Document toDisplayDocument;
                 if (signRequestService.getToSignDocuments(signRequest).size() == 1) {
                     toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
@@ -456,12 +432,6 @@ public class SignRequestController {
             if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
                 return "redirect:/user/nexu-sign/" + id + "?referer=" + referer;
             }
-            if (signRequest.isOverloadSignBookParams()) {
-                SignBook signBook = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0);
-                //signRequest.setSignRequestParams(signBook.getSignRequestParams().get(0));
-                signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignType(signBook.getSignRequestParams().getSignType());
-                signRequestRepository.save(signRequest);
-            }
             if (signPageNumber != null && xPos != null && yPos != null) {
                 signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignPageNumber(signPageNumber);
                 signRequest.getCurrentWorkflowStep().getSignRequestParams().setXPos(xPos);
@@ -519,9 +489,6 @@ public class SignRequestController {
                     setPassword(password);
                 }
                 try {
-                    if (!signRequest.isOverloadSignBookParams()) {
-                        signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().getSignType());
-                    }
                     if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignRequestParams.SignType.visa)) {
                         signRequestService.updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", comment);
                     } else if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignRequestParams.SignType.nexuSign)) {
@@ -659,6 +626,35 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
+    @PostMapping(value = "/add-workflow/{id}")
+    public String addWorkflow(@PathVariable("id") Long id,
+                          @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) {
+        User user = userService.getUserFromAuthentication();
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        if (signRequestService.checkUserViewRights(user, signRequest)) {
+            SignBook signBook = signBookRepository.findById(workflowSignBookId).get();
+            for (WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
+                WorkflowStep newWorkflowStep = new WorkflowStep();
+                newWorkflowStep.setSignRequestParams(workflowStep.getSignRequestParams());
+                newWorkflowStep.setAllSignToComplete(workflowStep.isAllSignToComplete());
+                for(Long signBookId : workflowStep.getSignBooks().keySet()){
+                    SignBook signBookToAdd = signBookRepository.findById(signBookId).get();
+                    if(signBookToAdd.getRecipientEmails().size() > 0) {
+                        for(String signBookRecipientEmail : signBookToAdd.getRecipientEmails()) {
+                            SignBook signBookRecipient = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookRecipientEmail), SignBookType.user).get(0);
+                            newWorkflowStep.getSignBooks().put(signBookRecipient.getId(), false);
+                        }
+                    } else {
+                        newWorkflowStep.getSignBooks().put(signBookToAdd.getId(), false);
+                    }
+                }
+                workflowStepRepository.save(newWorkflowStep);
+                signRequest.getWorkflowSteps().add(newWorkflowStep);
+            }
+            signRequestRepository.save(signRequest);
+        }
+        return "redirect:/user/signrequests/" + id;
+    }
 
     @RequestMapping(value = "/send-to-signbook/{id}/{workflowStepId}", method = RequestMethod.GET)
     public String sendToSignBook(@PathVariable("id") Long id,

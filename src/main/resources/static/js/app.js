@@ -492,34 +492,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	emailAlertDay = document.getElementById("_c_org_esupportail_esupsignature_domain_user_emailAlertDay");
 	emailAlertHour = document.getElementById("_c_org_esupportail_esupsignature_domain_user_emailAlertHour");
 	signTypeSelect = document.getElementById("_signType_id");
-	if(signTypeSelect != null) {
-		//checkRequirement();
-	}
 	if(emailAlertFrequencySelect != null) {
 		checkAlertFrequency();
 	}
 });
-
-function checkRequirement() {
-	var selectedValue = signTypeSelect.options[signTypeSelect.selectedIndex].value;
-	console.log(selectedValue);
-	if(selectedValue == 'certSign') {
-		signImageForm.style.display = 'block';
-		keyForm.style.display = 'block';
-		signImageInput.required = true;
-		keystoreInput.required = true;
-	} else if(selectedValue == 'pdfImageStamp' || selectedValue == 'nexuSign') {
-		signImageForm.style.display = 'block';
-		keyForm.style.display = 'none';
-		signImageInput.required = true;
-		keystoreInput.required = false;
-	} else {
-		keyForm.style.display = 'none';
-		signImageForm.style.display = 'none';
-		signImageInput.required = false;
-		keystoreInput.required = false;
-	}
-}
 
 function checkAlertFrequency() {
 	var selectedValue = emailAlertFrequencySelect.options[emailAlertFrequencySelect.selectedIndex].value;

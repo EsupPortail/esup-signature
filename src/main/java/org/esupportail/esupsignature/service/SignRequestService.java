@@ -109,24 +109,27 @@ public class SignRequestService {
 		List<WorkflowStep> workflowSteps = workflowStepRepository.findBySignBooks(signBook.getId());
 		for(WorkflowStep workflowStep : workflowSteps) {
 			if(!workflowStep.getSignBooks().get(signBook.getId()) && signRequestRepository.findByWorkflowSteps(Arrays.asList(workflowStep)).size() > 0) {
-				signRequestsToSign.add(signRequestRepository.findByWorkflowSteps(Arrays.asList(workflowStep)).get(0));
+				SignRequest signRequest = signRequestRepository.findByWorkflowSteps(Arrays.asList(workflowStep)).get(0);
+				if (signRequest.getCurrentWorkflowStep().equals(workflowStep)) {
+					signRequestsToSign.add(signRequest);
+				}
 			}
 		}
 		return signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 
 	}
 
-	public SignRequest createSignRequest(SignRequest signRequest, User user, SignRequestParams signRequestParams) {
-			return createSignRequest(signRequest, user, new ArrayList<>(), signRequestParams);
+	public SignRequest createSignRequest(SignRequest signRequest, User user) {
+			return createSignRequest(signRequest, user, new ArrayList<>());
 	}
 	
-	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document, SignRequestParams signRequestParams) {
+	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document) {
 		List<Document> documents = new ArrayList<Document>();
 		documents.add(document);
-		return createSignRequest(signRequest, user, documents, signRequestParams);
+		return createSignRequest(signRequest, user, documents);
 	}
 	
-	public SignRequest createSignRequest(SignRequest signRequest, User user, List<Document> documents, SignRequestParams signRequestParams) {
+	public SignRequest createSignRequest(SignRequest signRequest, User user, List<Document> documents) {
 		signRequest.setName(String.valueOf(generateUniqueId()));
 		signRequest.setCreateBy(user.getEppn());
 		signRequest.setCreateDate(new Date());
@@ -149,10 +152,6 @@ public class SignRequestService {
 
 	public void sign(SignRequest signRequest, User user, String password, boolean addDate) throws EsupSignatureSignException, EsupSignatureKeystoreException, IOException {
 		step = "Demarrage de la signature";
-		SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
-		if(signRequest.isOverloadSignBookParams()) {
-			signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignType(currentSignBook.getSignRequestParams().getSignType());
-		}
 		boolean addPage = false;
 		if(!SignRequestParams.NewPageType.none.equals(signRequest.getCurrentWorkflowStep().getSignRequestParams().getNewPageType())) {
 			int nbSignOk = signRequest.countSignOk();
@@ -310,9 +309,6 @@ public class SignRequestService {
 		SignRequestParams.SignType signType = signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType();
 		signRequest.getCurrentWorkflowStep().getSignBooks().put(recipientSignBook.getId(), true);
 		if (isSignRequestCompleted(signRequest)) {
-			if(recipientSignBook.getSignBookType().equals(SignBookType.user)) {
-				signBookService.resetSignBookParams(recipientSignBook);
-			}
 			if(signType.equals(SignType.visa)) {
 				updateStatus(signRequest, SignRequestStatus.checked, "Visa" , user, "SUCCESS", signRequest.getComment());
 			} else {
@@ -339,26 +335,6 @@ public class SignRequestService {
 
 	public void nextWorkFlowStep(SignRequest signRequest, User user) {
 		signRequest.setCurrentWorkflowStepNumber(signRequest.getCurrentWorkflowStepNumber() + 1);
-		List<String> recipients = new ArrayList<>();
-		for(Long signBookId : signRequest.getCurrentWorkflowStep().getSignBooks().keySet()){
-			recipients.addAll(signBookRepository.findById(signBookId).get().getRecipientEmails());
-		}
-		signBookService.importSignRequestByRecipients(signRequest, recipients, signRequest.getCurrentWorkflowStep(), user);
-		updateStatus(signRequest, SignRequestStatus.draft, "Envoyé dans le parapheur " + signRequest.getCurrentWorkflowStep().getSignBooks().toString(), user, "SUCCESS", "");
-	}
-
-
-	public void initWorkFlow(SignRequest signRequest, SignBook signBook, User user) {
-		for(WorkflowStep modelWorkflowStep : signBook.getWorkflowSteps()) {
-			WorkflowStep workflowStep = new WorkflowStep();
-			workflowStep.setAllSignToComplete(modelWorkflowStep.isAllSignToComplete());
-			workflowStep.setSignRequestParams(getEmptySignRequestParams());
-			workflowStep.getSignRequestParams().setSignType(modelWorkflowStep.getSignRequestParams().getSignType());
-			workflowStep.getSignRequestParams().setNewPageType(modelWorkflowStep.getSignRequestParams().getNewPageType());
-			workflowStep.getSignBooks().putAll(modelWorkflowStep.getSignBooks());
-			workflowStepRepository.save(workflowStep);
-			signRequest.getWorkflowSteps().add(workflowStep);
-		}
 		List<String> recipients = new ArrayList<>();
 		for(Long signBookId : signRequest.getCurrentWorkflowStep().getSignBooks().keySet()){
 			recipients.addAll(signBookRepository.findById(signBookId).get().getRecipientEmails());

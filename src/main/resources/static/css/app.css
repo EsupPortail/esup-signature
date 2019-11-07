@@ -196,7 +196,7 @@ input:checked + .slider:before {
 
 .step-trigger {
 	cursor: default !important;
-	background-color: rgba(0,0,0,.12) !important;
+	background-color: rgba(0,0,0,.05) !important;
 }
 
 .truncate {

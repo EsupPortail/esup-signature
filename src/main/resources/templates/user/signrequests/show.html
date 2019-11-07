@@ -3,13 +3,6 @@
 <head th:replace="fragments/head :: head"></head>
 <body>
 <nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/user/signrequests">Liste des demandes</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.name}"></span>
-        </li>
-    </ol>
-</nav>
 <div aria-expanded="true" class="collapse" id="collapseHelp">
     <div class="alert alert-info">
         Cet écran permet d'effectuer plusieurs types d'actions sur votre demande :
@@ -23,13 +16,13 @@
 </div>
 <main role="main">
     <div class="row">
-        <div class="col-lg-4">
-            <div class="card rounded-0 bg-light">
-                <div class="card-header">
+        <div class="col-lg-2" style="background-color: #CCCCCC">
+            <a href="/" class="col-12 ml-2 mt-2 btn btn-outline-dark btn-light">
+                <i class="fas fa-home"></i> Accueil
+            </a>
+            <div class="ml-2 mt-2">
                     <div th:replace="user/signrequests/includes/status :: status"></div>
-                </div>
-                <div class="card-body">
-                    <div th:switch="${signable}">
+                    <div th:switch="${signable}" class="mt-1">
                         <div th:case="'ok'">
                             <dl class="display-group border-bottom m-0 d-none">
                                 <dt class="col-lg-6">
@@ -59,9 +52,9 @@
                                 <div th:if="${signRequest.status.name() == 'draft'}">
                                     <div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
                                         <div class="alert alert-secondary">
-                                            <h4 class="alert-heading">
+                                            <h5 class="alert-heading">
                                                 Demande en cours de création
-                                            </h4>
+                                            </h5>
                                             <div th:if="${#lists.size(signRequest.originalDocuments) == 0}">
                                                 <div th:if="${modelId != null}">
                                                     <button type="button" class="btn btn-info"
@@ -82,41 +75,13 @@
                                     </div>
                                     <div th:unless="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
                                         <div class="alert alert-info">
-                                            <h4 class="alert-heading">
+                                            <h6 class="alert-heading">
                                                 Demande prête pour la mise en signature
-                                            </h4>
+                                            </h6>
                                             <hr/>
-                                            La demande sera envoyée dans le(s) parapheur(s) suivant(s)
-                                            <ul class="list-group">
-                                                <th:block th:each="inSignBook : ${signRequest.currentWorkflowStep.signBooksLabels}">
-                                                    <li class="list-group-item"><i class="fas fa-book"></i>
-                                                        <span th:text="${inSignBook.key}"></span>
-                                                    </li>
-                                                </th:block>
-                                            </ul>
                                             <div th:if="${signRequest.currentWorkflowStep.signBooks.size() > 1}">
                                                 <label for="allSignToComplete">
-                                                    <strong>
                                                         Il y a plusieurs destinataire pour l'étape courante : tous les participants doivent-ils signer ?
-                                                        <button data-target="#collapseHelpAllSign" data-toggle="collapse"
-                                                                type="button" class="btn btn-sm btn-info">
-                                                            <span class="fas fa-info-circle"></span>
-                                                        </button>
-                                                        <div class="collapse" id="collapseHelpAllSign">
-                                                            <div class="alert alert-info">
-                                                                <small>
-                                                                    <ul>
-                                                                        <li>
-                                                                            Oui : Tous les participants doivent signer pour que la demande passe au status "Signé"
-                                                                        </li>
-                                                                        <li>
-                                                                            Non : Une seule signature suffit
-                                                                        </li>
-                                                                    </ul>
-                                                                </small>
-                                                            </div>
-                                                        </div>
-                                                    </strong>
                                                 </label>
                                                 <div class="input-group">
                                                     <label class="switch">
@@ -130,13 +95,10 @@
                                                     </label>
                                                 </div>
                                             </div>
-                                            <small>Vous pouvez toujours ajouter des documents ou des destinataires</small>
                                             <hr/>
                                             <th:block th:if="${signRequest.status.name() == 'draft' && signRequest.currentWorkflowStep.signBooks.size() > 0 && user.eppn == signRequest.createBy && #lists.size(signRequest.originalDocuments) > 0}">
                                                 <button type="button" class="mr-2 btn btn-success" data-toggle="modal" data-target="#sendModal">
-                                                    <p class="text-center">
-                                                        <i class="fa fa-paper-plane fa-2x" aria-hidden="true"></i><br/>Lancer la procedure de signature
-                                                    </p>
+                                                    <i class="fa fa-paper-plane " aria-hidden="true"></i> Lancer la procedure de signature
                                                 </button>
                                             </th:block>
                                         </div>
@@ -152,16 +114,18 @@
                     </div>
                     <div th:if="${signRequest.status.name() == 'pending'}">
                         <div class="alert alert-info">
-                            <h4 class="alert-heading">
+                            <h6 class="alert-heading">
                                 La demande est en cours de signature
-                            </h4>
+                            </h6>
+                            <hr/>
                             Statut des signatures pour chaques destinataires
+                            <hr/>
                             <div class="form-group">
                                 <table class="table table-bordered table-striped table-sm">
                                     <thead class="thead-dark">
                                     <tr>
                                         <th scope="col">Destinataires</th>
-                                        <th scope="col">Statut de la signature</th>
+                                        <th scope="col">Statut</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -182,16 +146,15 @@
                                 </table>
                             </div>
                             <div th:if="${signable == 'ok'}">
-                                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#refuseModal">
-                                    <i class="fas fa-ban fa-2x"></i><br/>Refuser
+                                <button type="button" class="btn btn-danger col-12 mb-1" data-toggle="modal" data-target="#refuseModal">
+                                    <i class="fas fa-ban"></i> Refuser
                                 </button>
-                                <a class="btn btn-success float-right" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name} + '?referer=true'">
-                                    <i class="fas fa-signature fa-2x"></i> <br/>Signer
+                                <a class="btn btn-success col-12" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name} + '?referer=true'">
+                                    <i class="fas fa-signature"></i> Signer
                                 </a>
                             </div>
                         </div>
                     </div>
-                </div>
                 <div th:if="${user.eppn == signRequest.createBy}">
                     <div th:switch="${signRequest.status.name()}">
                         <div th:case="'signed'">
@@ -245,7 +208,6 @@
                         </th:block>
                     </div>
                 </div>
-            </div>
             <div th:unless="${signRequest.status == 'signed' || signRequest.status == 'completed' || signRequest.status == 'checked'}">
                 <div th:if="${#lists.size(signRequest.currentWorkflowStep.signBooks) > 1}">
                     <div class="alert alert-secondary">
@@ -257,9 +219,21 @@
                     </div>
                 </div>
             </div>
-            <div class="card rounded-0 bg-light">
+        </div>
+        </div>
+        <div class="col-lg-10">
+            <div class="mt-2">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/user/signrequests">Liste des demandes</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.name}"></span>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+            <div th:if="${signRequest.signedDocuments.size() > 0}" class="card rounded-0 mb-1">
                 <div class="card-header">
-                    Historique des documents signés
+                    Liste des documents signés
                 </div>
                 <div class="card-body">
                     <div class="file-loading">
@@ -267,8 +241,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-lg-8">
             <div class="card rounded-0 mb-1">
                 <div class="card-header">
                     Liste des documents originaux
@@ -293,16 +265,18 @@
                     <button th:if="${signRequest.status.name() == 'draft'}" type="button" class="btn btn-primary float-right" data-toggle="modal" data-target="#addStep">
                         <i class="fa fa-plus"></i> Ajouter une étape
                     </button>
+                    <button th:if="${signRequest.status.name() == 'draft' && signRequest.workflowSteps.size() == 0}" type="button" class="btn btn-primary float-right mr-1" data-toggle="modal" data-target="#addWorkflow">
+                        <i class="fa fa-plus"></i> Ajouter un workflow
+                    </button>
                 </div>
                 <div id="collapseSignBook" class="show" aria-labelledby="headingOne" data-parent="#accordion">
                     <div class="card-body">
-                        <dl class="display-group border-bottom m-0">
-                            <dd>
-                                <div th:if="${signRequest.workflowSteps != null}">
+
+                                <div th:if="${signRequest.workflowSteps != null}" style="height: 100%; display: flex; align-items: center; justify-content: center;">
                                     <div class="bs-stepper vertical linear">
                                         <div class="bs-stepper-header" role="tablist">
                                             <th:block th:each="workflowStep,iterator : ${signRequest.workflowSteps}">
-                                                <div class="step">
+                                                <div class="step table-bordered">
                                                     <div class="step-trigger col-12 text-left" role="tab" aria-selected="false">
                                                         <div th:if="${iterator.index + 1 == signRequest.currentWorkflowStepNumber && signRequest.status != 'completed'}">
                                                             <span class="bs-stepper-circle bg-danger" th:text="${iterator.index + 1}"></span>
@@ -313,34 +287,41 @@
                                                         <div th:unless="${iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
                                                             <span class="bs-stepper-circle bg-success" th:text="${iterator.index + 1}"></span>
                                                         </div>
-                                                        <div class="bs-stepper-label">
+                                                        <div class="bs-stepper-label w-100">
+                                                            Type de signature : <span th:text="#{'signbook.signtype.' + ${workflowStep.signRequestParams.signType}}"></span>
+                                                            <br/>
                                                             <div th:if="${workflowStep.allSignToComplete}">
-                                                                Type de signature : <span th:text="#{'signbook.signtype.' + ${workflowStep.signRequestParams.signType}}"></span>
-                                                                <br/>
                                                                 Tous les destinataires suivants :
-                                                                <th:block th:each="recipient : ${workflowStep.signBooksLabels}">
-                                                                    <span th:text="${recipient.key}"></span>
-                                                                </th:block>
                                                             </div>
                                                             <div th:unless="${workflowStep.allSignToComplete}">
-                                                                Type de signature : <span th:text="#{'signbook.signtype.' + ${workflowStep.signRequestParams.signType}}"></span>
-                                                                <br/>
                                                                 Un des déstinataires suivants :
-                                                                <th:block th:each="recipient : ${workflowStep.signBooksLabels}">
-                                                                    <span th:text="${recipient.key}"></span>
-                                                                </th:block>
                                                             </div>
-
+                                                            <table class="table table-sm table-bordered">
+                                                            <th:block th:each="recipient : ${workflowStep.signBooksLabels}">
+                                                                <tr>
+                                                                <form th:action="'/user/signrequests/remove-step-recipent/' + ${workflowStep.id} + '/' + ${recipient.key}" th:method="'delete'">
+                                                                    <td>
+                                                                        <span th:text="${recipient.key}"></span>
+                                                                    </td>
+                                                                    <td>
+                                                                        <button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" type="submit" class="btn btn-danger btn-sm"><i class="fas fa-minus-circle"></i></button>
+                                                                    </td>
+                                                                    </li>
+                                                                </form>
+                                                                </tr>
+                                                            </th:block>
+                                                            </table>
+                                                            <br/>
                                                             <th:block th:if="${user.eppn == signRequest.createBy && signRequest.status.name() == 'draft'}">
-                                                                <button type="button" class="btn btn-primary float-left" data-toggle="modal" th:data-target="'#reSendModal' + ${workflowStep.id}">
-                                                                    <i class="fa fa-plus" aria-hidden="true"></i> Ajouter un destinataire
+                                                                <button type="button" title="Ajouter un destinataire" class="btn btn-sm btn-primary float-right" data-toggle="modal" th:data-target="'#reSendModal' + ${workflowStep.id}">
+                                                                    <i class="fa fa-plus" aria-hidden="true"></i>
                                                                 </button>
                                                                 <div class="modal fade" th:id="'reSendModal' + ${workflowStep.id}" tabindex="-1" role="dialog" th:aria-labelledby="'reSendModal' + ${workflowStep.id}" aria-hidden="true">
                                                                     <div class="modal-dialog modal-lg" role="document">
                                                                         <div class="modal-content">
                                                                             <form class="form-group" th:action="'/user/signrequests/send-to-signbook/' + ${id} + '/' + ${workflowStep.id}" method="get">
                                                                                 <div class="modal-header">
-                                                                                    <h5 class="modal-title">Envoyer dans un parapheur</h5>
+                                                                                    <h5 class="modal-title">Ajout de destinataire(s)</h5>
                                                                                 </div>
                                                                                 <div class="modal-body">
                                                                                     <div class="input-group">
@@ -357,7 +338,7 @@
                                                                                 <div class="modal-footer">
                                                                                     <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
                                                                                     <button type="submit" class="btn btn-primary float-right">
-                                                                                        <i class="fas fa-share-square"></i>Envoyer
+                                                                                        Ajouter
                                                                                     </button>
                                                                                 </div>
                                                                             </form>
@@ -404,8 +385,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </dd>
-                        </dl>
+
                     </div>
                 </div>
             </div>
@@ -504,14 +484,62 @@
     </div>
 </div>
 
+<div class="modal fade" id="refuseModal" tabindex="-1" role="dialog" aria-labelledby="refuseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/signrequests/refuse/' + ${id}">
+            <div class="modal-header">
+                <h5 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows=""></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-danger">Refuser</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addWorkflow" tabindex="-1" role="dialog" aria-labelledby="addWorkflowLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/signrequests/add-workflow/' + ${id}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter un workflow</h5>
+                </div>
+                <div class="modal-body">
+                    <select name="workflowSignBookId" class="form-control">
+                    <th:block th:each="workflowSignBook : ${workflowSignBooks}">
+                        <option th:value="${workflowSignBook.id}" th:text="${workflowSignBook.name}"></option>
+                    </th:block>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-paper-plane" aria-hidden="true"></i> Ajouter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="addStep" tabindex="-1" role="dialog" aria-labelledby="addStep" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
+            <form th:action="'/user/signrequests/add-step/' + ${id}" method="post">
+
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Ajouter une étape</h5>
             </div>
             <div class="modal-body">
-                <form th:action="'/user/signrequests/add-step/' + ${id}" method="post">
                     <div class="form-group" id="_allSignToComplete_div_id">
                         <label for="_allSignToComplete"> <strong> Tous
                             les participants doivent-ils signer ? </strong>
@@ -591,14 +619,15 @@
                             </select>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fa fa-paper-plane" aria-hidden="true"></i> Envoyer
-                    </button>
-                </form>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-success">
+                    <i class="fa fa-paper-plane" aria-hidden="true"></i> Envoyer
+                </button>
             </div>
+            </form>
         </div>
     </div>
 </div>

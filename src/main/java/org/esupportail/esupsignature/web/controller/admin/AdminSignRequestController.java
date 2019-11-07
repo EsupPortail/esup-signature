@@ -121,7 +121,6 @@ public class AdminSignRequestController {
 
 		Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByStatus(this.statusFilter,  pageable);
 
-		model.addAttribute("signType", signBookService.getUserSignBook(user).getSignRequestParams().getSignType());
 		model.addAttribute("mydocs", "active");
 		model.addAttribute("signBookId", signBookId);
 		model.addAttribute("signRequests", signRequests);
@@ -141,13 +140,6 @@ public class AdminSignRequestController {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
 			List<SignBook> originalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
-			if(originalSignBooks.size() > 0) {
-				if(signRequest.isOverloadSignBookParams()) {
-					SignRequestParams signBookParams = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0).getSignRequestParams();
-					signRequest.getCurrentWorkflowStep().getSignRequestParams().setNewPageType(signBookParams.getNewPageType());
-					signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignType(signBookParams.getSignType());
-				}
-			}
 			Document toDisplayDocument = null;
 			if(signRequestService.getToSignDocuments(signRequest).size() == 1) {
 				toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);

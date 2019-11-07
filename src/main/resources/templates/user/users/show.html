@@ -74,16 +74,6 @@
 				</i>
 			</dd>
 		</dl>
-
-		<dl class="row border-bottom m-0">
-			<dt class="col-lg-5">Paramètres</dt>
-			<dd>
-				Type de signature :
-				<div class="alert alert-dark text-center" th:text="#{'signbook.signtype.' + ${defaultSignBook.signRequestParams.signType}}"></div>
-				Page de garde :
-				<div class="alert alert-dark text-center" th:text="#{'signbook.newpagetype.' + ${defaultSignBook.signRequestParams.newPageType}}"></div>
-			</dd>
-		</dl>
 		<dl class="row border-bottom m-0" th:if="${user.emailAlertFrequency == null}">
 			<dt class="col-lg-5">Fréquence d'alerte</dt>
 			<dd>non paramétrée (par défaut, une alerte sera envoyée à chaque nouvelle demande)</dd>

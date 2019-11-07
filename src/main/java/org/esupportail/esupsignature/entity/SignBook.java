@@ -81,9 +81,6 @@ public class SignBook {
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL }, orphanRemoval = true)
     private Document modelFile = new Document();
 
-    @ManyToOne
-    private SignRequestParams signRequestParams;
-	
 	@Enumerated(EnumType.STRING)
 	private SignBookType signBookType;
 	
@@ -211,7 +208,7 @@ public class SignBook {
         this.modelFile = modelFile;
     }
 
-
+    /*
     public SignRequestParams getSignRequestParams() {
         return this.signRequestParams;
     }
@@ -219,6 +216,7 @@ public class SignBook {
     public void setSignRequestParams(SignRequestParams signRequestParams) {
         this.signRequestParams = signRequestParams;
     }
+    */
 
     public SignBookType getSignBookType() {
         return this.signBookType;

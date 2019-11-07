@@ -18,18 +18,11 @@
 
 	<div id="ribbon" class="card">
 		<div class="card-body">
-			<button type="button" onclick="location.href='/manager/signbooks?form&type=group'" class="mr-2 btn btn-outline-dark btn-light float-left">
+			<button data-toggle="modal" data-target="#newSignBook" type="button" class="mr-2 btn btn-outline-dark btn-light float-left">
 				<p class="text-center">
 					<i class="fas fa-book fa-2x"></i>
 					<br />
-					Créer un parapheur
-				</p>
-			</button>
-			<button type="button" onclick="location.href='/manager/signbooks?form&type=workflow'" class="mr-2 btn btn-outline-dark btn-light float-left">
-				<p class="text-center">
-				<i class="fas fa-project-diagram fa-2x"></i>
-				<br />
-				Créer un workflow en série
+					Créer un nouveau parapheur
 				</p>
 			</button>
 		</div>
@@ -79,20 +72,46 @@
 									<span th:text="${moderatorEmail}"></span>
 									<br/>
 								</th:block>
-							
 							</td>
 							<td class="utilbox">
-								<button class="btn btn-info far fa-eye" title="Créer un nouveau parapheur" th:onclick="'location.href=\'/manager/signbooks/' + ${signBook.id} + '\';'" type="button"></button>
+								<button class="btn btn-info far fa-eye" title="Voir" th:onclick="'location.href=\'/manager/signbooks/' + ${signBook.id} + '\';'" type="button"></button>
 							</td>
 						</tr>
 					</th:block>
 				</tbody>
-				<tfoot>
-					<tr>
-						<td colspan="5"><input value="1" type="hidden" name="page"><input value="10" type="hidden" name="size"></td>
-					</tr>
-				</tfoot>
 			</table>
+		</div>
+	</div>
+	<div class="modal fade" id="newSignBook" tabindex="-1" role="dialog" aria-labelledby="newSignBookLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<form action="/manager/signbooks" method="post">
+					<div class="modal-header">
+						<h5 class="modal-title" id="exampleModalLabel">Ajouter un parapheur</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label for="name"> <strong>Type de parapheur</strong></label>
+							<select name="signBookType" class="form-control">
+								<option value=""></option>
+								<option value="group">Groupe</option>
+								<option value="workflow">Workflow</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label for="name"> <strong>Nom</strong></label>
+							<input id="name" name="name" class="form-control" type="text" value="" required="required">
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+						<button type="submit" class="btn btn-primary">Suivant</button>
+					</div>
+				</form>
+			</div>
 		</div>
 	</div>
 	<footer th:replace="fragments/footer :: footer"></footer>
