@@ -15,6 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+$(document).ready(function () {
+
+	$('#sidebarCollapse').on('click', function () {
+		$('#sidebar').toggleClass('active');
+		$('.sidebar-label').toggleClass('d-none');
+		$('.fa-arrow-left').toggleClass('fa-arrow-right')
+		$('#logo').toggleClass('logooverflow');
+		$('#content').toggleClass('content content2');
+	});
+
+});
+
 document.addEventListener('DOMContentLoaded', function() {
 
 	//input type file
@@ -163,13 +176,13 @@ function activeDate() {
 }
 
 function pointIt(e) {
+	console.log('point')
 	if(pointItEnable) {
 		pointItMove = true;
-
+		console.log('point enable')
 		if(e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel'){
 			e.preventDefault();
 			var rect = pointerDiv.getBoundingClientRect();
-			console.log("touch" + rect.top +" "+ window.scrollY);
 			var touch = e.touches[0] || e.changedTouches[0];
 			posX = touch.pageX - rect.left;
 			posY = touch.pageY - rect.top - window.scrollY;

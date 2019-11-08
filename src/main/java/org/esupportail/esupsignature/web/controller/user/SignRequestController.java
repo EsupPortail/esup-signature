@@ -398,7 +398,7 @@ public class SignRequestController {
                     String ref = request.getHeader("referer");
                     model.addAttribute("referer", ref);
                 }
-                return "user/signrequests/sign-only";
+                return "user/signrequests/sign";
             } else {
                 redirectAttrs.addAttribute("messageError", "Vous n'avez pas d'action à effectuer sur cette demande");
                 return "redirect:/user/signrequests";

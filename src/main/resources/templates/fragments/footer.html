@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<footer th:fragment="footer" id="footer" class="footer bg-secondary">
-	<div class="container">
-		<span class="text-white">Université de Rouen - 2019</span>
-	</div>
-	<div th:replace="fragments/message :: message"></div>
+<footer th:fragment="footer" id="footer" class="footer bg-secondary fixed-bottom">
+	<span class="text-white">Université de Rouen - 2019</span>
 </footer>
+<div th:replace="fragments/message :: message"></div>
 </html>

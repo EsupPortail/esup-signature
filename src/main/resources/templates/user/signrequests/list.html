@@ -9,77 +9,74 @@
             <p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
             <p>Statut des demandes de signatures :</p>
             <p>
-					<span class="alert alert-primary">
-					<i class="fas fa-clock"></i> <span th:text="#{'signbook.status.pending'}"></span>
-					</span> La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures
+                <span class="alert alert-primary">
+                <i class="fas fa-clock"></i> <span th:text="#{'signbook.status.pending'}"></span>
+                </span> La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures
             </p>
             <p>
-					<span class="alert alert-success">
-					<i class="fas fa-file-signature"></i> <span th:text="#{'signbook.status.signed'}"></span>
-					</span> Tous les critères de signatures sont remplis
+                <span class="alert alert-success">
+                <i class="fas fa-file-signature"></i> <span th:text="#{'signbook.status.signed'}"></span>
+                </span> Tous les critères de signatures sont remplis
             </p>
             <p>
-					<span class="alert alert-success">
-					<i class="far fa-check-circle"></i> <span th:text="#{'signbook.status.checked'}"></span>
-					</span> Le document à été validé par tous les participants
+                <span class="alert alert-success">
+                <i class="far fa-check-circle"></i> <span th:text="#{'signbook.status.checked'}"></span>
+                </span> Le document à été validé par tous les participants
             </p>
             <p>
-					<span class="alert alert-danger">
-					<i class="fas fa-ban"></i> <span th:text="#{'signbook.status.refused'}"></span>
-					</span> La demande à été refusée et retirée des parapheurs
+                <span class="alert alert-danger">
+                <i class="fas fa-ban"></i> <span th:text="#{'signbook.status.refused'}"></span>
+                </span> La demande à été refusée et retirée des parapheurs
             </p>
             <p>
-					<span class="alert alert-warning">
-					<i class="fas fa-flag-checkered"></i> <span th:text="#{'signbook.status.completed'}"></span>
-					</span> La demande la demande est terminée </p>
+                <span class="alert alert-warning">
+                <i class="fas fa-flag-checkered"></i> <span th:text="#{'signbook.status.completed'}"></span>
+                </span> La demande la demande est terminée </p>
             <p>
 				<span class="alert alert-warning">
 				<i class="fas fa-file-export"></i> <span th:text="#{'signbook.status.exported'}"></span>
-					</span> La demande la demande à été exportée vers un autre système de stockage et retirée des parapheurs
+                </span> La demande la demande à été exportée vers un autre système de stockage et retirée des parapheurs
             </p>
         </div>
     </div>
 </div>
 <main role="main">
-    <div class="row">
-        <div class="col-lg-2" style="background-color: #CCCCCC">
-            <a href="/" class="col-12 ml-2 mt-2 btn btn-outline-dark btn-light float-left">
-                <i class="fas fa-home"></i> Accueil
-            </a>
-            <button type="button" data-toggle="modal" data-target="#addSignRequestModal" class="col-12 m-2 btn btn-primary float-left">
-                <i class="fas fa-plus-circle"></i> Nouvelle demande de signature
+    <div class="wrapper">
+        <nav id="sidebar">
+            <div class="row">
+                <div class="col-lg-2">
+                    <button type="button" id="sidebarCollapse" class="mt-3 m-1 btn text-white">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                <div id="logo" class="col-lg-9">
+                    <a href="/">
+                        <img src="/images/logo.png"/>
+                    </a>
+                </div>
+            </div>
+            <button type="button" data-toggle="modal" data-target="#addSignRequestModal" class="m-1 btn btn-primary float-left">
+                <i class="fas fa-plus-circle"></i> <span class="sidebar-label">Nouvelle demande de signature</span>
             </button>
-            <button type="button" onclick="location.href='/user/validation'" class="col-12 m-2 btn btn-warning float-left">
-                <p class="text-center">
-                    <i class="fas fa-shield-alt"></i> Valider la signature d'un document
-                </p>
+            <button type="button" onclick="location.href='/user/validation'" class="m-1 btn btn-warning float-left">
+                <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Valider la signature d'un document</span>
             </button>
             <button id="opendocs" class="col-12 m-2 btn btn-outline-dark btn-light float-left" onclick="openCheckedDocs()" title="open docs" style="display: none;">
-                <p class="text-center">
-                    <i class="far fa-eye fa-2x"></i> <br/> Ouvrir les documents sélectionnés
-                </p>
+                <i class="far fa-eye fa-2x"></i> Ouvrir les documents sélectionnés
             </button>
-
             <button id="signdocs" class="col-12 m-2 btn btn-outline-dark btn-light float-left" type="button" data-toggle="modal" data-target="#signModal" style="display: none;">
-                <p class="text-center">
-                    <i class="fas fa-signature fa-2x"></i><br/>Signer les documents sélectionnés
-                </p>
+                <i class="fas fa-signature fa-2x"></i> Signer les documents sélectionnés
             </button>
-
             <button data-toggle="modal" data-target="#wait" id="complete" onclick="completeSignRequests()" title="Passer au statut terminé" class="d-none col-12 m-2 btn btn-outline-dark btn-light float-left">
-                <p class="text-center">
-                    <i class="fas fa-flag-checkered"></i> Passer au statut terminé
-                </p>
+                <i class="fas fa-flag-checkered"></i> Passer au statut terminé
             </button>
-        </div>
-        <div class="tab-content col-lg-10">
-            <div class="mt-2 mb-2">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item active">Liste des demandes</li>
-                    </ol>
-                </nav>
-            </div>
+        </nav>
+        <div id="content" class="content">
+           <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item active">Liste des demandes</li>
+                </ol>
+            </nav>
             <div class="card rounded-0">
                 <div class="card-header">
                     Documents à signer
@@ -255,7 +252,6 @@
     </div>
 </div>
 <div th:replace="fragments/footer :: footer"></div>
-
 <div id="signModal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -263,7 +259,7 @@
                 Signature en masse
             </div>
             <div class="modal-body text-center">
-                <div th:switch="${signType.name()}">
+                <div th:switch="${signType}">
                     <div th:case="'certSign'">
                         <div th:if="${keystore != null}">
                             <div class="input-group">
