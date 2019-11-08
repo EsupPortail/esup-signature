@@ -416,7 +416,6 @@ public class SignRequestController {
                        @RequestParam(value = "yPos", required = false) Integer yPos,
                        @RequestParam(value = "comment", required = false) String comment,
                        @RequestParam(value = "addDate", required = false) Boolean addDate,
-                       @RequestParam(value = "signonly", required = false) Boolean signonly,
                        @RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
                        @RequestParam(value = "password", required = false) String password,
                        @RequestParam(value = "referer", required = false) String referer,
@@ -453,13 +452,12 @@ public class SignRequestController {
                 logger.error(e.getMessage(), e);
             } catch (IOException e) {
                 logger.error(e.getMessage());
+            } catch (EsupSignatureException e) {
+                redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
+                logger.error(e.getMessage(), e);
             }
-            if (signonly != null && signonly) {
-                if (referer != null && !"".equals(referer) && !"null".equals(referer)) {
-                    return "redirect:" + referer;
-                } else {
-                    return "redirect:/user/signrequests/sign-by-token/" + signRequest.getName();
-                }
+            if (referer != null && !"".equals(referer) && !"null".equals(referer)) {
+                return "redirect:" + referer;
             } else {
                 return "redirect:/user/signrequests/" + id;
             }
@@ -594,13 +592,24 @@ public class SignRequestController {
     }
 
     @RequestMapping(value = "/toggle-need-all-sign/{id}/{step}", method = RequestMethod.GET)
-    public String toggleNeedAllSign(@PathVariable("id") Long id,@PathVariable("step") Integer step, HttpServletResponse response, Model model) {
+    public String toggleNeedAllSign(@PathVariable("id") Long id,@PathVariable("step") Integer step) {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if(user.getEppn().equals(signRequest.getCreateBy())) {
             signRequestService.toggleNeedAllSign(signRequest, step);
         }
         return "redirect:/user/signrequests/" + id;
+    }
+
+    @RequestMapping(value = "/change-step-sign-type/{id}/{step}", method = RequestMethod.GET)
+    public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
+        User user = userService.getUserFromAuthentication();
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        if(user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getCurrentWorkflowStepNumber() == step + 1) {
+            Long stepId = signRequestService.changeSignType(signRequest, step, signType);
+            return "redirect:/user/signrequests/" + id + "#" + stepId;
+        }
+        return "redirect:/user/signrequests/";
     }
 
     @PostMapping(value = "/add-step/{id}")
@@ -665,6 +674,25 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
+    @DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
+    public String removeStepRecipient(@PathVariable("id") Long id,
+                                 @PathVariable("workflowStepId") Long workflowStepId,
+                                 @RequestParam(value = "recipientName") String recipientName,
+                                 RedirectAttributes redirectAttrs, HttpServletRequest request) {
+        User user = userService.getUserFromAuthentication();
+        user.setIp(request.getRemoteAddr());
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
+        if (signRequestService.checkUserViewRights(user, signRequest)) {
+            SignBook signBook = signBookRepository.findByName(recipientName).get(0);
+            workflowStep.getSignBooks().remove(signBook.getId());
+            workflowStepRepository.save(workflowStep);
+        } else {
+            logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
+        }
+        return "redirect:/user/signrequests/" + id + "#" + workflowStep.getId();
+    }
+
     @RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
     public String complete(@PathVariable("id") Long id,
                            @RequestParam(value = "comment", required = false) String comment,
@@ -691,7 +719,7 @@ public class SignRequestController {
         ////			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
-        if (signRequestService.checkUserViewRights(user, signRequest) && signRequest.getStatus().equals(SignRequestStatus.draft)) {
+        if (signRequestService.checkUserViewRights(user, signRequest) && (signRequest.getStatus().equals(SignRequestStatus.draft) || signRequest.getStatus().equals(SignRequestStatus.completed))) {
             signRequestService.pendingSignRequest(signRequest, user);
         } else {
             logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");

@@ -30,6 +30,12 @@ $(document).ready(function () {
 
 document.addEventListener('DOMContentLoaded', function() {
 
+	console.log(window.location.hash);
+	if(window.location.hash) {
+		var element_to_scroll_to = document.getElementById(window.location.hash.substring(1));
+		element_to_scroll_to.scrollIntoView();
+	}
+
 	//input type file
 	var inputFile = document.getElementById("inputGroupFile01");
 	if(inputFile != null) {

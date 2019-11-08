@@ -3,8 +3,12 @@
 <head th:replace="fragments/head :: head"></head>
 <body>
 <th:block th:unless="${referer == 'null'}">
-    <nav th:replace="fragments/emptyBar :: emptyBar"></nav>
-</th:block>
+    <th:block th:if="${referer == null}">
+        <nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+    </th:block>
+    <th:block th:unless="${referer == null}">
+        <nav th:replace="fragments/emptyBar :: emptyBar"></nav>
+    </th:block></th:block>
 <main role="main">
     <div class="wrapper">
         <nav id="sidebar">
@@ -47,59 +51,58 @@
                     </ul>
                 </div>
             </div>
-            <div class="alert alert-secondary m-1">
-            <button class="btn btn-success m-2" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}" type="button" data-toggle="modal" data-target="#signModal">
-                <i class="fas fa-signature fa-2x"></i> Valider la signature
-            </button>
-            <div th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'nexuSign'}">
-                <script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
-                <script type="text/javascript" th:replace="user/signrequests/includes/scriptnexu :: scriptnexu"></script>
-                <div id="nexu_version_alert" style="display: none;">
-                    <a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left">
-                        <i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
-                    </a>
-                    <div class="alert alert-warning float-left">
-                        L'application NexU n'a pas la bonne version.
-                        <span th:text="${nexuVersion} + 'nécessaire'"></span>
-                        <br>
+            <div class="m-1">
+                <button class="btn btn-success m-2" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}" type="button" data-toggle="modal" data-target="#signModal">
+                    <i class="fas fa-signature fa-2x"></i> Valider la signature
+                </button>
+                <div th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'nexuSign'}">
+                    <script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
+                    <script type="text/javascript" th:replace="user/signrequests/includes/scriptnexu :: scriptnexu"></script>
+                    <div id="nexu_version_alert" style="display: none;">
+                        <a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left">
+                            <i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
+                        </a>
+                        <div class="alert alert-warning float-left">
+                            L'application NexU n'a pas la bonne version.
+                            <span th:text="${nexuVersion} + 'nécessaire'"></span>
+                            <br>
+                        </div>
+                    </div>
+                    <div id="nexu_missing_alert" style="display: none;">
+                        <a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left">
+                            <i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
+                        </a>
+                        <div class="alert alert-warning float-left">
+                            L'application NexU n'a pas été détectée
+                            <br>
+                            <small>Merci de lancer l'application sur votre poste.
+                                <a href="https://github.com/nowina-solutions/nexu/releases/">Téléchargement</a>
+                            </small>
+                        </div>
+                    </div>
+                    <div id="nexu_ready_alert" style="display: none;">
+                        <button type="button" onclick="document.getElementById('signForm').submit();" class="mr-2 btn btn-success float-left">
+                            <i class="fas fa-signature fa-2x"></i> <br/>
+                            Signer
+                        </button>
+                        <div class="alert alert-success float-left">
+                            L'application NexU est fonctionnelle <br/> <small>Vous pouvez utiliser une clé
+                            materielle ou un keystore</small>
+                        </div>
                     </div>
                 </div>
-                <div id="nexu_missing_alert" style="display: none;">
-                    <a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left">
-                        <i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
-                    </a>
-                    <div class="alert alert-warning float-left">
-                        L'application NexU n'a pas été détectée
-                        <br>
-                        <small>Merci de lancer l'application sur votre poste.
-                            <a href="https://github.com/nowina-solutions/nexu/releases/">Téléchargement</a>
-                        </small>
-                    </div>
-                </div>
-                <div id="nexu_ready_alert" style="display: none;">
-                    <button type="button" onclick="document.getElementById('signForm').submit();" class="mr-2 btn btn-success float-left">
-                        <i class="fas fa-signature fa-2x"></i> <br/>
-                        Signer
-                    </button>
-                    <div class="alert alert-success float-left">
-                        L'application NexU est fonctionnelle <br/> <small>Vous pouvez utiliser une clé
-                        materielle ou un keystore</small>
-                    </div>
-                </div>
-            </div>
-            <button class="btn btn-success col-12 m-1"
-                    th:unless="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'nexuSign' || signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}" type="button"
-                    onclick="document.getElementById('signForm').submit();">
-                <i class="fas fa-signature"></i><span class="sidebar-label"> Valider la signature</span>
-            </button>
+                <button th:if="${referer != null}" type="button" class="btn btn-danger col-12 mt-2" value="Retour" th:onclick="@{'location.href=\'' + ${referer} + '\''}">
+                    <i class="fas fa-times"></i><span class="sidebar-label"> Abandonner</span>
+                </button>
 
-            <button th:if="${referer != null}" type="button" class="btn btn-danger col-12 m-1" value="Retour" th:onclick="@{'location.href=\'' + ${referer} + '\''}">
-                <i class="fas fa-times"></i><span class="sidebar-label"> Abandonner</span>
-            </button>
-
-            <button th:unless="${referer != null}" type="button" class="btn btn-danger col-12 m-1" value="Retour" onclick="window.history.back()">
-                <i class="fas fa-times"></i><span class="sidebar-label"> Abandonner</span>
-            </button>
+                <button th:unless="${referer != null}" type="button" class="btn btn-danger col-12 mt-2" value="Retour" onclick="window.history.back()">
+                    <i class="fas fa-times"></i><span class="sidebar-label"> Abandonner</span>
+                </button>
+                <button class="btn btn-success col-12 mt-2"
+                        th:unless="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'nexuSign' || signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}" type="button"
+                        onclick="document.getElementById('signForm').submit();">
+                    <i class="fas fa-signature"></i><span class="sidebar-label"> Valider la signature</span>
+                </button>
             </div>
         </nav>
         <div aria-expanded="true" class="collapse" id="collapseHelp">
@@ -115,7 +118,6 @@
                 </nav>
             </th:block>
             <form id="signForm" th:action="'/user/signrequests/sign/' + ${signRequest.id}" method="post">
-                <input type="hidden" name="signonly" value="true">
                 <input id="addDate" type="hidden" name="addDate" value="false">
                 <input type="hidden" name="referer" th:value="${referer}">
                 <div th:if="${documentType == 'pdf'}">
@@ -126,7 +128,6 @@
                         </div>
                     </div>
                     <div th:unless="${user.signImage == null && documentType == 'pdf' && signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'visa'}">
-
                         <div id="pointer_div" onmouseup="savePosition();" ontouchend="savePosition();" ontouchmove="pointIt(event);" onmousemove="pointIt(event);"
                              th:style="'background-size: ' + ${pdfWidth} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/' + ${signRequest.currentWorkflowStep.signRequestParams.signPageNumber -1} + '\');width:' + ${pdfWidth} + 'px;height:' + ${pdfHeight} + 'px;border:1px solid #CCC;pointer-events: none;'">
                             <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.currentWorkflowStep.signRequestParams.newPageType.name() == 'none' && signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'visa'}">

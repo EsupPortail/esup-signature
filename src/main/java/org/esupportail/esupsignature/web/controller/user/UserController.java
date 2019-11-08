@@ -49,10 +49,10 @@ import java.util.stream.Collectors;
 public class UserController {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
-	
-	@ModelAttribute("active")
+
+	@ModelAttribute("paramMenu")
 	public String getActiveMenu() {
-		return "user/users";
+		return "active";
 	}
 
 	@Resource

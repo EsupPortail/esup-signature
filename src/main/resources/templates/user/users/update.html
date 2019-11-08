@@ -2,32 +2,37 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
-<div class="header-fixed fixed-top">
     <th:block th:if="${referer == null}">
         <nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
     </th:block>
     <th:block th:unless="${referer == null}">
         <nav th:replace="fragments/emptyBar :: emptyBar"></nav>
     </th:block>
-</div>
 <main role="main">
-    <div class="row">
-        <div class="col-lg-2" style="background-color: #CCCCCC">
-            <a href="/" class="col-12 ml-2 mt-2 btn btn-outline-dark btn-light float-left">
-                <i class="fas fa-home"></i> Accueil
-            </a>
-            <button type="button" onclick="document.getElementById('fu_org_esupportail_esupsignature_domain_User').submit();" class="col-12 m-2 btn btn-success float-left">
+    <div class="wrapper">
+        <nav id="sidebar">
+            <div class="row">
+                <div class="col-lg-2">
+                </div>
+                <div id="logo" class="col-lg-9">
+                    <img src="/images/logo.png"/>
+                </div>
+            </div>
+            <div class="m-1">
+            <button type="button" onclick="document.getElementById('fu_org_esupportail_esupsignature_domain_User').submit();" class="col-12 mt-2 btn btn-success float-left">
                 <i class="fas fa-save"></i> Enregistrer les modifications
             </button>
-            <a th:if="${referer != null}" class="col-12 m-2 btn btn-danger float-right" value="Retour" th:href="${referer}">
+            <a th:if="${referer != null}" class="col-12 mt-2 btn btn-danger float-right" value="Retour" th:href="${referer}">
                 <i class="fas fa-times"></i> Abandonner
             </a>
-        </div>
-        <div class="tab-content col-lg-10">
+            <a th:unless="${referer != null}" class="btn btn-light col-12 mt-2" href="/"><i class="fas fa-door-open"></i> Sortir</a>
+            </div>
+        </nav>
+        <div class="content">
             <div class="mt-2 mb-2">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/user/my-docs"> Paramètres de signature</a></li>
+                        <li class="breadcrumb-item active">Paramètres de signature</li>
                     </ol>
                 </nav>
             </div>

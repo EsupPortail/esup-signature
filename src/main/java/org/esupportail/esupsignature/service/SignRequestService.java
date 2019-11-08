@@ -150,7 +150,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void sign(SignRequest signRequest, User user, String password, boolean addDate) throws EsupSignatureSignException, EsupSignatureKeystoreException, IOException {
+	public void sign(SignRequest signRequest, User user, String password, boolean addDate) throws EsupSignatureException, IOException {
 		step = "Demarrage de la signature";
 		boolean addPage = false;
 		if(!SignRequestParams.NewPageType.none.equals(signRequest.getCurrentWorkflowStep().getSignRequestParams().getNewPageType())) {
@@ -170,11 +170,7 @@ public class SignRequestService {
 				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, user, addPage, addDate);
 			} else {
 				if(signType.equals(SignType.visa)) {
-					try {
-						applyEndOfStepRules(signRequest, user);
-					} catch (EsupSignatureException e) {
-						throw new EsupSignatureSignException("error on apply signBook rules", e);
-					}
+					signedFile = toSignDocuments.get(0);
 				} else {
 					logger.error("no visual sign for non pdf file");
 					throw new EsupSignatureSignException("no visual sign for non pdf file");
@@ -189,6 +185,7 @@ public class SignRequestService {
 			signRequest.getSignedDocuments().add(signedFile);
 			signedFile.setParentId(signRequest.getId());
 			//signedFile.delete();
+			applyEndOfStepRules(signRequest, user);
 			step = "end";
 		}
 	}
@@ -548,7 +545,14 @@ public class SignRequestService {
 		}
 		signRequestRepository.save(signRequest);
 	}
-	
+
+	public Long changeSignType(SignRequest signRequest, int step, SignType signType) {
+		WorkflowStep workflowStep = signRequest.getWorkflowSteps().get(step);
+		workflowStep.getSignRequestParams().setSignType(signType);
+		signRequestRepository.save(signRequest);
+		return workflowStep.getId();
+	}
+
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {
 		SignBook signBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
 		if ((signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft)) 

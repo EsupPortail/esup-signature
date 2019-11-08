@@ -2,126 +2,90 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
-<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-<div aria-expanded="true" class="collapse" id="collapseHelp">
-    <div class="alert alert-info">
-        Cet écran permet d'effectuer plusieurs types d'actions sur votre demande :
-        <ul>
-            <li>Ajouter des documents à votre demande et l'envoyer</li>
-            <li>Consulter les documents à signer</li>
-            <li>Signer une demande</li>
-            <li>Consulter / télécharger les documents signés</li>
-        </ul>
-    </div>
-</div>
+<header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <nav class="wrapper">
         <nav id="sidebar">
             <div class="row">
                 <div class="col-lg-2">
-            <button type="button" id="sidebarCollapse" class="mt-3 m-1 btn text-white">
-                <i class="fas fa-bars"></i>
-            </button>
+                    <button type="button" id="sidebarCollapse" class="mt-3 m-1 btn text-white">
+                        <i class="fas fa-bars"></i>
+                    </button>
                 </div>
-            <div id="logo" class="col-lg-9">
-                <a href="/">
-                    <img src="/images/logo.png"/>
-                </a>
-            </div>
+                <div id="logo" class="col-lg-9">
+                    <a href="/">
+                        <img src="/images/logo.png"/>
+                    </a>
+                </div>
             </div>
             <div class="m-1">
-                    <div th:replace="user/signrequests/includes/status :: status"></div>
-                    <div th:switch="${signable}" class="mt-1">
-                        <div th:case="'ok'">
-                            <dl class="display-group border-bottom m-0 d-none">
-                                <dt class="col-lg-6">
-                                    Parapheur courant
-                                    <button data-target="#collapseHelpCurrent"
-                                            data-toggle="collapse" type="button"
-                                            class="btn btn-sm btn-info">
-                                        <span class="fas fa-info-circle"></span>
-                                    </button>
-                                    <div class="collapse" id="collapseHelpCurrent">
-                                        <div class="alert alert-info">
-                                            <small>
-                                                Les paramètres du parapheur courant sont appliqués par défaut. Vous pouvez modifier la position manuellement à l'aide de la prévisualisation.
-                                            </small>
+                <div th:replace="user/signrequests/includes/status :: status"></div>
+                <div class="mb-1 mt-1">
+                    <div th:if="${user.eppn == signRequest.createBy}">
+                        <div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
+                            <div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
+                                <div class="alert alert-secondary">
+                                    <h5 class="alert-heading">
+                                        Demande en cours de création
+                                    </h5>
+                                    <div th:if="${#lists.size(signRequest.originalDocuments) == 0}">
+                                        <div th:if="${modelId != null}">
+                                            <button type="button" class="btn btn-info"
+                                                    onclick="window.open('${modelId}', '_blank')">
+                                                <i class="fas fa-download"></i> Télécharger le modèle
+                                            </button>
                                         </div>
+                                        <hr/>
+                                        <p>Vous devez ajouter des documents</p>
                                     </div>
-                                </dt>
-                                <dd>
-								<span class="alert alert-secondary">
-									<i class="fas fa-book"></i> ${currentSignBook.name}
-								</span>
-                                </dd>
-                            </dl>
-                        </div>
-                        <div th:case="*">
-                            <div th:if="${user.eppn == signRequest.createBy}">
-                                <div th:if="${signRequest.status.name() == 'draft'}">
-                                    <div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
-                                        <div class="alert alert-secondary">
-                                            <h5 class="alert-heading">
-                                                Demande en cours de création
-                                            </h5>
-                                            <div th:if="${#lists.size(signRequest.originalDocuments) == 0}">
-                                                <div th:if="${modelId != null}">
-                                                    <button type="button" class="btn btn-info"
-                                                            onclick="window.open('${modelId}', '_blank')">
-                                                        <i class="fas fa-download"></i> Télécharger le modèle
-                                                    </button>
-                                                </div>
-                                                <hr/>
-                                                <p>Vous devez ajouter des documents</p>
-                                            </div>
-                                            <div th:if="${signRequest.currentWorkflowStep.signBooks.size() == 0}">
-                                                <p>
-                                                <hr/>
-                                                Vous devez envoyer la demande dans un ou plusieurs parapheurs
-                                                </p>
-                                            </div>
-                                        </div>
+                                    <div th:if="${signRequest.currentWorkflowStep.signBooks.size() == 0}">
+                                        <p>
+                                        <hr/>
+                                        Vous devez envoyer la demande dans un ou plusieurs parapheurs
+                                        </p>
                                     </div>
-                                    <div th:unless="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
-                                        <div class="alert alert-info">
-                                            <h6 class="alert-heading">
-                                                Demande prête pour la mise en signature
-                                            </h6>
-                                            <hr/>
-                                            <th:block th:if="${signRequest.status.name() == 'draft' && signRequest.currentWorkflowStep.signBooks.size() > 0 && user.eppn == signRequest.createBy && #lists.size(signRequest.originalDocuments) > 0}">
-                                                <button type="button" class="mr-2 btn btn-success" data-toggle="modal" data-target="#sendModal">
-                                                    <i class="fa fa-paper-plane " aria-hidden="true"></i> Lancer la procedure de signature
-                                                </button>
-                                            </th:block>
-                                        </div>
-                                    </div>
+                                </div>
+                            </div>
+                            <div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
+                                <div class="alert alert-info">
+                                    <h6 class="alert-heading">
+                                        Demande prête pour la mise en signature
+                                    </h6>
+                                    <hr/>
+                                    <th:block
+                                            th:if="${signRequest.currentWorkflowStep.signBooks.size() > 0 && user.eppn == signRequest.createBy && #lists.size(signRequest.originalDocuments) > 0}">
+                                        <button type="button" class="mr-2 btn btn-success" data-toggle="modal" data-target="#sendModal">
+                                            <i class="fa fa-paper-plane " aria-hidden="true"></i> Lancer la procedure de signature
+                                        </button>
+                                    </th:block>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div th:if="${signRequest.status.name() == 'exported'}" class="alert alert-warning">
-                        <small><span th:text="'Emplacement définitif : ' + ${signRequest.exportedDocumentURI}"></span></small>
-                        <br>
-                        <a class="btn btn-success" th:href="'/ws/get-last-file?name=' + ${signRequest.name}"><i class="fa fa-download"></i> Télécharger le document signé</a>
+                </div>
+                <div th:if="${signRequest.status.name() == 'exported'}" class="alert alert-warning">
+                    <small><span th:text="'Emplacement définitif : ' + ${signRequest.exportedDocumentURI}"></span></small>
+                    <br>
+                    <a class="btn btn-success" th:href="'/ws/get-last-file?name=' + ${signRequest.name}"><i class="fa fa-download"></i> Télécharger le document signé</a>
+                </div>
+                <div th:if="${signRequest.status.name() == 'pending'}">
+                    <div class="alert alert-primary sidebar-label">
+                        <h6 class="alert-heading">
+                            La demande est en cours de signature
+                        </h6>
                     </div>
-                    <div th:if="${signRequest.status.name() == 'pending'}">
+                    <div th:if="${signable == 'ok'}">
                         <div class="alert alert-primary sidebar-label">
-                           <h6 class="alert-heading">
-                                La demande est en cours de signature
-                            </h6>
-                            <hr/>
                             Vous devez signer cette demande
-                            <hr/>
                         </div>
-                        <div th:if="${signable == 'ok'}">
-                            <button type="button" class="btn btn-danger col-12 mt-2" data-toggle="modal" data-target="#refuseModal">
-                                <i class="fas fa-ban"></i><span class="sidebar-label"> Refuser</span>
-                            </button>
-                            <a class="btn btn-success col-12 mt-2" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name} + '?referer=true'">
-                                <i class="fas fa-signature"></i><span class="sidebar-label"> Signer</span>
-                            </a>
-                        </div>
+                        <button type="button" class="btn btn-danger col-12 mt-2" data-toggle="modal" data-target="#refuseModal">
+                            <i class="fas fa-ban"></i><span class="sidebar-label"> Refuser</span>
+                        </button>
+                        <a class="btn btn-success col-12 mt-2" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
+                            <i class="fas fa-signature"></i><span class="sidebar-label"> Signer</span>
+                        </a>
                     </div>
+                </div>
                 <div th:if="${user.eppn == signRequest.createBy}">
                     <div th:switch="${signRequest.status.name()}">
                         <div th:case="'signed'">
@@ -154,23 +118,35 @@
                             </dl>
                         </div>
                         <th:block th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked'}">
-                                    <div class="alert alert-success">
-                                        <div class="sidebar-label">
+                            <div class="alert alert-success">
+                                <div class="sidebar-label">
                                     <h6 class="alert-heading">Toutes les étapes de la demande sont effectuées</h6>
-                                        </div>
-                                        <a class="m-1 btn btn-warning" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
-                                            <i class="fas fa-save "></i><span class="sidebar-label"> Enregistrer le document signé sous</span>
-                                        </a>
-                                        <a class="m-1 btn btn-warning" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
-                                            <i class="fas fa-shield-alt "></i><span class="sidebar-label"> Contrôler le document</span>
-                                        </a>
-                                    </div>
+                                </div>
+                                <a class="m-1 btn btn-warning" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
+                                    <i class="fas fa-save "></i><span class="sidebar-label"> Enregistrer le document signé sous</span>
+                                </a>
+                                <a class="m-1 btn btn-warning" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+                                    <i class="fas fa-shield-alt "></i><span class="sidebar-label"> Contrôler le document</span>
+                                </a>
+                            </div>
                         </th:block>
                     </div>
                 </div>
+                <a class="btn btn-light col-12 mt-2" href="/"><i class="fas fa-door-open"></i> Sortir</a>
             </div>
         </nav>
         <div id="content" class="content">
+            <div aria-expanded="true" class="collapse" id="collapseHelp">
+                <div class="alert alert-info">
+                    Cet écran permet d'effectuer plusieurs types d'actions sur votre demande :
+                    <ul>
+                        <li>Ajouter des documents à votre demande et l'envoyer</li>
+                        <li>Consulter les documents à signer</li>
+                        <li>Signer une demande</li>
+                        <li>Consulter / télécharger les documents signés</li>
+                    </ul>
+                </div>
+            </div>
             <div class="mt-2">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
@@ -207,154 +183,7 @@
                     </div>
                 </div>
             </div>
-
-            <div class="card rounded-0 mb-1">
-                <div class="card-header">
-                    Etapes de signature
-                    <button th:if="${signRequest.status.name() == 'draft'}" type="button" class="btn btn-primary float-right" data-toggle="modal" data-target="#addStep">
-                        <i class="fa fa-plus"></i> Ajouter une étape
-                    </button>
-                    <button th:if="${signRequest.status.name() == 'draft' && signRequest.workflowSteps.size() == 0}" type="button" class="btn btn-primary float-right mr-1" data-toggle="modal" data-target="#addWorkflow">
-                        <i class="fa fa-plus"></i> Ajouter un workflow
-                    </button>
-                </div>
-                <div id="collapseSignBook" class="show" aria-labelledby="headingOne" data-parent="#accordion">
-                    <div class="card-body">
-                        <div th:if="${signRequest.workflowSteps != null}" style="height: 100%; display: flex; align-items: center; justify-content: center;">
-                            <div class="bs-stepper vertical linear">
-                                <div class="bs-stepper-header" role="tablist">
-                                    <th:block th:each="workflowStep,iterator : ${signRequest.workflowSteps}">
-                                        <div class="step table-bordered">
-                                            <div class="step-trigger col-12 text-left" role="tab" aria-selected="false">
-                                                <div th:if="${iterator.index + 1 == signRequest.currentWorkflowStepNumber && signRequest.status != 'completed'}">
-                                                    <span class="bs-stepper-circle bg-warning" th:text="${iterator.index + 1}"></span> <span class="text-warning">Etape courante</span>
-                                                </div>
-                                                <div th:if="${iterator.index + 1 > signRequest.currentWorkflowStepNumber}">
-                                                    <span class="bs-stepper-circle" th:text="${iterator.index + 1}"></span> Etape en attente
-                                                </div>
-                                                <div th:unless="${iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
-                                                    <span class="bs-stepper-circle bg-success" th:text="${iterator.index + 1}"></span> <span class="text-success">Etape terminée</span>
-                                                </div>
-                                                <div class="bs-stepper-label w-100">
-                                                    <hr/>
-                                                    Type de signature : <span th:text="#{'signbook.signtype.' + ${workflowStep.signRequestParams.signType}}"></span>
-                                                    <hr/>
-                                                    <div th:if="${user.eppn == signRequest.createBy && (iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber) && workflowStep.signBooks.size() > 1 }">
-                                                        <label>
-                                                            Tous les participants doivent-ils signer ?
-                                                        </label>
-                                                        <label class="switch">
-                                                            <input th:onclick="'location.href=\'/user/signrequests/toggle-need-all-sign/' + ${id} + '/' + ${iterator.index} + '\''" type="checkbox" name="allSignToComplete" th:checked="${workflowStep.allSignToComplete}"/>
-                                                            <span class="slider round"></span>
-                                                        </label>
-                                                    </div>
-                                                    <hr/>
-                                                    <span th:if="${workflowStep.allSignToComplete}">
-                                                        Tous les destinataires suivants :
-                                                    </span>
-                                                    <span th:unless="${workflowStep.allSignToComplete}">Un des destinataires suivants :</span>
-                                                    <table class="table table-sm table-bordered">
-                                                        <tr>
-                                                            <th>Nom</th>
-                                                            <th>Etat</th>
-                                                            <th>Suppr.</th>
-                                                        </tr>
-                                                    <th:block th:each="recipient : ${workflowStep.signBooksLabels}">
-                                                        <tr>
-                                                        <form th:action="'/user/signrequests/remove-step-recipent/' + ${workflowStep.id} + '/' + ${recipient.key}" th:method="'delete'">
-                                                            <td>
-                                                                <span th:text="${recipient.key}"></span>
-                                                            </td>
-                                                            <td>
-                                                                <div th:switch="${recipient.value}">
-                                                                    <i th:case="true" class="fas fa-check-circle text-success" title="Signature effectuée"></i>
-                                                                    <i th:case="false" class="fas fa-exclamation-circle text-danger" title="En attente de signature"></i>
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <button title="Supprimer le destinataire" th:if="${user.eppn == signRequest.createBy && iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" type="submit" class="btn btn-danger btn-sm"><i class="fas fa-minus-circle"></i></button>
-                                                            </td>
-                                                            </li>
-                                                        </form>
-                                                        </tr>
-                                                    </th:block>
-                                                    </table>
-                                                    <th:block th:if="${user.eppn == signRequest.createBy && iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
-                                                        <button type="button" title="Ajouter un destinataire" class="btn btn-sm btn-primary float-right" data-toggle="modal" th:data-target="'#reSendModal' + ${workflowStep.id}">
-                                                            <i class="fa fa-plus" aria-hidden="true"></i>
-                                                        </button>
-                                                        <div class="modal fade" th:id="'reSendModal' + ${workflowStep.id}" tabindex="-1" role="dialog" th:aria-labelledby="'reSendModal' + ${workflowStep.id}" aria-hidden="true">
-                                                            <div class="modal-dialog modal-lg" role="document">
-                                                                <div class="modal-content">
-                                                                    <form class="form-group" th:action="'/user/signrequests/send-to-signbook/' + ${id} + '/' + ${workflowStep.id}" method="get">
-                                                                        <div class="modal-header">
-                                                                            <h5 class="modal-title">Ajout de destinataire(s)</h5>
-                                                                        </div>
-                                                                        <div class="modal-body">
-                                                                            <div class="input-group">
-                                                                                <select onchange="checkNbRecipients();" name="signBookNames" th:id="'signBookNames' + ${workflowStep.id}" size="5" multiple="multiple" required="required">
-                                                                                    <th:block th:each="signBook : ${allSignBooks}">
-                                                                                        <option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
-                                                                                    </th:block>
-                                                                                </select>
-                                                                            </div>
-                                                                            <div class="input-group">
-                                                                                <textarea class="form-control" name="comment" placeholder="Commentaire"></textarea>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="modal-footer">
-                                                                            <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
-                                                                            <button type="submit" class="btn btn-primary float-right">
-                                                                                Ajouter
-                                                                            </button>
-                                                                        </div>
-                                                                    </form>
-                                                                </div>
-                                                                <script language="JavaScript">
-                                                                    var signBookNamesSelect = new SlimSelect({
-                                                                        select: "#[['signBookNames' + ${workflowStep.id}]]",
-                                                                        placeholder: 'Choisir un ou plusieurs parapheur(s)',
-                                                                        searchText: 'Aucun résultat',
-                                                                        searchPlaceholder: 'Rechercher',
-                                                                        searchHighlight: true,
-                                                                        searchFilter: (option, search) => {
-                                                                            return true;
-                                                                        },
-                                                                        ajax: function (search, callback) {
-                                                                            if (search.length < 3) {
-                                                                                callback('Merci de saisir au moins 3 caractères')
-                                                                            }
-                                                                            fetch('/user/users/searchLdap?searchString=' + search)
-                                                                                .then(function (response) {
-                                                                                    return response.json()
-                                                                                })
-                                                                                .then(function (json) {
-                                                                                    let data = []
-                                                                                    for (let i = 0; i < json.length; i++) {
-                                                                                        data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
-                                                                                    }
-                                                                                    callback(data)
-                                                                                })
-                                                                                .catch(function (error) {
-                                                                                    callback(false)
-                                                                                })
-                                                                        }
-                                                                    });
-                                                                </script>
-                                                            </div>
-                                                        </div>
-                                                    </th:block>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div th:if="${signRequest.workflowSteps.size() > iterator.index + 1}" class="line"></div>
-                                </th:block>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            <div th:replace="user/signrequests/cards/stepscard :: stepscard"></div>
             <div class="card rounded-0 mb-1">
                 <div class="card-header">
                     Commentaires <span th:text="'(' + ${#lists.size(comments)} + ')'"></span>
@@ -421,7 +250,8 @@
                 </div>
             </div>
         </div>
-    </div>
+        </div>
+    </nav>
 </main>
 
 <div class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-labelledby="Refus" aria-hidden="true">
@@ -453,19 +283,19 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/signrequests/refuse/' + ${id}">
-            <div class="modal-header">
-                <h5 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows=""></textarea>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                <button type="submit" class="btn btn-danger">Refuser</button>
-            </div>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows=""></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Refuser</button>
+                </div>
             </form>
         </div>
     </div>
@@ -480,9 +310,9 @@
                 </div>
                 <div class="modal-body">
                     <select name="workflowSignBookId" class="form-control">
-                    <th:block th:each="workflowSignBook : ${workflowSignBooks}">
-                        <option th:value="${workflowSignBook.id}" th:text="${workflowSignBook.name}"></option>
-                    </th:block>
+                        <th:block th:each="workflowSignBook : ${workflowSignBooks}">
+                            <option th:value="${workflowSignBook.id}" th:text="${workflowSignBook.name}"></option>
+                        </th:block>
                     </select>
                 </div>
                 <div class="modal-footer">
@@ -501,10 +331,10 @@
         <div class="modal-content">
             <form th:action="'/user/signrequests/add-step/' + ${id}" method="post">
 
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Ajouter une étape</h5>
-            </div>
-            <div class="modal-body">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ajouter une étape</h5>
+                </div>
+                <div class="modal-body">
                     <div class="form-group" id="_signType_div_id">
                         <label for="_signType_id"> <strong> Type de signature
                             par défaut
@@ -555,195 +385,18 @@
                         </div>
                     </div>
 
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                <button type="submit" class="btn btn-success">
-                    <i class="fa fa-paper-plane" aria-hidden="true"></i> Envoyer
-                </button>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-paper-plane" aria-hidden="true"></i> Envoyer
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 </div>
-
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
-<script th:inline="javascript">
-    /*<![CDATA[*/
-
-    $('#multipartFile').on('filebatchuploadcomplete', function(event, file, previewId, index, reader) {
-        location.reload();
-    });
-    $('#multipartFile').on('fileuploaded', function(event, file, previewId, index, reader) {
-        location.reload();
-    });
-
-    $('#multipartFile').on('fileloaded', function(event, file, previewId, index, reader) {
-        $('#multipartFile').fileinput('upload');
-    });
-
-    $('#multipartFile').on('filedeleted', function(event, id, index) {
-        location.reload();
-    });
-
-    $("#multipartFile").fileinput({
-        language: "fr",
-        showCaption: false,
-        showClose: false,
-        showBrowse: false,
-        [# th:if="${signRequest.status.name() != 'draft' || user.eppn != signRequest.createBy || signRequest.signedDocuments.size() > 0}"]
-    showUpload: false,
-        showRemove: false,
-        dropZoneEnabled: false,
-        [/]
-            [# th:if="${signRequest.status.name() == 'draft' && user.eppn == signRequest.createBy && signRequest.signedDocuments.size() == 0}"]
-    browseOnZoneClick: true,
-        [/]
-            uploadUrl: "/user/signrequests/add-doc/[[${id}]]",
-        uploadAsync: false,
-        overwriteInitial: false,
-        theme: 'explorer-fas',
-        pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
-        initialPreview: [
-        [# th:each="originalDocument : ${signRequest.originalDocuments}"]
-    [# th:text=${originalDocument.url}][/],
-        [/]
-        ],
-        initialPreviewConfig: [
-        [# th:each="originalDocument : ${signRequest.originalDocuments}"]
-    [# th:switch="${#strings.arraySplit(originalDocument.contentType, '/')[1]}"]
-        [# th:case="'gif'"]
-    {type: "image", size: [[${originalDocument.size}]], downloadUrl: "/user/documents/getfile/[[${originalDocument.id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/user/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},
-        [/]
-            [# th:case="'pdf'"]
-    {type: "pdf", size: [[${originalDocument.size}]], downloadUrl: "/user/documents/getfile/[[${originalDocument.id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: "/user/signrequests/remove-doc/[[${originalDocument.id}]]", key: [[${originalDocument.id}]]},
-        [/]
-            [# th:case="'doc'"]
-    {type: "office", size: [[${originalDocument.size}]], downloadUrl: [[${originalDocument.url}]],caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/user/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},
-        [/]
-            [# th:case="'avi'"]
-    {type: "video", size: [[${originalDocument.size}]], downloadUrl: [[${originalDocument.url}]],caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/user/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},
-        [/]
-            [# th:case="*"]
-    {type: "other", size: [[${originalDocument.size}]], downloadUrl: [[${originalDocument.url}]],caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/user/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},
-        [/]
-            [/]
-            [/]
-            ],
-            initialPreviewAsData: true,
-            initialPreviewFileType: 'pdf',
-            preferIconicPreview: true,
-            previewFileIconSettings: { // configure your icon file extensions
-        'doc': '<i class="fas fa-file-word text-primary  fa-2x"></i>',
-            'xls': '<i class="fas fa-file-excel text-success  fa-2x"></i>',
-            'ppt': '<i class="fas fa-file-powerpoint text-danger  fa-2x"></i>',
-            'pdf': '<i class="fas fa-file-pdf text-danger  fa-2x"></i>',
-            'zip': '<i class="fas fa-file-archive text-muted  fa-2x"></i>',
-            'htm': '<i class="fas fa-file-code text-info  fa-2x"></i>',
-            'txt': '<i class="fas fa-file-alt text-info fa-2x"></i>',
-            'mov': '<i class="fas fa-file-video text-warning fa-2x"></i>',
-            'mp3': '<i class="fas fa-file-audio text-warning  fa-2x"></i>',
-            'jpg': '<i class="fas fa-file-image text-danger fa-2x"></i>',
-            'gif': '<i class="fas fa-file-image text-muted fa-2x"></i>',
-            'png': '<i class="fas fa-file-image text-primary fa-2x"></i>'
-    },
-        previewFileExtSettings: { // configure the logic for determining icon file extensions
-            'doc': function(ext) {
-                return ext.match(/(doc|docx)$/i);
-            },
-            'xls': function(ext) {
-                return ext.match(/(xls|xlsx)$/i);
-            },
-            'ppt': function(ext) {
-                return ext.match(/(ppt|pptx)$/i);
-            },
-            'zip': function(ext) {
-                return ext.match(/(zip|rar|tar|gzip|gz|7z)$/i);
-            },
-            'htm': function(ext) {
-                return ext.match(/(htm|html)$/i);
-            },
-            'txt': function(ext) {
-                return ext.match(/(txt|ini|csv|java|php|js|css)$/i);
-            },
-            'mov': function(ext) {
-                return ext.match(/(avi|mpg|mkv|mov|mp4|3gp|webm|wmv)$/i);
-            },
-            'mp3': function(ext) {
-                return ext.match(/(mp3|wav)$/i);
-            }
-        },
-        fileActionSettings: {
-            showDrag: false,
-                showZoom: function(config) {
-                if (config.type === 'pdf' || config.type === 'image') {
-                    return true;
-                }
-                return false;
-            },
-            [# th:if="${signRequest.status.name() != 'draft' || user.eppn != signRequest.createBy ||  signRequest.signedDocuments.size() > 0}"]
-            showRemove: false
-                [/]
-
-        }
-
-    });
-
-    $("#signedFiles").fileinput({
-        language: "fr",
-        showCaption: false,
-        showClose: false,
-        showUpload: false,
-        showBrowse: false,
-        showRemove: false,
-        dropZoneEnabled: false,
-        browseOnZoneClick: true,
-        uploadAsync: false,
-        theme: 'explorer-fas',
-        pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
-        initialPreview: [
-            [# th:each="signedDocument : ${signRequest.signedDocuments}"]
-    [[${signedDocument.url}]],
-        [/]
-        ],
-        initialPreviewConfig: [
-        [# th:each="signedDocument : ${signRequest.signedDocuments}"]
-    [# th:switch="${#strings.arraySplit(signedDocument.contentType, '/')[1]}"]
-        [# th:case="'pdf'"]
-    {type: "pdf", size: [[${signedDocument.size}]], downloadUrl: "/user/documents/getfile/[[${signedDocument.id}]]",caption: [[${signedDocument.fileName}]], filename: [[${signedDocument.fileName}]], key: [[${signedDocument.id}]]},
-        [/]
-            [# th:case="*"]
-    {type: "other", size: [[${signedDocument.size}]], downloadUrl: "/user/documents/getfile/[[${signedDocument.id}]]",caption: [[${signedDocument.fileName}]], filename: [[${signedDocument.fileName}]], key: [[${signedDocument.id}]]},
-        [/]
-            [/]
-            [/]
-            ],
-            initialPreviewAsData: true,
-            initialPreviewFileType: 'image',
-            overwriteInitial: false,
-            preferIconicPreview: true,
-            previewFileIconSettings: { // configure your icon file extensions
-        'pdf': '<i class="fas fa-file-pdf text-danger fa-2x"></i>',
-            'asic': '<i class="fas fa-file-signature text-dark fa-2x"></i>',
-    },
-        previewFileExtSettings: { // configure the logic for determining icon file extensions
-            'asic': function(ext) {
-                return ext.match(/(asics|asice)$/i);
-            }
-        },
-        fileActionSettings: {
-            showDrag: false,
-                showZoom: function(config) {
-                if (config.type === 'pdf') {
-                    return true;
-                }
-                return false;
-            },
-            showRemove: false
-        }
-
-    });
-    /*]]>*/
-</script>
+<script th:replace="user/signrequests/includes/scriptshow :: scriptshow"></script>
 </html>
