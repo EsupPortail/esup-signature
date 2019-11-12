@@ -81,21 +81,21 @@
                         </div>
                     </div>
                     <div id="nexu_ready_alert" style="display: none;">
-                        <button type="button" onclick="document.getElementById('signForm').submit();" class="mr-2 btn btn-success float-left">
-                            <i class="fas fa-signature fa-2x"></i> <br/>
-                            Signer
-                        </button>
-                        <div class="alert alert-success float-left">
-                            L'application NexU est fonctionnelle <br/> <small>Vous pouvez utiliser une clé
-                            materielle ou un keystore</small>
+                        <div class="alert alert-success float-left mb-1">
+                            L'application NexU est fonctionnelle
+                            <br/>
+                            <small>Vous pouvez utiliser une clé materielle ou un keystore</small>
                         </div>
+                        <button type="button" onclick="document.getElementById('signForm').submit();" class="btn btn-success float-left col-12 mb-1">
+                            <i class="fas fa-signature"></i> Signer
+                        </button>
                     </div>
                 </div>
-                <button th:if="${referer != null}" type="button" class="btn btn-danger col-12 mt-2" value="Retour" th:onclick="@{'location.href=\'' + ${referer} + '\''}">
+                <button th:if="${referer != null}" type="button" class="btn btn-danger col-12 mb-1" value="Retour" th:onclick="@{'location.href=\'' + ${referer} + '\''}">
                     <i class="fas fa-times"></i><span class="sidebar-label"> Abandonner</span>
                 </button>
 
-                <button th:unless="${referer != null}" type="button" class="btn btn-danger col-12 mt-2" value="Retour" onclick="window.history.back()">
+                <button th:unless="${referer != null}" type="button" class="btn btn-danger col-12 mb-1" value="Retour" onclick="window.history.back()">
                     <i class="fas fa-times"></i><span class="sidebar-label"> Abandonner</span>
                 </button>
                 <button class="btn btn-success col-12 mt-2"

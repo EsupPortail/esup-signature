@@ -69,7 +69,7 @@
                     <a class="btn btn-success" th:href="'/ws/get-last-file?name=' + ${signRequest.name}"><i class="fa fa-download"></i> Télécharger le document signé</a>
                 </div>
                 <div th:if="${signRequest.status.name() == 'pending'}">
-                    <div class="alert alert-primary sidebar-label">
+                    <div class="alert alert-primary sidebar-label mb-1">
                         <h6 class="alert-heading">
                             La demande est en cours de signature
                         </h6>
@@ -132,7 +132,9 @@
                         </th:block>
                     </div>
                 </div>
-                <a class="btn btn-light col-12 mt-2" href="/"><i class="fas fa-door-open"></i> Sortir</a>
+                <a class="btn btn-light col-12" href="/"><i class="fas fa-door-open"></i>
+                    <span class="sidebar-label">Sortir</span>
+                </a>
             </div>
         </nav>
         <div id="content" class="content">

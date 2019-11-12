@@ -347,8 +347,6 @@ public class SignRequestService {
 	public void addRecipientsToWorkflowStep(SignRequest signRequest, List<String> signBookNames, WorkflowStep workflowStep, User user) {
 		for (String signBookName : signBookNames) {
 			SignBook signBook;
-//			signBookRepository.countByName(recipientEmail);
-//			signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.user);
 			if (signBookRepository.countByName(signBookName) == 0 && signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user) == 0) {
 				User recipientUser = userService.createUser(signBookName);
 				signBook = signBookService.getUserSignBook(recipientUser);
@@ -536,20 +534,40 @@ public class SignRequestService {
 		signBookService.removeSignRequestFromAllSignBooks(signRequest);
 		updateStatus(signRequest, SignRequestStatus.refused, "Refusé", user, "SUCCESS", signRequest.getComment());
 	}
-	
-	public void toggleNeedAllSign(SignRequest signRequest, int step) {
-		if(signRequest.getWorkflowSteps().get(step).isAllSignToComplete()) {
-			signRequest.getWorkflowSteps().get(step).setAllSignToComplete(false);
+
+	public Long toggleNeedAllSign(SignBook signBook, int step) {
+		WorkflowStep workflowStep = signBook.getWorkflowSteps().get(step);
+		return toggleAllSignToCompleteForWorkflowStep(workflowStep);
+	}
+
+	public Long toggleNeedAllSign(SignRequest signRequest, int step) {
+		WorkflowStep workflowStep = signRequest.getWorkflowSteps().get(step);
+		return toggleAllSignToCompleteForWorkflowStep(workflowStep);
+	}
+
+	private Long toggleAllSignToCompleteForWorkflowStep(WorkflowStep workflowStep) {
+		if(workflowStep.isAllSignToComplete()) {
+			workflowStep.setAllSignToComplete(false);
 		} else {
-			signRequest.getWorkflowSteps().get(step).setAllSignToComplete(true);
+			workflowStep.setAllSignToComplete(true);
 		}
-		signRequestRepository.save(signRequest);
+		workflowStepRepository.save(workflowStep);
+		return workflowStep.getId();
+	}
+
+	public Long changeSignType(SignBook signBook, int step, SignType signType) {
+		WorkflowStep workflowStep = signBook.getWorkflowSteps().get(step);
+		return setSignTypeForWorkflowStep(signType, workflowStep);
 	}
 
 	public Long changeSignType(SignRequest signRequest, int step, SignType signType) {
 		WorkflowStep workflowStep = signRequest.getWorkflowSteps().get(step);
+		return setSignTypeForWorkflowStep(signType, workflowStep);
+	}
+
+	private Long setSignTypeForWorkflowStep(SignType signType, WorkflowStep workflowStep) {
 		workflowStep.getSignRequestParams().setSignType(signType);
-		signRequestRepository.save(signRequest);
+		workflowStepRepository.save(workflowStep);
 		return workflowStep.getId();
 	}
 

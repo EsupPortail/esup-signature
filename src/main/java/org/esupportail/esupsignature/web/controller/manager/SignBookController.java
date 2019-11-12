@@ -4,12 +4,10 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
-import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.*;
-import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
@@ -18,7 +16,7 @@ import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -36,9 +34,11 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.util.*;
 
+@CrossOrigin(origins = "*")
 @RequestMapping("/manager/signbooks")
 @Controller
 @Transactional
+@Scope(value = "session")
 public class SignBookController {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
@@ -303,8 +303,6 @@ public class SignBookController {
 
 				}
 			}
-
-
 		}
 		if(allSignToComplete ==null) {
 			workflowStep.setAllSignToComplete(false);
@@ -318,27 +316,73 @@ public class SignBookController {
 		return "redirect:/manager/signbooks/" + id;
 	}
 
-	@PutMapping(value = "/update-step/{id}/{stepNumber}")
-	public String updateStep(@PathVariable("id") Long id,
-						 @PathVariable("stepNumber") Integer stepNumber,
-						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
-						  @RequestParam("signType") String signType,
-						  RedirectAttributes redirectAttrs) {
+	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
+	public String removeStepRecipient(@PathVariable("id") Long id,
+									  @PathVariable("workflowStepId") Long workflowStepId,
+									  @RequestParam(value = "recipientName") String recipientName,
+									  RedirectAttributes redirectAttrs, HttpServletRequest request) {
+		User user = userService.getUserFromAuthentication();
+		user.setIp(request.getRemoteAddr());
+		SignBook signBook = signBookRepository.findById(id).get();
+		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
+		if(user.getEppn().equals(signBook.getCreateBy())) {
+			SignBook signBookToRemove = signBookRepository.findByName(recipientName).get(0);
+			workflowStep.getSignBooks().remove(signBookToRemove.getId());
+			workflowStepRepository.save(workflowStep);
+		} else {
+			logger.warn(user.getEppn() + " try to move " + signBook.getId() + " without rights");
+		}
+		return "redirect:/manager/signbooks/" + id + "#" + workflowStep.getId();
+	}
+
+	@RequestMapping(value = "/send-to-signbook/{id}/{workflowStepId}", method = RequestMethod.GET)
+	public String sendToSignBook(@PathVariable("id") Long id,
+								 @PathVariable("workflowStepId") Long workflowStepId,
+								 @RequestParam(value = "signBookNames", required = true) String[] signBookNames,
+								 RedirectAttributes redirectAttrs, HttpServletRequest request) {
+		User user = userService.getUserFromAuthentication();
+		user.setIp(request.getRemoteAddr());
+		SignBook signBook = signBookRepository.findById(id).get();
+		if(user.getEppn().equals(signBook.getCreateBy())) {
+			WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
+			for(String signBookName : signBookNames) {
+				if(signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user).size() > 0) {
+					SignBook signBookToAdd = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user).get(0);
+					workflowStep.getSignBooks().put(signBookToAdd.getId(), false);
+				} else {
+					if(signBookRepository.findByName(signBookName).size() > 0 ) {
+						SignBook signBookToAdd = signBookRepository.findByName(signBookName).get(0);
+						workflowStep.getSignBooks().put(signBookToAdd.getId(), false);
+
+					}
+				}
+			}
+		} else {
+			logger.warn(user.getEppn() + " try to move " + signBook.getId() + " without rights");
+		}
+		return "redirect:/manager/signbooks/" + id;
+	}
+
+	@RequestMapping(value = "/toggle-need-all-sign/{id}/{step}", method = RequestMethod.GET)
+	public String toggleNeedAllSign(@PathVariable("id") Long id,@PathVariable("step") Integer step) {
 		User user = userService.getUserFromAuthentication();
 		SignBook signBook = signBookRepository.findById(id).get();
-		if (!signBook.getCreateBy().equals(user.getEppn())) {
-			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/manager/signbooks/" + id;
+		if(user.getEppn().equals(signBook.getCreateBy())) {
+			Long stepId = signRequestService.toggleNeedAllSign(signBook, step);
+			return "redirect:/manager/signbooks/" + id + "#" + stepId;
 		}
-		WorkflowStep workflowStep = signBook.getWorkflowSteps().get(stepNumber);
-		workflowStep.getSignRequestParams().setSignType(SignType.valueOf(signType));
-		if(allSignToComplete ==null) {
-			workflowStep.setAllSignToComplete(false);
-		} else {
-			workflowStep.setAllSignToComplete(allSignToComplete);
+		return "redirect:/manager/signbooks/";
+	}
+
+	@RequestMapping(value = "/change-step-sign-type/{id}/{step}", method = RequestMethod.GET)
+	public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
+		User user = userService.getUserFromAuthentication();
+		SignBook signBook = signBookRepository.findById(id).get();
+		if(user.getEppn().equals(signBook.getCreateBy())) {
+			Long stepId = signRequestService.changeSignType(signBook, step, signType);
+			return "redirect:/manager/signbooks/" + id + "#" + stepId;
 		}
-		workflowStepRepository.save(workflowStep);
-		return "redirect:/manager/signbooks/" + id;
+		return "redirect:/manager/signbooks/";
 	}
 
 	@DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
@@ -408,13 +452,4 @@ public class SignBookController {
 		return "redirect:/manager/signbooks/" + id;
 
 	}
-	
-    String encodeUrlPathSegment(String pathSegment, HttpServletRequest httpServletRequest) {
-        String enc = httpServletRequest.getCharacterEncoding();
-        if (enc == null) {
-            enc = WebUtils.DEFAULT_CHARACTER_ENCODING;
-        }
-        pathSegment = UriUtils.encodePathSegment(pathSegment, enc);
-        return pathSegment;
-    }
 }
