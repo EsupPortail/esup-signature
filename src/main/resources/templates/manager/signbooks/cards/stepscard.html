@@ -25,8 +25,7 @@
                                             Tous les participants doivent-ils signer ?
                                         </label>
                                         <label class="switch">
-                                            <input th:onclick="'location.href=\'/manager/signbooks/toggle-need-all-sign/' + ${id} + '/' + ${iterator.index} + '\''" type="checkbox" name="allSignToComplete"
-                                                   th:checked="${workflowStep.allSignToComplete}"/>
+                                            <input th:onclick="'location.href=\'/manager/signbooks/toggle-need-all-sign/' + ${id} + '/' + ${iterator.index} + '\''" type="checkbox" name="allSignToComplete" th:checked="${workflowStep.allSignToComplete}"/>
                                             <span class="slider round"></span>
                                         </label>
 
