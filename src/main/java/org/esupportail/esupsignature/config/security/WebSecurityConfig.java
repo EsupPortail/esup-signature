@@ -44,9 +44,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			}
 		}
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy());
-		http.csrf().disable();
+		//http.csrf().disable();
 		http.headers().frameOptions().sameOrigin();
-		http.cors().disable();
 	}
 	
 	@Bean

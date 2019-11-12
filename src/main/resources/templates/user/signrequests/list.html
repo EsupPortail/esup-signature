@@ -2,44 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.thymeleaf.org/spring-data">
 <head th:replace="fragments/head :: head"></head>
 <body>
-<div class="header-fixed fixed-top">
-    <nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-    <div id="collapseHelp" class="collapse" aria-expanded="true">
-        <div class="alert alert-info">
-            <p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
-            <p>Statut des demandes de signatures :</p>
-            <p>
-                <span class="alert alert-primary">
-                <i class="fas fa-clock"></i> <span th:text="#{'signbook.status.pending'}"></span>
-                </span> La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures
-            </p>
-            <p>
-                <span class="alert alert-success">
-                <i class="fas fa-file-signature"></i> <span th:text="#{'signbook.status.signed'}"></span>
-                </span> Tous les critères de signatures sont remplis
-            </p>
-            <p>
-                <span class="alert alert-success">
-                <i class="far fa-check-circle"></i> <span th:text="#{'signbook.status.checked'}"></span>
-                </span> Le document à été validé par tous les participants
-            </p>
-            <p>
-                <span class="alert alert-danger">
-                <i class="fas fa-ban"></i> <span th:text="#{'signbook.status.refused'}"></span>
-                </span> La demande à été refusée et retirée des parapheurs
-            </p>
-            <p>
-                <span class="alert alert-warning">
-                <i class="fas fa-flag-checkered"></i> <span th:text="#{'signbook.status.completed'}"></span>
-                </span> La demande la demande est terminée </p>
-            <p>
-				<span class="alert alert-warning">
-				<i class="fas fa-file-export"></i> <span th:text="#{'signbook.status.exported'}"></span>
-                </span> La demande la demande à été exportée vers un autre système de stockage et retirée des parapheurs
-            </p>
-        </div>
-    </div>
-</div>
+<header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
         <nav id="sidebar">
@@ -72,6 +35,41 @@
             </button>
         </nav>
         <div id="content" class="content">
+            <div id="collapseHelp" class="collapse" aria-expanded="true">
+                <div class="alert alert-info">
+                    <p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
+                    <p>Statut des demandes de signatures :</p>
+                    <p>
+                <span class="alert alert-primary">
+                <i class="fas fa-clock"></i> <span th:text="#{'signbook.status.pending'}"></span>
+                </span> La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures
+                    </p>
+                    <p>
+                <span class="alert alert-success">
+                <i class="fas fa-file-signature"></i> <span th:text="#{'signbook.status.signed'}"></span>
+                </span> Tous les critères de signatures sont remplis
+                    </p>
+                    <p>
+                <span class="alert alert-success">
+                <i class="far fa-check-circle"></i> <span th:text="#{'signbook.status.checked'}"></span>
+                </span> Le document à été validé par tous les participants
+                    </p>
+                    <p>
+                <span class="alert alert-danger">
+                <i class="fas fa-ban"></i> <span th:text="#{'signbook.status.refused'}"></span>
+                </span> La demande à été refusée et retirée des parapheurs
+                    </p>
+                    <p>
+                <span class="alert alert-warning">
+                <i class="fas fa-flag-checkered"></i> <span th:text="#{'signbook.status.completed'}"></span>
+                </span> La demande la demande est terminée </p>
+                    <p>
+				<span class="alert alert-warning">
+				<i class="fas fa-file-export"></i> <span th:text="#{'signbook.status.exported'}"></span>
+                </span> La demande la demande à été exportée vers un autre système de stockage et retirée des parapheurs
+                    </p>
+                </div>
+            </div>
            <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item active">Liste des demandes</li>
@@ -226,7 +224,7 @@
 <div class="modal fade" id="addSignRequestModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form action="/user/signrequests" method="post">
+            <form th:action="'/user/signrequests'" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addSignRequestLabel">Créer une nouvelle demande</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">

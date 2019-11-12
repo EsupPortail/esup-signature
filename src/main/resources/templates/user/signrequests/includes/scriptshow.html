@@ -31,7 +31,7 @@
             [# th:if="${signRequest.status.name() == 'draft' && user.eppn == signRequest.createBy && signRequest.signedDocuments.size() == 0}"]
     browseOnZoneClick: true,
         [/]
-            uploadUrl: "/user/signrequests/add-doc/[[${id}]]",
+            uploadUrl: [['/user/signrequests/add-doc/' + ${id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}]],
         uploadAsync: false,
         overwriteInitial: false,
         theme: 'explorer-fas',
@@ -45,10 +45,10 @@
         [# th:each="originalDocument : ${signRequest.originalDocuments}"]
     [# th:switch="${#strings.arraySplit(originalDocument.contentType, '/')[1]}"]
         [# th:case="'gif'"]
-    {type: "image", size: [[${originalDocument.size}]], downloadUrl: "/user/documents/getfile/[[${originalDocument.id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/user/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},
+    {type: "image", size: [[${originalDocument.size}]], downloadUrl: "/user/documents/getfile/[[${originalDocument.id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/user/signrequests/remove-doc/' + ${originalDocument.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}]], key: [[${originalDocument.id}]]},
         [/]
             [# th:case="'pdf'"]
-    {type: "pdf", size: [[${originalDocument.size}]], downloadUrl: "/user/documents/getfile/[[${originalDocument.id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: "/user/signrequests/remove-doc/[[${originalDocument.id}]]", key: [[${originalDocument.id}]]},
+    {type: "pdf", size: [[${originalDocument.size}]], downloadUrl: "/user/documents/getfile/[[${originalDocument.id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/user/signrequests/remove-doc/' + ${originalDocument.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}]], key: [[${originalDocument.id}]]},
         [/]
             [# th:case="'doc'"]
     {type: "office", size: [[${originalDocument.size}]], downloadUrl: [[${originalDocument.url}]],caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/user/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},

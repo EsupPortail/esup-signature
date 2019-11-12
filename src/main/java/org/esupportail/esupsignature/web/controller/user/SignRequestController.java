@@ -46,7 +46,6 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "*")
 @RequestMapping("/user/signrequests")
 @Controller
 @Transactional

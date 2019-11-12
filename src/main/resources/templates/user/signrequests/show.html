@@ -25,10 +25,10 @@
                     <div th:if="${user.eppn == signRequest.createBy}">
                         <div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
                             <div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
-                                <div class="alert alert-secondary">
-                                    <h5 class="alert-heading">
+                                <div class="alert alert-secondary" th:if="${signRequest.status.name() == 'draft'}">
+                                    <h6 class="alert-heading">
                                         Demande en cours de création
-                                    </h5>
+                                    </h6>
                                     <div th:if="${#lists.size(signRequest.originalDocuments) == 0}">
                                         <div th:if="${modelId != null}">
                                             <button type="button" class="btn btn-info"
@@ -76,13 +76,13 @@
                         </h6>
                     </div>
                     <div th:if="${signable == 'ok'}">
-                        <div class="alert alert-primary sidebar-label">
+                        <div class="alert alert-primary sidebar-label mb-1">
                             Vous devez signer cette demande
                         </div>
-                        <button type="button" class="btn btn-danger col-12 mt-2" data-toggle="modal" data-target="#refuseModal">
+                        <button type="button" class="btn btn-danger col-12 mb-1" data-toggle="modal" data-target="#refuseModal">
                             <i class="fas fa-ban"></i><span class="sidebar-label"> Refuser</span>
                         </button>
-                        <a class="btn btn-success col-12 mt-2" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
+                        <a class="btn btn-success col-12 mb-1" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
                             <i class="fas fa-signature"></i><span class="sidebar-label"> Signer</span>
                         </a>
                     </div>
@@ -119,14 +119,14 @@
                             </dl>
                         </div>
                         <th:block th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked'}">
-                            <div class="alert alert-success">
+                            <div class="alert alert-success mb-1">
                                 <div class="sidebar-label">
                                     <h6 class="alert-heading">Toutes les étapes de la demande sont effectuées</h6>
                                 </div>
-                                <a class="m-1 btn btn-warning" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
+                                <a class="m-1 btn btn-success" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
                                     <i class="fas fa-save "></i><span class="sidebar-label"> Enregistrer le document signé sous</span>
                                 </a>
-                                <a class="m-1 btn btn-warning" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+                                <a class="m-1 btn btn-dark" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
                                     <i class="fas fa-shield-alt "></i><span class="sidebar-label"> Contrôler le document</span>
                                 </a>
                             </div>
@@ -333,7 +333,6 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/signrequests/add-step/' + ${id}" method="post">
-
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Ajouter une étape</h5>
                 </div>

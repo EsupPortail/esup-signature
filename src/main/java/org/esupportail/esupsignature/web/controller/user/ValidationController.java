@@ -84,7 +84,7 @@ public class ValidationController {
 		return "user/validation";
 	}
 
-	@RequestMapping(method = RequestMethod.POST)
+	@PostMapping
 	public String validate(@ModelAttribute("multipartFile") @Valid MultipartFile multipartFile, Model model) throws IOException {
 		Reports reports = validationService.validate(multipartFile);
 		if(reports != null) {

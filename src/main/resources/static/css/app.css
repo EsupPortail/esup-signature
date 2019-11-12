@@ -48,6 +48,9 @@ code {
   100% { transform: rotate(360deg); }
 }
 
+.custom-file-label {
+    justify-content: left !important;
+}
 .custom-file-input:lang(fr) ~ .custom-file-label::after {
 	content: "Parcourir" !important;
 }
