@@ -98,7 +98,7 @@
                 <button th:unless="${referer != null}" type="button" class="btn btn-danger col-12 mb-1" value="Retour" onclick="window.history.back()">
                     <i class="fas fa-times"></i><span class="sidebar-label"> Abandonner</span>
                 </button>
-                <button class="btn btn-success col-12 mt-2"
+                <button class="btn btn-success col-12 mb-1"
                         th:unless="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'nexuSign' || signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}" type="button"
                         onclick="document.getElementById('signForm').submit();">
                     <i class="fas fa-signature"></i><span class="sidebar-label"> Valider la signature</span>
