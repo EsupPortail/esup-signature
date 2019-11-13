@@ -227,9 +227,6 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 
 			}
 			return true;
-		} catch (SmbException e) {
-			logger.warn("can't move/copy file because of SmbException : "	+ e.getMessage(), e);
-			throw new EsupStockException(e);
 		} catch (MalformedURLException e) {
 			logger.error("problem in creation file that must not occur." +  e.getMessage(), e);
 			throw new EsupStockException(e);

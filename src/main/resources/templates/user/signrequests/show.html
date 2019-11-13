@@ -123,10 +123,14 @@
                                 <div class="sidebar-label">
                                     <h6 class="alert-heading">Toutes les étapes de la demande sont effectuées</h6>
                                 </div>
-                                <a class="m-1 btn btn-success" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
+                                <a class="m-1 col-12 btn btn-success" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
                                     <i class="fas fa-save "></i><span class="sidebar-label"> Enregistrer le document signé sous</span>
                                 </a>
-                                <a class="m-1 btn btn-dark" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+
+                                <a class="m-1 col-12 btn btn-success" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
+                                    <i class="fa fa-download"></i> Export SEDA
+                                </a>
+                                <a class="m-1 col-12 btn btn-dark" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
                                     <i class="fas fa-shield-alt "></i><span class="sidebar-label"> Contrôler le document</span>
                                 </a>
                             </div>

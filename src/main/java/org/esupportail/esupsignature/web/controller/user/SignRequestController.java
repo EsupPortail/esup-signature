@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import fr.gouv.vitam.tools.sedalib.utils.SEDALibException;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
@@ -14,6 +15,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
@@ -41,6 +43,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
@@ -566,6 +569,36 @@ public class SignRequestController {
             logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
         }
     }
+
+    @RequestMapping(value = "/get-last-file-seda/{id}", method = RequestMethod.GET)
+    public void getLastFileSeda(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        User user = userService.getUserFromAuthentication();
+        if (signRequestService.checkUserViewRights(user, signRequest)) {
+            List<Document> documents = signRequestService.getToSignDocuments(signRequest);
+            try {
+                if (documents.size() > 1) {
+                    response.sendRedirect("/user/signrequests/" + id);
+                } else {
+                    Document document = documents.get(0);
+                    response.setHeader("Content-Disposition", "inline;filename=test-seda.zip");
+                    response.setContentType("application/zip");
+                    SedaExportService sedaExportService = new SedaExportService();
+                    try {
+
+                        IOUtils.copy(sedaExportService.generateSip(document), response.getOutputStream());
+                    } catch (SEDALibException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("get file error", e);
+            }
+        } else {
+            logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
+        }
+    }
+
 
     @RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
     public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
