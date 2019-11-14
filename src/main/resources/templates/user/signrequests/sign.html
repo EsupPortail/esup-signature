@@ -52,8 +52,8 @@
                 </div>
             </div>
             <div class="m-1">
-                <button class="btn btn-success m-2" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}" type="button" data-toggle="modal" data-target="#signModal">
-                    <i class="fas fa-signature fa-2x"></i> Valider la signature
+                <button class="btn btn-success col-12 mb-1" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}" type="button" data-toggle="modal" data-target="#signModal">
+                    <i class="fas fa-signature"></i> Valider la signature
                 </button>
                 <div th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'nexuSign'}">
                     <script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
@@ -162,6 +162,7 @@
                             Y position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" th:value="${signRequest.currentWorkflowStep.signRequestParams.YPos}" id="yPos" type="text" name="yPos"/>
                         </div>
                     </div>
+                    <input id="csrf" th:value="${_csrf.token}" th:name="${_csrf.parameterName}" type="hidden"/>
                 </div>
                 <div th:unless="${documentType == 'pdf'}">
                     <div class="alert alert-warning" role="alert">

@@ -74,18 +74,19 @@ document.addEventListener('DOMContentLoaded', function() {
 //sign wait
 
 function submitSignRequest() {
+	var csrf = document.getElementById("csrf");
 	var signPageNumber = document.getElementById("signPageNumber");
 	var signRequestParams;
 	if(signPageNumber != null) {
 		signRequestParams = "password=" + document.getElementById("password").value +
 							"&xPos=" + document.getElementById("xPos").value +
 							"&yPos=" + document.getElementById("yPos").value +
-							"&signPageNumber=" + document.getElementById("signPageNumber").value
+							"&signPageNumber=" + document.getElementById("signPageNumber").value +
+							"&" + csrf.name + "=" + csrf.value
 							;
 	} else {
 		signRequestParams = "password=" + document.getElementById("password").value;
 	}
-	
 	sendData(signRequestParams);
 
 }
