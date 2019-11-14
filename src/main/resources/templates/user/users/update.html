@@ -36,7 +36,7 @@
                     </ol>
                 </nav>
             </div>
-            <form id="fu_org_esupportail_esupsignature_domain_User" th:object="${user}" action="/user/users" enctype="multipart/form-data" method="post">
+            <form id="fu_org_esupportail_esupsignature_domain_User" th:object="${user}" th:action="'/user/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
                 <input type="hidden" name="referer" th:value="${referer}"/>
                 <input type="hidden" name="id" th:value="${user.id}"/>
                 <div class="card rounded-0">
