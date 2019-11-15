@@ -484,6 +484,10 @@ public class SignService {
 		return signProperties.getDefaultSignatureForm();
 	}
 
+	public SignProperties getSignProperties() {
+		return signProperties;
+	}
+
 	public Long getPasswordTimeout() {
 		return signProperties.getPasswordTimeout();
 	}

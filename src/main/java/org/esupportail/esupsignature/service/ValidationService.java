@@ -28,7 +28,6 @@ public class ValidationService {
 	private Resource defaultPolicy;
 
 	public Reports validate(MultipartFile multipartFile) {
-		
 		try {
 		SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(WebAppUtils.toDSSDocument(multipartFile));
 		logger.info("validate with : " + documentValidator.getClass());

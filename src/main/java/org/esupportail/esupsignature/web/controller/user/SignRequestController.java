@@ -588,7 +588,7 @@ public class SignRequestController {
                     Document document = documents.get(0);
                     response.setHeader("Content-Disposition", "inline;filename=test-seda.zip");
                     response.setContentType("application/zip");
-                    IOUtils.copy(sedaExportService.generateSip(document), response.getOutputStream());
+                    IOUtils.copy(sedaExportService.generateSip(signRequest), response.getOutputStream());
                 }
             } catch (Exception e) {
                 logger.error("get file error", e);
