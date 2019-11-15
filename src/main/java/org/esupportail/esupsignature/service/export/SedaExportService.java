@@ -18,7 +18,7 @@ public class SedaExportService {
             OutputStream outputStream = new FileOutputStream(file);
             IOUtils.copy(document.getInputStream(), outputStream);
             outputStream.close();
-            SEDALibProgressLogger pl = new SEDALibProgressLogger(LoggerFactory.getLogger(SedaExportService.class), SEDALibProgressLogger.OBJECTS_GROUP);
+            SEDALibProgressLogger pl = new SEDALibProgressLogger(LoggerFactory.getLogger("sedalib"), SEDALibProgressLogger.OBJECTS_GROUP);
             SIPBuilder sb = new SIPBuilder(targetFile.getAbsolutePath(), pl);
             sb.setAgencies("FRAN_NP_000001", "FRAN_NP_000010", "FRAN_NP_000015", "FRAN_NP_000019");
             sb.setArchivalAgreement("IC-000001");
