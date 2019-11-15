@@ -162,7 +162,6 @@
                             Y position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" th:value="${signRequest.currentWorkflowStep.signRequestParams.YPos}" id="yPos" type="text" name="yPos"/>
                         </div>
                     </div>
-                    <input id="csrf" th:value="${_csrf.token}" th:name="${_csrf.parameterName}" type="hidden"/>
                 </div>
                 <div th:unless="${documentType == 'pdf'}">
                     <div class="alert alert-warning" role="alert">
@@ -172,7 +171,7 @@
                         <p class="mb-0">Si vous signez à m'aide d'un certificat, le fichier sera encapsulé dans un zip au format ASIC-E</p>
                     </div>
                 </div>
-
+                <input id="csrf" th:value="${_csrf.token}" th:name="${_csrf.parameterName}" type="hidden"/>
             </form>
             <script th:inline="javascript">
                 /*<![CDATA[*/

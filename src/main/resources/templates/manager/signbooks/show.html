@@ -22,7 +22,7 @@
             <div class="m-1">
             <button type="button" th:onclick="'location.href=\'/manager/signbooks/' + ${signBook.id} + '?form\''"
                     class="mb-1 col-12 btn btn-warning float-left">
-                <i class="far fa-edit"></i>Modifier
+                <i class="far fa-edit"></i>Modifier les paramètres
             </button>
             <form th:action="'/manager/signbooks/' + ${signBook.id}" th:method="delete">
                 <button type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="mb-1 col-12 btn btn-danger float-left">
@@ -33,7 +33,7 @@
                     data-toggle="modal" data-target="#addStep">
                 <i class="fa fa-shoe-prints"></i> Ajouter une étape
             </button>
-            <button th:if="${signBook.signBookType.name() == 'group'}" type="button" class="mb-1 col-12 btn btn-outline-dark btn-light float-left"
+            <button th:if="${signBook.signBookType.name() == 'group'}" type="button" class="mb-1 col-12 btn btn-primary float-left"
                     data-toggle="modal" data-target="#addRecipients">
                 <i class="fa fa-envelope"></i> Ajouter un destinataire
             </button>
@@ -157,7 +157,7 @@
                                         </td>
                                         <td>
                                             <div th:if="${signNumber > 1}">
-                                                <form action="/manager/signbooks/delete-params/${signRequestParam.id}" autocomplete="off" class="form-inline" method="post">
+                                                <form th:action="'/manager/signbooks/delete-params/' + ${signRequestParam.id}" autocomplete="off" class="form-inline" method="post">
                                                     <input name="signBookId" type="hidden" value="${id}"/>
                                                     <button class="btn btn-danger fas fa-times" onclick="submit();" title="Update signRequestParams" type="button"></button>
                                                 </form>
@@ -167,7 +167,7 @@
                                     <div th:with="signNumber = ${signNumber + 1}"></div>
                                 </th:block>
                             </table>
-                            <form action="/manager/signbooks/update-params/${id}"
+                            <form th:action="'/manager/signbooks/update-params/' +${id}"
                                   autocomplete="off" class="form-inline" method="post">
                                 <div class="form-group" style="display: none;">
                                     <div class="row">
@@ -186,7 +186,7 @@
                                     <i class="fas fa-save"></i> Modifier la position de la dernière signature
                                 </button>
                             </form>
-                            <form action="/manager/signbooks/add-params/${id}" autocomplete="off" class="form-inline" method="post">
+                            <form th:action="'/manager/signbooks/add-params/' + {id}" autocomplete="off" class="form-inline" method="post">
                                 <button class="btn btn-success" onclick="submit();" title="Update signRequestParams" type="submit" value="">
                                     <i class="fas fa-plus"></i> Ajouter une signature
                                 </button>

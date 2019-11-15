@@ -11,4 +11,6 @@ https://www.esup-portail.org/wiki/display/SIGN/esup-signature
 
 #####Ajout de sedalib dans le dépot maven
 
-mvn install:install-file -Dfile=src/etc/sedalib-2.1.0.jar -DgroupId=fr.gouv.vitam -DartifactId=sedalib -Dversion=2.1.0
+https://github.com/ProgrammeVitam/sedatools
+
+mvn install:install-file -Dfile=src/etc/sedalib-2.x.x.jar -DgroupId=fr.gouv.vitam -DartifactId=sedalib -Dversion=2.x.x

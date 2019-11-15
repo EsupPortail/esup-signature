@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
 //sign wait
 
 function submitSignRequest() {
-	var csrf = document.getElementById("csrf");
+	var csrf = document.getElementsByName("_csrf")[0];
 	var signPageNumber = document.getElementById("signPageNumber");
 	var signRequestParams;
 	if(signPageNumber != null) {
@@ -85,7 +85,9 @@ function submitSignRequest() {
 							"&" + csrf.name + "=" + csrf.value
 							;
 	} else {
-		signRequestParams = "password=" + document.getElementById("password").value;
+		signRequestParams = "password=" + document.getElementById("password").value +
+							"&" + csrf.name + "=" + csrf.value
+							;
 	}
 	sendData(signRequestParams);
 
