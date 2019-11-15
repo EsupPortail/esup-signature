@@ -1,14 +1,15 @@
 package org.esupportail.esupsignature.service.export;
 
 import fr.gouv.vitam.tools.sedalib.inout.SIPBuilder;
-import fr.gouv.vitam.tools.sedalib.utils.SEDALibException;
 import fr.gouv.vitam.tools.sedalib.utils.SEDALibProgressLogger;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import java.io.*;
 
+@Service
 public class SedaExportService {
 
     public InputStream generateSip(Document document) {

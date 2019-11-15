@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import fr.gouv.vitam.tools.sedalib.utils.SEDALibException;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
@@ -10,11 +9,13 @@ import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.*;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.DocumentService;
+import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
@@ -43,10 +44,11 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RequestMapping("/user/signrequests")
@@ -127,6 +129,9 @@ public class SignRequestController {
 
     @Resource
     private SignService signService;
+
+    @Resource
+    private SedaExportService sedaExportService;
 
     @RequestMapping(produces = "text/html")
     public String list(
@@ -583,7 +588,6 @@ public class SignRequestController {
                     Document document = documents.get(0);
                     response.setHeader("Content-Disposition", "inline;filename=test-seda.zip");
                     response.setContentType("application/zip");
-                    SedaExportService sedaExportService = new SedaExportService();
                     IOUtils.copy(sedaExportService.generateSip(document), response.getOutputStream());
                 }
             } catch (Exception e) {
