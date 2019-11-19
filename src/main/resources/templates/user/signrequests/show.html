@@ -7,18 +7,12 @@
 <main role="main">
     <nav class="wrapper">
         <nav id="sidebar">
-            <div class="row">
-                <div class="col-lg-2">
-                    <button type="button" id="sidebarCollapse" class="mt-3 m-1 btn text-white">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
-                <div id="logo" class="col-lg-9">
+
+                <div id="logo" class="col-lg-12">
                     <a href="/">
                         <img src="/images/logo.png"/>
                     </a>
                 </div>
-            </div>
             <div class="m-1">
                 <div th:replace="user/signrequests/includes/status :: status"></div>
                 <div class="mb-1 mt-1">
@@ -190,7 +184,7 @@
                     </div>
                 </div>
             </div>
-            <div th:replace="user/signrequests/cards/stepscard :: stepscard"></div>
+            <div th:replace="user/signrequests/cards/simplestepscard :: simplestepscard"></div>
             <div class="card rounded-0 mb-1">
                 <div class="card-header">
                     Commentaires <span th:text="'(' + ${#lists.size(comments)} + ')'"></span>

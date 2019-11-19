@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="workflow">
+    <div class="card rounded-0 mb-1">
+        <div class="card-header">
+            Etapes de signature
+            <button th:if="${signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed'}" type="button" class="btn btn-primary float-right" data-toggle="modal" data-target="#addStep">
+                <i class="fa fa-plus"></i> Ajouter une étape
+            </button>
+            <button th:if="${signRequest.status.name() == 'draft' && signRequest.workflowSteps.size() == 0}" type="button" class="btn btn-primary float-right mr-1" data-toggle="modal" data-target="#addWorkflow">
+                <i class="fa fa-plus"></i> Ajouter un workflow
+            </button>
+        </div>
+        <div class="card-body">
+            <div th:if="${signRequest.workflowSteps != null}" style="align-items: center; justify-content: center;">
+                <div class="workflow">
+                    <div class="svg-container">
+                        <svg version="1.1" viewBox="0 0 500 500" preserveAspectRatio="xMinYMin meet" class="svg-content">
+                            <defs>
+                                <marker id="arrow" markerWidth="4" markerHeight="10" viewBox="-2 -4 4 4" refX="0" refY="0" markerUnits="strokeWidth" orient="auto">
+                                    <polyline points="2,-2 0,0 2,2" stroke="#443c3d" stroke-width="0.75px" fill="none"/>
+                                </marker>
+                            </defs>
+                            <g class="box-group">
+                                <g transform="translate(-5)">
+                                    <circle fill="#000" cx="55" cy="50" r="30" opacity="1"/>
+                                    <text x="33" y="55" font-family="Open Sans Condensed" font-size="16" stroke="none" fill="#FFFFFF" font-weight="100" style="text-transform:uppercase; letter-spacing: 1px">Debut</text>
+                                    <line x1="90" x2="100" y1="50" y2="50" stroke="#443c3d" />
+                                </g>
+                                <th:block th:each="workflowStep,iterator : ${signRequest.workflowSteps}">
+                                    <g onclick="alert('click!')" th:transform="'translate(' + ${(iterator.index + 1) * 100} + ')'">
+                                        <rect fill="#66cc00" x="0" y="25" rx="3" ry="3" width="90" height="50" />
+                                        <text x="16" y="47" font-family="Open Sans Condensed" font-size="14" stroke="none" fill="#FFFFFF" font-weight="900" style="text-transform:uppercase; letter-spacing: 1px" th:text="'Etape ' + ${iterator.index}">
+                                        </text>
+                                        <line x1="90" x2="100" y1="50" y2="50" stroke="#443c3d" />
+                                    </g>
+                                </th:block>
+                                <line x1="362" x2="400" y1="50" y2="50" stroke-width="2" stroke="#443c3d" stroke-dasharray="2,1"/>
+
+                                <g transform="translate(392)">
+                                    <circle fill="#000" cx="55" cy="50" r="45" opacity="1"/>
+                                    <text x="33" y="55" font-family="Open Sans Condensed" font-size="16" stroke="none" fill="#FFFFFF" font-weight="100" style="text-transform:uppercase; letter-spacing: 1px">End</text>
+                                </g>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script language="JavaScript">
+        var svg = document.getElementsByTagName("svg");
+
+        var rect = document.getElementsByTagName("rect");
+
+        var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', '10');
+        text.setAttribute('y', '20');
+        text.setAttribute('fill', '#000');
+        text.textContent = 'Hello, I am a blah blah blah blah blah';
+    </script>
+</div>
+</html>

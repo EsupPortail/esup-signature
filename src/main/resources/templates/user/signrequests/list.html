@@ -6,33 +6,27 @@
 <main role="main">
     <div class="wrapper">
         <nav id="sidebar">
-            <div class="row">
-                <div class="col-lg-2">
-                    <button type="button" id="sidebarCollapse" class="mt-3 m-1 btn text-white">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
-                <div id="logo" class="col-lg-9">
-                    <a href="/">
-                        <img src="/images/logo.png"/>
-                    </a>
-                </div>
-            </div>
-            <button type="button" data-toggle="modal" data-target="#addSignRequestModal" class="m-1 btn btn-primary float-left">
+
+            <div class="m-1">
+            <button type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+            </button>
+            <button type="button" data-toggle="modal" data-target="#addSignRequestModal" class="mb-1 col-12 btn btn-primary text-left">
                 <i class="fas fa-plus-circle"></i> <span class="sidebar-label">Nouvelle demande de signature</span>
             </button>
-            <button type="button" onclick="location.href='/user/validation'" class="m-1 btn btn-warning float-left">
+            <button type="button" onclick="location.href='/user/validation'" class="mb-1 col-12 btn btn-warning text-left">
                 <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Valider la signature d'un document</span>
             </button>
-            <button id="opendocs" class="col-12 m-2 btn btn-outline-dark btn-light float-left" onclick="openCheckedDocs()" title="open docs" style="display: none;">
+            <button id="opendocs" class="mb-1 btn btn-outline-dark btn-light float-left" onclick="openCheckedDocs()" title="open docs" style="display: none;">
                 <i class="far fa-eye fa-2x"></i> Ouvrir les documents sélectionnés
             </button>
-            <button id="signdocs" class="col-12 m-2 btn btn-outline-dark btn-light float-left" type="button" data-toggle="modal" data-target="#signModal" style="display: none;">
+            <button id="signdocs" class="mb-1 btn btn-outline-dark btn-light float-left" type="button" data-toggle="modal" data-target="#signModal" style="display: none;">
                 <i class="fas fa-signature fa-2x"></i> Signer les documents sélectionnés
             </button>
             <button data-toggle="modal" data-target="#wait" id="complete" onclick="completeSignRequests()" title="Passer au statut terminé" class="d-none col-12 m-2 btn btn-outline-dark btn-light float-left">
                 <i class="fas fa-flag-checkered"></i> Passer au statut terminé
             </button>
+            </div>
         </nav>
         <div id="content" class="content">
             <div id="collapseHelp" class="collapse" aria-expanded="true">

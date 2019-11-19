@@ -66,18 +66,21 @@ code {
 .alert {
     margin-bottom: 0rem;
  }
-/*
-.btn-default,.btn-primary,.btn-success,.btn-info,.btn-warning,.btn-danger,.btn-dark,.btn-light {
-    -webkit-box-shadow: 0px 3px 0px rgba(0, 0, 0, 0.3);
-    -moz-box-shadow:    0px 3px 0px rgba(0, 0, 0, 0.3);
-    box-shadow:         0px 3px 0px rgba(0, 0, 0, 0.3);
+
+.btn-transparent {
+    background: transparent;
+    color: #F2F2F2;
+    -webkit-transition: background .2s ease-in-out, border .2s ease-in-out;
+    -moz-transition: background .2s ease-in-out, border .2s ease-in-out;
+    -o-transition: background .2s ease-in-out, border .2s ease-in-out;
+    transition: background .2s ease-in-out, border .2s ease-in-out;
 }
 
-.btn-default:active,.btn-primary:active,.btn-success:active,.btn-info:active,.btn-warning:active,.btn-dark:active.btn-light:active {
-    margin-top: 3px;
-    margin-bottom: -3px;
+.btn-transparent:hover {
+    color: white;
+    background-color: rgba(255,255,255,0.2);
 }
-*/
+
 .carousel-control-prev, .carousel-control-next {
     position: relative;
     display: block;
@@ -228,7 +231,7 @@ input:checked + .slider:before {
 }
 
 #sidebar {
-    top: 50px;
+    top: 56px;
     position: fixed;
     overflow-y: auto;
     z-index: 1000;
@@ -284,5 +287,21 @@ input:checked + .slider:before {
 }
 
 .logooverflow {
-    width: 42px; overflow: hidden;
+    width: 46px; overflow: hidden;
+}
+
+.svg-container {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%;
+    vertical-align: middle;
+    overflow: hidden;
+}
+
+.svg-content {
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
 }

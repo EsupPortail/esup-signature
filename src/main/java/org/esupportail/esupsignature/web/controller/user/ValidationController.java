@@ -86,7 +86,7 @@ public class ValidationController {
 
 	@PostMapping
 	public String validate(@ModelAttribute("multipartFile") @Valid MultipartFile multipartFile, Model model) throws IOException {
-		Reports reports = validationService.validate(multipartFile);
+		Reports reports = validationService.validate(multipartFile.getInputStream());
 		if(reports != null) {
 		String xmlSimpleReport = reports.getXmlSimpleReport();
 			model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));
@@ -112,7 +112,7 @@ public class ValidationController {
 	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		Document toValideDocument = signRequestService.getLastSignedDocument(signRequest);
-		Reports reports = validationService.validate(new MockMultipartFile(toValideDocument.getFileName(), toValideDocument.getInputStream()));
+		Reports reports = validationService.validate(toValideDocument.getInputStream());
 		
 		String xmlSimpleReport = reports.getXmlSimpleReport();
 		model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));

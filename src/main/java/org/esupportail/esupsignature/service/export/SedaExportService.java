@@ -4,12 +4,12 @@ import eu.europa.esig.dss.jaxb.simplereport.SimpleReport;
 import eu.europa.esig.dss.jaxb.simplereport.XmlSignature;
 import eu.europa.esig.dss.validation.reports.DetailedReport;
 import eu.europa.esig.dss.validation.reports.Reports;
-import fr.gouv.vitam.tools.sedalib.core.BinaryDataObject;
-import fr.gouv.vitam.tools.sedalib.core.DataObjectGroup;
-import fr.gouv.vitam.tools.sedalib.core.DataObjectPackage;
+import fr.gouv.vitam.tools.sedalib.core.*;
 import fr.gouv.vitam.tools.sedalib.inout.SIPBuilder;
+import fr.gouv.vitam.tools.sedalib.metadata.ManagementMetadata;
 import fr.gouv.vitam.tools.sedalib.metadata.SEDAMetadata;
 import fr.gouv.vitam.tools.sedalib.metadata.content.*;
+import fr.gouv.vitam.tools.sedalib.metadata.data.Metadata;
 import fr.gouv.vitam.tools.sedalib.metadata.management.LogBook;
 import fr.gouv.vitam.tools.sedalib.metadata.management.Management;
 import fr.gouv.vitam.tools.sedalib.metadata.namedtype.DigestType;
@@ -33,6 +33,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -61,52 +63,64 @@ public class SedaExportService {
 
     public InputStream generateSip(SignRequest signRequest) {
         try {
-            File targetFile = File.createTempFile("test-seda.zip", ".zip");
+            File targetFile = File.createTempFile(signRequest.getTitle() + "-seda.zip", ".zip");
             Document document = signRequestService.getLastSignedDocument(signRequest);
             File file = File.createTempFile(document.getFileName(), ".pdf");
             OutputStream outputStream = new FileOutputStream(file);
             IOUtils.copy(document.getInputStream(), outputStream);
             outputStream.close();
-            SEDALibProgressLogger pl = new SEDALibProgressLogger(logger, SEDALibProgressLogger.OBJECTS_GROUP);
+            Reports reports = validationService.validate(new FileInputStream(file));
+            File validationXml = File.createTempFile("validation", "xml");
+            FileWriter fw = new java.io.FileWriter(validationXml.getAbsolutePath());
+            fw.write(reports.getXmlDiagnosticData());
+            fw.close();
+
+            SEDALibProgressLogger pl = new SEDALibProgressLogger(logger, SEDALibProgressLogger.GLOBAL);
             SIPBuilder sb = new SIPBuilder(targetFile.getAbsolutePath(), pl);
             sb.setAgencies("FRAN_NP_000001", "FRAN_NP_000010", "FRAN_NP_000015", "FRAN_NP_000019");
             sb.setArchivalAgreement("IC-000001");
-            sb.createRootArchiveUnit("Racine", "Subseries", "Test", "Test export SEDA");
-            sb.addFileToArchiveUnit("Racine", file.getAbsolutePath(), "1");
-            Management management = sb.getManagement("Racine");
-            Content content = sb.getContent("Racine");
+            DataObjectPackage dataObjectPackage = sb.getArchiveTransfer().getDataObjectPackage();
+
+            BinaryDataObject docBinaryDataObject = new BinaryDataObject(dataObjectPackage, Paths.get(file.getAbsolutePath()), file.getName(), "BinaryMaster_1");
+            docBinaryDataObject.extractTechnicalElements(pl);
+            BinaryDataObject signViladationBinaryDataObject = new BinaryDataObject(dataObjectPackage, validationXml.toPath(), validationXml.getName(), "BinaryMaster_1");
+            signViladationBinaryDataObject.extractTechnicalElements(pl);
+
+            ArchiveUnit id1ArchiveUnit = sb.createRootArchiveUnit("ID1", "File", signRequest.getTitle(), signRequest.getComment());
             List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
-            LogBook logBook = new LogBook();
             for (Log log : logs) {
                 Event event = new Event(log.getId().toString(), log.getFinalStatus(), convertToLocalDateTimeViaInstant(log.getLogDate()), log.getReturnCode());
                 event.addNewMetadata("EventTypeCode", log.getFinalStatus() + " by " + log.getEppn());
                 event.addNewMetadata("EventDetail", log.getComment());
-                logBook.addMetadata(event);
+                id1ArchiveUnit.getContent().addMetadata(event);
             }
-            management.addMetadata(logBook);
 
-            Reports reports = validationService.validate(new MockMultipartFile(document.getFileName(), document.getInputStream()));
-            DetailedReport detailedReport = reports.getDetailedReport();
+
+            ArchiveUnit id2ArchiveUnit = sb.addNewSubArchiveUnit("ID1", "ID2", "Item", "validation.xml", "");
             SimpleReport simpleReport = reports.getSimpleReportJaxb();
             for(XmlSignature xmlSignature : simpleReport.getSignature()) {
                 //User user = userRepository.findByEppn(xmlSignature.getSignedBy()).get(0);
                 Signature signature = new Signature();
                 signature.addMetadata(new Signer(xmlSignature.getSignedBy(), convertToLocalDateTimeViaInstant(xmlSignature.getBestSignatureTime())));
-                DataObjectPackage dataObjectPackage = sb.findArchiveUnit("Racine").getDataObjectPackage();
-                for(BinaryDataObject binaryDataObject : dataObjectPackage.getBdoInDataObjectPackageIdMap().values()){
-                    ReferencedObject referencedObject = new ReferencedObject(
-                            binaryDataObject.getInDataObjectPackageId(),
-                            binaryDataObject.messageDigest.getValue(),
-                            binaryDataObject.messageDigest.getAlgorithm());
-                    signature.addMetadata(referencedObject);
-                    content.addMetadata(signature);
-                }
+                Validator validator = new Validator("DSS Validator", convertToLocalDateTimeViaInstant(xmlSignature.getBestSignatureTime()));
+                validator.addNewMetadata("Identifier", simpleReport.getPolicy().getPolicyName());
+                signature.addMetadata(validator);
+
+                ReferencedObject referencedObject = new ReferencedObject(
+                        docBinaryDataObject.getInDataObjectPackageId(),
+                        docBinaryDataObject.messageDigest.getValue(),
+                        docBinaryDataObject.messageDigest.getAlgorithm());
+                signature.addMetadata(referencedObject);
+                id2ArchiveUnit.getContent().addMetadata(signature);
             }
 
+            id1ArchiveUnit.addDataObjectById(docBinaryDataObject.getInDataObjectPackageId());
+            id2ArchiveUnit.addDataObjectById(signViladationBinaryDataObject.getInDataObjectPackageId());
             sb.generateSIP();
             InputStream targetInputStream = new FileInputStream(targetFile);
             targetFile.delete();
             file.delete();
+            //validationXml.delete();
             return targetInputStream;
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
