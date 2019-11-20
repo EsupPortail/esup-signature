@@ -2,37 +2,37 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="status">
 	<div th:switch="${signRequest.status.name()}">
-		<div th:case="'draft'" class="alert alert-secondary text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+		<div th:case="'draft'" class="alert alert-secondary text-center" th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${signRequest.status}}">
 			<small>
 			<i class="fab fa-firstdraft" th:title="#{'signbook.status.' + ${signRequest.status}}"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}" class="sidebar-label"></span>
 			</small>
 		</div>
-		<div th:case="'pending'" class="alert alert-primary text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+		<div th:case="'pending'" class="alert alert-primary text-center" th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${signRequest.status}}">
 			<small>
 			<i class="fas fa-clock"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}" class="sidebar-label"></span>
 			</small>
 		</div>
-		<div th:case="'signed'" class="alert alert-warning text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+		<div th:case="'signed'" class="alert alert-warning text-center" th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${signRequest.status}}">
 			<small>
 			<i class="fas fa-file-signature"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}" class="sidebar-label"></span>
 			</small>
 		</div>
-		<div th:case="'refused'" class="alert alert-danger text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+		<div th:case="'refused'" class="alert alert-danger text-center" th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${signRequest.status}}">
 			<small>
 			<i class="fas fa-ban"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}" class="sidebar-label"></span>
 			</small>
 		</div>
-		<div th:case="'checked'" class="alert alert-warning text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+		<div th:case="'checked'" class="alert alert-warning text-center" th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${signRequest.status}}">
 			<small>
 			<i class="far fa-check-circle"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}" class="sidebar-label"></span>
 			</small>
 		</div>
-		<div th:case="'exported'" class="alert alert-light text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
+		<div th:case="'exported'" class="alert alert-light text-center" th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${signRequest.status}}">
 			<i class="fas fa-file-export"></i>
 			<small>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}" class="sidebar-label"></span>

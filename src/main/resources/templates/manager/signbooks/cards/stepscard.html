@@ -31,8 +31,73 @@
 
                                         <table class="table table-sm table-bordered">
                                             <tr>
-                                                <th style="width: 100%;">Nom</th>
-                                                <th>Suppr.</th>
+                                                <th>Nom</th>
+                                                <th>
+                                                    Actions
+                                                    <button type="button" title="Ajouter un destinataire" class="btn btn-sm btn-primary float-right" data-toggle="modal" th:data-target="'#reSendModal' + ${workflowStep.id}">
+                                                        <i class="fa fa-plus" aria-hidden="true"></i>
+                                                    </button>
+                                                    <div class="modal fade" th:id="'reSendModal' + ${workflowStep.id}" tabindex="-1" role="dialog" th:aria-labelledby="'reSendModal' + ${workflowStep.id}" aria-hidden="true">
+                                                        <div class="modal-dialog modal-lg" role="document">
+                                                            <div class="modal-content">
+                                                                <form class="form-group" th:action="'/manager/signbooks/send-to-signbook/' + ${id} + '/' + ${workflowStep.id}" method="get">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title">Ajout de destinataire(s)</h5>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <div class="input-group">
+                                                                            <select onchange="checkNbRecipients();" name="signBookNames" th:id="'signBookNames' + ${workflowStep.id}" size="5" multiple="multiple" required="required">
+                                                                                <th:block th:each="signBook : ${allSignBooks}">
+                                                                                    <option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
+                                                                                </th:block>
+                                                                            </select>
+                                                                        </div>
+                                                                        <div class="input-group">
+                                                                            <textarea class="form-control" name="comment" placeholder="Commentaire"></textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
+                                                                        <button type="submit" class="btn btn-primary float-right">
+                                                                            Ajouter
+                                                                        </button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                            <script language="JavaScript">
+                                                                new SlimSelect({
+                                                                    select: "#[['signBookNames' + ${workflowStep.id}]]",
+                                                                    placeholder: 'Choisir un ou plusieurs parapheur(s)',
+                                                                    searchText: 'Aucun résultat',
+                                                                    searchPlaceholder: 'Rechercher',
+                                                                    searchHighlight: true,
+                                                                    searchFilter: (option, search) => {
+                                                                        return true;
+                                                                    },
+                                                                    ajax: function (search, callback) {
+                                                                        if (search.length < 3) {
+                                                                            callback('Merci de saisir au moins 3 caractères')
+                                                                        }
+                                                                        fetch('/user/users/searchLdap?searchString=' + search)
+                                                                            .then(function (response) {
+                                                                                return response.json()
+                                                                            })
+                                                                            .then(function (json) {
+                                                                                let data = []
+                                                                                for (let i = 0; i < json.length; i++) {
+                                                                                    data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
+                                                                                }
+                                                                                callback(data)
+                                                                            })
+                                                                            .catch(function (error) {
+                                                                                callback(false)
+                                                                            })
+                                                                    }
+                                                                });
+                                                            </script>
+                                                        </div>
+                                                    </div>
+                                                </th>
                                             </tr>
                                             <th:block th:each="recipient : ${workflowStep.signBooksLabels}">
                                                 <tr>
@@ -43,7 +108,7 @@
                                                         </td>
                                                         <td>
                                                             <button title="Supprimer le destinataire"
-                                                                    onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" type="submit" class="btn btn-danger btn-sm"><i class="fas fa-minus-circle"></i></button>
+                                                                    onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" type="submit" class="btn btn-danger btn-sm float-right"><i class="fas fa-minus-circle"></i></button>
                                                         </td>
                                                         </li>
                                                     </form>
@@ -51,69 +116,7 @@
                                             </th:block>
                                         </table>
 
-                                            <button type="button" title="Ajouter un destinataire" class="btn btn-sm btn-primary float-right" data-toggle="modal" th:data-target="'#reSendModal' + ${workflowStep.id}">
-                                                <i class="fa fa-plus" aria-hidden="true"></i>
-                                            </button>
-                                            <div class="modal fade" th:id="'reSendModal' + ${workflowStep.id}" tabindex="-1" role="dialog" th:aria-labelledby="'reSendModal' + ${workflowStep.id}" aria-hidden="true">
-                                                <div class="modal-dialog modal-lg" role="document">
-                                                    <div class="modal-content">
-                                                        <form class="form-group" th:action="'/manager/signbooks/send-to-signbook/' + ${id} + '/' + ${workflowStep.id}" method="get">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title">Ajout de destinataire(s)</h5>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <div class="input-group">
-                                                                    <select onchange="checkNbRecipients();" name="signBookNames" th:id="'signBookNames' + ${workflowStep.id}" size="5" multiple="multiple" required="required">
-                                                                        <th:block th:each="signBook : ${allSignBooks}">
-                                                                            <option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
-                                                                        </th:block>
-                                                                    </select>
-                                                                </div>
-                                                                <div class="input-group">
-                                                                    <textarea class="form-control" name="comment" placeholder="Commentaire"></textarea>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
-                                                                <button type="submit" class="btn btn-primary float-right">
-                                                                    Ajouter
-                                                                </button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                    <script language="JavaScript">
-                                                        new SlimSelect({
-                                                            select: "#[['signBookNames' + ${workflowStep.id}]]",
-                                                            placeholder: 'Choisir un ou plusieurs parapheur(s)',
-                                                            searchText: 'Aucun résultat',
-                                                            searchPlaceholder: 'Rechercher',
-                                                            searchHighlight: true,
-                                                            searchFilter: (option, search) => {
-                                                                return true;
-                                                            },
-                                                            ajax: function (search, callback) {
-                                                                if (search.length < 3) {
-                                                                    callback('Merci de saisir au moins 3 caractères')
-                                                                }
-                                                                fetch('/user/users/searchLdap?searchString=' + search)
-                                                                    .then(function (response) {
-                                                                        return response.json()
-                                                                    })
-                                                                    .then(function (json) {
-                                                                        let data = []
-                                                                        for (let i = 0; i < json.length; i++) {
-                                                                            data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
-                                                                        }
-                                                                        callback(data)
-                                                                    })
-                                                                    .catch(function (error) {
-                                                                        callback(false)
-                                                                    })
-                                                            }
-                                                        });
-                                                    </script>
-                                                </div>
-                                            </div>
+
                                     </div>
                                 </div>
                             </div>

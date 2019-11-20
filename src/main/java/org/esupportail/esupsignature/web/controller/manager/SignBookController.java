@@ -189,6 +189,18 @@ public class SignBookController {
 		return "redirect:/manager/signbooks/" + signBook.getId();
 	}
 
+	@DeleteMapping(value = "/remove-recipient/{id}", produces = "text/html")
+	public String removeRecipients(@PathVariable("id") Long id,
+								@RequestParam(name = "recipientEmail") String recipientEmail,
+								Model uiModel, RedirectAttributes redirectAttrs) {
+		User user = userService.getUserFromAuthentication();
+		SignBook signBook = signBookRepository.findById(id).get();
+		if(signBook.getCreateBy().equals(user.getEppn())) {
+			signBookService.removeRecipient(signBook, recipientEmail);
+		}
+		return "redirect:/manager/signbooks/" + signBook.getId();
+	}
+
     @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
     public String updateForm(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();

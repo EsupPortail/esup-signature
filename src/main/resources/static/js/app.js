@@ -17,14 +17,37 @@
  */
 
 $(document).ready(function () {
+	var sideBarStatus = localStorage.getItem('sideBarStatus');
+
+	if(sideBarStatus == null) {
+		localStorage.setItem('sideBarStatus', 'on');
+		sideBarStatus = localStorage.getItem('sideBarStatus');
+	}
+
+	if(sideBarStatus == 'off' && !$('#sidebar').hasClass('active')) {
+		toggleSideBar();
+	}
+
+	if(sideBarStatus == 'on' && $('#sidebar').hasClass('active')) {
+		toggleSideBar();
+	}
 
 	$('#sidebarCollapse').on('click', function () {
+		toggleSideBar();
+		if(sideBarStatus == 'on') {
+			localStorage.setItem('sideBarStatus', 'off');
+		} else {
+			localStorage.setItem('sideBarStatus', 'on');
+		}
+	});
+
+	function toggleSideBar() {
 		$('#sidebar').toggleClass('active');
 		$('.sidebar-label').toggleClass('d-none');
 		$('.fa-arrow-left').toggleClass('fa-arrow-right')
 		$('#logo').toggleClass('logooverflow');
 		$('#content').toggleClass('content content2');
-	});
+	}
 
 });
 

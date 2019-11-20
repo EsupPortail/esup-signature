@@ -636,7 +636,7 @@ public class SignRequestController {
     public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if(user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getCurrentWorkflowStepNumber() == step + 1) {
+        if(user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getCurrentWorkflowStepNumber() <= step + 1) {
             Long stepId = signRequestService.changeSignType(signRequest, step, signType);
             return "redirect:/user/signrequests/" + id + "#" + stepId;
         }

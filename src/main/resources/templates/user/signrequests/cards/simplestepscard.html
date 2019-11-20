@@ -3,7 +3,7 @@
 <div th:fragment="simplestepscard">
     <div class="card rounded-0 mb-1">
         <div class="card-header">
-            Etapes de signature
+            Circuit de signature
             <button th:if="${signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed'}" type="button" class="btn btn-primary float-right" data-toggle="modal" data-target="#addStep">
                 <i class="fa fa-plus"></i> Ajouter une étape
             </button>
@@ -12,6 +12,21 @@
             </button>
         </div>
         <div class="card-body">
+
+            <div th:if="${user.eppn == signRequest.createBy}">
+                <div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
+                    <div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
+                        <div class="alert alert-secondary" th:if="${signRequest.status.name() == 'draft'}">
+                            <div th:if="${signRequest.currentWorkflowStep.signBooks.size() == 0}">
+                                <p>
+                                    Vous devez ajouter des étapes ainsi que des participants au circuit de signature
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <th:block th:if="${signRequest.workflowSteps != null}">
                 <div id="stepper" class="bs-stepper">
                     <div class="bs-stepper-header" role="tablist">
@@ -39,9 +54,8 @@
                                 <div class="card card-body border-0 bg-light">
                                     <h5>Paramètres de l'étape <span th:text="${iterator.index + 1}"></span></h5>
                                     Type de signature :
-                                    <form th:action="'/user/signrequests/change-step-sign-type/' + ${id} + '/'  + ${iterator.index}"
-                                          th:if="${iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
-                                        <select name="signType" class="form-control" onchange="submit()">
+                                    <form th:action="'/user/signrequests/change-step-sign-type/' + ${id} + '/'  + ${iterator.index}" th:if="${iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
+                                        <select name="signType" class="form-control" onchange="submit();">
                                             <th:block th:each="signType : ${signTypes}">
                                                 <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${workflowStep.signRequestParams.signType == signType}"></option>
                                             </th:block>
@@ -60,9 +74,9 @@
                                     </div>
 
                                     <span th:if="${workflowStep.allSignToComplete}">
-                                                        Tous les destinataires suivants :
+                                                        Tous les participants suivants :
                                                     </span>
-                                    <span th:unless="${workflowStep.allSignToComplete}">Un des destinataires suivants :</span>
+                                    <span th:unless="${workflowStep.allSignToComplete}">Un des participants suivants :</span>
                                     <table class="table table-sm table-bordered">
                                         <tr>
                                             <th>Nom</th>

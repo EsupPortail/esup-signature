@@ -7,39 +7,30 @@
 <main role="main">
     <div class="wrapper">
         <nav id="sidebar">
-            <div class="row">
-                <div class="col-lg-2">
-                    <button type="button" id="sidebarCollapse" class="mt-3 m-1 btn text-white">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
-                <div id="logo" class="col-lg-9">
-                    <a href="/">
-                        <img src="/images/logo.png"/>
-                    </a>
-                </div>
-            </div>
             <div class="m-1">
-            <button type="button" th:onclick="'location.href=\'/manager/signbooks/' + ${signBook.id} + '?form\''"
-                    class="mb-1 col-12 btn btn-warning float-left">
-                <i class="far fa-edit"></i>Modifier les paramètres
+                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+                </button>
+
+                <button title="Modifier les paramètres" type="button" th:onclick="'location.href=\'/manager/signbooks/' + ${signBook.id} + '?form\''" class="mb-1 col-12 btn btn-warning text-left">
+                <i class="far fa-edit"></i><span class="sidebar-label"> Modifier les paramètres</span>
             </button>
             <form th:action="'/manager/signbooks/' + ${signBook.id}" th:method="delete">
-                <button type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="mb-1 col-12 btn btn-danger float-left">
-                    <i class="fas fa-trash"></i> Supprimer
+                <button title="Supprimer" type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="mb-1 col-12 btn btn-danger text-left">
+                    <i class="fas fa-trash"></i><span class="sidebar-label"> Supprimer</span>
                 </button>
             </form>
-            <button th:if="${signBook.signBookType.name() == 'workflow'}" type="button" class="mb-1 col-12 btn btn-primary float-left"
+            <button title="Ajouter une étape" th:if="${signBook.signBookType.name() == 'workflow'}" type="button" class="mb-1 col-12 btn btn-primary text-left"
                     data-toggle="modal" data-target="#addStep">
-                <i class="fa fa-shoe-prints"></i> Ajouter une étape
+                <i class="fa fa-shoe-prints"></i><span class="sidebar-label"> Ajouter une étape</span>
             </button>
-            <button th:if="${signBook.signBookType.name() == 'group'}" type="button" class="mb-1 col-12 btn btn-primary float-left"
+            <button title="Ajouter un destinataire" th:if="${signBook.signBookType.name() == 'group'}" type="button" class="mb-1 col-12 btn btn-primary text-left"
                     data-toggle="modal" data-target="#addRecipients">
-                <i class="fa fa-envelope"></i> Ajouter un destinataire
+                <i class="fa fa-plus"></i><span class="sidebar-label"> Ajouter un destinataire</span>
             </button>
-            <button type="button" class="mb-1 col-12 btn btn-outline-dark btn-light float-left"
+            <button title="Retour" type="button" class="mb-1 col-12 btn btn-light text-left"
                     value="Retour" onclick="location.href='/manager/signbooks'">
-                <i class="fas fa-door-open"></i> Retour
+                <i class="fas fa-door-open"></i><span class="sidebar-label"> Retour</span>
             </button>
             </div>
         </nav>
@@ -56,15 +47,15 @@
                 </div>
             </nav>
             <div class="card bg-light rounded-0">
-                <div class="card-header">Infos</div>
+                <div class="card-header">Parapheur : <span th:text="${signBook.name}"></span></div>
                 <div class="card-body">
                     <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Type de parapheur</dt>
-                        <dd th:text="${signBook.signBookType}"></dd>
+                        <dt class="col-lg-5">Description</dt>
+                        <dd th:text="${signBook.description}"></dd>
                     </dl>
                     <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Nom</dt>
-                        <dd th:text="${signBook.name}"></dd>
+                        <dt class="col-lg-5">Type de parapheur</dt>
+                        <dd th:text="#{'signbook.signbooktype.' + ${signBook.signBookType}}"></dd>
                     </dl>
                     <div th:if="${signBook.signBookType.name() == 'workflow'}">
                         <div th:replace="manager/signbooks/cards/stepscard :: stepscard"></div>
@@ -74,12 +65,22 @@
                             <dt class="col-lg-5">Destinataires</dt>
                             <dd>
                                 <div class="alert alert-dark col-12">
-                                    <th:block
-                                            th:each="recipientEmail : ${signBook.recipientEmails}">
-                                        <i class="fas fa-inbox"></i>
-                                        <span th:text="${recipientEmail}"></span>
-                                        <br/>
+                                    <table class="table table-sm table-striped">
+                                    <th:block th:each="recipientEmail : ${signBook.recipientEmails}">
+                                        <tr>
+                                        <td><i class="fas fa-inbox"></i></td>
+                                        <td><span th:text="${recipientEmail}"></span></td>
+                                        <td>
+                                            <form th:action="'/manager/signbooks/remove-recipient/' + ${id}" th:method="delete">
+                                                <input type="hidden" name="recipientEmail" th:value="${recipientEmail}">
+                                                <button type="submit" class="btn btn-danger" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                        </tr>
                                     </th:block>
+                                    </table>
                                 </div>
                             </dd>
                         </dl>
@@ -94,14 +95,6 @@
                                 </th:block>
                             </div>
                         </dd>
-                    </dl>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Paramètres de signature</dt>
-                        <dd></dd>
-                    </dl>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Description</dt>
-                        <dd th:text="${signBook.description}"></dd>
                     </dl>
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Protocole pour la source des documents</dt>
@@ -129,120 +122,6 @@
                             <dt class="col-lg-5">Lien pour la destination des documents</dt>
                             <dd th:text="${signBook.documentsTargetUri}"></dd>
                         </dl>
-                        <button class="btn btn-primary"
-                                onclick="location.href='/manager/signbooks/send-files-to-target/${id}'">
-                            <i class="fas fa-file-export"></i> Export to source
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div th:if="${documentId != null}">
-                <div class="card bg-light">
-                    <div class="card-header">Position de la signature</div>
-                    <div class="card-body">
-                        <div th:if="${containsSignatureFields}">
-                            <div class="alert alert-warning">Le modèle contient des
-                                champs de signature. La position sera gérée automatiquement
-                            </div>
-                        </div>
-                        <div th:unless="${containsSignatureFields}">
-                            <table class="table">
-                                <th:block
-                                        th:each="signRequestParam : ${signBook.signRequestParams}"
-                                        th:with="signNumber = 1">
-                                    <tr>
-                                        <td>Signature ${signNumber} (page :
-                                            ${signRequestParam.signPageNumber}, XPos :
-                                            ${signRequestParam.XPos}, YPos : ${signRequestParam.YPos})
-                                        </td>
-                                        <td>
-                                            <div th:if="${signNumber > 1}">
-                                                <form th:action="'/manager/signbooks/delete-params/' + ${signRequestParam.id}" autocomplete="off" class="form-inline" method="post">
-                                                    <input name="signBookId" type="hidden" value="${id}"/>
-                                                    <button class="btn btn-danger fas fa-times" onclick="submit();" title="Update signRequestParams" type="button"></button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <div th:with="signNumber = ${signNumber + 1}"></div>
-                                </th:block>
-                            </table>
-                            <form th:action="'/manager/signbooks/update-params/' +${id}"
-                                  autocomplete="off" class="form-inline" method="post">
-                                <div class="form-group" style="display: none;">
-                                    <div class="row">
-                                        <div class="col-lg-3">
-                                            Page : <input autocomplete="off" class="form-control form-control-sm col-4" id="signPageNumber" name="signPageNumber" readonly="readonly" type="text" value="1"/>
-                                        </div>
-                                        <div class="col-lg-3">
-                                            X position : <input autocomplete="off" class="form-control form-control-sm col-4" id="xPos" name="xPos" readonly="readonly" type="text" value="0"/>
-                                        </div>
-                                        <div class="col-lg-3">
-                                            Y position : <input autocomplete="off" class="form-control form-control-sm col-4" id="yPos" name="yPos" readonly="readonly" type="text" value="0"/>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button class="btn btn-success" onclick="submit();" title="Update signRequestParams" type="submit" value="">
-                                    <i class="fas fa-save"></i> Modifier la position de la dernière signature
-                                </button>
-                            </form>
-                            <form th:action="'/manager/signbooks/add-params/' + {id}" autocomplete="off" class="form-inline" method="post">
-                                <button class="btn btn-success" onclick="submit();" title="Update signRequestParams" type="submit" value="">
-                                    <i class="fas fa-plus"></i> Ajouter une signature
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div th:if="${documentId != null}">
-                <div class="col-lg-6">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="row">
-                                <div class="col-lg-4">
-                                    Précédent
-                                    <input class="btn btn-outline-dark" id="previous" onclick="previousImage()" type="button" value="${previousLabel}"/>
-                                </div>
-                                <div class="col-lg-4 text-center">
-                                    <h5>Model</h5>
-                                </div>
-                                <div class="col-lg-4">
-                                    Suivant
-                                    <input class="btn btn-outline-dark float-right" id="next" onclick="nextImage()" type="button" value="${nextLabel}"/>
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-center">
-                                <div id="pointer_div" onclick="savePosition();"
-                                     onmousemove="pointIt(event);" onmouseout="resetPosition();"
-                                     th:style="'position: relative; background-size: 595px; background-image: url(/'' + ${documentUrl} + '/0/'); width: 595px; height: 842px; border: 1px solid #CCC;'">
-                                    <div th:if="${containsSignatureFields == false}"
-                                         th:with="signNumber = 1">
-                                        <th:block th:each="signRequestParam, index : ${signBook.signRequestParams}">
-                                            <div id="signParam_${signRequestParam.signPageNumber}" th:style="'left: ' + ${signRequestParam.XPos}">
-                                                <div id="" style="width: 100px; height: 75px; background-color: gray; text-align: center; opacity: 0.9;">
-                                                    <i class="fas fa-signature fa-3x text-success"></i><span th:text="${index.id}"></span>
-                                                </div>
-                                            </div>
-                                        </th:block>
-                                        <div id="cross"
-                                             style="left: 0px; top: 0px; position: relative; pointer-events: none; z-index: 10;">
-                                            <div id="borders"
-                                                 style="width: 100px; height: 75px; background-color: gray; text-align: center; opacity: 0.7;">
-                                                <i class="fas fa-signature fa-3x"> <!--  -->
-                                                </i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <script type="text/javascript">
-                            var nbImagePage = [[${imagePagesSize}]];
-                            var currentImagePage = 0;
-                            var documentUrl = "${documentUrl}";
-                            hideSigns(0)
-                        </script>
                     </div>
                 </div>
             </div>
@@ -408,7 +287,7 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                                 <button type="submit" class="btn btn-primary">Ajouter</button>
                             </div>
                         </form>

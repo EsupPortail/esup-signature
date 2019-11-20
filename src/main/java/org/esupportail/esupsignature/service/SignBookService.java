@@ -133,6 +133,10 @@ public class SignBookService {
         }
     }
 
+    public void removeRecipient(SignBook signBook, String recipientEmail) {
+        signBook.getRecipientEmails().remove(recipientEmail);
+    }
+
     public SignBook createSignBook(SignBook signBook, User user, MultipartFile multipartFile, boolean external) throws EsupSignatureException {
         if (signBookRepository.countByName(signBook.getName()) == 0) {
             signBook.setCreateBy(user.getEppn());

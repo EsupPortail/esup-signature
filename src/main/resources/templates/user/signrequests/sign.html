@@ -12,47 +12,11 @@
 <main role="main">
     <div class="wrapper">
         <nav id="sidebar">
-            <div class="row">
-                <div class="col-lg-2">
-                </div>
-                <div id="logo" class="col-lg-9">
-                    <img src="/images/logo.png"/>
-                </div>
-            </div>
-            <div th:if="${documentType == 'pdf'}">
-                <div class="alert alert-secondary m-1">
-                    <label class="control-label col-7" for="_zoom" >Zoom</label>
-                    <label class="switch">
-                        <input onclick="toggleZoom();" type="checkbox" name="zoom" id="_zoom"/>
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-
-                <div class="alert alert-secondary m-1">
-                    <label class="control-label col-7" for="_activeDate">Afficher la date</label>
-                    <label class="switch"> <input onclick="activeDate();" type="checkbox" id="_activeDate"/>
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-
-                <div th:if="${imagePagesSize > 1}" class="alert alert-secondary m-2">
-                    <label class="control-label col-12" for="_zoom">Navigation</label>
-                    <ul class="pagination float-right">
-                        <li class="page-item">
-                            <button id="previous" type="button" onclick="previousImage();" class="btn btn-outline-dark mr-2 disabled" aria-label="Précédent" disabled>
-                                <i class="fas fa-arrow-left"></i>
-                            </button>
-                        </li>
-                        <li class="page-item">
-                            <button id="next" onclick="nextImage();" class="btn btn-outline-dark mr-2" aria-label="Prochain">
-                                <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            </div>
             <div class="m-1">
-                <button class="btn btn-success col-12 mb-1" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}" type="button" data-toggle="modal" data-target="#signModal">
+                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+                </button>
+                <button class="btn btn-success mb-1" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}" type="button" data-toggle="modal" data-target="#signModal">
                     <i class="fas fa-signature"></i> Valider la signature
                 </button>
                 <div th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'nexuSign'}">
@@ -91,15 +55,14 @@
                         </button>
                     </div>
                 </div>
-                <button th:if="${referer != null}" type="button" class="btn btn-danger col-12 mb-1" value="Retour" th:onclick="@{'location.href=\'' + ${referer} + '\''}">
+                <button title="Abandonner" th:if="${referer != null}" type="button" class="btn btn-danger col-12 mb-1 text-left" value="Retour" th:onclick="@{'location.href=\'' + ${referer} + '\''}">
                     <i class="fas fa-times"></i><span class="sidebar-label"> Abandonner</span>
                 </button>
-
-                <button th:unless="${referer != null}" type="button" class="btn btn-danger col-12 mb-1" value="Retour" onclick="window.history.back()">
+                <button title="Abandonner" th:unless="${referer != null}" type="button" class="btn btn-danger col-12 mb-1 text-left" value="Retour" onclick="window.history.back()">
                     <i class="fas fa-times"></i><span class="sidebar-label"> Abandonner</span>
                 </button>
-                <button class="btn btn-success col-12 mb-1"
-                        th:unless="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'nexuSign' || signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}" type="button"
+                <button title="Valider la signature" type="button" class="btn btn-success col-12 mb-1 text-left"
+                        th:unless="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'nexuSign' || signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}"
                         onclick="document.getElementById('signForm').submit();">
                     <i class="fas fa-signature"></i><span class="sidebar-label"> Valider la signature</span>
                 </button>
@@ -108,15 +71,60 @@
         <div aria-expanded="true" class="collapse" id="collapseHelp">
             <div class="alert alert-info">Pour modifier la position de la signature, cliquez sur le document. Selon le type de signature, le lancement de l'application NexU ou un mot de passe peut être demandé.</div>
         </div>
-        <div th:if="${signable == 'ok'}" class="content" id="v-pills-tabContent">
+        <div th:if="${signable == 'ok'}" class="content" id="content">
             <th:block >
-                <nav class="nav justify-content-between bg-white" aria-label="breadcrumb">
-                    <ol class="m-2 breadcrumb col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.name}"></span></li>
                     </ol>
                 </nav>
             </th:block>
+            <div th:if="${documentType == 'pdf'}">
+                <div class="row">
+                    <div class="btn btn-light col-3 mr-1">
+                        <label class="control-label" for="_zoom" >Insérer un visuel</label>
+                        <br/>
+                        <label class="switch">
+                            <input onclick="toggleVisa();" type="checkbox" name="visa" id="_visa" checked/>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="btn btn-light col-3 mr-1">
+                        <label class="control-label" for="_zoom" >Zoom</label>
+                        <br/>
+                        <label class="switch">
+                            <input onclick="toggleZoom();" type="checkbox" name="zoom" id="_zoom"/>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="btn btn-light col-3 mr-1">
+                        <label class="control-label" for="_activeDate">Afficher la date</label>
+                        <br/>
+                        <label class="switch"> <input onclick="activeDate();" type="checkbox" id="_activeDate"/>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div th:if="${imagePagesSize > 1}" class="btn btn-light col-3 mr-1">
+                        <label class="control-label" for="_zoom">Navigation</label>
+                        <ul class="pagination float-right">
+                            <li class="page-item">
+                                <button id="previous" type="button" onclick="previousImage();" class="btn btn-outline-dark mr-2 disabled" aria-label="Précédent" disabled>
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                            </li>
+                            <li class="page-item">
+                                <button id="next" onclick="nextImage();" class="btn btn-outline-dark mr-2" aria-label="Prochain">
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
             <form id="signForm" th:action="'/user/signrequests/sign/' + ${signRequest.id}" method="post">
                 <input id="addDate" type="hidden" name="addDate" value="false">
                 <input type="hidden" name="referer" th:value="${referer}">
@@ -194,6 +202,10 @@
 </main>
 <script th:inline="javascript">
     /*<![CDATA[*/
+    function toggleVisa() {
+        document.getElementById("cross").classList.toggle('d-none');
+    }
+
     zoom == 2;
 
     function toggleZoom() {

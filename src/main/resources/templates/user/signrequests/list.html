@@ -6,15 +6,14 @@
 <main role="main">
     <div class="wrapper">
         <nav id="sidebar">
-
             <div class="m-1">
-            <button type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+            <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                 <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
             </button>
-            <button type="button" data-toggle="modal" data-target="#addSignRequestModal" class="mb-1 col-12 btn btn-primary text-left">
-                <i class="fas fa-plus-circle"></i> <span class="sidebar-label">Nouvelle demande de signature</span>
+            <button title="Nouvelle demande de signature"  type="button" data-toggle="modal" data-target="#addSignRequestModal" class="mb-1 col-12 btn btn-primary text-left">
+                <i class="fas fa-plus"></i> <span class="sidebar-label">Nouvelle demande de signature</span>
             </button>
-            <button type="button" onclick="location.href='/user/validation'" class="mb-1 col-12 btn btn-warning text-left">
+            <button title="Valider la signature d'un document" type="button" onclick="location.href='/user/validation'" class="mb-1 col-12 btn btn-warning text-left">
                 <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Valider la signature d'un document</span>
             </button>
             <button id="opendocs" class="mb-1 btn btn-outline-dark btn-light float-left" onclick="openCheckedDocs()" title="open docs" style="display: none;">
@@ -79,9 +78,9 @@
                             <thead>
                             <tr>
                                 <th data-type="html"><input id="selectall" type="checkbox"/></th>
-                                <th class="none">Titre</th>
-                                <th class="none">Date de création</th>
-                                <th class="none">Créé par</th>
+                                <th class="">Titre</th>
+                                <th class="d-none d-md-table-cell">Date de création</th>
+                                <th class="d-none d-lg-table-cell">Créé par</th>
                                 <th>Voir</th>
                                 <th>Signer</th>
                             </tr>
@@ -89,17 +88,17 @@
                             <tbody>
                             <th:block th:each="signRequest : ${signRequestsToSign}">
                                 <tr>
-                                    <td class="none"><input th:value="${signRequest.id}" name="check" type="checkbox" class="check"/></td>
-                                    <td class="none"><p class="truncate" th:title="${signRequest.title}" th:text="${signRequest.title}"></p></td>
-                                    <td class="none"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                    <td class="none"><span th:text="${signRequest.createBy}"></span></td>
+                                    <td><input th:value="${signRequest.id}" name="check" type="checkbox" class="check"/></td>
+                                    <td class="text-break" th:text="${signRequest.title}"></td>
+                                    <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
+                                    <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy}"></span></td>
                                     <td class="utilbox">
                                         <a class="btn btn-info far fa-eye" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}">
                                             <!--  -->
                                         </a>
                                     </td>
                                     <td class="utilbox">
-                                        <a role="button" class="btn btn-success fas fa-signature" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name} + '?referer=true'">
+                                        <a role="button" class="btn btn-success fas fa-signature" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
                                             <!--  -->
                                         </a>
                                     </td>
@@ -137,18 +136,14 @@
                     <div style="display: none;" id="alertsigndocs" class="alert alert-danger" role="alert">Impossible de signer en masse la selection actuelle</div>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
                         <table class="table table-sm table-bordered table-striped table-hover">
                             <thead>
                             <tr>
                                 <th class="none">Titre</th>
-                                <th class="none"><a class="sorted"
-                                                    sd:pagination-sort="createDate">Date de création</a></th>
-                                <th class="none">Créé par</th>
-                                <th class="none d-none">Dans le parapheur</th>
-                                <th class="none">Destinataires</th>
-                                <th class="type d-none">Type de signature</th>
-                                <th class="status">Statut</th>
+                                <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
+                                <th class="d-none d-xl-table-cell">Créé par</th>
+                                <th class="d-none d-lg-table-cell">Participants</th>
+                                <th class="d-none d-md-table-cell">Statut</th>
                                 <th>Voir</th>
                                 <th>Supprimer</th>
                             </tr>
@@ -156,20 +151,10 @@
                             <tbody>
                             <th:block th:each="signRequest : ${signRequests}">
                                 <tr>
-                                    <td class="none"><p class="truncate" th:title="${signRequest.title}" th:text="${signRequest.title}"></p></td>
-                                    <td class="none"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                    <td class="none"><span th:text="${signRequest.createBy}"></span></td>
-                                    <td class="none d-none">
-                                        <ul class="list-group">
-                                            <th:block th:each="inSignBook : ${signRequest.currentWorkflowStep.signBooks}">
-                                                <li class="list-group-item truncate" th:title="${inSignBook.key}">
-                                                    <i class="fas fa-book"></i>
-                                                    <span th:text="${inSignBook.key}"></span>
-                                                </li>
-                                            </th:block>
-                                        </ul>
-                                    </td>
-                                    <td class="signbook" style="display: block;">
+                                    <td class="text-break" th:title="${signRequest.title}" th:text="${signRequest.title}"></td>
+                                    <td class="d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
+                                    <td class="d-none d-xl-table-cell"><span th:text="${signRequest.createBy}"></span></td>
+                                    <td class="d-none d-lg-table-cell">
                                         <table class="table table-sm">
                                             <tbody>
                                             <th:block th:each="signBooksLabel : ${signRequest.currentWorkflowStep.signBooksLabels}">
@@ -186,7 +171,7 @@
                                             </tbody>
                                         </table>
                                     </td>
-                                    <td class="status" style="width: 150px;">
+                                    <td class="d-none d-md-table-cell" style="width: 150px;">
                                         <div th:replace="user/signrequests/includes/status :: status"></div>
                                     </td>
                                     <td class="utilbox">
@@ -205,7 +190,6 @@
                             </th:block>
                             </tbody>
                         </table>
-                    </div>
                 </div>
                 <div c lass="card-footer">
                     <nav th:replace="fragments/pagination :: pagination"></nav>

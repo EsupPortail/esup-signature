@@ -7,54 +7,18 @@
 <main role="main">
     <nav class="wrapper">
         <nav id="sidebar">
-
-                <div id="logo" class="col-lg-12">
-                    <a href="/">
-                        <img src="/images/logo.png"/>
-                    </a>
-                </div>
             <div class="m-1">
-                <div th:replace="user/signrequests/includes/status :: status"></div>
-                <div class="mb-1 mt-1">
-                    <div th:if="${user.eppn == signRequest.createBy}">
-                        <div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
-                            <div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
-                                <div class="alert alert-secondary" th:if="${signRequest.status.name() == 'draft'}">
-                                    <h6 class="alert-heading">
-                                        Demande en cours de création
-                                    </h6>
-                                    <div th:if="${#lists.size(signRequest.originalDocuments) == 0}">
-                                        <div th:if="${modelId != null}">
-                                            <button type="button" class="btn btn-info"
-                                                    onclick="window.open('${modelId}', '_blank')">
-                                                <i class="fas fa-download"></i> Télécharger le modèle
-                                            </button>
-                                        </div>
-                                        <hr/>
-                                        <p>Vous devez ajouter des documents</p>
-                                    </div>
-                                    <div th:if="${signRequest.currentWorkflowStep.signBooks.size() == 0}">
-                                        <p>
-                                        <hr/>
-                                        Vous devez envoyer la demande dans un ou plusieurs parapheurs
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
-                                <div class="alert alert-info">
-                                    <h6 class="alert-heading">
-                                        Demande prête pour la mise en signature
-                                    </h6>
-                                    <hr/>
-                                    <th:block
-                                            th:if="${signRequest.currentWorkflowStep.signBooks.size() > 0 && user.eppn == signRequest.createBy && #lists.size(signRequest.originalDocuments) > 0}">
-                                        <button type="button" class="mr-2 btn btn-success" data-toggle="modal" data-target="#sendModal">
-                                            <i class="fa fa-paper-plane " aria-hidden="true"></i> Lancer la procedure de signature
-                                        </button>
-                                    </th:block>
-                                </div>
-                            </div>
+                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+                </button>
+                <div th:if="${user.eppn == signRequest.createBy}">
+                    <div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
+                        <div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
+                            <th:block th:if="${signRequest.currentWorkflowStep.signBooks.size() > 0 && user.eppn == signRequest.createBy && #lists.size(signRequest.originalDocuments) > 0}">
+                                <button title="Lancer la procedure de signature" type="button" class="mb-1 btn btn-success text-left" data-toggle="modal" data-target="#sendModal">
+                                    <i class="fa fa-paper-plane " aria-hidden="true"></i><span class="sidebar-label"> Lancer la procedure de signature</span>
+                                </button>
+                            </th:block>
                         </div>
                     </div>
                 </div>
@@ -64,19 +28,11 @@
                     <a class="btn btn-success" th:href="'/ws/get-last-file?name=' + ${signRequest.name}"><i class="fa fa-download"></i> Télécharger le document signé</a>
                 </div>
                 <div th:if="${signRequest.status.name() == 'pending'}">
-                    <div class="alert alert-primary sidebar-label mb-1">
-                        <h6 class="alert-heading">
-                            La demande est en cours de signature
-                        </h6>
-                    </div>
                     <div th:if="${signable == 'ok'}">
-                        <div class="alert alert-primary sidebar-label mb-1">
-                            Vous devez signer cette demande
-                        </div>
-                        <button type="button" class="btn btn-danger col-12 mb-1" data-toggle="modal" data-target="#refuseModal">
+                        <button title="Refuser" type="button" class="btn btn-danger col-12 mb-1 text-left" data-toggle="modal" data-target="#refuseModal">
                             <i class="fas fa-ban"></i><span class="sidebar-label"> Refuser</span>
                         </button>
-                        <a class="btn btn-success col-12 mb-1" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
+                        <a title="Signer" class="btn btn-success col-12 mb-1 text-left" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
                             <i class="fas fa-signature"></i><span class="sidebar-label"> Signer</span>
                         </a>
                     </div>
@@ -131,7 +87,7 @@
                         </th:block>
                     </div>
                 </div>
-                <a class="btn btn-light col-12" href="/"><i class="fas fa-door-open"></i>
+                <a class="btn btn-light col-12 mb-1 text-left" href="/"><i class="fas fa-door-open"></i>
                     <span class="sidebar-label">Sortir</span>
                 </a>
             </div>
@@ -157,6 +113,8 @@
                     </ol>
                 </nav>
             </div>
+            <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
+
             <div th:if="${signRequest.signedDocuments.size() > 0}" class="card rounded-0 mb-1">
                 <div class="card-header">
                     Liste des documents signés
@@ -178,6 +136,17 @@
                     </th:block>
                 </div>
                 <div class="card-body">
+                    <div th:if="${user.eppn == signRequest.createBy}">
+                        <div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
+                            <div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
+                                    <div th:if="${#lists.size(signRequest.originalDocuments) == 0}">
+                                        <div class="alert alert-secondary" th:if="${signRequest.status.name() == 'draft'}">
+                                        <p>Vous devez ajouter des documents</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="file-loading">
                         <input id="multipartFile" name="multipartFiles" type="file"
                                multiple="multiple"/>
@@ -185,71 +154,8 @@
                 </div>
             </div>
             <div th:replace="user/signrequests/cards/simplestepscard :: simplestepscard"></div>
-            <div class="card rounded-0 mb-1">
-                <div class="card-header">
-                    Commentaires <span th:text="'(' + ${#lists.size(comments)} + ')'"></span>
-                </div>
-                <div id="collapseComments" class="show"
-                     aria-labelledby="headingOne" data-parent="#accordion">
-                    <div class="card-body">
-                        <ul class="list-group">
-                            <th:block th:each="comment : ${comments}">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <li href="#" class="list-group-item list-group-item-action">
-                                        De : <span class="mb-1" th:text="${comment.eppn}"></span> -
-                                        <small>
-                                            le : <span th:text="${#dates.format(comment.logDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                            <br>
-                                            Action effectuée : <span th:text="#{'signbook.status.' + ${comment.finalStatus}}"></span>
-                                        </small>
-                                        <p th:text="${comment.comment}"></p>
-
-                                    </li>
-                                </div>
-                            </th:block>
-                        </ul>
-                        <form th:action="'/user/signrequests/comment/' + ${id}">
-                            <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows=""></textarea>
-                            <button type="submit" class="btn btn-primary float-right">
-                                <i class="fas fa-comments" aria-hidden="true"></i> Envoyer un commentaire
-                            </button>
-                        </form>
-
-                    </div>
-                </div>
-            </div>
-            <div class="card rounded-0 mb-1">
-                <div class="card-header">
-                    Logs
-                </div>
-                <div id="collapseLogs" class="show" aria-labelledby="headingOne"
-                     data-parent="#accordion">
-                    <div class="card-body">
-                        <table class="table table-responsive table-sm table-striped table-hover">
-                            <thead>
-                            <tr>
-                                <th class="none">Date</th>
-                                <th class="none">Eppn</th>
-                                <th class="none">Action</th>
-                                <th class="none">Statut initial</th>
-                                <th class="none">Statut final</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <th:block th:each="log : ${logs}">
-                                <tr>
-                                    <td><span th:text="${log.logDate}"></span></td>
-                                    <td><span th:text="${log.eppn}"></span></td>
-                                    <td><span th:text="${log.action}"></span></td>
-                                    <td><span th:text="${log.initialStatus}"></span></td>
-                                    <td><span th:text="${log.finalStatus}"></span></td>
-                                </tr>
-                            </th:block>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+            <div th:replace="user/signrequests/cards/commentscard :: commentscard"></div>
+            <div th:replace="user/signrequests/cards/logscard :: logscard"></div>
         </div>
         </div>
     </nav>
