@@ -192,19 +192,6 @@ input:checked + .slider:before {
   justify-content: left !important;
 }
 
-.step-trigger {
-	cursor: default !important;
-	background-color: rgba(0,0,0,.05) !important;
-}
-
-.line {
-    border: 1px solid #555555;
-}
-
-.step {
-    border: 1px solid #555555;
-}
-
 .truncate {
   width: 500px;
   white-space: nowrap;
