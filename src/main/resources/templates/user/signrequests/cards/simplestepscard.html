@@ -12,7 +12,6 @@
             </button>
         </div>
         <div class="card-body">
-
             <div th:if="${user.eppn == signRequest.createBy}">
                 <div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
                     <div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
@@ -26,13 +25,12 @@
                     </div>
                 </div>
             </div>
-
             <th:block th:if="${signRequest.workflowSteps != null}">
                 <div id="stepper" class="bs-stepper">
                     <div class="bs-stepper-header" role="tablist">
                         <th:block th:each="workflowStep,iterator : ${signRequest.workflowSteps}">
                             <div class="step" th:name="${workflowStep.id}" th:id="${workflowStep.id}" th:data-target="'#step_' + ${iterator.index}">
-                                <button th:aria-controls="'step_' + ${iterator.index}" class="step-trigger bg-light" role="tab" aria-selected="false">
+                                <button th:aria-controls="'step_' + ${iterator.index}" class="step-trigger bg-light" role="tab" aria-selected="false" style="border: 1px solid #CCCCCC;">
                                     <div th:if="${iterator.index + 1 == signRequest.currentWorkflowStepNumber && signRequest.status != 'completed'}">
                                         <span class="bs-stepper-circle"><i class="fa fa-cog"></i></span>
                                     </div>
@@ -51,9 +49,13 @@
                     <div class="bs-stepper-content mt-2">
                         <th:block th:each="workflowStep,iterator : ${signRequest.workflowSteps}">
                             <div class="bs-stepper-pane" th:id="'step_' + ${iterator.index}" role="tabpanel">
-                                <div class="card card-body border-0 bg-light">
+                                <div class="card card-body border-1 bg-light">
                                     <h5>Paramètres de l'étape <span th:text="${iterator.index + 1}"></span></h5>
                                     Type de signature :
+                                    <div th:unless="${user.eppn == signRequest.createBy && (iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber) && workflowStep.signBooks.size() > 1 }">
+                                        <b><span th:text="#{'signbook.signtype.' + ${workflowStep.signRequestParams.signType}}"></span></b>
+                                    </div>
+                                    <div th:if="${user.eppn == signRequest.createBy && (iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber) && workflowStep.signBooks.size() > 1 }">
                                     <form th:action="'/user/signrequests/change-step-sign-type/' + ${id} + '/'  + ${iterator.index}" th:if="${iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
                                         <select name="signType" class="form-control" onchange="submit();">
                                             <th:block th:each="signType : ${signTypes}">
@@ -62,7 +64,6 @@
                                         </select>
                                     </form>
                                     <hr/>
-                                    <div th:if="${user.eppn == signRequest.createBy && (iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber) && workflowStep.signBooks.size() > 1 }">
                                         <label>
                                             Tous les participants doivent-ils signer ?
                                         </label>
@@ -81,8 +82,8 @@
                                         <tr>
                                             <th>Nom</th>
                                             <th>Etat</th>
+                                            <th:block th:if="${user.eppn == signRequest.createBy && (iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber)}">
                                             <th>Actions
-                                                <th:block th:if="${user.eppn == signRequest.createBy && iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
                                                     <button type="button" title="Ajouter un destinataire" class="btn btn-sm btn-primary float-right" data-toggle="modal" th:data-target="'#reSendModal' + ${workflowStep.id}">
                                                         <i class="fa fa-plus" aria-hidden="true"></i>
                                                     </button>
@@ -146,8 +147,8 @@
                                                             </script>
                                                         </div>
                                                     </div>
-                                                </th:block>
-                                            </th>
+                                                </th>
+                                            </th:block>
                                         </tr>
                                         <th:block th:each="recipient : ${workflowStep.signBooksLabels}">
                                             <tr>
@@ -162,11 +163,13 @@
                                                             <span th:case="false" class="text-danger"><i class="fas fa-exclamation-circle text-danger" title=""></i> En attente de signature</span>
                                                         </div>
                                                     </td>
+                                                    <th:block th:if="${user.eppn == signRequest.createBy && (iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber)}">
                                                     <td>
                                                         <button title="Supprimer le destinataire"
                                                                 th:if="${user.eppn == signRequest.createBy && iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}"
                                                                 onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" type="submit" class="btn btn-danger btn-sm float-right"><i class="fas fa-minus-circle"></i></button>
                                                     </td>
+                                                    </th:block>
                                                     </li>
                                                 </form>
                                             </tr>

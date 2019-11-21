@@ -104,17 +104,14 @@
                     </ul>
                 </div>
             </div>
-            <div class="mt-2">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/user/signrequests">Liste des demandes</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.name}"></span>
-                        </li>
-                    </ol>
-                </nav>
-            </div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/user/signrequests">Liste des demandes</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.name}"></span>
+                    </li>
+                </ol>
+            </nav>
             <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
-
             <div th:if="${signRequest.signedDocuments.size() > 0}" class="card rounded-0 mb-1">
                 <div class="card-header">
                     Liste des documents signés
@@ -148,8 +145,7 @@
                         </div>
                     </div>
                     <div class="file-loading">
-                        <input id="multipartFile" name="multipartFiles" type="file"
-                               multiple="multiple"/>
+                        <input id="multipartFile" name="multipartFiles" type="file" multiple="multiple"/>
                     </div>
                 </div>
             </div>

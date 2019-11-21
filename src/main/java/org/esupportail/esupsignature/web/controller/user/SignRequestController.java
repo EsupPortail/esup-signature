@@ -209,6 +209,8 @@ public class SignRequestController {
                 model.addAttribute("documentId", toDisplayDocument.getId());
             }
             List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
+            logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
+
             model.addAttribute("logs", logs);
             model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
             if (user.getSignImage() != null) {

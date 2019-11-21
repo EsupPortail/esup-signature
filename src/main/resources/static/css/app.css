@@ -217,6 +217,11 @@ input:checked + .slider:before {
     color: #fff;
 }
 
+#sidebar.active {
+    min-width: 50px;
+    max-width: 50px;
+}
+
 .content {
     margin-left: 250px;
     padding: 5px;
@@ -229,6 +234,14 @@ input:checked + .slider:before {
 
 }
 
+.sign-menu {
+    max-width: 100px;
+    position: fixed;
+}
+
+.sign-preview {
+    margin-left: 110px;
+}
 @media (max-width: 768px) {
     #sidebar {
         top : 0px;
@@ -237,8 +250,12 @@ input:checked + .slider:before {
         min-height: 0px;
     }
     #sidebar.active {
-        min-width: 100vh !important;
-        min-height: 0px !important;
+        top : 0px;
+        position: relative;
+        max-width: initial;
+        min-height: 0px;
+        min-width: initial;
+        min-height: initial;
     }
     #sidebarCollapse {
         display: none;
@@ -247,7 +264,7 @@ input:checked + .slider:before {
         margin-left: 0px;
     }
     .content2 {
-        width: 100%;
+        min-width: initial !important;
         margin-left: 0px;
     }
     .logooverflow {
@@ -257,11 +274,14 @@ input:checked + .slider:before {
     .sidebar-label {
         display: inline !important;
     }
-}
-
-#sidebar.active {
-    min-width: 50px;
-    max-width: 50px;
+    .sign-menu {
+        max-width: initial;
+        position: relative !important;
+    }
+    .sign-preview {
+        overflow: auto;
+        margin-left: initial;
+    }
 }
 
 .logooverflow {
@@ -283,4 +303,10 @@ input:checked + .slider:before {
     position: absolute;
     top: 0;
     left: 0;
+}
+.explorer-caption {
+    overflow-wrap: break-word !important;
+}
+.file-details-cell {
+    word-break: break-all;
 }

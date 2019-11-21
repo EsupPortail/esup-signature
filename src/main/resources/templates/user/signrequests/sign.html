@@ -72,90 +72,80 @@
             <div class="alert alert-info">Pour modifier la position de la signature, cliquez sur le document. Selon le type de signature, le lancement de l'application NexU ou un mot de passe peut être demandé.</div>
         </div>
         <div th:if="${signable == 'ok'}" class="content" id="content">
-            <th:block >
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.name}"></span></li>
-                    </ol>
-                </nav>
-            </th:block>
-            <div th:if="${documentType == 'pdf'}">
-                <div class="row">
-                    <div class="btn btn-light col-3 mr-1">
-                        <label class="control-label" for="_zoom" >Insérer un visuel</label>
-                        <br/>
-                        <label class="switch">
-                            <input onclick="toggleVisa();" type="checkbox" name="visa" id="_visa" checked/>
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
-
-                    <div class="btn btn-light col-3 mr-1">
-                        <label class="control-label" for="_zoom" >Zoom</label>
-                        <br/>
-                        <label class="switch">
-                            <input onclick="toggleZoom();" type="checkbox" name="zoom" id="_zoom"/>
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
-
-                    <div class="btn btn-light col-3 mr-1">
-                        <label class="control-label" for="_activeDate">Afficher la date</label>
-                        <br/>
-                        <label class="switch"> <input onclick="activeDate();" type="checkbox" id="_activeDate"/>
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
-
-                    <div th:if="${imagePagesSize > 1}" class="btn btn-light col-3 mr-1">
-                        <label class="control-label" for="_zoom">Navigation</label>
-                        <ul class="pagination float-right">
-                            <li class="page-item">
-                                <button id="previous" type="button" onclick="previousImage();" class="btn btn-outline-dark mr-2 disabled" aria-label="Précédent" disabled>
-                                    <i class="fas fa-arrow-left"></i>
-                                </button>
-                            </li>
-                            <li class="page-item">
-                                <button id="next" onclick="nextImage();" class="btn btn-outline-dark mr-2" aria-label="Prochain">
-                                    <i class="fas fa-arrow-right"></i>
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
             <form id="signForm" th:action="'/user/signrequests/sign/' + ${signRequest.id}" method="post">
-                <input id="addDate" type="hidden" name="addDate" value="false">
                 <input type="hidden" name="referer" th:value="${referer}">
                 <div th:if="${documentType == 'pdf'}">
-                    <div th:if="${user.signImage == null && documentType == 'pdf' && signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'visa'}">
-                        <div class="alert alert-danger">
-                            <h6>Une signature visuelle est demandé pour ce document mais votre profil ne contient pas d'image de votre signature</h6>
-                            <a href="/user/users/?form">Modifier vos paramètres</a>
+                    <div class="sign-menu">
+                        <div class="btn btn-light col-12 m-1">
+                            <label class="control-label" for="_zoom" >Insérer un visuel</label>
+                            <br/>
+                            <label class="switch">
+                                <input onclick="toggleVisa();" type="checkbox" name="visa" id="_visa" checked/>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="btn btn-light col-12 m-1">
+                            <label class="control-label" for="_zoom" >Zoom</label>
+                            <br/>
+                            <label class="switch">
+                                <input onclick="toggleZoom();" type="checkbox" name="zoom" id="_zoom"/>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <div class="btn btn-light col-12 m-1">
+                            <label class="control-label" for="addDate">Afficher la date</label>
+                            <br/>
+                            <label class="switch"> <input onclick="activeDate();" type="checkbox" id="addDate"/>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <div th:if="${imagePagesSize > 1}" class="btn btn-light col-12 m-1">
+                            <label class="control-label" for="_zoom">Navigation</label>
+                            <ul class="pagination float-right">
+                                <li class="page-item">
+                                    <button id="previous" type="button" onclick="previousImage();" class="btn btn-outline-dark mr-2 disabled" aria-label="Précédent" disabled>
+                                        <i class="fas fa-arrow-left"></i>
+                                    </button>
+                                </li>
+                                <li class="page-item">
+                                    <button id="next" onclick="nextImage();" class="btn btn-outline-dark mr-2" aria-label="Prochain">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </li>
+                            </ul>
                         </div>
                     </div>
-                    <div th:unless="${user.signImage == null && documentType == 'pdf' && signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'visa'}">
-                        <div id="pointer_div" onmouseup="savePosition();" ontouchend="savePosition();" ontouchmove="pointIt(event);" onmousemove="pointIt(event);"
-                             th:style="'background-size: ' + ${pdfWidth} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/' + ${signRequest.currentWorkflowStep.signRequestParams.signPageNumber -1} + '\');width:' + ${pdfWidth} + 'px;height:' + ${pdfHeight} + 'px;border:1px solid #CCC;pointer-events: none;'">
-                            <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.currentWorkflowStep.signRequestParams.newPageType.name() == 'none' && signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'visa'}">
-                                <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();" ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
-                                     onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                                     onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
-                                     th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center; left: ' + ${signRequest.currentWorkflowStep.signRequestParams.XPos} + 'px;top: ' + ${signRequest.currentWorkflowStep.signRequestParams.YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
-                                    <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
-                                </div>
-                            </th:block>
-                            <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.currentWorkflowStep.signRequestParams.newPageType.name() == 'none' && signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'visa'}">
-                                <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();" ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
-                                     th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${signRequest.currentWorkflowStep.signRequestParams.XPos} + 'px;top: ' + ${signRequest.currentWorkflowStep.signRequestParams.YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
-                                    <div id="borders" class="anim-border"
-                                         style="text-align:left;line-height:normal;width: 100px; height: 75px;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;">
-                                        <span id="textVisa" style="font-size: 8px;" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span>
-                                        <br>
+                    <div class="sign-preview">
+                        <div th:if="${user.signImage == null && documentType == 'pdf' && signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'visa'}">
+                            <div class="alert alert-danger">
+                                <h6>Une signature visuelle est demandé pour ce document mais votre profil ne contient pas d'image de votre signature</h6>
+                                <a href="/user/users/?form">Modifier vos paramètres</a>
+                            </div>
+                        </div>
+                        <div th:unless="${user.signImage == null && documentType == 'pdf' && signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'visa'}">
+                            <div id="pointer_div" onmouseup="savePosition();" ontouchend="savePosition();" ontouchmove="pointIt(event);" onmousemove="pointIt(event);"
+                                 th:style="'background-size: ' + ${pdfWidth} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/' + ${signRequest.currentWorkflowStep.signRequestParams.signPageNumber -1} + '\');width:' + ${pdfWidth} + 'px;height:' + ${pdfHeight} + 'px;border:1px solid #CCC;pointer-events: none;'">
+                                <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.currentWorkflowStep.signRequestParams.newPageType.name() == 'none' && signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'visa'}">
+                                    <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();" ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
+                                         onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
+                                         onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
+                                         th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center; left: ' + ${signRequest.currentWorkflowStep.signRequestParams.XPos} + 'px;top: ' + ${signRequest.currentWorkflowStep.signRequestParams.YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
+                                        <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
                                     </div>
-                                </div>
-                            </th:block>
+                                </th:block>
+                                <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.currentWorkflowStep.signRequestParams.newPageType.name() == 'none' && signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'visa'}">
+                                    <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();" ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
+                                         th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${signRequest.currentWorkflowStep.signRequestParams.XPos} + 'px;top: ' + ${signRequest.currentWorkflowStep.signRequestParams.YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
+                                        <div id="borders" class="anim-border"
+                                             style="text-align:left;line-height:normal;width: 100px; height: 75px;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;">
+                                            <span id="textVisa" style="font-size: 8px;" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span>
+                                            <br>
+                                        </div>
+                                    </div>
+                                </th:block>
+                            </div>
                         </div>
                     </div>
                     <div class="d-none">
@@ -312,7 +302,5 @@
         </div>
     </div>
 </div>
-<div th:replace="fragments/footer :: footer"></div>
-
 </body>
 </html>

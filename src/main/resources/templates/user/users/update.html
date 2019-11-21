@@ -11,29 +11,24 @@
 <main role="main">
     <div class="wrapper">
         <nav id="sidebar">
-            <div id="logo">
-                <img src="/images/logo.png"/>
-            </div>
             <div class="m-1">
                 <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
             <button type="button" onclick="document.getElementById('fu_org_esupportail_esupsignature_domain_User').submit();" class="col-12 mb-1 btn btn-success text-left">
-                <i class="fas fa-save"></i> Enregistrer les modifications
+                <i class="fas fa-save"></i> <span class="sidebar-label">Enregistrer les modifications</span>
             </button>
             <a th:if="${referer != null}" class="col-12 mb-1 btn btn-danger text-left" value="Retour" th:href="${referer}">
-                <i class="fas fa-times"></i> Abandonner
+                <i class="fas fa-times"></i> <span class="sidebar-label">Abandonner</span>
             </a>
             </div>
         </nav>
-        <div class="content">
-            <div class="mt-2 mb-2">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item active">Paramètres de signature</li>
-                    </ol>
-                </nav>
-            </div>
+        <div id="content" class="content">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item active">Paramètres de signature</li>
+                </ol>
+            </nav>
             <form id="fu_org_esupportail_esupsignature_domain_User" th:object="${user}" th:action="'/user/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
                 <input type="hidden" name="referer" th:value="${referer}"/>
                 <input type="hidden" name="id" th:value="${user.id}"/>
