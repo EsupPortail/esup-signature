@@ -16,8 +16,8 @@
                 <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
-                <button class="btn btn-success mb-1" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}" type="button" data-toggle="modal" data-target="#signModal">
-                    <i class="fas fa-signature"></i> Valider la signature
+                <button class="btn btn-success col-12 mb-1 text-left" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}" type="button" data-toggle="modal" data-target="#signModal">
+                    <i class="fas fa-signature"></i><span class="sidebar-label"> Valider la signature</span>
                 </button>
                 <div th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'nexuSign'}">
                     <script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
@@ -76,11 +76,11 @@
                 <input type="hidden" name="referer" th:value="${referer}">
                 <div th:if="${documentType == 'pdf'}">
                     <div class="sign-menu">
-                        <div class="btn btn-light col-12 m-1">
-                            <label class="control-label" for="_zoom" >Insérer un visuel</label>
+                        <div class="btn btn-light col-12 m-1" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'pdfImageStamp'}">
+                            <label class="control-label" for="_visual" >Insérer un visuel</label>
                             <br/>
                             <label class="switch">
-                                <input onclick="toggleVisa();" type="checkbox" name="visa" id="_visa" checked/>
+                                <input onclick="toggleVisual();" type="checkbox" name="visual" id="_visual"/>
                                 <span class="slider round"></span>
                             </label>
                         </div>
@@ -94,25 +94,25 @@
                         </div>
 
                         <div class="btn btn-light col-12 m-1">
-                            <label class="control-label" for="addDate">Afficher la date</label>
+                            <label class="control-label" for="_addDate">Afficher la date</label>
                             <br/>
-                            <label class="switch"> <input onclick="activeDate();" type="checkbox" id="addDate"/>
+                            <label class="switch"> <input onclick="activeDate();" type="checkbox" name="addDate" id="_addDate"/>
                                 <span class="slider round"></span>
                             </label>
                         </div>
 
                         <div th:if="${imagePagesSize > 1}" class="btn btn-light col-12 m-1">
-                            <label class="control-label" for="_zoom">Navigation</label>
-                            <ul class="pagination float-right">
+                            <label class="control-label">Navigation</label>
+                            <ul class="pagination justify-content-center">
                                 <li class="page-item">
-                                    <button id="previous" type="button" onclick="previousImage();" class="btn btn-outline-dark mr-2 disabled" aria-label="Précédent" disabled>
+                                    <a id="previous" onclick="previousImage();" class="btn btn-outline-dark m-1" aria-label="Précédent">
                                         <i class="fas fa-arrow-left"></i>
-                                    </button>
+                                    </a>
                                 </li>
                                 <li class="page-item">
-                                    <button id="next" onclick="nextImage();" class="btn btn-outline-dark mr-2" aria-label="Prochain">
+                                    <a id="next" onclick="nextImage();" class="btn btn-outline-dark m-1" aria-label="Prochain">
                                         <i class="fas fa-arrow-right"></i>
-                                    </button>
+                                    </a>
                                 </li>
                             </ul>
                         </div>
@@ -171,15 +171,6 @@
                 </div>
                 <input id="csrf" th:value="${_csrf.token}" th:name="${_csrf.parameterName}" type="hidden"/>
             </form>
-            <script th:inline="javascript">
-                /*<![CDATA[*/
-                var zoom = 1;
-                var nbImagePage = [[${imagePagesSize}]];
-                var currentImagePage = [[${signRequest.currentWorkflowStep.signRequestParams.signPageNumber}]] - 1;
-                var documentUrl = "/user/documents/[[${documentId}]]/getimagepdfpage/";
-                var signId = [[${signRequest.id}]];
-                /*]]>*/
-            </script>
         </div>
         <div th:unless="${signable == 'ok'}" class="col-lg-10">
             <div class="alert alert-danger">
@@ -192,11 +183,21 @@
 </main>
 <script th:inline="javascript">
     /*<![CDATA[*/
-    function toggleVisa() {
-        document.getElementById("cross").classList.toggle('d-none');
-    }
 
-    zoom == 2;
+    var zoom = 1;
+    var nbImagePage = [[${imagePagesSize}]];
+    var currentImagePage = [[${signRequest.currentWorkflowStep.signRequestParams.signPageNumber}]] - 1;
+    var documentUrl = "/user/documents/[[${documentId}]]/getimagepdfpage/";
+    var signId = [[${signRequest.id}]];
+
+    document.getElementById("_visual").checked = true
+
+    //pdf navigation;
+
+    function toggleVisual() {
+        document.getElementById("cross").classList.toggle('d-none');
+        document.getElementById("_visual").toggleAttribute("checked");
+    }
 
     function toggleZoom() {
         if (zoom == 1) {
@@ -243,7 +244,7 @@
 
                                 <input class="form-control" required="required" placeholder="Vous allez signer à l'aide d'un certificat, merci d'entrer le mot de passe" id="password" name="password" type="password"/>
                                 <div class="input-group-append">
-                                    <input data-toggle="modal" data-target="#wait" onclick="submitSignRequest();" alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="button" value="Signer"/>
+                                    <input data-toggle="modal" data-target="#wait" data-dismiss="modal" onclick="submitSignRequest();" alt="${signLabel}" class="btn btn-success" id="signe" title="Signe" type="button" value="Signer"/>
                                 </div>
                             </div>
                         </div>
@@ -297,7 +298,7 @@
                 <button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">
                     Fermer
                 </button>
-                <a id="validModal" th:href="${referer}" class="btn btn-success align-self-center">Terminer</a>
+                <a id="validModal" th:href="${referer != null} ? ${referer} : '/user/signrequests/' + ${signRequest.id}" class="btn btn-success align-self-center">Terminer</a>
             </div>
         </div>
     </div>

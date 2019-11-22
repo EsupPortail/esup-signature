@@ -12,6 +12,7 @@ import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureAlignmentHorizontal;
 import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureAlignmentVertical;
 import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureRotation;
+import eu.europa.esig.dss.pades.SignatureImageTextParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
@@ -21,7 +22,7 @@ import eu.europa.esig.dss.validation.TimestampToken;
 import eu.europa.esig.dss.x509.CertificateToken;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
-import org.esupportail.esupsignature.config.sign.SignProperties;
+import org.esupportail.esupsignature.config.sign.SignConfig;
 import org.esupportail.esupsignature.dss.web.WebAppUtils;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.ExtensionForm;
@@ -37,29 +38,30 @@ import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 
 @Service
-@EnableConfigurationProperties(SignProperties.class)
 public class SignService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignService.class);
 
-	private SignProperties signProperties;
-
-	public SignService(SignProperties signProperties) {
-		this.signProperties = signProperties;
-	}
+	@Resource
+	private SignConfig signConfig;
 
 	@Resource
 	private CAdESService cadesService;
@@ -182,18 +184,47 @@ public class SignService {
 		return parameters;
 	}
 
-	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user) throws IOException {
+	public File addTextToImage(InputStream imageStream) throws IOException {
+		final BufferedImage signImage = ImageIO.read(imageStream);
+		BufferedImage  image = new BufferedImage(300, 150, BufferedImage.TYPE_INT_RGB);
+		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
+		graphics2D.setColor(Color.white);
+		graphics2D.fillRect(0, 0, 300, 150);
+		graphics2D.drawImage(signImage, 0, 0, null);
+		DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
+		Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
+		map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+		Font font = new Font("Helvetica", Font.BOLD, 15);
+		font = font.deriveFont(map);
+		graphics2D.setFont(font);
+		graphics2D.setRenderingHint(
+				RenderingHints.KEY_TEXT_ANTIALIASING,
+				RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+		graphics2D.setColor(Color.black);
+		graphics2D.drawString("Le " + dateFormat.format(new Date()), 0, 15);
+		File fileImage = File.createTempFile("sign", "png");
+		ImageIO.write(image, "png", fileImage);
+		graphics2D.dispose();
+		return fileImage;
+	}
+
+	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user, boolean addDate) throws IOException {
+		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
-		int[] signSize = pdfService.getSignSize(user.getSignImage().getInputStream());
-		InMemoryDocument fileDocumentImage = new InMemoryDocument(user.getSignImage().getInputStream());
+		InMemoryDocument fileDocumentImage;
+		int[] signSize;
+
+		if(addDate) {
+			File signImage = addTextToImage(user.getSignImage().getInputStream());
+			fileDocumentImage = new InMemoryDocument(new FileInputStream(signImage));
+			signSize = pdfService.getSignSize(new FileInputStream(signImage));
+		} else {
+			fileDocumentImage = new InMemoryDocument(user.getSignImage().getInputStream());
+			signSize = pdfService.getSignSize(user.getSignImage().getInputStream());
+		}
+
 		fileDocumentImage.setMimeType(MimeType.PNG);
 		// TODO ajout date et nom
-		/*
-		SignatureImageTextParameters signatureImageTextParameters = new SignatureImageTextParameters();
-		signatureImageTextParameters.setFont(new Font("Helvetica", Font.PLAIN, 12));
-		signatureImageTextParameters.setText("TEST");
-		imageParameters.setTextParameters(signatureImageTextParameters);
-		*/
 		imageParameters.setImage(fileDocumentImage);
 		imageParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
@@ -209,14 +240,11 @@ public class SignService {
 			imageParameters.setxAxis(signRequestParams.getXPos() - 50);
 			imageParameters.setyAxis(signRequestParams.getYPos());
 		}
-		
+		imageParameters.setDpi(300);
 		imageParameters.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.LEFT);
 		imageParameters.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
-		
-		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		pAdESSignatureParameters.setSignatureImageParameters(imageParameters);
-		//TODO : calculer la taille de la signature
-		//size 32767 is max for PDF/A-2B
+		//signature size 32767 is max for PDF/A-2B
 		pAdESSignatureParameters.setSignatureSize(32767);
 		pAdESSignatureParameters.setSignaturePackaging(form.getSignaturePackaging());
 
@@ -290,23 +318,23 @@ public class SignService {
 		}
 	}
 
-	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest) throws IOException {
+	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest, boolean visual) throws IOException {
 		SignatureForm signatureForm;
 		AbstractSignatureForm abstractSignatureForm;
 		if(documents.size() > 1) {
-			signatureForm = signProperties.getDefaultSignatureForm();
+			signatureForm = signConfig.getSignProperties().getDefaultSignatureForm();
 			SignatureMultipleDocumentsForm signatureMultipleDocumentsForm = new SignatureMultipleDocumentsForm();
 			List<MultipartFile> multipartFiles = new ArrayList<>();
 			for(Document toSignFile : documents) {
 				multipartFiles.add(fileService.toMultipartFile(toSignFile.getInputStream(), toSignFile.getFileName(), toSignFile.getContentType()));
 			}
 			signatureMultipleDocumentsForm.setDocumentsToSign(multipartFiles);
-			signatureMultipleDocumentsForm.setContainerType(signProperties.getContainerType());
+			signatureMultipleDocumentsForm.setContainerType(signConfig.getSignProperties().getContainerType());
 			abstractSignatureForm = signatureMultipleDocumentsForm;
 		} else {
 			InputStream inputStream;
 			Document toSignFile = documents.get(0);
-			if(toSignFile.getContentType().equals("application/pdf")) {
+			if(toSignFile.getContentType().equals("application/pdf") && visual) {
 				signatureForm = SignatureForm.PAdES;
 				boolean addPage = false;
 				if(signRequest.countSignOk() == 0) {
@@ -317,30 +345,30 @@ public class SignService {
 					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest));
 				}
 			} else {
-				signatureForm = signProperties.getDefaultSignatureForm();
+				signatureForm = signConfig.getSignProperties().getDefaultSignatureForm();
 				inputStream = toSignFile.getInputStream();
 			}
 			SignatureDocumentForm signatureDocumentForm = new SignatureDocumentForm();
 			signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(inputStream, documents.get(0).getFileName(), documents.get(0).getContentType()));
 			if(!signatureForm.equals(SignatureForm.PAdES)) {	
-				signatureDocumentForm.setContainerType(signProperties.getContainerType());
+				signatureDocumentForm.setContainerType(signConfig.getSignProperties().getContainerType());
 			}
 			abstractSignatureForm = signatureDocumentForm;
 		}
 		abstractSignatureForm.setSignWithExpiredCertificate(false);
 		abstractSignatureForm.setSignatureForm(signatureForm);
 		if(signatureForm.equals(SignatureForm.PAdES)) {
-			abstractSignatureForm.setSignatureLevel(signProperties.getPadesSignatureLevel());
-			abstractSignatureForm.setDigestAlgorithm(signProperties.getPadesDigestAlgorithm());
-			abstractSignatureForm.setSignaturePackaging(signProperties.getSignaturePackaging());
+			abstractSignatureForm.setSignatureLevel(signConfig.getSignProperties().getPadesSignatureLevel());
+			abstractSignatureForm.setDigestAlgorithm(signConfig.getSignProperties().getPadesDigestAlgorithm());
+			abstractSignatureForm.setSignaturePackaging(signConfig.getSignProperties().getSignaturePackaging());
 		} else if(signatureForm.equals(SignatureForm.CAdES)) {
-			abstractSignatureForm.setSignatureLevel(signProperties.getCadesSignatureLevel());
-			abstractSignatureForm.setDigestAlgorithm(signProperties.getCadesDigestAlgorithm());
-			abstractSignatureForm.setSignaturePackaging(signProperties.getSignaturePackaging());
+			abstractSignatureForm.setSignatureLevel(signConfig.getSignProperties().getCadesSignatureLevel());
+			abstractSignatureForm.setDigestAlgorithm(signConfig.getSignProperties().getCadesDigestAlgorithm());
+			abstractSignatureForm.setSignaturePackaging(signConfig.getSignProperties().getSignaturePackaging());
 		} else if(signatureForm.equals(SignatureForm.XAdES)) {
-			abstractSignatureForm.setSignatureLevel(signProperties.getXadesSignatureLevel());
-			abstractSignatureForm.setDigestAlgorithm(signProperties.getXadesDigestAlgorithm());
-			abstractSignatureForm.setSignaturePackaging(signProperties.getSignaturePackaging());
+			abstractSignatureForm.setSignatureLevel(signConfig.getSignProperties().getXadesSignatureLevel());
+			abstractSignatureForm.setDigestAlgorithm(signConfig.getSignProperties().getXadesDigestAlgorithm());
+			abstractSignatureForm.setSignaturePackaging(signConfig.getSignProperties().getSignaturePackaging());
 		}
 		abstractSignatureForm.setSigningDate(new Date());
 		return abstractSignatureForm;
@@ -481,14 +509,10 @@ public class SignService {
 	}
 
 	public SignatureForm getDefaultSignatureForm() {
-		return signProperties.getDefaultSignatureForm();
-	}
-
-	public SignProperties getSignProperties() {
-		return signProperties;
+		return signConfig.getSignProperties().getDefaultSignatureForm();
 	}
 
 	public Long getPasswordTimeout() {
-		return signProperties.getPasswordTimeout();
+		return signConfig.getSignProperties().getPasswordTimeout();
 	}
 }

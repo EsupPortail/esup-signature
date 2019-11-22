@@ -26,6 +26,7 @@ import org.apache.xmpbox.schema.PDFAIdentificationSchema;
 import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.type.BadFieldValueException;
 import org.apache.xmpbox.xml.XmpSerializer;
+import org.esupportail.esupsignature.config.pdf.PdfConfig;
 import org.esupportail.esupsignature.config.pdf.PdfProperties;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -56,20 +57,17 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
 
 
 @Service
-@Configuration
-@EnableConfigurationProperties(PdfProperties.class)
 public class PdfService {
 
     private static final Logger logger = LoggerFactory.getLogger(PdfService.class);
 
-    private PdfProperties pdfProperties;
-
-    public PdfService(PdfProperties pdfProperties) {
-        this.pdfProperties = pdfProperties;
-    }
+    @Resource
+    private PdfConfig pdfConfig;
 
     @Resource
     private DocumentService documentService;
@@ -136,6 +134,7 @@ public class PdfService {
 
             contentStream.close();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
+            pdDocument.setAllSecurityToBeRemoved(true);
             pdDocument.save(out);
             ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
             pdDocument.close();
@@ -217,7 +216,7 @@ public class PdfService {
 
             PDFAIdentificationSchema pdfaid = xmpMetadata.createAndAddPFAIdentificationSchema();
             pdfaid.setConformance("B");
-            pdfaid.setPart(pdfProperties.getPdfALevel());
+            pdfaid.setPart(pdfConfig.getPdfProperties().getPdfALevel());
             pdfaid.setAboutAsSimple("");
 
             XmpSerializer serializer = new XmpSerializer();
@@ -242,7 +241,7 @@ public class PdfService {
         if (!isPdfAComplient(file)) {
             File targetFile = File.createTempFile("afterconvert_tmp", ".pdf");
             String defFile = PdfService.class.getResource("/PDFA_def.ps").getFile();
-            String cmd = pdfProperties.getPathToGS() + "gs -dPDFA=" + pdfProperties.getPdfALevel() + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + "gs -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
             logger.info("GhostScript PDF/A convertion : " + cmd);
 
             ProcessBuilder processBuilder = new ProcessBuilder();
@@ -368,12 +367,12 @@ public class PdfService {
     public int[] getSignSize(BufferedImage bimg) throws IOException {
         int signWidth;
         int signHeight;
-        if (bimg.getWidth() <= pdfProperties.getSignWidthThreshold() * 2) {
+        if (bimg.getWidth() <= pdfConfig.getPdfProperties().getSignWidthThreshold() * 2) {
             signWidth = bimg.getWidth() / 2;
             signHeight = bimg.getHeight() / 2;
         } else {
-            signWidth = pdfProperties.getSignWidthThreshold();
-            double percent = ((double) pdfProperties.getSignWidthThreshold() / (double) bimg.getWidth());
+            signWidth = pdfConfig.getPdfProperties().getSignWidthThreshold();
+            double percent = ((double) pdfConfig.getPdfProperties().getSignWidthThreshold() / (double) bimg.getWidth());
             signHeight = (int) (percent * bimg.getHeight());
         }
         return new int[]{signWidth, signHeight};
@@ -445,8 +444,8 @@ public class PdfService {
         return pageNrByAnnotDict;
     }
 
-    public LinkedList<SignRequestParams> pdSignatureFieldsToSignRequestParams(PDDocument pdDocument) {
-        LinkedList<SignRequestParams> signRequestParamsList = new LinkedList<>();
+    public List<SignRequestParams> pdSignatureFieldsToSignRequestParams(PDDocument pdDocument) {
+        List<SignRequestParams> signRequestParamsList = new ArrayList<>();
 		try {
 			PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
 			Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNrByAnnotDict(docCatalog);
@@ -478,7 +477,7 @@ public class PdfService {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
-        return signRequestParamsList;
+		return signRequestParamsList.stream().sorted(Comparator.comparingInt(value -> value.getXPos())).sorted(Comparator.comparingInt(value -> value.getYPos())).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
     }
 
 	/*
@@ -489,7 +488,7 @@ public class PdfService {
 			pdDocument = PDDocument.load(pdfFile);
 		  PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
 	        for(int i = 0; i < (pdDocument.getNumberOfPages()); i++) {
-		        BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(i, pdfProperties.getPdfToImageDpi(), ImageType.RGB);
+		        BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(i, pdfConfig.getPdfProperties().getPdfToImageDpi(), ImageType.RGB);
 		        imagePages.add(fileService.getBase64Image(bufferedImage, pdfFile.getName()));
 	        }
 		} catch (IOException e) {
@@ -548,7 +547,7 @@ public class PdfService {
             try {
                 pdDocument = PDDocument.load(pdfFile);
                 PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
-                BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfProperties.getPdfToImageDpi(), ImageType.RGB);
+                BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfConfig.getPdfProperties().getPdfToImageDpi(), ImageType.RGB);
                 imagePage = fileService.getBase64Image(bufferedImage, pdfFile.getName());
             } catch (IOException e) {
                 logger.error("error on convert page to base 64 image", e);
@@ -570,7 +569,7 @@ public class PdfService {
         try {
             pdDocument = PDDocument.load(pdfFile);
             PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
-            bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfProperties.getPdfToImageDpi(), ImageType.RGB);
+            bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfConfig.getPdfProperties().getPdfToImageDpi(), ImageType.RGB);
         } catch (IOException e) {
             logger.error("error on convert page to image", e);
         } finally {

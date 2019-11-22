@@ -235,12 +235,12 @@ input:checked + .slider:before {
 }
 
 .sign-menu {
-    max-width: 100px;
+    max-width: 150px;
     position: fixed;
 }
 
 .sign-preview {
-    margin-left: 110px;
+    margin-left: 160px;
 }
 @media (max-width: 768px) {
     #sidebar {
@@ -309,4 +309,8 @@ input:checked + .slider:before {
 }
 .file-details-cell {
     word-break: break-all;
+}
+
+.current-step {
+    background-color: #CCCCCC !important;
 }

@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.controller.user;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import org.apache.commons.io.IOUtils;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
@@ -425,13 +426,16 @@ public class SignRequestController {
                        @RequestParam(value = "yPos", required = false) Integer yPos,
                        @RequestParam(value = "comment", required = false) String comment,
                        @RequestParam(value = "addDate", required = false) Boolean addDate,
+                       @RequestParam(value = "visual", required = false) Boolean visual,
                        @RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
                        @RequestParam(value = "password", required = false) String password,
                        @RequestParam(value = "referer", required = false) String referer,
-                       RedirectAttributes redirectAttrs, HttpServletResponse response, Model model, HttpServletRequest request) {
-        //TODO : choose xades cades
+                       RedirectAttributes redirectAttrs, HttpServletRequest request) {
         if (addDate == null) {
             addDate = false;
+        }
+        if (visual == null) {
+            visual = false;
         }
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
@@ -451,7 +455,7 @@ public class SignRequestController {
             }
             try {
                 signRequest.setComment(comment);
-                signRequestService.sign(signRequest, user, this.password, addDate);
+                signRequestService.sign(signRequest, user, this.password, addDate, visual);
             } catch (EsupSignatureKeystoreException e) {
                 logger.error("keystore error", e);
                 redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
@@ -481,8 +485,7 @@ public class SignRequestController {
     public void signMultiple(
             @RequestParam(value = "ids", required = true) Long[] ids,
             @RequestParam(value = "comment", required = false) String comment,
-            @RequestParam(value = "password", required = false) String password, RedirectAttributes redirectAttrs,
-            HttpServletResponse response, Model model, HttpServletRequest request) throws JsonParseException, JsonMappingException, IOException {
+            @RequestParam(value = "password", required = false) String password, HttpServletRequest request) throws IOException {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         float totalToSign = ids.length;
@@ -502,7 +505,7 @@ public class SignRequestController {
                         logger.error("no multiple nexu sign");
                         progress = "not_autorized";
                     } else {
-                        signRequestService.sign(signRequest, user, this.password, false);
+                        signRequestService.sign(signRequest, user, this.password, false, false);
                     }
                 } catch (EsupSignatureKeystoreException e) {
                     logger.error("keystore error", e);
@@ -658,6 +661,16 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
+    @DeleteMapping(value = "/remove-step/{id}/{step}")
+    public String removeStep(@PathVariable("id") Long id, @PathVariable("step") Integer step) {
+        User user = userService.getUserFromAuthentication();
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        if(user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getCurrentWorkflowStepNumber() <= step + 1) {
+            signRequestService.removeStep(signRequest, step);
+        }
+        return "redirect:/user/signrequests/" + id;
+    }
+
     @PostMapping(value = "/add-workflow/{id}")
     public String addWorkflow(@PathVariable("id") Long id,
                           @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) {
@@ -756,6 +769,24 @@ public class SignRequestController {
             signRequestService.pendingSignRequest(signRequest, user);
         } else {
             logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");
+        }
+        return "redirect:/user/signrequests/" + id;
+    }
+
+    @RequestMapping(value = "/scan-pdf-sign/{id}", method = RequestMethod.GET)
+    public String scanPdfSign(@PathVariable("id") Long id,
+                          RedirectAttributes redirectAttrs, HttpServletRequest request) throws IOException {
+        User user = userService.getUserFromAuthentication();
+        user.setIp(request.getRemoteAddr());
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        if(signRequest.getCurrentWorkflowStepNumber() == 1 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
+            Document toSignDocument = signRequest.getOriginalDocuments().get(0);
+            try {
+                int nbSignFound = signRequestService.scanSignatureFields(signRequest, PDDocument.load(toSignDocument.getInputStream()));
+                redirectAttrs.addFlashAttribute("messageInfo", "Scan terminé, " + nbSignFound + " signature(s) trouvée(s)");
+            } catch (IOException e) {
+                logger.error("unable to scan the pdf document", e);
+            }
         }
         return "redirect:/user/signrequests/" + id;
     }

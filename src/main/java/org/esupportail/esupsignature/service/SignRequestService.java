@@ -150,7 +150,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void sign(SignRequest signRequest, User user, String password, boolean addDate) throws EsupSignatureException, IOException {
+	public void sign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException, IOException {
 		step = "Demarrage de la signature";
 		boolean addPage = false;
 		if(!SignRequestParams.NewPageType.none.equals(signRequest.getCurrentWorkflowStep().getSignRequestParams().getNewPageType())) {
@@ -165,19 +165,16 @@ public class SignRequestService {
 		Document signedFile = null;
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
 		SignType signType = signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType();
-		if (signType.equals(SignRequestParams.SignType.pdfImageStamp) || signType.equals(SignType.visa)) {
-			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
+		if (signType.equals(SignType.visa)) {
+			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
 				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, user, addPage, addDate);
 			} else {
-				if(signType.equals(SignType.visa)) {
-					signedFile = toSignDocuments.get(0);
-				} else {
-					logger.error("no visual sign for non pdf file");
-					throw new EsupSignatureSignException("no visual sign for non pdf file");
-				}
+				signedFile = toSignDocuments.get(0);
 			}
+		} else if(signType.equals(SignRequestParams.SignType.pdfImageStamp)) {
+			signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, user, addPage, addDate);
 		} else {
-			signedFile = certSign(signRequest, user, password);
+			signedFile = certSign(signRequest, user, password, addDate, visual);
 		}
 		
 		if (signedFile != null) {
@@ -210,7 +207,7 @@ public class SignRequestService {
 		}
 	}
 
-	public Document certSign(SignRequest signRequest, User user, String password) throws EsupSignatureKeystoreException, IOException {
+	public Document certSign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureKeystoreException, IOException {
 		SignatureForm signatureForm;
 		List<Document> toSignFiles = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest)) {
@@ -218,7 +215,7 @@ public class SignRequestService {
 		}
 		step = "Préparation de la signature";
 		try {
-			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest);
+			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest, visual);
 			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 			
@@ -255,7 +252,7 @@ public class SignRequestService {
 					toSignInputStream = pdfService.convertGS(pdfService.writeMetadatas(toSignFile.getInputStream(), toSignFile.getFileName(), signRequest));
 				}
 				MultipartFile multipartFile = fileService.toMultipartFile(toSignInputStream, toSignFile.getFileName(), "application/pdf");
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentWorkflowStep().getSignRequestParams(), multipartFile, user);
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentWorkflowStep().getSignRequestParams(), multipartFile, user, addDate);
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
 				documentForm.setDocumentToSign(multipartFile);
 				signatureDocumentForm = documentForm;
@@ -405,10 +402,10 @@ public class SignRequestService {
 		updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 	}
 
-	private void scanSignatureFields(SignRequest signRequest, PDDocument pdDocument) {
-		LinkedList<SignRequestParams> signRequestParamsList = pdfService.pdSignatureFieldsToSignRequestParams(pdDocument);
+	public int scanSignatureFields(SignRequest signRequest, PDDocument pdDocument) {
+		List<SignRequestParams> signRequestParamsList = pdfService.pdSignatureFieldsToSignRequestParams(pdDocument);
+		int stepNumber = 0;
 		if(signRequestParamsList.size() > 0) {
-			int stepNumber = 0;
 			for (SignRequestParams signRequestParams : signRequestParamsList) {
 				signRequestParams.setNewPageType(NewPageType.none);
 				signRequestParams.setSignType(SignType.visa);
@@ -425,6 +422,7 @@ public class SignRequestService {
 				stepNumber++;
 			}
 		}
+		return stepNumber;
 	}
 
 	public void completeSignRequest(SignRequest signRequest, User user) throws EsupSignatureException {
@@ -543,6 +541,14 @@ public class SignRequestService {
 	public Long toggleNeedAllSign(SignRequest signRequest, int step) {
 		WorkflowStep workflowStep = signRequest.getWorkflowSteps().get(step);
 		return toggleAllSignToCompleteForWorkflowStep(workflowStep);
+	}
+
+	public void removeStep(SignRequest signRequest, int step) {
+		WorkflowStep workflowStep = signRequest.getWorkflowSteps().get(step);
+		signRequest.getWorkflowSteps().remove(step);
+		signRequestRepository.save(signRequest);
+		workflowStepRepository.delete(workflowStep);
+
 	}
 
 	private Long toggleAllSignToCompleteForWorkflowStep(WorkflowStep workflowStep) {

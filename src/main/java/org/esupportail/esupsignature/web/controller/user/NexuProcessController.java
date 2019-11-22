@@ -69,7 +69,9 @@ public class NexuProcessController {
 	private AbstractSignatureParameters parameters;
 	
 	@RequestMapping(value = "/{id}", produces = "text/html")
-	public String showSignatureParameters(@PathVariable("id") Long id, Model model, @RequestParam(value = "referer", required = false) String referer, HttpServletRequest request, RedirectAttributes redirectAttrs) throws InvalidPasswordException, IOException {
+	public String showSignatureParameters(@PathVariable("id") Long id, Model model,
+										  @RequestParam(value = "referer", required = false) String referer,
+										  HttpServletRequest request, RedirectAttributes redirectAttrs) throws InvalidPasswordException, IOException {
     	User user = userService.getUserFromAuthentication();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
@@ -78,7 +80,7 @@ public class NexuProcessController {
 			for(Document document : signRequestService.getToSignDocuments(signRequest)) {
 				toSignFiles.add(document);
 			}
-			signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest);
+			signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest, true);
 			model.addAttribute("signRequestId", signRequest.getId());
 			model.addAttribute("signatureDocumentForm", signatureDocumentForm);
 			model.addAttribute("digestAlgorithm", signatureDocumentForm.getDigestAlgorithm());
@@ -110,7 +112,7 @@ public class NexuProcessController {
 			} else {
 				if(signatureDocumentForm.getSignatureForm().equals(SignatureForm.PAdES)) {
 					SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
-					parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentWorkflowStep().getSignRequestParams(), documentForm.getDocumentToSign(), user);
+					parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentWorkflowStep().getSignRequestParams(), documentForm.getDocumentToSign(), user, false);
 				} else {
 					parameters = signService.fillParameters((SignatureDocumentForm) signatureDocumentForm);
 				}

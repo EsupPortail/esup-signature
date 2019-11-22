@@ -24,6 +24,7 @@ import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.ValidationService;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.sign.SignService;
 import org.esupportail.esupsignature.web.controller.user.SignRequestController;
 import org.slf4j.Logger;
@@ -59,13 +60,16 @@ public class SedaExportService {
     UserRepository userRepository;
 
     @Resource
+    FileService fileService;
+
+    @Resource
     private ValidationService validationService;
 
     public InputStream generateSip(SignRequest signRequest) {
         try {
             File targetFile = File.createTempFile(signRequest.getTitle() + "-seda.zip", ".zip");
             Document document = signRequestService.getLastSignedDocument(signRequest);
-            File file = File.createTempFile(document.getFileName(), ".pdf");
+            File file = File.createTempFile(fileService.getNameOnly(document.getFileName()), fileService.getExtension(document.getFileName()));
             OutputStream outputStream = new FileOutputStream(file);
             IOUtils.copy(document.getInputStream(), outputStream);
             outputStream.close();

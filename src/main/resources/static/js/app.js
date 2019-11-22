@@ -103,6 +103,8 @@ function submitSignRequest() {
 	var signRequestParams;
 	if(signPageNumber != null) {
 		signRequestParams = "password=" + document.getElementById("password").value +
+							"&addDate=" + document.getElementById("_addDate").checked +
+							"&visual=" + document.getElementById("_visual").checked +
 							"&xPos=" + document.getElementById("xPos").value +
 							"&yPos=" + document.getElementById("yPos").value +
 							"&signPageNumber=" + document.getElementById("signPageNumber").value +
@@ -184,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function activeDate() {
 	
-	var addDate = document.getElementById("addDate");
+	var addDate = document.getElementById("_addDate");
 	var cross = document.getElementById("cross");
 	var borders = document.getElementById("borders");
 	var textDate;
@@ -195,6 +197,7 @@ function activeDate() {
 		borders.style.width = 200;
 		borders.style.height = borders.offsetHeight + 20;
 		borders.insertAdjacentHTML("beforeend", "<span id='textDate' class='align-top' style='font-size:" + 8 * zoom + "px;'>Le XX/XX/XXXX XX:XX</span>");
+
 	} else {
 		cross.style.width = 100;
 		cross.style.height = cross.offsetHeight - 20;
@@ -275,10 +278,24 @@ function dragSignature() {
 }
 
 //pdf navigation
+document.addEventListener('DOMContentLoaded', function() {
+	if(document.getElementById("next") != null) {
+
+		if (currentImagePage == nbImagePage - 1) {
+			document.getElementById("next").classList.add("disabled");
+			document.getElementById("next").disabled = true;
+		}
+		if (currentImagePage > 0) {
+			document.getElementById("previous").classList.remove("disabled");
+			document.getElementById("previous").disabled = false
+		}
+	}
+});
 
 function nextImage() {
 	currentImagePage++;
 	hideSigns(currentImagePage)
+	console.info("url('" + documentUrl + "" + currentImagePage + "')");
 	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
 	if (currentImagePage == nbImagePage - 1) {
 		document.getElementById("next").classList.add("disabled");

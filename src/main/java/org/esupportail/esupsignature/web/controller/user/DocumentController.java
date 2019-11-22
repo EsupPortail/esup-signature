@@ -74,9 +74,6 @@ public class DocumentController {
 	@Resource
 	private SignRequestService signRequestService;
 
-	@Resource
-	private SignBookService signBookService;
-	
 	@RequestMapping(value = "/{id}/getimage", method = RequestMethod.GET)
 	public void getImageAsByteArray(@PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException {
 		Document document = documentRepository.findById(id).get();
@@ -101,13 +98,9 @@ public class DocumentController {
 			signRequest = signRequestRepository.findById(document.getParentId()).get();
 		}
 		SignBook signBook = null;
-		if(signBookRepository.countById(document.getParentId()) > 0) {
-			signBook = signBookRepository.findById(document.getParentId()).get();
-		}
 		User user = userService.getUserFromAuthentication();
 		InputStream in = null;
-		if((signRequest != null && signRequestService.checkUserViewRights(user, signRequest)) 
-		|| (signBook != null && signBookService.checkUserManageRights(user, signBook))) {
+		if(signRequest != null && signRequestService.checkUserViewRights(user, signRequest)) {
 			try {
 				in = pdfService.pageAsImageInputStream(document.getInputStream(), page);
 			} catch (Exception e) {

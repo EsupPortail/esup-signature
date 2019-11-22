@@ -170,6 +170,33 @@
         </div>
     </div>
 </main>
+<div class="modal fade" id="testKeystore" tabindex="-1" role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form action="/user/users/viewCert" method="get">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tester mon keystore</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-2">
+                        <div th:if="${!isPasswordSet}">
+                            <input class="form-control" placeholder="Mot de passe" type="password" name="password" />
+                        </div>
+                        <div th:unless="${!isPasswordSet}">
+                            Mot de passe en cache
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
+                    <input class="btn btn-primary" type="submit" value="Afficher le certificat" />
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 </body>
 <div th:replace="fragments/footer :: footer"></div>
 </html>

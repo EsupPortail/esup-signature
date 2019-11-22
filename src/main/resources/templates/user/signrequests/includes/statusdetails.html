@@ -33,5 +33,10 @@
 			</div>
 		</div>
 	</div>
+	<div th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked'}">
+		<div class="alert alert-success mb-1">
+			<h6 class="alert-heading">Toutes les étapes de la demande sont effectuées</h6>
+		</div>
+	</div>
 </div>
 </html>

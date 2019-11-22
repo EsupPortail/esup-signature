@@ -4,6 +4,9 @@
     <div class="card rounded-0 mb-1">
         <div class="card-header">
             Commentaires <span th:text="'(' + ${#lists.size(comments)} + ')'"></span>
+            <button type="button" class="btn btn-primary float-right" data-toggle="modal" data-target="#sendComment">
+                <i class="fa fa-plus"></i> Ajouter un commentaire
+            </button>
         </div>
         <div id="collapseComments" class="show"
              aria-labelledby="headingOne" data-parent="#accordion">
@@ -24,13 +27,26 @@
                         </div>
                     </th:block>
                 </ul>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="sendComment" tabindex="-1" role="dialog" aria-labelledby="sendComment" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
                 <form th:action="'/user/signrequests/comment/' + ${id}">
-                    <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows=""></textarea>
-                    <button type="submit" class="btn btn-primary float-right">
-                        <i class="fas fa-comments" aria-hidden="true"></i> Envoyer un commentaire
-                    </button>
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ajouter un commentaire</h5>
+                    </div>
+                    <div class="modal-body">
+                        <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows=""></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary float-right">
+                            <i class="fas fa-comments" aria-hidden="true"></i> Envoyer un commentaire
+                        </button>
+                    </div>
                 </form>
-
             </div>
         </div>
     </div>

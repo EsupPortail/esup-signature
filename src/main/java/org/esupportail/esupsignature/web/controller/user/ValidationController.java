@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.controller.user;
 import eu.europa.esig.dss.MimeType;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dss.web.model.ValidationForm;
 import org.esupportail.esupsignature.dss.web.service.FOPService;
 import org.esupportail.esupsignature.dss.web.service.XSLTService;
@@ -30,8 +31,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.sql.SQLException;
 import java.util.Arrays;
 
 @Controller
@@ -109,10 +110,17 @@ public class ValidationController {
 	
 	@Transactional
 	@RequestMapping(value = "/document/{id}")
-	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException {
+	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException, SQLException {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
+
 		Document toValideDocument = signRequestService.getLastSignedDocument(signRequest);
-		Reports reports = validationService.validate(toValideDocument.getInputStream());
+
+		File file = File.createTempFile(toValideDocument.getFileName(), ".pdf");
+		OutputStream outputStream = new FileOutputStream(file);
+		IOUtils.copy(toValideDocument.getInputStream(), outputStream);
+		outputStream.close();
+
+		Reports reports = validationService.validate(new FileInputStream(file));
 		
 		String xmlSimpleReport = reports.getXmlSimpleReport();
 		model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));
