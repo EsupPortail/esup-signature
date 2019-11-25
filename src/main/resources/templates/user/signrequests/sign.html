@@ -2,13 +2,11 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
-<th:block th:unless="${referer == 'null'}">
-    <th:block th:if="${referer == null}">
-        <nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-    </th:block>
-    <th:block th:unless="${referer == null}">
-        <nav th:replace="fragments/emptyBar :: emptyBar"></nav>
-    </th:block>
+<th:block th:if="${referer == null}">
+    <nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+</th:block>
+<th:block th:unless="${referer == null}">
+    <nav th:replace="fragments/emptyBar :: emptyBar"></nav>
 </th:block>
 <main role="main">
     <div class="wrapper">
