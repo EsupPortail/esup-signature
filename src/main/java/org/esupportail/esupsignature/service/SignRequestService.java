@@ -546,6 +546,9 @@ public class SignRequestService {
 	public void removeStep(SignRequest signRequest, int step) {
 		WorkflowStep workflowStep = signRequest.getWorkflowSteps().get(step);
 		signRequest.getWorkflowSteps().remove(step);
+		if(signRequest.getWorkflowSteps().size() < signRequest.getCurrentWorkflowStepNumber() && signRequest.getStatus().equals(SignRequestStatus.pending)) {
+			signRequest.setStatus(SignRequestStatus.completed);
+		}
 		signRequestRepository.save(signRequest);
 		workflowStepRepository.delete(workflowStep);
 

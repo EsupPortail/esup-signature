@@ -12,7 +12,7 @@
     <div class="wrapper">
         <nav id="sidebar">
             <div class="m-1">
-                <button th:unless="${referer == null}" title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                <button th:if="${referer == null}" title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
                 <button class="btn btn-success col-12 mb-1 text-left" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}" type="button" data-toggle="modal" data-target="#signModal">
@@ -123,7 +123,7 @@
                                 <a href="/user/users/?form">Modifier vos paramètres</a>
                             </div>
                         </div>
-                        <div th:unless="${user.signImage == null && documentType == 'pdf' && signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'visa'}">
+                        <div th:if="${documentType == 'pdf' && signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'visa'}">
                             <div id="pointer_div" onmouseup="savePosition();" ontouchend="savePosition();" ontouchmove="pointIt(event);" onmousemove="pointIt(event);"
                                  th:style="'background-size: ' + ${pdfWidth} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/' + ${signRequest.currentWorkflowStep.signRequestParams.signPageNumber -1} + '\');width:' + ${pdfWidth} + 'px;height:' + ${pdfHeight} + 'px;border:1px solid #CCC;pointer-events: none;'">
                                 <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.currentWorkflowStep.signRequestParams.newPageType.name() == 'none' && signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'visa'}">

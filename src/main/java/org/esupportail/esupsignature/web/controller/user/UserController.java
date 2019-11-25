@@ -89,35 +89,21 @@ public class UserController {
 	private SignBookService signBookService;
 
 	private String password;
-	
+
+	@ModelAttribute("password")
+	public String getPassword() {
+		return password;
+	}
+
 	long startTime;
 	
 	public void setPassword(String password) {
 		startTime = System.currentTimeMillis();
 		this.password = password;
 	}
-	
+
     @GetMapping
-    public String show(Model uiModel) throws Exception {
-    	User user = userService.getUserFromAuthentication();
-    	if(!userService.isUserReady(user) || signBookService.getUserSignBook(user) == null) {
-			return "redirect:/user/users/?form";
-		}    	
-    	populateEditForm(uiModel, user);
-    	if(user.getSignImage() != null) {
-        	uiModel.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-        }
-        if(user.getKeystore() != null) {
-        	uiModel.addAttribute("keystore", user.getKeystore().getFileName());
-        }        
-        uiModel.addAttribute("defaultSignBook", signBookService.getUserSignBook(user));
-        uiModel.addAttribute("isPasswordSet", (password != null && password != ""));
-        return "user/users/show";
-    }
-    
-    @GetMapping(params = "form")
     public String createForm(Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) throws IOException, SQLException {
-    	//TODO : choix automatique du mode de signature
 		User user = userService.getUserFromAuthentication();
 		if(user != null) {
 	        model.addAttribute("user", user);
@@ -188,7 +174,7 @@ public class UserController {
 		}
     }
     
-    @RequestMapping(value = "/viewCert", method = RequestMethod.GET, produces = "text/html")
+    @RequestMapping(value = "/view-cert", method = RequestMethod.GET, produces = "text/html")
     public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttrs) throws Exception {
 		User user = userService.getUserFromAuthentication();
 		if (password != null && !"".equals(password)) {
@@ -203,7 +189,7 @@ public class UserController {
 			startTime = 0;
         	redirectAttrs.addFlashAttribute("messageError", "Mauvais mot de passe");
 		}
-        return "redirect:/user/users/";
+        return "redirect:/user/users/?form";
     }
     
 	@RequestMapping(value = "/get-keystore-file", method = RequestMethod.GET)

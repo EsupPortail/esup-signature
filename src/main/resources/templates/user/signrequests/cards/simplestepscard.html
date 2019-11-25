@@ -11,7 +11,7 @@
                 <i class="fas fa-plus"></i> Ajouter un workflow
             </button>
             <a th:if="${signRequest.status.name() == 'draft' && signRequest.workflowSteps.size() == 0 && signRequest.originalDocuments.size() == 1 && signRequest.originalDocuments.get(0).contentType == 'application/pdf'}" th:href="'/user/signrequests/scan-pdf-sign/' + ${id}" class="btn btn-primary float-right mr-1">
-                <i class="fas fa-binoculars"></i> Scanner les champs signature
+                <i class="fas fa-binoculars"></i> Rechercher les champs signature
             </a>
         </div>
         <div class="card-body">
@@ -52,14 +52,17 @@
                     <div class="bs-stepper-content mt-2">
                         <th:block th:each="workflowStep,iterator : ${signRequest.workflowSteps}">
                             <div class="bs-stepper-pane" th:id="'step_' + ${iterator.index}" role="tabpanel">
-                                <div class="card card-body border-1 bg-light">
-                                    <h5>Paramètres de l'étape <span th:text="${iterator.index + 1}"></span></h5>
-                                    <form th:action="'/user/signrequests/remove-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
-                                        <button type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="btn btn-danger float-right">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                    <span th:text="${workflowStep.signRequestParams.xPos} + ' ' + ${workflowStep.signRequestParams.yPos} + ' ' + ${workflowStep.signRequestParams.signPageNumber}"></span>
+                                <div class="card">
+                                <div class="card-body border-1 bg-light">
+                                    <button class="btn btn-primary" data-toggle="collapse" th:href="'#stepDetail_' + ${iterator.index}" role="button" aria-expanded="false" th:aria-controls="'stepDetail_' + ${iterator.index}">
+                                        <i class="fas fa-sort-down"></i> <span th:text="'Détails de l\'étape ' + ${iterator.index + 1}"></span> <i class="fas fa-sort-down"></i>
+                                    </button>
+                                    <th:block th:if="${signRequest.signedDocuments.size() > iterator.index}">
+                                        <a class="btn btn-success" th:href="'/user/documents/getfile/' + ${signRequest.signedDocuments.get(iterator.index).id}" target="_blank">
+                                            <i class="fas fa-eye"></i> Voir le document signé
+                                        </a>
+                                    </th:block>
+                                    <div class="collapse" th:id="'stepDetail_' + ${iterator.index}">
                                     Type de signature :
                                     <div th:unless="${iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
                                         <b><span th:text="#{'signbook.signtype.' + ${workflowStep.signRequestParams.signType}}"></span></b>
@@ -184,7 +187,14 @@
                                             </tr>
                                         </th:block>
                                     </table>
+                                    <form th:action="'/user/signrequests/remove-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
+                                        <button type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="btn btn-danger float-right">
+                                            <i class="fas fa-trash"></i> Supprimer l'étape
+                                        </button>
+                                    </form>
                                 </div>
+                                </div>
+                            </div>
                             </div>
                         </th:block>
                     </div>

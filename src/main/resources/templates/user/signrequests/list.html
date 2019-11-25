@@ -162,8 +162,8 @@
                                                     <td width="100%" th:text="${signBooksLabel.key}"></td>
                                                     <td align="center">
                                                         <div th:switch="${signBooksLabel.value}">
-                                                            <i th:case="true" class="fas fa-check-circle text-success"></i>
-                                                            <i th:case="false" class="fas fa-exclamation-circle text-danger"></i>
+                                                            <i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
+                                                            <i title="n'a pas signé le document" th:case="false" class="fas fa-exclamation-circle text-danger"></i>
                                                         </div>
                                                     </td>
                                                 </tr>

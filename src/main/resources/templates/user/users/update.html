@@ -15,12 +15,15 @@
                 <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
-            <button type="button" onclick="document.getElementById('fu_org_esupportail_esupsignature_domain_User').submit();" class="col-12 mb-1 btn btn-success text-left">
-                <i class="fas fa-save"></i> <span class="sidebar-label">Enregistrer les modifications</span>
-            </button>
-            <a th:if="${referer != null}" class="col-12 mb-1 btn btn-danger text-left" value="Retour" th:href="${referer}">
-                <i class="fas fa-times"></i> <span class="sidebar-label">Abandonner</span>
-            </a>
+                <button th:if="${user.getKeystore() != null}" class="col-12 mb-1 btn btn-primary text-left" type="button" data-toggle="modal" data-target="#testKeystore">
+                    <i class="fas fa-certificate"></i> <span class="sidebar-label">Tester mon certificat</span>
+                </button>
+                <button type="button" onclick="document.getElementById('fu_org_esupportail_esupsignature_domain_User').submit();" class="col-12 mb-1 btn btn-success text-left">
+                    <i class="fas fa-save"></i> <span class="sidebar-label">Enregistrer les modifications</span>
+                </button>
+                <a th:if="${referer != null}" class="col-12 mb-1 btn btn-danger text-left" value="Retour" th:href="${referer}">
+                    <i class="fas fa-times"></i> <span class="sidebar-label">Abandonner</span>
+                </a>
             </div>
         </nav>
         <div id="content" class="content">
@@ -87,7 +90,7 @@
                                 <div class="custom-file">
                                     <input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
                                     <label class="custom-file-label" id="inputGroupLabel01" for="inputGroupFile01">
-                                        Choisir un fichier
+                                        Choisir une nouvelle image
                                     </label>
                                 </div>
                             </div>
@@ -173,16 +176,16 @@
 <div class="modal fade" id="testKeystore" tabindex="-1" role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form action="/user/users/viewCert" method="get">
+            <form action="/user/users/view-cert" method="get">
                 <div class="modal-header">
-                    <h5 class="modal-title">Tester mon keystore</h5>
+                    <h5 class="modal-title">Tester mon certificat</h5>
                 </div>
                 <div class="modal-body">
                     <div class="input-group mb-2">
-                        <div th:if="${!isPasswordSet}">
+                        <div th:if="${password == null}">
                             <input class="form-control" placeholder="Mot de passe" type="password" name="password" />
                         </div>
-                        <div th:unless="${!isPasswordSet}">
+                        <div th:unless="${password == null}">
                             Mot de passe en cache
                         </div>
                     </div>
@@ -196,7 +199,7 @@
         </div>
     </div>
 </div>
-
 </body>
+<div th:replace="fragments/message :: message"></div>
 <div th:replace="fragments/footer :: footer"></div>
 </html>

@@ -6,21 +6,12 @@
 <main role="main">
     <div class="wrapper">
         <nav id="sidebar">
-            <div class="row">
-                <div class="col-lg-2">
-                    <button type="button" id="sidebarCollapse" class="mt-3 m-1 btn text-white">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
-                <div id="logo" class="col-lg-9">
-                    <a href="/">
-                        <img src="/images/logo.png"/>
-                    </a>
-                </div>
-            </div>
             <div class="m-1">
+                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+                </button>
                 <button type="button" class="mb-1 col-12 btn btn-outline-dark btn-light float-left" value="Retour" onclick="window.history.back();">
-                    <i class="fas fa-door-open"></i> Retour
+                    <i class="fas fa-door-open"></i> <span class="sidebar-label">Retour</span>
                 </button>
             </div>
         </nav>

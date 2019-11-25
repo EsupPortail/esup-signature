@@ -38,5 +38,10 @@
 			<h6 class="alert-heading">Toutes les étapes de la demande sont effectuées</h6>
 		</div>
 	</div>
+	<div th:if="${signRequest.status.name() == 'refused'}">
+		<div class="alert alert-danger mb-1">
+			<h6 class="alert-heading">La demande à été refusée</h6>
+		</div>
+	</div>
 </div>
 </html>
