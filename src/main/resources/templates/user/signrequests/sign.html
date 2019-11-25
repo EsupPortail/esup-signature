@@ -8,12 +8,13 @@
     </th:block>
     <th:block th:unless="${referer == null}">
         <nav th:replace="fragments/emptyBar :: emptyBar"></nav>
-    </th:block></th:block>
+    </th:block>
+</th:block>
 <main role="main">
     <div class="wrapper">
         <nav id="sidebar">
             <div class="m-1">
-                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                <button th:unless="${referer == null}" title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
                 <button class="btn btn-success col-12 mb-1 text-left" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}" type="button" data-toggle="modal" data-target="#signModal">
