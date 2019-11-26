@@ -187,28 +187,6 @@ public class SignRequestController {
         if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
             model.addAttribute("signBooks", signBookService.getAllSignBooks());
             Document toDisplayDocument = null;
-            if (signRequestService.getToSignDocuments(signRequest).size() == 1) {
-                toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
-                if (toDisplayDocument.getContentType().equals("application/pdf")) {
-                    PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
-                    if (pdfParameters != null) {
-                        model.addAttribute("pdfWidth", pdfParameters.getWidth());
-                        model.addAttribute("pdfHeight", pdfParameters.getHeight());
-                        model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-                    }
-                    if (user.getSignImage() != null) {
-                        model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-                        int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
-                        model.addAttribute("signWidth", size[0]);
-                        model.addAttribute("signHeight", size[1]);
-                    } else {
-                        model.addAttribute("signWidth", 100);
-                        model.addAttribute("signHeight", 75);
-                    }
-                }
-                model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
-                model.addAttribute("documentId", toDisplayDocument.getId());
-            }
             List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
             logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
 
@@ -227,8 +205,8 @@ public class SignRequestController {
             signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
 
             model.addAttribute("signRequest", signRequest);
-            model.addAttribute("itemId", id);
-            SignBook signBook = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0);
+            //model.addAttribute("itemId", id);
+
             if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                 model.addAttribute("signable", "ok");
             }
@@ -352,8 +330,8 @@ public class SignRequestController {
         if (signRequestRepository.countByName(token) > 0) {
             SignRequest signRequest = signRequestRepository.findByName(token).get(0);
             if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
-                List<SignBook> originalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
                 Document toDisplayDocument;
+                boolean paramsOk = true;
                 if (signRequestService.getToSignDocuments(signRequest).size() == 1) {
                     toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
                     if (toDisplayDocument.getContentType().equals("application/pdf")) {
@@ -361,7 +339,7 @@ public class SignRequestController {
                         model.addAttribute("pdfWidth", pdfParameters.getWidth());
                         model.addAttribute("pdfHeight", pdfParameters.getHeight());
                         model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-                        if (user.getSignImage() != null) {
+                        if (user.getSignImage() != null && user.getSignImage().getSize() > 0) {
                             model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
                             int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
                             model.addAttribute("signWidth", size[0]);
@@ -369,22 +347,22 @@ public class SignRequestController {
                         } else {
                             model.addAttribute("signWidth", 100);
                             model.addAttribute("signHeight", 75);
+                            paramsOk = false;
                         }
                     }
                     model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
                     model.addAttribute("documentId", toDisplayDocument.getId());
                 }
+                model.addAttribute("paramsOk", paramsOk);
+
+
                 if (user.getSignImage() != null) {
                     model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
                 }
                 if (user.getKeystore() != null) {
                     model.addAttribute("keystore", user.getKeystore().getFileName());
                 }
-
-                //signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
-
                 signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
-
                 model.addAttribute("signRequest", signRequest);
                 if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                     model.addAttribute("signable", "ok");
@@ -399,8 +377,6 @@ public class SignRequestController {
                         model.addAttribute("modelId", firstOriginalSignBook.getModelFile().getUrl());
                     }
                 }
-
-
                 model.addAttribute("baseUrl", baseUrl);
                 model.addAttribute("nexuVersion", nexuVersion);
                 model.addAttribute("nexuUrl", nexuUrl);
@@ -643,7 +619,7 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if(user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getCurrentWorkflowStepNumber() <= step + 1) {
             Long stepId = signRequestService.changeSignType(signRequest, step, signType);
-            return "redirect:/user/signrequests/" + id + "#" + stepId;
+            return "redirect:/user/signrequests/" + id;
         }
         return "redirect:/user/signrequests/";
     }
@@ -736,7 +712,7 @@ public class SignRequestController {
         } else {
             logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
         }
-        return "redirect:/user/signrequests/" + id + "#" + workflowStep.getId();
+        return "redirect:/user/signrequests/" + id;
     }
 
     @RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)

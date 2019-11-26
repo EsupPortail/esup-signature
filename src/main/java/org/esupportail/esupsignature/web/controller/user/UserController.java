@@ -136,8 +136,6 @@ public class UserController {
     public String create(Long id,
 		    @RequestParam(value = "referer", required=false) String referer,
     		@RequestParam(value = "signImageBase64", required=false) String signImageBase64, 
-    		@RequestParam(value = "newPageType", required=false) NewPageType newPageType, 
-    		@RequestParam(value = "signType", required=false) SignType signType,
     		@RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
     		@RequestParam(value = "emailAlertHour", required=false) String emailAlertHour,
     		@RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,

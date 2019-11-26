@@ -15,7 +15,7 @@
                     <div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
                         <div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
                             <th:block th:if="${signRequest.currentWorkflowStep.signBooks.size() > 0 && user.eppn == signRequest.createBy && #lists.size(signRequest.originalDocuments) > 0}">
-                                <button title="Lancer la procedure de signature" type="button" class="mb-1 btn btn-primary text-left" data-toggle="modal" data-target="#sendModal">
+                                <button title="Lancer la procedure de signature" type="button" class="mb-1 col-12 btn btn-primary text-left" data-toggle="modal" data-target="#sendModal">
                                     <i class="fa fa-paper-plane " aria-hidden="true"></i><span class="sidebar-label"> Lancer la procedure de signature</span>
                                 </button>
                             </th:block>
@@ -106,7 +106,9 @@
                 </ol>
             </nav>
             <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
-            <div th:replace="user/signrequests/cards/simplestepscard :: simplestepscard"></div>
+            <th:block th:if="${signRequest.originalDocuments.size() > 0}">
+                <div th:replace="user/signrequests/cards/simplestepscard :: simplestepscard"></div>
+            </th:block>
             <div class="card rounded-0 mb-1">
                 <div class="card-header">
                     Liste des documents originaux
@@ -136,7 +138,7 @@
             </div>
             <div th:replace="user/signrequests/cards/commentscard :: commentscard"></div>
             <div th:replace="user/signrequests/cards/logscard :: logscard"></div>
-        </div>
+        </th:block>
         </div>
     </nav>
 </main>

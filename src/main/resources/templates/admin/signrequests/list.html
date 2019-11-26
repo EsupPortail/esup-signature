@@ -94,9 +94,7 @@
                         <th class="none"><a class="sorted"
                                             sd:pagination-sort="createDate">Date de création</a></th>
                         <th class="none">Créé par</th>
-                        <th class="none d-none">Dans le parapheur</th>
                         <th class="none">Destinataires</th>
-                        <th class="type d-none">Type de signature</th>
                         <th class="status">Statut</th>
                         <th>Voir</th>
                         <th>Supprimer</th>
@@ -108,14 +106,7 @@
                             <td class="none"><p class="truncate" th:title="${signRequest.title}" th:text="${signRequest.title}"></p></td>
                             <td class="none"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                             <td class="none"><span th:text="${signRequest.createBy}"></span></td>
-                            <td class="none d-none">
-                                <ul class="list-group">
-                                    <th:block th:each="originalSignBook : ${signRequest.originalSignBooks}">
-                                        <li class="list-group-item truncate" th:title="${originalSignBook.name}"><i class="fas fa-book"></i><span th:text="${originalSignBook.name}"></span></li>
-                                    </th:block>
-                                </ul>
-                            </td>
-                            <td class="signbook" style="display: block;">
+                            <td class="d-none d-lg-table-cell">
                                 <table class="table table-sm">
                                     <tbody>
                                     <th:block th:each="signBooksLabel : ${signRequest.currentWorkflowStep.signBooksLabels}">
@@ -123,22 +114,14 @@
                                             <td width="100%" th:text="${signBooksLabel.key}"></td>
                                             <td align="center">
                                                 <div th:switch="${signBooksLabel.value}">
-                                                    <i th:case="true" class="fas fa-check-circle text-success"></i>
-                                                    <i th:case="false" class="fas fa-exclamation-circle text-danger"></i>
+                                                    <i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
+                                                    <i title="n'a pas signé le document" th:case="false" class="fas fa-exclamation-circle text-danger"></i>
                                                 </div>
                                             </td>
                                         </tr>
                                     </th:block>
                                     </tbody>
                                 </table>
-                            </td>
-                            <td class="type d-none">
-                                <input type="hidden" th:id="'signbook_' + ${signRequest.id}" th:value="${signRequest.signBooksJson}"/>
-                                <div th:if="${signRequest.signRequestParams != null}">
-                                    <div class="alert alert-secondary text-center" title="${signRequest.signRequestParams.signType}">
-                                        <small><span th:text="${signRequest.signRequestParams.signType}"></span></small>
-                                    </div>
-                                </div>
                             </td>
                             <td class="status" style="width: 150px;">
                                 <div th:replace="user/signrequests/includes/status :: status"></div>
@@ -164,227 +147,6 @@
             <nav th:replace="fragments/pagination :: pagination"></nav>
         </div>
     </div>
-
-    <div id="signModal" class="modal fade" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    Signature en masse
-                </div>
-                <div class="modal-body text-center">
-                    <div th:switch="${signType.name()}">
-                        <div th:case="'certSign'">
-                            <div th:if="${keystore != null}">
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">Mot de passe</span>
-                                    </div>
-
-                                    <input class="form-control" required="required" placeholder="Vous allez signer à l'aide d'un certificat, merci d'entrer le mot de passe" id="passwordField" name="password" type="password"/>
-                                    <div class="input-group-append">
-                                        <input data-toggle="modal" data-target="#wait" onclick="submitSignRequests();" alt="${signLabel}" class="btn btn-success" title="Signe" type="button" value="Signer"/>
-                                    </div>
-                                </div>
-                            </div>
-                            <div th:unless="${keystore != null}">
-                                <div class="card card-body bg-danger text-white">
-                                    <a href="/admin/admins/" class="text-white">Pas de keystore</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div th:case="'nexuSign'">
-                            <button type="submit" class="btn btn-success  text-center" data-target="#signatureModal">Signer</button>
-                        </div>
-                        <div th:case="*">
-                            <div th:if="${signType == 'visa'}">
-                                <input alt="${visaLabel}" class="btn btn-success  text-center" id="signe" onclick="submitSignRequests();" type="button" value="Viser"/>
-                            </div>
-                            <div th:unless="${signType == 'visa'}">
-                                <div th:if="${user.signImage != null}">
-                                    <input alt="${signLabel}" class="btn btn-success  text-center" id="signe" onclick="submitSignRequests();" type="button" value="Signer"/>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">Fermer</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="wait" class="modal fade" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-body text-center">
-                    <h5>Signature en cours</h5>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped active" style="width: 0%;" id="bar">
-							<span id="bar-text"> <!--  -->
-							</span>
-                        </div>
-                    </div>
-                    <div id="loader" class="loader">
-                        <!--  -->
-                    </div>
-                    <div style="display: none;" id="passwordError" class="alert alert-danger" role="alert">
-                        Mauvais mot de passe
-                    </div>
-                    <div style="display: none;" id="signError" class="alert alert-danger" role="alert">
-                        Erreur du système de signature
-                    </div>
-                    <button onclick="javascript:window.location.reload()" id="closeModal" type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script type="text/javascript">
-        var selectAll = document.getElementById("selectall");
-        var checkBoxes = document.querySelectorAll(".check");
-        var openDocsButton = document.getElementById("opendocs");
-        var signDocsButton = document.getElementById("signdocs");
-        var alertSignDocsButton = document.getElementById("alertsigndocs");
-        var passwordField = document.getElementById("passwordField");
-
-        if (selectAll != null) {
-            openDocsButton.style.display = "none";
-            selectAll.onchange = function () {
-                [].forEach.call(checkBoxes, function (checkBox) {
-                    if (selectAll.checked) {
-                        checkBox.checked = true;
-                    } else {
-                        checkBox.checked = false;
-                    }
-                });
-                checkOpenDocButtonEnable();
-                checkSignDocButtonEnable();
-            };
-        }
-
-        [].forEach.call(checkBoxes, function (checkBox) {
-            checkBox.addEventListener('click', function (event) {
-                checkOpenDocButtonEnable();
-                checkSignDocButtonEnable();
-            });
-        });
-
-        function checkOpenDocButtonEnable() {
-            for (i = 0; i < checkBoxes.length; i++) {
-                if (checkBoxes[i].checked) {
-                    openDocsButton.style.display = "block";
-                    break;
-                } else {
-                    openDocsButton.style.display = "none";
-                }
-            }
-        }
-
-        function checkSignDocButtonEnable() {
-            signDocsButton.style.display = "none";
-            alertSignDocsButton.style.display = "none";
-            var oldSignBook = "";
-            var oldType = "";
-            for (i = 0; i < checkBoxes.length; i++) {
-                if (checkBoxes[i].checked) {
-                    var status = document.getElementById("status_" + checkBoxes[i].value).title;
-                    var signBook = document.getElementById("signbook_" + checkBoxes[i].value).title;
-                    var type = document.getElementById("type_" + checkBoxes[i].value).title;
-                    var signBookId = signBook.split(',');
-                    if (status != "pending" || (oldType != "" && oldType != type)) {
-                        signDocsButton.style.display = "none";
-                        alertSignDocsButton.style.display = "block";
-                        break;
-                    } else {
-                        oldSignBook = signBook;
-                        oldType = type;
-                        alertSignDocsButton.style.display = "none";
-                        signDocsButton.style.display = "block";
-                    }
-                }
-
-            }
-        }
-
-        var checkBoxes = document.querySelectorAll(".check");
-        var getProgressTimer = null;
-
-        function openCheckedDocs() {
-            [].forEach.call(checkBoxes, function (checkBox) {
-                if (checkBox.checked) {
-                    window.open('/admin/signrequests/get-last-file/'
-                        + checkBox.value, '_blank');
-                }
-            });
-        }
-
-        function submitSignRequests() {
-            var toSignResquest = new Array();
-            [].forEach.call(checkBoxes, function (checkBox) {
-                if (checkBox.checked) {
-                    toSignResquest.push(checkBox.value);
-                }
-            });
-
-            var signRequestParams = "ids=" + toSignResquest + "&password=" + passwordField.value;
-            sendData(signRequestParams);
-
-        }
-
-        function sendData(signRequestParams) {
-            document.getElementById("passwordError").style.display = "none";
-            document.getElementById("signError").style.display = "none";
-            document.getElementById("closeModal").style.display = "none";
-            document.getElementById("bar").style.display = "none";
-            document.getElementById("loader").style.display = "block";
-            getProgressTimer = setInterval(function () {
-                getProgress();
-            }, 1000);
-            var xmlHttp = new XMLHttpRequest();
-            xmlHttp.open('POST', '/admin/signrequests/sign-multiple', true);
-            xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            console.info(signRequestParams);
-            xmlHttp.send(signRequestParams);
-        }
-
-        function getProgress() {
-            console.log("getProgress");
-            var xmlHttp = new XMLHttpRequest();
-            xmlHttp.open("GET", "/admin/signrequests/get-progress", false);
-            xmlHttp.onreadystatechange = function () {
-                var result = xmlHttp.responseText;
-                if (result == "security_bad_password") {
-                    document.getElementById("passwordError").style.display = "block";
-                    document.getElementById("closeModal").style.display = "block";
-                    document.getElementById("loader").style.display = "none";
-                    clearInterval(getProgressTimer);
-                } else if (result == "sign_system_error") {
-                    document.getElementById("signError").style.display = "block";
-                    document.getElementById("closeModal").style.display = "block";
-                    document.getElementById("bar").classList.remove("progress-bar-animated");
-                    clearInterval(getProgressTimer);
-                } else if (result == "100") {
-                    document.getElementById("closeModal").style.display = "block";
-                    document.getElementById("bar").style.display = "block";
-                    document.getElementById("bar").style.width = result + "%";
-                    document.getElementById("bar-text").innerHTML = result + "%";
-                    document.getElementById("loader").style.display = "none";
-                    clearInterval(getProgressTimer);
-                    window.location.reload()
-                } else {
-                    document.getElementById("bar").style.display = "block";
-                    document.getElementById("bar").style.width = result + "%";
-                    document.getElementById("bar-text").innerHTML = result
-                        + "%";
-                }
-            }
-            xmlHttp.send(null);
-            return;
-        }
-    </script>
-
-
 </main>
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
