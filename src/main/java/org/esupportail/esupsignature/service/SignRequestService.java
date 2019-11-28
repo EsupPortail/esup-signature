@@ -486,6 +486,7 @@ public class SignRequestService {
 	public void exportFilesToTarget(SignRequest signRequest, User user) throws EsupSignatureException {
 		logger.trace("export signRequest to : " + signRequest.getTargetType() + "://" + signRequest.getDocumentsTargetUri());
 		if (signRequest.getStatus().equals(SignRequestStatus.completed) /* && signRequestService.isSignRequestCompleted(signRequest)*/) {
+			setSignBooksLabels(signRequest.getWorkflowSteps());
 			boolean exportOk = exportFileToTarget(signRequest, user);
 			if (exportOk) {
 					updateStatus(signRequest, SignRequestStatus.exported, "Copié vers la destination " + signRequest.getExportedDocumentURI(), user, "SUCCESS", "");

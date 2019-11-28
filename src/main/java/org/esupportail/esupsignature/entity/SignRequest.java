@@ -44,8 +44,6 @@ public class SignRequest {
     @JsonIgnore
     @OneToMany(cascade = CascadeType.REMOVE)
     private List<Document> signedDocuments = new ArrayList<>();
-    
-    private boolean overloadSignBookParams = false;
 
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.REMOVE})
@@ -60,6 +58,7 @@ public class SignRequest {
 
     private Integer currentWorkflowStepNumber = 1;
 
+    private String workflowName;
 
     @Enumerated(EnumType.STRING)
     private SignBook.DocumentIOType targetType;
@@ -169,14 +168,6 @@ public class SignRequest {
         this.signedDocuments = signedDocuments;
     }
 
-	public boolean isOverloadSignBookParams() {
-        return this.overloadSignBookParams;
-    }
-
-	public void setOverloadSignBookParams(boolean overloadSignBookParams) {
-        this.overloadSignBookParams = overloadSignBookParams;
-    }
-
 	public List<SignRequestParams> getSignRequestParamsList() {
         return this.signRequestParamsList;
     }
@@ -215,6 +206,14 @@ public class SignRequest {
         } else {
             return new WorkflowStep();
         }
+    }
+
+    public String getWorkflowName() {
+        return workflowName;
+    }
+
+    public void setWorkflowName(String workflowName) {
+        this.workflowName = workflowName;
     }
 
     public SignBook.DocumentIOType getTargetType() {

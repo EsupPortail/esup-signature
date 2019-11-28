@@ -79,27 +79,16 @@ public class MailService {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signRequest", signRequest);
         ctx.setVariable("rootUrl", rootUrl);
-        try {
-            ctx.setVariable("logo", fileService.getBase64Image(new ClassPathResource("/static/images/logo.png", MailService.class).getInputStream(), "logo.png"));
-            try (Reader reader = new InputStreamReader(new ClassPathResource("/static/css/bootstrap.min.css", MailService.class).getInputStream(), UTF_8)) {
-                ctx.setVariable("css", FileCopyUtils.copyToString(reader));
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;
         try {
             message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            message.setSubject("Esup-Signature : demande signature complète");
+            message.setSubject("Esup-Signature : demande signature terminée");
             message.setFrom(mailConfig.getMailFrom());
             message.setTo(user.getEmail());
             String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
-            message.setText(htmlContent, true); // true = isHtml
+            message.setText(htmlContent, true);
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
             logger.error("enable to sens email", e);
@@ -118,19 +107,7 @@ public class MailService {
             User user = userRepository.findByEppn(signRequest.getCreateBy()).get(0);
             signRequest.setCreator(user);
         }
-
-        try {
-            ctx.setVariable("logo", fileService.getBase64Image(new ClassPathResource("/static/images/logo.png", MailService.class).getInputStream(), "logo.png"));
-            try (Reader reader = new InputStreamReader(new ClassPathResource("/static/css/bootstrap.min.css", MailService.class).getInputStream(), UTF_8)) {
-                ctx.setVariable("css", FileCopyUtils.copyToString(reader));
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;
         try {
@@ -139,7 +116,7 @@ public class MailService {
             message.setFrom(mailConfig.getMailFrom());
             message.setTo(recipientEmail);
             String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
-            message.setText(htmlContent, true); // true = isHtml
+            message.setText(htmlContent, true);
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
             logger.error("enable to sens email", e);
@@ -156,7 +133,7 @@ public class MailService {
         ctx.setVariable("signRequest", signRequest);
         User user = userRepository.findByEppn(signRequest.getCreateBy()).get(0);
         ctx.setVariable("user", user);
-
+        setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;
         try {
@@ -171,6 +148,20 @@ public class MailService {
             mailSender.send(mimeMessage);
         } catch (MessagingException | IOException e) {
             logger.error("enable to sens email", e);
+        }
+    }
+
+    private void setTemplate(Context ctx) {
+        try {
+            ctx.setVariable("logo", fileService.getBase64Image(new ClassPathResource("/static/images/logo.png", MailService.class).getInputStream(), "logo.png"));
+            try (Reader reader = new InputStreamReader(new ClassPathResource("/static/css/bootstrap.min.css", MailService.class).getInputStream(), UTF_8)) {
+                ctx.setVariable("css", FileCopyUtils.copyToString(reader));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

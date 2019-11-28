@@ -250,16 +250,6 @@ public class SignRequestController {
         model.asMap().clear();
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
-        SignRequestParams signRequestParams = null;
-        if (signRequest.isOverloadSignBookParams()) {
-            signRequestParams = new SignRequestParams();
-            signRequestParams.setSignType(SignType.valueOf(signType));
-            signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
-            signRequestParams.setSignPageNumber(1);
-            signRequestParamsRepository.save(signRequestParams);
-            signRequest.getSignRequestParamsList().add(signRequestParams);
-        }
-        //TODO si signbook type workflow == 1 seul
         signRequest = signRequestService.createSignRequest(signRequest, user);
         return "redirect:/user/signrequests/" + signRequest.getId();
     }
@@ -274,13 +264,6 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
             try {
-                if (signRequest.isOverloadSignBookParams()) {
-                    if (signRequest.getOriginalDocuments().size() > 0
-                            &&
-                            (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.pdfImageStamp) || signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.visa))) {
-                        signRequest.getOriginalDocuments().remove(signRequest.getOriginalDocuments().get(0));
-                    }
-                }
                 List<Document> documents = documentService.createDocuments(multipartFiles);
                 signRequestService.addOriginalDocuments(signRequest, documents);
                 signRequestRepository.save(signRequest);
@@ -651,6 +634,7 @@ public class SignRequestController {
                 workflowStepRepository.save(newWorkflowStep);
                 signRequest.getWorkflowSteps().add(newWorkflowStep);
             }
+            signRequest.setWorkflowName(signBook.getName());
             signRequest.setTargetType(signBook.getTargetType());
             signRequest.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
             signRequestRepository.save(signRequest);

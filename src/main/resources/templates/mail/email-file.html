@@ -1,25 +1,31 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
-<style>
-
-tr:nth-child(even) {
-  background-color: #f2f2f2
-}
-
-table {
-  border-collapse: collapse;
-}
-
-table, td, th {
-  border: 1px solid black;
-}
-</style>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style th:text="${css}"></style>
 </head>
-<body>
-<p>Bonjour</p>
-<p>En pièce jointe, un nouveau document signé : </p>
-<span th:text="'Titre du document : ' + ${signRequest.title}"></span>
-<span th:text="'Auteur : ' + ${user.firstname} + ' ' + ${user.name}"></span>
+<body class="bg-light">
+<div class="container">
+    <div class="card m-4  rounded-0">
+        <div class="card-header bg-dark">
+            <img class="mx-auto" th:src="@{|data:image/png;base64, ${logo}|}" />
+        </div>
+        <div class="card-body">
+            <h4>Bonjour</h4>
+            <h5>En pièce jointe, un nouveau document issue du circuit <span th:text="${signRequest.workflowName}"></span></h5>
+            <p th:text="'Titre du document : ' + ${signRequest.title}"></p>
+            <p th:text="'Auteur : ' + ${user.firstname} + ' ' + ${user.name}"></p>
+            <p>Signé par :</p>
+            <ul>
+                <th:block th:each="workflowStep : ${signRequest.workflowSteps}">
+                    <li th:text="${workflowStep.signBooksLabels.keySet()}"></li>
+                </th:block>
+            </ul>
+        </div>
+        <div class="card-footer bg-secondary">
+            <span class="text-white">Université de Rouen</span>
+        </div>
+    </div>
+</div>
 </body>
 </html>
