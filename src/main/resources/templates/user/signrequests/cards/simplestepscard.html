@@ -21,7 +21,7 @@
                         <div class="alert alert-warning mb-1" th:if="${signRequest.status.name() == 'draft'}">
                             <div th:if="${signRequest.currentWorkflowStep.signBooks.size() == 0}">
                                 <p>
-                                    Vous devez ajouter des étapes ainsi que des participants au circuit de signature
+                                    Vous devez ajouter des étapes ainsi que des participants pour chaque étape du circuit de signature
                                 </p>
                             </div>
                         </div>
@@ -63,7 +63,7 @@
                                         </a>
                                     </th:block>
                                     <hr/>
-                                    <div class="collapse" th:id="'stepDetail_' + ${iterator.index}">
+                                    <div th:classappend="${workflowStep.signBooks.size() > 0} ? 'collapse'" th:id="'stepDetail_' + ${iterator.index}">
                                         <label>Type de signature :</label>
                                     <div th:unless="${iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
                                         <b><span th:text="#{'signbook.signtype.' + ${workflowStep.signRequestParams.signType}}"></span></b>

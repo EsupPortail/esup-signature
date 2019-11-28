@@ -139,7 +139,6 @@ public class AdminSignRequestController {
 		}
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
-			List<SignBook> originalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
 			Document toDisplayDocument = null;
 			if(signRequestService.getToSignDocuments(signRequest).size() == 1) {
 				toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
@@ -182,17 +181,6 @@ public class AdminSignRequestController {
 			if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
 				model.addAttribute("signable", "ok");
 			}
-			List<SignBook> firstOriginalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
-			if(firstOriginalSignBooks.size() > 0 ) {
-				SignBook firstOriginalSignBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
-				if(firstOriginalSignBook.getSignBookType().equals(SignBookType.workflow)) {
-					model.addAttribute("firstOriginalSignBook", firstOriginalSignBook);
-				}
-				if(firstOriginalSignBook.getModelFile() != null) {
-					model.addAttribute("modelId", firstOriginalSignBook.getModelFile().getUrl());
-				}
-			}
-			model.addAttribute("originalSignBooks", signBookService.getSignBookBySignRequest(signRequest));
 			model.addAttribute("allSignBooks", signBookRepository.findByNotCreateBy("System"));
 			model.addAttribute("nbSignOk", signRequest.countSignOk());
 			model.addAttribute("baseUrl", baseUrl);
@@ -246,7 +234,6 @@ public class AdminSignRequestController {
 	@DeleteMapping(value = "/{id}", produces = "text/html")
 	public String delete(@PathVariable("id") Long id, Model model) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		signBookService.removeSignRequestFromAllSignBooks(signRequest);
 		List<Log> logs = logRepository.findBySignRequestId(id);
 		for(Log log : logs) {
 			logRepository.delete(log);
@@ -336,7 +323,6 @@ public class AdminSignRequestController {
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
-			SignBook originalSignBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
 			signRequestService.completeSignRequest(signRequest, user);
 		} else {
 			logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");

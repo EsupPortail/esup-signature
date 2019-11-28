@@ -126,7 +126,7 @@ public class UserService {
 		Date date = new Date();
 		List<SignRequest> signRequests = signRequestService.getTosignRequests(user);
 		if(signRequests.size() > 0) {
-			mailService.sendSignRequestAlert("test", user.getEmail(), signRequests);
+			mailService.sendSignRequestAlert(user.getEmail(), signRequests);
 		}
 		user.setLastSendAlertDate(date);
 		userRepository.save(user);

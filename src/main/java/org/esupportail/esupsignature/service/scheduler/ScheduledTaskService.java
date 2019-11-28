@@ -2,10 +2,13 @@ package org.esupportail.esupsignature.service.scheduler;
 
 import org.esupportail.esupsignature.dss.web.service.OJService;
 import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.slf4j.Logger;
@@ -21,9 +24,15 @@ import java.util.List;
 public class ScheduledTaskService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ScheduledTaskService.class);
-	
+
 	@Resource
 	private SignBookService signBookService;
+
+	@Resource
+	private SignRequestService signRequestService;
+
+	@Resource
+	private SignRequestRepository signRequestRepository;
 
 	@Resource
 	private UserService userService;
@@ -48,11 +57,11 @@ public class ScheduledTaskService {
 	@Scheduled(fixedRate = 10000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
-		logger.trace("scan all signbooks target");
-		List<SignBook> signBooks = signBookService.getAllSignBooks();
-		for(SignBook signBook : signBooks) {
+		logger.trace("scan all signRequest to export");
+		List<SignRequest> signRequests = signRequestRepository.findByStatusAndDocumentsTargetUriIsNotNull(SignRequest.SignRequestStatus.completed);
+		for(SignRequest signRequest : signRequests) {
 			try {
-				signBookService.exportFilesToTarget(signBook, getSchedulerUser());
+				signRequestService.exportFilesToTarget(signRequest, getSchedulerUser());
 			} catch (EsupSignatureException e) {
 				logger.error(e.getMessage());
 			}

@@ -28,19 +28,13 @@ public class SignBookService {
     private SignBookRepository signBookRepository;
 
     @Resource
-    private WorkflowStepRepository workflowStepRepository;
+    private SignRequestRepository signRequestRepository;
 
     @Resource
-	private SignRequestRepository signRequestRepository;
-
-	@Resource
     private DocumentRepository documentRepository;
 
     @Resource
     private UserRepository userRepository;
-
-    @Resource
-    private SignRequestParamsRepository signRequestParamsRepository;
 
     @Resource
     private FsAccessFactory fsAccessFactory;
@@ -53,9 +47,6 @@ public class SignBookService {
 
     @Resource
     private UserService userService;
-
-    @Resource
-    private MailService mailService;
 
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<SignBook>();
@@ -179,15 +170,15 @@ public class SignBookService {
     }
 
     public void deleteSignBook(SignBook signBook) {
-            List<SignBook> signBooks = new ArrayList<>();
-            signBookRepository.save(signBook);
-            for (SignBook signBookStep : signBooks) {
-                if (signBookStep.isExternal()) {
-                    deleteSignBook(signBookStep);
-                }
+        List<SignBook> signBooks = new ArrayList<>();
+        signBookRepository.save(signBook);
+        for (SignBook signBookStep : signBooks) {
+            if (signBookStep.isExternal()) {
+                deleteSignBook(signBookStep);
             }
+        }
 
-            signBookRepository.delete(signBook);
+        signBookRepository.delete(signBook);
     }
 
     public void importFilesFromSource(SignBook signBook, User user) throws EsupSignatureIOException, EsupStockException {
@@ -232,67 +223,7 @@ public class SignBookService {
         }
     }
 
-    public void exportFilesToTarget(SignBook signBook, User user) throws EsupSignatureException {
-        logger.trace("export signRequest from " + signBook.getName());
-        List<SignRequest> signRequests = new ArrayList<>();
-        //signRequests.addAll(signBook.getSignRequests());
-        for (SignRequest signRequest : signRequests) {
-            if (signRequest.getStatus().equals(SignRequestStatus.completed) /* && signRequestService.isSignRequestCompleted(signRequest)*/) {
-                boolean exportOk = exportFileToTarget(signBook, signRequest, user);
-                if(exportOk) {
-                    removeSignRequestFromAllSignBooks(signRequest);
-                    signRequestService.updateStatus(signRequest, SignRequestStatus.exported, "Copié vers la destination " + signBook.getTargetType() + " : " + signBook.getDocumentsTargetUri(), user, "SUCCESS", "");
-                    if (!signBook.getTargetType().equals(DocumentIOType.mail)) {
-                        signRequestService.clearAllDocuments(signRequest);
-                    }
-                }
-            }
-        }
-
-        if (signBook.isExternal()) {
-            deleteSignBook(signBook);
-        }
-    }
-
-    public boolean exportFileToTarget(SignBook signBook, SignRequest signRequest, User user) throws EsupSignatureException {
-        if (signBook.getTargetType() != null && !signBook.getTargetType().equals(DocumentIOType.none)) {
-            Document signedFile = signRequestService.getLastSignedDocument(signRequest);
-            if(signBook.getTargetType().equals(DocumentIOType.mail)) {
-                logger.info("send by email to " + signBook.getDocumentsTargetUri());
-                mailService.sendFile(signBook.getDocumentsTargetUri(), signedFile, signRequest);
-                signRequest.setExportedDocumentURI("mail://" + signBook.getDocumentsTargetUri());
-                return true;
-            } else {
-                try {
-                    logger.info("send to " + signBook.getTargetType() + " in /" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri());
-                    FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signBook.getTargetType());
-                    InputStream inputStream = signedFile.getInputStream();
-                    fsAccessService.createFile("/", signBook.getSignBookType().toString(), "folder");
-                    fsAccessService.createFile("/" + signBook.getSignBookType().toString(), signBook.getDocumentsTargetUri(), "folder");
-                    signRequest.setExportedDocumentURI(fsAccessService.getUri() + "/" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri() + "/" + signedFile.getFileName());
-                    return fsAccessService.putFile("/" + signBook.getSignBookType().toString() + "/" + signBook.getDocumentsTargetUri() + "/", signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE);
-                } catch (Exception e) {
-                    throw new EsupSignatureException("write fsaccess error : ", e);
-                }
-            }
-        } else {
-            logger.debug("no target type for this signbook");
-        }
-        return false;
-    }
-
-    public void removeSignRequestFromAllSignBooks(SignRequest signRequest) {
-        logger.info("remove from all signBook " + signRequest.getName());
-        List<SignBook> signBooks = getSignBookBySignRequest(signRequest);
-        for (SignBook signBook : signBooks) {
-                //signBook.getSignRequests().remove(signRequest);
-				signBookRepository.save(signBook);
-        }
-        signRequestRepository.save(signRequest);
-    }
-
     public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook) {
-        //signBook.getSignRequests().remove(signRequest);
         signRequestRepository.save(signRequest);
         signBookRepository.save(signBook);
     }
@@ -318,18 +249,13 @@ public class SignBookService {
             return signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(recipientEmail), SignBookType.user).get(0);
         } else {
             User user;
-            if(userRepository.findByEmail(recipientEmail).size() > 0) {
+            if (userRepository.findByEmail(recipientEmail).size() > 0) {
                 user = userRepository.findByEmail(recipientEmail).get(0);
             } else {
                 user = userService.createUser(recipientEmail);
             }
             return getUserSignBook(user);
         }
-    }
-
-    public List<SignBook> getSignBookBySignRequest(SignRequest signRequest) {
-        List<SignBook> signBooks = new ArrayList<>();
-        return signBooks;
     }
 
     public boolean checkUserManageRights(User user, SignBook signBook) {

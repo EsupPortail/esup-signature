@@ -21,4 +21,6 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     Page<SignRequest> findByCreateBy(String createBy, Pageable pageable);
     Page<SignRequest> findById(Long id, Pageable pageable);
     Page<SignRequest> findAll(Pageable pageable);
+    List<SignRequest> findByStatusAndDocumentsTargetUriIsNotNull(SignRequest.SignRequestStatus status);
+
 }

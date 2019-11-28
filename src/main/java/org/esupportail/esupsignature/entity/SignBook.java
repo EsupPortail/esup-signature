@@ -71,8 +71,6 @@ public class SignBook {
     @OrderColumn
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
-    //TODO alerte au moment de la cloture
-    //TODO alerte + validation de la demande par le gestionnaire
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;
     

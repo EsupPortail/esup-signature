@@ -30,7 +30,11 @@ public class SignRequest {
     @JsonIgnore
     @Transient
     transient String comment;
-    
+
+    @JsonIgnore
+    @Transient
+    transient User creator;
+
     private String exportedDocumentURI;
 
     @JsonIgnore
@@ -55,6 +59,12 @@ public class SignRequest {
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
     private Integer currentWorkflowStepNumber = 1;
+
+
+    @Enumerated(EnumType.STRING)
+    private SignBook.DocumentIOType targetType;
+
+    private String documentsTargetUri;
 
     public enum SignRequestStatus {
 		draft, pending, canceled, checked, signed, refused, deleted, exported, completed;
@@ -131,6 +141,14 @@ public class SignRequest {
         this.comment = comment;
     }
 
+    public User getCreator() {
+        return creator;
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
+    }
+
     public SignRequestStatus getStatus() {
         return status;
     }
@@ -197,5 +215,21 @@ public class SignRequest {
         } else {
             return new WorkflowStep();
         }
+    }
+
+    public SignBook.DocumentIOType getTargetType() {
+        return targetType;
+    }
+
+    public void setTargetType(SignBook.DocumentIOType targetType) {
+        this.targetType = targetType;
+    }
+
+    public String getDocumentsTargetUri() {
+        return documentsTargetUri;
+    }
+
+    public void setDocumentsTargetUri(String documentsTargetUri) {
+        this.documentsTargetUri = documentsTargetUri;
     }
 }

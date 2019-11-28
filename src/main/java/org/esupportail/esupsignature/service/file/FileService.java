@@ -61,11 +61,16 @@ public class FileService {
 		return FilenameUtils.getBaseName(name);
 	}
 	
-	public String getBase64Image(Document file) throws IOException {
-		BufferedImage imBuff = ImageIO.read(file.getInputStream());
-		return getBase64Image(imBuff, file.getFileName());
+	public String getBase64Image(Document document) throws IOException {
+		BufferedImage imBuff = ImageIO.read(document.getInputStream());
+		return getBase64Image(imBuff, document.getFileName());
 	}
-	
+
+	public String getBase64Image(InputStream is, String name) throws IOException {
+		BufferedImage imBuff = ImageIO.read(is);
+		return getBase64Image(imBuff, name);
+	}
+
 	public String getBase64Image(BufferedImage imBuff, String name) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(imBuff, "png", baos);

@@ -30,7 +30,6 @@
 
     <logger name="org.esupportail.esupsignature" level="info" additivity="false">
         <appender-ref ref="FILE"/>
-        <appender-ref ref="CONSOLE"/>
     </logger>
 
     <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="info" additivity="false">
@@ -39,7 +38,6 @@
 
     <root level="info">
         <appender-ref ref="FILE"/>
-        <appender-ref ref="CONSOLE"/>
     </root>
 
 </configuration>

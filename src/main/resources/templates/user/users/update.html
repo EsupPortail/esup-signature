@@ -12,10 +12,10 @@
     <div class="wrapper">
         <nav id="sidebar">
             <div class="m-1">
-                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                <button th:if="${referer == null}" title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
-                <button th:if="${user.getKeystore() != null}" class="col-12 mb-1 btn btn-primary text-left" type="button" data-toggle="modal" data-target="#testKeystore">
+                <button th:if="${user.getKeystore() != null && referer == null  }" class="col-12 mb-1 btn btn-primary text-left" type="button" data-toggle="modal" data-target="#testKeystore">
                     <i class="fas fa-certificate"></i> <span class="sidebar-label">Tester mon certificat</span>
                 </button>
                 <button type="button" onclick="document.getElementById('fu_org_esupportail_esupsignature_domain_User').submit();" class="col-12 mb-1 btn btn-success text-left">
@@ -200,6 +200,6 @@
     </div>
 </div>
 </body>
-<div th:replace="fragments/message :: message"></div>
 <div th:replace="fragments/footer :: footer"></div>
+<div th:replace="fragments/message :: message"></div>
 </html>

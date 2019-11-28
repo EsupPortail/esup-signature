@@ -378,30 +378,6 @@ public class WsController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-//    @ResponseBody
-//    @RequestMapping(value = "/count-signed-in-signbook", produces = "text/html")
-//    public String countSignedInSignBook(@RequestParam String signBookName, HttpServletRequest httpServletRequest) throws IOException, ParseException {
-//        SignBook signBook = signBookRepository.findByName(signBookName).get(0);
-//        return String.valueOf(signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.signed)).count());
-//    }
-
-    @Transactional
-    @RequestMapping(value = "/move-sign-request", method = RequestMethod.POST)
-    public ResponseEntity<Void> moveSignRequest(@RequestParam String signBookName, @RequestParam String name, HttpServletRequest httpServletRequest, HttpServletResponse response, Model model) {
-        SignBook signBook = signBookRepository.findByName(signBookName).get(0);
-        SignRequest signRequest = signRequestRepository.findByName(name).get(0);
-        User user = userService.getSystemUser();
-        user.setIp(httpServletRequest.getRemoteAddr());
-        try {
-            signBookService.removeSignRequestFromAllSignBooks(signRequest);
-            //signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error("get file error", e);
-        }
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     //TODO refactor with UserController
     @RequestMapping(value = "/searchLdap")
     @ResponseBody
@@ -411,8 +387,7 @@ public class WsController {
         headers.add("Content-Type", "application/json; charset=utf-8");
         List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
         if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
-            List<PersonLdap> ldapSearchList = new ArrayList<PersonLdap>();
-            ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
+            List<PersonLdap> ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
             ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
 
         }
@@ -427,8 +402,7 @@ public class WsController {
         headers.add("Content-Type", "application/json; charset=utf-8");
         List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
         if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
-            List<PersonLdap> ldapSearchList = new ArrayList<PersonLdap>();
-            ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
+            List<PersonLdap> ldapSearchList = ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
             ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
 
         }

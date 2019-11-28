@@ -452,16 +452,4 @@ public class SignBookController {
 
 	}
 
-	@RequestMapping(value = "/send-files-to-target/{id}", produces = "text/html")
-	public String sendFileToTarget(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureException {
-		User user = userService.getUserFromAuthentication();
-		SignBook signBook = signBookRepository.findById(id).get();
-		if (!signBook.getCreateBy().equals(user.getEppn())) {
-			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/manager/signbooks/" + id;
-		}
-		signBookService.exportFilesToTarget(signBook, user);
-		return "redirect:/manager/signbooks/" + id;
-
-	}
 }

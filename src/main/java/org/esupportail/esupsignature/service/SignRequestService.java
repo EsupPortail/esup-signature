@@ -26,6 +26,7 @@ import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
+import org.esupportail.esupsignature.service.fs.UploadActionType;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.sign.SignService;
@@ -307,6 +308,7 @@ public class SignRequestService {
 			signBookService.removeSignRequestFromSignBook(signRequest, recipientSignBook);
 			if(signRequest.getCurrentWorkflowStepNumber() == signRequest.getWorkflowSteps().size()) {
 				completeSignRequest(signRequest, user);
+				setSignBooksLabels(signRequest.getWorkflowSteps());
 				mailService.sendCompletedMail(signRequest);
 			} else {
 				nextWorkFlowStep(signRequest, user);
@@ -376,6 +378,7 @@ public class SignRequestService {
 	}
 
 	public void pendingSignRequest(SignRequest signRequest, User user) {
+		updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 		for(Long signBookId : signRequest.getCurrentWorkflowStep().getSignBooks().keySet()) {
 			SignBook signBook = signBookRepository.findById(signBookId).get();
 			for(String emailRecipient : signBook.getRecipientEmails()) {
@@ -386,20 +389,11 @@ public class SignRequestService {
 				} else {
 					recipient = userService.createUser(emailRecipient);
 				}
-				if(signRequest.getCurrentWorkflowStepNumber() == 1 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
-					Document toSignDocument = signRequest.getOriginalDocuments().get(0);
-					try {
-						scanSignatureFields(signRequest, PDDocument.load(toSignDocument.getInputStream()));
-					} catch (IOException e) {
-						logger.error("unable to scan the pdf document", e);
-					}
-				}
 				if(recipient.getEmailAlertFrequency() == null|| recipient.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipient)) {
 					userService.sendEmailAlert(recipient);
 				}
 			}
 		}
-		updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 	}
 
 	public int scanSignatureFields(SignRequest signRequest, PDDocument pdDocument) {
@@ -427,7 +421,6 @@ public class SignRequestService {
 
 	public void completeSignRequest(SignRequest signRequest, User user) throws EsupSignatureException {
 		signRequest.setCurrentWorkflowStepNumber(signRequest.getCurrentWorkflowStepNumber() + 1);
-		signBookService.removeSignRequestFromAllSignBooks(signRequest);
 		updateStatus(signRequest, SignRequestStatus.completed, "Terminé automatiquement", user, "SUCCESS", signRequest.getComment());
 	}
 
@@ -488,7 +481,48 @@ public class SignRequestService {
 		}
 		signRequestRepository.save(signRequest);
 	}
-	
+
+
+	public void exportFilesToTarget(SignRequest signRequest, User user) throws EsupSignatureException {
+		logger.trace("export signRequest to : " + signRequest.getTargetType() + "://" + signRequest.getDocumentsTargetUri());
+		if (signRequest.getStatus().equals(SignRequestStatus.completed) /* && signRequestService.isSignRequestCompleted(signRequest)*/) {
+			boolean exportOk = exportFileToTarget(signRequest, user);
+			if (exportOk) {
+					updateStatus(signRequest, SignRequestStatus.exported, "Copié vers la destination " + signRequest.getExportedDocumentURI(), user, "SUCCESS", "");
+				if (!signRequest.getTargetType().equals(DocumentIOType.mail)) {
+					clearAllDocuments(signRequest);
+				}
+			}
+		}
+	}
+
+	public boolean exportFileToTarget(SignRequest signRequest, User user) throws EsupSignatureException {
+		if (signRequest.getTargetType() != null && !signRequest.getTargetType().equals(DocumentIOType.none)) {
+			Document signedFile = getLastSignedDocument(signRequest);
+			if (signRequest.getTargetType().equals(DocumentIOType.mail)) {
+				logger.info("send by email to " + signRequest.getDocumentsTargetUri());
+				mailService.sendFile(signRequest);
+				signRequest.setExportedDocumentURI("mail://" + signRequest.getDocumentsTargetUri());
+				return true;
+			} else {
+				try {
+					logger.info("send to " + signRequest.getTargetType() + " in /" + signRequest.getDocumentsTargetUri() + "/signed");
+					FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signRequest.getTargetType());
+					InputStream inputStream = signedFile.getInputStream();
+					fsAccessService.createFile("/", signRequest.getDocumentsTargetUri(), "folder");
+					fsAccessService.createFile("/" + signRequest.getDocumentsTargetUri() + "/", "signed", "folder");
+					signRequest.setExportedDocumentURI(fsAccessService.getUri() + "/" + signRequest.getDocumentsTargetUri() + "/signed/" + signedFile.getFileName());
+					return fsAccessService.putFile( "/" + signRequest.getDocumentsTargetUri() + "/signed/", signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE);
+				} catch (Exception e) {
+					throw new EsupSignatureException("write fsaccess error : ", e);
+				}
+			}
+		} else {
+			logger.debug("no target type for this signbook");
+		}
+		return false;
+	}
+
 	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, User user, String returnCode, String comment) {
 		Log log = new Log();
 		log.setSignRequestId(signRequest.getId());
@@ -529,7 +563,6 @@ public class SignRequestService {
 	}
 
 	public void refuse(SignRequest signRequest, User user) {
-		signBookService.removeSignRequestFromAllSignBooks(signRequest);
 		updateStatus(signRequest, SignRequestStatus.refused, "Refusé", user, "SUCCESS", signRequest.getComment());
 	}
 

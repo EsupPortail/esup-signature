@@ -97,21 +97,13 @@ public class DocumentController {
 		if(signRequestRepository.countById(document.getParentId()) > 0) {
 			signRequest = signRequestRepository.findById(document.getParentId()).get();
 		}
-		SignBook signBook = null;
 		User user = userService.getUserFromAuthentication();
 		InputStream in = null;
 		if(signRequest != null && signRequestService.checkUserViewRights(user, signRequest)) {
 			try {
-				in = pdfService.pageAsImageInputStream(document.getInputStream(), page);
+				in = pdfService.pageAsInputStream(document.getInputStream(), page);
 			} catch (Exception e) {
 				logger.error("page " + page + " not found in this document");
-			}
-			if(in == null) {
-				try {
-					in = pdfService.pageAsImageInputStream(document.getInputStream(), 0);
-				} catch (Exception e) {
-					logger.error("page " + page + " not found in this document");
-				}
 			}
 		    response.setContentType(MediaType.IMAGE_PNG_VALUE);
 		    IOUtils.copy(in, response.getOutputStream());

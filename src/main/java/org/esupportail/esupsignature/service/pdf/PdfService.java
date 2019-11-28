@@ -383,26 +383,6 @@ public class PdfService {
         return getSignSize(bimg);
     }
 
-    /*
-    public File formatSignFields(File file, long signNumber, SignRequestParams parameters) throws InvalidPasswordException, IOException {
-        PDDocument pdDocument = PDDocument.load(file);
-        PDPage pdPage = pdDocument.getPage(0);
-        List<PDSignatureField> pdSignatureFields = pdDocument.getSignatureFields();
-        PDSignatureField pdSignatureField = pdSignatureFields.get((int) signNumber);
-        if(pdSignatureField.getSignature() == null) {
-            PDAnnotationWidget widget = pdSignatureField.getWidgets().get(0);
-            int[] pos = new int[2];
-            pos[0] = (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX();
-            pos[1] = (int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight();
-            PDRectangle rect = new PDRectangle(pos[0], pos[1], 100, 75);
-            widget.getRectangle().
-        }
-        pdDocument.saveIncrementalForExternalSigning(new FileOutputStream(file));
-        pdDocument.close();
-        return file;
-    }
-    */
-
     public int[] getSignFieldCoord(PDDocument pdDocument, long signNumber) {
         try {
             PDPage pdPage = pdDocument.getPage(0);
@@ -480,32 +460,6 @@ public class PdfService {
 		return signRequestParamsList.stream().sorted(Comparator.comparingInt(value -> value.getXPos())).sorted(Comparator.comparingInt(value -> value.getYPos())).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
     }
 
-	/*
-	public List<String> pagesAsBase64Images(File pdfFile) {
-		List<String> imagePages = new ArrayList<String>();
-		PDDocument pdDocument = null;
-		try {
-			pdDocument = PDDocument.load(pdfFile);
-		  PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
-	        for(int i = 0; i < (pdDocument.getNumberOfPages()); i++) {
-		        BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(i, pdfConfig.getPdfProperties().getPdfToImageDpi(), ImageType.RGB);
-		        imagePages.add(fileService.getBase64Image(bufferedImage, pdfFile.getName()));
-	        }
-		} catch (IOException e) {
-			logger.error("error on get page as base 64 image", e);
-		} finally {
-			if (pdDocument != null) {
-				try {
-					pdDocument.close();
-				} catch (IOException e) {
-					logger.error("enable to close document", e);
-				}
-	          }
-		}
-        return imagePages;
-	}
-	*/
-
     public PdfParameters getPdfParameters(InputStream pdfFile) {
         PDDocument pdDocument = null;
         try {
@@ -540,30 +494,7 @@ public class PdfService {
         return file;
     }
 
-    /*
-        public String pageAsBase64Image(File pdfFile, int page) {
-            String imagePage = "";
-            PDDocument pdDocument = null;
-            try {
-                pdDocument = PDDocument.load(pdfFile);
-                PDFRenderer pdfRenderer = new PDFRenderer(pdDocument);
-                BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, pdfConfig.getPdfProperties().getPdfToImageDpi(), ImageType.RGB);
-                imagePage = fileService.getBase64Image(bufferedImage, pdfFile.getName());
-            } catch (IOException e) {
-                logger.error("error on convert page to base 64 image", e);
-            } finally {
-                if (pdDocument != null) {
-                    try {
-                        pdDocument.close();
-                    } catch (IOException e) {
-                        logger.error("enable to close document", e);
-                    }
-                  }
-            }
-            return imagePage;
-        }
-    */
-    public InputStream pageAsImageInputStream(InputStream pdfFile, int page) throws Exception {
+    public BufferedImage pageAsBufferedImage(InputStream pdfFile, int page) {
         BufferedImage bufferedImage = null;
         PDDocument pdDocument = null;
         try {
@@ -581,10 +512,21 @@ public class PdfService {
                 }
             }
         }
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ImageIO.write(bufferedImage, "png", os);
-        return new ByteArrayInputStream(os.toByteArray());
-
+        return bufferedImage;
     }
+
+    public InputStream pageAsInputStream(InputStream pdfFile, int page) throws Exception {
+        BufferedImage bufferedImage = pageAsBufferedImage(pdfFile, page);
+        InputStream inputStream = bufferedImageToInputStream(bufferedImage, "png");
+        bufferedImage.flush();
+        return inputStream;
+    }
+
+    public InputStream bufferedImageToInputStream(BufferedImage image, String type) throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ImageIO.write(image, type, os);
+        return new ByteArrayInputStream(os.toByteArray());
+    }
+
 
 }
