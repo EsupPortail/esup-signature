@@ -26,6 +26,7 @@ import jcifs.config.PropertyConfiguration;
 import jcifs.context.BaseContext;
 import jcifs.smb.*;
 import org.apache.chemistry.opencmis.commons.impl.IOUtils;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.*;
 import org.slf4j.Logger;
@@ -122,31 +123,29 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		return (this.root != null) ;
 	}
 
-	private SmbFile cd(String path) {
+	public SmbFile cd(String path) {
 		try {
 			this.open();
 			if (path == null || path.length() == 0)
 				return root;
 			return new SmbFile(this.getUri() + path, cifsContext);
 		} catch (MalformedURLException e) {
-			logger.error("enable to open" + e.getMessage());
+			logger.error("unable to open" + e.getMessage());
 		}
 		return null;
 	}
 
 	@Override
-	public boolean remove(FsFile fsFile) {
-		logger.info("remove file " + fsFile.getPath() + "/" + fsFile.getName());
+	public void remove(FsFile fsFile) throws EsupSignatureFsException {
+		logger.info("removing file " + fsFile.getPath() + "/" + fsFile.getName());
 		SmbFile file;
 		try {
 			file = cd("/" + fsFile.getPath() + "/" + fsFile.getName());
 			file.delete();
-			return true;
 		} catch (SmbException e) {
-			logger.info("can't delete file because of SmbException : "
-					+ e.getMessage(), e);
+			logger.info("can't delete file because of SmbException : " + e.getMessage());
+			throw new EsupSignatureFsException(e);
 		}
-		return false;
 	}
 
 	@Override
@@ -178,7 +177,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean renameFile(String path, String title) throws EsupStockException {
+	public boolean renameFile(String path, String title) throws EsupSignatureFsException {
 		try {
 			SmbFile file = cd(path);
 			if (file.exists()) {
@@ -198,7 +197,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws EsupStockException {
+	public boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws EsupSignatureFsException {
 		try {
 			SmbFile folder = cd(dir);
 			for (String fileToCopyPath : filesToCopy) {
@@ -218,9 +217,9 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			return true;
 		} catch (MalformedURLException e) {
 			logger.error("problem in creation file that must not occur." +  e.getMessage(), e);
-			throw new EsupStockException(e);
+			throw new EsupSignatureFsException(e);
 		} catch (IOException e) {
-			throw new EsupStockException(e);
+			throw new EsupSignatureFsException(e);
 		}
 	}
 
@@ -272,7 +271,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			if (newFile.exists()) {
 				switch (uploadOption) {
 				case ERROR :
-					throw new EsupStockFileExistException();
+					throw new EsupSignatureFsException("unable to put file " + filename + " in " + dir);
 				case OVERRIDE :
 					newFile.delete();
 					break;
@@ -315,7 +314,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 
-	public List<FsFile> listFiles(String url) throws EsupStockException {
+	public List<FsFile> listFiles(String url) throws EsupSignatureFsException {
 		List<FsFile> fsFiles = new ArrayList<>();
 		try {
 			SmbFile resource = cd(url);		
@@ -333,7 +332,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 				}
 			}
 		} catch (Exception e) {
-			throw new EsupStockException(e);
+			throw new EsupSignatureFsException(e);
 		}
 		return fsFiles;
 	}

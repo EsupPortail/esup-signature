@@ -5,12 +5,11 @@ import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.fs.EsupStockException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -42,7 +41,7 @@ public class ScheduledTaskService {
 
 	//@Scheduled(fixedRate = 100000)
 	@Transactional
-	public void scanAllSignbooksSources() throws EsupStockException {
+	public void scanAllSignbooksSources() throws EsupSignatureFsException {
 		List<SignBook> signBooks = signBookService.getAllSignBooks();
 		for(SignBook signBook : signBooks) {
 			signBookService.importFilesFromSource(signBook, getSchedulerUser());

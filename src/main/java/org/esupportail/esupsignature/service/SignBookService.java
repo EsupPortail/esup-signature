@@ -5,19 +5,17 @@ import org.esupportail.esupsignature.entity.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.*;
 import java.util.*;
 
 @Service
@@ -175,18 +173,18 @@ public class SignBookService {
         signBookRepository.delete(signBook);
     }
 
-    public List<FsFile> importFilesFromSource(SignBook signBook, User user) throws EsupStockException {
+    public List<FsFile> importFilesFromSource(SignBook signBook, User user) {
         List<FsFile> fsFiles = new ArrayList<>();
         if (signBook.getSourceType() != null && !signBook.getSourceType().equals(DocumentIOType.none)) {
             logger.info("retrieve from " + signBook.getSourceType() + " in " + signBook.getDocumentsSourceUri());
             FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signBook.getSourceType());
-                try {
-                    fsFiles.addAll(fsAccessService.listFiles("/" + signBook.getDocumentsSourceUri() + "/"));
-                } catch (EsupStockException e) {
-                    logger.warn("create non existing folder because", e);
-                    fsAccessService.createFile("/", signBook.getDocumentsSourceUri(), "folder");
-                    fsAccessService.createFile("/" + signBook.getDocumentsSourceUri() + "/", "signed", "folder");
-                }
+            if(fsAccessService.cd(signBook.getDocumentsSourceUri()) == null) {
+                logger.info("create non existing folders : " + signBook.getDocumentsSourceUri());
+                fsAccessService.createFile("/", signBook.getDocumentsSourceUri(), "folder");
+                fsAccessService.createFile("/" + signBook.getDocumentsSourceUri() + "/", "signed", "folder");
+            }
+            try {
+                fsFiles.addAll(fsAccessService.listFiles("/" + signBook.getDocumentsSourceUri() + "/"));
                 if (fsFiles.size() > 0) {
                     for (FsFile fsFile : fsFiles) {
                         logger.info("adding file : " + fsFile.getName());
@@ -202,11 +200,12 @@ public class SignBookService {
                         signRequestRepository.save(signRequest);
                         signRequestService.importWorkflow(signRequest, signBook);
                         signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Import depuis " + signBook.getSourceType() + " : " + signBook.getDocumentsSourceUri(), user, "SUCCESS", null);
-                        if(!fsAccessService.remove(fsFile)) {
-                            throw new EsupStockException("error on delete source file");
-                        }
+                        fsAccessService.remove(fsFile);
                     }
                 }
+            } catch (EsupSignatureFsException e) {
+                throw new EsupSignatureRuntimeException("error on delete source file", e);
+            }
         }
         return fsFiles;
     }

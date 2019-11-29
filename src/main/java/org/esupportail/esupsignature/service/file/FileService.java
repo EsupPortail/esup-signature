@@ -31,7 +31,7 @@ public class FileService {
 		try {
 			return new MockMultipartFile(name, name, mimeType, file);
 		} catch (IOException e) {
-			logger.error("enable to convert to multipartfile", e);
+			logger.error("unable to convert to multipartfile", e);
 		}
 		return null;
 	}
@@ -63,7 +63,7 @@ public class FileService {
 			tempFile.deleteOnExit();
 			return tempFile;
 		} catch (IOException e) {
-			logger.error("enable to create temp file", e);
+			logger.error("unable to create temp file", e);
 		}
 		return null;
 	}

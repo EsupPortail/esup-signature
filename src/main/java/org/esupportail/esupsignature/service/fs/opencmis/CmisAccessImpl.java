@@ -13,7 +13,7 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.esupportail.esupsignature.service.file.FileService;
-import org.esupportail.esupsignature.service.fs.EsupStockException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
@@ -24,7 +24,6 @@ import org.springframework.util.ResourceUtils;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
@@ -118,7 +117,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 		try {
 			return cmisSession.getObjectByPath(constructPath(path));
 		} catch (CmisObjectNotFoundException e){
-			logger.error("enable to open path", e);
+			logger.error("unable to open path", e);
 		}
 		return null;
 	}
@@ -153,7 +152,12 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	public void destroy() throws Exception {
 		this.close();
 	}
-	
+
+	@Override
+	public Object cd(String path) {
+		return getCmisObject(path);
+	}
+
 	@Override
 	public void close() {
 		cmisSession.clear();
@@ -161,7 +165,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 
 
 	@Override
-	public List<FsFile> listFiles(String path) throws EsupStockException {
+	public List<FsFile> listFiles(String path) throws EsupSignatureFsException {
 		Folder folder =  (Folder)  getCmisObject(path);
 		if(folder != null) {
 			logger.info("get file list from : " + folder.getPath());
@@ -176,7 +180,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 			}
 			return fsFiles;
 		} else {
-			throw new EsupStockException("folder does not exist");
+			throw new EsupSignatureFsException("folder does not exist");
 		}
 
 	}
@@ -228,7 +232,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 	@Override
-	public boolean moveCopyFilesIntoDirectory(String path, List<String> filesToCopy, boolean copy) throws EsupStockException {
+	public boolean moveCopyFilesIntoDirectory(String path, List<String> filesToCopy, boolean copy) throws EsupSignatureFsException {
 		try {
 			Folder targetFolder = (Folder)getCmisObject(path);
 			if(copy) {
@@ -267,7 +271,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws EsupStockException {
+	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws EsupSignatureFsException {
 		//must manage the upload option.
 		Folder targetFolder = (Folder)getCmisObject(dir);
 		Map<String, String> prop = new HashMap<String, String>();
@@ -284,19 +288,18 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean remove(FsFile fsFile) {
+	public void remove(FsFile fsFile) throws EsupSignatureFsException {
 		CmisObject cmisObject = getCmisObject(fsFile.getPath() + fsFile.getId());
 		if(cmisObject != null) {
 			cmisObject.delete(true);
-			return true;
 		} else {
-			logger.error("enable to delete file");
+			logger.error("unable to delete file");
+			throw new EsupSignatureFsException("unable to delete file, file not exist");
 		}
-		return false;
 	}
 
 	@Override
-	public boolean renameFile(String path, String title) throws EsupStockException {
+	public boolean renameFile(String path, String title) throws EsupSignatureFsException {
 		CmisObject cmisObject = getCmisObject(path);
 		HashMap<String, String> m = new HashMap<String, String>();
         m.put("cmis:name",title);

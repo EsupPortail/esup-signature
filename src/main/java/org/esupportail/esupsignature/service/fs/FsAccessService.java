@@ -17,6 +17,7 @@
  */
 package org.esupportail.esupsignature.service.fs;
 
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.fs.uri.UriManipulateService;
 
 import javax.mail.Quota;
@@ -90,21 +91,23 @@ public abstract class FsAccessService {
 
 	protected abstract boolean isOpened();
 
-	public abstract boolean remove(FsFile fsFile);
+	public abstract void remove(FsFile fsFile) throws EsupSignatureFsException;
 	
-	public abstract List<FsFile> listFiles(String path) throws EsupStockException;
+	public abstract List<FsFile> listFiles(String path) throws EsupSignatureFsException;
 
 	public abstract String createFile(String parentPath, String title, String type);
 
-	public abstract boolean renameFile(String path, String title) throws EsupStockException;
+	public abstract boolean renameFile(String path, String title) throws EsupSignatureFsException;
 
-	public abstract boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws EsupStockException, IOException;
+	public abstract boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws EsupSignatureFsException, IOException;
 
 	public abstract FsFile getFile(String dir) throws Exception;
 
+	public abstract Object cd(String dir);
+
 	public abstract FsFile getFileFromURI(String uri) throws Exception;
 	
-	public abstract boolean putFile(String dir, String filename,InputStream inputStream, UploadActionType uploadOption) throws EsupStockException;
+	public abstract boolean putFile(String dir, String filename,InputStream inputStream, UploadActionType uploadOption) throws EsupSignatureFsException;
 
 	public boolean supportIntraCopyPast() {
 		return true;

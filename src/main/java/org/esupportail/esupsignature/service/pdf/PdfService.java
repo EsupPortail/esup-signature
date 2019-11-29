@@ -146,7 +146,7 @@ public class PdfService {
                 InputStream file = convertGS(writeMetadatas(in, toSignFile.getFileName(), signRequest));
                 return documentService.createDocument(file, toSignFile.getFileName(), toSignFile.getContentType());
             } catch (Exception e) {
-                logger.error("enable to convert to pdf A", e);
+                logger.error("unable to convert to pdf A", e);
             }
         } catch (IOException e) {
             logger.error("error to add image", e);
@@ -476,7 +476,7 @@ public class PdfService {
                 try {
                     pdDocument.close();
                 } catch (IOException e) {
-                    logger.error("enable to close document", e);
+                    logger.error("unable to close document", e);
                 }
             }
         }
@@ -512,7 +512,7 @@ public class PdfService {
                 try {
                     pdDocument.close();
                 } catch (IOException e) {
-                    logger.error("enable to close document", e);
+                    logger.error("unable to close document", e);
                 }
             }
         }

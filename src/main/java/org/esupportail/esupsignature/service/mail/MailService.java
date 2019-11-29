@@ -91,7 +91,7 @@ public class MailService {
             message.setText(htmlContent, true);
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            logger.error("enable to sens email", e);
+            logger.error("unable to sens email", e);
         }
 
     }
@@ -119,7 +119,7 @@ public class MailService {
             message.setText(htmlContent, true);
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            logger.error("enable to sens email", e);
+            logger.error("unable to sens email", e);
         }
 
     }
@@ -147,7 +147,7 @@ public class MailService {
             message.setText(htmlContent, true); // true = isHtml
             mailSender.send(mimeMessage);
         } catch (MessagingException | IOException e) {
-            logger.error("enable to sens email", e);
+            logger.error("unable to sens email", e);
         }
     }
 
