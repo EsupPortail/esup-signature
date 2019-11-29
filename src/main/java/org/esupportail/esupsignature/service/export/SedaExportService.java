@@ -67,14 +67,14 @@ public class SedaExportService {
 
     public InputStream generateSip(SignRequest signRequest) {
         try {
-            File targetFile = File.createTempFile(signRequest.getTitle() + "-seda.zip", ".zip");
+            File targetFile = fileService.getTempFile(signRequest.getTitle() + "-seda.zip");
             Document document = signRequestService.getLastSignedDocument(signRequest);
-            File file = File.createTempFile(fileService.getNameOnly(document.getFileName()), fileService.getExtension(document.getFileName()));
+            File file = fileService.getTempFile(document.getFileName());
             OutputStream outputStream = new FileOutputStream(file);
             IOUtils.copy(document.getInputStream(), outputStream);
             outputStream.close();
             Reports reports = validationService.validate(new FileInputStream(file));
-            File validationXml = File.createTempFile("validation", "xml");
+            File validationXml = fileService.getTempFile("validation.xml");
             FileWriter fw = new java.io.FileWriter(validationXml.getAbsolutePath());
             fw.write(reports.getXmlDiagnosticData());
             fw.close();

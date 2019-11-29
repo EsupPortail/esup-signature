@@ -152,7 +152,7 @@ public class UserController {
         }
         Document oldSignImage = userToUpdate.getSignImage();
         if(signImageBase64 != null && !signImageBase64.isEmpty()) {
-        	userToUpdate.setSignImage(documentService.createDocument(fileService.base64Transparence(signImageBase64), userToUpdate.getEppn() + "_sign"));
+        	userToUpdate.setSignImage(documentService.createDocument(fileService.base64Transparence(signImageBase64), userToUpdate.getEppn() + "_sign.png", "image/png"));
             if(oldSignImage != null) {
             	oldSignImage.getBigFile().getBinaryFile().free();
             	bigFileRepository.delete(oldSignImage.getBigFile());

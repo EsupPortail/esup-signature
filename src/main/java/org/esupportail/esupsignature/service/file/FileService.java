@@ -36,12 +36,8 @@ public class FileService {
 		return null;
 	}
 
-	public File fromBase64Image(String base64Image, String name) throws IOException {
-		File fileImage = File.createTempFile(name, ".png");
-		ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(base64Image.substring(base64Image.lastIndexOf(',') + 1).trim()));
-        BufferedImage image = ImageIO.read(bis);
-        ImageIO.write(image, "png", fileImage);
-        return fileImage;
+	public InputStream fromBase64Image(String base64Image) {
+		return new ByteArrayInputStream(Base64.getDecoder().decode(base64Image.substring(base64Image.lastIndexOf(',') + 1).trim()));
 	}
 
 	public String getContentType(File file) {
@@ -60,7 +56,19 @@ public class FileService {
 	public String getNameOnly(String name) {
 		return FilenameUtils.getBaseName(name);
 	}
-	
+
+	public File getTempFile(String name) {
+		try {
+			File tempFile = File.createTempFile(getNameOnly(name), getExtension(name));
+			tempFile.deleteOnExit();
+			return tempFile;
+		} catch (IOException e) {
+			logger.error("enable to create temp file", e);
+		}
+		return null;
+	}
+
+
 	public String getBase64Image(Document document) throws IOException {
 		BufferedImage imBuff = ImageIO.read(document.getInputStream());
 		return getBase64Image(imBuff, document.getFileName());

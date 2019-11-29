@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.fs.EsupStockException;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.hibernate.annotations.Synchronize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -167,7 +168,7 @@ public class SignBookController {
 		SignBook newSignBook = new SignBook();
 		newSignBook.setName(name);
 		newSignBook.setSignBookType(SignBookType.valueOf(signBookType));
-		SignBook signBook = null;
+		SignBook signBook;
 		try {
 			signBook = signBookService.createSignBook(newSignBook, user, multipartFile, false);
 		} catch (EsupSignatureException e) {
@@ -422,15 +423,11 @@ public class SignBookController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/signbooks/" + id;
 		}
-
-		//TODO with workflowsteps
-
 		signBook.setUpdateBy(user.getEppn());
 		signBook.setUpdateDate(new Date());
-
 		return "redirect:/manager/signbooks/" + id;
 	}
-	
+
 	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
 	public String getFileFromSource(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
@@ -443,9 +440,9 @@ public class SignBookController {
 		try {
 			signBookService.importFilesFromSource(signBook, user);
 		} catch (EsupSignatureIOException e) {
-			redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
+			redirectAttrs.addFlashAttribute("messageError", e.getMessage());
 		} catch (EsupStockException e) {
-			redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
+			redirectAttrs.addFlashAttribute("messageError", e.getMessage());
 		}
 		
 		return "redirect:/manager/signbooks/" + id;

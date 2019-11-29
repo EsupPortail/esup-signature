@@ -261,7 +261,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		FsFile fsFile = new FsFile();
 		fsFile.setName(fileObject.getName().getBaseName());
 		fsFile.setContentType(fileObject.getContent().getContentInfo().getContentType());
-		fsFile.setFile(inputStream);
+		fsFile.setInputStream(inputStream);
 		//TODO recup creator + date
 		//System.err.println(fileContent.getAttributes());
 		return fsFile;

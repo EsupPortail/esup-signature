@@ -7,16 +7,17 @@ import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.*;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.*;
-import org.esupportail.esupsignature.service.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 
 @Service
@@ -47,6 +48,9 @@ public class SignBookService {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private FileService fileService;
 
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<SignBook>();
@@ -186,20 +190,18 @@ public class SignBookService {
             logger.info("retrieve from " + signBook.getSourceType() + " in " + signBook.getDocumentsSourceUri());
             FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signBook.getSourceType());
             try {
-                List<FsFile> fsFiles = new ArrayList<FsFile>();
+                List<FsFile> fsFiles = new ArrayList<>();
                 try {
                     fsFiles.addAll(fsAccessService.listFiles("/" + signBook.getDocumentsSourceUri() + "/"));
                 } catch (EsupStockException e) {
                     logger.warn("create non existing folder because", e);
-                    fsAccessService.createFile("/", signBook.getSignBookType().toString(), "folder");
-                    fsAccessService.createFile("/" + signBook.getSignBookType().toString(), signBook.getName(), "folder");
-                    fsAccessService.createFile("/" + signBook.getSignBookType().toString() + "/" + signBook.getName(), "signed", "folder");
+                    fsAccessService.createFile("/", signBook.getDocumentsSourceUri(), "folder");
+                    fsAccessService.createFile("/" + signBook.getDocumentsSourceUri() + "/", "signed", "folder");
                 }
                 if (fsFiles.size() > 0) {
                     for (FsFile fsFile : fsFiles) {
                         logger.info("adding file : " + fsFile.getName());
-                        fsFile.setPath(signBook.getDocumentsSourceUri());
-                        Document documentToAdd = documentService.createDocument(fsFile.getFile(), fsFile.getName(), fsFile.getContentType());
+                        Document documentToAdd = documentService.createDocument(fsFile.getInputStream(), fsFile.getName(), fsFile.getContentType());
                         if (fsFile.getCreateBy() != null && userRepository.countByEppn(fsFile.getCreateBy()) > 0) {
                             user = userRepository.findByEppn(fsFile.getCreateBy()).get(0);
                             user.setIp("127.0.0.1");
@@ -207,13 +209,23 @@ public class SignBookService {
                         List<String> signBookRecipientsEmails = new ArrayList<>();
                         signBookRecipientsEmails.add(user.getEmail());
                         SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd);
-                        signRequest.setTitle("Import depuis " + signBook.getSourceType() + " : " + signBook.getDocumentsSourceUri());
-                        //importSignRequestInSignBook(signRequest, signBook, user);
+                        signRequest.setTitle(documentToAdd.getFileName());
+                        signRequestRepository.save(signRequest);
+                        signRequestService.importWorkflow(signRequest, signBook);
                         signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Import depuis " + signBook.getSourceType() + " : " + signBook.getDocumentsSourceUri(), user, "SUCCESS", null);
                         fsAccessService.remove(fsFile);
+//                        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter(){
+//                            public void afterCommit(){
+//                                try {
+//                                    fsAccessService.remove(fsFile);
+//                                } catch (EsupStockException e) {
+//                                    logger.error("enable to remove source document");
+//                                }
+//                            }
+//                        });
                     }
                 } else {
-                    throw new EsupSignatureIOException("no file to import in this folder : " + signBook.getDocumentsSourceUri());
+                    throw new EsupSignatureIOException("Aucun fichier à importer depuis " + signBook.getSourceType().name() + "://" + fsAccessService.getUri() + "/" + signBook.getDocumentsSourceUri());
                 }
             } catch (IOException e) {
                 logger.error("read fsaccess error : ", e);

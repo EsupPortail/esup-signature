@@ -115,7 +115,7 @@ public class ValidationController {
 
 		Document toValideDocument = signRequestService.getLastSignedDocument(signRequest);
 
-		File file = File.createTempFile(toValideDocument.getFileName(), ".pdf");
+		File file = fileService.getTempFile(toValideDocument.getFileName());
 		OutputStream outputStream = new FileOutputStream(file);
 		IOUtils.copy(toValideDocument.getInputStream(), outputStream);
 		outputStream.close();

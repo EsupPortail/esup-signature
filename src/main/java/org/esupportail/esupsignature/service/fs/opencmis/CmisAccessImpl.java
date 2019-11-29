@@ -183,7 +183,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 		FsFile fsFile = new FsFile();
 		Document document = (Document) cmisObject;
 		InputStream inputStream = document.getContentStream().getStream();
-		fsFile.setFile(inputStream);
+		fsFile.setInputStream(inputStream);
 		fsFile.setName(document.getName());
 		fsFile.setContentType(document.getContentStreamMimeType());
 		fsFile.setId(cmisObject.getProperty("nuxeo:pathSegment").getValueAsString());

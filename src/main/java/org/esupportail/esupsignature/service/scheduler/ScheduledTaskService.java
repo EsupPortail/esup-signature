@@ -40,7 +40,7 @@ public class ScheduledTaskService {
 	@Resource
 	private OJService oJService;
 
-	@Scheduled(fixedRate = 100000)
+	//@Scheduled(fixedRate = 100000)
 	@Transactional
 	public void scanAllSignbooksSources() throws EsupStockException {
 		List<SignBook> signBooks = signBookService.getAllSignBooks();
@@ -50,7 +50,6 @@ public class ScheduledTaskService {
 			} catch (EsupSignatureIOException e) {
 				logger.warn(e.getMessage());
 			}
-			
 		}
 	}
 

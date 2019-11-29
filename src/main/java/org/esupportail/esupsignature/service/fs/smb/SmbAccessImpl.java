@@ -25,6 +25,7 @@ import jcifs.CIFSException;
 import jcifs.config.PropertyConfiguration;
 import jcifs.context.BaseContext;
 import jcifs.smb.*;
+import org.apache.chemistry.opencmis.commons.impl.IOUtils;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.*;
 import org.slf4j.Logger;
@@ -33,9 +34,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.FileCopyUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -239,7 +238,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	public FsFile getFile(String dir) throws Exception {
 		try {
 			SmbFile smbFile = cd(dir);
-			return toFsFile(smbFile);
+			return toFsFile(smbFile, dir);
 		} catch (SmbException e) {
 			logger.warn("can't download file : " + e.getMessage(), e);
 		} catch (IOException e) {
@@ -253,7 +252,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		try {
 			open();
 			SmbFile smbFile = new SmbFile(uri, cifsContext);
-			return toFsFile(smbFile);
+			return toFsFile(smbFile, uri);
 		} catch (SmbException e) {
 			logger.warn("can't download file : " + e.getMessage(), e);
 		} catch (IOException e) {
@@ -333,13 +332,13 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			if(jcifsSynchronizeRootListing && this.root.equals(resource)) {
 				synchronized (this.root.getCanonicalPath()) {
 					for(SmbFile smbFile : resource.listFiles()) {
-						fsFiles.add(toFsFile(smbFile));
+						fsFiles.add(toFsFile(smbFile, url));
 					}
 				}
 			} else {
 				for(SmbFile smbFile : resource.listFiles()) {
 					if(!smbFile.isDirectory()) {
-						fsFiles.add(toFsFile(smbFile));
+						fsFiles.add(toFsFile(smbFile, url));
 					}
 				}
 			}
@@ -349,13 +348,16 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		return fsFiles;
 	}
 	
-	private FsFile toFsFile(SmbFile smbFile) throws IOException {
-		FsFile fsFile = new FsFile(smbFile.getInputStream(), smbFile.getName(), URLConnection.guessContentTypeFromName(smbFile.getName()));
-		/*
-		if(smbFile.getOwnerUser() != null) {
-			fsFile.setCreateBy(smbFile.getOwnerUser().getAccountName());
-		}
-		*/
+	private FsFile toFsFile(SmbFile smbFile, String path) throws IOException {
+		File tempFile = fileService.getTempFile(smbFile.getName());
+		FileOutputStream out = new FileOutputStream(tempFile);
+		InputStream is = smbFile.getInputStream();
+		IOUtils.copy(is, out);
+		is.close();
+		out.close();
+		smbFile.close();
+		FsFile fsFile = new FsFile(new FileInputStream(tempFile), smbFile.getName(), URLConnection.guessContentTypeFromName(smbFile.getName()));
+		fsFile.setPath(path);
 		fsFile.setCreateDate(new Date(smbFile.getDate()));
 		return fsFile;
 	}

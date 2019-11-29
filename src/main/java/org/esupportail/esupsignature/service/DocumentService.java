@@ -27,8 +27,8 @@ public class DocumentService {
 	@Resource
 	private FileService fileService;
 
-	public Document createDocument(String base64File, String name) throws IOException {
-		return createDocument(fileService.fromBase64Image(base64File, name), name);
+	public Document createDocument(String base64File, String name, String contentType) throws IOException {
+		return createDocument(fileService.fromBase64Image(base64File), name, contentType);
     }
 
 	public Document createDocument(File file, String name) throws IOException {

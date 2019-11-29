@@ -258,7 +258,7 @@ public class WsController {
                     } else {
                         response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
                         response.setContentType(file.getContentType());
-                        IOUtils.copy(file.getFile(), response.getOutputStream());
+                        IOUtils.copy(file.getInputStream(), response.getOutputStream());
                     }
                     return new ResponseEntity<>(HttpStatus.OK);
                 } catch (Exception e) {
@@ -290,7 +290,7 @@ public class WsController {
                     } else {
                         response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
                         response.setContentType(file.getContentType());
-                        IOUtils.copy(file.getFile(), response.getOutputStream());
+                        IOUtils.copy(file.getInputStream(), response.getOutputStream());
                     }
                     return new ResponseEntity<>(HttpStatus.OK);
                 } catch (Exception e) {

@@ -34,6 +34,7 @@ import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.DocumentService;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -71,6 +72,9 @@ public class PdfService {
 
     @Resource
     private DocumentService documentService;
+
+    @Resource
+    private FileService fileService;
 
     public Document stampImage(Document toSignFile, SignRequest signRequest, User user, boolean addPage, boolean addDate) throws InvalidPasswordException, IOException {
         //TODO add ip ? + date + nom ?
@@ -239,7 +243,7 @@ public class PdfService {
     public InputStream convertGS(InputStream inputStream) throws IOException {
         File file = inputStreamToPdfTempFile(inputStream);
         if (!isPdfAComplient(file)) {
-            File targetFile = File.createTempFile("afterconvert_tmp", ".pdf");
+            File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
             String defFile = PdfService.class.getResource("/PDFA_def.ps").getFile();
             String cmd = pdfConfig.getPdfProperties().getPathToGS() + "gs -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
             logger.info("GhostScript PDF/A convertion : " + cmd);
@@ -486,7 +490,7 @@ public class PdfService {
     }
 
     public File inputStreamToPdfTempFile(InputStream inputStream) throws IOException {
-        File file = File.createTempFile("tmp", ".pdf");
+        File file = fileService.getTempFile("tmp.pdf");
         OutputStream outputStream = new FileOutputStream(file);
         IOUtils.copy(inputStream, outputStream);
         outputStream.close();

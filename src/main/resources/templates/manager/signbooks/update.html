@@ -3,16 +3,34 @@
 <head th:replace="fragments/head :: head"></head>
 <body>
 <nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-<nav class="nav justify-content-between" aria-label="breadcrumb">
-    <div class="navbar-nav">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/manager/">Liste des parapheurs</a></li>
-            <li class="breadcrumb-item active"><span th:text="'Modification de parapheur ' + ${signBook.name}"></span></li>
-        </ol>
-    </div>
-</nav>
-<main role="main" class="container">
-    <form th:object="${signBook}" th:action="'/manager/signbooks/update/' + ${signBook.id}" method="post">
+<main role="main">
+    <div class="wrapper">
+        <nav id="sidebar">
+            <div class="m-1">
+                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+                </button>
+                <button title="Abandonner" type="button" class="btn btn-danger col-12 mb-1 text-left" value="Retour" onclick="window.history.back()">
+                    <i class="fas fa-times"></i><span class="sidebar-label"> Abandonner</span>
+                </button>
+                <button type="submit" class="btn btn-success col-12 mb-1 text-left" onclick="document.getElementById('updateSignBook').submit();">
+                    <i class="fas fa-save"></i> <span class="sidebar-label">Enregistrer</span>
+                </button>
+            </div>
+        </nav>
+        <div id="content" class="content">
+            <nav aria-label="breadcrumb" class="nav justify-content-between">
+                <div class="navbar-nav col-12">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/manager">Liste des
+                            parapheurs</a></li>
+                        <li aria-current="page" class="breadcrumb-item active">Parapheur
+                            : <span th:text="${signBook.name}"></span>
+                        </li>
+                    </ol>
+                </div>
+            </nav>
+    <form th:object="${signBook}" th:action="'/manager/signbooks/update/' + ${signBook.id}" method="post" id="updateSignBook">
         <input type="hidden" th:field="*{id}">
         <div class="card card-body bg-light">
             <div class="row">
@@ -73,14 +91,13 @@
                         </label>
                         <select class="form-control" id="_sourceType_id" th:field="*{sourceType}" size="1">
                             <th:block th:each="sourceType : ${sourceTypes}">
-                                <option th:if="${signBook.sourceType == sourceType}" selected="selected" th:value="${sourceType}" th:text="${sourceType}"></option>
-                                <option th:unless="${signBook.sourceType == sourceType}" value="${sourceType}" th:text="${sourceType}"></option>
+                                <option th:selected="${signBook.sourceType == sourceType}" th:value="${sourceType}" th:text="#{'signbook.documentiotype.' + ${sourceType}}"></option>
                             </th:block>
                         </select>
                     </div>
                     <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri">
                         <label for="documentsSourceUri"> <strong>Lien pour la source des documents</strong></label>
-                        <input id="documentsSourceUri" name="documentsSourceUri" placeholder="Si autre que la valeur par défaut" class="form-control" type="text" value="" autocomplete="on">
+                        <input id="documentsSourceUri" th:field="*{documentsSourceUri}" placeholder="Si autre que la valeur par défaut" class="form-control" type="text" value="" autocomplete="on">
                     </div>
                     <div class="form-group" id="c_org_esupportail_esupsignature_domain_SignBook_targetType">
                         <label for="_targetType_id">
@@ -88,33 +105,24 @@
                         </label>
                         <select class="form-control" id="_targetType_id" th:field="*{targetType}" size="1">
                             <th:block th:each="targetType : ${targetTypes}">
-                                <option th:if="${signBook.targetType == targetType}" selected="selected" th:value="${targetType}" th:text="${targetType}"></option>
-                                <option th:unless="${signBook.targetType == targetType}" th:value="${targetType}" th:text="${targetType}"></option>
+                                <option th:selected="${signBook.targetType == targetType}" th:value="${targetType}" th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
                             </th:block>
                         </select>
                     </div>
                     <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri">
                         <label for="documentsTargetUri"><strong>Lien pour la destination des documents</strong></label>
-                        <input id="documentsTargetUri" name="documentsTargetUri" placeholder="Si autre que la valeur par défaut" class="form-control" type="text" value="" autocomplete="on">
+                        <input id="documentsTargetUri" th:field="*{documentsTargetUri}" placeholder="Si autre que la valeur par défaut" class="form-control" type="text" value="" autocomplete="on">
                     </div>
-                    <div class="form-group">
-                        <label for="inputGroupFile01"><strong> Ajouter un modèle </strong></label>
-                        <div class="input-group">
-                            <div class="custom-file">
-                                <input aria-describedby="inputGroupFileAddon01" class="custom-file-input" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file"/>
-                                <label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01">
-                                </label>
-                            </div>
-                        </div>
+                    <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_description">
+                        <label for="_description_id"><strong>Description</strong></label>
+                        <textarea id="_description_id" name="description" class="form-control" rows="5" cols="50"></textarea>
                     </div>
-                    <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_description"><label for="_description_id" class="col-lg-3  col-form-label"><strong>Description</strong></label>
-                        <div class="col-lg-9"><textarea id="_description_id" name="description" class="form-control" rows="5" cols="50"></textarea><br></div>
-                    </div>
-                    <input type="submit" class="btn btn-success" value="Valider">
                 </div>
             </div>
         </div>
     </form>
+    </div>
+    </div>
 </main>
 <script type="text/javascript">
     var sourceSelector = document.getElementById("_sourceType_id");
@@ -177,5 +185,7 @@
 
     });
 </script>
+<div th:replace="fragments/footer :: footer"></div>
+<div th:replace="fragments/message :: message"></div>
 </body>
 </html>

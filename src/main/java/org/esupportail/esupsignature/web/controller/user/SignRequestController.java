@@ -616,28 +616,7 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
             SignBook signBook = signBookRepository.findById(workflowSignBookId).get();
-            for (WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
-                WorkflowStep newWorkflowStep = new WorkflowStep();
-                newWorkflowStep.setSignRequestParams(workflowStep.getSignRequestParams());
-                newWorkflowStep.setAllSignToComplete(workflowStep.isAllSignToComplete());
-                for(Long signBookId : workflowStep.getSignBooks().keySet()){
-                    SignBook signBookToAdd = signBookRepository.findById(signBookId).get();
-                    if(signBookToAdd.getRecipientEmails().size() > 0) {
-                        for(String signBookRecipientEmail : signBookToAdd.getRecipientEmails()) {
-                            SignBook signBookRecipient = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookRecipientEmail), SignBookType.user).get(0);
-                            newWorkflowStep.getSignBooks().put(signBookRecipient.getId(), false);
-                        }
-                    } else {
-                        newWorkflowStep.getSignBooks().put(signBookToAdd.getId(), false);
-                    }
-                }
-                workflowStepRepository.save(newWorkflowStep);
-                signRequest.getWorkflowSteps().add(newWorkflowStep);
-            }
-            signRequest.setWorkflowName(signBook.getName());
-            signRequest.setTargetType(signBook.getTargetType());
-            signRequest.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
-            signRequestRepository.save(signRequest);
+            signRequestService.importWorkflow(signRequest, signBook);
         }
         return "redirect:/user/signrequests/" + id;
     }

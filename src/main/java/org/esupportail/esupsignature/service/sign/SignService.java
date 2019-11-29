@@ -202,7 +202,7 @@ public class SignService {
 				RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
 		graphics2D.setColor(Color.black);
 		graphics2D.drawString("Le " + dateFormat.format(new Date()), 0, 15);
-		File fileImage = File.createTempFile("sign", "png");
+		File fileImage = fileService.getTempFile("sign.png");
 		ImageIO.write(image, "png", fileImage);
 		graphics2D.dispose();
 		return fileImage;

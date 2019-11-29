@@ -30,7 +30,7 @@
             </button>
             <button title="Retour" type="button" class="mb-1 col-12 btn btn-light text-left"
                     value="Retour" onclick="location.href='/manager/signbooks'">
-                <i class="fas fa-door-open"></i><span class="sidebar-label"> Retour</span>
+                <i class="fas fa-door-open"></i><span class="sidebar-label"> Retour à la liste</span>
             </button>
             </div>
         </nav>
@@ -104,12 +104,10 @@
                         <dl class="row border-bottom m-0">
                             <dt class="col-lg-5">Lien pour la source des documents</dt>
                             <dd th:text="${signBook.documentsSourceUri}"></dd>
+                            <a class="btn btn-primary" th:href="'/manager/signbooks/get-files-from-source/' + ${id}">
+                                <i class="fas fa-file-import"></i> Importer manuellement
+                            </a>
                         </dl>
-                        <button class="btn btn-primary"
-                                onclick="location.href='/manager/signbooks/get-files-from-source/${id}'">
-                            <i class="fas fa-file-import"> <!--  -->
-                            </i> Import from source
-                        </button>
                     </div>
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Protocole pour la destination des
@@ -337,5 +335,7 @@
         signBookSelect = document.getElementById("signBookNames");
     });
 </script>
+<div th:replace="fragments/footer :: footer"></div>
+<div th:replace="fragments/message :: message"></div>
 </body>
 </html>

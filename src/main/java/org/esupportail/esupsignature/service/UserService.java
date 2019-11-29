@@ -148,23 +148,6 @@ public class UserService {
 		}
     	
     }
-	
-    public User addSignImage(User user, String signImageBase64) throws IOException {
-    	user.setSignImage(documentService.createDocument(user.getSignImageBase64(), user.getEppn() + "_sign"));
-    	userRepository.save(user);
-    	return user;
-    	
-    }
-    
-    public PersonLdap getPersonLdap(User user) {
-    	if(personDao != null) {
-    		List<PersonLdap> persons =  personDao.getPersonNamesByEppn(user.getEppn());
-    		if(persons.size() > 0) {
-    			return persons.get(0);
-    		}
-    	}
-    	return null;
-    }
 
 	public User getSystemUser() {
 		User user = new User();

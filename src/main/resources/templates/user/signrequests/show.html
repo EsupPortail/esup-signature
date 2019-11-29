@@ -5,7 +5,7 @@
 <body>
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
-    <nav class="wrapper">
+    <div class="wrapper">
         <nav id="sidebar">
             <div class="m-1">
                 <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
@@ -138,7 +138,7 @@
             <div th:replace="user/signrequests/cards/logscard :: logscard"></div>
         </th:block>
         </div>
-    </nav>
+    </div>
 </main>
 
 <div class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-labelledby="Refus" aria-hidden="true">
