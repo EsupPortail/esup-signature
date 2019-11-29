@@ -45,11 +45,7 @@ public class ScheduledTaskService {
 	public void scanAllSignbooksSources() throws EsupStockException {
 		List<SignBook> signBooks = signBookService.getAllSignBooks();
 		for(SignBook signBook : signBooks) {
-			try {
-				signBookService.importFilesFromSource(signBook, getSchedulerUser());
-			} catch (EsupSignatureIOException e) {
-				logger.warn(e.getMessage());
-			}
+			signBookService.importFilesFromSource(signBook, getSchedulerUser());
 		}
 	}
 

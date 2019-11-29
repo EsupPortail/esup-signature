@@ -73,7 +73,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	protected void open() throws EsupStockException {
+	protected void open() {
 		super.open();
 		try {
 			if(!isOpened()) {
@@ -99,8 +99,8 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 				fsManager = VFS.getManager();
 				root = fsManager.resolveFile(uri, fsOptions);
 			}
-		} catch(FileSystemException fse) {
-			throw new EsupStockException(fse);
+		} catch(FileSystemException e) {
+			logger.error("enable to open vfs", e);
 		}
 	}
 
@@ -123,7 +123,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		return (root != null);
 	}
 
-	private FileObject cd(String path) throws EsupStockException {
+	private FileObject cd(String path) {
 		try {
 			// assure that it'as already opened
 			this.open();
@@ -140,8 +140,9 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			returnValue.refresh();
 			return returnValue;
 		} catch(FileSystemException fse) {
-			throw new EsupStockException(fse);
-		} 
+			logger.error("enable to open directory");
+		}
+		return null;
 	}
 	
 	@Override
@@ -165,7 +166,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 	@Override
-	public boolean remove(FsFile fsFile) throws EsupStockException {
+	public boolean remove(FsFile fsFile) {
 		boolean success = false;
 		FileObject file;
 		try {
@@ -180,7 +181,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public String createFile(String parentPath, String title, String type) throws EsupStockException {
+	public String createFile(String parentPath, String title, String type) {
 		try {
 			FileObject parent = cd(parentPath);
 			FileObject child = parent.resolveFile(title);

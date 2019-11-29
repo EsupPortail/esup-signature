@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.fs.EsupStockException;
+import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.hibernate.annotations.Synchronize;
@@ -429,7 +430,7 @@ public class SignBookController {
 	}
 
 	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
-	public String getFileFromSource(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
+	public String getFileFromSource(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws EsupStockException {
 		User user = userService.getUserFromAuthentication();
 		SignBook signBook = signBookRepository.findById(id).get();
 
@@ -437,16 +438,13 @@ public class SignBookController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/signbooks/" + id;
 		}
-		try {
-			signBookService.importFilesFromSource(signBook, user);
-		} catch (EsupSignatureIOException e) {
-			redirectAttrs.addFlashAttribute("messageError", e.getMessage());
-		} catch (EsupStockException e) {
-			redirectAttrs.addFlashAttribute("messageError", e.getMessage());
+		List<FsFile> fsFiles = signBookService.importFilesFromSource(signBook, user);
+		if(fsFiles.size() == 0) {
+			redirectAttrs.addFlashAttribute("messageError", "Aucun fichier à importer");
+		} else {
+			redirectAttrs.addFlashAttribute("messageInfo", fsFiles.size() + " ficher(s) importé(s)");
 		}
-		
 		return "redirect:/manager/signbooks/" + id;
-
 	}
 
 }

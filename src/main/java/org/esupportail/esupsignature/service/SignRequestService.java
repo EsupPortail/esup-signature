@@ -285,14 +285,10 @@ public class SignRequestService {
 	}
 	
 	public void addSignedFile(SignRequest signRequest, InputStream signedInputStream, String fileName, String mimeType, User user) throws EsupSignatureIOException {
-		try {
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-			Document document = documentService.createDocument(signedInputStream, signRequest.getTitle() + "_" + signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType() + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(fileName), mimeType);
-			signRequest.getSignedDocuments().add(document);
-			document.setParentId(signRequest.getId());
-		} catch (IOException e) {
-			throw new EsupSignatureIOException("error on save signed file", e);
-		}
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+		Document document = documentService.createDocument(signedInputStream, signRequest.getTitle() + "_" + signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType() + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(fileName), mimeType);
+		signRequest.getSignedDocuments().add(document);
+		document.setParentId(signRequest.getId());
 	}
 
 	public void applyEndOfStepRules(SignRequest signRequest, User user) throws EsupSignatureException, IOException {

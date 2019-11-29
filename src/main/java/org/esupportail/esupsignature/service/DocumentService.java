@@ -27,7 +27,7 @@ public class DocumentService {
 	@Resource
 	private FileService fileService;
 
-	public Document createDocument(String base64File, String name, String contentType) throws IOException {
+	public Document createDocument(String base64File, String name, String contentType) {
 		return createDocument(fileService.fromBase64Image(base64File), name, contentType);
     }
 
@@ -35,7 +35,7 @@ public class DocumentService {
 		return createDocument(new FileInputStream(file), name, Files.probeContentType(file.toPath()));
     }
 	
-	public List<Document> createDocuments(MultipartFile[] multipartFiles) throws IOException {
+	public List<Document> createDocuments(MultipartFile[] multipartFiles) {
 		List<Document> documents = new ArrayList<>();
 		for(MultipartFile multipartFile : multipartFiles) {
 			documents.add(createDocument(multipartFile, multipartFile.getOriginalFilename()));
@@ -43,27 +43,36 @@ public class DocumentService {
 		return documents;
     }
 	
-	public Document createDocument(MultipartFile multipartFile, String name) throws IOException {
+	public Document createDocument(MultipartFile multipartFile, String name) {
 		if ((multipartFile != null) && !multipartFile.isEmpty()) {
-			return createDocument(multipartFile.getInputStream(), name, multipartFile.getContentType());
+			try {
+				return createDocument(multipartFile.getInputStream(), name, multipartFile.getContentType());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		return null;
     }
 	
-	public Document createDocument(InputStream inputStream, String name, String contentType) throws IOException {
-        return persistDocument(inputStream, name, inputStream.available(), contentType);
+	public Document createDocument(InputStream inputStream, String name, String contentType) {
+        return persistDocument(inputStream, name, contentType);
     }
 	
-	public Document persistDocument(InputStream inputStream, String name, long size, String contentType) {
+	public Document persistDocument(InputStream inputStream, String name, String contentType) {
 		Document document = new Document();
 		document.setCreateDate(new Date());
 		document.setFileName(name);
 		BigFile bigFile = new BigFile();
-		bigFileService.setBinaryFileStream(bigFile, inputStream, size);
-		document.setBigFile(bigFile);
-		document.setSize(size);
-		document.setContentType(contentType);
-		documentRepository.save(document);
+		try {
+			long size = inputStream.available();
+			bigFileService.setBinaryFileStream(bigFile, inputStream, size);
+			document.setBigFile(bigFile);
+			document.setSize(size);
+			document.setContentType(contentType);
+			documentRepository.save(document);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return document;
 	}
 	

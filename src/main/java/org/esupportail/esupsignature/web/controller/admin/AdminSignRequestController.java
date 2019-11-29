@@ -199,18 +199,14 @@ public class AdminSignRequestController {
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
-			try {
-				if(signRequest.getOriginalDocuments().size() > 0 &&
-				(signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.pdfImageStamp) || signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.visa))
-				) {
-					signRequest.getOriginalDocuments().remove(signRequest.getOriginalDocuments().get(0));
-				}
-				List<Document> documents =  documentService.createDocuments(multipartFiles);
-				signRequestService.addOriginalDocuments(signRequest, documents);
-				signRequestRepository.save(signRequest);
-			} catch (IOException e) {
-				logger.error("error to add file : " + multipartFiles[0].getOriginalFilename(), e);
+			if(signRequest.getOriginalDocuments().size() > 0 &&
+			(signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.pdfImageStamp) || signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.visa))
+			) {
+				signRequest.getOriginalDocuments().remove(signRequest.getOriginalDocuments().get(0));
 			}
+			List<Document> documents =  documentService.createDocuments(multipartFiles);
+			signRequestService.addOriginalDocuments(signRequest, documents);
+			signRequestRepository.save(signRequest);
 		}
 		String[] ok = {"ok"};
 		return ok;

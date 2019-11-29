@@ -100,12 +100,7 @@ public class SignBookService {
         signBookToUpdate.setTargetType(signBook.getTargetType());
         if (multipartFile != null && !multipartFile.isEmpty()) {
             Document newModel;
-            try {
-                newModel = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-            } catch (IOException e) {
-                logger.error("enable to add model", e);
-                throw new EsupSignatureException(e.getMessage(), e);
-            }
+            newModel = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
             if (newModel != null) {
                 Document oldModel = signBookToUpdate.getModelFile();
                 signBookToUpdate.setModelFile(newModel);
@@ -151,12 +146,7 @@ public class SignBookService {
             }
             Document model = null;
             if (multipartFile != null) {
-                try {
-                    model = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-                } catch (IOException e) {
-                    logger.error("enable to add model", e);
-                    throw new EsupSignatureException(e.getMessage(), e);
-                }
+                model = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
                 signBook.setModelFile(model);
             } else {
                 signBook.setModelFile(null);
@@ -185,12 +175,11 @@ public class SignBookService {
         signBookRepository.delete(signBook);
     }
 
-    public void importFilesFromSource(SignBook signBook, User user) throws EsupSignatureIOException, EsupStockException {
+    public List<FsFile> importFilesFromSource(SignBook signBook, User user) throws EsupStockException {
+        List<FsFile> fsFiles = new ArrayList<>();
         if (signBook.getSourceType() != null && !signBook.getSourceType().equals(DocumentIOType.none)) {
             logger.info("retrieve from " + signBook.getSourceType() + " in " + signBook.getDocumentsSourceUri());
             FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signBook.getSourceType());
-            try {
-                List<FsFile> fsFiles = new ArrayList<>();
                 try {
                     fsFiles.addAll(fsAccessService.listFiles("/" + signBook.getDocumentsSourceUri() + "/"));
                 } catch (EsupStockException e) {
@@ -213,26 +202,13 @@ public class SignBookService {
                         signRequestRepository.save(signRequest);
                         signRequestService.importWorkflow(signRequest, signBook);
                         signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Import depuis " + signBook.getSourceType() + " : " + signBook.getDocumentsSourceUri(), user, "SUCCESS", null);
-                        fsAccessService.remove(fsFile);
-//                        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter(){
-//                            public void afterCommit(){
-//                                try {
-//                                    fsAccessService.remove(fsFile);
-//                                } catch (EsupStockException e) {
-//                                    logger.error("enable to remove source document");
-//                                }
-//                            }
-//                        });
+                        if(!fsAccessService.remove(fsFile)) {
+                            throw new EsupStockException("error on delete source file");
+                        }
                     }
-                } else {
-                    throw new EsupSignatureIOException("Aucun fichier à importer depuis " + signBook.getSourceType().name() + "://" + fsAccessService.getUri() + "/" + signBook.getDocumentsSourceUri());
                 }
-            } catch (IOException e) {
-                logger.error("read fsaccess error : ", e);
-            }
-        } else {
-            logger.trace("no source type for signbook : " + signBook.getName());
         }
+        return fsFiles;
     }
 
     public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook) {

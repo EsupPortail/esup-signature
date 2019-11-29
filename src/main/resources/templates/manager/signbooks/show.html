@@ -24,6 +24,9 @@
                     data-toggle="modal" data-target="#addStep">
                 <i class="fa fa-shoe-prints"></i><span class="sidebar-label"> Ajouter une étape</span>
             </button>
+            <a th:if="${signBook.sourceType.name() != 'none'}" class="mb-1 col-12 btn btn-primary text-left" th:href="'/manager/signbooks/get-files-from-source/' + ${id}">
+                <i class="fas fa-file-import"></i> Importer manuellement
+            </a>
             <button title="Ajouter un destinataire" th:if="${signBook.signBookType.name() == 'group'}" type="button" class="mb-1 col-12 btn btn-primary text-left"
                     data-toggle="modal" data-target="#addRecipients">
                 <i class="fa fa-plus"></i><span class="sidebar-label"> Ajouter un destinataire</span>
@@ -104,14 +107,10 @@
                         <dl class="row border-bottom m-0">
                             <dt class="col-lg-5">Lien pour la source des documents</dt>
                             <dd th:text="${signBook.documentsSourceUri}"></dd>
-                            <a class="btn btn-primary" th:href="'/manager/signbooks/get-files-from-source/' + ${id}">
-                                <i class="fas fa-file-import"></i> Importer manuellement
-                            </a>
                         </dl>
                     </div>
                     <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Protocole pour la destination des
-                            documents
+                        <dt class="col-lg-5">Protocole pour la destination des documents
                         </dt>
                         <dd th:text="#{'signbook.documentiotype.' + ${signBook.targetType}}"></dd>
                     </dl>

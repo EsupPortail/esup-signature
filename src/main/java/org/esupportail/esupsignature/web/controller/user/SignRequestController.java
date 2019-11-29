@@ -263,13 +263,9 @@ public class SignRequestController {
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
-            try {
-                List<Document> documents = documentService.createDocuments(multipartFiles);
-                signRequestService.addOriginalDocuments(signRequest, documents);
-                signRequestRepository.save(signRequest);
-            } catch (IOException e) {
-                logger.error("error to add file : " + multipartFiles[0].getOriginalFilename(), e);
-            }
+            List<Document> documents = documentService.createDocuments(multipartFiles);
+            signRequestService.addOriginalDocuments(signRequest, documents);
+            signRequestRepository.save(signRequest);
         }
         String[] ok = {"ok"};
         return ok;

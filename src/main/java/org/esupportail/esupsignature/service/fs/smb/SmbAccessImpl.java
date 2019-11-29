@@ -72,7 +72,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public void open() throws EsupStockException {
+	public void open() {
 		super.open();
 
 		if(!this.isOpened()) {
@@ -82,7 +82,6 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 					cifsContext = new BaseContext(new PropertyConfiguration(jcifsConfigProperties));
 				} catch (CIFSException e) {
 					logger.error(e.getMessage(), e);
-					throw new EsupStockException(e);
 				}
 			}
 
@@ -95,21 +94,16 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 				}
 			} catch (MalformedURLException me) {
 				logger.error(me.getMessage(), me);
-				throw new EsupStockException(me);
 			} catch (SmbAuthException e) {
 				if (e.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
 					logger.error("connect"+" :: bad password ");
-					throw new EsupStockException(e);
 				} else if (e.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
 					logger.error("connect"+" :: bad login ");
-					throw new EsupStockException(e);
 				} else {
 					logger.error("connect"+" :: "+e);
-					throw new EsupStockException(e);
 				}
 			} catch (SmbException se) {
 				logger.error("connect"+" :: "+se);
-				throw new EsupStockException(se);
 			}
 		}
 	}
@@ -128,33 +122,31 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		return (this.root != null) ;
 	}
 
-	private SmbFile cd(String path) throws EsupStockException {
+	private SmbFile cd(String path) {
 		try {
 			this.open();
 			if (path == null || path.length() == 0)
 				return root;
 			return new SmbFile(this.getUri() + path, cifsContext);
-		} catch (MalformedURLException me) {
-			logger.error(me.getMessage());
-			throw new EsupStockException(me);
+		} catch (MalformedURLException e) {
+			logger.error("enable to open" + e.getMessage());
 		}
+		return null;
 	}
 
 	@Override
-	public boolean remove(FsFile fsFile) throws EsupStockException {
+	public boolean remove(FsFile fsFile) {
 		logger.info("remove file " + fsFile.getPath() + "/" + fsFile.getName());
-		boolean success = false;
 		SmbFile file;
 		try {
 			file = cd("/" + fsFile.getPath() + "/" + fsFile.getName());
 			file.delete();
-			success = true;
+			return true;
 		} catch (SmbException e) {
 			logger.info("can't delete file because of SmbException : "
 					+ e.getMessage(), e);
-			success = false;
 		}
-		return success;
+		return false;
 	}
 
 	@Override
@@ -180,8 +172,6 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		} catch (SmbException e) {
 			logger.info("can't create file because of SmbException : " + e.getMessage());
 		} catch (MalformedURLException e) {
-			logger.error("problem in creation file that must not occur. " +  e.getMessage(), e);
-		} catch (EsupStockException e) {
 			logger.error("problem in creation file that must not occur. " +  e.getMessage(), e);
 		}
 		return null;

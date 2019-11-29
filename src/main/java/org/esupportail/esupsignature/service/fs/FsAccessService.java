@@ -69,7 +69,7 @@ public abstract class FsAccessService {
 		}
 	}
 
-	protected void open() throws EsupStockException {
+	protected void open() {
 		if(!this.isOpened()) {
 			manipulateUri();
 		}
@@ -90,11 +90,11 @@ public abstract class FsAccessService {
 
 	protected abstract boolean isOpened();
 
-	public abstract boolean remove(FsFile fsFile) throws EsupStockException;
+	public abstract boolean remove(FsFile fsFile);
 	
 	public abstract List<FsFile> listFiles(String path) throws EsupStockException;
 
-	public abstract String createFile(String parentPath, String title, String type) throws EsupStockException;
+	public abstract String createFile(String parentPath, String title, String type);
 
 	public abstract boolean renameFile(String path, String title) throws EsupStockException;
 
