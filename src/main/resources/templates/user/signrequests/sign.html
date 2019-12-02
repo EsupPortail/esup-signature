@@ -87,7 +87,7 @@
                             <h6>La signature demandée requière un certificat</h6>
                             Vous pouvez ajouter un keystore en accédant à vos paramètres : <a href="/user/users/?form" target="_blank">Modifier vos paramètres</a>
                         </div>
-                        <div class="alert alert-warning" th:unless="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'pdfImageStamp'}">
+                        <div class="alert alert-warning" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'pdfImageStamp' && user.signImage == null}">
                             <h6>Une signature visuelle est possible pour signer ce document mais votre profil ne contient pas d'image de votre signature</h6>
                             Vous pouvez signer aussi signer sans marque visuelle
                             <a href="/user/users/?form" target="_blank">Modifier vos paramètres</a>

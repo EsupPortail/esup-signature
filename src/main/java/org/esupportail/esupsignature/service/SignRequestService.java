@@ -241,6 +241,7 @@ public class SignRequestService {
 				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else if(signatureForm.equals(SignatureForm.PAdES)) {
+				//TODO fix problème png (premier upload ?)
 				step = "Formatage du PDF";
 				boolean addPage = false;
 				if(signRequest.countSignOk() == 0) {
@@ -274,9 +275,6 @@ public class SignRequestService {
 			return documentService.createDocument(signedPdfDocument.openStream(), signedPdfDocument.getName(), signedPdfDocument.getMimeType().getMimeTypeString());
 		} catch (EsupSignatureKeystoreException e) {
 			step = "security_bad_password";
-			throw new EsupSignatureKeystoreException(e.getMessage(), e);
-		} catch (EsupSignatureException e) {
-			step = "sign_system_error";
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
 		} catch (Exception e) {
 			step = "sign_system_error";

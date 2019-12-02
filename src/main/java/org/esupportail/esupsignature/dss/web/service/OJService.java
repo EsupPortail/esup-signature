@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -67,7 +68,7 @@ public class OJService {
 	private FileService fileService;
 	
 	//TODO reactive
-	//@PostConstruct
+	@PostConstruct
 	public void getCertificats() throws MalformedURLException, IOException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
 		Security.addProvider(new BouncyCastleProvider());
 		List<ServiceInfo> serviceInfos = getServicesInfos();
