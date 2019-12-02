@@ -318,6 +318,9 @@ public class SignRequestController {
                             model.addAttribute("signHeight", 75);
                             paramsOk = false;
                         }
+                        if(signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.certSign) && user.getKeystore() == null) {
+                            paramsOk = false;
+                        }
                     }
                     model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
                     model.addAttribute("documentId", toDisplayDocument.getId());

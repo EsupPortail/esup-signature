@@ -375,7 +375,7 @@ public class SignService {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) throws EsupSignatureException {
+	public DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
 		logger.info("Start certSignDocument with database keystore");
 		DocumentSignatureService service = getSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
 		fillParameters(parameters, signatureDocumentForm);
