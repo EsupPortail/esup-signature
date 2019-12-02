@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,8 +86,7 @@ public class AdminDocumentController {
 		    response.setContentType(MediaType.IMAGE_PNG_VALUE);
 		    IOUtils.copy(in, response.getOutputStream());
 		}else {
-			in = new FileInputStream(fileService.notFoundImageToInputStream("png"));
-			IOUtils.copy(in, response.getOutputStream());
+			IOUtils.copy(fileService.notFoundImageToInputStream("png"), response.getOutputStream());
 		    in.close();
 		}
 	}
@@ -107,13 +107,13 @@ public class AdminDocumentController {
 		if((signRequest != null && signRequestService.checkUserViewRights(user, signRequest)) 
 		|| (signBook != null && signBookService.checkUserManageRights(user, signBook))) {
 			try {
-				in = pdfService.pageAsInputStream(document.getJavaIoFile(), page);
+				in = pdfService.pageAsInputStream(document.getInputStream(), page);
 			} catch (Exception e) {
 				logger.error("page " + page + " not found in this document");
 			}
 			if(in == null) {
 				try {
-					in = pdfService.pageAsInputStream(document.getJavaIoFile(), 0);
+					in = pdfService.pageAsInputStream(document.getInputStream(), 0);
 				} catch (Exception e) {
 					logger.error("page " + page + " not found in this document");
 				}
@@ -122,8 +122,7 @@ public class AdminDocumentController {
 		    IOUtils.copy(in, response.getOutputStream());
 		    in.close();
 		} else {
-			in = new FileInputStream(fileService.notFoundImageToInputStream("png"));
-			IOUtils.copy(in, response.getOutputStream());
+			IOUtils.copy(fileService.notFoundImageToInputStream("png"), response.getOutputStream());
 		    in.close();
 		}
 	}
@@ -132,13 +131,13 @@ public class AdminDocumentController {
     @RequestMapping(value = "/getfile/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		Document document = documentRepository.findById(id).get();
+		//TODO check rights
 		SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
 		User user = userService.getUserFromAuthentication();
 		try {
-			File fileToDownload = document.getJavaIoFile();
 			response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
 			response.setContentType(document.getContentType());
-			IOUtils.copy(new FileInputStream(fileToDownload), response.getOutputStream());
+			IOUtils.copy(document.getInputStream(), response.getOutputStream());
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (Exception e) {
 			logger.error("get file error", e);

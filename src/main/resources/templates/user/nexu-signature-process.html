@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
 	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
@@ -43,10 +43,10 @@
 			</div>
 			<div class="alert alert-success text-center" role="danger"
 				id="success">
-				<strong>Signature effectuée</strong> <br /> <a
-					th:href="${referer}"
-					class="btn btn-success btnSeccion" id="btnSeccion3"> Retour
-				</a>
+				<strong>Signature effectuée</strong>
+				<br />
+				<a th:if="${referer != 'null'}" th:href="${referer}" class="btn btn-success btnSeccion" id="return1">Retour</a>
+				<a th:unless="${referer != 'null'}" th:href="'/user/signrequests/' + ${signRequestId}" class="btn btn-success btnSeccion" id="return2">Retour</a>
 			</div>
 		</div>
 	</div>

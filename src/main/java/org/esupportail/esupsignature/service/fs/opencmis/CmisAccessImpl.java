@@ -10,9 +10,10 @@ import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.Updatability;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
-import org.esupportail.esupsignature.service.FileService;
-import org.esupportail.esupsignature.service.fs.EsupStockException;
+import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
@@ -23,7 +24,6 @@ import org.springframework.util.ResourceUtils;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
@@ -112,14 +112,18 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 		return path;
 	}
 	
-	private CmisObject getCmisObject(String path) throws EsupStockException {
+	private CmisObject getCmisObject(String path) {
 		this.open();
-		CmisObject cmisObject = cmisSession.getObjectByPath(constructPath(path));
-		return cmisObject;
+		try {
+			return cmisSession.getObjectByPath(constructPath(path));
+		} catch (CmisObjectNotFoundException e){
+			logger.error("unable to open path", e);
+		}
+		return null;
 	}
 
 	@Override
-	public void open() throws EsupStockException {
+	public void open() {
 	
 		super.open();
 		
@@ -148,7 +152,12 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	public void destroy() throws Exception {
 		this.close();
 	}
-	
+
+	@Override
+	public Object cd(String path) {
+		return getCmisObject(path);
+	}
+
 	@Override
 	public void close() {
 		cmisSession.clear();
@@ -156,34 +165,37 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 
 
 	@Override
-	public List<FsFile> listFiles(String path) throws EsupStockException {
+	public List<FsFile> listFiles(String path) throws EsupSignatureFsException {
 		Folder folder =  (Folder)  getCmisObject(path);
-		logger.info("get file list from : " + folder.getPath());
-		ItemIterable<CmisObject> pl = folder.getChildren();
-		List<FsFile> fsFiles = new ArrayList<FsFile>();
-		for (CmisObject cmisObject : pl) {
-			if(cmisObject.getBaseType().getBaseTypeId().equals(BaseTypeId.CMIS_DOCUMENT)) {
-				try {
-					fsFiles.add(toFsFile(cmisObject));
-				} catch (IOException e) {
-					throw new EsupStockException(e);
+		if(folder != null) {
+			logger.info("get file list from : " + folder.getPath());
+			ItemIterable<CmisObject> pl = folder.getChildren();
+			List<FsFile> fsFiles = new ArrayList<>();
+			for (CmisObject cmisObject : pl) {
+				if (cmisObject.getBaseType().getBaseTypeId().equals(BaseTypeId.CMIS_DOCUMENT)) {
+					FsFile fsFile = toFsFile(cmisObject);
+					fsFile.setPath(path);
+					fsFiles.add(fsFile);
 				}
 			}
+			return fsFiles;
+		} else {
+			throw new EsupSignatureFsException("folder does not exist");
 		}
-		return fsFiles;
+
 	}
 
 	@Override
-	public FsFile getFile(String path) throws Exception {
+	public FsFile getFile(String path) {
 		CmisObject cmisObject = getCmisObject(path);
 		return toFsFile(cmisObject);
 	}
 	
-	private FsFile toFsFile(CmisObject cmisObject) throws IOException {
+	private FsFile toFsFile(CmisObject cmisObject) {
 		FsFile fsFile = new FsFile();
 		Document document = (Document) cmisObject;
 		InputStream inputStream = document.getContentStream().getStream();
-		fsFile.setFile(fileService.inputStreamToFile(inputStream, document.getContentStreamFileName()));
+		fsFile.setInputStream(inputStream);
 		fsFile.setName(document.getName());
 		fsFile.setContentType(document.getContentStreamMimeType());
 		fsFile.setId(cmisObject.getProperty("nuxeo:pathSegment").getValueAsString());
@@ -193,25 +205,34 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public String createFile(String parentPath, String title, String type) throws EsupStockException {
-		Folder parent = (Folder)getCmisObject(parentPath);
+	public String createFile(String parentPath, String title, String type) {
+    	logger.info("try to create : " + title + " in " + parentPath);
+		Folder parent = (Folder) getCmisObject(parentPath);
 		CmisObject createdObject = null; 
 		if("folder".equals(type)) {
 			Map<String, String> prop = new HashMap<String, String>();
 			prop.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_FOLDER.value());
 			prop.put(PropertyIds.NAME, String.valueOf(title));
-			createdObject = parent.createFolder(prop, null, null, null, cmisSession.getDefaultContext());
+			if(getCmisObject(parentPath + title) == null) {
+				createdObject = parent.createFolder(prop, null, null, null, cmisSession.getDefaultContext());
+			}
 		} else if("file".equals(type)) {
 			Map<String, String> prop = new HashMap<String, String>();
 			prop.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_DOCUMENT.value());
 			prop.put(PropertyIds.NAME, String.valueOf(title));
-			createdObject = parent.createDocument(prop, null, null, null, null, null, cmisSession.getDefaultContext());
+			if(getCmisObject(parentPath + title) == null) {
+				createdObject = parent.createDocument(prop, null, null, null, null, null, cmisSession.getDefaultContext());
+			}
 		}
-		return parentPath + "/" + createdObject.getName();
+		if(createdObject != null) {
+			return parentPath + "/" + createdObject.getName();
+		} else {
+			return null;
+		}
 	}
 	
 	@Override
-	public boolean moveCopyFilesIntoDirectory(String path, List<String> filesToCopy, boolean copy) throws EsupStockException {
+	public boolean moveCopyFilesIntoDirectory(String path, List<String> filesToCopy, boolean copy) throws EsupSignatureFsException {
 		try {
 			Folder targetFolder = (Folder)getCmisObject(path);
 			if(copy) {
@@ -250,7 +271,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws EsupStockException {
+	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws EsupSignatureFsException {
 		//must manage the upload option.
 		Folder targetFolder = (Folder)getCmisObject(dir);
 		Map<String, String> prop = new HashMap<String, String>();
@@ -267,14 +288,18 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean remove(FsFile fsFile) throws EsupStockException {
-		CmisObject cmisObject = getCmisObject(fsFile.getPath() + "/" + fsFile.getId());
-		cmisObject.delete(true);
-		return true;
+	public void remove(FsFile fsFile) throws EsupSignatureFsException {
+		CmisObject cmisObject = getCmisObject(fsFile.getPath() + fsFile.getId());
+		if(cmisObject != null) {
+			cmisObject.delete(true);
+		} else {
+			logger.error("unable to delete file");
+			throw new EsupSignatureFsException("unable to delete file, file not exist");
+		}
 	}
 
 	@Override
-	public boolean renameFile(String path, String title) throws EsupStockException {
+	public boolean renameFile(String path, String title) throws EsupSignatureFsException {
 		CmisObject cmisObject = getCmisObject(path);
 		HashMap<String, String> m = new HashMap<String, String>();
         m.put("cmis:name",title);

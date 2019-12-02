@@ -2,233 +2,204 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
-	<div class="header-fixed fixed-top">
-		<th:block th:if="${referer == null}">
-			<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-			<nav class="nav justify-content-between" aria-label="breadcrumb">
-				<ol class="breadcrumb col-11">
-					<li class="breadcrumb-item active">Paramètres utilisateur</li>
-				</ol>
-				<div class="navbar-nav align-self-center">
-					<button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
-					<span class="fas fa-info-circle"> <!--  -->
-					</span>
-					</button>
-				</div>
-			</nav>
-		</th:block>
-		<th:block th:unless="${referer == null}">
-			<nav th:replace="fragments/emptyBar :: emptyBar"></nav>
-		</th:block>
-		<div id="ribbon" class="card">
-			<div class="card-body">
-				<button type="button" onclick="document.getElementById('fu_org_esupportail_esupsignature_domain_User').submit();" class="mr-2 btn btn-outline-dark btn-light float-left">
-					<p class="text-center">
-						<i class="fas fa-save fa-2x"></i> <br /> Enregistrer
-					</p>
-				</button>
-				<button th:if="${referer != null}" type="button" class="btn  btn-danger float-right" value="Retour" th:onclick="@{'location.href=\'' + ${referer} + '\''}">
-					<i class="fas fa-times fa-2x"></i><br/>Abandonner
-				</button>
-				<button th:unless="${referer != null}" type="button" class="btn  btn-danger float-right" value="Retour" onclick="location.href='/user/users'">
-					<i class="fas fa-times fa-2x"></i><br/>Abandonner
-				</button>
-			</div>
-		</div>
-	</div>
-	<main role="main" class="container">
-	<form id="fu_org_esupportail_esupsignature_domain_User" th:object="${user}" action="/user/users" enctype="multipart/form-data" method="post">
-		<input type="hidden" th:field=*{id} />
-		<input type="hidden" name="referer" th:value="${referer}"/>
-
-		<div id="accordion" role="tablist" aria-multiselectable="true">
-			<div class="card">
-				<div class="card-header" role="tab" id="headingOne">
-					<h5 class="mb-0">
-						<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne"> Identité <i class="fas fa-caret-down"> <!--  -->
-						</i>
-						</a>
-					</h5>
-				</div>
-				<div id="collapseOne" class="collapse show" role="tabpanel" aria-labelledby="headingOne">
-					<div class="card-body">
-						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_name">
-							<label class="col-form-label" for="name"><strong>Nom</strong></label>
-							<input id="name" class="form-control" readonly="readonly" type="text" th:field="*{name}">
-						</div>
-						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_firstname">
-							<label class="col-form-label" for="firstname"><strong>Prénom</strong></label>
-							<input id="firstname" class="form-control" readonly="readonly" type="text" th:field="*{firstname}">
-						</div>
-						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_eppn">
-							<label class="col-form-label" for="eppn"><strong>Identifiant</strong></label>
-							<input id="eppn" class="form-control" readonly="readonly" type="text" th:field="*{eppn}">
-						</div>
-						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_email">
-							<label class="col-form-label" for="email"><strong>Email</strong></label>
-							<input id="email" class="form-control" readonly="readonly" type="text" th:field="*{email}">
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="card">
-				<div class="card-header" role="tab" id="headingTwo">
-					<h5 class="mb-0">
-						<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo"> Signature <i class="fas fa-caret-down"> <!--  -->
-						</i>
-						</a>
-					</h5>
-				</div>
-				<div id="collapseTwo" class="show" role="tabpanel" aria-labelledby="headingTwo">
-					<div class="card-body">
-						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signType_id">
-							<label class="col-form-label" for="signType">
-							<strong>Type de signature par défaut</strong>
-								<button data-target="#collapseHelpSignType" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
-									<span class="fas fa-info-circle "></span>
-								</button>
-								<div class="collapse" id="collapseHelpSignType">
-									<div class="alert alert-info">
-										<small>
-											<ul>
-												<li>La signature electronique s'appuie sur le certificat P12 uploader au niveau de vos paramètres</li>
-												<li>Apposition de la signature : ajoute simplement l'image de votre signature sur un PDF à l'endroit voulu</li>
-												<li>La signature electronique avec NexU s'appuie l'application NexU qui permet l'utilisation d'un certificat matériel</li>
-												<li>Confirmation de lecture : permet de valider la lecture d'un document</li>
-											</ul>
-										</small>
-									</div>
-								</div> 
-							</label> 
-							<select class="form-control" id="_signType_id" name="signType" onchange="checkRequirement();" size="1">
-							<th:block th:each="signType : ${signTypes}">
-								<option th:if="${signBook != null && signType == signBook.signRequestParams[0].signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:value="${signType}" selected="selected"></option>
-								<option th:if="${signBook == null || signType != signBook.signRequestParams[0].signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:value="${signType}"></option>
-							</th:block>
-							</select>
-						</div>
-						<div class="form-group">
-							<label class="col-form-label" for="signature">
-								<strong>Image de la signature</strong>
-								<button data-target="#collapseHelpSignImage" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
-									<span class="fas fa-info-circle "> <!-- -->
-									</span>
-								</button>
-								<div class="collapse" id="collapseHelpSignImage">
-									<div class="alert alert-info">
-										<small> Après avoir sélectionné une image, vous pourrez ajuster sa taille pour que la signature entre dans le carré blanc. Si votre signature est grande (contient un tampon par exemple), il est possible d'élargir le carré blanc (la signature prendra plus de place sur le document) <br /> Une image de la signature sera toujours nécessaire pour signer un PDF
-										</small>
-									</div>
-								</div>
-							</label>
-							<div class="alert alert-secondary text-center">
-								<img th:if="${signFile != null}" alt="signature" th:src="'data:image/png;base64,' + ${signFile}" />
-							</div>
-							<div class="input-group">
-								<div class="custom-file">
-									<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01" />
-									<label class="custom-file-label" id="inputGroupLabel01" for="upload">
-										Choisir un fichier
-									</label>
-								</div>
-								<div class="col-12 text-center">
-							<button type="button" class="btn btn-dark vanilla-rotate" data-deg="90"><i class="fas fa-undo"></i></button>
-							<button type="button" class="btn btn-dark vanilla-rotate" data-deg="-90"><i class="fas fa-redo"></i></button>
-							<div id="vanilla-crop">
-								<!--  -->
-							</div>
-							</div>
-							</div>
-						</div>
-					<input type="hidden" th:field="*{signImageBase64}" />
-					<div class="form-group">
-						<label class="col-form-label" for="keystore"><strong>Keystore</strong>
-							<button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
-								<span class="fas fa-info-circle "> <!-- -->
-								</span>
-							</button>
-							<div class="collapse collapse" id="collapseHelpKeyStore">
-								<div class="alert alert-info">
-									<small> Il est possible de générer un keystore en suivant cette procédure <a href="https://services.renater.fr/tcs/certcentral/orders/request-certificate" target="_blank">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a>
-									</small>
-								</div>
-							</div>
-						</label>
-						<div th:if="${user.keystore != null}" class="alert alert-secondary col-6" th:text="${user.keystore.fileName}"></div>
-						<div class="input-group">
-							<div class="custom-file">
-								<input type="file" accept="application/x-pkcs12" class="custom-file-input" name="multipartKeystore" id="inputGroupFile02" value="Choose a file" aria-describedby="inputGroupFileAddon02" /> <label class="custom-file-label" id="inputGroupLabel02" for="upload"> Choisir un keystore
-								</label>
-							</div>
-						</div>
-					</div>
-					<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
-						<label class="col-form-label" for="newPageType"><strong>Ajout d'une page de garde</strong>
-							<div class="collapse collapse" id="collapseHelpKeyStore">
-								<div class="alert alert-info">
-									<small> Il est possible de générer un keystore en suivant cette procédure <a href="https://services.renater.fr/tcs/certcentral/orders/request-certificate" target="_blank">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a>
-									</small>
-								</div>
-							</div>
-						</label>
-						<select class="form-control" id="_newPageType_id" name="newPageType" size="1">
-							<th:block th:each="newPageType : ${newPageTypes}">
-								<option th:if="${signBook != null && newPageType == signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}" selected="selected"></option>
-								<option th:if="${signBook == null || newPageType != signBook.signRequestParams[0].newPageType}" th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}"></option>
-							</th:block>
-						</select>
-					</div>
-				</div>
-			</div>
-			</div>
-			<div class="card">
-				<div class="card-header" role="tab" id="headingThree">
-					<h5 class="mb-0">
-						<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree"> Alertes <i class="fas fa-caret-down"> <!--  -->
-						</i>
-						</a>
-					</h5>
-				</div>
-				<div id="collapseThree" class="show" role="tabpanel" aria-labelledby="headingThree">
-					<div class="card-body">
-						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertFrequency">
-							<label class="col-form-label" for="signType"> <strong>Fréquence d'alerte</strong>
-								<button data-target="#collapseHelpEmailAlertFrequency" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+    <th:block th:if="${referer == null}">
+        <nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+    </th:block>
+    <th:block th:unless="${referer == null}">
+        <nav th:replace="fragments/emptyBar :: emptyBar"></nav>
+    </th:block>
+<main role="main">
+    <div class="wrapper">
+        <nav id="sidebar">
+            <div class="m-1">
+                <button th:if="${referer == null}" title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+                </button>
+                <button th:if="${user.getKeystore() != null && referer == null  }" class="col-12 mb-1 btn btn-primary text-left" type="button" data-toggle="modal" data-target="#testKeystore">
+                    <i class="fas fa-certificate"></i> <span class="sidebar-label">Tester mon certificat</span>
+                </button>
+                <button type="button" onclick="document.getElementById('fu_org_esupportail_esupsignature_domain_User').submit();" class="col-12 mb-1 btn btn-success text-left">
+                    <i class="fas fa-save"></i> <span class="sidebar-label">Enregistrer les modifications</span>
+                </button>
+                <a th:if="${referer != null}" class="col-12 mb-1 btn btn-danger text-left" value="Retour" th:href="${referer}">
+                    <i class="fas fa-times"></i> <span class="sidebar-label">Abandonner</span>
+                </a>
+            </div>
+        </nav>
+        <div id="content" class="content">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item active">Paramètres de signature</li>
+                </ol>
+            </nav>
+            <form id="fu_org_esupportail_esupsignature_domain_User" th:object="${user}" th:action="'/user/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
+                <input type="hidden" name="referer" th:value="${referer}"/>
+                <input type="hidden" name="id" th:value="${user.id}"/>
+                <div class="card rounded-0">
+                    <div class="card-header" role="tab" id="headingOne">Identité</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_name">
+                                    <label class="col-form-label" for="name"><strong>Nom : </strong></label>
+                                    <span id="name" th:text="${user.name}"></span>
+                                </div>
+                                <div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_firstname">
+                                    <label class="col-form-label" for="firstname"><strong>Prénom : </strong></label>
+                                    <span id="firstname" th:text="${user.firstname}"></span>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_eppn">
+                                    <label class="col-form-label" for="eppn"><strong>Identifiant : </strong></label>
+                                    <span id="eppn" th:text="${user.eppn}"></span>
+                                </div>
+                                <div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_email">
+                                    <label class="col-form-label" for="email"><strong>Email : </strong></label>
+                                    <span id="email" th:text="${user.email}"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card rounded-0">
+                    <div class="card-header" role="tab" id="headingTwo">
+                        Paramètres de signature
+                    </div>
+                    <div class="card-body">
+                        <div id="signImageForm" class="form-group">
+                            <label class="col-form-label" for="inputGroupFile01">
+                                <strong>Image de la signature</strong>
+                                <button data-target="#collapseHelpSignImage" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+                                <span class="fas fa-info-circle "> <!-- -->
+                                </span>
+                                </button>
+                                <div class="collapse" id="collapseHelpSignImage">
+                                    <div class="alert alert-info">
+                                        <small> Après avoir sélectionné une image, vous pourrez ajuster sa taille pour que la signature entre dans le carré blanc. Si votre signature est grande (contient un tampon par exemple), il est possible
+                                            d'élargir
+                                            le carré blanc (la signature prendra plus de place sur le document) <br/> Une image de la signature sera toujours nécessaire pour signer un PDF
+                                        </small>
+                                    </div>
+                                </div>
+                            </label>
+                            <div class="alert alert-secondary text-center">
+                                <img th:if="${signFile != null}" alt="signature" th:src="'data:image/png;base64,' + ${signFile}"/>
+                            </div>
+                            <div class="input-group">
+                                <div class="custom-file">
+                                    <input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
+                                    <label class="custom-file-label" id="inputGroupLabel01" for="inputGroupFile01">
+                                        Choisir une nouvelle image
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="card rounded-0">
+                                <div class="card-body col-12 text-center">
+                                    <button type="button" class="btn btn-dark vanilla-rotate" data-deg="90"><i class="fas fa-undo"></i></button>
+                                    Rotation
+                                    <button type="button" class="btn btn-dark vanilla-rotate" data-deg="-90"><i class="fas fa-redo"></i></button>
+                                    <div id="vanilla-crop"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" th:field="*{signImageBase64}"/>
+                        <div id="keyForm" class="form-group">
+                            <label class="col-form-label" for="inputGroupFile02"><strong>Keystore</strong>
+                                <button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+                            <span class="fas fa-info-circle "> <!-- -->
+                            </span>
+                                </button>
+                                <div class="collapse collapse" id="collapseHelpKeyStore">
+                                    <div class="alert alert-info">
+                                        <small> Il est possible de générer un keystore en suivant cette procédure <a href="https://services.renater.fr/tcs/certcentral/orders/request-certificate" target="_blank">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a>
+                                        </small>
+                                    </div>
+                                </div>
+                            </label>
+                            <div th:if="${user.keystore != null}" class="alert alert-secondary col-6" th:text="${user.keystore.fileName}"></div>
+                            <div class="input-group">
+                                <div class="custom-file">
+                                    <input type="file" accept="application/x-pkcs12" class="custom-file-input" name="multipartKeystore" id="inputGroupFile02" value="Choose a file" aria-describedby="inputGroupFileAddon02"/> <label
+                                        class="custom-file-label" id="inputGroupLabel02" for="inputGroupFile02"> Choisir un keystore
+                                </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card rounded-0">
+                    <div class="card-header" role="tab" id="headingThree">
+                        Fréquence des alertes
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertFrequency">
+                            <label class="col-form-label" for="_emailAlertFrequency_id"> <strong>Fréquence d'alerte</strong>
+                                <button data-target="#collapseHelpEmailAlertFrequency" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
 									<span class="fas fa-info-circle "> <!--  -->
 									</span>
-								</button>
-								<div class="collapse" id="collapseHelpEmailAlertFrequency">
-									<div class="alert alert-info">
-										<small>Vous pouvez choisir une fréquence pour les alertes</small>
-									</div>
-								</div>
-							</label>
-							<select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency" size="1" onchange="checkAlertFrequency();">
-								<option selected="selected" value="">-- Choisir votre préférence d'alerte --</option>
-								<th:block th:each="emailAlertFrequency : ${emailAlertFrequencies}">
-									<option th:if="${emailAlertFrequency == user.emailAlertFrequency}" selected="selected" th:value="${emailAlertFrequency}" th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
-									<option th:unless="${emailAlertFrequency == user.emailAlertFrequency}" th:value="${emailAlertFrequency}" th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
-								</th:block>
-							</select>
-						</div>
-						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertHour" style="display: none;">
-							<label class="col-form-label" for="emailAlertHour"> <strong>Heure d'alerte</strong>
-							</label>
-							<input id="emailAlertHour" name="emailAlertHour" class="form-control" type="time" th:value="${user.emailAlertHour}" autocomplete="off" />
-						</div>
-						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertDay" style="display: none;">
-							<label class="col-form-label" for="emailAlertDay"> <strong>Jour de l'alerte</strong></label>
-							<select class="form-control" id="_emailAlertDay_id" name="emailAlertDay">
-								<th:block th:each="emailAlertDay : ${daysOfWeek}" var="emailAlertDay">
-									<option th:if="${emailAlertDay == user.emailAlertDay}" selected="selected" th:value="${emailAlertDay}" th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
-									<option th:unless="${emailAlertDay == user.emailAlertDay}" th:value="${emailAlertDay}" th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
-								</th:block>
-							</select>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</form>
-	</main>
+                                </button>
+                                <div class="collapse" id="collapseHelpEmailAlertFrequency">
+                                    <div class="alert alert-info">
+                                        <small>Vous pouvez choisir une fréquence pour les alertes</small>
+                                    </div>
+                                </div>
+                            </label>
+                            <select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency" size="1" onchange="checkAlertFrequency();">
+                                <option selected="selected" value="">-- Choisir votre préférence d'alerte --</option>
+                                <th:block th:each="emailAlertFrequency : ${emailAlertFrequencies}">
+                                    <option th:if="${emailAlertFrequency == user.emailAlertFrequency}" selected="selected" th:value="${emailAlertFrequency}" th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
+                                    <option th:unless="${emailAlertFrequency == user.emailAlertFrequency}" th:value="${emailAlertFrequency}" th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertHour" style="display: none;">
+                            <label class="col-form-label" for="emailAlertHour"> <strong>Heure d'alerte</strong>
+                            </label>
+                            <input id="emailAlertHour" name="emailAlertHour" class="form-control" type="time" th:value="${user.emailAlertHour}" autocomplete="off"/>
+                        </div>
+                        <div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertDay" style="display: none;">
+                            <label class="col-form-label" for="_emailAlertDay_id"> <strong>Jour de l'alerte</strong></label>
+                            <select class="form-control" id="_emailAlertDay_id" name="emailAlertDay">
+                                <th:block th:each="emailAlertDay : ${daysOfWeek}" var="emailAlertDay">
+                                    <option th:if="${emailAlertDay == user.emailAlertDay}" selected="selected" th:value="${emailAlertDay}" th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
+                                    <option th:unless="${emailAlertDay == user.emailAlertDay}" th:value="${emailAlertDay}" th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+<div class="modal fade" id="testKeystore" tabindex="-1" role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form action="/user/users/view-cert" method="get">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tester mon certificat</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-2">
+                        <div th:if="${password == null}">
+                            <input class="form-control" placeholder="Mot de passe" type="password" name="password" />
+                        </div>
+                        <div th:unless="${password == null}">
+                            Mot de passe en cache
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
+                    <input class="btn btn-primary" type="submit" value="Afficher le certificat" />
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 </body>
+<div th:replace="fragments/footer :: footer"></div>
+<div th:replace="fragments/message :: message"></div>
+</html>

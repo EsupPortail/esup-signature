@@ -1,6 +1,5 @@
-package org.esupportail.esupsignature.service;
+package org.esupportail.esupsignature.service.file;
 
-import com.google.common.io.Files;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
@@ -27,40 +26,18 @@ import java.util.Map;
 public class FileService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
-	
-	public MultipartFile toMultipartFile(File file, String mimeType) {
+
+	public MultipartFile toMultipartFile(InputStream file, String name, String mimeType) {
 		try {
-			return new MockMultipartFile(file.getName(), file.getName(), mimeType, new FileInputStream(file));
+			return new MockMultipartFile(name, name, mimeType, file);
 		} catch (IOException e) {
-			logger.error("enable to convert to multipartfile", e);
+			logger.error("unable to convert to multipartfile", e);
 		}
 		return null;
 	}
-	
-	public File inputStreamToFile(InputStream inputStream, String name) throws IOException {
-		File file = new File(Files.createTempDir(), name);
-		OutputStream outputStream = new FileOutputStream(file);
-		IOUtils.copy(inputStream, outputStream);
-		outputStream.close();
-		inputStream.close();
-		return file;
-	}
 
-	public File multipartPdfToFile(MultipartFile multipartFile) throws IOException	{
-		File file = File.createTempFile(multipartFile.getOriginalFilename(), ".pdf");
-	    file.createNewFile(); 
-	    FileOutputStream fos = new FileOutputStream(file); 
-	    fos.write(multipartFile.getBytes());
-	    fos.close(); 
-	    return file;
-	}
-	
-	public File fromBase64Image(String base64Image, String name) throws IOException {
-		File fileImage = File.createTempFile(name, ".png");
-		ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(base64Image.substring(base64Image.lastIndexOf(',') + 1).trim()));
-        BufferedImage image = ImageIO.read(bis);
-        ImageIO.write(image, "png", fileImage);
-        return fileImage;
+	public InputStream fromBase64Image(String base64Image) {
+		return new ByteArrayInputStream(Base64.getDecoder().decode(base64Image.substring(base64Image.lastIndexOf(',') + 1).trim()));
 	}
 
 	public String getContentType(File file) {
@@ -71,20 +48,37 @@ public class FileService {
 		}
 		return null;
 	}
-	
-	public String getExtension(File file) {
-		return FilenameUtils.getExtension(file.getName());
+
+	public String getExtension(String name) {
+		return FilenameUtils.getExtension(name);
 	}
 	
-	public String getNameOnly(File file) {
-		return FilenameUtils.getBaseName(file.getName());
+	public String getNameOnly(String name) {
+		return FilenameUtils.getBaseName(name);
 	}
-	
-	public String getBase64Image(Document file) throws IOException, SQLException {
-		BufferedImage imBuff = ImageIO.read(file.getBigFile().getBinaryFile().getBinaryStream());
-		return getBase64Image(imBuff, file.getFileName());
+
+	public File getTempFile(String name) {
+		try {
+			File tempFile = File.createTempFile(getNameOnly(name), getExtension(name));
+			tempFile.deleteOnExit();
+			return tempFile;
+		} catch (IOException e) {
+			logger.error("unable to create temp file", e);
+		}
+		return null;
 	}
-	
+
+
+	public String getBase64Image(Document document) throws IOException {
+		BufferedImage imBuff = ImageIO.read(document.getInputStream());
+		return getBase64Image(imBuff, document.getFileName());
+	}
+
+	public String getBase64Image(InputStream is, String name) throws IOException {
+		BufferedImage imBuff = ImageIO.read(is);
+		return getBase64Image(imBuff, name);
+	}
+
 	public String getBase64Image(BufferedImage imBuff, String name) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(imBuff, "png", baos);
@@ -93,18 +87,18 @@ public class FileService {
         baos.close();
         return out;
 	}
-	
+
 	public InputStream bufferedImageToInputStream(BufferedImage image, String type) throws IOException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		ImageIO.write(image, type, os);
 		return new ByteArrayInputStream(os.toByteArray());
 	}
 
-	public File notFoundImageToInputStream(String type) throws IOException {
+	public InputStream notFoundImageToInputStream(String type) throws IOException {
 		return stringToImageFile("PAGE NOT\n FOUND", type);
 	}
 	
-	public File stringToImageFile(String text, String type) throws IOException {
+	public InputStream stringToImageFile(String text, String type) throws IOException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
         BufferedImage  image = new BufferedImage(200, 150, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics2D = (Graphics2D) image.getGraphics();
@@ -126,42 +120,9 @@ public class FileService {
 	    }
 	    graphics2D.dispose();
 	    ImageIO.write(image, type, os);
-		return inputStreamToFile(new ByteArrayInputStream(os.toByteArray()), "paraphe." + type);
+		return new ByteArrayInputStream(os.toByteArray());
 	}
-	
-	/*
-	 * 	public File stringToImageFile(String text, String type) throws IOException {
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-        BufferedImage image = new BufferedImage(100, 75, BufferedImage.TYPE_INT_RGB);
-        Font font = new Font("Courier", Font.PLAIN, 14);
-		FontRenderContext frc = new FontRenderContext(null, true, true);
-		GlyphVector gv = font.createGlyphVector(frc, codes);	
-        Graphics2D g2d = (Graphics2D) image.getGraphics();
-        g2d.setColor(Color.white);
-	    g2d.fillRect(0, 0, 100, 75);
-	    g2d.setColor(Color.black);
-	    g2d.drawGlyphVector(gv, 5,200);
-	    g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                            RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-	    g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
-                            RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-		g2d.drawString(text, 0, 100);
-	    g2d.dispose();
-	    ImageIO.write(image, type, os);
-		return inputStreamToFile(new ByteArrayInputStream(os.toByteArray()), "paraphe." + type);
-	}
-	*/
-	 
-	public File renameFile(File file, String name) {
-		File newfile = new File(Files.createTempDir(), name);
-		boolean result = file.renameTo(newfile);
-		if (result) {
-			return newfile;
-		} else {
-			return null;
-		}
-	}
-	
+
 	public void copyFile(File source, File dest) throws IOException {
 	    InputStream is = null;
 	    OutputStream os = null;
@@ -251,14 +212,5 @@ public class FileService {
 	        throw new UncheckedIOException(ioe);
 	    }
 	}
-	
-	public BufferedImage imageToBufferedImage(final Image image)
-	   {
-	      final BufferedImage bufferedImage =
-	         new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-	      final Graphics2D g2 = bufferedImage.createGraphics();
-	      g2.drawImage(image, 0, 0, null);
-	      g2.dispose();
-	      return bufferedImage;
-	    }
+
 }

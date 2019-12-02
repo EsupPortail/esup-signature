@@ -12,10 +12,8 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.service.FileService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +32,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.xml.bind.DatatypeConverter;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -63,13 +59,7 @@ public class NexuProcessController {
 
 	@Autowired
 	private SignRequestRepository signRequestRepository;
-	
-	@Resource
-	private PdfService pdfService;
-	
-	@Resource
-	private FileService fileService;
-	
+
 	@Resource
 	private UserService userService;
 	
@@ -79,39 +69,18 @@ public class NexuProcessController {
 	private AbstractSignatureParameters parameters;
 	
 	@RequestMapping(value = "/{id}", produces = "text/html")
-	public String showSignatureParameters(@PathVariable("id") Long id, Model model, @RequestParam(value = "referer", required = false) String referer, HttpServletRequest request, RedirectAttributes redirectAttrs) throws InvalidPasswordException, IOException {
+	public String showSignatureParameters(@PathVariable("id") Long id, Model model,
+										  @RequestParam(value = "referer", required = false) String referer,
+										  HttpServletRequest request, RedirectAttributes redirectAttrs) throws InvalidPasswordException, IOException {
     	User user = userService.getUserFromAuthentication();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
-			AbstractSignatureForm signatureDocumentForm = null;
-    		List<Document> documents = signRequestService.getToSignDocuments(signRequest);
-    		if(documents.size() == 1){
-        		File toSignFile = documents.get(0).getJavaIoFile();
-        		if(fileService.getContentType(toSignFile).equals("application/pdf")) {
-    				boolean addPage = false;
-    				if(signRequest.countSignOk() == 0) {
-    					addPage = true;
-    				}
-        			try {
-						toSignFile = pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage, user);
-					} catch (IOException e) {
-						logger.error("error on format pdf", e);
-					}
-        			pdfService.formatPdf(toSignFile, signRequest.getSignRequestParams(), addPage, user);
-        			if(signRequest.getNbSign() == 0) {
-        				toSignFile = pdfService.convertGS(pdfService.writeMetadatas(toSignFile, signRequest));
-        			}
-        			signatureDocumentForm = signService.getSignatureDocumentForm(Arrays.asList(toSignFile), SignatureForm.PAdES);
-        		} else {
-        			signatureDocumentForm = signService.getSignatureDocumentForm(Arrays.asList(toSignFile));
-        		}
-    		} else {
-    			List<File> toSignFiles = new ArrayList<>();
-    			for(Document document : signRequestService.getToSignDocuments(signRequest)) {
-    				toSignFiles.add(document.getJavaIoFile());
-    			}
-				signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles);
-    		}
+			AbstractSignatureForm signatureDocumentForm;
+			List<Document> toSignFiles = new ArrayList<>();
+			for(Document document : signRequestService.getToSignDocuments(signRequest)) {
+				toSignFiles.add(document);
+			}
+			signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest, true);
 			model.addAttribute("signRequestId", signRequest.getId());
 			model.addAttribute("signatureDocumentForm", signatureDocumentForm);
 			model.addAttribute("digestAlgorithm", signatureDocumentForm.getDigestAlgorithm());
@@ -143,7 +112,7 @@ public class NexuProcessController {
 			} else {
 				if(signatureDocumentForm.getSignatureForm().equals(SignatureForm.PAdES)) {
 					SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
-					parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams(), documentForm.getDocumentToSign(), user);
+					parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentWorkflowStep().getSignRequestParams(), documentForm.getDocumentToSign(), user, false);
 				} else {
 					parameters = signService.fillParameters((SignatureDocumentForm) signatureDocumentForm);
 				}

@@ -22,6 +22,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -49,106 +50,10 @@ public class IndexAdminController {
 		return "admin";
 	}
 
-	private SignRequest.SignRequestStatus statusFilter = null;
-
-	@Resource
-	private UserService userService;
-
-	@Autowired
-	private SignRequestRepository signRequestRepository;
-
-	@Resource
-	private SignRequestService signRequestService;
-
-	@Autowired
-	private SignRequestParamsRepository signRequestParamsRepository;
-
-	@Autowired
-	private SignBookRepository signBookRepository;
-
-	@Resource
-	private SignBookService signBookService;
-
-	@Autowired
-	private LogRepository logRepository;
-
-	@Autowired
-	private DocumentRepository documentRepository;
-
-	@Resource
-	private DocumentService documentService;
-
-	@Resource
-	private PdfService pdfService;
-
-	@Resource
-	private FileService fileService;
-	
 	@RequestMapping(produces = "text/html")
-	public String list(
-			@RequestParam(value = "statusFilter", required = false) String statusFilter,
-			@RequestParam(value = "signBookId", required = false) Long signBookId,
-			@RequestParam(value = "messageError", required = false) String messageError,
-			@SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 5) Pageable pageable, RedirectAttributes redirectAttrs, Model model) {
-		User user = userService.getUserFromAuthentication();
-		if (user == null || !userService.isUserReady(user)) {
-			return "redirect:/user/users/?form";
-		}
+	public String index(RedirectAttributes redirectAttrs, Model model) {
 
-		if(statusFilter != null) {
-			if(!statusFilter.equals("all")) {
-				this.statusFilter = SignRequest.SignRequestStatus.valueOf(statusFilter);
-			} else {
-				this.statusFilter = null;
-			}
-		}
-
-		List<SignRequest> signRequestsToSign = new ArrayList<>();
-		List<SignBook> signBooksGroup = signBookRepository.findByRecipientEmailsContainAndSignBookType(user.getEmail(), SignBook.SignBookType.group);
-		signBooksGroup.addAll(signBookRepository.findByRecipientEmailsContainAndSignBookType(user.getEmail(), SignBook.SignBookType.user));
-		SignBook signBook = signBookRepository.findByName(user.getFirstname() + " " + user.getName()).get(0);
-		for(SignBook signBookGroup : signBooksGroup) {
-			for(SignRequest signRequest : signBookGroup.getSignRequests()) {
-				if(signRequest.getStatus().equals(SignRequest.SignRequestStatus.pending)) {
-					signRequestsToSign.add(signRequest);
-				}
-			}
-
-			List<SignBook> signBooksWorkflows = signBookRepository.findBySignBookContain(signBookGroup);
-			for(SignBook signBookWorkflow : signBooksWorkflows) {
-				for(SignRequest signRequest : signBookWorkflow.getSignRequests()) {
-					if(signRequest.getStatus().equals(SignRequest.SignRequestStatus.pending) && signRequest.getSignBooks().containsKey(signBook.getId()) && !signRequest.getSignBooks().get(signBook.getId())) {
-						signRequestsToSign.add(signRequest);
-					}
-				}
-			}
-		}
-
-		signRequestsToSign = signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
-
-		Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByCreateByAndStatus(user.getEppn(), this.statusFilter,  pageable);
-
-		for(SignRequest signRequest : signRequests) {
-			signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
-			Map<String, Boolean> signBookNames = new HashMap<>();
-			for(Map.Entry<Long, Boolean> signBookMap : signRequest.getSignBooks().entrySet()) {
-				signBookNames.put(signBookRepository.findById(signBookMap.getKey()).get().getName(), signBookMap.getValue());
-			}
-			signRequest.setSignBooksLabels(signBookNames);
-		}
-		if(user.getKeystore() != null) {
-			model.addAttribute("keystore", user.getKeystore().getFileName());
-		}
-		model.addAttribute("signType", signBookService.getUserSignBook(user).getSignRequestParams().get(0).getSignType());
-		model.addAttribute("mydocs", "active");
-		model.addAttribute("signRequestsToSign", signRequestsToSign);
-		model.addAttribute("signBookId", signBookId);
-		model.addAttribute("signRequests", signRequests);
-		model.addAttribute("statusFilter", this.statusFilter);
-		model.addAttribute("statuses", SignRequest.SignRequestStatus.values());
-		model.addAttribute("messageError", messageError);
-
-		return "user/signrequests/list";
+		return "redirect:/admin/signrequests";
 	}
 
 }

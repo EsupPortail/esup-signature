@@ -1,13 +1,15 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
-<nav th:fragment="emptyBar" class="nav nav-pills navbar navbar-expand-lg navbar-dark bg-dark" id="navbar">
+<header th:fragment="emptyBar" class="header-fixed fixed-top">
+<nav class="nav nav-pills navbar navbar-expand-lg navbar-dark bg-dark" id="navbar">
 	<div class="collapse navbar-collapse justify-content-between">
-	<div class="navbar-brand">Esup Signature</div>
-	<ul class="navbar-nav">
-		<li class="nav-item">
-			<span class="float-right text-light" th:if="${user != null}" th:text="${user.firstname} + ' ' + ${user.name}"></span>
-		</li>
-	</ul>
+		<img src="/images/logo.png" height="41"/>
+		<ul class="navbar-nav">
+			<li class="nav-item">
+				<span class="float-right text-light" th:if="${user != null}" th:text="${user.firstname} + ' ' + ${user.name}"></span>
+			</li>
+		</ul>
 	</div>
 </nav>
+</header>
 </html>

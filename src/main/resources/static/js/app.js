@@ -15,8 +15,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+$(document).ready(function () {
+	var sideBarStatus = localStorage.getItem('sideBarStatus');
+
+	if(sideBarStatus == null) {
+		localStorage.setItem('sideBarStatus', 'on');
+		sideBarStatus = localStorage.getItem('sideBarStatus');
+	}
+
+	if(sideBarStatus == 'off' && !$('#sidebar').hasClass('active')) {
+		toggleSideBar();
+	}
+
+	if(sideBarStatus == 'on' && $('#sidebar').hasClass('active')) {
+		toggleSideBar();
+	}
+
+	$('#sidebarCollapse').on('click', function () {
+		sideBarStatus = sideBarStatus = localStorage.getItem('sideBarStatus');
+		toggleSideBar();
+		if(sideBarStatus == 'on') {
+			localStorage.setItem('sideBarStatus', 'off');
+		} else {
+			localStorage.setItem('sideBarStatus', 'on');
+		}
+	});
+
+	function toggleSideBar() {
+		$('#sidebar').toggleClass('active');
+		$('.sidebar-label').toggleClass('d-none');
+		$('.fa-arrow-left').toggleClass('fa-arrow-right')
+		$('#logo').toggleClass('logooverflow');
+		$('#content').toggleClass('content content2');
+	}
+
+});
+
 document.addEventListener('DOMContentLoaded', function() {
-	
+
+	console.log(window.location.hash);
+	if(window.location.hash) {
+		var element_to_scroll_to = document.getElementById(window.location.hash.substring(1));
+		element_to_scroll_to.scrollIntoView();
+	}
+
 	//input type file
 	var inputFile = document.getElementById("inputGroupFile01");
 	if(inputFile != null) {
@@ -55,18 +98,23 @@ document.addEventListener('DOMContentLoaded', function() {
 //sign wait
 
 function submitSignRequest() {
+	var csrf = document.getElementsByName("_csrf")[0];
 	var signPageNumber = document.getElementById("signPageNumber");
 	var signRequestParams;
 	if(signPageNumber != null) {
 		signRequestParams = "password=" + document.getElementById("password").value +
+							"&addDate=" + document.getElementById("_addDate").checked +
+							"&visual=" + document.getElementById("_visual").checked +
 							"&xPos=" + document.getElementById("xPos").value +
 							"&yPos=" + document.getElementById("yPos").value +
-							"&signPageNumber=" + document.getElementById("signPageNumber").value
+							"&signPageNumber=" + document.getElementById("signPageNumber").value +
+							"&" + csrf.name + "=" + csrf.value
 							;
 	} else {
-		signRequestParams = "password=" + document.getElementById("password").value;
+		signRequestParams = "password=" + document.getElementById("password").value +
+							"&" + csrf.name + "=" + csrf.value
+							;
 	}
-	
 	sendData(signRequestParams);
 
 }
@@ -126,6 +174,7 @@ var pointerDiv;
 var startPosX;
 var startPosY;
 var pointItEnable = false;
+var pointItMove = false;
 
 document.addEventListener('DOMContentLoaded', function() {
 	pointerDiv = document.getElementById("pointer_div");
@@ -137,19 +186,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function activeDate() {
 	
-	var activeDateCheck = document.getElementById("_activeDate");
-	var addDate = document.getElementById("addDate");
+	var addDate = document.getElementById("_addDate");
 	var cross = document.getElementById("cross");
 	var borders = document.getElementById("borders");
 	var textDate;
 
-	if(activeDateCheck.checked) {
+	if(addDate.checked) {
 		cross.style.width = 200;
 		cross.style.height = cross.offsetHeight + 20;
 		borders.style.width = 200;
 		borders.style.height = borders.offsetHeight + 20;
 		borders.insertAdjacentHTML("beforeend", "<span id='textDate' class='align-top' style='font-size:" + 8 * zoom + "px;'>Le XX/XX/XXXX XX:XX</span>");
-		addDate.value = true;
+
 	} else {
 		cross.style.width = 100;
 		cross.style.height = cross.offsetHeight - 20;
@@ -157,26 +205,35 @@ function activeDate() {
 		borders.style.height = borders.offsetHeight - 20;
 		textDate = document.getElementById("textDate");
 		textDate.remove();
-		addDate.value = false;
 	}
 }
 
-function pointIt(event) {
-	posX = event.offsetX ? (event.offsetX)
-			: event.pageX
-					- document
-							.getElementById("pointer_div").offsetLeft;
-	posY = event.offsetY ? (event.offsetY)
-			: event.pageY
-					- document
-							.getElementById("pointer_div").offsetTop;
-	var cross = document.getElementById("cross");
-	if(cross != null && posX > 0 && posY > 0 && pointItEnable) {
-		cross.style.left = posX + "px";
-		cross.style.top = posY + "px";
-		document.getElementById("xPos").value = Math.round(posX / zoom);
-		document.getElementById("yPos").value = Math.round(posY / zoom);
-		document.getElementById("borders").classList.add("anim-border");
+function pointIt(e) {
+	console.log('point')
+	if(pointItEnable) {
+		pointItMove = true;
+		console.log('point enable')
+		if(e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel'){
+			e.preventDefault();
+			var rect = pointerDiv.getBoundingClientRect();
+			var touch = e.touches[0] || e.changedTouches[0];
+			posX = touch.pageX - rect.left;
+			posY = touch.pageY - rect.top - window.scrollY;
+		} else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover'|| e.type=='mouseout' || e.type=='mouseenter' || e.type=='mouseleave') {
+			console.log("mouse");
+			posX = e.offsetX ? (e.offsetX)
+				: e.clientX - pointerDiv.offsetLeft;
+			posY = e.offsetY ? (e.offsetY)
+				: e.clientY - pointerDiv.offsetTop;
+		}
+
+		if (cross != null && posX > 0 && posY > 0 && pointItEnable) {
+			cross.style.backgroundColor= 'rgba(0, 255, 0, .5)';
+			cross.style.left = posX + "px";
+			cross.style.top = posY + "px";
+			document.getElementById("xPos").value = Math.round(posX / zoom);
+			document.getElementById("yPos").value = Math.round(posY / zoom);
+		}
 	}
 }
 
@@ -185,33 +242,35 @@ function animBorder() {
 }
 
 function resetPosition() {
+	console.log("out");
 	var cross = document.getElementById("cross");
 	if(cross != null) {
 		cross.style.left = (startPosX * zoom) + "px";
 		cross.style.top = (startPosY * zoom)  + "px";
 		document.getElementById("xPos").value = startPosX;
 		document.getElementById("yPos").value = startPosY;
-		document.getElementById("borders").classList.remove("anim-border");
+		cross.style.pointerEvents = "auto";
+		document.body.style.cursor = "default";
+		pointItEnable = false;
+		pointItMove = false
 	}
 }
 
 function savePosition() {
-	console.log("save");
-	if(pointItEnable) {
-		var borders = document.getElementById("borders");
+	if(pointItEnable && pointItMove) {
+		console.log("save");
 		startPosX = Math.round(posX / zoom);
 		startPosY = Math.round(posY / zoom);
-		pointItEnable = false;
-		borders.classList.remove("anim-border");
-		cross.style.pointerEvents = "auto";
-		document.body.style.cursor = "default";
 	}
+	cross.style.backgroundColor= 'rgba(0, 255, 0, 0)';
+	cross.style.pointerEvents = "auto";
+	document.body.style.cursor = "default";
+	pointItEnable = false;
+	pointItMove = false
 }
 
 function dragSignature() {
 	console.log("drag");
-	var borders = document.getElementById("borders");
-	borders.classList.add("anim-border");
 	cross.style.pointerEvents = "none";
 	pointerDiv.style.pointerEvents = "auto";
 	document.body.style.cursor = "move";
@@ -219,16 +278,32 @@ function dragSignature() {
 }
 
 //pdf navigation
+document.addEventListener('DOMContentLoaded', function() {
+	if(document.getElementById("next") != null) {
+
+		if (currentImagePage == nbImagePage - 1) {
+			document.getElementById("next").classList.add("disabled");
+			document.getElementById("next").disabled = true;
+		}
+		if (currentImagePage > 0) {
+			document.getElementById("previous").classList.remove("disabled");
+			document.getElementById("previous").disabled = false
+		}
+	}
+});
 
 function nextImage() {
 	currentImagePage++;
 	hideSigns(currentImagePage)
+	console.info("url('" + documentUrl + "" + currentImagePage + "')");
 	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
 	if (currentImagePage == nbImagePage - 1) {
 		document.getElementById("next").classList.add("disabled");
+		document.getElementById("next").disabled = true;
 	}
 	if (currentImagePage > 0) {
 		document.getElementById("previous").classList.remove("disabled");
+		document.getElementById("previous").disabled = false
 	}
 	document.getElementById("signPageNumber").value = currentImagePage + 1;
 }
@@ -239,9 +314,11 @@ function previousImage() {
 	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
 	if (currentImagePage == 0) {
 		document.getElementById("previous").classList.add("disabled");
+		document.getElementById("previous").disabled = true;
 	}
 	if (nbImagePage - 1 > currentImagePage) {
 		document.getElementById("next").classList.remove("disabled");
+		document.getElementById("next").disabled = false;
 	}
 	document.getElementById("signPageNumber").value = currentImagePage + 1;
 }
@@ -271,13 +348,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	signTypeDiv = document.getElementById("_signType_div_id");
 	newPageTypeSelector = document.getElementById("_newPageType_id");
 	newPageTypeDiv = document.getElementById("_newPageType_div_id");
-	
-	if(signTypeDiv != null) {
-		signTypeSelector.disabled = true;
-		newPageTypeSelector.disabled = true;
-		signTypeDiv.classList.add("d-none");
-		newPageTypeDiv.classList.add("d-none");
-	}
 });
 
 function toggleOverload() {
@@ -463,37 +533,29 @@ function changeSignBookForm() {
 }
 
 //create user
+var signImageForm;
+var keyForm;
 var signImageInput;
 var keystoreInput;
 var emailAlertFrequencySelect;
 var emailAlertDay;
 var emailAlertHour;
+var signTypeSelect;
+var selectedValue;
 
 document.addEventListener('DOMContentLoaded', function() {
 	signImageInput = document.getElementById("inputGroupFile01");
 	keystoreInput = document.getElementById("inputGroupFile02");
+	signImageForm = document.getElementById("signImageForm");
+	keyForm = document.getElementById("keyForm");
 	emailAlertFrequencySelect = document.getElementById("_emailAlertFrequency_id");
 	emailAlertDay = document.getElementById("_c_org_esupportail_esupsignature_domain_user_emailAlertDay");
 	emailAlertHour = document.getElementById("_c_org_esupportail_esupsignature_domain_user_emailAlertHour");
+	signTypeSelect = document.getElementById("_signType_id");
 	if(emailAlertFrequencySelect != null) {
 		checkAlertFrequency();
 	}
 });
-
-function checkRequirement() {
-	var signTypeSelect = document.getElementById("_signType_id");
-	var selectedValue = signTypeSelect.options[signTypeSelect.selectedIndex].value; 
-	if(selectedValue == 'certSign') {
-		signImageInput.required = true;
-		keystoreInput.required = true;
-	} else if(selectedValue == 'imageStamp' || selectedValue == 'nexuSign') {
-		signImageInput.required = true;
-		keystoreInput.required = false;
-	} else {
-		signImageInput.required = false;
-		keystoreInput.required = false;
-	}
-}
 
 function checkAlertFrequency() {
 	var selectedValue = emailAlertFrequencySelect.options[emailAlertFrequencySelect.selectedIndex].value;

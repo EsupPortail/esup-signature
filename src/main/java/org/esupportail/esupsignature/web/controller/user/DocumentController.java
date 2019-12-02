@@ -10,10 +10,10 @@ import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,8 +30,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
@@ -52,16 +50,16 @@ public class DocumentController {
 		return userService.getUserFromAuthentication();
 	}
 	
-	@Autowired
+	@Resource
 	private SignRequestRepository signRequestRepository;
 
-	@Autowired
+	@Resource
 	private SignBookRepository signBookRepository;
 	
-	@Autowired
+	@Resource
 	private DocumentRepository documentRepository;
 	
-	@Autowired
+	@Resource
 	private BigFileRepository bigFileRepository;
 	
 	@Resource
@@ -76,9 +74,6 @@ public class DocumentController {
 	@Resource
 	private SignRequestService signRequestService;
 
-	@Resource
-	private SignBookService signBookService;
-	
 	@RequestMapping(value = "/{id}/getimage", method = RequestMethod.GET)
 	public void getImageAsByteArray(@PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException {
 		Document document = documentRepository.findById(id).get();
@@ -90,8 +85,7 @@ public class DocumentController {
 		    response.setContentType(MediaType.IMAGE_PNG_VALUE);
 		    IOUtils.copy(in, response.getOutputStream());
 		}else {
-			in = new FileInputStream(fileService.notFoundImageToInputStream("png"));
-			IOUtils.copy(in, response.getOutputStream());
+			IOUtils.copy(fileService.notFoundImageToInputStream("png"), response.getOutputStream());
 		    in.close();
 		}
 	}
@@ -103,32 +97,19 @@ public class DocumentController {
 		if(signRequestRepository.countById(document.getParentId()) > 0) {
 			signRequest = signRequestRepository.findById(document.getParentId()).get();
 		}
-		SignBook signBook = null;
-		if(signBookRepository.countById(document.getParentId()) > 0) {
-			signBook = signBookRepository.findById(document.getParentId()).get();
-		}
 		User user = userService.getUserFromAuthentication();
 		InputStream in = null;
-		if((signRequest != null && signRequestService.checkUserViewRights(user, signRequest)) 
-		|| (signBook != null && signBookService.checkUserManageRights(user, signBook))) {
+		if(signRequest != null && signRequestService.checkUserViewRights(user, signRequest)) {
 			try {
-				in = pdfService.pageAsInputStream(document.getJavaIoFile(), page);
+				in = pdfService.pageAsInputStream(document.getInputStream(), page);
 			} catch (Exception e) {
 				logger.error("page " + page + " not found in this document");
-			}
-			if(in == null) {
-				try {
-					in = pdfService.pageAsInputStream(document.getJavaIoFile(), 0);
-				} catch (Exception e) {
-					logger.error("page " + page + " not found in this document");
-				}
 			}
 		    response.setContentType(MediaType.IMAGE_PNG_VALUE);
 		    IOUtils.copy(in, response.getOutputStream());
 		    in.close();
 		} else {
-			in = new FileInputStream(fileService.notFoundImageToInputStream("png"));
-			IOUtils.copy(in, response.getOutputStream());
+			IOUtils.copy(fileService.notFoundImageToInputStream("png"), response.getOutputStream());
 		    in.close();
 		}
 	}
@@ -147,13 +128,12 @@ public class DocumentController {
 		Document document = documentRepository.findById(id).get();
 		SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
 		User user = userService.getUserFromAuthentication();
-		//TODO les modèle ne sont pas protégés
+		//TODO les modèles ne sont pas protégés
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
 			try {
-				File fileToDownload = document.getJavaIoFile();
 				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
 				response.setContentType(document.getContentType());
-				IOUtils.copy(new FileInputStream(fileToDownload), response.getOutputStream());
+				IOUtils.copy(document.getInputStream(), response.getOutputStream());
 				return new ResponseEntity<>(HttpStatus.OK);
 			} catch (Exception e) {
 				logger.error("get file error", e);
@@ -167,11 +147,10 @@ public class DocumentController {
     
     @RequestMapping(value = "/test", method = RequestMethod.GET)
 	public ResponseEntity<Void> test(HttpServletResponse response, Model model) throws IOException {
-		File file = fileService.stringToImageFile("test\nok", "png");
 		try {
 			response.setHeader("Content-Disposition", "inline;filename=\"test.png\"");
 			response.setContentType("image/png");
-			IOUtils.copy(new FileInputStream(file), response.getOutputStream());
+			IOUtils.copy(fileService.stringToImageFile("test\nok", "png"), response.getOutputStream());
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (Exception e) {
 			logger.error("get file error", e);

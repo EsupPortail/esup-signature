@@ -15,11 +15,9 @@ public class SignBook {
 
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
     private Long id;
 
 	@Version
-    @Column(name = "version")
     private Integer version;
     
     public Long getId() {
@@ -64,20 +62,15 @@ public class SignBook {
     private String documentsSourceUri;
     
     @ElementCollection(targetClass=String.class)
-    private List<String> moderatorEmails = new ArrayList<String>();
+    private List<String> moderatorEmails = new ArrayList<>();
 
     @ElementCollection(targetClass=String.class)
-    private List<String> recipientEmails = new ArrayList<String>();
+    private List<String> recipientEmails = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-    private List<SignBook> signBooks = new ArrayList<SignBook>();
-    
-    //TODO renomer autoWorkflow
-    private boolean autoRemove = true;
-    
-    //TODO alerte au moment de la cloture
-    
-    //TODO alerte + validation de la demande par le gestionnaire
+    @OneToMany
+    @OrderColumn
+    private List<WorkflowStep> workflowSteps = new ArrayList<>();
+
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;
     
@@ -85,14 +78,7 @@ public class SignBook {
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL }, orphanRemoval = true)
     private Document modelFile = new Document();
-    
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL })
-    private List<SignRequest> signRequests = new ArrayList<SignRequest>();
 
-    //TODO multiple params + steps ou nb signatures
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
-    private List<SignRequestParams> signRequestParams = new ArrayList<SignRequestParams>();
-	
 	@Enumerated(EnumType.STRING)
 	private SignBookType signBookType;
 	
@@ -103,23 +89,7 @@ public class SignBook {
     public enum DocumentIOType {
 		none, smb, vfs, cmis, mail;
 	}
-    
-    public String getRecipientEmailsLabels() {
-    	String recipientEmailsLabels = "";
-		for(String recipientEmail : recipientEmails) {
-			recipientEmailsLabels += "<li>" + recipientEmail + "</li>";
-		}
-		return recipientEmailsLabels;
-    }
-    
-    public String getModeratorEmailsLabels() {
-    	String modetatorEmailsLabels = "";
-		for(String modetatorEmail : moderatorEmails) {
-			modetatorEmailsLabels += "<li>" + modetatorEmail + "</li>";
-		}
-		return modetatorEmailsLabels;
-    }
-    
+
     public void setSourceType(DocumentIOType sourceType) {
         this.sourceType = sourceType;
     }
@@ -207,23 +177,15 @@ public class SignBook {
     public void setRecipientEmails(List<String> recipientEmails) {
         this.recipientEmails = recipientEmails;
     }
-    
-    public List<SignBook> getSignBooks() {
-        return this.signBooks;
+
+    public List<WorkflowStep> getWorkflowSteps() {
+        return workflowSteps;
     }
-    
-    public void setSignBooks(List<SignBook> SignBooks) {
-        this.signBooks = SignBooks;
+
+    public void setWorkflowSteps(List<WorkflowStep> workflowSteps) {
+        this.workflowSteps = workflowSteps;
     }
-    
-    public boolean isAutoRemove() {
-        return this.autoRemove;
-    }
-    
-    public void setAutoRemove(boolean autoRemove) {
-        this.autoRemove = autoRemove;
-    }
-    
+
     public DocumentIOType getTargetType() {
         return this.targetType;
     }
@@ -243,23 +205,17 @@ public class SignBook {
     public void setModelFile(Document modelFile) {
         this.modelFile = modelFile;
     }
-    
-    public List<SignRequest> getSignRequests() {
-        return this.signRequests;
-    }
-    
-    public void setSignRequests(List<SignRequest> signRequests) {
-        this.signRequests = signRequests;
-    }
-    
-    public List<SignRequestParams> getSignRequestParams() {
+
+    /*
+    public SignRequestParams getSignRequestParams() {
         return this.signRequestParams;
     }
     
-    public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
+    public void setSignRequestParams(SignRequestParams signRequestParams) {
         this.signRequestParams = signRequestParams;
     }
-    
+    */
+
     public SignBookType getSignBookType() {
         return this.signBookType;
     }

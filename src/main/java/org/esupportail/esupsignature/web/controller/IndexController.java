@@ -61,8 +61,12 @@ public class IndexController {
 		} else {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			if("anonymousUser".equals(auth.getName())) {
-				model.addAttribute("securityConfigs", securityConfigs);
-				return "index"; 
+				if(securityConfigs.size() > 1) {
+					model.addAttribute("securityConfigs", securityConfigs);
+					return "index";
+				} else {
+					return "redirect:" + securityConfigs.get(0).getLoginUrl();
+				}
 			} else {
 				userService.createUser(SecurityContextHolder.getContext().getAuthentication());
 				return "index";			

@@ -20,7 +20,8 @@ package org.esupportail.esupsignature.service.fs.vfs;
 import org.apache.commons.vfs2.*;
 import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
-import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +74,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	protected void open() throws EsupStockException {
+	protected void open() {
 		super.open();
 		try {
 			if(!isOpened()) {
@@ -99,8 +100,8 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 				fsManager = VFS.getManager();
 				root = fsManager.resolveFile(uri, fsOptions);
 			}
-		} catch(FileSystemException fse) {
-			throw new EsupStockException(fse);
+		} catch(FileSystemException e) {
+			logger.error("unable to open vfs", e);
 		}
 	}
 
@@ -123,64 +124,64 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		return (root != null);
 	}
 
-	private FileObject cd(String path) throws EsupStockException {
+	public FileObject cd(String path) {
 		try {
-			// assure that it'as already opened
 			this.open();
-			
 			FileObject returnValue = null;
 			
 			if (path == null || path.length() == 0) {
 				returnValue = root; 
 			} else {
-				returnValue = root.resolveFile(getUri() + path);
+				returnValue = root.resolveFile(getUri() + "/" + path);
 			}
-
-			//Added for GIP Recia : make sure that the file is up to date
 			returnValue.refresh();
-			return returnValue;
-		} catch(FileSystemException fse) {
-			throw new EsupStockException(fse);
-		} 
+			if(returnValue.exists()) {
+				return returnValue;
+			}
+		} catch(FileSystemException e) {
+			logger.error("unable to open directory");
+		}
+		return null;
 	}
 	
 	@Override
-	public List<FsFile> listFiles(String url) throws EsupStockException {
+	public List<FsFile> listFiles(String url) throws EsupSignatureFsException {
 		List<FsFile> fsFiles = new ArrayList<>();
 		FileObject resource = cd(url);
 		try {
-			if(resource.isFolder()){ 
+			if(resource.isFolder()){
 				for(FileObject fileObject : resource.getChildren()) {
 					if(fileObject.isFile()) {
-						fsFiles.add(toFsFile(fileObject));
+						FsFile fsFile = toFsFile(fileObject);
+						fsFile.setPath(url);
+						fsFiles.add(fsFile);
 					}
 				}
+			} else {
+				throw new EsupSignatureFsException("folder not exist");
 			}
-		} catch (FileSystemException e) {
-			throw new EsupStockException(e);
+
 		} catch (IOException e) {
-			throw new EsupStockException(e);
+			throw new EsupSignatureFsException(e);
 		}
 		return fsFiles;
 	}
 	
 	@Override
-	public boolean remove(FsFile fsFile) throws EsupStockException {
-		boolean success = false;
+	public void remove(FsFile fsFile) throws EsupSignatureFsException {
+		logger.info("removing file on vfs " + fsFile.getPath() + "/" + fsFile.getName());
 		FileObject file;
 		try {
-			file = cd(fsFile.getPath() + "/" + fsFile.getFile().getName());
-			success = file.delete();
-		} catch (FileSystemException e) {
-			logger.info("can't delete file because of FileSystemException : "
-					+ e.getMessage(), e);
+			file = cd(fsFile.getPath() + "/" + fsFile.getName());
+			file.delete();
+		} catch (Exception e) {
+			throw new EsupSignatureFsException("unable to delete file", e);
 		}
-		logger.debug("remove file " + fsFile.getPath() + fsFile.getFile().getName() + ": " + success);
-		return success;
+		logger.debug("remove file " + fsFile.getPath() + fsFile.getName());
 	}
 
 	@Override
-	public String createFile(String parentPath, String title, String type) throws EsupStockException {
+	public String createFile(String parentPath, String title, String type) {
 		try {
 			FileObject parent = cd(parentPath);
 			FileObject child = parent.resolveFile(title);
@@ -204,7 +205,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean renameFile(String path, String title) throws EsupStockException {
+	public boolean renameFile(String path, String title) throws EsupSignatureFsException {
 		try {
 			FileObject file = cd(path);
 			FileObject newFile = file.getParent().resolveFile(title);
@@ -222,7 +223,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws EsupStockException {
+	public boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws EsupSignatureFsException {
 		try {
 			FileObject folder = cd(dir);
 			for (String fileToCopyPath : filesToCopy) {
@@ -256,19 +257,16 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	private FsFile toFsFile(FileObject fileObject) throws IOException {
-		FileContent fileContent = fileObject.getContent();
-		InputStream inputStream = fileContent.getInputStream();
 		FsFile fsFile = new FsFile();
 		fsFile.setName(fileObject.getName().getBaseName());
 		fsFile.setContentType(fileObject.getContent().getContentInfo().getContentType());
-		fsFile.setFile(fileService.inputStreamToFile(inputStream, fileObject.getName().getBaseName()));
+		fsFile.setInputStream(fileObject.getContent().getInputStream());
 		//TODO recup creator + date
-		//System.err.println(fileContent.getAttributes());
 		return fsFile;
 	}
 	
 	@Override
-	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws EsupStockException {
+	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws EsupSignatureFsException {
 
 		boolean success = false;
 		FileObject newFile = null;
@@ -279,7 +277,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			if (newFile.exists()) {
 				switch (uploadOption) {
 				case ERROR :
-					throw new EsupStockFileExistException();
+					throw new EsupSignatureFsException("unable to put file" + filename + " in " + dir);
 				case OVERRIDE :
 					newFile.delete();
 					break;

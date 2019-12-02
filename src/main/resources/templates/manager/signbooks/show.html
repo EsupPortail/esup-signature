@@ -1,305 +1,340 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
-	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-	<nav aria-label="breadcrumb" class="nav justify-content-between">
-		<div class="navbar-nav col-11">
-			<ol class="breadcrumb">
-				<li class="breadcrumb-item"><a href="/manager">Liste des
-						parapheurs</a></li>
-				<li aria-current="page" class="breadcrumb-item active">Parapheur
-					: <span th:text="${signBook.name}"></span>
-				</li>
-			</ol>
-		</div>
-		<div class="navbar-nav align-self-center">
-			<button class="btn btn-info" data-target="#collapseHelp"
-				data-toggle="collapse" type="button">
-				<span class="fas fa-info-circle"> <!--  -->
-				</span>
-			</button>
-		</div>
-	</nav>
-	<div id="ribbon" class="card">
-		<div class="card-body">
-			<button type="button"
-				th:onclick="'location.href=\'/manager/signbooks/' + ${signBook.id} + '?form\''"
-				class="mr-2 btn btn-outline-dark btn-light float-left">
-				<p class="text-center">
-					<i class="far fa-edit fa-2x"></i> <br /> Modifier
-				</p>
-			</button>
-			<form th:action="'/manager/signbooks/' + ${signBook.id}"
-				th:method="delete">
+<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav id="sidebar">
+            <div class="m-1">
+                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+                </button>
 
-				<button type="submit"
-					class="mr-2 btn btn-outline-dark btn-light float-left">
-					<p class="text-center">
-						<i class="fas fa-trash fa-2x"></i> <br /> Supprimer
-					</p>
-				</button>
-			</form>
-			<button type="button" class="btn  btn-danger float-right"
-				value="Retour" onclick="location.href='/manager/signbooks'">
-				<i class="fas fa-times fa-1x"></i>
-			</button>
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-lg-6">
-			<div class="card bg-light">
-				<div class="card-header">Infos</div>
-				<div class="card-body">
-					<dl class="row border-bottom m-0">
-						<dt class="col-lg-5">Type de parapheur</dt>
-						<dd th:text="${signBook.signBookType}"></dd>
-					</dl>
-					<dl class="row border-bottom m-0">
-						<dt class="col-lg-5">Nom</dt>
-						<dd th:text="${signBook.name}"></dd>
-					</dl>
-					<div th:if="${signBook.signBookType.name() == 'workflow'}">
-						<dl class="row border-bottom m-0">
-							<dt class="col-lg-5" th:text="${signBook.signBookType}"></dt>
-							<dd>
-								<div class="bs-stepper vertical linear">
-									<div class="bs-stepper-header" role="tablist">
-										<th:block
-											th:each="workflowSignbook,iterator : ${signBook.signBooks}">
-											<div class="step" data-target="#test-vl-1">
-												<span class="step-trigger col-12 text-left" role="tab">
-													<span class="bs-stepper-circle"
-													th:text="${iterator.index + 1}"></span> <span
-													class="bs-stepper-label" th:text="${workflowSignbook.name}"></span>
-												</span>
-											</div>
-											<div
-												th:if="${#lists.size(signBook.signBooks) > iterator.index + 1}"
-												class="line"></div>
-										</th:block>
-									</div>
-								</div>
-							</dd>
-						</dl>
-					</div>
-					<div th:if="${signBook.signBookType.name() == 'group'}">
-						<dl class="row border-bottom m-0">
-							<dt class="col-lg-5">Destinataires</dt>
-							<dd>
-								<div class="alert alert-dark col-12">
-									<th:block
-										th:each="recipientEmail : ${signBook.recipientEmails}">
-										<i class="fas fa-inbox"></i>
-										<span th:text="${recipientEmail}"></span>
-										<br />
-									</th:block>
-								</div>
-							</dd>
-						</dl>
-					</div>
-					<dl class="row border-bottom m-0">
-						<dt class="col-lg-5">Gestionnaire(s) du parapheur</dt>
-						<dd>
-							<div class="alert alert-dark col-12">
-								<th:block th:each="moderatorEmail : ${signBook.moderatorEmails}">
-									<i class="fas fa-users-cog"></i> ${moderatorEmail}
-	                                <br />
-								</th:block>
-							</div>
-						</dd>
-					</dl>
-					<dl class="row border-bottom m-0">
-						<dt class="col-lg-5">Paramètres de signature</dt>
-						<dd></dd>
-					</dl>
-					<dl class="row border-bottom m-0">
-						<dt class="col-lg-5">Description</dt>
-						<dd th:text="${signBook.description}"></dd>
-					</dl>
-					<dl class="row border-bottom m-0">
-						<dt class="col-lg-5">Protocole pour la source des documents</dt>
-						<dd th:text="#{'signbook.documentiotype.' + ${signBook.sourceType}}" ></dd>
-					</dl>
-					<div th:if="${signBook.sourceType.name() != 'none'}">
-						<dl class="row border-bottom m-0">
-							<dt class="col-lg-5">Lien pour la source des documents</dt>
-							<dd th:text="${signBook.documentsSourceUri}"></dd>
-						</dl>
-						<button class="btn btn-primary"
-							onclick="location.href='/manager/signbooks/get-files-from-source/${id}'">
-							<i class="fas fa-file-import"> <!--  -->
-							</i> Import from source
-						</button>
-					</div>
-					<dl class="row border-bottom m-0">
-						<dt class="col-lg-5">Protocole pour la destination des
-							documents</dt>
-						<dd th:text="#{'signbook.documentiotype.' + ${signBook.targetType}}" ></dd>
-					</dl>
-					<div th:if="${signBook.targetType.name() != 'none'}">
-						<dl class="row border-bottom m-0">
-							<dt class="col-lg-5">Lien pour la destination des documents</dt>
-							<dd th:text="${signBook.documentsTargetUri}"></dd>
-						</dl>
-						<button class="btn btn-primary"
-							onclick="location.href='/manager/signbooks/send-files-to-target/${id}'">
-							<i class="fas fa-file-export"> <!--  -->
-							</i> Export to source
-						</button>
-					</div>
-					<dl class="row border-bottom m-0">
-						<dt class="col-lg-5">Gérer automatiquement l'avancement du
-							workflow</dt>
-						<dd>
-							<div th:if="${signBook.autoRemove}">
-								<i class="fas fa-check fa-2x text-success"> <!--  -->
-								</i>
-							</div>
-							<div th:unless="${signBook.autoRemove}">
-								<i class="fas fa-times fa-2x text-danger"> <!--  -->
-								</i>
-							</div>
-						</dd>
-					</dl>
-				</div>
-			</div>
-			<div th:if="${documentId != null}">
-				<div class="card bg-light">
-					<div class="card-header">Position de la signature</div>
-					<div class="card-body">
-						<div th:if="${containsSignatureFields}">
-							<div class="alert alert-warning">Le modèle contient des
-								champs de signature. La position sera gérée automatiquement</div>
-						</div>
-						<div th:unless="${containsSignatureFields}">
-							<table class="table">
-								<th:block
-									th:each="signRequestParam : ${signBook.signRequestParams}"
-									th:with="signNumber = 1">
-									<tr>
-										<td>Signature ${signNumber} (page :
-											${signRequestParam.signPageNumber}, XPos :
-											${signRequestParam.XPos}, YPos : ${signRequestParam.YPos})</td>
-										<td>
-											<div th:if="${signNumber > 1}">
-												<form
-													action="/manager/signbooks/deleteParams/${signRequestParam.id}"
-													autocomplete="off" class="form-inline" method="post">
-													<input name="signBookId" type="hidden" value="${id}" />
-													<button class="btn btn-danger fas fa-times"
-														id="Update signRequestParams" onclick="submit();"
-														title="Update signRequestParams" type="button"></button>
-												</form>
-											</div>
-										</td>
-									</tr>
-									<div th:with="signNumber = ${signNumber + 1}"></div>
-								</th:block>
-							</table>
-							<form action="/manager/signbooks/updateParams/${id}"
-								autocomplete="off" class="form-inline" method="post">
-								<div class="form-group" style="display: none;">
-									<div class="row">
-										<div class="col-lg-3">
-											Page : <input autocomplete="off"
-												class="form-control form-control-sm col-4"
-												id="signPageNumber" name="signPageNumber"
-												readonly="readonly" type="text" value="1" />
-										</div>
-										<div class="col-lg-3">
-											X position : <input autocomplete="off"
-												class="form-control form-control-sm col-4" id="xPos"
-												name="xPos" readonly="readonly" type="text" value="0" />
-										</div>
-										<div class="col-lg-3">
-											Y position : <input autocomplete="off"
-												class="form-control form-control-sm col-4" id="yPos"
-												name="yPos" readonly="readonly" type="text" value="0" />
-										</div>
-									</div>
-								</div>
-								<button class="btn btn-success" id="Update signRequestParams"
-									onclick="submit();" title="Update signRequestParams"
-									type="submit" value="">
-									<i class="fas fa-save"> <!--  -->
-									</i>&amp;nbsp; Modifier la position de la dernière signature
-								</button>
-							</form>
-							<form action="/manager/signbooks/addParams/${id}"
-								autocomplete="off" class="form-inline" method="post">
-								<button class="btn btn-success" id="Update signRequestParams"
-									onclick="submit();" title="Update signRequestParams"
-									type="submit" value="">
-									<i class="fas fa-plus"> <!--  -->
-									</i>&amp;nbsp; Ajouter une signature
-								</button>
-							</form>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div th:if="${documentId != null}">
-				<div class="col-lg-6">
-					<div class="row">
-						<div class="col-lg-12">
-							<div class="row">
-								<div class="col-lg-4">
-									Précédent
-									<input class="btn btn-outline-dark" id="previous"
-										onclick="previousImage()" type="button"
-										value="${previousLabel}" />
-								</div>
-								<div class="col-lg-4 text-center">
-									<h5>Model</h5>
-								</div>
-								<div class="col-lg-4">
-									Suivant <input class="btn btn-outline-dark float-right"
-										id="next" onclick="nextImage()" type="button"
-										value="${nextLabel}" />
-								</div>
-							</div>
-							<div class="d-flex justify-content-center">
-								<div id="pointer_div" onclick="savePosition();"
-									onmousemove="pointIt(event);" onmouseout="resetPosition();"
-									style="position: relative; background-size: 595px; background-image: url('${documentUrl}/0'); width: 595px; height: 842px; border: 1px solid #CCC;">
-									<div th:if="${containsSignatureFields == false}"
-										th:with="signNumber = 1">
-										<th:block th:each="signRequestParam, index : ${signBook.signRequestParams}">
-											<div id="signParam_${signRequestParam.signPageNumber}"
-												style="left: ${signRequestParam.XPos">
-												<div id=""
-													style="width: 100px; height: 75px; background-color: gray; text-align: center; opacity: 0.9;">
-													<i class="fas fa-signature fa-3x text-success">
-														${index.id} </i>
-												</div>
-											</div>
-										</th:block>
-										<div id="cross"
-											style="left: 0px; top: 0px; position: relative; pointer-events: none; z-index: 10;">
-											<div id="borders"
-												style="width: 100px; height: 75px; background-color: gray; text-align: center; opacity: 0.7;">
-												<i class="fas fa-signature fa-3x"> <!--  -->
-												</i>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-						<script type="text/javascript">
-							var nbImagePage = $
-							{
-								imagePagesSize
-							};
-							var currentImagePage = 0;
-							var documentUrl = "${documentUrl}";
-							hideSigns(0)
-						</script>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+                <button title="Modifier les paramètres" type="button" th:onclick="'location.href=\'/manager/signbooks/' + ${signBook.id} + '?form\''" class="mb-1 col-12 btn btn-warning text-left">
+                <i class="far fa-edit"></i><span class="sidebar-label"> Modifier les paramètres</span>
+            </button>
+            <form th:action="'/manager/signbooks/' + ${signBook.id}" th:method="delete">
+                <button title="Supprimer" type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="mb-1 col-12 btn btn-danger text-left">
+                    <i class="fas fa-trash"></i><span class="sidebar-label"> Supprimer</span>
+                </button>
+            </form>
+            <button title="Ajouter une étape" th:if="${signBook.signBookType.name() == 'workflow'}" type="button" class="mb-1 col-12 btn btn-primary text-left"
+                    data-toggle="modal" data-target="#addStep">
+                <i class="fa fa-shoe-prints"></i><span class="sidebar-label"> Ajouter une étape</span>
+            </button>
+            <a th:if="${signBook.sourceType.name() != 'none'}" class="mb-1 col-12 btn btn-primary text-left" th:href="'/manager/signbooks/get-files-from-source/' + ${id}">
+                <i class="fas fa-file-import"></i> Importer manuellement
+            </a>
+            <button title="Ajouter un destinataire" th:if="${signBook.signBookType.name() == 'group'}" type="button" class="mb-1 col-12 btn btn-primary text-left"
+                    data-toggle="modal" data-target="#addRecipients">
+                <i class="fa fa-plus"></i><span class="sidebar-label"> Ajouter un destinataire</span>
+            </button>
+            <button title="Retour" type="button" class="mb-1 col-12 btn btn-light text-left"
+                    value="Retour" onclick="location.href='/manager/signbooks'">
+                <i class="fas fa-door-open"></i><span class="sidebar-label"> Retour à la liste</span>
+            </button>
+            </div>
+        </nav>
+        <div id="content" class="content">
+            <nav aria-label="breadcrumb" class="nav justify-content-between">
+                <div class="navbar-nav col-12">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/manager">Liste des
+                            parapheurs</a></li>
+                        <li aria-current="page" class="breadcrumb-item active">Parapheur
+                            : <span th:text="${signBook.name}"></span>
+                        </li>
+                    </ol>
+                </div>
+            </nav>
+            <div class="card bg-light rounded-0">
+                <div class="card-header">Parapheur : <span th:text="${signBook.name}"></span></div>
+                <div class="card-body">
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Description</dt>
+                        <dd th:text="${signBook.description}"></dd>
+                    </dl>
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Type de parapheur</dt>
+                        <dd th:text="#{'signbook.signbooktype.' + ${signBook.signBookType}}"></dd>
+                    </dl>
+                    <div th:if="${signBook.signBookType.name() == 'workflow'}">
+                        <div th:replace="manager/signbooks/cards/stepscard :: stepscard"></div>
+                    </div>
+                    <div th:if="${signBook.signBookType.name() == 'group'}">
+                        <dl class="row border-bottom m-0">
+                            <dt class="col-lg-5">Destinataires</dt>
+                            <dd>
+                                <div class="alert alert-dark col-12">
+                                    <table class="table table-sm table-striped">
+                                    <th:block th:each="recipientEmail : ${signBook.recipientEmails}">
+                                        <tr>
+                                        <td><i class="fas fa-inbox"></i></td>
+                                        <td><span th:text="${recipientEmail}"></span></td>
+                                        <td>
+                                            <form th:action="'/manager/signbooks/remove-recipient/' + ${id}" th:method="delete">
+                                                <input type="hidden" name="recipientEmail" th:value="${recipientEmail}">
+                                                <button type="submit" class="btn btn-danger" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                        </tr>
+                                    </th:block>
+                                    </table>
+                                </div>
+                            </dd>
+                        </dl>
+                    </div>
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Gestionnaire(s) du parapheur</dt>
+                        <dd>
+                            <div class="alert alert-dark col-12">
+                                <th:block th:each="moderatorEmail : ${signBook.moderatorEmails}">
+                                    <i class="fas fa-users-cog"></i> ${moderatorEmail}
+                                    <br/>
+                                </th:block>
+                            </div>
+                        </dd>
+                    </dl>
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Protocole pour la source des documents</dt>
+                        <dd th:text="#{'signbook.documentiotype.' + ${signBook.sourceType}}"></dd>
+                    </dl>
+                    <div th:if="${signBook.sourceType.name() != 'none'}">
+                        <dl class="row border-bottom m-0">
+                            <dt class="col-lg-5">Lien pour la source des documents</dt>
+                            <dd th:text="${signBook.documentsSourceUri}"></dd>
+                        </dl>
+                    </div>
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Protocole pour la destination des documents
+                        </dt>
+                        <dd th:text="#{'signbook.documentiotype.' + ${signBook.targetType}}"></dd>
+                    </dl>
+                    <div th:if="${signBook.targetType.name() != 'none'}">
+                        <dl class="row border-bottom m-0">
+                            <dt class="col-lg-5">Lien pour la destination des documents</dt>
+                            <dd th:text="${signBook.documentsTargetUri}"></dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="addStep" tabindex="-1" role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <form th:action="'/manager/signbooks/add-step/' + ${id}" method="post">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addStepLabel">Ajouter une étape</h5>
+                            </div>
+                            <div class="modal-body">
+                                <div class="input-group">
+                                    <select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple" required="required">
+                                        <th:block th:each="signBook : ${allSignBooks}">
+                                            <option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
+                                        </th:block>
+                                    </select>
+                                </div>
+                                <div class="form-group" id="_allSignToComplete_div_id">
+                                    <label for="_allSignToComplete">
+                                        <strong> Tous les participants doivent-ils signer ? </strong>
+                                        <button data-target="#collapseHelpAllSign" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+                                            <span class="fas fa-info-circle"></span>
+                                        </button>
+                                        <div class="collapse" id="collapseHelpAllSign">
+                                            <div class="alert alert-info">
+                                                <small>
+                                                    <ul>
+                                                        <li>
+                                                            Oui : Tous les participants doivent signer pour que la demande passe au status "Signé"
+                                                        </li>
+                                                        <li>
+                                                            Non : Une seule signature suffit
+                                                        </li>
+                                                    </ul>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <div class="col-lg-8">
+                                        <label class="switch">
+                                            <input type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" id="_signType_div_id">
+                                    <label for="_signType_id"> <strong> Type de signature
+                                        par défaut
+                                        <button data-target="#collapseHelpSignType"
+                                                data-toggle="collapse" type="button"
+                                                class="btn btn-sm btn-info">
+                                            <i class="fas fa-info-circle"></i>
+                                        </button>
+                                    </strong>
+                                        <div class="collapse" id="collapseHelpSignType">
+                                            <div class="alert alert-info">
+                                                <ul>
+                                                    <li>PAdES/XAdES : s'appuie sur le certificat P12
+                                                        uploader au niveau de vos paramètres
+                                                    </li>
+                                                    <li>Apposition de la signature : ajoute simplement
+                                                        l'image de votre signature sur un PDF à l'endroit voulu
+                                                    </li>
+                                                    <li>PAdES/XAdES avec NexU : s'appuie l'application NexU
+                                                        qui permet l'utilisation d'un certificat matériel
+                                                    </li>
+                                                    <li>Confirmation de lecture : permet de valider la
+                                                        lecture d'un document
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <div class="col-lg-8">
+                                        <select id="_signType_id" name="signType" class="form-control" size="1">
+                                            <th:block th:each="signType : ${signTypes}">
+                                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                                            </th:block>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group" id="_newPageType_div_id">
+                                    <label for="_newPageType_id">
+                                        <strong> Insérer unepage de garde </strong>
+                                    </label>
+                                    <div class="col-lg-8">
+                                        <select id="_newPageType_id" name="newPageType"
+                                                class="form-control" size="1">
+                                            <th:block th:each="newPageType : ${newPageTypes}">
+                                                <option th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}"></option>
+                                            </th:block>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fa fa-paper-plane" aria-hidden="true"></i> Ajouter
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="addRecipients" tabindex="-1" role="dialog" aria-labelledby="addRecipientsLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <form th:action="'/manager/signbooks/add-recipients/' + ${id}" method="post">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addRecipientsLabel">Ajouter un destinataire</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div th:if="${signBook.signBookType.name() == 'group'}" class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_recipientemails">
+                                    <label for="recipientemailsSelect"> <strong> Destinataires </strong>
+                                        <button class="btn btn-sm btn-info" data-target="#collapseHelp2" data-toggle="collapse" type="button">
+                                            <i class="fas fa-info-circle"></i>
+                                        </button>
+                                        <div class="collapse" id="collapseHelp2">
+                                            <div class="alert alert-info"></div>
+                                        </div>
+                                    </label>
+                                    <select id="recipientemailsSelect" multiple="multiple" name="recipientEmails" required="required"></select>
+                                    <script type="text/javascript">
+                                        new SlimSelect({
+                                            select: '#recipientemailsSelect',
+                                            placeholder: 'Choisir un ou plusieurs utilisateurs',
+                                            searchText: 'Aucun résultat',
+                                            searchPlaceholder: 'Rechercher',
+                                            searchHighlight: true,
+                                            searchFilter: (option, search) => {
+                                                return true;
+                                            },
+                                            ajax: function (search, callback) {
+                                                if (search.length < 3) {
+                                                    callback('Merci de saisir au moins 3 caractères')
+                                                    return
+                                                }
+                                                fetch('/ws/searchLdap?searchString=' + search)
+                                                    .then(function (response) {
+                                                        return response.json()
+                                                    })
+                                                    .then(function (json) {
+                                                        let data = []
+                                                        for (let i = 0; i < json.length; i++) {
+                                                            data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
+                                                        }
+                                                        callback(data)
+                                                    })
+                                                    .catch(function (error) {
+                                                        callback(false)
+                                                    })
+                                            }
+
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-primary">Ajouter</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<script language="JavaScript">
+    var testSignBookName = document.getElementById("signBookNames");
+
+    if (testSignBookName != null) {
+        var signBookNamesSelect = new SlimSelect({
+            select: '#signBookNames',
+            placeholder: 'Choisir un ou plusieurs parapheur(s)',
+            searchText: 'Aucun résultat',
+            searchPlaceholder: 'Rechercher',
+            searchHighlight: true,
+            searchFilter: (option, search) => {
+                return true;
+            },
+            ajax: function (search, callback) {
+                if (search.length < 3) {
+                    callback('Merci de saisir au moins 3 caractères')
+                }
+                fetch('/user/users/searchLdap?searchString=' + search)
+                    .then(function (response) {
+                        return response.json()
+                    })
+                    .then(function (json) {
+                        let data = []
+                        for (let i = 0; i < json.length; i++) {
+                            data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
+                        }
+                        callback(data)
+                    })
+                    .catch(function (error) {
+                        callback(false)
+                    })
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        allSignToComplete = document.getElementById("_allSignToComplete");
+        signBookSelect = document.getElementById("signBookNames");
+    });
+</script>
+<div th:replace="fragments/footer :: footer"></div>
+<div th:replace="fragments/message :: message"></div>
 </body>
 </html>

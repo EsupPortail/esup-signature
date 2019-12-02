@@ -12,6 +12,7 @@ import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureAlignmentHorizontal;
 import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureAlignmentVertical;
 import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureRotation;
+import eu.europa.esig.dss.pades.SignatureImageTextParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
@@ -21,44 +22,46 @@ import eu.europa.esig.dss.validation.TimestampToken;
 import eu.europa.esig.dss.x509.CertificateToken;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
-import org.esupportail.esupsignature.config.sign.SignProperties;
+import org.esupportail.esupsignature.config.sign.SignConfig;
 import org.esupportail.esupsignature.dss.web.WebAppUtils;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.ExtensionForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 
 @Service
-@EnableConfigurationProperties(SignProperties.class)
 public class SignService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignService.class);
 
-	private SignProperties signProperties;
-
-	public SignService(SignProperties signProperties) {
-		this.signProperties = signProperties;
-	}
+	@Resource
+	private SignConfig signConfig;
 
 	@Resource
 	private CAdESService cadesService;
@@ -100,6 +103,7 @@ public class SignService {
 		}
 
 		DSSDocument extendedDoc = (DSSDocument) service.extendDocument(signedDocument, parameters);
+		logger.info("End extend with one document");
 		return extendedDoc;
 	}
 
@@ -180,22 +184,51 @@ public class SignService {
 		return parameters;
 	}
 
-	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user) throws IOException {
+	public File addTextToImage(InputStream imageStream) throws IOException {
+		final BufferedImage signImage = ImageIO.read(imageStream);
+		BufferedImage  image = new BufferedImage(300, 150, BufferedImage.TYPE_INT_RGB);
+		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
+		graphics2D.setColor(Color.white);
+		graphics2D.fillRect(0, 0, 300, 150);
+		graphics2D.drawImage(signImage, 0, 0, null);
+		DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
+		Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
+		map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+		Font font = new Font("Helvetica", Font.BOLD, 15);
+		font = font.deriveFont(map);
+		graphics2D.setFont(font);
+		graphics2D.setRenderingHint(
+				RenderingHints.KEY_TEXT_ANTIALIASING,
+				RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+		graphics2D.setColor(Color.black);
+		graphics2D.drawString("Le " + dateFormat.format(new Date()), 0, 15);
+		File fileImage = fileService.getTempFile("sign.png");
+		ImageIO.write(image, "png", fileImage);
+		graphics2D.dispose();
+		return fileImage;
+	}
+
+	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user, boolean addDate) throws IOException {
+		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
-		File signImage = user.getSignImage().getJavaIoFile();
-		int[] signSize = pdfService.getSignSize(signImage);
-		FileDocument fileDocumentImage = new FileDocument(signImage);
+		InMemoryDocument fileDocumentImage;
+		int[] signSize;
+
+		if(addDate) {
+			File signImage = addTextToImage(user.getSignImage().getInputStream());
+			fileDocumentImage = new InMemoryDocument(new FileInputStream(signImage));
+			signSize = pdfService.getSignSize(new FileInputStream(signImage));
+		} else {
+			fileDocumentImage = new InMemoryDocument(user.getSignImage().getInputStream());
+			signSize = pdfService.getSignSize(user.getSignImage().getInputStream());
+		}
+
 		fileDocumentImage.setMimeType(MimeType.PNG);
-		/*
-		SignatureImageTextParameters signatureImageTextParameters = new SignatureImageTextParameters();
-		signatureImageTextParameters.setFont(new Font("Helvetica", Font.PLAIN, 12));
-		signatureImageTextParameters.setText("TEST");
-		imageParameters.setTextParameters(signatureImageTextParameters);
-		*/
+		// TODO ajout date et nom
 		imageParameters.setImage(fileDocumentImage);
 		imageParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
-		PdfParameters pdfParameters = pdfService.getPdfParameters(fileService.multipartPdfToFile(toSignFile));
+		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile.getInputStream());
 		if (pdfParameters.getRotation() == 0) {
 			imageParameters.setWidth(signSize[0]);
 			imageParameters.setHeight(signSize[1]);
@@ -207,21 +240,17 @@ public class SignService {
 			imageParameters.setxAxis(signRequestParams.getXPos() - 50);
 			imageParameters.setyAxis(signRequestParams.getYPos());
 		}
-		
+		imageParameters.setDpi(300);
 		imageParameters.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.LEFT);
 		imageParameters.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
-		
-		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		pAdESSignatureParameters.setSignatureImageParameters(imageParameters);
-		//TODO : calculer la taille de la signature
-		//size 32767 is max for PDF/A-2B
+		//signature size 32767 is max for PDF/A-2B
 		pAdESSignatureParameters.setSignatureSize(32767);
 		pAdESSignatureParameters.setSignaturePackaging(form.getSignaturePackaging());
 
 		fillParameters(pAdESSignatureParameters, form);
 		//pAdESSignatureParameters.setSignatureFieldId(signRequestParams.getPdSignatureFieldName());
 		pAdESSignatureParameters.setSignatureName(user.getEppn());
-		
 		return pAdESSignatureParameters;
 	}
 	
@@ -289,43 +318,57 @@ public class SignService {
 		}
 	}
 
-	public AbstractSignatureForm getSignatureDocumentForm(List<File> toSignFiles) {
-		return getSignatureDocumentForm(toSignFiles, signProperties.getDefaultSignatureForm());
-	}
-
-	public AbstractSignatureForm getSignatureDocumentForm(List<File> toSignFiles, SignatureForm signatureForm) {
+	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest, boolean visual) throws IOException {
+		SignatureForm signatureForm;
 		AbstractSignatureForm abstractSignatureForm;
-		if(toSignFiles.size() > 1) {
+		if(documents.size() > 1) {
+			signatureForm = signConfig.getSignProperties().getDefaultSignatureForm();
 			SignatureMultipleDocumentsForm signatureMultipleDocumentsForm = new SignatureMultipleDocumentsForm();
 			List<MultipartFile> multipartFiles = new ArrayList<>();
-			for(File toSignFile : toSignFiles) {
-				multipartFiles.add(fileService.toMultipartFile(toSignFile, fileService.getContentType(toSignFile)));
+			for(Document toSignFile : documents) {
+				multipartFiles.add(fileService.toMultipartFile(toSignFile.getInputStream(), toSignFile.getFileName(), toSignFile.getContentType()));
 			}
 			signatureMultipleDocumentsForm.setDocumentsToSign(multipartFiles);
-			signatureMultipleDocumentsForm.setContainerType(signProperties.getContainerType());
+			signatureMultipleDocumentsForm.setContainerType(signConfig.getSignProperties().getContainerType());
 			abstractSignatureForm = signatureMultipleDocumentsForm;
 		} else {
+			InputStream inputStream;
+			Document toSignFile = documents.get(0);
+			if(toSignFile.getContentType().equals("application/pdf") && visual) {
+				signatureForm = SignatureForm.PAdES;
+				boolean addPage = false;
+				if(signRequest.countSignOk() == 0) {
+					addPage = true;
+				}
+				inputStream = pdfService.formatPdf(toSignFile.getInputStream(), signRequest.getWorkflowSteps().get(signRequest.getCurrentWorkflowStepNumber() - 1).getSignRequestParams(), addPage);
+				if(signRequest.getCurrentWorkflowStepNumber() == 1) {
+					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest));
+				}
+			} else {
+				signatureForm = signConfig.getSignProperties().getDefaultSignatureForm();
+				inputStream = toSignFile.getInputStream();
+			}
 			SignatureDocumentForm signatureDocumentForm = new SignatureDocumentForm();
-			signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(toSignFiles.get(0), fileService.getContentType(toSignFiles.get(0))));
+			signatureDocumentForm.setDocumentToSign(fileService.toMultipartFile(inputStream, documents.get(0).getFileName(), documents.get(0).getContentType()));
 			if(!signatureForm.equals(SignatureForm.PAdES)) {	
-				signatureDocumentForm.setContainerType(signProperties.getContainerType());
+				signatureDocumentForm.setContainerType(signConfig.getSignProperties().getContainerType());
 			}
 			abstractSignatureForm = signatureDocumentForm;
 		}
 		abstractSignatureForm.setSignWithExpiredCertificate(false);
 		abstractSignatureForm.setSignatureForm(signatureForm);
 		if(signatureForm.equals(SignatureForm.PAdES)) {
-			abstractSignatureForm.setSignatureLevel(signProperties.getPadesSignatureLevel());
-			abstractSignatureForm.setDigestAlgorithm(signProperties.getPadesDigestAlgorithm());
-			abstractSignatureForm.setSignaturePackaging(signProperties.getSignaturePackaging());
+			abstractSignatureForm.setSignatureLevel(signConfig.getSignProperties().getPadesSignatureLevel());
+			abstractSignatureForm.setDigestAlgorithm(signConfig.getSignProperties().getPadesDigestAlgorithm());
+			abstractSignatureForm.setSignaturePackaging(signConfig.getSignProperties().getSignaturePackaging());
 		} else if(signatureForm.equals(SignatureForm.CAdES)) {
-			abstractSignatureForm.setSignatureLevel(signProperties.getCadesSignatureLevel());
-			abstractSignatureForm.setDigestAlgorithm(signProperties.getCadesDigestAlgorithm());
-			abstractSignatureForm.setSignaturePackaging(signProperties.getSignaturePackaging());
+			abstractSignatureForm.setSignatureLevel(signConfig.getSignProperties().getCadesSignatureLevel());
+			abstractSignatureForm.setDigestAlgorithm(signConfig.getSignProperties().getCadesDigestAlgorithm());
+			abstractSignatureForm.setSignaturePackaging(signConfig.getSignProperties().getSignaturePackaging());
 		} else if(signatureForm.equals(SignatureForm.XAdES)) {
-			abstractSignatureForm.setSignatureLevel(signProperties.getXadesSignatureLevel());
-			abstractSignatureForm.setDigestAlgorithm(signProperties.getXadesDigestAlgorithm());
-			abstractSignatureForm.setSignaturePackaging(signProperties.getSignaturePackaging());
+			abstractSignatureForm.setSignatureLevel(signConfig.getSignProperties().getXadesSignatureLevel());
+			abstractSignatureForm.setDigestAlgorithm(signConfig.getSignProperties().getXadesDigestAlgorithm());
+			abstractSignatureForm.setSignaturePackaging(signConfig.getSignProperties().getSignaturePackaging());
 		}
 		abstractSignatureForm.setSigningDate(new Date());
 		return abstractSignatureForm;
@@ -334,30 +377,24 @@ public class SignService {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) throws EsupSignatureException {
 		logger.info("Start certSignDocument with database keystore");
-		try {
-			DocumentSignatureService service = getSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
-			DSSDocument signedDocument = null;
-			fillParameters(parameters, signatureDocumentForm);
-			DSSDocument toSignDocument = WebAppUtils.toDSSDocument(signatureDocumentForm.getDocumentToSign());
-			ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
-			SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
-			signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);
-			logger.info("End certSignDocument with database keystore");
-			return signedDocument;
-		} catch (Exception e) {
-			throw new EsupSignatureException("certSign error", e);
-		}
+		DocumentSignatureService service = getSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
+		fillParameters(parameters, signatureDocumentForm);
+		DSSDocument toSignDocument = WebAppUtils.toDSSDocument(signatureDocumentForm.getDocumentToSign());
+		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
+		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
+		DSSDocument signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);
+		logger.info("End certSignDocument with database keystore");
+		return signedDocument;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument certSignDocument(SignatureMultipleDocumentsForm form, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
 		logger.info("Start signDocument with multiple documents");
 		MultipleDocumentsSignatureService service = getASiCSignatureService(form.getSignatureForm());
-		DSSDocument signedDocument = null;
 		List<DSSDocument> toSignDocuments = WebAppUtils.toDSSDocuments(form.getDocumentsToSign());
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocuments, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
-		signedDocument = (DSSDocument) service.signDocument(toSignDocuments, parameters, signatureValue);
+		DSSDocument signedDocument = (DSSDocument) service.signDocument(toSignDocuments, parameters, signatureValue);
 		logger.info("End signDocument with multiple documents");
 		return signedDocument;
 	}
@@ -367,15 +404,10 @@ public class SignService {
 	public DSSDocument nexuSignDocument(SignatureDocumentForm form, AbstractSignatureParameters parameters) {
 		logger.info("Start signDocument with one document");
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
-		DSSDocument signedDocument = null;
-		try {
-			DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());
-			SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
-			SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
-			signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);
-		} catch (Exception e) {
-			logger.error("Unable to execute signDocument : " + e.getMessage(), e);
-		}
+		DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());
+		SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
+		SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
+		DSSDocument signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);
 		logger.info("End signDocument with one document");
 		return signedDocument;
 	}
@@ -385,18 +417,11 @@ public class SignService {
 	public DSSDocument signDocument(SignatureMultipleDocumentsForm form) {
 		logger.info("Start signDocument with multiple documents");
 		MultipleDocumentsSignatureService service = getASiCSignatureService(form.getSignatureForm());
-
 		AbstractSignatureParameters parameters = fillParameters(form);
-
-		DSSDocument signedDocument = null;
-		try {
-			List<DSSDocument> toSignDocuments = WebAppUtils.toDSSDocuments(form.getDocumentsToSign());
-			SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
-			SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
-			signedDocument = (DSSDocument) service.signDocument(toSignDocuments, parameters, signatureValue);
-		} catch (Exception e) {
-			logger.error("Unable to execute signDocument : " + e.getMessage(), e);
-		}
+		List<DSSDocument> toSignDocuments = WebAppUtils.toDSSDocuments(form.getDocumentsToSign());
+		SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
+		SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
+		DSSDocument signedDocument = (DSSDocument) service.signDocument(toSignDocuments, parameters, signatureValue);
 		logger.info("End signDocument with multiple documents");
 		return signedDocument;
 	}
@@ -484,10 +509,10 @@ public class SignService {
 	}
 
 	public SignatureForm getDefaultSignatureForm() {
-		return signProperties.getDefaultSignatureForm();
+		return signConfig.getSignProperties().getDefaultSignatureForm();
 	}
 
 	public Long getPasswordTimeout() {
-		return signProperties.getPasswordTimeout();
+		return signConfig.getSignProperties().getPasswordTimeout();
 	}
 }

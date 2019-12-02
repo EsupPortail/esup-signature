@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.controller.user;
 import eu.europa.esig.dss.MimeType;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dss.web.model.ValidationForm;
 import org.esupportail.esupsignature.dss.web.service.FOPService;
 import org.esupportail.esupsignature.dss.web.service.XSLTService;
@@ -10,7 +11,7 @@ import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ValidationService;
@@ -18,6 +19,7 @@ import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -29,7 +31,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.io.IOException;
+import java.io.*;
+import java.sql.SQLException;
 import java.util.Arrays;
 
 @Controller
@@ -82,9 +85,9 @@ public class ValidationController {
 		return "user/validation";
 	}
 
-	@RequestMapping(method = RequestMethod.POST)
+	@PostMapping
 	public String validate(@ModelAttribute("multipartFile") @Valid MultipartFile multipartFile, Model model) throws IOException {
-		Reports reports = validationService.validate(multipartFile);
+		Reports reports = validationService.validate(multipartFile.getInputStream());
 		if(reports != null) {
 		String xmlSimpleReport = reports.getXmlSimpleReport();
 			model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));
@@ -97,7 +100,7 @@ public class ValidationController {
 			model.addAttribute("detailedReport", "<h2>Impossible de valider ce document</h2>");
 		}
 		if(multipartFile.getContentType().contains("pdf")) {
-			model.addAttribute("pdfaReport", pdfService.checkPDFA(fileService.multipartPdfToFile(multipartFile)));
+			model.addAttribute("pdfaReport", pdfService.checkPDFA(multipartFile.getInputStream(), true));
 		} else {
 			model.addAttribute("pdfaReport", Arrays.asList("danger", "Impossible de valider ce document"));
 		}
@@ -107,10 +110,17 @@ public class ValidationController {
 	
 	@Transactional
 	@RequestMapping(value = "/document/{id}")
-	public String validateDocument(@PathVariable(name="id") long id, Model model) {
+	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException, SQLException {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
+
 		Document toValideDocument = signRequestService.getLastSignedDocument(signRequest);
-		Reports reports = validationService.validate(fileService.toMultipartFile(toValideDocument.getJavaIoFile(), toValideDocument.getContentType()));
+
+		File file = fileService.getTempFile(toValideDocument.getFileName());
+		OutputStream outputStream = new FileOutputStream(file);
+		IOUtils.copy(toValideDocument.getInputStream(), outputStream);
+		outputStream.close();
+
+		Reports reports = validationService.validate(new FileInputStream(file));
 		
 		String xmlSimpleReport = reports.getXmlSimpleReport();
 		model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));
@@ -119,8 +129,7 @@ public class ValidationController {
 		model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
 		model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
 		model.addAttribute("diagnosticTree", reports.getXmlDiagnosticData());
-		model.addAttribute("pdfaReport", pdfService.checkPDFA(toValideDocument.getJavaIoFile()));
-		
+		model.addAttribute("pdfaReport", pdfService.checkPDFA(toValideDocument.getInputStream(), true));
 		return "user/validation-result";
 	}
 	

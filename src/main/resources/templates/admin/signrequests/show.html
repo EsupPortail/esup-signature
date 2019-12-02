@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
 	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
@@ -53,81 +53,7 @@
 				</button>
 			</div>
 
-			<div th:if="${signable == 'ok'}">
-				<div th:switch="${signRequest.signRequestParams.signType.name()}">
-					<div th:case="'nexuSign'">
-						<script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
-						<script type="text/javascript" th:replace="user/signrequests/includes/script :: script"></script>
-						<div id="nexu_version_alert" style="display: none;">
-							<a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left" id="btnSeccion3">
-								<i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
-							</a>
-							<div class="alert alert-warning float-left">
-								L'application NexU n'a pas la bonne version.
-								<br>
-								<span th:text="${nexuVersion} + ' nécessaire'"></span>
-							</div>
-						</div>
-						<div id="nexu_missing_alert" style="display: none;">
-							<a onclick="location.reload();"
-								class="mr-2 btn btn-warning btnSeccion float-left"
-								id="btnSeccion3"> <i class="fas fa-sync-alt fa-2x"></i><br>
-								Actualiser
-							</a>
-							<div class="alert alert-warning float-left">
-								L'application NexU n'a pas été détectée <br> <small>Merci
-									de lancer l'application sur votre poste. <a
-									href="https://github.com/nowina-solutions/nexu/releases/">Téléchargement</a>
-								</small>
-							</div>
-						</div>
-						<div id="nexu_ready_alert" style="display: none;">
-							<button type="button" class="mr-2 btn btn-success float-left"
-								data-toggle="modal" data-target="#signatureModal">
-								<i class="fas fa-signature fa-2x"></i> <br /> Signer
-							</button>
-							<div class="alert alert-success float-left">
-								L'application NexU est fonctionnelle <br /> <small>Vous
-									pouvez utiliser une clé materielle ou un keystore</small>
-							</div>
-
-						</div>
-					</div>
-					<div th:case="*">
-						<button type="button" class="mr-2 btn btn-success float-left"
-							data-toggle="modal" data-target="#signatureModal">
-							<p class="text-center">
-								<i class="fas fa-signature fa-2x"></i> <br />Signer
-							</p>
-						</button>
-
-						<button type="button" class="mr-2 btn btn-danger float-left"
-							data-toggle="modal" data-target="#refuseModal">
-							<p class="text-center">
-								<i class="fas fa-ban fa-2x"></i><br />Refuser
-							</p>
-						</button>
-					</div>
-				</div>
-			</div>
-
-			<div th:if="${user.eppn == signRequest.createBy}">
-				<div th:if="${#lists.size(signRequest.originalDocuments) > 0}">
-					<div th:if="${signRequest.status.name() == 'draft'}">
-						<button type="button"
-							class="mr-2 btn btn-outline-dark btn-light float-left"
-							data-toggle="modal" data-target="#sendModal">
-							<p class="text-center">
-								<i class="fa fa-paper-plane fa-2x" aria-hidden="true"></i><br />
-								Envoyer pour signature
-							</p>
-						</button>
-					</div>
-				</div>
-			</div>
-
-			<div
-				th:if="${user.eppn == signRequest.createBy && signRequest.status.name() == 'completed'}">
+			<div>
 				<button type="button"
 					class="mr-2 btn btn-outline-dark btn-light float-left"
 					data-toggle="modal" data-target="#reSendModal">
@@ -140,7 +66,7 @@
 
 			<button type="button" title="Retour"
 				class="btn  btn-danger float-right" value="Retour"
-				onclick="window.history.back();">
+				onclick="location.href='/admin/signrequests'">
 				<i class="fas fa-times fa-1x"></i>
 			</button>
 
@@ -226,7 +152,7 @@
 											</thead>
 											<tbody>
 												<th:block
-													th:each="signBooksLabel : ${signRequest.signBooksLabels}">
+													th:each="signBooksLabel : ${signRequest.currentWorkflowStep.signBooksLabels}">
 													<tr>
 														<td align="left"><i class="fas fa-user"></i> <span
 															th:text="${signBooksLabel.key}"></span></td>
@@ -427,10 +353,9 @@
 										th:text="${signRequest.signBooksWorkflowStep}"></span>
 									<div class="bs-stepper vertical linear">
 										<div class="bs-stepper-header" role="tablist">
-											<th:block
-												th:each="signBookSteps,iterator : ${firstOriginalSignBook.signBooks}">
+											<th:block th:each="signBookSteps,iterator : ${firstOriginalSignBook.signBooks}">
 												<div
-													th:if="${iterator.index + 1 == signRequest.signBooksWorkflowStep && signRequest.status != 'completed'}">
+													th:if="${iterator.index + 1 == signRequest.currentWorkflowStepNumber && signRequest.status != 'completed'}">
 													<div class="step active" data-target="#test-vl-1">
 														<button type="button"
 															class="step-trigger col-12 text-left" role="tab"
@@ -454,7 +379,7 @@
 													</div>
 												</div>
 												<div
-													th:unless="${iterator.index + 1 > signRequest.signBooksWorkflowStep || iterator.index + 1 == signRequest.signBooksWorkflowStep}">
+													th:unless="${iterator.index + 1 > signRequest.signBooksWorkflowStep || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
 													<div class="step" data-target="#test-vl-1">
 														<button type="button"
 															class="step-trigger col-12 text-left" role="tab"
@@ -496,12 +421,12 @@
 										Type de signature :
 										<div
 											class="alert alert-secondary text-center col-12 font-weight-light">
-											<small th:text="#{'signbook.signtype.' +  ${signRequest.signRequestParams.signType}}"></small>
+											<small th:if="${signRequest.signRequestParams != null}" th:text="#{'signbook.signtype.' +  ${signRequest.signRequestParams.signType}}"></small>
 										</div>
 										Ajout d'une page de garde :
 										<div
 											class="alert alert-secondary text-center col-12 font-weight-light">
-											<small th:text="#{'signbook.newpagetype.' + ${signRequest.signRequestParams.newPageType}}"></small>
+											<small th:if="${signRequest.signRequestParams != null}" th:text="#{'signbook.newpagetype.' + ${signRequest.signRequestParams.newPageType}}"></small>
 										</div>
 									</div>
 								</dd>
@@ -555,28 +480,7 @@
 		</div>
 	</div>
 	</main>
-	<div class="modal fade" id="refuseModal" tabindex="-1" role="dialog"
-		aria-labelledby="Refus" aria-hidden="true">
-		<div class="modal-dialog modal-lg" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="exampleModalLabel">Refus</h5>
-					<button type="button" class="close" data-dismiss="modal"
-						aria-label="Close">
-						<i class="fas fa-times"></i>
-					</button>
-				</div>
-				<div class="modal-body">
-					<div
-						th:replace="user/signrequests/includes/refusemodal :: refusemodal"></div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary"
-						data-dismiss="modal">Annuler</button>
-				</div>
-			</div>
-		</div>
-	</div>
+
 
 	<div class="modal fade" style="width: 100%;" id="signatureModal"
 		tabindex="-1" role="dialog" aria-labelledby="Signature"

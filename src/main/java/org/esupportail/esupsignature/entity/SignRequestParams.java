@@ -10,11 +10,9 @@ public class SignRequestParams {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
     private Long id;
 
 	@Version
-    @Column(name = "version")
     private Integer version;
 	
 	public enum SignType {

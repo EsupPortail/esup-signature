@@ -15,17 +15,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.esupportail.esupsignature.service.fs;
+package org.esupportail.esupsignature.exception;
 
-public class EsupStockPermissionDeniedException extends EsupStockException {
+public class EsupSignatureFsException extends Exception {
 	
-	public EsupStockPermissionDeniedException(Exception e) {
+	protected String codeI18n = "exception.general";
+	
+	public EsupSignatureFsException(Exception e) {
 		super(e);
 	}
 
-	public EsupStockPermissionDeniedException(String message, Exception e) {
+	public EsupSignatureFsException(String message) {
+		super(message);
+	}
+
+	public EsupSignatureFsException(String message, Exception e) {
 		super(message, e);
 	}
+
+	public EsupSignatureFsException(String message, String codeI18n) {
+		super(message);
+		this.codeI18n = codeI18n;
+	}
+
+	public String getRootCause() {
+	    Throwable t = this;
+	    while(t.getCause() != null)
+		t = t.getCause();
+	    return t.getMessage();
+	}
+
+	public String getCodeI18n() {
+		return codeI18n;
+	}
+
+
 
 	private static final long serialVersionUID = 1L;
 	

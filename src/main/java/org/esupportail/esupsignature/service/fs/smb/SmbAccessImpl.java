@@ -25,7 +25,9 @@ import jcifs.CIFSException;
 import jcifs.config.PropertyConfiguration;
 import jcifs.context.BaseContext;
 import jcifs.smb.*;
-import org.esupportail.esupsignature.service.FileService;
+import org.apache.chemistry.opencmis.commons.impl.IOUtils;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +35,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.FileCopyUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -73,7 +73,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public void open() throws EsupStockException {
+	public void open() {
 		super.open();
 
 		if(!this.isOpened()) {
@@ -83,7 +83,6 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 					cifsContext = new BaseContext(new PropertyConfiguration(jcifsConfigProperties));
 				} catch (CIFSException e) {
 					logger.error(e.getMessage(), e);
-					throw new EsupStockException(e);
 				}
 			}
 
@@ -96,21 +95,16 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 				}
 			} catch (MalformedURLException me) {
 				logger.error(me.getMessage(), me);
-				throw new EsupStockException(me);
 			} catch (SmbAuthException e) {
 				if (e.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
 					logger.error("connect"+" :: bad password ");
-					throw new EsupStockException(e);
 				} else if (e.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
 					logger.error("connect"+" :: bad login ");
-					throw new EsupStockException(e);
 				} else {
 					logger.error("connect"+" :: "+e);
-					throw new EsupStockException(e);
 				}
 			} catch (SmbException se) {
 				logger.error("connect"+" :: "+se);
-				throw new EsupStockException(se);
 			}
 		}
 	}
@@ -129,33 +123,29 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		return (this.root != null) ;
 	}
 
-	private SmbFile cd(String path) throws EsupStockException {
+	public SmbFile cd(String path) {
 		try {
 			this.open();
 			if (path == null || path.length() == 0)
 				return root;
 			return new SmbFile(this.getUri() + path, cifsContext);
-		} catch (MalformedURLException me) {
-			logger.error(me.getMessage());
-			throw new EsupStockException(me);
+		} catch (MalformedURLException e) {
+			logger.error("unable to open" + e.getMessage());
 		}
+		return null;
 	}
 
 	@Override
-	public boolean remove(FsFile fsFile) throws EsupStockException {
-		logger.info("remove file " + fsFile.getPath() + "/" + fsFile.getName());
-		boolean success = false;
+	public void remove(FsFile fsFile) throws EsupSignatureFsException {
+		logger.info("removing file " + fsFile.getPath() + "/" + fsFile.getName());
 		SmbFile file;
 		try {
 			file = cd("/" + fsFile.getPath() + "/" + fsFile.getName());
 			file.delete();
-			success = true;
 		} catch (SmbException e) {
-			logger.info("can't delete file because of SmbException : "
-					+ e.getMessage(), e);
-			success = false;
+			logger.info("can't delete file because of SmbException : " + e.getMessage());
+			throw new EsupSignatureFsException(e);
 		}
-		return success;
 	}
 
 	@Override
@@ -182,14 +172,12 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			logger.info("can't create file because of SmbException : " + e.getMessage());
 		} catch (MalformedURLException e) {
 			logger.error("problem in creation file that must not occur. " +  e.getMessage(), e);
-		} catch (EsupStockException e) {
-			logger.error("problem in creation file that must not occur. " +  e.getMessage(), e);
 		}
 		return null;
 	}
 
 	@Override
-	public boolean renameFile(String path, String title) throws EsupStockException {
+	public boolean renameFile(String path, String title) throws EsupSignatureFsException {
 		try {
 			SmbFile file = cd(path);
 			if (file.exists()) {
@@ -209,7 +197,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws EsupStockException {
+	public boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws EsupSignatureFsException {
 		try {
 			SmbFile folder = cd(dir);
 			for (String fileToCopyPath : filesToCopy) {
@@ -220,20 +208,18 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 				} else {
 					fileToCopy.copyTo(newFile);
 					FsFile fsFileToRemove = new FsFile();
-					fsFileToRemove.setFile(fileService.inputStreamToFile(fileToCopy.getInputStream(), fileToCopy.getName()));
+					fsFileToRemove.setName(fileToCopy.getName());
+					fsFileToRemove.setPath(fileToCopy.getPath());
 					this.remove(fsFileToRemove);
 				}
 
 			}
 			return true;
-		} catch (SmbException e) {
-			logger.warn("can't move/copy file because of SmbException : "	+ e.getMessage(), e);
-			throw new EsupStockException(e);
 		} catch (MalformedURLException e) {
 			logger.error("problem in creation file that must not occur." +  e.getMessage(), e);
-			throw new EsupStockException(e);
+			throw new EsupSignatureFsException(e);
 		} catch (IOException e) {
-			throw new EsupStockException(e);
+			throw new EsupSignatureFsException(e);
 		}
 	}
 
@@ -241,7 +227,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	public FsFile getFile(String dir) throws Exception {
 		try {
 			SmbFile smbFile = cd(dir);
-			return toFsFile(smbFile);
+			return toFsFile(smbFile, dir);
 		} catch (SmbException e) {
 			logger.warn("can't download file : " + e.getMessage(), e);
 		} catch (IOException e) {
@@ -255,7 +241,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		try {
 			open();
 			SmbFile smbFile = new SmbFile(uri, cifsContext);
-			return toFsFile(smbFile);
+			return toFsFile(smbFile, uri);
 		} catch (SmbException e) {
 			logger.warn("can't download file : " + e.getMessage(), e);
 		} catch (IOException e) {
@@ -285,7 +271,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			if (newFile.exists()) {
 				switch (uploadOption) {
 				case ERROR :
-					throw new EsupStockFileExistException();
+					throw new EsupSignatureFsException("unable to put file " + filename + " in " + dir);
 				case OVERRIDE :
 					newFile.delete();
 					break;
@@ -328,39 +314,39 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 
-	public List<FsFile> listFiles(String url) throws EsupStockException {
+	public List<FsFile> listFiles(String url) throws EsupSignatureFsException {
 		List<FsFile> fsFiles = new ArrayList<>();
 		try {
 			SmbFile resource = cd(url);		
 			if(jcifsSynchronizeRootListing && this.root.equals(resource)) {
 				synchronized (this.root.getCanonicalPath()) {
 					for(SmbFile smbFile : resource.listFiles()) {
-						fsFiles.add(toFsFile(smbFile));
+						fsFiles.add(toFsFile(smbFile, url));
 					}
 				}
 			} else {
 				for(SmbFile smbFile : resource.listFiles()) {
 					if(!smbFile.isDirectory()) {
-						fsFiles.add(toFsFile(smbFile));
+						fsFiles.add(toFsFile(smbFile, url));
 					}
 				}
 			}
 		} catch (Exception e) {
-			throw new EsupStockException(e);
+			throw new EsupSignatureFsException(e);
 		}
 		return fsFiles;
 	}
 	
-	private FsFile toFsFile(SmbFile smbFile) throws IOException {
-		FsFile fsFile = new FsFile();
-		fsFile.setName(smbFile.getName());
-		fsFile.setContentType(URLConnection.guessContentTypeFromName(smbFile.getName()));
-		fsFile.setFile(fileService.inputStreamToFile(smbFile.getInputStream(), smbFile.getName()));
-		/*
-		if(smbFile.getOwnerUser() != null) {
-			fsFile.setCreateBy(smbFile.getOwnerUser().getAccountName());
-		}
-		*/
+	private FsFile toFsFile(SmbFile smbFile, String path) throws IOException {
+		File tempFile = fileService.getTempFile(smbFile.getName());
+		FileOutputStream out = new FileOutputStream(tempFile);
+		InputStream is = smbFile.getInputStream();
+		IOUtils.copy(is, out);
+		is.close();
+		out.close();
+		smbFile.close();
+		FsFile fsFile = new FsFile(new FileInputStream(tempFile), smbFile.getName(), URLConnection.guessContentTypeFromName(smbFile.getName()));
+		fsFile.setPath(path);
 		fsFile.setCreateDate(new Date(smbFile.getDate()));
 		return fsFile;
 	}

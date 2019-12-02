@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
@@ -34,7 +35,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -121,7 +121,6 @@ public class AdminSignRequestController {
 
 		Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByStatus(this.statusFilter,  pageable);
 
-		model.addAttribute("signType", signBookService.getUserSignBook(user).getSignRequestParams().get(0).getSignType());
 		model.addAttribute("mydocs", "active");
 		model.addAttribute("signBookId", signBookId);
 		model.addAttribute("signRequests", signRequests);
@@ -140,28 +139,19 @@ public class AdminSignRequestController {
 		}
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
-			List<SignBook> originalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
-			if(originalSignBooks.size() > 0) {
-				if(!signRequest.isOverloadSignBookParams()) {
-					SignRequestParams signBookParams = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0).getSignRequestParams().get(0);
-					signRequest.getSignRequestParams().setNewPageType(signBookParams.getNewPageType());
-					signRequest.getSignRequestParams().setSignType(signBookParams.getSignType());
-				}
-			}
 			Document toDisplayDocument = null;
-			File toDisplayFile = null;
 			if(signRequestService.getToSignDocuments(signRequest).size() == 1) {
 				toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
-				toDisplayFile = toDisplayDocument.getJavaIoFile();
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
-					PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayFile);
-					model.addAttribute("pdfWidth", pdfParameters.getWidth());
-					model.addAttribute("pdfHeight", pdfParameters.getHeight());
-					model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-
+					PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
+					if (pdfParameters != null) {
+						model.addAttribute("pdfWidth", pdfParameters.getWidth());
+						model.addAttribute("pdfHeight", pdfParameters.getHeight());
+						model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+					}
 					if(user.getSignImage() != null) {
 						model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-						int[] size = pdfService.getSignSize(user.getSignImage().getJavaIoFile());
+						int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
 						model.addAttribute("signWidth", size[0]);
 						model.addAttribute("signHeight", size[1]);
 					} else {
@@ -169,7 +159,7 @@ public class AdminSignRequestController {
 						model.addAttribute("signHeight", 75);
 					}
 				}
-				model.addAttribute("documentType", fileService.getExtension(toDisplayFile));
+				model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
 				model.addAttribute("documentId", toDisplayDocument.getId());
 			}
 			List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
@@ -182,26 +172,15 @@ public class AdminSignRequestController {
 				model.addAttribute("keystore", user.getKeystore().getFileName());
 			}
 
-			signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
+			//signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
 
-			signRequestService.setSignBooksLabels(signRequest);
+			signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
 
 			model.addAttribute("signRequest", signRequest);
 			model.addAttribute("itemId", id);
 			if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
 				model.addAttribute("signable", "ok");
 			}
-			List<SignBook> firstOriginalSignBooks = signBookService.getSignBookBySignRequest(signRequest);
-			if(firstOriginalSignBooks.size() > 0 ) {
-				SignBook firstOriginalSignBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
-				if(firstOriginalSignBook.getSignBookType().equals(SignBookType.workflow)) {
-					model.addAttribute("firstOriginalSignBook", firstOriginalSignBook);
-				}
-				if(firstOriginalSignBook.getModelFile() != null) {
-					model.addAttribute("modelId", firstOriginalSignBook.getModelFile().getUrl());
-				}
-			}
-			model.addAttribute("originalSignBooks", signBookService.getSignBookBySignRequest(signRequest));
 			model.addAttribute("allSignBooks", signBookRepository.findByNotCreateBy("System"));
 			model.addAttribute("nbSignOk", signRequest.countSignOk());
 			model.addAttribute("baseUrl", baseUrl);
@@ -220,18 +199,14 @@ public class AdminSignRequestController {
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
-			try {
-				if(signRequest.getOriginalDocuments().size() > 0 &&
-				(signRequest.getSignRequestParams().getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignRequestParams().getSignType().equals(SignType.visa))
-				) {
-					signRequest.getOriginalDocuments().remove(signRequest.getOriginalDocuments().get(0));
-				}
-				List<Document> documents =  documentService.createDocuments(multipartFiles);
-				signRequestService.addOriginalDocuments(signRequest, documents);
-				signRequestRepository.save(signRequest);
-			} catch (IOException e) {
-				logger.error("error to add file : " + multipartFiles[0].getOriginalFilename(), e);
+			if(signRequest.getOriginalDocuments().size() > 0 &&
+			(signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.pdfImageStamp) || signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.visa))
+			) {
+				signRequest.getOriginalDocuments().remove(signRequest.getOriginalDocuments().get(0));
 			}
+			List<Document> documents =  documentService.createDocuments(multipartFiles);
+			signRequestService.addOriginalDocuments(signRequest, documents);
+			signRequestRepository.save(signRequest);
 		}
 		String[] ok = {"ok"};
 		return ok;
@@ -255,7 +230,6 @@ public class AdminSignRequestController {
 	@DeleteMapping(value = "/{id}", produces = "text/html")
 	public String delete(@PathVariable("id") Long id, Model model) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		signBookService.removeSignRequestFromAllSignBooks(signRequest);
 		List<Log> logs = logRepository.findBySignRequestId(id);
 		for(Log log : logs) {
 			logRepository.delete(log);
@@ -302,13 +276,6 @@ public class AdminSignRequestController {
 		}
 	}
 
-	@RequestMapping(value = "/toggle-need-all-sign/{id}", method = RequestMethod.GET)
-	public String toggleNeedAllSign(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
-		SignRequest signRequest = signRequestRepository.findById(id).get();
-		signRequestService.toggleNeedAllSign(signRequest);
-		return "redirect:/admin/signrequests/" + id;
-	}
-
 	@RequestMapping(value = "/send-to-signbook/{id}", method = RequestMethod.GET)
 	public String sendToSignBook(@PathVariable("id") Long id,
 			@RequestParam(value = "signBookNames", required = true) String[] signBookNames,
@@ -323,7 +290,8 @@ public class AdminSignRequestController {
 				for(String signBookName : signBookNames) {
 					SignBook signBook;
 					if(signBookRepository.countByName(signBookName) == 0 && signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user) == 0) {
-						signBook = userService.createUserWithSignBook(signBookName);
+						User recipientUser = userService.createUser(signBookName);
+						signBook = signBookService.getUserSignBook(recipientUser);
 						//recipientEmails.add(signBookName);
 					} else {
 						if(signBookRepository.countByName(signBookName) > 0) {
@@ -332,15 +300,8 @@ public class AdminSignRequestController {
 							signBook = signBookService.getUserSignBookByRecipientEmail(signBookName);
 						}
 					}
-					try {
-						signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-						signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé au parapheur " + signBook.getName(), user, "SUCCESS", comment);
-					} catch (EsupSignatureException e) {
-						logger.warn(e.getMessage());
-						redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
-
-					}
-
+					//signBookService.importSignRequestInSignBook(signRequest, signBook, user);
+					signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé au parapheur " + signBook.getName(), user, "SUCCESS", comment);
 				}
 			}
 		} else {
@@ -358,8 +319,7 @@ public class AdminSignRequestController {
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
-			SignBook originalSignBook = signBookService.getSignBookBySignRequest(signRequest).get(0);
-			signRequestService.completeSignRequest(signRequest, originalSignBook, user);
+			signRequestService.completeSignRequest(signRequest, user);
 		} else {
 			logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
 		}
@@ -368,8 +328,7 @@ public class AdminSignRequestController {
 
 	@RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
 	public String pending(@PathVariable("id") Long id,
-			@RequestParam(value = "comment", required = false) String comment,
-			HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
+			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) throws IOException {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();

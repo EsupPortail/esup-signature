@@ -1,23 +1,32 @@
 package org.esupportail.esupsignature.service.fs;
 
-import java.io.File;
+import java.io.InputStream;
 import java.util.Date;
 
 public class FsFile {
 
-	File file;
+	InputStream inputStream;
 	String id;
 	String name;
 	String path;
 	String contentType;
 	String createBy;
 	Date createDate;
-	
-	public File getFile() {
-		return file;
+
+	public FsFile() {
 	}
-	public void setFile(File file) {
-		this.file = file;
+
+	public FsFile(InputStream inputStream, String name, String contentType) {
+		this.inputStream = inputStream;
+		this.name = name;
+		this.contentType = contentType;
+	}
+
+	public InputStream getInputStream() {
+		return inputStream;
+	}
+	public void setInputStream(InputStream inputStream) {
+		this.inputStream = inputStream;
 	}
 	public String getId() {
 		return id;

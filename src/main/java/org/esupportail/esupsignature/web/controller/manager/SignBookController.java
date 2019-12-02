@@ -1,29 +1,22 @@
 package org.esupportail.esupsignature.web.controller.manager;
 
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.SignBook;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
-import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.service.DocumentService;
+import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.fs.EsupStockException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -31,8 +24,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.util.UriUtils;
-import org.springframework.web.util.WebUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -41,9 +32,11 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.util.*;
 
+@CrossOrigin(origins = "*")
 @RequestMapping("/manager/signbooks")
 @Controller
 @Transactional
+@Scope(value = "session")
 public class SignBookController {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
@@ -52,37 +45,64 @@ public class SignBookController {
 	public String getActiveMenu() {
 		return "active";
 	}
-	@Autowired
+
+	@Resource
 	private UserRepository userRepository;
 	
 	@Resource
 	private UserService userService;
 	
-	@ModelAttribute("user")
-	public User getUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@Autowired
+	@Resource
 	private SignBookRepository signBookRepository;
-	
+
+	@Resource
+	private WorkflowStepRepository workflowStepRepository;
+
 	@Resource
 	private SignBookService signBookService;
 
-	@Autowired
+	@Resource
 	private SignRequestRepository signRequestRepository;
 	
 	@Resource
 	private SignRequestService signRequestService;
 	
-	@Autowired
-	private SignRequestParamsRepository signRequestParamsRepository; 
-	
 	@Resource
-	private DocumentService documentService;
+	private SignRequestParamsRepository signRequestParamsRepository; 
 
 	@Resource
 	private PdfService pdfService;
+
+	@ModelAttribute("user")
+	public User getUser() {
+		return userService.getUserFromAuthentication();
+	}
+
+
+	@RequestMapping(value = "/{id}", produces = "text/html")
+	public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
+		SignBook signBook = signBookRepository.findById(id).get();
+		signRequestService.setSignBooksLabels(signBook.getWorkflowSteps());
+		Document modelFile = signBook.getModelFile();
+		if (modelFile != null && modelFile.getSize() != null) {
+			uiModel.addAttribute("documentId", modelFile.getId());
+			if(modelFile.getContentType().equals("application/pdf")) {
+				PDDocument pdDocument = PDDocument.load(modelFile.getInputStream());
+				PdfParameters pdfParameters = pdfService.getPdfParameters(pdDocument);
+				uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+				int[] signFieldCoord = pdfService.getSignFieldCoord(pdDocument, 0);
+				if(signFieldCoord != null && signFieldCoord.length > 0) {
+					uiModel.addAttribute("containsSignatureFields", true);
+				} else {
+					uiModel.addAttribute("containsSignatureFields", false);
+				}
+			}
+		}
+		uiModel.addAttribute("signBook", signBook);
+		uiModel.addAttribute("signTypes", SignType.values());
+		uiModel.addAttribute("itemId", id);
+		return "manager/signbooks/show";
+	}
 
 	void populateEditForm(Model uiModel, SignBook signBook) {
 		uiModel.addAttribute("signBook", signBook);
@@ -95,7 +115,6 @@ public class SignBookController {
 		uiModel.addAttribute("signBookTypes", signBookTypes);
 		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
 		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
-		addDateTimeFormatPatterns(uiModel);
 		uiModel.addAttribute("signrequests", signRequestRepository.findAll());
 	}
 
@@ -111,82 +130,72 @@ public class SignBookController {
     	if(sortFieldName == null) {
     		sortFieldName = "signBookType";
     	}
-		if (page != null || size != null) {
-			int sizeNo = size == null ? 10 : size.intValue();
-			//final int firstResult = page == null ? 0 : (page.intValue() - 1) * sizeNo;
-			uiModel.addAttribute("signBooks", signBookRepository.findByNotCreateBy("System"));
-			float nrOfPages = (float) signBookRepository.count() / sizeNo;
-			uiModel.addAttribute("maxPages", (int) ((nrOfPages > (int) nrOfPages || nrOfPages == 0.0) ? nrOfPages + 1 : nrOfPages));
-		} else {
-			uiModel.addAttribute("signBooks", signBookRepository.findByNotCreateBy("System"));
+
+    	List<SignBook> signBooks = signBookRepository.findByNotCreateBy("System");
+
+		for (SignBook signBook : signBooks) {
+			signRequestService.setSignBooksLabels(signBook.getWorkflowSteps());
 		}
-		addDateTimeFormatPatterns(uiModel);
+		uiModel.addAttribute("signBooks", signBooks);
 		return "manager/signbooks/list";
 	}
 	
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(@RequestParam(required = false) String type, Model uiModel) {
     	populateEditForm(uiModel, new SignBook());
-		List<SignBook> signBooks = new ArrayList<SignBook>();
+		List<SignBook> signBooks = new ArrayList<>();
 		signBookService.creatorSignBook();
 		signBooks.addAll(signBookRepository.findByExternal(false));
 		uiModel.addAttribute("allSignBooks", signBooks);
 		uiModel.addAttribute("type", type);
-        return "manager/signbooks/create";
+		if(type.equals("workflow")) {
+			return "manager/signbooks/create-workflow";
+		} else {
+			return "manager/signbooks/create";
+		}
+
     }
 	
 	@PostMapping(produces = "text/html")
-	public String create(SignBook signBook, @RequestParam("type") String type, @RequestParam("multipartFile") MultipartFile multipartFile,
-			@RequestParam(name = "signBooksIds", required = false) Long[] signBooksIds, @RequestParam("signType") String signType, @RequestParam("newPageType") String newPageType,  Model uiModel, RedirectAttributes redirectAttrs) {
+	public String create(@RequestParam(name = "name") String name,
+						 @RequestParam(name = "signBookType") String signBookType,
+			             @RequestParam(name = "multipartFile", required = false) MultipartFile multipartFile,
+						 Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
-		SignBook signBookToUpdate = null;
-		if(signBook.getId() != null) {
-			signBookToUpdate = signBookRepository.findById(signBook.getId()).get();
-		}
-		signBook.setName(signBook.getName().trim());
-		if(signBook.getSourceType() != null && signBook.getDocumentsSourceUri().isEmpty()) {
-			String defaultSourceUri =  signBook.getSignBookType().toString() + "/" + signBook.getName();
-			signBook.setDocumentsSourceUri(defaultSourceUri);
-		}
-		if(signBook.getTargetType() != null && signBook.getDocumentsTargetUri().isEmpty()) {
-			String defaultTargetUri =  signBook.getSignBookType().toString() + "/" + signBook.getName() + "/signed";
-			signBook.setDocumentsTargetUri(defaultTargetUri);
-		}
-		SignRequestParams signRequestParams = new SignRequestParams();
-		signRequestParams.setSignType(SignType.valueOf(signType));
-		signRequestParams.setNewPageType(NewPageType.valueOf(newPageType));
-		signRequestParams.setSignPageNumber(1);
-		try {		
-			if (signBookToUpdate != null) {
-				if(signBookToUpdate.getSignBookType().equals(SignBookType.user)) {
-					return "redirect:/manager/signbooks/" + signBook.getId();
-				}
-				signBookService.updateSignBook(signBook, signBookToUpdate, signRequestParams, multipartFile);
-			} else {
-				if("workflow".equals(type)) {
-					signBook.setSignBookType(SignBookType.workflow);
-					List<SignBook> signBooks = new ArrayList<>();
-					for(long signBookId : signBooksIds) {
-						SignBook signBook2 = signBookRepository.findById(signBookId).get();
-						if(!signBooks.contains(signBook2)) {
-							signBooks.add(signBook2);
-						}
-					}
-					signBook.setSignBooks(signBooks);
-					signBookService.createWorkflowSignBook(signBook, user, signRequestParams, multipartFile, false);
-				} else {
-					signBook.setSignBookType(SignBookType.group);
-					signBookService.createGroupSignBook(signBook, user, signRequestParams, multipartFile, false);
-				}
-			}
+		SignBook newSignBook = new SignBook();
+		newSignBook.setName(name);
+		newSignBook.setSignBookType(SignBookType.valueOf(signBookType));
+		SignBook signBook;
+		try {
+			signBook = signBookService.createSignBook(newSignBook, user, multipartFile, false);
 		} catch (EsupSignatureException e) {
-			logger.error("enable to create signBookGroup", e);
-			redirectAttrs.addFlashAttribute("messageCustom", signBook.getName() + " " + e.getMessage());
-			return "redirect:/manager/signbooks?form";
-
+			redirectAttrs.addAttribute("messageError", "Ce parapheur existe déjà");
+			return "redirect:/manager/signbooks/";
 		}
+		return "redirect:/manager/signbooks/" + signBook.getId();
+	}
 
-		uiModel.asMap().clear();
+	@PostMapping(value = "/add-recipients/{id}", produces = "text/html")
+	public String addRecipients(@PathVariable("id") Long id,
+						 @RequestParam(name = "recipientEmails") List<String> recipientEmails,
+						 Model uiModel, RedirectAttributes redirectAttrs) {
+		User user = userService.getUserFromAuthentication();
+		SignBook signBook = signBookRepository.findById(id).get();
+		if(signBook.getCreateBy().equals(user.getEppn())) {
+			signBookService.addRecipient(signBook, recipientEmails);
+		}
+		return "redirect:/manager/signbooks/" + signBook.getId();
+	}
+
+	@DeleteMapping(value = "/remove-recipient/{id}", produces = "text/html")
+	public String removeRecipients(@PathVariable("id") Long id,
+								@RequestParam(name = "recipientEmail") String recipientEmail,
+								Model uiModel, RedirectAttributes redirectAttrs) {
+		User user = userService.getUserFromAuthentication();
+		SignBook signBook = signBookRepository.findById(id).get();
+		if(signBook.getCreateBy().equals(user.getEppn())) {
+			signBookService.removeRecipient(signBook, recipientEmail);
+		}
 		return "redirect:/manager/signbooks/" + signBook.getId();
 	}
 
@@ -206,43 +215,23 @@ public class SignBookController {
         return "manager/signbooks/update";
     }
 	
-    @RequestMapping(method = RequestMethod.PUT, produces = "text/html")
-    public String update(@Valid SignBook signBook, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
-        if (bindingResult.hasErrors()) {
-            populateEditForm(uiModel, signBook);
-            return "manager/signbooks/update";
-        }
-        uiModel.asMap().clear();
-        signBookRepository.save(signBook);
-        return "redirect:/manager/signbooks/" + encodeUrlPathSegment(signBook.getId().toString(), httpServletRequest);
-    }
-	
-	@RequestMapping(value = "/{id}", produces = "text/html")
-	public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
-		addDateTimeFormatPatterns(uiModel);
-		SignBook signBook = signBookRepository.findById(id).get();
-		Document modelFile = signBook.getModelFile();
-		if (modelFile != null && modelFile.getSize() > 0) {
-			uiModel.addAttribute("documentId", modelFile.getId());
-			if(modelFile.getContentType().equals("application/pdf")) {
-				PdfParameters pdfParameters = pdfService.getPdfParameters(modelFile.getJavaIoFile());
-				uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-				int[] signFieldCoord = pdfService.getSignFieldCoord(modelFile.getJavaIoFile(), 0);
-				if(signFieldCoord != null && signFieldCoord.length > 0) {
-					uiModel.addAttribute("containsSignatureFields", true);			
-				} else {
-					uiModel.addAttribute("containsSignatureFields", false);
-				}
-			}
+    @PostMapping(value = "/update/{id}")
+    public String update(@PathVariable("id") Long id, @Valid SignBook signBook, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
+		User user = userService.getUserFromAuthentication();
+		SignBook signBookToUpdate = signBookRepository.findById(signBook.getId()).get();
+		if(signBookToUpdate.getCreateBy().equals(user.getEppn())) {
+			signBookToUpdate.setSourceType(signBook.getSourceType());
+			signBookToUpdate.setTargetType(signBook.getTargetType());
+			signBookToUpdate.setDocumentsSourceUri(signBook.getDocumentsSourceUri());
+			signBookToUpdate.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
+			signBookToUpdate.setDescription(signBook.getDescription());
+			signBookToUpdate.setUpdateBy(user.getEppn());
+			signBookToUpdate.setUpdateDate(new Date());
+			signBookRepository.save(signBookToUpdate);
 		}
-		
-		uiModel.addAttribute("lastSignRequestParam", signBook.getSignRequestParams().get(signBook.getSignRequestParams().size() - 1));
-		uiModel.addAttribute("numberOfDocuments", signBook.getSignRequests().size());
-		uiModel.addAttribute("signRequests", signBook.getSignRequests());
-		uiModel.addAttribute("signBook", signBook);
-		uiModel.addAttribute("itemId", id);
-		return "manager/signbooks/show";
-	}
+        return "redirect:/manager/signbooks/" + signBook.getId();
+
+    }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
     public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, Model uiModel, RedirectAttributes redirectAttrs) {
@@ -259,10 +248,6 @@ public class SignBookController {
 				return "redirect:/manager/signbooks/" + id;
 			}    
 		}
-		if(signBook.getSignRequests().size() > 0) {
-			redirectAttrs.addFlashAttribute("messageCustom", "Le parapheur n'est pas vide");
-			return "redirect:/manager/signbooks/" + id;
-		}
 		signBookService.deleteSignBook(signBook);
         uiModel.asMap().clear();
         uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
@@ -270,7 +255,7 @@ public class SignBookController {
         return "redirect:/manager/signbooks";
     }
 	
-	@RequestMapping(value = "/updateParams/{id}", method = RequestMethod.POST)
+	@RequestMapping(value = "/update-params/{id}", method = RequestMethod.POST)
 	public String updateParams(@PathVariable("id") Long id, @RequestParam(value = "xPos", required = true) int xPos,
 			@RequestParam(value = "yPos", required = true) int yPos,
 			@RequestParam(value = "signPageNumber", required = true) int signPageNumber,
@@ -282,16 +267,13 @@ public class SignBookController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/signbooks/" + id;
 		}
-		signBook.getSignRequestParams().get(signBook.getSignRequestParams().size() - 1).setSignPageNumber(signPageNumber);
-		signBook.getSignRequestParams().get(signBook.getSignRequestParams().size() - 1).setXPos(xPos);
-		signBook.getSignRequestParams().get(signBook.getSignRequestParams().size() - 1).setYPos(yPos);
 		signBook.setUpdateBy(user.getEppn());
 		signBook.setUpdateDate(new Date());
 
 		return "redirect:/manager/signbooks/" + id;
 	}
 
-	@RequestMapping(value = "/deleteParams/{id}", method = RequestMethod.POST)
+	@RequestMapping(value = "/delete-params/{id}", method = RequestMethod.POST)
 	public String deleteParams(@PathVariable("id") Long id,
 			@RequestParam(value = "signBookId", required = true) Long signBookId,
 			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
@@ -302,20 +284,135 @@ public class SignBookController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/signbooks/" + id;
 		}
-		if(!signBook.getSignRequestParams().get(0).equals(signRequestParams)) {
-			signBook.getSignRequestParams().remove(signRequestParams);
-			signBook.setUpdateBy(user.getEppn());
-			signBook.setUpdateDate(new Date());
-			signBookRepository.save(signBook);
-		}
-		//signRequestParams.remove();
+		//TODO with workflowsteps
 		
 		return "redirect:/manager/signbooks/" + signBookId;
 	}
-	
-	@RequestMapping(value = "/addParams/{id}", method = RequestMethod.POST)
+
+	@PostMapping(value = "/add-step/{id}")
+	public String addStep(@PathVariable("id") Long id,
+						  @RequestParam("signBookNames") List<String> singBookNames,
+						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
+						  @RequestParam("signType") String signType,
+						  RedirectAttributes redirectAttrs) {
+		User user = userService.getUserFromAuthentication();
+		SignBook signBook = signBookRepository.findById(id).get();
+		if (!signBook.getCreateBy().equals(user.getEppn())) {
+			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+			return "redirect:/manager/signbooks/" + id;
+		}
+		WorkflowStep workflowStep = new WorkflowStep();
+		for(String signBookName : singBookNames) {
+			if(signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user).size() > 0) {
+				SignBook signBookToAdd = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user).get(0);
+				workflowStep.getSignBooks().put(signBookToAdd.getId(), false);
+			} else {
+				if(signBookRepository.findByName(signBookName).size() > 0 ) {
+					SignBook signBookToAdd = signBookRepository.findByName(signBookName).get(0);
+					workflowStep.getSignBooks().put(signBookToAdd.getId(), false);
+
+				}
+			}
+		}
+		if(allSignToComplete ==null) {
+			workflowStep.setAllSignToComplete(false);
+		} else {
+			workflowStep.setAllSignToComplete(allSignToComplete);
+		}
+		workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
+		workflowStep.getSignRequestParams().setSignType(SignType.valueOf(signType));
+		workflowStepRepository.save(workflowStep);
+		signBook.getWorkflowSteps().add(workflowStep);
+		return "redirect:/manager/signbooks/" + id;
+	}
+
+	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
+	public String removeStepRecipient(@PathVariable("id") Long id,
+									  @PathVariable("workflowStepId") Long workflowStepId,
+									  @RequestParam(value = "recipientName") String recipientName,
+									  RedirectAttributes redirectAttrs, HttpServletRequest request) {
+		User user = userService.getUserFromAuthentication();
+		user.setIp(request.getRemoteAddr());
+		SignBook signBook = signBookRepository.findById(id).get();
+		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
+		if(user.getEppn().equals(signBook.getCreateBy())) {
+			SignBook signBookToRemove = signBookRepository.findByName(recipientName).get(0);
+			workflowStep.getSignBooks().remove(signBookToRemove.getId());
+			workflowStepRepository.save(workflowStep);
+		} else {
+			logger.warn(user.getEppn() + " try to move " + signBook.getId() + " without rights");
+		}
+		return "redirect:/manager/signbooks/" + id + "#" + workflowStep.getId();
+	}
+
+	@RequestMapping(value = "/send-to-signbook/{id}/{workflowStepId}", method = RequestMethod.GET)
+	public String sendToSignBook(@PathVariable("id") Long id,
+								 @PathVariable("workflowStepId") Long workflowStepId,
+								 @RequestParam(value = "signBookNames", required = true) String[] signBookNames,
+								 RedirectAttributes redirectAttrs, HttpServletRequest request) {
+		User user = userService.getUserFromAuthentication();
+		user.setIp(request.getRemoteAddr());
+		SignBook signBook = signBookRepository.findById(id).get();
+		if(user.getEppn().equals(signBook.getCreateBy())) {
+			WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
+			for(String signBookName : signBookNames) {
+				if(signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user).size() > 0) {
+					SignBook signBookToAdd = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user).get(0);
+					workflowStep.getSignBooks().put(signBookToAdd.getId(), false);
+				} else {
+					if(signBookRepository.findByName(signBookName).size() > 0 ) {
+						SignBook signBookToAdd = signBookRepository.findByName(signBookName).get(0);
+						workflowStep.getSignBooks().put(signBookToAdd.getId(), false);
+
+					}
+				}
+			}
+		} else {
+			logger.warn(user.getEppn() + " try to move " + signBook.getId() + " without rights");
+		}
+		return "redirect:/manager/signbooks/" + id;
+	}
+
+	@RequestMapping(value = "/toggle-need-all-sign/{id}/{step}", method = RequestMethod.GET)
+	public String toggleNeedAllSign(@PathVariable("id") Long id,@PathVariable("step") Integer step) {
+		User user = userService.getUserFromAuthentication();
+		SignBook signBook = signBookRepository.findById(id).get();
+		if(user.getEppn().equals(signBook.getCreateBy())) {
+			Long stepId = signRequestService.toggleNeedAllSign(signBook, step);
+			return "redirect:/manager/signbooks/" + id + "#" + stepId;
+		}
+		return "redirect:/manager/signbooks/";
+	}
+
+	@RequestMapping(value = "/change-step-sign-type/{id}/{step}", method = RequestMethod.GET)
+	public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
+		User user = userService.getUserFromAuthentication();
+		SignBook signBook = signBookRepository.findById(id).get();
+		if(user.getEppn().equals(signBook.getCreateBy())) {
+			Long stepId = signRequestService.changeSignType(signBook, step, signType);
+			return "redirect:/manager/signbooks/" + id + "#" + stepId;
+		}
+		return "redirect:/manager/signbooks/";
+	}
+
+	@DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
+	public String addStep(@PathVariable("id") Long id, @PathVariable("stepNumber") Integer stepNumber, RedirectAttributes redirectAttrs) {
+		User user = userService.getUserFromAuthentication();
+		SignBook signBook = signBookRepository.findById(id).get();
+		if (!signBook.getCreateBy().equals(user.getEppn())) {
+			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+			return "redirect:/manager/signbooks/" + id;
+		}
+		WorkflowStep workflowStep = signBook.getWorkflowSteps().get(stepNumber);
+		signBook.getWorkflowSteps().remove(workflowStep);
+		signBookRepository.save(signBook);
+		workflowStepRepository.delete(workflowStep);
+		return "redirect:/manager/signbooks/" + id;
+	}
+
+	@RequestMapping(value = "/add-params/{id}", method = RequestMethod.POST)
 	public String addParams(@PathVariable("id") Long id, 
-			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
+			RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
 		SignBook signBook = signBookRepository.findById(id).get();
 
@@ -323,15 +420,13 @@ public class SignBookController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/signbooks/" + id;
 		}
-		signBook.getSignRequestParams().add(signRequestService.getEmptySignRequestParams());
 		signBook.setUpdateBy(user.getEppn());
 		signBook.setUpdateDate(new Date());
-
 		return "redirect:/manager/signbooks/" + id;
 	}
-	
+
 	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
-	public String getFileFromSource(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
+	public String getFileFromSource(@PathVariable("id") Long id, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
 		SignBook signBook = signBookRepository.findById(id).get();
 
@@ -339,43 +434,13 @@ public class SignBookController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/signbooks/" + id;
 		}
-		try {
-			signBookService.importFilesFromSource(signBook, user);
-		} catch (EsupSignatureIOException e) {
-			redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
-		} catch (EsupStockException e) {
-			redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
+		List<FsFile> fsFiles = signBookService.importFilesFromSource(signBook, user);
+		if(fsFiles.size() == 0) {
+			redirectAttrs.addFlashAttribute("messageError", "Aucun fichier à importer");
+		} else {
+			redirectAttrs.addFlashAttribute("messageInfo", fsFiles.size() + " ficher(s) importé(s)");
 		}
-		
 		return "redirect:/manager/signbooks/" + id;
-
 	}
 
-	@RequestMapping(value = "/send-files-to-target/{id}", produces = "text/html")
-	public String sendFileToTarget(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureException {
-		User user = userService.getUserFromAuthentication();
-		SignBook signBook = signBookRepository.findById(id).get();
-		if (!signBook.getCreateBy().equals(user.getEppn())) {
-			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/manager/signbooks/" + id;
-		}
-		signBookService.exportFilesToTarget(signBook, user);
-		return "redirect:/manager/signbooks/" + id;
-
-	}
-	
-    String encodeUrlPathSegment(String pathSegment, HttpServletRequest httpServletRequest) {
-        String enc = httpServletRequest.getCharacterEncoding();
-        if (enc == null) {
-            enc = WebUtils.DEFAULT_CHARACTER_ENCODING;
-        }
-        pathSegment = UriUtils.encodePathSegment(pathSegment, enc);
-        return pathSegment;
-    }
-
-
-	void addDateTimeFormatPatterns(Model uiModel) {
-        uiModel.addAttribute("signBook_createdate_date_format", "dd/MM/yyyy HH:mm");
-        uiModel.addAttribute("signBook_updatedate_date_format", "dd/MM/yyyy HH:mm");
-    }
 }

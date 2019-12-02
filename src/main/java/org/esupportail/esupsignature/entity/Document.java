@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
 import com.google.common.io.Files;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +21,9 @@ public class Document {
 
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
     private Long id;
 
 	@Version
-    @Column(name = "version")
     private Integer version;
 	
 	private String fileName;
@@ -45,21 +44,15 @@ public class Document {
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST}, orphanRemoval = true)
     private BigFile bigFile = new BigFile();
- 
-    public File getJavaIoFile() {
-    	try {
-			InputStream inputStream = bigFile.getBinaryFile().getBinaryStream();
-		    File targetFile = new File(Files.createTempDir(), fileName);
-		    OutputStream outputStream = new FileOutputStream(targetFile);
-		    IOUtils.copy(inputStream, outputStream);
-		    outputStream.close();
-		    inputStream.close();
-			return targetFile;
-    	} catch (SQLException | IOException e) {
-    		logger.error("error to convert BigFile to java.io.File", e);
-		}
-    	return null;
-	}
+
+    public InputStream getInputStream() {
+        try {
+            return this.bigFile.getBinaryFile().getBinaryStream();
+        } catch (SQLException e) {
+            logger.error("error get inputStream", e);
+        }
+        return null;
+    }
 
 	public String getFileName() {
         return this.fileName;

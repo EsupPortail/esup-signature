@@ -42,6 +42,22 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 	
 	@Resource
 	private ClientRegistrationRepository clientRegistrationRepository;
+	
+	/* A GARDER POUR MULTIPLE AUTH OU FRANCE CONNECT
+	@Bean
+	public ClientRegistrationRepository clientRegistrationRepository() {
+        String clientId = "295837101524-b9kj77m2kp30ahr01kk5abaprr9r3h12.apps.googleusercontent.com";
+		String clientSecret = "OPeG_a0fifx1r5qcN5RONL_o";
+    	ClientRegistration registration = CommonOAuth2Provider.GOOGLE.getBuilder("google")
+		        .clientId(clientId)
+		        .clientSecret(clientSecret)
+		        .scope("profile", "email")
+		        .redirectUriTemplate("https://esup-signature.univ-ville.fr/login/oauth2/code/google")
+		        .build();
+
+        return new InMemoryClientRegistrationRepository(Arrays.asList(registration));
+    }
+    */
 
 	@Bean
 	public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
 	<div class="header-fixed fixed-top">
@@ -55,10 +55,9 @@
 			<dt class="col-lg-5">KeyStore</dt>
 			<dd>
 				<div th:if="${keystore != null}">
-					<button type="button" class="btn btn-warning" th:onclick="'location.href=/user/users/get-keystore-file/' + ${user.id}">
-						<i class="fas fa-download"> <!--  -->
-						</i> Télécharger le keystore
-					</button>
+					<a class="btn btn-warning" href="/user/users/get-keystore-file">
+						<i class="fas fa-download"></i> Télécharger le keystore
+					</a>
 					<br /> <br />
 					<form action="/user/users/viewCert" method="get">
 						<div class="input-group mb-2">
@@ -73,16 +72,6 @@
 				</div>
 				<i th:if="${keystore == null}" class="fas fa-ban"> <!--  -->
 				</i>
-			</dd>
-		</dl>
-
-		<dl class="row border-bottom m-0">
-			<dt class="col-lg-5">Paramètres</dt>
-			<dd>
-				Type de signature :
-				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" th:text="#{'signbook.signtype.' + ${defaultSignBook.signRequestParams[0].signType}}"></div>
-				Page de garde :
-				<div class="alert alert-dark text-center" id="type_${defaultSignBook.id}" th:text="#{'signbook.newpagetype.' + ${defaultSignBook.signRequestParams[0].newPageType}}"></div>
 			</dd>
 		</dl>
 		<dl class="row border-bottom m-0" th:if="${user.emailAlertFrequency == null}">
@@ -110,7 +99,6 @@
 		</th:block>
 		</div>
 	</main>
-	<div th:replace="fragments/message :: message"></div>
-
+	<div th:replace="fragments/footer :: footer"></div>
 </body>
 </html>

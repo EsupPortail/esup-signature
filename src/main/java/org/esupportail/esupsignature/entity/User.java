@@ -13,11 +13,9 @@ public class User {
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
     private Long id;
 
 	@Version
-    @Column(name = "version")
     private Integer version;
 	
 	private String name;
@@ -68,7 +66,15 @@ public class User {
         this.id = id;
     }
 
-	public String toString() {
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 

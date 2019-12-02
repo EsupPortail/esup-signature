@@ -11,7 +11,7 @@ import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.x509.CertificateToken;
 import eu.europa.esig.dss.x509.KeyStoreCertificateSource;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.esupportail.esupsignature.service.FileService;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
