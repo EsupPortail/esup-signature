@@ -242,7 +242,7 @@ public class PdfService {
 
     public InputStream convertGS(InputStream inputStream) throws IOException {
         File file = inputStreamToPdfTempFile(inputStream);
-        if (!isPdfAComplient(file)) {
+        if (!isPdfAComplient(file) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
             String defFile = PdfService.class.getResource("/PDFA_def.ps").getFile();
             String cmd = pdfConfig.getPdfProperties().getPathToGS() + "gs -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";

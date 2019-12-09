@@ -10,6 +10,7 @@ public class PdfProperties {
     private int pdfToImageDpi = 150;
     private int signWidthThreshold = 150;
     private String pathToGS = "/usr/bin/";
+    private boolean convertToPdfA = true;
     private int pdfALevel = 2;
 
     public int getWidth() {
@@ -50,6 +51,14 @@ public class PdfProperties {
 
     public void setPathToGS(String pathToGS) {
         this.pathToGS = pathToGS;
+    }
+
+    public boolean isConvertToPdfA() {
+        return convertToPdfA;
+    }
+
+    public void setConvertToPdfA(boolean convertToPdfA) {
+        this.convertToPdfA = convertToPdfA;
     }
 
     public int getPdfALevel() {

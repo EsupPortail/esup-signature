@@ -49,19 +49,19 @@ public class WsController {
 
     private static final Logger logger = LoggerFactory.getLogger(WsController.class);
 
-    @Autowired
+    @Resource
     private SignRequestRepository signRequestRepository;
 
     @Resource
     private SignRequestService signRequestService;
 
-    @Autowired
+    @Resource
     private SignBookRepository signBookRepository;
 
     @Resource
     private SignBookService signBookService;
 
-    @Autowired
+    @Resource
     private UserRepository userRepository;
 
     @Resource

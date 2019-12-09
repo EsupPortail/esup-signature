@@ -172,7 +172,7 @@ public class SignRequestController {
         model.addAttribute("statusFilter", this.statusFilter);
         model.addAttribute("statuses", SignRequest.SignRequestStatus.values());
         model.addAttribute("messageError", messageError);
-
+        populateEditForm(model, new SignRequest());
         return "user/signrequests/list";
     }
 
@@ -356,6 +356,24 @@ public class SignRequestController {
             return "redirect:/user/signrequests";
         }
 
+    }
+
+    @RequestMapping(value = "/fast-sign-request", method = RequestMethod.POST)
+    public String createSignRequest(@RequestParam("multipartFile") MultipartFile multipartFile, @RequestParam("signType") SignType signType) {
+        User user = userService.getUserFromAuthentication();
+        if (multipartFile != null) {
+            Document documentToAdd = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
+            SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd);
+            signRequest.setTitle(fileService.getNameOnly(documentToAdd.getFileName()));
+            signRequestRepository.save(signRequest);
+            signRequestService.addWorkflowStep(Arrays.asList(user.getEmail()), "Ma signature", true, signType, signRequest);
+            signRequestService.pendingSignRequest(signRequest, user);
+            logger.info("adding new file into signRequest " + signRequest.getName());
+            return "redirect:/user/signrequests/sign-by-token/" + signRequest.getName();
+        } else {
+            logger.warn("no file to import");
+        }
+        return "redirect:/user/signrequests";
     }
 
     @RequestMapping(value = "/sign/{id}", method = RequestMethod.POST)
