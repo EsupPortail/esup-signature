@@ -51,12 +51,6 @@
                         </button>
                     </div>
                 </div>
-                <button th:if="${referer != null}" title="Abandonner" type="button" class="btn btn-danger col-12 mb-1 text-left" value="Retour" th:onclick="@{'location.href=\'' + ${referer} + '\''}">
-                    <i class="fas fa-times"></i><span class="sidebar-label"> Abandonner</span>
-                </button>
-                <button th:unless="${referer != null}" title="Abandonner" type="button" class="btn btn-danger col-12 mb-1 text-left" value="Retour" onclick="window.history.back()">
-                    <i class="fas fa-times"></i><span class="sidebar-label"> Abandonner</span>
-                </button>
                 <button title="Valider la signature" type="button" class="btn btn-success col-12 mb-1 text-left"
                         th:unless="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'visa' || signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'nexuSign' || signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign' || paramsOk == false}"
                         onclick="document.getElementById('signForm').submit();">
@@ -69,6 +63,12 @@
                         th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'visa'}"
                         onclick="document.getElementById('signForm').submit();">
                     <i class="fas fa-check"></i><span class="sidebar-label"> Valider le document</span>
+                </button>
+                <button th:if="${referer != null}" title="Abandonner" type="button" class="btn btn-light col-12 mb-1 text-left" value="Retour" th:onclick="@{'location.href=\'' + ${referer} + '\''}">
+                    <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
+                </button>
+                <button th:unless="${referer != null}" title="Abandonner" type="button" class="btn btn-light col-12 mb-1 text-left" value="Retour" onclick="window.history.back()">
+                    <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
                 </button>
             </div>
         </nav>

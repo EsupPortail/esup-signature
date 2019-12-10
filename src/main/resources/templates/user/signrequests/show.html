@@ -79,8 +79,8 @@
                         </th:block>
                     </div>
                 </div>
-                <a class="btn btn-light col-12 mb-1 text-left" href="/"><i class="fas fa-door-open"></i>
-                    <span class="sidebar-label">Sortir</span>
+                <a class="btn btn-light col-12 mb-1 text-left" href="/">
+                    <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
                 </a>
             </div>
         </nav>
@@ -99,7 +99,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="/user/signrequests">Liste des demandes</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.name}"></span>
+                    <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.title}"></span>
                     </li>
                 </ol>
             </nav>
