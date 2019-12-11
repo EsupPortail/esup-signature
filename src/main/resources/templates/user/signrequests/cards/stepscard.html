@@ -28,12 +28,19 @@
                     </div>
                 </div>
             </div>
+            <script language="JavaScript">
+                function confirmdel(name) {
+                    if(confirm("Confimer la suppression de l'étape")) {
+                        document.getElementById(name).submit();
+                    }
+                }
+            </script>
             <th:block th:if="${signRequest.workflowSteps != null}">
                 <div id="stepper" class="bs-stepper">
                     <div class="bs-stepper-header" role="tablist">
                         <th:block th:each="workflowStep,iterator : ${signRequest.workflowSteps}">
                             <div class="step" th:name="${workflowStep.id}" th:id="${workflowStep.id}" th:data-target="'#step_' + ${iterator.index}">
-                                <button th:aria-controls="'step_' + ${iterator.index}" class="step-trigger bg-light" role="tab" aria-selected="false" style="border: 1px solid #CCCCCC;" th:classappend="${iterator.index + 1 == signRequest.currentWorkflowStepNumber} ? 'current-step'">
+                                <div class="step-trigger" th:classappend="${iterator.index + 1 == signRequest.currentWorkflowStepNumber} ? 'current-step'"  style="border: 1px solid #CCCCCC;">
                                     <div th:if="${iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
                                         <span class="bs-stepper-circle bg-success"><i class="fa fa-cog"></i></span>
                                     </div>
@@ -43,8 +50,19 @@
                                     <div th:unless="${iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
                                         <span class="bs-stepper-circle"><i class="fa fa-check"></i></span>
                                     </div>
-                                    <span class="bs-stepper-label" th:text="'Etape ' + ${iterator.index + 1}"></span>
-                                </button>
+                                    <span th:if="${workflowStep.name != null}" th:text="${workflowStep.name}"></span>
+                                    <span th:unless="${workflowStep.name != null}" class="bs-stepper-label" th:text="'Etape ' + ${iterator.index + 1}"></span>
+                                    <span class="bs-stepper-bottom">
+                                        <button class="btn btn-sm float-right" data-toggle="collapse" th:href="'#stepDetail_' + ${iterator.index}" role="button" aria-expanded="false" th:aria-controls="'stepDetail_' + ${iterator.index}">
+                                            <i class="fas fa-pen"></i>
+                                        </button>
+                                        <form th:id="'del_' + ${iterator.index}" th:action="'/user/signrequests/remove-step/' + ${id} + '/' + ${iterator.index}" th:method="delete" onsubmit="confirmdel();">
+                                            <button th:onclick="'confirmdel(\'del_' + ${iterator.index} + '\');'" class="btn btn-sm float-right">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </span>
+                                </div>
                             </div>
                             <div th:if="${signRequest.workflowSteps.size() > iterator.index + 1}" class="line"></div>
                         </th:block>
@@ -68,16 +86,21 @@
                             <div class="bs-stepper-pane" th:id="'step_' + ${iterator.index}" role="tabpanel">
                                 <div class="card">
                                     <div class="card-body border-1 bg-light">
-                                        <button class="btn btn-secondary" data-toggle="collapse" th:href="'#stepDetail_' + ${iterator.index}" role="button" aria-expanded="false" th:aria-controls="'stepDetail_' + ${iterator.index}">
-                                            <i class="fas fa-sort-down"></i> <span th:text="'Détails de l\'étape ' + ${iterator.index + 1}"></span> <i class="fas fa-sort-down"></i>
-                                        </button>
+                                        <h5><span th:text="'Etape ' + ${iterator.index + 1}"></span> : <span th:text="${workflowStep.name}"></span></h5>
                                         <th:block th:if="${signRequest.signedDocuments.size() > iterator.index}">
                                             <a class="btn btn-success" th:href="'/user/documents/getfile/' + ${signRequest.signedDocuments.get(iterator.index).id}" target="_blank">
                                                 <i class="fas fa-download"></i> Ouvrir le document signé
                                             </a>
                                         </th:block>
                                         <hr/>
-                                        <div th:classappend="${workflowStep.signBooks.size() > 0} ? 'collapse'" th:id="'stepDetail_' + ${iterator.index}">
+                                        <div class="collapse" th:id="'stepDetail_' + ${iterator.index}">
+                                            <label>Nom de l'étape :</label>
+                                            <div th:unless="${iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
+                                                <b><span th:text="${workflowStep.name}"></span></b>
+                                            </div>
+                                            <div th:if="${iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
+                                                <input type="text" name="name" class="form-control" th:value="${workflowStep.name}">
+                                            </div>
                                             <label>Type de signature :</label>
                                             <div th:unless="${iterator.index + 1 > signRequest.currentWorkflowStepNumber || iterator.index + 1 == signRequest.currentWorkflowStepNumber}">
                                                 <b><span th:text="#{'signbook.signtype.' + ${workflowStep.signRequestParams.signType}}"></span></b>
@@ -197,16 +220,10 @@
                                                                             onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" type="submit" class="btn btn-danger btn-sm float-right"><i class="fas fa-minus-circle"></i></button>
                                                                 </td>
                                                             </th:block>
-                                                            </li>
                                                         </form>
                                                     </tr>
                                                 </th:block>
                                             </table>
-                                            <form th:action="'/user/signrequests/remove-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
-                                                <button type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="btn btn-danger float-right">
-                                                    <i class="fas fa-trash"></i> Supprimer l'étape
-                                                </button>
-                                            </form>
                                         </div>
                                     </div>
                                 </div>
