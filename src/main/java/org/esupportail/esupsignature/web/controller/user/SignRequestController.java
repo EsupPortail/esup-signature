@@ -227,6 +227,44 @@ public class SignRequestController {
         }
     }
 
+    @RequestMapping(value = "/annoter/{id}", produces = "text/html")
+    public String annoter(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
+        User user = userService.getUserFromAuthentication();
+        if (!userService.isUserReady(user)) {
+            return "redirect:/user/users/?form";
+        }
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        model.addAttribute("signRequest", signRequest);
+        if ((signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest))) {
+            Document toDisplayDocument;
+            if (signRequestService.getToSignDocuments(signRequest).size() == 1) {
+                toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
+                if (toDisplayDocument.getContentType().equals("application/pdf")) {
+                    PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
+                    model.addAttribute("pdfWidth", pdfParameters.getWidth());
+                    model.addAttribute("pdfHeight", pdfParameters.getHeight());
+                    model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+                    if (user.getSignImage() != null && user.getSignImage().getSize() > 0) {
+                        model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+                        int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
+                        model.addAttribute("signWidth", size[0]);
+                        model.addAttribute("signHeight", size[1]);
+                    } else {
+                        model.addAttribute("signWidth", 100);
+                        model.addAttribute("signHeight", 75);
+                    }
+                    if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.certSign) && user.getKeystore() == null) {
+                    }
+                }
+                model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
+                model.addAttribute("documentId", toDisplayDocument.getId());
+            }
+        }
+        List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNull(id);
+        model.addAttribute("logs", logs);
+        return "user/signrequests/annoter";
+    }
+
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(Model model) {
         populateEditForm(model, new SignRequest());
@@ -581,7 +619,7 @@ public class SignRequestController {
             logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
         }
     }
-
+/*
     @RequestMapping(value = "/toggle-need-all-sign/{id}/{step}", method = RequestMethod.GET)
     public String toggleNeedAllSign(@PathVariable("id") Long id,@PathVariable("step") Integer step) {
         User user = userService.getUserFromAuthentication();
@@ -591,13 +629,32 @@ public class SignRequestController {
         }
         return "redirect:/user/signrequests/" + id;
     }
-
+*/
     @RequestMapping(value = "/change-step-sign-type/{id}/{step}", method = RequestMethod.GET)
     public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if(user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getCurrentWorkflowStepNumber() <= step + 1) {
-            Long stepId = signRequestService.changeSignType(signRequest, step, signType);
+            signRequestService.changeSignType(signRequest, step, null, signType);
+            return "redirect:/user/signrequests/" + id;
+        }
+        return "redirect:/user/signrequests/";
+    }
+
+    @RequestMapping(value = "/update-step/{id}/{step}", method = RequestMethod.GET)
+    public String changeStepSignType(@PathVariable("id") Long id,
+                                     @PathVariable("step") Integer step,
+                                     @RequestParam(name="name", required = false) String name,
+                                     @RequestParam(name="signType") SignType signType,
+                                     @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
+        User user = userService.getUserFromAuthentication();
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        if(user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getCurrentWorkflowStepNumber() <= step + 1) {
+            if(allSignToComplete == null) {
+                allSignToComplete = false;
+            }
+            signRequestService.changeSignType(signRequest, step, name, signType);
+            signRequestService.toggleNeedAllSign(signRequest, step, allSignToComplete);
             return "redirect:/user/signrequests/" + id;
         }
         return "redirect:/user/signrequests/";
@@ -727,15 +784,18 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @RequestMapping(value = "/comment/{id}", method = RequestMethod.GET)
+    @PostMapping(value = "/comment/{id}")
     public String comment(@PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
+                          @RequestParam(value = "pageNumber", required = false) Integer pageNumber,
+                          @RequestParam(value = "posX", required = false) Integer posX,
+                          @RequestParam(value = "posY", required = false) Integer posY,
                           HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
-            signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", user, "SUCCESS", comment);
+            signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", user, "SUCCESS", comment, pageNumber, posX, posY);
         } else {
             logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
         }

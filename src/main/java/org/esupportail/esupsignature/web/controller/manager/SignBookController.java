@@ -389,8 +389,8 @@ public class SignBookController {
 		User user = userService.getUserFromAuthentication();
 		SignBook signBook = signBookRepository.findById(id).get();
 		if(user.getEppn().equals(signBook.getCreateBy())) {
-			Long stepId = signRequestService.changeSignType(signBook, step, signType);
-			return "redirect:/manager/signbooks/" + id + "#" + stepId;
+			signRequestService.changeSignType(signBook, step, null, signType);
+			return "redirect:/manager/signbooks/" + id;
 		}
 		return "redirect:/manager/signbooks/";
 	}

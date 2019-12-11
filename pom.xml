@@ -21,9 +21,9 @@
 		<java.version>1.8</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<slf4j.version>1.7.5</slf4j.version>
-		<spring.version>5.1.4.RELEASE</spring.version>
-		<spring-security.version>5.1.4.RELEASE</spring-security.version>
-		<spring-data.version>2.1.5.RELEASE</spring-data.version>
+		<spring.version>5.2.2.RELEASE</spring.version>
+		<spring-security.version>5.2.0.RELEASE</spring-security.version>
+		<spring-data.version>2.2.3.RELEASE</spring-data.version>
 		<dss.framework.version>5.4.3</dss.framework.version>
 		<hsqldb.version>2.4.1</hsqldb.version>
 		<nexu.version>1.22</nexu.version>
@@ -128,6 +128,12 @@
 		</dependency>
 		 
 		<!-- https://mvnrepository.com/artifact/org.webjars/bootstrap -->
+
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>pdf-js</artifactId>
+			<version>2.3.200</version>
+		</dependency>
 
 		<dependency>
 		    <groupId>org.webjars</groupId>

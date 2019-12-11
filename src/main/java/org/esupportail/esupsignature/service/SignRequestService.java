@@ -519,6 +519,10 @@ public class SignRequestService {
 	}
 
 	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, User user, String returnCode, String comment) {
+		updateStatus(signRequest, signRequestStatus, action, user, returnCode, comment, null, null, null);
+	}
+
+	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, User user, String returnCode, String comment, Integer pageNumber, Integer posX, Integer posY ) {
 		Log log = new Log();
 		log.setSignRequestId(signRequest.getId());
 		log.setEppn(user.getEppn());
@@ -528,6 +532,11 @@ public class SignRequestService {
 		log.setAction(action);
 		log.setReturnCode(returnCode);
 		log.setComment(comment);
+		if(pageNumber != null) {
+			log.setPageNumber(pageNumber);
+			log.setPosX(posX);
+			log.setPosY(posY);
+		}
 		if(signRequestStatus != null) {
 			log.setFinalStatus(signRequestStatus.toString());		
 			signRequest.setStatus(signRequestStatus);
@@ -566,9 +575,11 @@ public class SignRequestService {
 		return toggleAllSignToCompleteForWorkflowStep(workflowStep);
 	}
 
-	public Long toggleNeedAllSign(SignRequest signRequest, int step) {
+	public void toggleNeedAllSign(SignRequest signRequest, int step, Boolean allSignToComplete) {
 		WorkflowStep workflowStep = signRequest.getWorkflowSteps().get(step);
-		return toggleAllSignToCompleteForWorkflowStep(workflowStep);
+		if(allSignToComplete != null && !allSignToComplete.equals(workflowStep.isAllSignToComplete())) {
+			toggleAllSignToCompleteForWorkflowStep(workflowStep);
+		}
 	}
 
 	public void removeStep(SignRequest signRequest, int step) {
@@ -592,19 +603,26 @@ public class SignRequestService {
 		return workflowStep.getId();
 	}
 
-	public Long changeSignType(SignBook signBook, int step, SignType signType) {
+	public void changeSignType(SignBook signBook, int step, String name, SignType signType) {
 		WorkflowStep workflowStep = signBook.getWorkflowSteps().get(step);
-		return setSignTypeForWorkflowStep(signType, workflowStep);
+		if(name != null) {
+			workflowStep.setName(name);
+		}
+		setSignTypeForWorkflowStep(signType, workflowStep);
+		workflowStepRepository.save(workflowStep);
 	}
 
-	public Long changeSignType(SignRequest signRequest, int step, SignType signType) {
+	public void changeSignType(SignRequest signRequest, int step, String name, SignType signType) {
 		WorkflowStep workflowStep = signRequest.getWorkflowSteps().get(step);
-		return setSignTypeForWorkflowStep(signType, workflowStep);
+		if(name != null) {
+			workflowStep.setName(name);
+		}
+		setSignTypeForWorkflowStep(signType, workflowStep);
+		workflowStepRepository.save(workflowStep);
 	}
 
 	private Long setSignTypeForWorkflowStep(SignType signType, WorkflowStep workflowStep) {
 		workflowStep.getSignRequestParams().setSignType(signType);
-		workflowStepRepository.save(workflowStep);
 		return workflowStep.getId();
 	}
 

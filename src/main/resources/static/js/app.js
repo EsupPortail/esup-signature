@@ -54,7 +54,6 @@ $(document).ready(function () {
 
 document.addEventListener('DOMContentLoaded', function() {
 
-	console.log(window.location.hash);
 	if(window.location.hash) {
 		var element_to_scroll_to = document.getElementById(window.location.hash.substring(1));
 		element_to_scroll_to.scrollIntoView();
@@ -208,6 +207,35 @@ function activeDate() {
 	}
 }
 
+function pointIt2(e) {
+	if(pointItEnable) {
+		if (e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel') {
+			e.preventDefault();
+			var rect = pointerDiv.getBoundingClientRect();
+			var touch = e.touches[0] || e.changedTouches[0];
+			posX = touch.pageX - rect.left;
+			posY = touch.pageY - rect.top - window.scrollY;
+		} else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover' || e.type == 'mouseout' || e.type == 'mouseenter' || e.type == 'mouseleave') {
+			console.log("mouse");
+			posX = e.offsetX ? (e.offsetX)
+				: e.clientX - pointerDiv.offsetLeft;
+			posY = e.offsetY ? (e.offsetY)
+				: e.clientY - pointerDiv.offsetTop;
+		}
+		console.log('point' + posX + ' : ' + posY);
+		document.getElementById("xPos").value = Math.round(posX / zoom);
+		document.getElementById("yPos").value = Math.round(posY / zoom);
+	}
+}
+
+function displayComment(){
+	pointItEnable = false;
+	console.log('test');
+	document.getElementById("postit").style.left = document.getElementById("xPos").value + "px";
+	document.getElementById("postit").style.top = document.getElementById("yPos").value + "px";
+	document.getElementById("postit").style.display = "block";
+}
+
 function pointIt(e) {
 	console.log('point')
 	if(pointItEnable) {
@@ -274,6 +302,11 @@ function dragSignature() {
 	cross.style.pointerEvents = "none";
 	pointerDiv.style.pointerEvents = "auto";
 	document.body.style.cursor = "move";
+	pointItEnable = true;
+}
+
+function startPointIt() {
+	console.log("start point it");
 	pointItEnable = true;
 }
 

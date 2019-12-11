@@ -33,7 +33,7 @@
     <div class="modal fade" id="sendComment" tabindex="-1" role="dialog" aria-labelledby="sendComment" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <form th:action="'/user/signrequests/comment/' + ${id}">
+                <form th:action="'/user/signrequests/comment/' + ${id}" method="post">
                     <div class="modal-header">
                         <h5 class="modal-title">Ajouter un commentaire</h5>
                     </div>
