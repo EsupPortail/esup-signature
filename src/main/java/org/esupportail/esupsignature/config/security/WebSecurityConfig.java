@@ -45,6 +45,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		}
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy());
 		http.csrf().ignoringAntMatchers("/ws/**");
+		http.csrf().ignoringAntMatchers("/user/signrequests/add-doc/**");
 		http.headers().frameOptions().sameOrigin();
 	}
 	

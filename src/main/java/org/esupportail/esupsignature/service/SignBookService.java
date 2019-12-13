@@ -47,9 +47,6 @@ public class SignBookService {
     @Resource
     private UserService userService;
 
-    @Resource
-    private FileService fileService;
-
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<SignBook>();
         signBookRepository.findAll().forEach(e -> list.add(e));

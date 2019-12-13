@@ -95,12 +95,6 @@ public class SignRequestService {
 	private MailService mailService;
 
 	private String step = "";
-	
-	public List<SignRequest> getAllSignRequests() {
-		List<SignRequest> list = new ArrayList<SignRequest>();
-		signRequestRepository.findAll().forEach(e -> list.add(e));
-		return list;
-	}
 
 	public List<SignRequest> getTosignRequests(User user) {
 		List<SignRequest> signRequestsToSign = new ArrayList<>();
@@ -682,8 +676,14 @@ public class SignRequestService {
 
 
 	public void importWorkflow(SignRequest signRequest, SignBook signBook) {
+		int i = 0;
 		for (WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
-			WorkflowStep newWorkflowStep = new WorkflowStep();
+			WorkflowStep newWorkflowStep;
+			if(signRequest.getWorkflowSteps().size() >= i) {
+				newWorkflowStep = signRequest.getWorkflowSteps().get(i);
+			} else {
+				newWorkflowStep = new WorkflowStep();
+			}
 			newWorkflowStep.setSignRequestParams(workflowStep.getSignRequestParams());
 			newWorkflowStep.setAllSignToComplete(workflowStep.isAllSignToComplete());
 			for(Long signBookId : workflowStep.getSignBooks().keySet()){
@@ -697,8 +697,11 @@ public class SignRequestService {
 					newWorkflowStep.getSignBooks().put(signBookToAdd.getId(), false);
 				}
 			}
-			workflowStepRepository.save(newWorkflowStep);
-			signRequest.getWorkflowSteps().add(newWorkflowStep);
+			if(newWorkflowStep.getId() == null) {
+				workflowStepRepository.save(newWorkflowStep);
+				signRequest.getWorkflowSteps().add(newWorkflowStep);
+			}
+			i++;
 		}
 		signRequest.setWorkflowName(signBook.getName());
 		signRequest.setTargetType(signBook.getTargetType());

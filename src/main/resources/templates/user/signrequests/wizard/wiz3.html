@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+
+<body>
+<form th:action="'/user/signrequests/wizard/wiz4/' + ${signRequest.id}" method="post">
+    <div class="form-group">
+        <label for="signBookId">Utiliser un workflow prédéfini</label>
+        <div class="alert alert-info">Permet d'appliquer les étapes d'un circuit de validation prédéfini</div>
+        <select id="signBookId" name="signBookId" class="form-control" required>
+            <option value="" disabled selected>Choisir un workflow</option>
+            <th:block th:each="signBook : ${signBooks} ">
+                <option th:value="${signBook.id}" th:text="${signBook.name}"></option>
+            </th:block>
+        </select>
+        <button type="submit" class="btn btn-success">
+            Importer <i class="fas fa-file-import"></i>
+        </button>
+    </div>
+</form>
+<h1 class="hr">ou</h1>
+<form th:action="'/user/signrequests/wizard/wiz4/' + ${signRequest.id}" method="post">
+    <div class="form-group">
+        <button type="submit" class="btn btn-success">
+            Ajouter les étapes manuellement <i class="fas fa-hand-paper"></i>
+        </button>
+    </div>
+</form>
+
+</body>
+</html>

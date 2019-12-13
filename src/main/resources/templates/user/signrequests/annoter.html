@@ -30,6 +30,8 @@
                     </li>
                 </ol>
             </nav>
+            <div class="row">
+                <div class="col-lg-6">
             <script th:inline="javascript">
                 /*<![CDATA[*/
                 var zoom = 1;
@@ -81,9 +83,13 @@
                 <input class="form-control form-control-sm col-6" value="0" id="xPos" type="hidden" name="posX"/>
                 <input class="form-control form-control-sm col-6" value="0" id="yPos" type="hidden" name="posY"/>
             </form>
+                </div>
+                <div class="col-lg-6">
             <th:block th:each="log : ${logs}">
                 <span th:text="${log.comment}"></span>
             </th:block>
+                </div>
+            </div>
         </div>
     </div>
 </main>

@@ -431,6 +431,7 @@ public class SignRequestController {
         if (visual == null) {
             visual = false;
         }
+
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -773,9 +774,8 @@ public class SignRequestController {
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if(signRequest.getCurrentWorkflowStepNumber() == 1 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
-            Document toSignDocument = signRequest.getOriginalDocuments().get(0);
             try {
-                int nbSignFound = signRequestService.scanSignatureFields(signRequest, PDDocument.load(toSignDocument.getInputStream()));
+                int nbSignFound = signRequestService.scanSignatureFields(signRequest, PDDocument.load(signRequest.getOriginalDocuments().get(0).getInputStream()));
                 redirectAttrs.addFlashAttribute("messageInfo", "Scan terminé, " + nbSignFound + " signature(s) trouvée(s)");
             } catch (IOException e) {
                 logger.error("unable to scan the pdf document", e);

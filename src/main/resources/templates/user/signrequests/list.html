@@ -10,11 +10,17 @@
             <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                 <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
             </button>
-            <button title="Nouvelle demande de signature"  type="button" data-toggle="modal" data-target="#addSignRequestModal" class="mb-1 col-12 btn btn-primary text-left">
-                <i class="fas fa-plus"></i> <span class="sidebar-label">Nouvelle demande de signature</span>
+            <button title="Assistant de demande de signature"  type="button" data-toggle="modal" data-target="#wizardModal" class="mb-1 col-12 btn btn-primary text-left">
+                <i class="fas fa-magic"></i> <span class="sidebar-label">Assistant de demande de signature</span>
             </button>
-            <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="mb-1 col-12 btn btn-primary text-left">
-                <i class="fas fa-bolt"></i> <span class="sidebar-label">Signature rapide</span>
+            <button title="Nouvelle demande de signature"  type="button" data-toggle="modal" data-target="#addSignRequestModal" class="mb-1 col-12 btn btn-primary text-left">
+                <i class="fas fa-plus"></i> <span class="sidebar-label">Créer une demande de signature manuellement</span>
+            </button>
+            <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="d-none mb-1 col-12 btn btn-primary text-left">
+                <i class="fas fa-plus"></i> <span class="sidebar-label">Signature rapide</span>
+            </button>
+            <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="d-none mb-1 col-12 btn btn-primary text-left">
+                <i class="fas fa-plus"></i> <span class="sidebar-label">Signature rapide</span>
             </button>
             <button title="Valider la signature d'un document" type="button" onclick="location.href='/user/validation'" class="mb-1 col-12 btn btn-warning text-left">
                 <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Valider la signature d'un document</span>
@@ -84,7 +90,7 @@
                                 <th class="">Titre</th>
                                 <th class="d-none d-md-table-cell">Date de création</th>
                                 <th class="d-none d-lg-table-cell">Créé par</th>
-                                <th>Voir</th>
+                                <th>Modifier</th>
                                 <th>Signer</th>
                             </tr>
                             </thead>
@@ -96,7 +102,7 @@
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy}"></span></td>
                                     <td class="utilbox">
-                                        <a class="btn btn-info far fa-eye" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}">
+                                        <a class="btn btn-warning far fa-pen" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}">
                                             <!--  -->
                                         </a>
                                     </td>
@@ -147,7 +153,7 @@
                                 <th class="d-none d-xl-table-cell">Créé par</th>
                                 <th class="d-none d-lg-table-cell">Participants</th>
                                 <th class="d-none d-md-table-cell">Statut</th>
-                                <th>Voir</th>
+                                <th>Modifier</th>
                                 <th>Supprimer</th>
                             </tr>
                             </thead>
@@ -178,7 +184,7 @@
                                         <div th:replace="user/signrequests/includes/status :: status"></div>
                                     </td>
                                     <td class="utilbox">
-                                        <button class="btn btn-info far fa-eye" title="Sign Request" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '\''">
+                                        <button class="btn btn-warning fas fa-pen" title="Sign Request" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '\''">
                                             <!--  -->
                                         </button>
                                     </td>
@@ -202,6 +208,22 @@
     </div>
 </main>
 
+<div class="modal fade" id="wizardModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Assistant de création de demande de signature</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <iframe frameborder="0" src="/user/signrequests/wizard/wiz1"  style="width: 100%; height: 500px;" ></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="addSignRequestModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -214,7 +236,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="col-lg-12">
-                        <div class="form-group">
+                        <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_title">
                             <label for="title"><strong>Titre de la demande</strong></label>
                             <input id="title" name="title" class="form-control" required="required" type="text" value="" autocomplete="on">
                         </div>
@@ -490,5 +512,6 @@
         xmlHttp.send(null);
         return;
     }
+
 </script>
 </html>
