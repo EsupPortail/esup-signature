@@ -6,7 +6,7 @@
 <form th:action="'/user/signrequests/wizard/wizX/' + ${signRequest.id}" method="post">
     <input type="hidden" name="step" th:value="${step}">
     <th:block th:if="${workflowStep != null}">
-    <h5 th:text="'Etape ' + ${step}"></h5>
+    <h5 th:text="'Etape ' + ${step + 1}"></h5>
     <label>Nom de l'étape :</label>
     <input type="text" name="name" class="form-control" th:value="${workflowStep.name}" required>
     <br>
@@ -71,9 +71,9 @@
         <button type="submit" name="addNew" value="true" class="btn btn-primary" style="position: absolute;left: 0;bottom: 0;">
             <i class="fas fa-plus"></i> Ajouter une étape
         </button>
-        <a href="/" class="btn btn-success" style="position: absolute;right: 0;bottom: 0;">
-            Terminer</i>
-        </a>
+        <button th:onclick="'parent.location.href=\'/user/signrequests/' + ${signRequest.id} + '\''" type="submit" class="btn btn-success">
+            Terminer <i class="fas fa-flag-checkered"></i>
+        </button>
     </th:block>
 </form>
 </body>

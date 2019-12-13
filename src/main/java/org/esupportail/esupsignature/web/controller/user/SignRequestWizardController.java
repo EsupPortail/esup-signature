@@ -149,11 +149,13 @@ public class SignRequestWizardController {
         }
         signRequestRepository.save(signRequest);
         model.addAttribute("signRequest", signRequest);
-        if(signRequest.getWorkflowSteps().size() > step) {
+        if(signRequest.getWorkflowSteps().size() > step + 1) {
             model.addAttribute("workflowStep", signRequest.getWorkflowSteps().get(step + 1));
+            model.addAttribute("signTypes", SignType.values());
+            model.addAttribute("step", step + 1);
+        } else {
+            model.addAttribute("step", step);
         }
-        model.addAttribute("signTypes", SignType.values());
-        model.addAttribute("step", step + 1);
         return "user/signrequests/wizard/wiz4";
     }
 

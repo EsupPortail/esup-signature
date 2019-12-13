@@ -4,15 +4,18 @@
 
 <body>
 <form th:action="'/user/signrequests/wizard/wiz4/' + ${signRequest.id}" method="post">
+    <h1>Paramétrage du circuit de visas</h1>
     <div class="form-group">
-        <label for="signBookId">Utiliser un workflow prédéfini</label>
+        <label for="signBookId">Utiliser un circuit prédéfini</label>
         <div class="alert alert-info">Permet d'appliquer les étapes d'un circuit de validation prédéfini</div>
+        <br>
         <select id="signBookId" name="signBookId" class="form-control" required>
             <option value="" disabled selected>Choisir un workflow</option>
             <th:block th:each="signBook : ${signBooks} ">
                 <option th:value="${signBook.id}" th:text="${signBook.name}"></option>
             </th:block>
         </select>
+        <br>
         <button type="submit" class="btn btn-success">
             Importer <i class="fas fa-file-import"></i>
         </button>
