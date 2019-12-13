@@ -176,8 +176,8 @@ public class SignRequestController {
         return "user/signrequests/list";
     }
 
-    @RequestMapping(value = "/{id}", produces = "text/html")
-    public String show(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
+    @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
+    public String updateForm(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
         User user = userService.getUserFromAuthentication();
         if (!userService.isUserReady(user)) {
             return "redirect:/user/users/?form";
@@ -198,14 +198,8 @@ public class SignRequestController {
             if (user.getKeystore() != null) {
                 model.addAttribute("keystore", user.getKeystore().getFileName());
             }
-
-           // signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
-            //TODO choix signType
-            //			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
             signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
-
             model.addAttribute("signRequest", signRequest);
-            //model.addAttribute("itemId", id);
 
             if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                 model.addAttribute("signable", "ok");
@@ -219,7 +213,7 @@ public class SignRequestController {
             model.addAttribute("nexuVersion", nexuVersion);
             model.addAttribute("nexuUrl", nexuUrl);
 
-            return "user/signrequests/show";
+            return "user/signrequests/update";
         } else {
             logger.warn(user.getEppn() + " attempted to access signRequest " + id + " without write access");
             redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
@@ -227,8 +221,8 @@ public class SignRequestController {
         }
     }
 
-    @RequestMapping(value = "/annoter/{id}", produces = "text/html")
-    public String annoter(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
+    @RequestMapping(value = "/{id}", produces = "text/html")
+    public String show(@PathVariable("id") Long id, Model model) throws Exception {
         User user = userService.getUserFromAuthentication();
         if (!userService.isUserReady(user)) {
             return "redirect:/user/users/?form";
@@ -262,7 +256,7 @@ public class SignRequestController {
         }
         List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNull(id);
         model.addAttribute("logs", logs);
-        return "user/signrequests/annoter";
+        return "user/signrequests/show";
     }
 
     @RequestMapping(params = "form", produces = "text/html")

@@ -100,9 +100,15 @@ public class SignRequestWizardController {
             if (signBookId != null) {
                 SignBook signBook = signBookRepository.findById(signBookId).get();
                 signRequestService.importWorkflow(signRequest, signBook);
-                return "user/signrequests/wizard/wizend";
+                return "redirect:/user/signrequests/wizard/wizend/" + signRequest.getId();
             }
             signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
+            if(signRequest.getWorkflowSteps() == null || signRequest.getWorkflowSteps().size() == 0) {
+                WorkflowStep workflowStep = new WorkflowStep();
+                workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
+                workflowStepRepository.save(workflowStep);
+                signRequest.getWorkflowSteps().add(workflowStep);
+            }
             model.addAttribute("workflowStep", signRequest.getWorkflowSteps().get(0));
             model.addAttribute("signTypes", SignType.values());
             model.addAttribute("step", 0);
@@ -157,6 +163,18 @@ public class SignRequestWizardController {
             model.addAttribute("step", step);
         }
         return "user/signrequests/wizard/wiz4";
+    }
+
+
+    @RequestMapping(value = "/wizend/{id}", produces = "text/html")
+    public String wizEnd(@PathVariable("id") Long id, Model model) {
+        User user = userService.getUserFromAuthentication();
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        if(signRequestService.checkUserViewRights(user, signRequest)) {
+            model.addAttribute("signRequest", signRequest);
+            signRequestService.pendingSignRequest(signRequest, user);
+        }
+        return "user/signrequests/wizard/wizend";
     }
 
 }

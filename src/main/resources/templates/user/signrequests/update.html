@@ -1,0 +1,288 @@
+<!doctype html>
+<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav id="sidebar">
+            <div class="m-1">
+                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+                </button>
+                <div th:if="${user.eppn == signRequest.createBy}">
+                    <div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
+                        <div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
+                            <th:block th:if="${signRequest.currentWorkflowStep.signBooks.size() > 0 && user.eppn == signRequest.createBy && #lists.size(signRequest.originalDocuments) > 0}">
+                                <button title="Lancer la procedure de signature" type="button" class="mb-1 col-12 btn btn-primary text-left" data-toggle="modal" data-target="#sendModal">
+                                    <i class="fa fa-paper-plane " aria-hidden="true"></i><span class="sidebar-label"> Lancer la procedure de signature</span>
+                                </button>
+                            </th:block>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${signRequest.status.name() == 'exported'}">
+                    <a class="btn btn-success col-12 mb-1 text-left" th:href="'/ws/get-last-file?name=' + ${signRequest.name}"><i class="fa fa-download"></i> Télécharger le document signé</a>
+                </div>
+                <div th:if="${signRequest.status.name() == 'pending'}">
+                    <div th:if="${signable == 'ok'}">
+                        <button title="Refuser" type="button" class="btn btn-danger col-12 mb-1 text-left" data-toggle="modal" data-target="#refuseModal">
+                            <i class="fas fa-ban"></i><span class="sidebar-label"> Refuser</span>
+                        </button>
+                        <a title="Signer" class="btn btn-success col-12 mb-1 text-left" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
+                            <i class="fas fa-signature"></i><span class="sidebar-label"> Signer</span>
+                        </a>
+                    </div>
+                </div>
+                <div th:if="${user.eppn == signRequest.createBy}">
+                    <div th:switch="${signRequest.status.name()}">
+                        <div th:case="'signed'">
+                            <dl class="display-group border-bottom m-0">
+                                <dt class="col-lg-5">
+                                    Terminer
+                                    <button data-target="#collapseHelp1" data-toggle="collapse"
+                                            type="button" class="btn btn-sm btn-info">
+                                        <span class="fas fa-info-circle"></span>
+                                    </button>
+                                    <div class="collapse" id="collapseHelp1">
+                                        <div class="alert alert-info">
+                                            <small> La cloture de la demande permet de liberer
+                                                le parapheur. La demande sera supprimée dans un délai
+                                                défini par l'administrateur. </small>
+                                        </div>
+                                    </div>
+                                </dt>
+                                <dd class="col-lg-7">
+                                    <form class="form-group"
+                                          th:action="'/user/signrequests/complete/' +  ${id}"
+                                          method="get">
+                                        <div class="input-group">
+                                            <button type="submit" class="btn btn-warning">
+                                                <i class="fas fa-flag-checkered"> </i> Terminer
+                                            </button>
+                                        </div>
+                                    </form>
+                                </dd>
+                            </dl>
+                        </div>
+                        <th:block th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked'}">
+                            <a class="col-12 btn btn-success mb-1 text-left" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
+                                <i class="fas fa-download"></i><span class="sidebar-label"> Enregistrer le document signé sous</span>
+                            </a>
+                            <a title="Export SEDA" class="col-12 btn btn-success mb-1 text-left" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
+                                <i class="fa fa-file-archive"></i><span class="sidebar-label"> Export SEDA</span>
+                            </a>
+                            <a class="col-12 btn btn-success mb-1 text-left" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+                                <i class="fas fa-shield-alt "></i><span class="sidebar-label"> Contrôler le document</span>
+                            </a>
+                        </th:block>
+                    </div>
+                </div>
+                <a class="btn btn-light col-12 mb-1 text-left" href="/">
+                    <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
+                </a>
+            </div>
+        </nav>
+        <div id="content" class="content">
+            <div aria-expanded="true" class="collapse" id="collapseHelp">
+                <div class="alert alert-info">
+                    Cet écran permet d'effectuer plusieurs types d'actions sur votre demande :
+                    <ul>
+                        <li>Ajouter des documents à votre demande et l'envoyer</li>
+                        <li>Consulter les documents à signer</li>
+                        <li>Signer une demande</li>
+                        <li>Consulter / télécharger les documents signés</li>
+                    </ul>
+                </div>
+            </div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/user/signrequests">Liste des demandes</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.title}"></span>
+                    </li>
+                </ol>
+            </nav>
+            <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
+            <th:block th:if="${signRequest.originalDocuments.size() > 0 || signRequest.status.name() == 'exported'}">
+                <div th:replace="user/signrequests/cards/stepscard :: stepscard"></div>
+            </th:block>
+            <div class="card rounded-0 mb-1" th:if="${signRequest.status.name() != 'exported'}">
+                <div class="card-header">
+                    Liste des documents originaux
+                    <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'draft')}">
+                        <button th:if="${signRequest.status.name() == 'draft' && user.eppn == signRequest.createBy && signRequest.signedDocuments.size() == 0}" id="browseBtn" type="button" class="mr-2 btn btn-primary float-right"
+                                onclick="$('.clickable').click();">
+                            <i class="fa fa-plus" aria-hidden="true"></i> Ajouter un document
+                        </button>
+                    </th:block>
+                </div>
+                <div class="card-body">
+                    <div th:if="${user.eppn == signRequest.createBy}">
+                        <div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
+                            <div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
+                                <div th:if="${#lists.size(signRequest.originalDocuments) == 0}">
+                                    <div class="alert alert-warning" th:if="${signRequest.status.name() == 'draft'}">
+                                        <p>Vous devez ajouter des documents</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="file-loading">
+                        <input id="multipartFile" name="multipartFiles" type="file" multiple="multiple"/>
+                    </div>
+                </div>
+            </div>
+            <div th:replace="user/signrequests/cards/commentscard :: commentscard"></div>
+            <div th:replace="user/signrequests/cards/logscard :: logscard"></div>
+        </th:block>
+        </div>
+    </div>
+</main>
+
+<div class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-labelledby="Refus" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/signrequests/pending/' + ${id}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Envoi pour signature</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        Attention, les paramètres de la demande ne pourront plus etre changés une fois celle-ci envoyée
+                    </div>
+                    <br/>
+                    <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-paper-plane" aria-hidden="true"></i> Envoyer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="refuseModal" tabindex="-1" role="dialog" aria-labelledby="refuseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/signrequests/refuse/' + ${id}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Refuser</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addWorkflow" tabindex="-1" role="dialog" aria-labelledby="addWorkflowLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/signrequests/add-workflow/' + ${id}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter un workflow</h5>
+                </div>
+                <div class="modal-body">
+                    <select name="workflowSignBookId" class="form-control">
+                        <th:block th:each="workflowSignBook : ${workflowSignBooks}">
+                            <option th:value="${workflowSignBook.id}" th:text="${workflowSignBook.name}"></option>
+                        </th:block>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-paper-plane" aria-hidden="true"></i> Ajouter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addStep" tabindex="-1" role="dialog" aria-labelledby="addStep" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/signrequests/add-step/' + ${id}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ajouter une étape</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" id="_signType_div_id">
+                        <label for="_signType_id"> <strong> Type de signature
+                            par défaut
+                            <button data-target="#collapseHelpSignType"
+                                    data-toggle="collapse" type="button"
+                                    class="btn btn-sm btn-info">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        </strong>
+                            <div class="collapse" id="collapseHelpSignType">
+                                <div class="alert alert-info">
+                                    <ul>
+                                        <li>PAdES/XAdES : s'appuie sur le certificat P12
+                                            uploader au niveau de vos paramètres
+                                        </li>
+                                        <li>Apposition de la signature : ajoute simplement
+                                            l'image de votre signature sur un PDF à l'endroit voulu
+                                        </li>
+                                        <li>PAdES/XAdES avec NexU : s'appuie l'application NexU
+                                            qui permet l'utilisation d'un certificat matériel
+                                        </li>
+                                        <li>Confirmation de lecture : permet de valider la
+                                            lecture d'un document
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </label>
+                        <div class="col-lg-8">
+                            <select id="_signType_id" name="signType" class="form-control" size="1">
+                                <th:block th:each="signType : ${signTypes}">
+                                    <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" id="_newPageType_div_id">
+                        <label for="_newPageType_id">
+                            <strong> Insérer unepage de garde </strong>
+                        </label>
+                        <div class="col-lg-8">
+                            <select id="_newPageType_id" name="newPageType"
+                                    class="form-control" size="1">
+                                <th:block th:each="newPageType : ${newPageTypes}">
+                                    <option th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-paper-plane" aria-hidden="true"></i> Envoyer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+<script th:replace="user/signrequests/includes/scriptshow :: scriptshow"></script>
+</html>

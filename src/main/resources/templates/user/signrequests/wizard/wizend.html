@@ -3,7 +3,7 @@
 <head th:replace="fragments/head :: head"></head>
 
 <body>
-    <button th:onclick="'parent.location.href=\'/user/signrequests/' + ${signRequest.id} + '\''" type="submit" class="btn btn-success">
+    <button th:onclick="'parent.location.href=\'/user/signrequests/sign/' + ${signRequest.id} + '\''" type="submit" class="btn btn-success">
         Terminer <i class="fas fa-flag-checkered"></i>
     </button>
 </body>

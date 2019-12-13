@@ -90,7 +90,7 @@
                                 <th class="">Titre</th>
                                 <th class="d-none d-md-table-cell">Date de création</th>
                                 <th class="d-none d-lg-table-cell">Créé par</th>
-                                <th>Modifier</th>
+                                <th>Voir</th>
                                 <th>Signer</th>
                             </tr>
                             </thead>
@@ -102,7 +102,7 @@
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy}"></span></td>
                                     <td class="utilbox">
-                                        <a class="btn btn-warning far fa-pen" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}">
+                                        <a class="btn btn-info far fa-eye" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}">
                                             <!--  -->
                                         </a>
                                     </td>
@@ -153,6 +153,7 @@
                                 <th class="d-none d-xl-table-cell">Créé par</th>
                                 <th class="d-none d-lg-table-cell">Participants</th>
                                 <th class="d-none d-md-table-cell">Statut</th>
+                                <th>Voir</th>
                                 <th>Modifier</th>
                                 <th>Supprimer</th>
                             </tr>
@@ -184,7 +185,12 @@
                                         <div th:replace="user/signrequests/includes/status :: status"></div>
                                     </td>
                                     <td class="utilbox">
-                                        <button class="btn btn-warning fas fa-pen" title="Sign Request" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '\''">
+                                        <button class="btn btn-info fas fa-eye" title="Voir" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '\''">
+                                            <!--  -->
+                                        </button>
+                                    </td>
+                                    <td class="utilbox">
+                                        <button class="btn btn-warning fas fa-pen" title="Modifier" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '?form\''">
                                             <!--  -->
                                         </button>
                                     </td>
