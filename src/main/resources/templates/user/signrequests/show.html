@@ -33,7 +33,7 @@
                     </li>
                 </ol>
             </nav>
-            
+
             <div class="row">
                 <div class="col-lg-6">
             <script th:inline="javascript">
@@ -82,6 +82,9 @@
                             <i class="fas fa-save"></i>
                         </button>
                     </div>
+                    <th:block th:each="log : ${logs}">
+                        <div th:id="${log.id}" class="circle" th:style="'left:' + ${log.posX} + 'px; top:' + ${log.posX} + 'px;'"></div>
+                    </th:block>
                 </div>
                 <input class="form-control form-control-sm col-6" value="0" id="signPageNumber" type="hidden" name="pageNumber"/>
                 <input class="form-control form-control-sm col-6" value="0" id="xPos" type="hidden" name="posX"/>
@@ -89,9 +92,12 @@
             </form>
                 </div>
                 <div class="col-lg-6">
-            <th:block th:each="log : ${logs}">
-                <span th:text="${log.comment}"></span>
-            </th:block>
+                <th:block th:each="log : ${logs}">
+                    <div class="postit" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer" th:onclick="'$(\'#' + ${log.id} + '\').toggle()'">
+                        <h5 th:text="${log.eppn} + ' - ' +  ${log.logDate}"></h5>
+                        <span th:text="${log.comment}"></span>
+                    </div>
+                </th:block>
                 </div>
             </div>
         </div>
