@@ -268,7 +268,7 @@ public class SignRequestController {
         return "user/signrequests/create";
     }
 
-    @RequestMapping(method = RequestMethod.POST, produces = "text/html")
+    @PostMapping(produces = "text/html")
     public String create(@Valid SignRequest signRequest, BindingResult bindingResult,
                          @RequestParam(value = "signType", required = false) String signType,
                          @RequestParam(value = "signBookNames", required = false) String[] signBookNames,
@@ -283,7 +283,7 @@ public class SignRequestController {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         signRequest = signRequestService.createSignRequest(signRequest, user);
-        return "redirect:/user/signrequests/" + signRequest.getId();
+        return "redirect:/user/signrequests/" + signRequest.getId() + "/?form";
     }
 
     @ResponseBody
@@ -392,6 +392,7 @@ public class SignRequestController {
 
     @RequestMapping(value = "/fast-sign-request", method = RequestMethod.POST)
     public String createSignRequest(@RequestParam("multipartFile") MultipartFile multipartFile, @RequestParam("signType") SignType signType) {
+        logger.info("création rapide demande de signature");
         User user = userService.getUserFromAuthentication();
         if (multipartFile != null) {
             Document documentToAdd = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
@@ -408,7 +409,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests";
     }
 
-    @RequestMapping(value = "/sign/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "/sign/{id}", method = RequestMethod.POST   )
     public String sign(@PathVariable("id") Long id,
                        @RequestParam(value = "xPos", required = false) Integer xPos,
                        @RequestParam(value = "yPos", required = false) Integer yPos,
@@ -675,7 +676,7 @@ public class SignRequestController {
         if(user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getCurrentWorkflowStepNumber() <= step + 1) {
             signRequestService.removeStep(signRequest, step);
         }
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/user/signrequests/" + id + "/?form";
     }
 
     @PostMapping(value = "/add-workflow/{id}")
@@ -725,7 +726,7 @@ public class SignRequestController {
         } else {
             logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
         }
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/user/signrequests/" + id + "/?form";
     }
 
     @RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
@@ -747,10 +748,10 @@ public class SignRequestController {
     public String pending(@PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
                           HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) throws IOException {
+        logger.info("démarrage de la demande");
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         //TODO controle signType
-        ////			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
         if (signRequestService.checkUserViewRights(user, signRequest) && (signRequest.getStatus().equals(SignRequestStatus.draft) || signRequest.getStatus().equals(SignRequestStatus.completed))) {
@@ -775,7 +776,7 @@ public class SignRequestController {
                 logger.error("unable to scan the pdf document", e);
             }
         }
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/user/signrequests/" + id + "/?form";
     }
 
     @PostMapping(value = "/comment/{id}")

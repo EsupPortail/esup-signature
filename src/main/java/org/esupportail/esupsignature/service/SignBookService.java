@@ -27,6 +27,9 @@ public class SignBookService {
     private SignBookRepository signBookRepository;
 
     @Resource
+    private WorkflowStepRepository workflowStepRepository;
+
+    @Resource
     private SignRequestRepository signRequestRepository;
 
     @Resource
@@ -53,10 +56,9 @@ public class SignBookService {
         return list;
     }
 
-    public void creatorSignBook() {
-        SignBook signBook;
+    public void initCreatorSignBook() {
         if (signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList("creator"), SignBookType.system) == 0) {
-            signBook = new SignBook();
+            SignBook signBook = new SignBook();
             signBook.setName("Créateur de la demande");
             signBook.setRecipientEmails(Arrays.asList("creator"));
             signBook.setCreateDate(new Date());
@@ -65,7 +67,26 @@ public class SignBookService {
             signBook.setSourceType(DocumentIOType.none);
             signBook.setTargetType(DocumentIOType.none);
             signBookRepository.save(signBook);
+
+            SignBook signBookWorkflow = new SignBook();
+            signBookWorkflow.setName("Ma Signature");
+            signBookWorkflow.setCreateDate(new Date());
+            signBookWorkflow.setModelFile(null);
+            signBookWorkflow.setSignBookType(SignBookType.workflow);
+            signBookWorkflow.setSourceType(DocumentIOType.none);
+            signBookWorkflow.setTargetType(DocumentIOType.none);
+
+            WorkflowStep workflowStep = new WorkflowStep();
+            workflowStep.setName("Ma signature");
+            workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
+            workflowStep.getSignBooks().put(signBook.getId(), false);
+            workflowStepRepository.save(workflowStep);
+
+            signBookWorkflow.getWorkflowSteps().add(workflowStep);
+            signBookRepository.save(signBookWorkflow);
+
         }
+
     }
 
     public SignBook createUserSignBook(User user) {

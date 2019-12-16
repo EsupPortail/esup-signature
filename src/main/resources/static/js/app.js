@@ -230,10 +230,15 @@ function pointIt2(e) {
 
 function displayComment(){
 	pointItEnable = false;
-	console.log('test');
 	document.getElementById("postit").style.left = document.getElementById("xPos").value + "px";
 	document.getElementById("postit").style.top = document.getElementById("yPos").value + "px";
-	document.getElementById("postit").style.display = "block";
+	$("#postit").show();
+	//document.getElementById("postit").style.display = "block";
+}
+
+function hideComment(){
+	pointItEnable = true;
+	$("#postit").hide();
 }
 
 function pointIt(e) {
@@ -328,6 +333,21 @@ document.addEventListener('DOMContentLoaded', function() {
 function nextImage() {
 	currentImagePage++;
 	hideSigns(currentImagePage)
+	console.info("url('" + documentUrl + "" + currentImagePage + "')");
+	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
+	if (currentImagePage == nbImagePage - 1) {
+		document.getElementById("next").classList.add("disabled");
+		document.getElementById("next").disabled = true;
+	}
+	if (currentImagePage > 0) {
+		document.getElementById("previous").classList.remove("disabled");
+		document.getElementById("previous").disabled = false
+	}
+	document.getElementById("signPageNumber").value = currentImagePage + 1;
+}
+
+function gotoImage(pageNumber) {
+	currentImagePage = pageNumber;
 	console.info("url('" + documentUrl + "" + currentImagePage + "')");
 	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
 	if (currentImagePage == nbImagePage - 1) {

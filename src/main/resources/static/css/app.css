@@ -350,7 +350,6 @@ input:checked + .slider:before {
     height: 100%;
 }
 
-
 .postit {
     list-style:none;
     overflow:hidden;
@@ -368,11 +367,30 @@ input:checked + .slider:before {
     -webkit-box-shadow: 5px 5px 7px rgba(33,33,33,.7);
     /* Opera */
     box-shadow: 5px 5px 7px rgba(33,33,33,.7);
+    position:relative;
+    top:-5px;
+}
+
+.angle-3 {
+    -o-transform:rotate(3deg);
+    -webkit-transform:rotate(3deg);
+    -moz-transform:rotate(3deg);
+}
+
+:root {
+    --angle: 2deg;
+}
+
+.angle {
+    -o-transform:rotate(var(--angle));
+    -webkit-transform:rotate(var(--angle));
+    -moz-transform:rotate(var(--angle));
+}
+
+.angle--2 {
     -o-transform:rotate(-3deg);
     -webkit-transform:rotate(-3deg);
     -moz-transform:rotate(-3deg);
-    position:relative;
-    top:-5px;
 }
 
 .postitarea

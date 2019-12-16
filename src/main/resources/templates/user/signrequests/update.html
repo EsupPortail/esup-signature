@@ -111,7 +111,7 @@
                 <div class="card-header">
                     Liste des documents originaux
                     <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'draft')}">
-                        <button th:if="${signRequest.status.name() == 'draft' && user.eppn == signRequest.createBy && signRequest.signedDocuments.size() == 0}" id="browseBtn" type="button" class="mr-2 btn btn-primary float-right"
+                        <button th:if="${signRequest.status.name() == 'draft' && user.eppn == signRequest.createBy && signRequest.signedDocuments.size() == 0}" id="browseBtn" type="button" class="mr-2 btn btn-sm btn-primary float-right"
                                 onclick="$('.clickable').click();">
                             <i class="fa fa-plus" aria-hidden="true"></i> Ajouter un document
                         </button>

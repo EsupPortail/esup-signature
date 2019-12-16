@@ -12,10 +12,22 @@
                 <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
-                <a role="button" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
-                    <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
-                </a>
-                <div class="btn btn-light col-12 m-1">
+                <div th:if="${imagePagesSize > 1}" class="btn btn-secondary col-12 mb-1">
+                    <label class="control-label">Navigation</label>
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item">
+                            <a id="previous" onclick="previousImage();" class="btn btn-outline-dark m-1" aria-label="Précédent">
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a id="next" onclick="nextImage();" class="btn btn-outline-dark m-1" aria-label="Prochain">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="btn btn-secondary col-12 mb-1">
                     <label class="control-label" for="_zoom" >Zoom</label>
                     <br/>
                     <label class="switch">
@@ -23,6 +35,12 @@
                         <span class="slider round"></span>
                     </label>
                 </div>
+                <a role="button" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
+                    <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
+                </a>
+                <a th:unless="${referer != null}" title="Abandonner" type="button" class="btn btn-light col-12 mb-1 text-left" value="Retour" href="/user/signrequests">
+                    <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
+                </a>
             </div>
         </nav>
         <div id="content" class="content">
@@ -40,7 +58,7 @@
                 /*<![CDATA[*/
                 var zoom = 1;
                 var nbImagePage = [[${imagePagesSize}]];
-                var currentImagePage = [[${signRequest.currentWorkflowStep.signRequestParams.signPageNumber}]] - 1;
+                var currentImagePage = 0;
                 var documentUrl = "/user/documents/[[${documentId}]]/getimagepdfpage/";
                 var signId = [[${signRequest.id}]];
 
@@ -58,25 +76,10 @@
 
                 /*]]>*/
             </script>
-            <div th:if="${imagePagesSize > 1}" class="btn btn-light col-12 m-1">
-                <label class="control-label">Navigation</label>
-                <ul class="pagination justify-content-center">
-                    <li class="page-item">
-                        <a id="previous" onclick="previousImage();" class="btn btn-outline-dark m-1" aria-label="Précédent">
-                            <i class="fas fa-arrow-left"></i>
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a id="next" onclick="nextImage();" class="btn btn-outline-dark m-1" aria-label="Prochain">
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
             <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
-                <div id="pointer_div" onmouseup="displayComment();" ontouchend="displayComment();" ontouchmove="pointIt2(event);" onmousemove="pointIt2(event);" th:style="'background-size: ' + ${pdfWidth} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/' + ${signRequest.currentWorkflowStep.signRequestParams.signPageNumber -1} + '\');width:' + ${pdfWidth} + 'px;height:' + ${pdfHeight} + 'px;border:1px solid #CCC;'">
-                    <div id="postit" class="postit" style="display: none;position: relative;left: 0px;top: 0px;z-index: 2">
-                        Nouvelle annotation
+                <div id="pointer_div" onmouseup="displayComment();" ontouchend="displayComment();" ontouchmove="pointIt2(event);" onmousemove="pointIt2(event);" th:style="'background-size: ' + ${pdfWidth} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/0\');width:' + ${pdfWidth} + 'px;height:' + ${pdfHeight} + 'px;border:1px solid #CCC;'">
+                    <div id="postit" class="postit" style="display: none;position: relative;left: 0px;top: 0px;z-index: 2;">
+                        Nouvelle annotation <span onclick="hideComment()" class="float-right" style="cursor: pointer;">X</span>
                         <textarea name="comment" class="postitarea"></textarea>
                         <button type="submit" class="btn btn-sm float-right">
                             <i class="fas fa-save"></i>
@@ -93,10 +96,21 @@
                 </div>
                 <div class="col-lg-6">
                 <th:block th:each="log : ${logs}">
-                    <div class="postit" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer" th:onclick="'$(\'#' + ${log.id} + '\').toggle()'">
+                    <div th:id="'log' + ${log.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer" th:onmouseover="'$(\'#' + ${log.id} + '\').show(); gotoImage(' + ${log.pageNumber-1} + ')'" th:onmouseout="'$(\'#' + ${log.id} + '\').hide()'">
                         <h5 th:text="${log.eppn} + ' - ' +  ${log.logDate}"></h5>
                         <span th:text="${log.comment}"></span>
                     </div>
+                    <script>
+                        /*<![CDATA[*/
+                        var c = document.getElementById("log[[${log.id}]]");
+                        c.style.setProperty("--angle", Math.round(Math.random()) * 6 - 3 + "deg");
+                        // var ctx = c.getContext("2d");
+                        // ctx.beginPath();
+                        // ctx.moveTo([[${log.posX}]], [[${log.posY}]]);
+                        // ctx.lineTo(0, 0);
+                        // ctx.stroke();
+                        /*]]>*/
+                    </script>
                 </th:block>
                 </div>
             </div>

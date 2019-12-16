@@ -213,6 +213,7 @@ public class UserController {
 		headers.add("Content-Type", "application/json; charset=utf-8");
 		List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
 		List<SignBook> signBooks = signBookRepository.findBySignBookType(SignBookType.group);
+		signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.system));
 		for(SignBook signBook : signBooks) {
 			PersonLdap personLdap = new PersonLdap();
 			personLdap.setUid("parapheur");

@@ -366,21 +366,25 @@ public class SignRequestService {
 	}
 
 	public void pendingSignRequest(SignRequest signRequest, User user) {
-		updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
-		for(Long signBookId : signRequest.getCurrentWorkflowStep().getSignBooks().keySet()) {
-			SignBook signBook = signBookRepository.findById(signBookId).get();
-			for(String emailRecipient : signBook.getRecipientEmails()) {
-				User recipient;
-				List<User> recipients = userRepository.findByEmail(emailRecipient);
-				if(recipients.size() > 0) {
-					recipient = recipients.get(0);
-				} else {
-					recipient = userService.createUser(emailRecipient);
-				}
-				if(recipient.getEmailAlertFrequency() == null|| recipient.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipient)) {
-					userService.sendEmailAlert(recipient);
+		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
+			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
+			for (Long signBookId : signRequest.getCurrentWorkflowStep().getSignBooks().keySet()) {
+				SignBook signBook = signBookRepository.findById(signBookId).get();
+				for (String emailRecipient : signBook.getRecipientEmails()) {
+					User recipient;
+					List<User> recipients = userRepository.findByEmail(emailRecipient);
+					if (recipients.size() > 0) {
+						recipient = recipients.get(0);
+					} else {
+						recipient = userService.createUser(emailRecipient);
+					}
+					if (recipient.getEmailAlertFrequency() == null || recipient.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipient)) {
+						userService.sendEmailAlert(recipient);
+					}
 				}
 			}
+		} else {
+			logger.warn("allready pending");
 		}
 	}
 
@@ -690,7 +694,12 @@ public class SignRequestService {
 				SignBook signBookToAdd = signBookRepository.findById(signBookId).get();
 				if(signBookToAdd.getRecipientEmails().size() > 0) {
 					for(String signBookRecipientEmail : signBookToAdd.getRecipientEmails()) {
-						SignBook signBookRecipient = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookRecipientEmail), SignBookType.user).get(0);
+						SignBook signBookRecipient;
+						if(signBookRecipientEmail.equals("creator")) {
+							signBookRecipient = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(userService.getUserFromAuthentication().getEmail()), SignBookType.user).get(0);
+						} else {
+							signBookRecipient = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookRecipientEmail), SignBookType.user).get(0);
+						}
 						newWorkflowStep.getSignBooks().put(signBookRecipient.getId(), false);
 					}
 				} else {

@@ -109,6 +109,7 @@ public class SignRequestWizardController {
                 workflowStepRepository.save(workflowStep);
                 signRequest.getWorkflowSteps().add(workflowStep);
             }
+            model.addAttribute("allSignBooks", signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user));
             model.addAttribute("workflowStep", signRequest.getWorkflowSteps().get(0));
             model.addAttribute("signTypes", SignType.values());
             model.addAttribute("step", 0);
@@ -170,7 +171,13 @@ public class SignRequestWizardController {
     public String wizEnd(@PathVariable("id") Long id, Model model) {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
+        SignBook signBook = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user).get(0);
         if(signRequestService.checkUserViewRights(user, signRequest)) {
+            boolean mySign = false;
+            if(signRequest.getCurrentWorkflowStep().getSignBooks().containsKey(signBook.getId())) {
+                mySign = true;
+            }
+            model.addAttribute("mySign", mySign);
             model.addAttribute("signRequest", signRequest);
             signRequestService.pendingSignRequest(signRequest, user);
         }

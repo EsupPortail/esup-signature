@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.web.controller.manager;
 
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.collections4.IteratorUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.SignBook.DocumentIOType;
@@ -124,6 +126,7 @@ public class SignBookController {
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
 			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
 		User user = userService.getUserFromAuthentication();
+		signBookService.initCreatorSignBook();
     	if(!userService.isUserReady(user)) {
 			return "redirect:/user/users/?form";
 		}
@@ -131,7 +134,7 @@ public class SignBookController {
     		sortFieldName = "signBookType";
     	}
 
-    	List<SignBook> signBooks = signBookRepository.findByNotCreateBy("System");
+    	List<SignBook> signBooks = ImmutableList.copyOf(signBookRepository.findAll());
 
 		for (SignBook signBook : signBooks) {
 			signRequestService.setSignBooksLabels(signBook.getWorkflowSteps());
@@ -144,7 +147,6 @@ public class SignBookController {
     public String createForm(@RequestParam(required = false) String type, Model uiModel) {
     	populateEditForm(uiModel, new SignBook());
 		List<SignBook> signBooks = new ArrayList<>();
-		signBookService.creatorSignBook();
 		signBooks.addAll(signBookRepository.findByExternal(false));
 		uiModel.addAttribute("allSignBooks", signBooks);
 		uiModel.addAttribute("type", type);

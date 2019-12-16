@@ -3,8 +3,13 @@
 <head th:replace="fragments/head :: head"></head>
 
 <body>
-    <button th:onclick="'parent.location.href=\'/user/signrequests/sign/' + ${signRequest.id} + '\''" type="submit" class="btn btn-success">
+    <button th:if="${mySign}" th:data1="${signRequest.name}" onclick="parent.location.href='/user/signrequests/sign-by-token/' + this.getAttribute('data1')" type="button" class="btn btn-success">
+        Signer <i class="fas fa-signature"></i>
+    </button>
+
+    <button th:onclick="'parent.location.href=\'/user/signrequests/\''" type="submit" class="btn btn-success">
         Terminer <i class="fas fa-flag-checkered"></i>
     </button>
+
 </body>
 </html>
