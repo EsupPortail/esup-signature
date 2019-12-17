@@ -11,7 +11,6 @@ import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
@@ -291,7 +290,7 @@ public class SignRequestService {
 			//signBookService.removeSignRequestFromSignBook(signRequest, recipientSignBook);
 			if(signRequest.getCurrentWorkflowStepNumber() == signRequest.getWorkflowSteps().size()) {
 				completeSignRequest(signRequest, user);
-				setSignBooksLabels(signRequest.getWorkflowSteps());
+				setWorkflowsLabels(signRequest.getWorkflowSteps());
 				mailService.sendCompletedMail(signRequest);
 			} else {
 				nextWorkFlowStep(signRequest, user);
@@ -447,7 +446,7 @@ public class SignRequestService {
 	public void exportFilesToTarget(SignRequest signRequest, User user) throws EsupSignatureException {
 		logger.trace("export signRequest to : " + signRequest.getTargetType() + "://" + signRequest.getDocumentsTargetUri());
 		if (signRequest.getStatus().equals(SignRequestStatus.completed) /* && signRequestService.isSignRequestCompleted(signRequest)*/) {
-			setSignBooksLabels(signRequest.getWorkflowSteps());
+			setWorkflowsLabels(signRequest.getWorkflowSteps());
 			boolean exportOk = exportFileToTarget(signRequest, user);
 			if (exportOk) {
 					updateStatus(signRequest, SignRequestStatus.exported, "Copié vers la destination " + signRequest.getExportedDocumentURI(), user, "SUCCESS", "");
@@ -537,8 +536,8 @@ public class SignRequestService {
 		updateStatus(signRequest, SignRequestStatus.refused, "Refusé", user, "SUCCESS", signRequest.getComment());
 	}
 
-	public Long toggleNeedAllSign(SignBook signBook, int step) {
-		WorkflowStep workflowStep = signBook.getWorkflowSteps().get(step);
+	public Long toggleNeedAllSign(Workflow workflow, int step) {
+		WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
 		return toggleAllSignToCompleteForWorkflowStep(workflowStep);
 	}
 
@@ -570,8 +569,8 @@ public class SignRequestService {
 		return workflowStep.getId();
 	}
 
-	public void changeSignType(SignBook signBook, int step, String name, SignType signType) {
-		WorkflowStep workflowStep = signBook.getWorkflowSteps().get(step);
+	public void changeSignType(Workflow workflow, int step, String name, SignType signType) {
+		WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
 		if(name != null) {
 			workflowStep.setName(name);
 		}
@@ -634,7 +633,7 @@ public class SignRequestService {
         return val;
     }
 	
-	public void setSignBooksLabels(List<WorkflowStep> workflowSteps) {
+	public void setWorkflowsLabels(List<WorkflowStep> workflowSteps) {
 		for(WorkflowStep workflowStep : workflowSteps) {
 			Map<String, Boolean> signBookNames = new HashMap<>();
 			for (Map.Entry<Long, Boolean> userMap : workflowStep.getRecipients().entrySet()) {
@@ -645,9 +644,9 @@ public class SignRequestService {
 	}
 
 
-	public void importWorkflow(SignRequest signRequest, SignBook signBook) {
+	public void importWorkflow(SignRequest signRequest, Workflow workflow) {
 		int i = 0;
-		for (WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
+		for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
 			WorkflowStep newWorkflowStep;
 			if(signRequest.getWorkflowSteps().size() >= i) {
 				newWorkflowStep = signRequest.getWorkflowSteps().get(i);
@@ -669,9 +668,9 @@ public class SignRequestService {
 			}
 			i++;
 		}
-		signRequest.setWorkflowName(signBook.getName());
-		signRequest.setTargetType(signBook.getTargetType());
-		signRequest.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
+		signRequest.setWorkflowName(workflow.getName());
+		signRequest.setTargetType(workflow.getTargetType());
+		signRequest.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
 		signRequestRepository.save(signRequest);
 	}
 

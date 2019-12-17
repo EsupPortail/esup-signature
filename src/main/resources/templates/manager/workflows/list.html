@@ -1,0 +1,116 @@
+<!doctype html>
+<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav id="sidebar">
+            <div class="m-1">
+            <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+            </button>
+			<button title="Créer un nouveau parapheur" data-toggle="modal" data-target="#newSignBook" type="button" class="mb-1 btn btn-primary text-left">
+                <i class="fas fa-plus"></i><span class="sidebar-label"> Créer un nouveau parapheur</span>
+			</button>
+            </div>
+        </nav>
+        <div id="content" class="content">
+			<nav class="nav justify-content-between" aria-label="breadcrumb">
+				<ol class="breadcrumb col-12">
+					<li class="breadcrumb-item active">Liste des parapheurs</li>
+				</ol>
+			</nav>
+            <div class="card">
+                <div class="card-body">
+
+                    <table class="table table-bordered table-sm table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th class="none">Nom</th>
+                            <th class="none">Type</th>
+                            <th class="none">Créé par</th>
+                            <th class="none">Destinataires</th>
+                            <th class="none">Gestionnaire(s) du parapheur</th>
+                            <th>Voir</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="signBook : ${signBooks}">
+                            <tr class="roocol">
+                                <td class="none" th:text="${signBook.name}"></td>
+                                <td class="none" th:text="${signBook.signBookType}"></td>
+                                <td class="none" th:text="${signBook.createBy}"></td>
+                                <td th:if="${#lists.size(signBook.recipientEmails) > 0}" class="none">
+                                    <div class="alert alert-secondary">
+                                        <th:block th:each="recipientEmail : ${signBook.recipientEmails}">
+                                            <i class="fas fa-user"></i>
+                                            <span th:text="${recipientEmail}"></span>
+                                            <br/>
+                                        </th:block>
+                                    </div>
+                                </td>
+                                <td th:unless="${#lists.size(signBook.recipientEmails) > 0}" class="none">
+                                    <div class="alert alert-secondary">
+                                        <th:block th:each="workflowSignBooks : ${signBook.workflowSteps}">
+                                            <i class="fas fa-book"></i>
+                                            <span th:text="${workflowSignBooks.signBooksLabels.keySet()}"></span>
+                                            <br/>
+                                        </th:block>
+                                    </div>
+                                </td>
+                                <td class="none">
+                                    <th:block th:each="moderatorEmail : ${signBook.moderatorEmails}">
+                                        <i class="far fa-people"></i>
+                                        <span th:text="${moderatorEmail}"></span>
+                                        <br/>
+                                    </th:block>
+                                </td>
+                                <td class="utilbox">
+                                    <button class="btn btn-info far fa-eye" title="Voir" th:onclick="'location.href=\'/manager/signbooks/' + ${signBook.id} + '\';'" type="button"></button>
+                                </td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<div class="modal fade" id="newSignBook" tabindex="-1" role="dialog" aria-labelledby="newSignBookLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form th:action="'/manager/signbooks'" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ajouter un parapheur</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name"> <strong>Type de parapheur</strong></label>
+                        <select name="signBookType" class="form-control">
+                            <option value=""></option>
+                            <option value="group">Groupe</option>
+                            <option value="workflow">Workflow</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="name"> <strong>Nom</strong></label>
+                        <input id="name" name="name" class="form-control" type="text" value="" required="required">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                    <button type="submit" class="btn btn-primary">Suivant</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>

@@ -1,21 +1,19 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.SignBook.DocumentIOType;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
-import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.*;
-import org.esupportail.esupsignature.service.file.FileService;
-import org.esupportail.esupsignature.service.fs.*;
+import org.esupportail.esupsignature.service.fs.FsAccessFactory;
+import org.esupportail.esupsignature.service.fs.FsAccessService;
+import org.esupportail.esupsignature.service.fs.FsFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.*;
 
@@ -55,31 +53,6 @@ public class SignBookService {
         List<SignBook> list = new ArrayList<SignBook>();
         signBookRepository.findAll().forEach(e -> list.add(e));
         return list;
-    }
-
-    public void initCreatorSignBook() {
-        if (userRepository.countByEppn("creator") == 0) {
-            User creator = userService.createUser("creator", "Createur de la demande", "", "");
-
-            SignBook signBookWorkflow = new SignBook();
-            signBookWorkflow.setName("Ma signature");
-            signBookWorkflow.setCreateDate(new Date());
-            signBookWorkflow.setModelFile(null);
-            signBookWorkflow.setSignBookType(SignBookType.workflow);
-            signBookWorkflow.setSourceType(DocumentIOType.none);
-            signBookWorkflow.setTargetType(DocumentIOType.none);
-
-            WorkflowStep workflowStep = new WorkflowStep();
-            workflowStep.setName("Ma signature");
-            workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
-            workflowStep.getRecipients().put(creator.getId(), false);
-            workflowStepRepository.save(workflowStep);
-
-            signBookWorkflow.getWorkflowSteps().add(workflowStep);
-            signBookRepository.save(signBookWorkflow);
-
-        }
-
     }
 
     public SignBook createUserSignBook(User user) {
@@ -184,43 +157,6 @@ public class SignBookService {
         signBookRepository.delete(signBook);
     }
 
-    public List<FsFile> importFilesFromSource(SignBook signBook, User user) {
-        List<FsFile> fsFiles = new ArrayList<>();
-        if (signBook.getSourceType() != null && !signBook.getSourceType().equals(DocumentIOType.none)) {
-            logger.info("retrieve from " + signBook.getSourceType() + " in " + signBook.getDocumentsSourceUri());
-            FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signBook.getSourceType());
-            if(fsAccessService.cd(signBook.getDocumentsSourceUri()) == null) {
-                logger.info("create non existing folders : " + signBook.getDocumentsSourceUri());
-                fsAccessService.createFile("/", signBook.getDocumentsSourceUri(), "folder");
-                fsAccessService.createFile("/" + signBook.getDocumentsSourceUri() + "/", "signed", "folder");
-            }
-            try {
-                fsFiles.addAll(fsAccessService.listFiles("/" + signBook.getDocumentsSourceUri() + "/"));
-                if (fsFiles.size() > 0) {
-                    for (FsFile fsFile : fsFiles) {
-                        logger.info("adding file : " + fsFile.getName());
-                        Document documentToAdd = documentService.createDocument(fsFile.getInputStream(), fsFile.getName(), fsFile.getContentType());
-                        if (fsFile.getCreateBy() != null && userRepository.countByEppn(fsFile.getCreateBy()) > 0) {
-                            user = userRepository.findByEppn(fsFile.getCreateBy()).get(0);
-                            user.setIp("127.0.0.1");
-                        }
-                        List<String> signBookRecipientsEmails = new ArrayList<>();
-                        signBookRecipientsEmails.add(user.getEmail());
-                        SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd);
-                        signRequest.setTitle(documentToAdd.getFileName());
-                        signRequestRepository.save(signRequest);
-                        signRequestService.importWorkflow(signRequest, signBook);
-                        signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Import depuis " + signBook.getSourceType() + " : " + signBook.getDocumentsSourceUri(), user, "SUCCESS", null);
-                        fsAccessService.remove(fsFile);
-                    }
-                }
-            } catch (EsupSignatureFsException e) {
-                throw new EsupSignatureRuntimeException("error on delete source file", e);
-            }
-        }
-        return fsFiles;
-    }
-
     public void removeSignRequestFromSignBook(SignRequest signRequest, SignBook signBook) {
         signRequestRepository.save(signRequest);
         signBookRepository.save(signBook);
@@ -261,6 +197,42 @@ public class SignBookService {
         } else {
             return false;
         }
+    }
+
+    public List<FsFile> importFilesFromSource(SignBook signBook, User user) {
+        List<FsFile> fsFiles = new ArrayList<>();
+        if (signBook.getSourceType() != null && !signBook.getSourceType().equals(DocumentIOType.none)) {
+            logger.info("retrieve from " + signBook.getSourceType() + " in " + signBook.getDocumentsSourceUri());
+            FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signBook.getSourceType());
+            if(fsAccessService.cd(signBook.getDocumentsSourceUri()) == null) {
+                logger.info("create non existing folders : " + signBook.getDocumentsSourceUri());
+                fsAccessService.createFile("/", signBook.getDocumentsSourceUri(), "folder");
+                fsAccessService.createFile("/" + signBook.getDocumentsSourceUri() + "/", "signed", "folder");
+            }
+            try {
+                fsFiles.addAll(fsAccessService.listFiles("/" + signBook.getDocumentsSourceUri() + "/"));
+                if (fsFiles.size() > 0) {
+                    for (FsFile fsFile : fsFiles) {
+                        logger.info("adding file : " + fsFile.getName());
+                        Document documentToAdd = documentService.createDocument(fsFile.getInputStream(), fsFile.getName(), fsFile.getContentType());
+                        if (fsFile.getCreateBy() != null && userRepository.countByEppn(fsFile.getCreateBy()) > 0) {
+                            user = userRepository.findByEppn(fsFile.getCreateBy()).get(0);
+                            user.setIp("127.0.0.1");
+                        }
+                        List<String> workflowRecipientsEmails = new ArrayList<>();
+                        workflowRecipientsEmails.add(user.getEmail());
+                        SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd);
+                        signRequest.setTitle(documentToAdd.getFileName());
+                        signRequestRepository.save(signRequest);
+                        signRequestService.updateStatus(signRequest, SignRequest.SignRequestStatus.pending, "Import depuis " + signBook.getSourceType() + " : " + signBook.getDocumentsSourceUri(), user, "SUCCESS", null);
+                        fsAccessService.remove(fsFile);
+                    }
+                }
+            } catch (EsupSignatureFsException e) {
+                throw new EsupSignatureRuntimeException("error on delete source file", e);
+            }
+        }
+        return fsFiles;
     }
 
 }

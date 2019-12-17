@@ -171,11 +171,6 @@ public class AdminSignRequestController {
 			if(user.getKeystore() != null) {
 				model.addAttribute("keystore", user.getKeystore().getFileName());
 			}
-
-			//signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
-
-			signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
-
 			model.addAttribute("signRequest", signRequest);
 			model.addAttribute("itemId", id);
 			if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {

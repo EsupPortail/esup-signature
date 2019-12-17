@@ -57,7 +57,7 @@ public class SignRequest {
     private String workflowName;
 
     @Enumerated(EnumType.STRING)
-    private SignBook.DocumentIOType targetType;
+    private DocumentIOType targetType;
 
     private String documentsTargetUri;
 
@@ -204,11 +204,11 @@ public class SignRequest {
         this.workflowName = workflowName;
     }
 
-    public SignBook.DocumentIOType getTargetType() {
+    public DocumentIOType getTargetType() {
         return targetType;
     }
 
-    public void setTargetType(SignBook.DocumentIOType targetType) {
+    public void setTargetType(DocumentIOType targetType) {
         this.targetType = targetType;
     }
 

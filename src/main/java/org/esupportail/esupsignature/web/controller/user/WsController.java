@@ -59,6 +59,9 @@ public class WsController {
     private SignBookRepository signBookRepository;
 
     @Resource
+    private WorkflowService workflowService;
+
+    @Resource
     private SignBookService signBookService;
 
     @Resource
@@ -186,46 +189,13 @@ public class WsController {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/create-sign-book", method = RequestMethod.POST)
-    public String createSignBook(@RequestParam String signBookString, @RequestParam String signBookType, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
+    @RequestMapping(value = "/create-workflow", method = RequestMethod.POST)
+    public String createSignBook(@RequestParam String workflowString, @RequestParam String signBookType, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
         User user = userService.getSystemUser();
         user.setIp(httpServletRequest.getRemoteAddr());
         ObjectMapper mapper = new ObjectMapper();
-        SignBook newSignBook = mapper.readValue(signBookString, SignBook.class);
-        if (signBookType.equals("workflow")) {
-            newSignBook.setSignBookType(SignBookType.workflow);
-            signBookService.createSignBook(mapper.readValue(signBookString, SignBook.class), user, null, true);
-        } else {
-            newSignBook.setSignBookType(SignBookType.group);
-            if (newSignBook.getRecipientEmails().size() > 1) {
-                SignBook signBookCheck = null;
-                for (String recipientEmail : newSignBook.getRecipientEmails()) {
-                    if (signBookRepository.countByRecipientEmailsContainAndSignBookType(newSignBook.getRecipientEmails().get(0), SignBookType.user) > 0 && signBookCheck == null) {
-                        signBookCheck = signBookRepository.findByRecipientEmailsContainAndSignBookType(newSignBook.getRecipientEmails().get(0), SignBookType.user).get(0);
-
-                    } else {
-                        if (signBookCheck != null && !signBookCheck.getRecipientEmails().contains(recipientEmail)) {
-                            break;
-                        }
-                    }
-                }
-                if (signBookCheck != null && signBookCheck.getRecipientEmails().size() == newSignBook.getRecipientEmails().size()) {
-                    return signBookCheck.getName();
-                }
-            } else {
-                if (signBookRepository.countByRecipientEmailsAndSignBookType(newSignBook.getRecipientEmails(), SignBookType.user) > 0) {
-                    return signBookRepository.findByRecipientEmailsAndSignBookType(newSignBook.getRecipientEmails(), SignBookType.user).get(0).getName();
-                } else if(newSignBook.getRecipientEmails().size() == 1) {
-                    User newUser = userService.createUser(newSignBook.getRecipientEmails().get(0));
-                    return newUser.getFirstname() + " " + newUser.getName();
-                }
-            }
-            signBookService.createSignBook(newSignBook, user,null, true);
-            return newSignBook.getName();
-
-        }
-        return "";
-
+        Workflow workflow = workflowService.createWorkflow(mapper.readValue(workflowString, Workflow.class), user, null, true);
+        return workflow.getName();
     }
 
     @ResponseBody
@@ -315,7 +285,7 @@ public class WsController {
                 JsonSignInfoMessage jsonSignInfoMessage = new JsonSignInfoMessage();
                 jsonSignInfoMessage.setStatus(signRequest.getStatus().toString());
                 if(signRequest.getWorkflowSteps().size() > 0 ) {
-                    signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
+                    signRequestService.setWorkflowsLabels(signRequest.getWorkflowSteps());
                     for (Long userId : signRequest.getCurrentWorkflowStep().getRecipients().keySet()) {
                         User user = userRepository.findById(userId).get();
                         jsonSignInfoMessage.getNextRecipientNames().add(user.getName());
@@ -409,7 +379,6 @@ public class WsController {
 
         List<SignBook> signBooks = new ArrayList<>();
         signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.system));
-        signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.workflow));
         signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.group));
 
         for (SignBook signBook : signBooks) {

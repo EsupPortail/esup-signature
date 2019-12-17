@@ -11,7 +11,7 @@ import java.util.List;
 
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SignBook {
+public class Workflow {
 
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -64,8 +64,9 @@ public class SignBook {
     @ElementCollection(targetClass=String.class)
     private List<String> moderatorEmails = new ArrayList<>();
 
-    @ElementCollection(targetClass=String.class)
-    private List<String> recipientEmails = new ArrayList<>();
+    @OneToMany
+    @OrderColumn
+    private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;
@@ -75,13 +76,6 @@ public class SignBook {
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL }, orphanRemoval = true)
     private Document modelFile = new Document();
 
-	@Enumerated(EnumType.STRING)
-	private SignBookType signBookType;
-	
-	public enum SignBookType {
-		system, user, group;
-	}
-
     public void setSourceType(DocumentIOType sourceType) {
         this.sourceType = sourceType;
     }
@@ -90,10 +84,6 @@ public class SignBook {
         this.targetType = targetType;
     }
     
-    public void setSignBookType(SignBookType signBookType) {
-        this.signBookType = signBookType;
-    }
-        
     public String getName() {
         return this.name;
     }
@@ -161,13 +151,13 @@ public class SignBook {
     public void setModeratorEmails(List<String> moderatorEmails) {
         this.moderatorEmails = moderatorEmails;
     }
-    
-    public List<String> getRecipientEmails() {
-        return this.recipientEmails;
+
+    public List<WorkflowStep> getWorkflowSteps() {
+        return workflowSteps;
     }
-    
-    public void setRecipientEmails(List<String> recipientEmails) {
-        this.recipientEmails = recipientEmails;
+
+    public void setWorkflowSteps(List<WorkflowStep> workflowSteps) {
+        this.workflowSteps = workflowSteps;
     }
 
     public DocumentIOType getTargetType() {
@@ -188,20 +178,6 @@ public class SignBook {
     
     public void setModelFile(Document modelFile) {
         this.modelFile = modelFile;
-    }
-
-    /*
-    public SignRequestParams getSignRequestParams() {
-        return this.signRequestParams;
-    }
-    
-    public void setSignRequestParams(SignRequestParams signRequestParams) {
-        this.signRequestParams = signRequestParams;
-    }
-    */
-
-    public SignBookType getSignBookType() {
-        return this.signBookType;
     }
 
 	public Boolean isExternal() {

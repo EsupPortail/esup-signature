@@ -3,13 +3,12 @@ package org.esupportail.esupsignature.web.controller.manager;
 import com.google.common.collect.ImmutableList;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.*;
-import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
@@ -29,16 +28,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 @CrossOrigin(origins = "*")
-@RequestMapping("/manager/signbooks")
+@RequestMapping("/manager/workflow")
 @Controller
 @Transactional
 @Scope(value = "session")
-public class SignBookController {
+public class WorkflowController {
 
-	private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
+	private static final Logger logger = LoggerFactory.getLogger(WorkflowController.class);
 	
 	@ModelAttribute("managerMenu")
 	public String getActiveMenu() {
@@ -52,13 +54,13 @@ public class SignBookController {
 	private UserService userService;
 	
 	@Resource
-	private SignBookRepository signBookRepository;
+	private WorkflowRepository workflowRepository;
 
 	@Resource
 	private WorkflowStepRepository workflowStepRepository;
 
 	@Resource
-	private SignBookService signBookService;
+	private WorkflowService workflowService;
 
 	@Resource
 	private SignRequestRepository signRequestRepository;
@@ -80,8 +82,8 @@ public class SignBookController {
 
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
-		SignBook signBook = signBookRepository.findById(id).get();
-		Document modelFile = signBook.getModelFile();
+		Workflow workflow = workflowRepository.findById(id).get();
+		Document modelFile = workflow.getModelFile();
 		if (modelFile != null && modelFile.getSize() != null) {
 			uiModel.addAttribute("documentId", modelFile.getId());
 			if(modelFile.getContentType().equals("application/pdf")) {
@@ -96,22 +98,18 @@ public class SignBookController {
 				}
 			}
 		}
-		uiModel.addAttribute("signBook", signBook);
+		uiModel.addAttribute("workflow", workflow);
 		uiModel.addAttribute("signTypes", SignType.values());
 		uiModel.addAttribute("itemId", id);
-		return "manager/signbooks/show";
+		return "manager/workflows/show";
 	}
 
-	void populateEditForm(Model uiModel, SignBook signBook) {
-		uiModel.addAttribute("signBook", signBook);
+	void populateEditForm(Model uiModel, Workflow workflow) {
+		uiModel.addAttribute("workflow", workflow);
 		uiModel.addAttribute("users", userRepository.findAll());
 		uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
 		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
-		List<SignBookType> signBookTypes = new LinkedList<SignBookType>(Arrays.asList(SignBookType.values()));
-		signBookTypes.remove(SignBookType.system);
-		signBookTypes.remove(SignBookType.user);
-		uiModel.addAttribute("signBookTypes", signBookTypes);
-		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
+		uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
 		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
 		uiModel.addAttribute("signrequests", signRequestRepository.findAll());
 	}
@@ -126,122 +124,91 @@ public class SignBookController {
 			return "redirect:/user/users/?form";
 		}
     	if(sortFieldName == null) {
-    		sortFieldName = "signBookType";
+    		sortFieldName = "workflowType";
     	}
 
-    	List<SignBook> signBooks = ImmutableList.copyOf(signBookRepository.findAll());
-		uiModel.addAttribute("signBooks", signBooks);
-		return "manager/signbooks/list";
+    	List<Workflow> workflows = ImmutableList.copyOf(workflowRepository.findAll());
+
+		for (Workflow workflow : workflows) {
+			signRequestService.setWorkflowsLabels(workflow.getWorkflowSteps());
+		}
+		uiModel.addAttribute("workflows", workflows);
+		return "manager/workflows/list";
 	}
 	
     @RequestMapping(params = "form", produces = "text/html")
     public String createForm(@RequestParam(required = false) String type, Model uiModel) {
-    	populateEditForm(uiModel, new SignBook());
-		List<SignBook> signBooks = new ArrayList<>();
-		signBooks.addAll(signBookRepository.findByExternal(false));
-		uiModel.addAttribute("allSignBooks", signBooks);
+    	populateEditForm(uiModel, new Workflow());
+		List<Workflow> workflows = new ArrayList<>();
+		workflows.addAll(workflowRepository.findByExternal(false));
+		uiModel.addAttribute("allWorkflows", workflows);
 		uiModel.addAttribute("type", type);
 		if(type.equals("workflow")) {
-			return "manager/signbooks/create-workflow";
+			return "manager/workflows/create-workflow";
 		} else {
-			return "manager/signbooks/create";
+			return "manager/workflows/create";
 		}
 
     }
 	
 	@PostMapping(produces = "text/html")
 	public String create(@RequestParam(name = "name") String name,
-						 @RequestParam(name = "signBookType") String signBookType,
+						 @RequestParam(name = "workflowType") String workflowType,
 			             @RequestParam(name = "multipartFile", required = false) MultipartFile multipartFile,
 						 Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
-		SignBook newSignBook = new SignBook();
-		newSignBook.setName(name);
-		newSignBook.setSignBookType(SignBookType.valueOf(signBookType));
-		SignBook signBook;
+		Workflow newWorkflow = new Workflow();
+		newWorkflow.setName(name);
+		Workflow workflow;
 		try {
-			signBook = signBookService.createSignBook(newSignBook, user, multipartFile, false);
+			workflow = workflowService.createWorkflow(newWorkflow, user, multipartFile, false);
 		} catch (EsupSignatureException e) {
 			redirectAttrs.addAttribute("messageError", "Ce parapheur existe déjà");
-			return "redirect:/manager/signbooks/";
+			return "redirect:/manager/workflows/";
 		}
-		return "redirect:/manager/signbooks/" + signBook.getId();
-	}
-
-	@PostMapping(value = "/add-recipients/{id}", produces = "text/html")
-	public String addRecipients(@PathVariable("id") Long id,
-						 @RequestParam(name = "recipientEmails") List<String> recipientEmails,
-						 Model uiModel, RedirectAttributes redirectAttrs) {
-		User user = userService.getUserFromAuthentication();
-		SignBook signBook = signBookRepository.findById(id).get();
-		if(signBook.getCreateBy().equals(user.getEppn())) {
-			signBookService.addRecipient(signBook, recipientEmails);
-		}
-		return "redirect:/manager/signbooks/" + signBook.getId();
-	}
-
-	@DeleteMapping(value = "/remove-recipient/{id}", produces = "text/html")
-	public String removeRecipients(@PathVariable("id") Long id,
-								@RequestParam(name = "recipientEmail") String recipientEmail,
-								Model uiModel, RedirectAttributes redirectAttrs) {
-		User user = userService.getUserFromAuthentication();
-		SignBook signBook = signBookRepository.findById(id).get();
-		if(signBook.getCreateBy().equals(user.getEppn())) {
-			signBookService.removeRecipient(signBook, recipientEmail);
-		}
-		return "redirect:/manager/signbooks/" + signBook.getId();
+		return "redirect:/manager/workflows/" + workflow.getId();
 	}
 
     @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
     public String updateForm(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
-		SignBook signBook = signBookRepository.findById(id).get();
-		if(signBook.getSignBookType().equals(SignBookType.user)) {
-			return "redirect:/manager/signbooks/" + id;
-		} else {
-			if (!signBookService.checkUserManageRights(user, signBook)) {
-				redirectAttrs.addFlashAttribute("messageCustom", "access error");
-				return "redirect:/manager/signbooks/" + id;
-			}
+		Workflow workflow = workflowRepository.findById(id).get();
+		if (!workflowService.checkUserManageRights(user, workflow)) {
+			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+			return "redirect:/manager/workflows/" + id;
 		}
-		populateEditForm(uiModel, signBook);
-        return "manager/signbooks/update";
+		populateEditForm(uiModel, workflow);
+        return "manager/workflows/update";
     }
 	
     @PostMapping(value = "/update/{id}")
-    public String update(@PathVariable("id") Long id, @Valid SignBook signBook, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
+    public String update(@PathVariable("id") Long id, @Valid Workflow workflow, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
 		User user = userService.getUserFromAuthentication();
-		SignBook signBookToUpdate = signBookRepository.findById(signBook.getId()).get();
-		if(signBookToUpdate.getCreateBy().equals(user.getEppn())) {
-			signBookToUpdate.setSourceType(signBook.getSourceType());
-			signBookToUpdate.setTargetType(signBook.getTargetType());
-			signBookToUpdate.setDocumentsSourceUri(signBook.getDocumentsSourceUri());
-			signBookToUpdate.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
-			signBookToUpdate.setDescription(signBook.getDescription());
-			signBookToUpdate.setUpdateBy(user.getEppn());
-			signBookToUpdate.setUpdateDate(new Date());
-			signBookRepository.save(signBookToUpdate);
+		Workflow workflowToUpdate = workflowRepository.findById(workflow.getId()).get();
+		if(workflowToUpdate.getCreateBy().equals(user.getEppn())) {
+			workflowToUpdate.setSourceType(workflow.getSourceType());
+			workflowToUpdate.setTargetType(workflow.getTargetType());
+			workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
+			workflowToUpdate.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
+			workflowToUpdate.setDescription(workflow.getDescription());
+			workflowToUpdate.setUpdateBy(user.getEppn());
+			workflowToUpdate.setUpdateDate(new Date());
+			workflowRepository.save(workflowToUpdate);
 		}
-        return "redirect:/manager/signbooks/" + signBook.getId();
+        return "redirect:/manager/workflows/" + workflow.getId();
 
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
     public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, Model uiModel, RedirectAttributes redirectAttrs) {
     	User user = userService.getUserFromAuthentication();
-    	SignBook signBook = signBookRepository.findById(id).get();
-    		populateEditForm(uiModel, signBook);
-		if(signBook.getSignBookType().equals(SignBookType.user)) {
-			logger.error("can not delete user signBook");
-			redirectAttrs.addFlashAttribute("messageCustom", "Impossible de supprimer un parapheur utilisateur");
-			return "redirect:/manager/signbooks/" + id;
-		} else {
-			if (!signBookService.checkUserManageRights(user, signBook)) {
-				redirectAttrs.addFlashAttribute("messageCustom", "Non autorisé");
-				return "redirect:/manager/signbooks/" + id;
-			}    
+    	Workflow workflow = workflowRepository.findById(id).get();
+		populateEditForm(uiModel, workflow);
+		if (!workflowService.checkUserManageRights(user, workflow)) {
+			redirectAttrs.addFlashAttribute("messageCustom", "Non autorisé");
+			return "redirect:/manager/workflows/" + id;
 		}
-		signBookService.deleteSignBook(signBook);
+		workflowService.deleteWorkflow(workflow);
         uiModel.asMap().clear();
         uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
         uiModel.addAttribute("size", (size == null) ? "10" : size.toString());
@@ -254,32 +221,63 @@ public class SignBookController {
 			@RequestParam(value = "signPageNumber", required = true) int signPageNumber,
 			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
 		User user = userService.getUserFromAuthentication();
-		SignBook signBook = signBookRepository.findById(id).get();
+		Workflow workflow = workflowRepository.findById(id).get();
 
-		if (!signBook.getCreateBy().equals(user.getEppn())) {
+		if (!workflow.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/manager/signbooks/" + id;
+			return "redirect:/manager/workflows/" + id;
 		}
-		signBook.setUpdateBy(user.getEppn());
-		signBook.setUpdateDate(new Date());
+		workflow.setUpdateBy(user.getEppn());
+		workflow.setUpdateDate(new Date());
 
-		return "redirect:/manager/signbooks/" + id;
+		return "redirect:/manager/workflows/" + id;
 	}
 
 	@RequestMapping(value = "/delete-params/{id}", method = RequestMethod.POST)
 	public String deleteParams(@PathVariable("id") Long id,
-			@RequestParam(value = "signBookId", required = true) Long signBookId,
+			@RequestParam(value = "workflowId", required = true) Long workflowId,
 			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
 		User user = userService.getUserFromAuthentication();
 		SignRequestParams signRequestParams = signRequestParamsRepository.findById(id).get(); 
-		SignBook signBook = signBookRepository.findById(signBookId).get();
-		if (!signBook.getCreateBy().equals(user.getEppn())) {
+		Workflow workflow = workflowRepository.findById(workflowId).get();
+		if (!workflow.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/manager/signbooks/" + id;
+			return "redirect:/manager/workflows/" + id;
 		}
 		//TODO with workflowsteps
 		
-		return "redirect:/manager/signbooks/" + signBookId;
+		return "redirect:/manager/workflows/" + workflowId;
+	}
+
+	@PostMapping(value = "/add-step/{id}")
+	public String addStep(@PathVariable("id") Long id,
+						  @RequestParam("workflowNames") List<String> recipientsEmail,
+						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
+						  @RequestParam("signType") String signType,
+						  RedirectAttributes redirectAttrs) {
+		User user = userService.getUserFromAuthentication();
+		Workflow workflow = workflowRepository.findById(id).get();
+		if (!workflow.getCreateBy().equals(user.getEppn())) {
+			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+			return "redirect:/manager/workflows/" + id;
+		}
+		WorkflowStep workflowStep = new WorkflowStep();
+		for(String recipientEmail : recipientsEmail) {
+			if(userRepository.countByEmail(recipientEmail) > 0) {
+				User recipientUserToAdd = userRepository.findByEmail(recipientEmail).get(0);
+				workflowStep.getRecipients().put(recipientUserToAdd.getId(), false);
+			}
+		}
+		if(allSignToComplete ==null) {
+			workflowStep.setAllSignToComplete(false);
+		} else {
+			workflowStep.setAllSignToComplete(allSignToComplete);
+		}
+		workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
+		workflowStep.getSignRequestParams().setSignType(SignType.valueOf(signType));
+		workflowStepRepository.save(workflowStep);
+		workflow.getWorkflowSteps().add(workflowStep);
+		return "redirect:/manager/workflows/" + id;
 	}
 
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
@@ -289,49 +287,86 @@ public class SignBookController {
 									  RedirectAttributes redirectAttrs, HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
-		SignBook signBook = signBookRepository.findById(id).get();
+		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-		if(user.getEppn().equals(signBook.getCreateBy())) {
+		if(user.getEppn().equals(workflow.getCreateBy())) {
 			User recipientUserToRemove = userRepository.findByEmail(recipientEmail).get(0);
 			workflowStep.getRecipients().remove(recipientUserToRemove.getId());
 			workflowStepRepository.save(workflowStep);
 		} else {
-			logger.warn(user.getEppn() + " try to move " + signBook.getId() + " without rights");
+			logger.warn(user.getEppn() + " try to move " + workflow.getId() + " without rights");
 		}
-		return "redirect:/manager/signbooks/" + id + "#" + workflowStep.getId();
+		return "redirect:/manager/workflows/" + id + "#" + workflowStep.getId();
+	}
+
+	@RequestMapping(value = "/toggle-need-all-sign/{id}/{step}", method = RequestMethod.GET)
+	public String toggleNeedAllSign(@PathVariable("id") Long id,@PathVariable("step") Integer step) {
+		User user = userService.getUserFromAuthentication();
+		Workflow workflow = workflowRepository.findById(id).get();
+		if(user.getEppn().equals(workflow.getCreateBy())) {
+			Long stepId = signRequestService.toggleNeedAllSign(workflow, step);
+			return "redirect:/manager/workflows/" + id + "#" + stepId;
+		}
+		return "redirect:/manager/workflows/";
+	}
+
+	@RequestMapping(value = "/change-step-sign-type/{id}/{step}", method = RequestMethod.GET)
+	public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
+		User user = userService.getUserFromAuthentication();
+		Workflow workflow = workflowRepository.findById(id).get();
+		if(user.getEppn().equals(workflow.getCreateBy())) {
+			signRequestService.changeSignType(workflow, step, null, signType);
+			return "redirect:/manager/workflows/" + id;
+		}
+		return "redirect:/manager/workflows/";
+	}
+
+	@DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
+	public String addStep(@PathVariable("id") Long id, @PathVariable("stepNumber") Integer stepNumber, RedirectAttributes redirectAttrs) {
+		User user = userService.getUserFromAuthentication();
+		Workflow workflow = workflowRepository.findById(id).get();
+		if (!workflow.getCreateBy().equals(user.getEppn())) {
+			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+			return "redirect:/manager/workflows/" + id;
+		}
+		WorkflowStep workflowStep = workflow.getWorkflowSteps().get(stepNumber);
+		workflow.getWorkflowSteps().remove(workflowStep);
+		workflowRepository.save(workflow);
+		workflowStepRepository.delete(workflowStep);
+		return "redirect:/manager/workflows/" + id;
 	}
 
 	@RequestMapping(value = "/add-params/{id}", method = RequestMethod.POST)
 	public String addParams(@PathVariable("id") Long id, 
 			RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
-		SignBook signBook = signBookRepository.findById(id).get();
+		Workflow workflow = workflowRepository.findById(id).get();
 
-		if (!signBook.getCreateBy().equals(user.getEppn())) {
+		if (!workflow.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/manager/signbooks/" + id;
+			return "redirect:/manager/workflows/" + id;
 		}
-		signBook.setUpdateBy(user.getEppn());
-		signBook.setUpdateDate(new Date());
-		return "redirect:/manager/signbooks/" + id;
+		workflow.setUpdateBy(user.getEppn());
+		workflow.setUpdateDate(new Date());
+		return "redirect:/manager/workflows/" + id;
 	}
 
 	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
 	public String getFileFromSource(@PathVariable("id") Long id, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
-		SignBook signBook = signBookRepository.findById(id).get();
+		Workflow workflow = workflowRepository.findById(id).get();
 
-		if (!signBook.getCreateBy().equals(user.getEppn())) {
+		if (!workflow.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/manager/signbooks/" + id;
+			return "redirect:/manager/workflows/" + id;
 		}
-		List<FsFile> fsFiles = signBookService.importFilesFromSource(signBook, user);
+		List<FsFile> fsFiles = workflowService.importFilesFromSource(workflow, user);
 		if(fsFiles.size() == 0) {
 			redirectAttrs.addFlashAttribute("messageError", "Aucun fichier à importer");
 		} else {
 			redirectAttrs.addFlashAttribute("messageInfo", fsFiles.size() + " ficher(s) importé(s)");
 		}
-		return "redirect:/manager/signbooks/" + id;
+		return "redirect:/manager/workflows/" + id;
 	}
 
 }

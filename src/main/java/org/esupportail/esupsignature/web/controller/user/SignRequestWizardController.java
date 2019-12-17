@@ -1,14 +1,12 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
-import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
@@ -56,6 +54,9 @@ public class SignRequestWizardController {
     private SignRequestService signRequestService;
 
     @Resource
+    private WorkflowRepository workflowRepository;
+
+    @Resource
     private WorkflowStepRepository workflowStepRepository;
 
     @Resource
@@ -86,14 +87,14 @@ public class SignRequestWizardController {
                 int nbSign = signRequestService.scanSignatureFields(signRequest, PDDocument.load(signRequest.getOriginalDocuments().get(0).getInputStream()));
                 model.addAttribute("nbSign", nbSign);
             }
-            List<SignBook> signBooks = new ArrayList<>();
-            signBooks.add(signBookRepository.findByName("Ma signature").get(0));
-            for(SignBook signBook : signBookRepository.findBySignBookType(SignBookType.workflow)) {
-                if(!signBooks.contains(signBook)) {
-                    signBooks.add(signBook);
+            List<Workflow> workflows = new ArrayList<>();
+            workflows.add(workflowRepository.findByName("Ma signature").get(0));
+            for(Workflow workflow : workflowRepository.findAll()) {
+                if(!workflows.contains(workflow)) {
+                    workflows.add(workflow);
                 }
             }
-            model.addAttribute("signBooks", signBooks);
+            model.addAttribute("workflows", workflows);
         }
         return "user/signrequests/wizard/wiz3";
     }
@@ -101,18 +102,18 @@ public class SignRequestWizardController {
 
 
     @RequestMapping(value = "/wiz4/{id}", produces = "text/html")
-    public String wiz4(@PathVariable("id") Long id, @RequestParam(value = "signBookId", required = false) Long signBookId,  Model model) throws IOException {
+    public String wiz4(@PathVariable("id") Long id, @RequestParam(value = "workflowId", required = false) Long workflowId,  Model model) throws IOException {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if(signRequestService.checkUserViewRights(user, signRequest)) {
             model.addAttribute("signRequest", signRequest);
             signRequestRepository.save(signRequest);
-            if (signBookId != null) {
-                SignBook signBook = signBookRepository.findById(signBookId).get();
-                signRequestService.importWorkflow(signRequest, signBook);
+            if (workflowId != null) {
+                Workflow workflow = workflowRepository.findById(workflowId).get();
+                signRequestService.importWorkflow(signRequest, workflow);
                 return "redirect:/user/signrequests/wizard/wizend/" + signRequest.getId();
             }
-            signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
+            signRequestService.setWorkflowsLabels(signRequest.getWorkflowSteps());
             if(signRequest.getWorkflowSteps() == null || signRequest.getWorkflowSteps().size() == 0) {
                 WorkflowStep workflowStep = new WorkflowStep();
                 workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
@@ -162,7 +163,7 @@ public class SignRequestWizardController {
                     }
                 }
             }
-            signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
+            signRequestService.setWorkflowsLabels(signRequest.getWorkflowSteps());
         }
         signRequestRepository.save(signRequest);
         model.addAttribute("signRequest", signRequest);

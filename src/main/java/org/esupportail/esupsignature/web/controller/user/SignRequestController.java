@@ -13,10 +13,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.*;
-import org.esupportail.esupsignature.service.DocumentService;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
@@ -111,6 +108,12 @@ public class SignRequestController {
     private SignBookRepository signBookRepository;
 
     @Resource
+    private WorkflowRepository workflowRepository;
+
+    @Resource
+    private WorkflowService workflowService;
+
+    @Resource
     private SignBookService signBookService;
 
     @Resource
@@ -141,7 +144,7 @@ public class SignRequestController {
             @RequestParam(value = "messageError", required = false) String messageError,
             @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, RedirectAttributes redirectAttrs, Model model) {
         User user = userService.getUserFromAuthentication();
-        signBookService.initCreatorSignBook();
+        workflowService.initCreatorWorkflow();
         if (user == null || !userService.isUserReady(user)) {
             return "redirect:/user/users/?form";
         }
@@ -161,7 +164,7 @@ public class SignRequestController {
         Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByCreateByAndStatus(user.getEppn(), this.statusFilter, pageable);
 
         for (SignRequest signRequest : signRequests) {
-            signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
+            signRequestService.setWorkflowsLabels(signRequest.getWorkflowSteps());
         }
         if (user.getKeystore() != null) {
             model.addAttribute("keystore", user.getKeystore().getFileName());
@@ -199,7 +202,7 @@ public class SignRequestController {
             if (user.getKeystore() != null) {
                 model.addAttribute("keystore", user.getKeystore().getFileName());
             }
-            signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
+            signRequestService.setWorkflowsLabels(signRequest.getWorkflowSteps());
             model.addAttribute("signRequest", signRequest);
 
             if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
@@ -208,7 +211,7 @@ public class SignRequestController {
             model.addAttribute("signTypes", SignType.values());
             model.addAttribute("newPageTypes", NewPageType.values());
             model.addAttribute("allSignBooks", signBookRepository.findBySignBookType(SignBookType.group));
-            model.addAttribute("workflowSignBooks", signBookRepository.findBySignBookType(SignBookType.workflow));
+            model.addAttribute("workflows", workflowRepository.findAll());
             model.addAttribute("nbSignOk", signRequest.countSignOk());
             model.addAttribute("baseUrl", baseUrl);
             model.addAttribute("nexuVersion", nexuVersion);
@@ -370,7 +373,7 @@ public class SignRequestController {
                 if (user.getKeystore() != null) {
                     model.addAttribute("keystore", user.getKeystore().getFileName());
                 }
-                signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
+                signRequestService.setWorkflowsLabels(signRequest.getWorkflowSteps());
                 model.addAttribute("signRequest", signRequest);
                 if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                     model.addAttribute("signable", "ok");
@@ -686,8 +689,8 @@ public class SignRequestController {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
-            SignBook signBook = signBookRepository.findById(workflowSignBookId).get();
-            signRequestService.importWorkflow(signRequest, signBook);
+            Workflow workflow = workflowRepository.findById(workflowSignBookId).get();
+            signRequestService.importWorkflow(signRequest, workflow);
         }
         return "redirect:/user/signrequests/" + id + "/?form";
     }

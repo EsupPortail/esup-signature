@@ -197,8 +197,8 @@
                 </div>
                 <div class="modal-body">
                     <select name="workflowSignBookId" class="form-control">
-                        <th:block th:each="workflowSignBook : ${workflowSignBooks}">
-                            <option th:value="${workflowSignBook.id}" th:text="${workflowSignBook.name}"></option>
+                        <th:block th:each="workflow : ${workflows}">
+                            <option th:value="${workflow.id}" th:text="${workflow.name}"></option>
                         </th:block>
                     </select>
                 </div>
