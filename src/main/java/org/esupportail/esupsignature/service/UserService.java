@@ -1,9 +1,7 @@
 package org.esupportail.esupsignature.service;
 
-import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.ldap.PersonLdap;
@@ -12,20 +10,18 @@ import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.spel.spi.EvaluationContextExtension;
+import org.springframework.data.spel.spi.Function;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class UserService {
+public class UserService implements EvaluationContextExtension {
 
 	private PersonLdapDao personDao;
 
@@ -153,5 +149,29 @@ public class UserService {
 		User user = new User();
 		user.setEppn("System");
 		return user;
+	}
+
+	public String getNameFromEppn(String eppn) {
+		return userRepository.findByEppn(eppn).get(0).getFirstname() + " " + userRepository.findByEppn(eppn).get(0).getName();
+	}
+
+	@Override
+	public Map<String, Object> getProperties() {
+		return null;
+	}
+
+	@Override
+	public Map<String, Function> getFunctions() {
+		return null;
+	}
+
+	@Override
+	public Object getRootObject() {
+		return null;
+	}
+
+	@Override
+	public String getExtensionId() {
+		return null;
 	}
 }

@@ -308,7 +308,7 @@ public class WsController {
 
     @ResponseBody
     @RequestMapping(value = "/check-sign-request", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public JsonSignInfoMessage checkSignRequest(@RequestParam String fileToken) throws JsonProcessingException {
+    public JsonSignInfoMessage checkSignRequest(@RequestParam String fileToken) {
         try {
             if (signRequestRepository.countByName(fileToken) > 0) {
                 SignRequest signRequest = signRequestRepository.findByName(fileToken).get(0);
@@ -316,10 +316,10 @@ public class WsController {
                 jsonSignInfoMessage.setStatus(signRequest.getStatus().toString());
                 if(signRequest.getWorkflowSteps().size() > 0 ) {
                     signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
-                    for (Long signBookId : signRequest.getCurrentWorkflowStep().getSignBooks().keySet()) {
-                        SignBook signBook = signBookRepository.findById(signBookId).get();
-                        jsonSignInfoMessage.getNextRecipientNames().add(signBook.getName());
-                        jsonSignInfoMessage.getNextRecipientEppns().add(userRepository.findByEmail(signBook.getRecipientEmails().get(0)).get(0).getEppn());
+                    for (Long userId : signRequest.getCurrentWorkflowStep().getRecipients().keySet()) {
+                        User user = userRepository.findById(userId).get();
+                        jsonSignInfoMessage.getNextRecipientNames().add(user.getName());
+                        jsonSignInfoMessage.getNextRecipientEppns().add(user.getEppn());
                     }
                 }
                 return jsonSignInfoMessage;

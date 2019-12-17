@@ -79,6 +79,13 @@
             <div th:if="${paramsOk == false}">
                 <div class="row">
                     <div class="col-lg-6">
+                        <div class="embedresize">
+                            <div>
+                                <iframe allowfullscreen="" frameborder="0" th:src="'/user/documents/getfile/' + ${documentId}" width="560"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
                         <div class="alert alert-danger" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'pdfImageStamp'}">
                             <h6>Une signature visuelle est obligatoire pour signer ce document mais votre profil ne contient pas d'image de votre signature</h6>
                             Vous pouvez ajouter une image en accédant à vos paramètres : <a href="/user/users/?form" target="_blank">Modifier vos paramètres</a>
@@ -87,19 +94,13 @@
                             <h6>La signature demandée requière un certificat</h6>
                             Vous pouvez ajouter un keystore en accédant à vos paramètres : <a href="/user/users/?form" target="_blank">Modifier vos paramètres</a>
                         </div>
-                        <div class="alert alert-warning" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'pdfImageStamp' && user.signImage == null}">
+                        <div class="alert alert-warning" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'pdfImageStamp' && user.signImage == null}">
                             <h6>Une signature visuelle est possible pour signer ce document mais votre profil ne contient pas d'image de votre signature</h6>
                             Vous pouvez signer aussi signer sans marque visuelle
                             <a href="/user/users/?form" target="_blank">Modifier vos paramètres</a>
                         </div>
                     </div>
-                    <div class="col-lg-6">
-                        <div class="embedresize">
-                            <div>
-                                <iframe allowfullscreen="" frameborder="0" th:src="'/user/documents/getfile/' + ${documentId}" width="560"></iframe>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </div>
             <form th:if="${signable == 'ok' && paramsOk == false}" id="signForm" th:action="'/user/signrequests/sign/' + ${signRequest.id}" method="post">

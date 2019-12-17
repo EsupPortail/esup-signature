@@ -7,6 +7,6 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface WorkflowStepRepository extends CrudRepository<WorkflowStep, Long>  {
-    @Query("select w from WorkflowStep w where :signBookId = key(w.signBooks)")
-    List<WorkflowStep> findBySignBooks(Long signBookId);
+    @Query("select w from WorkflowStep w where :recipientId = key(w.recipients)")
+    List<WorkflowStep> findByRecipients(Long recipientId);
 }

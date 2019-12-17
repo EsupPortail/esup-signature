@@ -35,7 +35,7 @@
                         <span class="slider round"></span>
                     </label>
                 </div>
-                <a role="button" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
+                <a role="button" th:if="${signOk}" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
                     <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                 </a>
                 <a th:unless="${referer != null}" title="Abandonner" type="button" class="btn btn-light col-12 mb-1 text-left" value="Retour" href="/user/signrequests">
@@ -97,8 +97,9 @@
                 <div class="col-lg-6">
                 <th:block th:each="log : ${logs}">
                     <div th:id="'log' + ${log.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer" th:onmouseover="'$(\'#' + ${log.id} + '\').show(); gotoImage(' + ${log.pageNumber} + ')'" th:onmouseout="'$(\'#' + ${log.id} + '\').hide()'">
-                        <h5 th:text="${log.eppn} + ' - ' +  ${log.logDate}"></h5>
-                        <span th:text="${log.comment}"></span>
+                        <b th:text="${@userService.getNameFromEppn(log.eppn)}"></b>
+                        <span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span>
+                        <p class="postitarea" th:text="${log.comment}"></p>
                     </div>
                     <script>
                         /*<![CDATA[*/

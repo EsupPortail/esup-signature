@@ -17,14 +17,14 @@ public class WorkflowStep {
     private String name;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    private Map<Long, Boolean> signBooks = new HashMap<>();
+    private Map<Long, Boolean> recipients = new HashMap<>();
+
+    transient Map<String, Boolean> recipientsNames;
 
     private Boolean allSignToComplete = false;
 
     @OneToOne
     private SignRequestParams signRequestParams;
-
-    transient Map<String, Boolean> signBooksLabels;
 
     public Long getId() {
         return id;
@@ -50,12 +50,12 @@ public class WorkflowStep {
         this.version = version;
     }
 
-    public Map<Long, Boolean> getSignBooks() {
-        return signBooks;
+    public Map<Long, Boolean> getRecipients() {
+        return recipients;
     }
 
-    public void setSignBooks(Map<Long, Boolean> signBooks) {
-        this.signBooks = signBooks;
+    public void setRecipients(Map<Long, Boolean> recipients) {
+        this.recipients = recipients;
     }
 
     public Boolean isAllSignToComplete() {
@@ -76,7 +76,7 @@ public class WorkflowStep {
 
     public Boolean isCompleted() {
         int nbSign = 0;
-        for (Map.Entry<Long, Boolean> signBookEntry : signBooks.entrySet()) {
+        for (Map.Entry<Long, Boolean> signBookEntry : recipients.entrySet()) {
             if(!allSignToComplete && signBookEntry.getValue()) {
                 return true;
             }
@@ -84,19 +84,19 @@ public class WorkflowStep {
                 nbSign++;
             }
         }
-        if(nbSign == signBooks.size()) {
+        if(nbSign == recipients.size()) {
             return true;
         } else {
             return false;
         }
     }
 
-    public Map<String, Boolean> getSignBooksLabels() {
-        return signBooksLabels;
+    public Map<String, Boolean> getRecipientsNames() {
+        return recipientsNames;
     }
 
-    public void setSignBooksLabels(Map<String, Boolean> signBooksLabels) {
-        this.signBooksLabels = signBooksLabels;
+    public void setRecipientsNames(Map<String, Boolean> recipientsNames) {
+        this.recipientsNames = recipientsNames;
     }
 
 }

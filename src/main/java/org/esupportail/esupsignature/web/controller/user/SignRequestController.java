@@ -105,7 +105,7 @@ public class SignRequestController {
     private WorkflowStepRepository workflowStepRepository;
 
     @Resource
-    private SignRequestParamsRepository signRequestParamsRepository;
+    private UserRepository userRepository;
 
     @Resource
     private SignBookRepository signBookRepository;
@@ -141,6 +141,7 @@ public class SignRequestController {
             @RequestParam(value = "messageError", required = false) String messageError,
             @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, RedirectAttributes redirectAttrs, Model model) {
         User user = userService.getUserFromAuthentication();
+        signBookService.initCreatorSignBook();
         if (user == null || !userService.isUserReady(user)) {
             return "redirect:/user/users/?form";
         }
@@ -206,7 +207,7 @@ public class SignRequestController {
             }
             model.addAttribute("signTypes", SignType.values());
             model.addAttribute("newPageTypes", NewPageType.values());
-            model.addAttribute("allSignBooks", signBookRepository.findByNotCreateBy("System"));
+            model.addAttribute("allSignBooks", signBookRepository.findBySignBookType(SignBookType.group));
             model.addAttribute("workflowSignBooks", signBookRepository.findBySignBookType(SignBookType.workflow));
             model.addAttribute("nbSignOk", signRequest.countSignOk());
             model.addAttribute("baseUrl", baseUrl);
@@ -252,6 +253,9 @@ public class SignRequestController {
                 }
                 model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
                 model.addAttribute("documentId", toDisplayDocument.getId());
+            }
+            if(signRequestService.checkUserSignRights(user, signRequest)) {
+                model.addAttribute("signOk", true);
             }
         }
         List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNull(id);
@@ -483,7 +487,6 @@ public class SignRequestController {
         progress = "0";
         for (Long id : ids) {
             SignRequest signRequest = signRequestRepository.findById(id).get();
-            SignBook currentSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
             if (signRequestService.checkUserSignRights(user, signRequest)) {
                 if (!"".equals(password)) {
                     setPassword(password);
@@ -711,15 +714,15 @@ public class SignRequestController {
     @DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
     public String removeStepRecipient(@PathVariable("id") Long id,
                                  @PathVariable("workflowStepId") Long workflowStepId,
-                                 @RequestParam(value = "recipientName") String recipientName,
+                                 @RequestParam(value = "recipientName") String recipientEmail,
                                  RedirectAttributes redirectAttrs, HttpServletRequest request) {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
-            SignBook signBook = signBookRepository.findByName(recipientName).get(0);
-            workflowStep.getSignBooks().remove(signBook.getId());
+            User userToRemove = userRepository.findByEmail(recipientEmail).get(0);
+            workflowStep.getRecipients().remove(userToRemove.getId());
             workflowStepRepository.save(workflowStep);
         } else {
             logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");

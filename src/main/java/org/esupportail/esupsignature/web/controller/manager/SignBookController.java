@@ -126,7 +126,6 @@ public class SignBookController {
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
 			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
 		User user = userService.getUserFromAuthentication();
-		signBookService.initCreatorSignBook();
     	if(!userService.isUserReady(user)) {
 			return "redirect:/user/users/?form";
 		}
@@ -293,7 +292,7 @@ public class SignBookController {
 
 	@PostMapping(value = "/add-step/{id}")
 	public String addStep(@PathVariable("id") Long id,
-						  @RequestParam("signBookNames") List<String> singBookNames,
+						  @RequestParam("signBookNames") List<String> recipientsEmail,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
 						  @RequestParam("signType") String signType,
 						  RedirectAttributes redirectAttrs) {
@@ -304,16 +303,10 @@ public class SignBookController {
 			return "redirect:/manager/signbooks/" + id;
 		}
 		WorkflowStep workflowStep = new WorkflowStep();
-		for(String signBookName : singBookNames) {
-			if(signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user).size() > 0) {
-				SignBook signBookToAdd = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user).get(0);
-				workflowStep.getSignBooks().put(signBookToAdd.getId(), false);
-			} else {
-				if(signBookRepository.findByName(signBookName).size() > 0 ) {
-					SignBook signBookToAdd = signBookRepository.findByName(signBookName).get(0);
-					workflowStep.getSignBooks().put(signBookToAdd.getId(), false);
-
-				}
+		for(String recipientEmail : recipientsEmail) {
+			if(userRepository.countByEmail(recipientEmail) > 0) {
+				User recipientUserToAdd = userRepository.findByEmail(recipientEmail).get(0);
+				workflowStep.getRecipients().put(recipientUserToAdd.getId(), false);
 			}
 		}
 		if(allSignToComplete ==null) {
@@ -331,48 +324,20 @@ public class SignBookController {
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
 	public String removeStepRecipient(@PathVariable("id") Long id,
 									  @PathVariable("workflowStepId") Long workflowStepId,
-									  @RequestParam(value = "recipientName") String recipientName,
+									  @RequestParam(value = "recipientEmail") String recipientEmail,
 									  RedirectAttributes redirectAttrs, HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignBook signBook = signBookRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
 		if(user.getEppn().equals(signBook.getCreateBy())) {
-			SignBook signBookToRemove = signBookRepository.findByName(recipientName).get(0);
-			workflowStep.getSignBooks().remove(signBookToRemove.getId());
+			User recipientUserToRemove = userRepository.findByEmail(recipientEmail).get(0);
+			workflowStep.getRecipients().remove(recipientUserToRemove.getId());
 			workflowStepRepository.save(workflowStep);
 		} else {
 			logger.warn(user.getEppn() + " try to move " + signBook.getId() + " without rights");
 		}
 		return "redirect:/manager/signbooks/" + id + "#" + workflowStep.getId();
-	}
-
-	@RequestMapping(value = "/send-to-signbook/{id}/{workflowStepId}", method = RequestMethod.GET)
-	public String sendToSignBook(@PathVariable("id") Long id,
-								 @PathVariable("workflowStepId") Long workflowStepId,
-								 @RequestParam(value = "signBookNames", required = true) String[] signBookNames,
-								 RedirectAttributes redirectAttrs, HttpServletRequest request) {
-		User user = userService.getUserFromAuthentication();
-		user.setIp(request.getRemoteAddr());
-		SignBook signBook = signBookRepository.findById(id).get();
-		if(user.getEppn().equals(signBook.getCreateBy())) {
-			WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-			for(String signBookName : signBookNames) {
-				if(signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user).size() > 0) {
-					SignBook signBookToAdd = signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user).get(0);
-					workflowStep.getSignBooks().put(signBookToAdd.getId(), false);
-				} else {
-					if(signBookRepository.findByName(signBookName).size() > 0 ) {
-						SignBook signBookToAdd = signBookRepository.findByName(signBookName).get(0);
-						workflowStep.getSignBooks().put(signBookToAdd.getId(), false);
-
-					}
-				}
-			}
-		} else {
-			logger.warn(user.getEppn() + " try to move " + signBook.getId() + " without rights");
-		}
-		return "redirect:/manager/signbooks/" + id;
 	}
 
 	@RequestMapping(value = "/toggle-need-all-sign/{id}/{step}", method = RequestMethod.GET)

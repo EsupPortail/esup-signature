@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.*;
 
@@ -57,16 +58,8 @@ public class SignBookService {
     }
 
     public void initCreatorSignBook() {
-        if (signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList("creator"), SignBookType.system) == 0) {
-            SignBook signBook = new SignBook();
-            signBook.setName("Créateur de la demande");
-            signBook.setRecipientEmails(Arrays.asList("creator"));
-            signBook.setCreateDate(new Date());
-            signBook.setModelFile(null);
-            signBook.setSignBookType(SignBookType.system);
-            signBook.setSourceType(DocumentIOType.none);
-            signBook.setTargetType(DocumentIOType.none);
-            signBookRepository.save(signBook);
+        if (userRepository.countByEppn("creator") == 0) {
+            User creator = userService.createUser("creator", "Createur de la demande", "", "");
 
             SignBook signBookWorkflow = new SignBook();
             signBookWorkflow.setName("Ma signature");
@@ -79,7 +72,7 @@ public class SignBookService {
             WorkflowStep workflowStep = new WorkflowStep();
             workflowStep.setName("Ma signature");
             workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
-            workflowStep.getSignBooks().put(signBook.getId(), false);
+            workflowStep.getRecipients().put(creator.getId(), false);
             workflowStepRepository.save(workflowStep);
 
             signBookWorkflow.getWorkflowSteps().add(workflowStep);
@@ -233,16 +226,15 @@ public class SignBookService {
         signBookRepository.save(signBook);
     }
 
-    public SignBook getSignBookBySignRequestAndUser(SignRequest signRequest, User user) {
-        if (signRequest.getCurrentWorkflowStep() != null && signRequest.getCurrentWorkflowStep().getSignBooks().size() > 0) {
-            for (Map.Entry<Long, Boolean> signBookId : signRequest.getCurrentWorkflowStep().getSignBooks().entrySet()) {
-                SignBook signBook = signBookRepository.findById(signBookId.getKey()).get();
-                if (signBook.getRecipientEmails().contains(user.getEmail()) && signRequest.getCurrentWorkflowStep().getSignBooks().containsKey(signBookId.getKey())) {
-                    return signBook;
+    public boolean isUserInWorkflow(SignRequest signRequest, User user) {
+        if (signRequest.getCurrentWorkflowStep() != null && signRequest.getCurrentWorkflowStep().getRecipients().size() > 0) {
+            for (Map.Entry<Long, Boolean> userId : signRequest.getCurrentWorkflowStep().getRecipients().entrySet()) {
+                if (userId.getKey().equals(user.getId())) {
+                    return true;
                 }
             }
         }
-        return null;
+        return false;
     }
 
     public SignBook getUserSignBook(User user) {

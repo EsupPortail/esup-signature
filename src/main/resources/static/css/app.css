@@ -387,19 +387,12 @@ input:checked + .slider:before {
     -moz-transform:rotate(var(--angle));
 }
 
-.angle--2 {
-    -o-transform:rotate(-3deg);
-    -webkit-transform:rotate(-3deg);
-    -moz-transform:rotate(-3deg);
-}
-
 .postitarea
 {
     width:100%;
     min-height: 60%;
     font-family:"Reenie Beanie",arial,sans-serif;
     font-size:150%;
-    border:1px solid #999999;
     margin:5px 0;
     padding:3px;
 }
