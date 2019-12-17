@@ -1,5 +1,5 @@
 <!doctype html>
-<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
@@ -12,27 +12,23 @@
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
 
-                <button title="Modifier les paramètres" type="button" th:onclick="'location.href=\'/manager/signbooks/' + ${signBook.id} + '?form\''" class="mb-1 col-12 btn btn-warning text-left">
+                <button title="Modifier les paramètres" type="button" th:onclick="'location.href=\'/manager/workflows/' + ${workflow.id} + '?form\''" class="mb-1 col-12 btn btn-warning text-left">
                 <i class="far fa-edit"></i><span class="sidebar-label"> Modifier les paramètres</span>
             </button>
-            <form th:action="'/manager/signbooks/' + ${signBook.id}" th:method="delete">
+            <form th:action="'/manager/workflows/' + ${workflow.id}" th:method="delete">
                 <button title="Supprimer" type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="mb-1 col-12 btn btn-danger text-left">
                     <i class="fas fa-trash"></i><span class="sidebar-label"> Supprimer</span>
                 </button>
             </form>
-            <button title="Ajouter une étape" th:if="${signBook.signBookType.name() == 'workflow'}" type="button" class="mb-1 col-12 btn btn-primary text-left"
+            <button title="Ajouter une étape" type="button" class="mb-1 col-12 btn btn-primary text-left"
                     data-toggle="modal" data-target="#addStep">
                 <i class="fa fa-shoe-prints"></i><span class="sidebar-label"> Ajouter une étape</span>
             </button>
-            <a th:if="${signBook.sourceType.name() != 'none'}" class="mb-1 col-12 btn btn-primary text-left" th:href="'/manager/signbooks/get-files-from-source/' + ${id}">
+            <a th:if="${workflow.sourceType.name() != 'none'}" class="mb-1 col-12 btn btn-primary text-left" th:href="'/manager/workflows/get-files-from-source/' + ${id}">
                 <i class="fas fa-file-import"></i> Importer manuellement
             </a>
-            <button title="Ajouter un destinataire" th:if="${signBook.signBookType.name() == 'group'}" type="button" class="mb-1 col-12 btn btn-primary text-left"
-                    data-toggle="modal" data-target="#addRecipients">
-                <i class="fa fa-plus"></i><span class="sidebar-label"> Ajouter un destinataire</span>
-            </button>
             <button title="Retour" type="button" class="mb-1 col-12 btn btn-light text-left"
-                    value="Retour" onclick="location.href='/manager/signbooks'">
+                    value="Retour" onclick="location.href='/manager/workflows'">
                 <i class="fas fa-door-open"></i><span class="sidebar-label"> Retour à la liste</span>
             </button>
             </div>
@@ -41,58 +37,26 @@
             <nav aria-label="breadcrumb" class="nav justify-content-between">
                 <div class="navbar-nav col-12">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/manager">Liste des
-                            parapheurs</a></li>
-                        <li aria-current="page" class="breadcrumb-item active">Parapheur
-                            : <span th:text="${signBook.name}"></span>
+                        <li class="breadcrumb-item"><a href="/manager">Circuit de visas</a></li>
+                        <li aria-current="page" class="breadcrumb-item active">Circuit
+                            : <span th:text="${workflow.name}"></span>
                         </li>
                     </ol>
                 </div>
             </nav>
             <div class="card bg-light rounded-0">
-                <div class="card-header">Parapheur : <span th:text="${signBook.name}"></span></div>
+                <div class="card-header">Parapheur : <span th:text="${workflow.name}"></span></div>
                 <div class="card-body">
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Description</dt>
-                        <dd th:text="${signBook.description}"></dd>
+                        <dd th:text="${workflow.description}"></dd>
                     </dl>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Type de parapheur</dt>
-                        <dd th:text="#{'signbook.signbooktype.' + ${signBook.signBookType}}"></dd>
-                    </dl>
-                    <div th:if="${signBook.signBookType.name() == 'workflow'}">
-                        <div th:replace="manager/signbooks/cards/stepscard :: stepscard"></div>
-                    </div>
-                    <div th:if="${signBook.signBookType.name() == 'group'}">
-                        <dl class="row border-bottom m-0">
-                            <dt class="col-lg-5">Destinataires</dt>
-                            <dd>
-                                <div class="alert alert-dark col-12">
-                                    <table class="table table-sm table-striped">
-                                    <th:block th:each="recipientEmail : ${signBook.recipientEmails}">
-                                        <tr>
-                                        <td><i class="fas fa-inbox"></i></td>
-                                        <td><span th:text="${recipientEmail}"></span></td>
-                                        <td>
-                                            <form th:action="'/manager/signbooks/remove-recipient/' + ${id}" th:method="delete">
-                                                <input type="hidden" name="recipientEmail" th:value="${recipientEmail}">
-                                                <button type="submit" class="btn btn-danger" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </td>
-                                        </tr>
-                                    </th:block>
-                                    </table>
-                                </div>
-                            </dd>
-                        </dl>
-                    </div>
+                    <div th:replace="manager/workflows/cards/stepscard :: stepscard"></div>
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Gestionnaire(s) du parapheur</dt>
                         <dd>
                             <div class="alert alert-dark col-12">
-                                <th:block th:each="moderatorEmail : ${signBook.moderatorEmails}">
+                                <th:block th:each="moderatorEmail : ${workflow.moderatorEmails}">
                                     <i class="fas fa-users-cog"></i> ${moderatorEmail}
                                     <br/>
                                 </th:block>
@@ -101,23 +65,23 @@
                     </dl>
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Protocole pour la source des documents</dt>
-                        <dd th:text="#{'signbook.documentiotype.' + ${signBook.sourceType}}"></dd>
+                        <dd th:text="#{'signbook.documentiotype.' + ${workflow.sourceType}}"></dd>
                     </dl>
-                    <div th:if="${signBook.sourceType.name() != 'none'}">
+                    <div th:if="${workflow.sourceType.name() != 'none'}">
                         <dl class="row border-bottom m-0">
                             <dt class="col-lg-5">Lien pour la source des documents</dt>
-                            <dd th:text="${signBook.documentsSourceUri}"></dd>
+                            <dd th:text="${workflow.documentsSourceUri}"></dd>
                         </dl>
                     </div>
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Protocole pour la destination des documents
                         </dt>
-                        <dd th:text="#{'signbook.documentiotype.' + ${signBook.targetType}}"></dd>
+                        <dd th:text="#{'signbook.documentiotype.' + ${workflow.targetType}}"></dd>
                     </dl>
-                    <div th:if="${signBook.targetType.name() != 'none'}">
+                    <div th:if="${workflow.targetType.name() != 'none'}">
                         <dl class="row border-bottom m-0">
                             <dt class="col-lg-5">Lien pour la destination des documents</dt>
-                            <dd th:text="${signBook.documentsTargetUri}"></dd>
+                            <dd th:text="${workflow.documentsTargetUri}"></dd>
                         </dl>
                     </div>
                 </div>
@@ -125,15 +89,15 @@
             <div class="modal fade" id="addStep" tabindex="-1" role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
-                        <form th:action="'/manager/signbooks/add-step/' + ${id}" method="post">
+                        <form th:action="'/manager/workflows/add-step/' + ${id}" method="post">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="addStepLabel">Ajouter une étape</h5>
                             </div>
                             <div class="modal-body">
                                 <div class="input-group">
-                                    <select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple" required="required">
-                                        <th:block th:each="signBook : ${allSignBooks}">
-                                            <option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
+                                    <select onchange="checkNbRecipients();" name="recipientsEmail" id="recipientsEmail" size="5" multiple="multiple" required="required">
+                                        <th:block th:each="workflow : ${allSignBooks}">
+                                            <option th:value="${workflow.name}" th:text="${workflow.name} + ' (' + ${workflow.signBookType} + ')'"></option>
                                         </th:block>
                                     </select>
                                 </div>
@@ -227,79 +191,16 @@
                 </div>
             </div>
 
-            <div class="modal fade" id="addRecipients" tabindex="-1" role="dialog" aria-labelledby="addRecipientsLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <form th:action="'/manager/signbooks/add-recipients/' + ${id}" method="post">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="addRecipientsLabel">Ajouter un destinataire</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <div th:if="${signBook.signBookType.name() == 'group'}" class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_recipientemails">
-                                    <label for="recipientemailsSelect"> <strong> Destinataires </strong>
-                                        <button class="btn btn-sm btn-info" data-target="#collapseHelp2" data-toggle="collapse" type="button">
-                                            <i class="fas fa-info-circle"></i>
-                                        </button>
-                                        <div class="collapse" id="collapseHelp2">
-                                            <div class="alert alert-info"></div>
-                                        </div>
-                                    </label>
-                                    <select id="recipientemailsSelect" multiple="multiple" name="recipientEmails" required="required"></select>
-                                    <script type="text/javascript">
-                                        new SlimSelect({
-                                            select: '#recipientemailsSelect',
-                                            placeholder: 'Choisir un ou plusieurs utilisateurs',
-                                            searchText: 'Aucun résultat',
-                                            searchPlaceholder: 'Rechercher',
-                                            searchHighlight: true,
-                                            searchFilter: (option, search) => {
-                                                return true;
-                                            },
-                                            ajax: function (search, callback) {
-                                                if (search.length < 3) {
-                                                    callback('Merci de saisir au moins 3 caractères')
-                                                    return
-                                                }
-                                                fetch('/ws/searchLdap?searchString=' + search)
-                                                    .then(function (response) {
-                                                        return response.json()
-                                                    })
-                                                    .then(function (json) {
-                                                        let data = []
-                                                        for (let i = 0; i < json.length; i++) {
-                                                            data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
-                                                        }
-                                                        callback(data)
-                                                    })
-                                                    .catch(function (error) {
-                                                        callback(false)
-                                                    })
-                                            }
-
-                                        });
-                                    </script>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                <button type="submit" class="btn btn-primary">Ajouter</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 </main>
 <script language="JavaScript">
-    var testSignBookName = document.getElementById("signBookNames");
+    var testSignBookName = document.getElementById("recipientsEmail");
 
     if (testSignBookName != null) {
-        var signBookNamesSelect = new SlimSelect({
-            select: '#signBookNames',
+        new SlimSelect({
+            select: '#recipientsEmail',
             placeholder: 'Choisir un ou plusieurs parapheur(s)',
             searchText: 'Aucun résultat',
             searchPlaceholder: 'Rechercher',

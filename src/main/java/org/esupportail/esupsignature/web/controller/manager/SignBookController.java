@@ -151,13 +151,12 @@ public class SignBookController {
 	
 	@PostMapping(produces = "text/html")
 	public String create(@RequestParam(name = "name") String name,
-						 @RequestParam(name = "signBookType") String signBookType,
 			             @RequestParam(name = "multipartFile", required = false) MultipartFile multipartFile,
 						 Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
 		SignBook newSignBook = new SignBook();
 		newSignBook.setName(name);
-		newSignBook.setSignBookType(SignBookType.valueOf(signBookType));
+		newSignBook.setSignBookType(SignBookType.group);
 		SignBook signBook;
 		try {
 			signBook = signBookService.createSignBook(newSignBook, user, multipartFile, false);

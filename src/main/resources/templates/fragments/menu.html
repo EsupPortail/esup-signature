@@ -13,7 +13,16 @@
 		<ul class="navbar-nav">
 			<li class="nav-item"><a title="Utilisateur" href="/user/signrequests/" th:class="'nav-link ' + ${userMenu}">Utilisateur</a></li>
 			<th:block th:if="${#authorization != null}">
-				<li class="nav-item" sec:authorize="hasRole('ROLE_MANAGER')"><a title="Manager" href="/manager/signbooks" th:class="'nav-link ' + ${managerMenu}">Gestionnaire</a></li>
+				<li class="nav-item" sec:authorize="hasRole('ROLE_MANAGER')"></li>
+				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						Gestionnaire
+					</a>
+					<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+						<a class="nav-link" title="Parapheurs" href="/manager/signbooks" th:class="'nav-link ' + ${managerMenu}">Parapheurs</a>
+						<a class="nav-link" title="Circuits de visas" href="/manager/workflows" th:class="'nav-link ' + ${managerMenu}">Circuits de visas</a>
+					</div>
+				</li>
 				<li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')"><a title="Admin" href="/admin/signrequests" th:class="'nav-link ' + ${adminMenu}">Admin</a></li>
 			</th:block>
 		</ul>

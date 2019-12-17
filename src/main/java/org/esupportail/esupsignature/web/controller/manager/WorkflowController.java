@@ -33,8 +33,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-@CrossOrigin(origins = "*")
-@RequestMapping("/manager/workflow")
+@RequestMapping("/manager/workflows")
 @Controller
 @Transactional
 @Scope(value = "session")
@@ -98,6 +97,7 @@ public class WorkflowController {
 				}
 			}
 		}
+		signRequestService.setWorkflowsLabels(workflow.getWorkflowSteps());
 		uiModel.addAttribute("workflow", workflow);
 		uiModel.addAttribute("signTypes", SignType.values());
 		uiModel.addAttribute("itemId", id);
@@ -135,25 +135,9 @@ public class WorkflowController {
 		uiModel.addAttribute("workflows", workflows);
 		return "manager/workflows/list";
 	}
-	
-    @RequestMapping(params = "form", produces = "text/html")
-    public String createForm(@RequestParam(required = false) String type, Model uiModel) {
-    	populateEditForm(uiModel, new Workflow());
-		List<Workflow> workflows = new ArrayList<>();
-		workflows.addAll(workflowRepository.findByExternal(false));
-		uiModel.addAttribute("allWorkflows", workflows);
-		uiModel.addAttribute("type", type);
-		if(type.equals("workflow")) {
-			return "manager/workflows/create-workflow";
-		} else {
-			return "manager/workflows/create";
-		}
 
-    }
-	
 	@PostMapping(produces = "text/html")
 	public String create(@RequestParam(name = "name") String name,
-						 @RequestParam(name = "workflowType") String workflowType,
 			             @RequestParam(name = "multipartFile", required = false) MultipartFile multipartFile,
 						 Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
@@ -251,7 +235,7 @@ public class WorkflowController {
 
 	@PostMapping(value = "/add-step/{id}")
 	public String addStep(@PathVariable("id") Long id,
-						  @RequestParam("workflowNames") List<String> recipientsEmail,
+						  @RequestParam("recipientsEmail") List<String> recipientsEmail,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
 						  @RequestParam("signType") String signType,
 						  RedirectAttributes redirectAttrs) {
