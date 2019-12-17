@@ -120,9 +120,6 @@ public class WorkflowController {
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
 			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
 		User user = userService.getUserFromAuthentication();
-    	if(!userService.isUserReady(user)) {
-			return "redirect:/user/users/?form";
-		}
     	if(sortFieldName == null) {
     		sortFieldName = "workflowType";
     	}

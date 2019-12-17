@@ -53,10 +53,6 @@ public class UserService implements EvaluationContextExtension {
 		userRepository.findAll().forEach(e -> list.add(e));
 		return list;
 	}
-	
-	public boolean isUserReady(User user) {
-		return signBookService.getUserSignBook(user) != null;
-	}
 
 	public User createUser(String email) {
 		List<PersonLdap> persons =  personDao.getPersonLdaps("mail", email);
@@ -97,9 +93,6 @@ public class UserService implements EvaluationContextExtension {
 		user.setEmail(email);
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
-		if (signBookRepository.countByRecipientEmailsAndSignBookType(recipientEmails, SignBookType.user) == 0) {
-			signBookService.createUserSignBook(user);
-		}
 		userRepository.save(user);
 		return user;
 	}

@@ -1,15 +1,19 @@
 package org.esupportail.esupsignature.service.scheduler;
 
+import org.apache.fop.fonts.type1.AdobeStandardEncoding;
 import org.esupportail.esupsignature.dss.web.service.OJService;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -28,6 +32,12 @@ public class ScheduledTaskService {
 	private SignBookService signBookService;
 
 	@Resource
+	private WorkflowService workflowService;
+
+	@Resource
+	private WorkflowRepository workflowRepository;
+
+	@Resource
 	private SignRequestService signRequestService;
 
 	@Resource
@@ -42,9 +52,9 @@ public class ScheduledTaskService {
 	//@Scheduled(fixedRate = 100000)
 	@Transactional
 	public void scanAllSignbooksSources() throws EsupSignatureFsException {
-		List<SignBook> signBooks = signBookService.getAllSignBooks();
-		for(SignBook signBook : signBooks) {
-			signBookService.importFilesFromSource(signBook, getSchedulerUser());
+		Iterable<Workflow> workflows = workflowRepository.findAll();
+		for(Workflow workflow : workflows) {
+			workflowService.importFilesFromSource(workflow, getSchedulerUser());
 		}
 	}
 

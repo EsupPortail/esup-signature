@@ -23,9 +23,6 @@ public class OAuthAuthenticationSuccessHandler implements AuthenticationSuccessH
 	@Resource
 	private UserService userService;
 
-	@Resource
-	private SignBookService signBookService;
-
 	private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 	
 	@Override
@@ -36,7 +33,6 @@ public class OAuthAuthenticationSuccessHandler implements AuthenticationSuccessH
 		String prenom = defaultOidcUser.getAttributes().get("given_name").toString();
 		String email = defaultOidcUser.getAttributes().get("email").toString();
 		User user = userService.createUser(id, name, prenom, email);
-		signBookService.createUserSignBook(user);
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		String targetURL = defaultSavedRequest.getRedirectUrl();
         redirectStrategy.sendRedirect(request, response, targetURL);

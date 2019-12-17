@@ -1,7 +1,5 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.entity.*;
@@ -145,9 +143,6 @@ public class SignRequestController {
             @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, RedirectAttributes redirectAttrs, Model model) {
         User user = userService.getUserFromAuthentication();
         workflowService.initCreatorWorkflow();
-        if (user == null || !userService.isUserReady(user)) {
-            return "redirect:/user/users/?form";
-        }
 
         if (statusFilter != null) {
             if (!statusFilter.equals("all")) {
@@ -183,9 +178,6 @@ public class SignRequestController {
     @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
     public String updateForm(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
         User user = userService.getUserFromAuthentication();
-        if (!userService.isUserReady(user)) {
-            return "redirect:/user/users/?form";
-        }
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setSignedDocuments(signRequest.getSignedDocuments().stream().sorted(Comparator.comparing(Document::getCreateDate)).collect(Collectors.toList()));
         if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
@@ -228,9 +220,6 @@ public class SignRequestController {
     @RequestMapping(value = "/{id}", produces = "text/html")
     public String show(@PathVariable("id") Long id, Model model) throws Exception {
         User user = userService.getUserFromAuthentication();
-        if (!userService.isUserReady(user)) {
-            return "redirect:/user/users/?form";
-        }
         SignRequest signRequest = signRequestRepository.findById(id).get();
         model.addAttribute("signRequest", signRequest);
         if ((signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest))) {
@@ -264,15 +253,6 @@ public class SignRequestController {
         List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNull(id);
         model.addAttribute("logs", logs);
         return "user/signrequests/show";
-    }
-
-    @RequestMapping(params = "form", produces = "text/html")
-    public String createForm(Model model) {
-        populateEditForm(model, new SignRequest());
-        User user = userService.getUserFromAuthentication();
-        model.addAttribute("mySignBook", signBookService.getUserSignBook(user));
-        model.addAttribute("allSignBooks", signBookRepository.findByNotCreateBy("System"));
-        return "user/signrequests/create";
     }
 
     @PostMapping(produces = "text/html")
@@ -332,9 +312,6 @@ public class SignRequestController {
             Model model, HttpServletRequest request) throws IOException, SQLException {
 
         User user = userService.getUserFromAuthentication();
-        if (!userService.isUserReady(user)) {
-            return "redirect:/user/users/?form";
-        }
         if (signRequestRepository.countByName(token) > 0) {
             SignRequest signRequest = signRequestRepository.findByName(token).get(0);
             if ((signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) && signRequest.getStatus().equals(SignRequestStatus.pending)) {
@@ -408,8 +385,8 @@ public class SignRequestController {
             signRequestRepository.save(signRequest);
             signRequestService.addWorkflowStep(Arrays.asList(user.getEmail()), "Ma signature", true, signType, signRequest);
             signRequestService.pendingSignRequest(signRequest, user);
-            logger.info("adding new file into signRequest " + signRequest.getName());
-            return "redirect:/user/signrequests/sign-by-token/" + signRequest.getName();
+            logger.info("adding new file into signRequest " + signRequest.getToken());
+            return "redirect:/user/signrequests/sign-by-token/" + signRequest.getToken();
         } else {
             logger.warn("no file to import");
         }

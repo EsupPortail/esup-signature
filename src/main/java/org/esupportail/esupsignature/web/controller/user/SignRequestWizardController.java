@@ -120,7 +120,7 @@ public class SignRequestWizardController {
                 workflowStepRepository.save(workflowStep);
                 signRequest.getWorkflowSteps().add(workflowStep);
             }
-            model.addAttribute("allSignBooks", signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user));
+            //model.addAttribute("allSignBooks", signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user));
             model.addAttribute("workflowStep", signRequest.getWorkflowSteps().get(0));
             model.addAttribute("signTypes", SignType.values());
             model.addAttribute("step", 0);

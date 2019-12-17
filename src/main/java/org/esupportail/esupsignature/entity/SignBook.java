@@ -55,41 +55,24 @@ public class SignBook {
     
     @Size(max = 500)
     private String description;
-    
-    @Enumerated(EnumType.STRING)
-    private DocumentIOType sourceType;
-    
-    private String documentsSourceUri;
-    
-    @ElementCollection(targetClass=String.class)
-    private List<String> moderatorEmails = new ArrayList<>();
 
     @ElementCollection(targetClass=String.class)
     private List<String> recipientEmails = new ArrayList<>();
-
-    @Enumerated(EnumType.STRING)
-    private DocumentIOType targetType;
-    
-    private String documentsTargetUri;    
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL }, orphanRemoval = true)
-    private Document modelFile = new Document();
 
 	@Enumerated(EnumType.STRING)
 	private SignBookType signBookType;
 	
 	public enum SignBookType {
-		system, user, group;
+		system, group, workflow;
 	}
 
-    public void setSourceType(DocumentIOType sourceType) {
-        this.sourceType = sourceType;
-    }
-    
-    public void setTargetType(DocumentIOType targetType) {
-        this.targetType = targetType;
-    }
-    
+	@OneToMany
+    @OrderColumn
+    private List<SignRequest> signRequests = new ArrayList<>();
+
+    @ManyToOne
+    private Workflow workflow;
+
     public void setSignBookType(SignBookType signBookType) {
         this.signBookType = signBookType;
     }
@@ -141,65 +124,11 @@ public class SignBook {
     public void setDescription(String description) {
         this.description = description;
     }
-    
-    public DocumentIOType getSourceType() {
-        return this.sourceType;
-    }
-    
-    public String getDocumentsSourceUri() {
-        return this.documentsSourceUri;
-    }
-    
-    public void setDocumentsSourceUri(String documentsSourceUri) {
-        this.documentsSourceUri = documentsSourceUri;
-    }
-    
-    public List<String> getModeratorEmails() {
-        return this.moderatorEmails;
-    }
-    
-    public void setModeratorEmails(List<String> moderatorEmails) {
-        this.moderatorEmails = moderatorEmails;
-    }
-    
+
     public List<String> getRecipientEmails() {
         return this.recipientEmails;
     }
     
-    public void setRecipientEmails(List<String> recipientEmails) {
-        this.recipientEmails = recipientEmails;
-    }
-
-    public DocumentIOType getTargetType() {
-        return this.targetType;
-    }
-    
-    public String getDocumentsTargetUri() {
-        return this.documentsTargetUri;
-    }
-    
-    public void setDocumentsTargetUri(String documentsTargetUri) {
-        this.documentsTargetUri = documentsTargetUri;
-    }
-    
-    public Document getModelFile() {
-        return this.modelFile;
-    }
-    
-    public void setModelFile(Document modelFile) {
-        this.modelFile = modelFile;
-    }
-
-    /*
-    public SignRequestParams getSignRequestParams() {
-        return this.signRequestParams;
-    }
-    
-    public void setSignRequestParams(SignRequestParams signRequestParams) {
-        this.signRequestParams = signRequestParams;
-    }
-    */
-
     public SignBookType getSignBookType() {
         return this.signBookType;
     }
@@ -211,5 +140,20 @@ public class SignBook {
 	public void setExternal(Boolean external) {
 		this.external = external;
 	}
-    
+
+    public List<SignRequest> getSignRequests() {
+        return signRequests;
+    }
+
+    public void setSignRequests(List<SignRequest> signRequests) {
+        this.signRequests = signRequests;
+    }
+
+    public Workflow getWorkflow() {
+        return workflow;
+    }
+
+    public void setWorkflow(Workflow workflow) {
+        this.workflow = workflow;
+    }
 }

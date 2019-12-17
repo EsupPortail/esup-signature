@@ -81,21 +81,6 @@ public class SignBookController {
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
 		SignBook signBook = signBookRepository.findById(id).get();
-		Document modelFile = signBook.getModelFile();
-		if (modelFile != null && modelFile.getSize() != null) {
-			uiModel.addAttribute("documentId", modelFile.getId());
-			if(modelFile.getContentType().equals("application/pdf")) {
-				PDDocument pdDocument = PDDocument.load(modelFile.getInputStream());
-				PdfParameters pdfParameters = pdfService.getPdfParameters(pdDocument);
-				uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-				int[] signFieldCoord = pdfService.getSignFieldCoord(pdDocument, 0);
-				if(signFieldCoord != null && signFieldCoord.length > 0) {
-					uiModel.addAttribute("containsSignatureFields", true);
-				} else {
-					uiModel.addAttribute("containsSignatureFields", false);
-				}
-			}
-		}
 		uiModel.addAttribute("signBook", signBook);
 		uiModel.addAttribute("signTypes", SignType.values());
 		uiModel.addAttribute("itemId", id);
@@ -107,9 +92,8 @@ public class SignBookController {
 		uiModel.addAttribute("users", userRepository.findAll());
 		uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
 		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
-		List<SignBookType> signBookTypes = new LinkedList<SignBookType>(Arrays.asList(SignBookType.values()));
+		List<SignBookType> signBookTypes = new LinkedList<>(Arrays.asList(SignBookType.values()));
 		signBookTypes.remove(SignBookType.system);
-		signBookTypes.remove(SignBookType.user);
 		uiModel.addAttribute("signBookTypes", signBookTypes);
 		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
 		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
@@ -122,9 +106,6 @@ public class SignBookController {
 			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
 			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
 		User user = userService.getUserFromAuthentication();
-    	if(!userService.isUserReady(user)) {
-			return "redirect:/user/users/?form";
-		}
     	if(sortFieldName == null) {
     		sortFieldName = "signBookType";
     	}
@@ -159,7 +140,7 @@ public class SignBookController {
 		newSignBook.setSignBookType(SignBookType.group);
 		SignBook signBook;
 		try {
-			signBook = signBookService.createSignBook(newSignBook, user, multipartFile, false);
+			signBook = signBookService.createSignBook(newSignBook, user, false);
 		} catch (EsupSignatureException e) {
 			redirectAttrs.addAttribute("messageError", "Ce parapheur existe déjà");
 			return "redirect:/manager/signbooks/";
@@ -195,13 +176,9 @@ public class SignBookController {
     public String updateForm(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
 		SignBook signBook = signBookRepository.findById(id).get();
-		if(signBook.getSignBookType().equals(SignBookType.user)) {
+		if (!signBookService.checkUserManageRights(user, signBook)) {
+			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/signbooks/" + id;
-		} else {
-			if (!signBookService.checkUserManageRights(user, signBook)) {
-				redirectAttrs.addFlashAttribute("messageCustom", "access error");
-				return "redirect:/manager/signbooks/" + id;
-			}
 		}
 		populateEditForm(uiModel, signBook);
         return "manager/signbooks/update";
@@ -212,10 +189,6 @@ public class SignBookController {
 		User user = userService.getUserFromAuthentication();
 		SignBook signBookToUpdate = signBookRepository.findById(signBook.getId()).get();
 		if(signBookToUpdate.getCreateBy().equals(user.getEppn())) {
-			signBookToUpdate.setSourceType(signBook.getSourceType());
-			signBookToUpdate.setTargetType(signBook.getTargetType());
-			signBookToUpdate.setDocumentsSourceUri(signBook.getDocumentsSourceUri());
-			signBookToUpdate.setDocumentsTargetUri(signBook.getDocumentsTargetUri());
 			signBookToUpdate.setDescription(signBook.getDescription());
 			signBookToUpdate.setUpdateBy(user.getEppn());
 			signBookToUpdate.setUpdateDate(new Date());
@@ -229,16 +202,10 @@ public class SignBookController {
     public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, Model uiModel, RedirectAttributes redirectAttrs) {
     	User user = userService.getUserFromAuthentication();
     	SignBook signBook = signBookRepository.findById(id).get();
-    		populateEditForm(uiModel, signBook);
-		if(signBook.getSignBookType().equals(SignBookType.user)) {
-			logger.error("can not delete user signBook");
-			redirectAttrs.addFlashAttribute("messageCustom", "Impossible de supprimer un parapheur utilisateur");
+		populateEditForm(uiModel, signBook);
+		if (!signBookService.checkUserManageRights(user, signBook)) {
+			redirectAttrs.addFlashAttribute("messageCustom", "Non autorisé");
 			return "redirect:/manager/signbooks/" + id;
-		} else {
-			if (!signBookService.checkUserManageRights(user, signBook)) {
-				redirectAttrs.addFlashAttribute("messageCustom", "Non autorisé");
-				return "redirect:/manager/signbooks/" + id;
-			}    
 		}
 		signBookService.deleteSignBook(signBook);
         uiModel.asMap().clear();
@@ -312,24 +279,6 @@ public class SignBookController {
 		}
 		signBook.setUpdateBy(user.getEppn());
 		signBook.setUpdateDate(new Date());
-		return "redirect:/manager/signbooks/" + id;
-	}
-
-	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
-	public String getFileFromSource(@PathVariable("id") Long id, RedirectAttributes redirectAttrs) {
-		User user = userService.getUserFromAuthentication();
-		SignBook signBook = signBookRepository.findById(id).get();
-
-		if (!signBook.getCreateBy().equals(user.getEppn())) {
-			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/manager/signbooks/" + id;
-		}
-		List<FsFile> fsFiles = signBookService.importFilesFromSource(signBook, user);
-		if(fsFiles.size() == 0) {
-			redirectAttrs.addFlashAttribute("messageError", "Aucun fichier à importer");
-		} else {
-			redirectAttrs.addFlashAttribute("messageInfo", fsFiles.size() + " ficher(s) importé(s)");
-		}
 		return "redirect:/manager/signbooks/" + id;
 	}
 

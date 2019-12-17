@@ -107,10 +107,6 @@ public class AdminSignRequestController {
 			@RequestParam(value = "messageError", required = false) String messageError,
 			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, RedirectAttributes redirectAttrs, Model model) {
 		User user = userService.getUserFromAuthentication();
-		if (user == null || !userService.isUserReady(user)) {
-			return "redirect:/user/users/?form";
-		}
-		
 		if(statusFilter != null) {
 			if(!statusFilter.equals("all")) {
 				this.statusFilter = SignRequestStatus.valueOf(statusFilter);
@@ -134,9 +130,6 @@ public class AdminSignRequestController {
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
 		User user = userService.getUserFromAuthentication();
-		if(!userService.isUserReady(user)) {
-			return "redirect:/user/users/?form";
-		}
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
 			Document toDisplayDocument = null;
@@ -268,41 +261,6 @@ public class AdminSignRequestController {
 			logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
 		}
 	}
-
-	@RequestMapping(value = "/send-to-signbook/{id}", method = RequestMethod.GET)
-	public String sendToSignBook(@PathVariable("id") Long id,
-			@RequestParam(value = "signBookNames", required = true) String[] signBookNames,
-			@RequestParam(value = "comment", required = false) String comment,
-			HttpServletResponse response,
-			RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
-		User user = userService.getUserFromAuthentication();
-		user.setIp(request.getRemoteAddr());
-		SignRequest signRequest = signRequestRepository.findById(id).get();
-		if(signRequest.getCreateBy().equals(user.getEppn())) {
-			if(signBookNames != null && signBookNames.length > 0) {
-				for(String signBookName : signBookNames) {
-					SignBook signBook;
-					if(signBookRepository.countByName(signBookName) == 0 && signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user) == 0) {
-						User recipientUser = userService.createUser(signBookName);
-						signBook = signBookService.getUserSignBook(recipientUser);
-						//recipientEmails.add(signBookName);
-					} else {
-						if(signBookRepository.countByName(signBookName) > 0) {
-							signBook = signBookRepository.findByName(signBookName).get(0);
-						} else {
-							signBook = signBookService.getUserSignBookByRecipientEmail(signBookName);
-						}
-					}
-					//signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-					signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé au parapheur " + signBook.getName(), user, "SUCCESS", comment);
-				}
-			}
-		} else {
-			logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
-		}
-		return "redirect:/admin/signrequests/" + id;
-	}
-
 
 	@RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
 	public String complete(@PathVariable("id") Long id,

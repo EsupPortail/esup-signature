@@ -101,8 +101,8 @@ public class WsController {
             SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd);
             signRequest.setTitle(fileService.getNameOnly(documentToAdd.getFileName()));
             signRequestRepository.save(signRequest);
-            logger.info("adding new file into signRequest " + signRequest.getName());
-            return signRequest.getName();
+            logger.info("adding new file into signRequest " + signRequest.getToken());
+            return signRequest.getToken();
         } else {
             logger.warn("no file to import");
         }
@@ -130,11 +130,11 @@ public class WsController {
             try {
                 SignRequest signRequest = signRequestRepository.findById(log.getSignRequestId()).get();
                 for(Doc doc : signedFiles) {
-                    if (doc.getToken().equals(signRequest.getName())) {
+                    if (doc.getToken().equals(signRequest.getToken())) {
                         continue logs;
                     }
                 }
-                signedFiles.add(new Doc(signRequest.getTitle(), signRequest.getSignedDocuments().get(0).getContentType(), signRequest.getName(), signRequest.getStatus().name(), log.getLogDate()));
+                signedFiles.add(new Doc(signRequest.getTitle(), signRequest.getSignedDocuments().get(0).getContentType(), signRequest.getToken(), signRequest.getStatus().name(), log.getLogDate()));
             } catch (Exception e) {
                 logger.debug(e.getMessage());
             }
@@ -183,7 +183,7 @@ public class WsController {
         User user = userRepository.findByEmail(recipientEmail).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
         for (SignRequest signRequest : signRequestService.getTosignRequests(user)) {
-            signedFiles.add(new Doc(signRequest.getTitle(), signRequestService.getToSignDocuments(signRequest).get(0).getContentType(), signRequest.getName(), signRequest.getStatus().name(), signRequest.getCreateDate()));
+            signedFiles.add(new Doc(signRequest.getTitle(), signRequestService.getToSignDocuments(signRequest).get(0).getContentType(), signRequest.getToken(), signRequest.getStatus().name(), signRequest.getCreateDate()));
         }
         return signedFiles;
     }
@@ -209,14 +209,13 @@ public class WsController {
                 signBookService.deleteSignBook(signBook);
             }
         }
-        return new ResponseEntity<String>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Transactional
     @RequestMapping(value = "/get-signed-file", method = RequestMethod.GET)
-    public ResponseEntity<Void> getSignedFile(@RequestParam String signBookName, @RequestParam String name, HttpServletResponse response, Model model) throws Exception {
+    public ResponseEntity<Void> getSignedFile(@RequestParam String signBookName, @RequestParam String name, HttpServletResponse response) {
         try {
-            SignBook signBook = signBookRepository.findByName(signBookName).get(0);
             SignRequest signRequest = signRequestRepository.findByName(signBookName).get(0);
             if (signRequest.getStatus().equals(SignRequestStatus.signed)) {
                 try {
@@ -246,7 +245,7 @@ public class WsController {
 
     @Transactional
     @RequestMapping(value = "/get-last-file", method = RequestMethod.GET)
-    public ResponseEntity<Void> getLastFile(@RequestParam String name, HttpServletResponse response, Model model) {
+    public ResponseEntity<Void> getLastFile(@RequestParam String name, HttpServletResponse response) {
         try {
             //TODO add user to check right
             SignRequest signRequest = signRequestRepository.findByName(name).get(0);
@@ -317,7 +316,7 @@ public class WsController {
     public String checkUserStatus(@RequestParam String eppn, HttpServletResponse response, Model model) throws JsonProcessingException {
         if (userRepository.countByEppn(eppn) > 0) {
             User user = userRepository.findByEppn(eppn).get(0);
-            return new ObjectMapper().writeValueAsString(userService.isUserReady(user));
+            return new ObjectMapper().writeValueAsString(true);
         } else {
             return new ObjectMapper().writeValueAsString(false);
         }
@@ -333,7 +332,7 @@ public class WsController {
             user.setIp(httpServletRequest.getRemoteAddr());
             if (signRequest.getStatus().equals(SignRequestStatus.signed)) {
                 try {
-                    signBookService.removeSignRequestFromSignBook(signRequest, signBook);
+                    signBookService.removeSignRequestFromSignBook(signBook, signRequest);
                     return new ResponseEntity<>(HttpStatus.OK);
                 } catch (Exception e) {
                     logger.error("get file error", e);

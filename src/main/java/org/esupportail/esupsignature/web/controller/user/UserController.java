@@ -107,7 +107,6 @@ public class UserController {
 		User user = userService.getUserFromAuthentication();
 		if(user != null) {
 	        model.addAttribute("user", user);
-        	model.addAttribute("signBook", signBookService.getUserSignBook(user));
         	model.addAttribute("signTypes", Arrays.asList(SignType.values()));
         	model.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
         	model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
@@ -115,15 +114,10 @@ public class UserController {
         	if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
 				model.addAttribute("referer", request.getHeader("referer"));
 			}
-
-        	if(userService.isUserReady(user)) {
-        		if(user.getSignImage() != null) {
-        			model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-        		}
-	        	return "user/users/update";
-	        } else {
-				return "user/users/create";
-	        }
+			if(user.getSignImage() != null) {
+				model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+			}
+			return "user/users/update";
 		} else {
 			user = new User();
 			model.addAttribute("user", user);
@@ -159,9 +153,6 @@ public class UserController {
             	documentRepository.delete(oldSignImage);
         	}
         }
-    	if(signBookService.getUserSignBook(user) == null) {
-    		signBookService.createUserSignBook(user);
-    	}
     	userToUpdate.setEmailAlertFrequency(emailAlertFrequency);
     	userToUpdate.setEmailAlertHour(emailAlertHour);
     	userToUpdate.setEmailAlertDay(emailAlertDay);

@@ -8,7 +8,7 @@
 			<li class="breadcrumb-item"><a href="/admin/signrequests">Liste
 					des demandes</a></li>
 			<li class="breadcrumb-item active" aria-current="page">Demande
-				de signature : <span th:text="${signRequest.name}"></span>
+				de signature : <span th:text="${signRequest.token}"></span>
 			</li>
 		</ol>
 		<div class="navbar-nav align-self-center">
@@ -135,7 +135,7 @@
 							<div th:if="${signRequest.status.name() == 'exported'}" class="alert alert-warning">
 							<small><span th:text="'Emplacement définitif : ' + ${signRequest.exportedDocumentURI}"></span></small>
 							<br>
-							<a class="btn btn-success" th:href="'/ws/get-last-file?name=' + ${signRequest.name}"><i class="fa fa-download"></i> Télécharger le document signé</a>
+							<a class="btn btn-success" th:href="'/ws/get-last-file?name=' + ${signRequest.token}"><i class="fa fa-download"></i> Télécharger le document signé</a>
 
 							</div>
 							<div th:if="${signRequest.status.name() == 'pending'}">

@@ -17,7 +17,7 @@ public class SignRequest {
     private Integer version;
 	
 	@Column(unique=true)
-	private String name;
+	private String token;
 	
 	private String title;
 	
@@ -48,13 +48,14 @@ public class SignRequest {
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
+    @ManyToOne
+    private SignBook parentSignBook;
+
     @OneToMany
     @OrderColumn
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
     private Integer currentWorkflowStepNumber = 1;
-
-    private String workflowName;
 
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;
@@ -96,12 +97,12 @@ public class SignRequest {
         this.version = version;
     }
 
-	public String getName() {
-        return this.name;
+	public String getToken() {
+        return this.token;
     }
 
-	public void setName(String name) {
-        this.name = name;
+	public void setToken(String token) {
+        this.token = token;
     }
 
 	public String getTitle() {
@@ -196,14 +197,6 @@ public class SignRequest {
         }
     }
 
-    public String getWorkflowName() {
-        return workflowName;
-    }
-
-    public void setWorkflowName(String workflowName) {
-        this.workflowName = workflowName;
-    }
-
     public DocumentIOType getTargetType() {
         return targetType;
     }
@@ -218,5 +211,13 @@ public class SignRequest {
 
     public void setDocumentsTargetUri(String documentsTargetUri) {
         this.documentsTargetUri = documentsTargetUri;
+    }
+
+    public SignBook getParentSignBook() {
+        return parentSignBook;
+    }
+
+    public void setParentSignBook(SignBook parentSignBook) {
+        this.parentSignBook = parentSignBook;
     }
 }

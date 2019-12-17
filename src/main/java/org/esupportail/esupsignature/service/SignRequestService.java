@@ -120,7 +120,7 @@ public class SignRequestService {
 	}
 	
 	public SignRequest createSignRequest(SignRequest signRequest, User user, List<Document> documents) {
-		signRequest.setName(String.valueOf(generateUniqueId()));
+		signRequest.setToken(String.valueOf(generateUniqueId()));
 		signRequest.setCreateBy(user.getEppn());
 		signRequest.setCreateDate(new Date());
 		signRequest.setStatus(SignRequestStatus.draft);
@@ -426,7 +426,7 @@ public class SignRequestService {
 	}
 
 	public void clearAllDocuments(SignRequest signRequest) {
-		logger.info("clear all documents from " + signRequest.getName());
+		logger.info("clear all documents from " + signRequest.getToken());
 		List<Document> originalDocuments = new ArrayList<Document>();
 		originalDocuments.addAll(signRequest.getOriginalDocuments());
 		signRequest.getOriginalDocuments().clear();
@@ -668,7 +668,6 @@ public class SignRequestService {
 			}
 			i++;
 		}
-		signRequest.setWorkflowName(workflow.getName());
 		signRequest.setTargetType(workflow.getTargetType());
 		signRequest.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
 		signRequestRepository.save(signRequest);

@@ -35,7 +35,7 @@
                         <span class="slider round"></span>
                     </label>
                 </div>
-                <a role="button" th:if="${signOk}" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
+                <a role="button" th:if="${signOk}" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.token}">
                     <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                 </a>
                 <a th:unless="${referer != null}" title="Abandonner" type="button" class="btn btn-light col-12 mb-1 text-left" value="Retour" href="/user/signrequests">

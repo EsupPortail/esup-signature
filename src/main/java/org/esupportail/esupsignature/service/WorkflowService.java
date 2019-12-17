@@ -44,6 +44,9 @@ public class WorkflowService {
     private SignRequestService signRequestService;
 
     @Resource
+    private SignBookService signBookService;
+
+    @Resource
     private DocumentService documentService;
 
     @Resource
@@ -162,7 +165,10 @@ public class WorkflowService {
                         }
                         List<String> workflowRecipientsEmails = new ArrayList<>();
                         workflowRecipientsEmails.add(user.getEmail());
+                        SignBook signBook = signBookService.createSignBook("Auto import : " + workflow.getName(), SignBook.SignBookType.workflow, user, false);
                         SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd);
+                        signBook.getSignRequests().add(signRequest);
+                        signRequest.setParentSignBook(signBook);
                         signRequest.setTitle(documentToAdd.getFileName());
                         signRequestRepository.save(signRequest);
                         signRequestService.importWorkflow(signRequest, workflow);
@@ -170,7 +176,7 @@ public class WorkflowService {
                         fsAccessService.remove(fsFile);
                     }
                 }
-            } catch (EsupSignatureFsException e) {
+            } catch (EsupSignatureFsException | EsupSignatureException e) {
                 throw new EsupSignatureRuntimeException("error on delete source file", e);
             }
         }
