@@ -343,7 +343,7 @@ function nextImage() {
 		document.getElementById("previous").classList.remove("disabled");
 		document.getElementById("previous").disabled = false
 	}
-	document.getElementById("signPageNumber").value = currentImagePage + 1;
+	document.getElementById("signPageNumber").value = currentImagePage;
 }
 
 function gotoImage(pageNumber) {
@@ -373,7 +373,7 @@ function previousImage() {
 		document.getElementById("next").classList.remove("disabled");
 		document.getElementById("next").disabled = false;
 	}
-	document.getElementById("signPageNumber").value = currentImagePage + 1;
+	document.getElementById("signPageNumber").value = currentImagePage;
 }
 
 function hideSigns(currentImagePage) {

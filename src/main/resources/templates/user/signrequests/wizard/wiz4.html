@@ -66,6 +66,9 @@
     <button type="submit" class="btn btn-success" style="position: absolute;right: 0;bottom: 0;">
         Suivant <i class="fas fa-angle-right"></i>
     </button>
+    <button type="button" onclick="window.history.back();" class="btn btn-success" style="position: absolute;left: 0;bottom: 0;">
+        <i class="fas fa-angle-left"></i> Précédent
+    </button>
     </th:block>
     <th:block th:if="${workflowStep == null}">
         <button type="submit" name="addNew" value="true" class="btn btn-primary" style="position: absolute;left: 0;bottom: 0;">

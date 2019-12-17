@@ -550,8 +550,6 @@ public class SignRequestController {
         for (Log log : logs) {
             logRepository.delete(log);
         }
-        signRequest.getSignRequestParamsList().clear();
-
         signRequestRepository.save(signRequest);
         signRequestRepository.delete(signRequest);
         model.asMap().clear();
@@ -632,7 +630,7 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if(user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getCurrentWorkflowStepNumber() <= step + 1) {
             signRequestService.changeSignType(signRequest, step, null, signType);
-            return "redirect:/user/signrequests/" + id;
+            return "redirect:/user/signrequests/" + id + "/?form";
         }
         return "redirect:/user/signrequests/";
     }
@@ -651,7 +649,7 @@ public class SignRequestController {
             }
             signRequestService.changeSignType(signRequest, step, name, signType);
             signRequestService.toggleNeedAllSign(signRequest, step, allSignToComplete);
-            return "redirect:/user/signrequests/" + id;
+            return "redirect:/user/signrequests/" + id + "/?form";
         }
         return "redirect:/user/signrequests/";
     }
@@ -666,7 +664,7 @@ public class SignRequestController {
         if (signRequestService.checkUserViewRights(user, signRequest)) {
             signRequestService.addWorkflowStep(null, name, allSignToComplete, SignType.valueOf(signType), signRequest);
         }
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/user/signrequests/" + id + "/?form";
     }
 
     @DeleteMapping(value = "/remove-step/{id}/{step}")
@@ -688,7 +686,7 @@ public class SignRequestController {
             SignBook signBook = signBookRepository.findById(workflowSignBookId).get();
             signRequestService.importWorkflow(signRequest, signBook);
         }
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/user/signrequests/" + id + "/?form";
     }
 
     @RequestMapping(value = "/send-to-signbook/{id}/{workflowStepId}", method = RequestMethod.GET)
@@ -707,7 +705,7 @@ public class SignRequestController {
         } else {
             logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
         }
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/user/signrequests/" + id + "/?form";
     }
 
     @DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
@@ -741,7 +739,7 @@ public class SignRequestController {
         } else {
             logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
         }
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/user/signrequests/" + id + "/?form";
     }
 
     @RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
@@ -759,7 +757,7 @@ public class SignRequestController {
         } else {
             logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");
         }
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/user/signrequests/" + id + "/?form";
     }
 
     @RequestMapping(value = "/scan-pdf-sign/{id}", method = RequestMethod.GET)

@@ -45,10 +45,6 @@ public class SignRequest {
     @OneToMany(cascade = CascadeType.REMOVE)
     private List<Document> signedDocuments = new ArrayList<>();
 
-    @JsonIgnore
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.REMOVE})
-    private List<SignRequestParams> signRequestParamsList = new ArrayList<>();
-    
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
@@ -166,14 +162,6 @@ public class SignRequest {
 
 	public void setSignedDocuments(List<Document> signedDocuments) {
         this.signedDocuments = signedDocuments;
-    }
-
-	public List<SignRequestParams> getSignRequestParamsList() {
-        return this.signRequestParamsList;
-    }
-
-	public void setSignRequestParamsList(List<SignRequestParams> signRequestParams) {
-        this.signRequestParamsList = signRequestParams;
     }
 
     public Integer getCurrentWorkflowStepNumber() {

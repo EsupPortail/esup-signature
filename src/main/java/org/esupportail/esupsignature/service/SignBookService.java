@@ -69,7 +69,7 @@ public class SignBookService {
             signBookRepository.save(signBook);
 
             SignBook signBookWorkflow = new SignBook();
-            signBookWorkflow.setName("Ma Signature");
+            signBookWorkflow.setName("Ma signature");
             signBookWorkflow.setCreateDate(new Date());
             signBookWorkflow.setModelFile(null);
             signBookWorkflow.setSignBookType(SignBookType.workflow);

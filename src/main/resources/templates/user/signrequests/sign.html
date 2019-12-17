@@ -111,7 +111,7 @@
                 <input type="hidden" name="referer" th:value="${referer}">
                 <div th:if="${documentType == 'pdf'}">
                     <div class="sign-menu">
-                        <div class="btn btn-light col-12 m-1" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'pdfImageStamp'}">
+                        <div class="btn btn-light col-3 col-md-12 m-1" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'pdfImageStamp'}">
                             <label class="control-label" for="_visual" >Insérer un visuel</label>
                             <br/>
                             <label class="switch">
@@ -119,7 +119,7 @@
                                 <span class="slider round"></span>
                             </label>
                         </div>
-                        <div class="btn btn-light col-12 m-1">
+                        <div class="btn btn-light col-3 col-md-12 m-1">
                             <label class="control-label" for="_zoom" >Zoom</label>
                             <br/>
                             <label class="switch">
@@ -128,7 +128,7 @@
                             </label>
                         </div>
 
-                        <div class="btn btn-light col-12 m-1">
+                        <div class="btn btn-light col-3 col-md-12 m-1">
                             <label class="control-label" for="_addDate">Afficher la date</label>
                             <br/>
                             <label class="switch">

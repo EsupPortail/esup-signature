@@ -4,10 +4,13 @@
 
 <body>
 <form th:action="'/user/signrequests/wizard/wiz4/' + ${signRequest.id}" method="post">
-    <h1>Paramétrage du circuit de visas</h1>
+    <th:block th:if="${nbSign != null}">
+        <div class="alert alert-info" th:text="'Le document comporte ' + ${nbSign} + ' champ(s) de signature'"></div>
+    </th:block>
+    <h5>Paramétrage du circuit de visas</h5>
     <div class="form-group">
         <select id="signBookId" name="signBookId" class="form-control" required>
-            <option value="" disabled selected>Choisir un circuit prédéfini</option>
+            <option value="" disabled selected>Choisir un circuit de visas</option>
             <th:block th:each="signBook : ${signBooks} ">
                 <option th:value="${signBook.id}" th:text="${signBook.name}"></option>
             </th:block>
@@ -18,7 +21,7 @@
         </button>
     </div>
 </form>
-<h1 class="hr">ou</h1>
+<h5 class="hr">ou</h5>
 <form th:action="'/user/signrequests/wizard/wiz4/' + ${signRequest.id}" method="post">
     <div class="form-group">
         <button type="submit" class="btn btn-success">

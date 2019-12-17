@@ -234,8 +234,6 @@ public class AdminSignRequestController {
 		for(Log log : logs) {
 			logRepository.delete(log);
 		}
-		signRequest.getSignRequestParamsList().clear();
-
 		signRequestRepository.save(signRequest);
 		signRequestRepository.delete(signRequest);
 		model.asMap().clear();

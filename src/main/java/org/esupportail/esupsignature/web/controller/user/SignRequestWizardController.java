@@ -24,7 +24,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @RequestMapping("/user/signrequests/wizard")
 @Controller
@@ -80,7 +82,18 @@ public class SignRequestWizardController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if(signRequestService.checkUserViewRights(user, signRequest)) {
             model.addAttribute("signRequest", signRequest);
-            model.addAttribute("signBooks", signBookRepository.findBySignBookType(SignBookType.workflow));
+            if (signRequest.getOriginalDocuments().size() == 1) {
+                int nbSign = signRequestService.scanSignatureFields(signRequest, PDDocument.load(signRequest.getOriginalDocuments().get(0).getInputStream()));
+                model.addAttribute("nbSign", nbSign);
+            }
+            List<SignBook> signBooks = new ArrayList<>();
+            signBooks.add(signBookRepository.findByName("Ma signature").get(0));
+            for(SignBook signBook : signBookRepository.findBySignBookType(SignBookType.workflow)) {
+                if(!signBooks.contains(signBook)) {
+                    signBooks.add(signBook);
+                }
+            }
+            model.addAttribute("signBooks", signBooks);
         }
         return "user/signrequests/wizard/wiz3";
     }
@@ -93,9 +106,6 @@ public class SignRequestWizardController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if(signRequestService.checkUserViewRights(user, signRequest)) {
             model.addAttribute("signRequest", signRequest);
-            if (signRequest.getOriginalDocuments().size() == 1) {
-                signRequestService.scanSignatureFields(signRequest, PDDocument.load(signRequest.getOriginalDocuments().get(0).getInputStream()));
-            }
             signRequestRepository.save(signRequest);
             if (signBookId != null) {
                 SignBook signBook = signBookRepository.findById(signBookId).get();
