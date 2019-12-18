@@ -145,7 +145,7 @@ public class WsController {
     @ResponseBody
     @RequestMapping(value = "/pending-sign-request", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public String pendingSignRequest(@RequestParam String token) throws IOException {
-        SignRequest signRequest = signRequestRepository.findByName(token).get(0);
+        SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
         signRequestService.pendingSignRequest(signRequest, userService.getSystemUser());
         return null;
     }
@@ -154,7 +154,7 @@ public class WsController {
     @RequestMapping(value = "/add-workflow-step", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public String addWorkflowStep(@RequestParam String token,
                                   @RequestParam String jsonWorkflowStepString) throws IOException {
-        SignRequest signRequest = signRequestRepository.findByName(token).get(0);
+        SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
         SignRequestParams.SignType signType = null;
         ObjectMapper mapper = new ObjectMapper();
         JsonWorkflowStep jsonWorkflowStep = mapper.readValue(jsonWorkflowStepString, JsonWorkflowStep.class);
@@ -216,7 +216,7 @@ public class WsController {
     @RequestMapping(value = "/get-signed-file", method = RequestMethod.GET)
     public ResponseEntity<Void> getSignedFile(@RequestParam String signBookName, @RequestParam String name, HttpServletResponse response) {
         try {
-            SignRequest signRequest = signRequestRepository.findByName(signBookName).get(0);
+            SignRequest signRequest = signRequestRepository.findByToken(signBookName).get(0);
             if (signRequest.getStatus().equals(SignRequestStatus.signed)) {
                 try {
                     FsFile file = signRequestService.getLastSignedFile(signRequest);
@@ -248,7 +248,7 @@ public class WsController {
     public ResponseEntity<Void> getLastFile(@RequestParam String name, HttpServletResponse response) {
         try {
             //TODO add user to check right
-            SignRequest signRequest = signRequestRepository.findByName(name).get(0);
+            SignRequest signRequest = signRequestRepository.findByToken(name).get(0);
             if (signRequest != null) {
                 try {
                     FsFile file = signRequestService.getLastSignedFile(signRequest);
@@ -279,8 +279,8 @@ public class WsController {
     @RequestMapping(value = "/check-sign-request", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public JsonSignInfoMessage checkSignRequest(@RequestParam String fileToken) {
         try {
-            if (signRequestRepository.countByName(fileToken) > 0) {
-                SignRequest signRequest = signRequestRepository.findByName(fileToken).get(0);
+            if (signRequestRepository.countByToken(fileToken) > 0) {
+                SignRequest signRequest = signRequestRepository.findByToken(fileToken).get(0);
                 JsonSignInfoMessage jsonSignInfoMessage = new JsonSignInfoMessage();
                 jsonSignInfoMessage.setStatus(signRequest.getStatus().toString());
                 if(signRequest.getWorkflowSteps().size() > 0 ) {
@@ -302,7 +302,7 @@ public class WsController {
     @ResponseBody
     @RequestMapping(value = "/delete-sign-request", method = RequestMethod.GET)
     public void deleteSignRequest(@RequestParam String fileToken, HttpServletResponse response, Model model) {
-        SignRequest signRequest = signRequestRepository.findByName(fileToken).get(0);
+        SignRequest signRequest = signRequestRepository.findByToken(fileToken).get(0);
         signRequestRepository.delete(signRequest);
     }
 
@@ -327,7 +327,7 @@ public class WsController {
     public ResponseEntity<Void> completeSignRequest(@RequestParam String signBookName, @RequestParam String name, HttpServletRequest httpServletRequest, HttpServletResponse response, Model model) {
         try {
             SignBook signBook = signBookRepository.findByName(signBookName).get(0);
-            SignRequest signRequest = signRequestRepository.findByName(name).get(0);
+            SignRequest signRequest = signRequestRepository.findByToken(name).get(0);
             User user = userService.getSystemUser();
             user.setIp(httpServletRequest.getRemoteAddr());
             if (signRequest.getStatus().equals(SignRequestStatus.signed)) {

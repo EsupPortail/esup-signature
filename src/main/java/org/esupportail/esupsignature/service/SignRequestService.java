@@ -109,10 +109,33 @@ public class SignRequestService {
 
 	}
 
+	public SignRequest createSignRequest(String title, User user) throws EsupSignatureException {
+		SignRequest signRequest = new SignRequest();
+		signRequest.setTitle(title);
+		createSignRequest(signRequest, user);
+		SignBook signBook = signBookService.createSignBook(title, SignBook.SignBookType.workflow, user, false);
+		signBook.getSignRequests().add(signRequest);
+		signBookRepository.save(signBook);
+		signRequest.setParentSignBook(signBook);
+		signRequestRepository.save(signRequest);
+		return signRequest;
+	}
+
+	public SignRequest createSignRequest(String title, SignBook signBook,  User user, List<Document> documents) {
+		SignRequest signRequest = new SignRequest();
+		signRequest.setTitle(title);
+		createSignRequest(signRequest, user, documents);
+		signBook.getSignRequests().add(signRequest);
+		signBookRepository.save(signBook);
+		signRequest.setParentSignBook(signBook);
+		return signRequest;
+	}
+
 	public SignRequest createSignRequest(SignRequest signRequest, User user) {
 			return createSignRequest(signRequest, user, new ArrayList<>());
 	}
-	
+
+
 	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document) {
 		List<Document> documents = new ArrayList<Document>();
 		documents.add(document);
@@ -648,7 +671,7 @@ public class SignRequestService {
 		int i = 0;
 		for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
 			WorkflowStep newWorkflowStep;
-			if(signRequest.getWorkflowSteps().size() >= i) {
+			if(signRequest.getWorkflowSteps().size() > i) {
 				newWorkflowStep = signRequest.getWorkflowSteps().get(i);
 			} else {
 				newWorkflowStep = new WorkflowStep();
@@ -657,7 +680,7 @@ public class SignRequestService {
 			newWorkflowStep.setAllSignToComplete(workflowStep.isAllSignToComplete());
 			for(Long userId : workflowStep.getRecipients().keySet()){
 				User recipient = userRepository.findById(userId).get();
-				if(recipient.getName().equals("creator")) {
+				if(recipient.getEppn().equals("creator")) {
 					recipient = userRepository.findByEmail(userService.getUserFromAuthentication().getEmail()).get(0);
 				}
 				newWorkflowStep.getRecipients().put(recipient.getId(), false);
@@ -671,6 +694,18 @@ public class SignRequestService {
 		signRequest.setTargetType(workflow.getTargetType());
 		signRequest.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
 		signRequestRepository.save(signRequest);
+	}
+
+	public void delete(SignRequest signRequest) {
+		List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
+		for (Log log : logs) {
+			logRepository.delete(log);
+		}
+		for(Document document : signRequest.getOriginalDocuments()) {
+			documentService.deleteDocument(document);
+		}
+		signRequest.getOriginalDocuments().clear();
+		signRequestRepository.delete(signRequest);
 	}
 
 	public String getStep() {

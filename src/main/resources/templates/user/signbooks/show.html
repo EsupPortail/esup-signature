@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
+<!--/*@thymesVar id="log" type="org.esupportail.esupsignature.entity.Log"*/-->
+<head th:replace="fragments/head :: head"></head>
+<body>
+<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav id="sidebar">
+            <div class="m-1">
+                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+                </button>
+                <a role="button" th:if="${signOk}" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:href="'/user/signrequests/sign-by-token/'">
+                    <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
+                </a>
+                <a th:unless="${referer != null}" title="Abandonner" type="button" class="btn btn-light col-12 mb-1 text-left" value="Retour" href="/user/signbooks">
+                    <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
+                </a>
+            </div>
+        </nav>
+        <div id="content" class="content">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/user/signrequests">Parapheurs</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Parapheur : <span th:text="${signBook.name}"></span>
+                    </li>
+                </ol>
+            </nav>
+            <nav class="nav nav-tabs">
+                <th:block th:each="signRequestTab, iterator : ${signBook.signRequests}">
+                    <a th:classappend="${doc == iterator.index} ? 'active'" class="nav-item nav-link" th:href="'/user/signbooks/' + ${signBook.id} + '/' + ${iterator.index}" th:text="${signRequestTab.title}"></a>
+                </th:block>
+            </nav>
+            <h5 th:text="${signRequest.title}"></h5>
+            <div class="row">
+                <div class="col-lg-6">
+                    <script th:inline="javascript">
+                        /*<![CDATA[*/
+                        var zoom = 1;
+                        var nbImagePage = [[${imagePagesSize}]];
+                        var currentImagePage = 0;
+                        var documentUrl = "/user/documents/[[${documentId}]]/getimagepdfpage/";
+                        var signId = [[${signRequest.id}]];
+
+                        pointItEnable = true;
+
+                        function toggleZoom() {
+                            if (zoom == 1) {
+                                zoom = 2;
+                            } else {
+                                zoom = 1;
+                            }
+
+                            document.getElementById("pointer_div").style = "background-size: " + [[${pdfWidth}]] * zoom + "px;background-image:url('/user/documents/[[${documentId}]]/getimagepdfpage/" + currentImagePage + "');width:" + ([[${pdfWidth}]] * zoom) + "px;height: " + ([[${pdfHeight}]] * zoom) + "px;border:1px solid #CCC;";
+                        }
+
+                        /*]]>*/
+                    </script>
+                    <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
+                        <div id="pointer_div" onmouseup="displayComment();" ontouchend="displayComment();" ontouchmove="pointIt2(event);" onmousemove="pointIt2(event);" th:style="'background-size: ' + ${pdfWidth} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/0\');width:' + ${pdfWidth} + 'px;height:' + ${pdfHeight} + 'px;border:1px solid #CCC;'">
+                            <div id="postit" class="postit" style="display: none;position: relative;left: 0px;top: 0px;z-index: 2;">
+                                Nouvelle annotation <span onclick="hideComment()" class="float-right" style="cursor: pointer;">X</span>
+                                <textarea name="comment" class="postitarea"></textarea>
+                                <button type="submit" class="btn btn-sm float-right">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                            </div>
+                            <th:block th:each="log : ${logs}">
+                                <div th:id="${log.id}" class="circle" th:style="'left:' + ${log.posX} + 'px; top:' + ${log.posX} + 'px;'"></div>
+                            </th:block>
+                        </div>
+                        <input class="form-control form-control-sm col-6 d-none" value="0" id="signPageNumber" type="text" name="pageNumber"/>
+                        <input class="form-control form-control-sm col-6 d-none" value="0" id="xPos" type="text" name="posX"/>
+                        <input class="form-control form-control-sm col-6 d-none" value="0" id="yPos" type="text" name="posY"/>
+                    </form>
+                </div>
+                <div class="col-lg-6">
+                <th:block th:each="log : ${logs}">
+                    <div th:id="'log' + ${log.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer" th:onmouseover="'$(\'#' + ${log.id} + '\').show(); gotoImage(' + ${log.pageNumber} + ')'" th:onmouseout="'$(\'#' + ${log.id} + '\').hide()'">
+                        <b th:text="${@userService.getNameFromEppn(log.eppn)}"></b>
+                        <span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span>
+                        <p class="postitarea" th:text="${log.comment}"></p>
+                    </div>
+                    <script>
+                        /*<![CDATA[*/
+                        var c = document.getElementById("log[[${log.id}]]");
+                        c.style.setProperty("--angle", Math.round(Math.random()) * 6 - 3 + "deg");
+                        // var ctx = c.getContext("2d");
+                        // ctx.beginPath();
+                        // ctx.moveTo([[${log.posX}]], [[${log.posY}]]);
+                        // ctx.lineTo(0, 0);
+                        // ctx.stroke();
+                        /*]]>*/
+                    </script>
+                </th:block>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+<script th:replace="user/signrequests/includes/scriptshow :: scriptshow"></script>
+</html>

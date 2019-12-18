@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.web.controller.manager;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
@@ -10,8 +9,6 @@ import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.fs.FsFile;
-import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,9 +33,9 @@ import java.util.*;
 @Controller
 @Transactional
 @Scope(value = "session")
-public class SignBookController {
+public class SignBookManagerController {
 
-	private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
+	private static final Logger logger = LoggerFactory.getLogger(SignBookManagerController.class);
 	
 	@ModelAttribute("managerMenu")
 	public String getActiveMenu() {
@@ -135,12 +132,9 @@ public class SignBookController {
 			             @RequestParam(name = "multipartFile", required = false) MultipartFile multipartFile,
 						 Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
-		SignBook newSignBook = new SignBook();
-		newSignBook.setName(name);
-		newSignBook.setSignBookType(SignBookType.group);
 		SignBook signBook;
 		try {
-			signBook = signBookService.createSignBook(newSignBook, user, false);
+			signBook = signBookService.createSignBook(name, SignBookType.group, user, false);
 		} catch (EsupSignatureException e) {
 			redirectAttrs.addAttribute("messageError", "Ce parapheur existe déjà");
 			return "redirect:/manager/signbooks/";

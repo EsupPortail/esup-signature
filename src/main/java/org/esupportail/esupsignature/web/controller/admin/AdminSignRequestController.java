@@ -117,7 +117,6 @@ public class AdminSignRequestController {
 
 		Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByStatus(this.statusFilter,  pageable);
 
-		model.addAttribute("mydocs", "active");
 		model.addAttribute("signBookId", signBookId);
 		model.addAttribute("signRequests", signRequests);
 		model.addAttribute("statusFilter", this.statusFilter);
@@ -231,7 +230,7 @@ public class AdminSignRequestController {
 	@RequestMapping(value = "/get-last-file-by-token/{token}", method = RequestMethod.GET)
 	public void getLastFileByToken(@PathVariable("token") String token, HttpServletResponse response, Model model) {
 		User user = userService.getUserFromAuthentication();
-		SignRequest signRequest = signRequestRepository.findByName(token).get(0);
+		SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
 			getLastFile(signRequest.getId(), response, model);
 		} else {

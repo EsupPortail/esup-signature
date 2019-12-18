@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -37,9 +36,9 @@ import java.util.List;
 @Controller
 @Transactional
 @Scope(value = "session")
-public class WorkflowController {
+public class WorkflowManagerController {
 
-	private static final Logger logger = LoggerFactory.getLogger(WorkflowController.class);
+	private static final Logger logger = LoggerFactory.getLogger(WorkflowManagerController.class);
 	
 	@ModelAttribute("managerMenu")
 	public String getActiveMenu() {

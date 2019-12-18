@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+
+<body>
+<form th:action="'/user/wizard/wiz1'" method="post">
+    <div class="col-lg-12">
+        <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_title">
+            <label for="title"><strong>Titre de la demande</strong></label>
+            <input id="title" name="title" class="form-control" required="required" type="text" value="" autocomplete="on">
+        </div>
+    </div>
+    <button onclick="parent.$('#wizardModal').modal('hide');" type="button" class="btn btn-secondary" style="position: absolute;left: 10px;bottom: 10px;">
+        Annuler
+    </button>
+    <button type="submit" id="register-form-submit" class="btn btn-success" style="position: absolute;right: 10px;bottom: 10px;">
+        Suivant <i class="fas fa-angle-right"></i>
+    </button>
+</form>
+<div th:replace="fragments/message :: message"></div>
+</body>
+</html>

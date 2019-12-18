@@ -75,7 +75,7 @@ public class SignBookService {
             }
             return signBook;
         } else {
-            throw new EsupSignatureException("all ready exist");
+            throw new EsupSignatureException("Un parapheur porte déjà ce nom");
         }
     }
 

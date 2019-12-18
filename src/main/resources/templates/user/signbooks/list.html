@@ -13,9 +13,6 @@
             <button title="Assistant de demande de signature"  type="button" data-toggle="modal" data-target="#wizardModal" class="mb-1 col-12 btn btn-primary text-left">
                 <i class="fas fa-magic"></i> <span class="sidebar-label">Assistant de demande de signature</span>
             </button>
-            <button title="Nouvelle demande de signature"  type="button" data-toggle="modal" data-target="#addSignRequestModal" class="mb-1 col-12 btn btn-primary text-left">
-                <i class="fas fa-plus"></i> <span class="sidebar-label">Créer une demande de signature manuellement</span>
-            </button>
             <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="d-none mb-1 col-12 btn btn-primary text-left">
                 <i class="fas fa-plus"></i> <span class="sidebar-label">Signature rapide</span>
             </button>
@@ -37,41 +34,6 @@
             </div>
         </nav>
         <div id="content" class="content">
-            <div id="collapseHelp" class="collapse" aria-expanded="true">
-                <div class="alert alert-info">
-                    <p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
-                    <p>Statut des demandes de signatures :</p>
-                    <p>
-                <span class="alert alert-primary">
-                <i class="fas fa-clock"></i> <span th:text="#{'signbook.status.pending'}"></span>
-                </span> La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures
-                    </p>
-                    <p>
-                <span class="alert alert-success">
-                <i class="fas fa-file-signature"></i> <span th:text="#{'signbook.status.signed'}"></span>
-                </span> Tous les critères de signatures sont remplis
-                    </p>
-                    <p>
-                <span class="alert alert-success">
-                <i class="far fa-check-circle"></i> <span th:text="#{'signbook.status.checked'}"></span>
-                </span> Le document à été validé par tous les participants
-                    </p>
-                    <p>
-                <span class="alert alert-danger">
-                <i class="fas fa-ban"></i> <span th:text="#{'signbook.status.refused'}"></span>
-                </span> La demande à été refusée et retirée des parapheurs
-                    </p>
-                    <p>
-                <span class="alert alert-warning">
-                <i class="fas fa-flag-checkered"></i> <span th:text="#{'signbook.status.completed'}"></span>
-                </span> La demande la demande est terminée </p>
-                    <p>
-				<span class="alert alert-warning">
-				<i class="fas fa-file-export"></i> <span th:text="#{'signbook.status.exported'}"></span>
-                </span> La demande la demande à été exportée vers un autre système de stockage et retirée des parapheurs
-                    </p>
-                </div>
-            </div>
            <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item active">Liste des demandes</li>
@@ -82,41 +44,31 @@
                     Documents à signer
                 </div>
                 <div class="card-body">
-                    <div th:if="${#lists.size(signRequestsToSign) > 0}" class="table-responsive">
+                    <div th:if="${#lists.size(signBooksToView) > 0}" class="table-responsive">
                         <table class="table table-sm table-bordered table-striped table-hover">
                             <thead>
                             <tr>
-                                <th data-type="html"><input id="selectall" type="checkbox"/></th>
                                 <th class="">Titre</th>
                                 <th class="d-none d-md-table-cell">Date de création</th>
                                 <th class="d-none d-lg-table-cell">Créé par</th>
                                 <th>Voir</th>
-                                <th>Signer</th>
                             </tr>
                             </thead>
                             <tbody>
-                            <th:block th:each="signRequest : ${signRequestsToSign}">
+                            <th:block th:each="signBook : ${signBooksToView}">
                                 <tr>
-                                    <td><input th:value="${signRequest.id}" name="check" type="checkbox" class="check"/></td>
-                                    <td class="text-break" th:text="${signRequest.title}"></td>
-                                    <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                    <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy}"></span></td>
+                                    <td class="text-break" th:text="${signBook.name}"></td>
+                                    <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
+                                    <td class="d-none d-lg-table-cell"><span th:text="${signBook.createBy}"></span></td>
                                     <td class="utilbox">
-                                        <a class="btn btn-info far fa-eye" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}">
-                                            <!--  -->
-                                        </a>
-                                    </td>
-                                    <td class="utilbox">
-                                        <a role="button" class="btn btn-success fas fa-signature" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.token}">
-                                            <!--  -->
-                                        </a>
+                                        <a class="btn btn-info far fa-eye" title="Voir" th:href="'/user/signbooks/' + ${signBook.id}"></a>
                                     </td>
                                 </tr>
                             </th:block>
                             </tbody>
                         </table>
                     </div>
-                    <span th:unless="${#lists.size(signRequestsToSign) > 0}" class="table-responsive">
+                    <span th:unless="${#lists.size(signBooksToView) > 0}" class="table-responsive">
 				Aucun document à signer pour le moment
 			</span>
                 </div>
@@ -124,7 +76,7 @@
             <br/>
             <div class="card rounded-0">
                 <div class="card-header">
-                    Documents envoyés
+                    <h5>Parapheurs créés par moi</h5>
                     <form class="" action="" method="get">
                         <div class="card">
                             <div class="input-group">
@@ -151,52 +103,29 @@
                                 <th class="none">Titre</th>
                                 <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
                                 <th class="d-none d-xl-table-cell">Créé par</th>
-                                <th class="d-none d-lg-table-cell">Participants</th>
-                                <th class="d-none d-md-table-cell">Statut</th>
                                 <th>Voir</th>
                                 <th>Modifier</th>
                                 <th>Supprimer</th>
                             </tr>
                             </thead>
                             <tbody>
-                            <th:block th:each="signRequest : ${signRequests}">
+                            <th:block th:each="signBook : ${signBooksCreateByCurrentUser}">
                                 <tr>
-                                    <td class="text-break" th:title="${signRequest.title}" th:text="${signRequest.title}"></td>
-                                    <td class="d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                    <td class="d-none d-xl-table-cell"><span th:text="${signRequest.createBy}"></span></td>
-                                    <td class="d-none d-lg-table-cell">
-                                        <table class="table table-sm">
-                                            <tbody>
-                                            <th:block th:each="signBooksLabel : ${signRequest.currentWorkflowStep.recipientsNames}">
-                                                <tr>
-                                                    <td width="100%" th:text="${signBooksLabel.key}"></td>
-                                                    <td align="center">
-                                                        <div th:switch="${signBooksLabel.value}">
-                                                            <i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
-                                                            <i title="n'a pas signé le document" th:case="false" class="fas fa-exclamation-circle text-danger"></i>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </th:block>
-                                            </tbody>
-                                        </table>
-                                    </td>
-                                    <td class="d-none d-md-table-cell" style="width: 150px;">
-                                        <div th:replace="user/signrequests/includes/status :: status"></div>
-                                    </td>
+                                    <td class="text-break" th:title="${signBook.name}" th:text="${signBook.name}"></td>
+                                    <td class="d-none d-xl-table-cell"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
+                                    <td class="d-none d-xl-table-cell"><span th:text="${signBook.createBy}"></span></td>
                                     <td class="utilbox">
-                                        <button class="btn btn-info fas fa-eye" title="Voir" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '\''">
+                                        <button class="btn btn-info fas fa-eye" title="Voir" th:onclick="'location.href=\'/user/signbooks/' + ${signBook.id} + '/0\''">
                                             <!--  -->
                                         </button>
                                     </td>
                                     <td class="utilbox">
-                                        <button class="btn btn-warning fas fa-pen" title="Modifier" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '?form\''">
+                                        <button class="btn btn-warning fas fa-pen" title="Modifier" th:onclick="'location.href=\'/user/signbooks/' + ${signBook.id} + '?form\''">
                                             <!--  -->
                                         </button>
                                     </td>
                                     <td class="utilbox">
-                                        <form class="delete" th:action="'/user/signrequests/' + ${signRequest.id}" method="post">
-                                            <input type="hidden" name="_method" value="DELETE"/>
+                                        <form class="delete" th:action="'/user/signbooks/' + ${signBook.id}" th:method="'delete'">
                                             <button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" value="Supprimer Sign Request" type="submit" title="Supprimer Sign Request"
                                                     class="btn btn-danger far fa-trash-alt"></button>
                                         </form>
@@ -224,7 +153,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <iframe frameborder="0" src="/user/signrequests/wizard/wiz1"  style="width: 100%; height: 500px;" ></iframe>
+                <iframe id="wizIframe" frameborder="0" src="/user/wizard/wiz1"  style="width: 100%; height: 500px;" ></iframe>
             </div>
         </div>
     </div>
