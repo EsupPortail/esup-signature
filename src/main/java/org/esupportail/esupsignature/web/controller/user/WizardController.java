@@ -194,16 +194,15 @@ public class WizardController {
     public String wizEnd(@PathVariable("id") Long id, Model model) {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
-        SignRequest signRequest = signBook.getSignRequests().get(0);
+        boolean mySign = false;
+        for(SignRequest signRequest : signBook.getSignRequests())
         if(signRequestService.checkUserViewRights(user, signRequest)) {
-            boolean mySign = false;
             if(signRequest.getCurrentWorkflowStep().getRecipients().containsKey(user.getId())) {
                 mySign = true;
             }
-            model.addAttribute("mySign", mySign);
-            model.addAttribute("signRequest", signRequest);
             signRequestService.pendingSignRequest(signRequest, user);
         }
+        model.addAttribute("mySign", mySign);
         return "user/wizard/wizend";
     }
 

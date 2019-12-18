@@ -171,43 +171,10 @@ public class SignBookController {
     @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
     public String updateForm(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
         User user = userService.getUserFromAuthentication();
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        signRequest.setSignedDocuments(signRequest.getSignedDocuments().stream().sorted(Comparator.comparing(Document::getCreateDate)).collect(Collectors.toList()));
-        if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
-            model.addAttribute("signBooks", signBookService.getAllSignBooks());
-            Document toDisplayDocument = null;
-            List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
-            logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
+        SignBook signBook = signBookRepository.findById(id).get();
+        model.addAttribute("signBook", signBook);
+        return "user/signbooks/update";
 
-            model.addAttribute("logs", logs);
-            model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
-            if (user.getSignImage() != null) {
-                model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-            }
-            if (user.getKeystore() != null) {
-                model.addAttribute("keystore", user.getKeystore().getFileName());
-            }
-            signRequestService.setWorkflowsLabels(signRequest.getWorkflowSteps());
-            model.addAttribute("signRequest", signRequest);
-
-            if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
-                model.addAttribute("signable", "ok");
-            }
-            model.addAttribute("signTypes", SignType.values());
-            model.addAttribute("newPageTypes", NewPageType.values());
-            model.addAttribute("allSignBooks", signBookRepository.findBySignBookType(SignBookType.group));
-            model.addAttribute("workflows", workflowRepository.findAll());
-            model.addAttribute("nbSignOk", signRequest.countSignOk());
-            model.addAttribute("baseUrl", baseUrl);
-            model.addAttribute("nexuVersion", nexuVersion);
-            model.addAttribute("nexuUrl", nexuUrl);
-
-            return "user/signbooks/update";
-        } else {
-            logger.warn(user.getEppn() + " attempted to access signRequest " + id + " without write access");
-            redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
-            return "redirect:/user/signbooks/";
-        }
     }
 
     @RequestMapping(value = "/{id}/{doc}", produces = "text/html")
@@ -237,8 +204,6 @@ public class SignBookController {
                         model.addAttribute("signWidth", 100);
                         model.addAttribute("signHeight", 75);
                     }
-                    if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.certSign) && user.getKeystore() == null) {
-                    }
                 }
                 model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
                 model.addAttribute("documentId", toDisplayDocument.getId());
@@ -251,51 +216,6 @@ public class SignBookController {
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("doc", doc);
         return "user/signbooks/show";
-    }
-
-    @PostMapping(produces = "text/html")
-    public String create(@RequestParam("title") String title, RedirectAttributes redirectAttributes, HttpServletRequest request) {
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        try {
-            SignRequest signRequest = signRequestService.createSignRequest(title, user);
-            return "redirect:/user/signbooks/" + signRequest.getId() + "/?form";
-        } catch (EsupSignatureException e) {
-            redirectAttributes.addFlashAttribute("messageError", e.getMessage());
-        }
-        return "redirect:/user/signbooks/";
-    }
-
-    @ResponseBody
-    @RequestMapping(value = "/add-doc/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocument(@PathVariable("id") Long id,
-                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest request) {
-        logger.info("start add documents");
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
-            List<Document> documents = documentService.createDocuments(multipartFiles);
-            signRequestService.addOriginalDocuments(signRequest, documents);
-            signRequestRepository.save(signRequest);
-        }
-        String[] ok = {"ok"};
-        return ok;
-    }
-
-    @ResponseBody
-    @RequestMapping(value = "/remove-doc/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object removeDocument(@PathVariable("id") Long id, HttpServletRequest request) {
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        Document document = documentRepository.findById(id).get();
-        SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
-        if (signRequest.getCreateBy().equals(user.getEppn())) {
-            signRequest.getOriginalDocuments().remove(document);
-            documentService.deleteDocument(document);
-        }
-        String[] ok = {"ok"};
-        return ok;
     }
 
     @RequestMapping(value = "/sign-by-token/{token}")
@@ -365,25 +285,6 @@ public class SignBookController {
             return "redirect:/user/signrequests";
         }
 
-    }
-
-    @RequestMapping(value = "/fast-sign-request", method = RequestMethod.POST)
-    public String createSignRequest(@RequestParam("multipartFile") MultipartFile multipartFile, @RequestParam("signType") SignType signType) {
-        logger.info("création rapide demande de signature");
-        User user = userService.getUserFromAuthentication();
-        if (multipartFile != null) {
-            Document documentToAdd = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-            SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd);
-            signRequest.setTitle(fileService.getNameOnly(documentToAdd.getFileName()));
-            signRequestRepository.save(signRequest);
-            signRequestService.addWorkflowStep(Arrays.asList(user.getEmail()), "Ma signature", true, signType, signRequest);
-            signRequestService.pendingSignRequest(signRequest, user);
-            logger.info("adding new file into signRequest " + signRequest.getToken());
-            return "redirect:/user/signbooks/sign-by-token/" + signRequest.getToken();
-        } else {
-            logger.warn("no file to import");
-        }
-        return "redirect:/user/signrequests";
     }
 
     @RequestMapping(value = "/sign/{id}", method = RequestMethod.POST   )

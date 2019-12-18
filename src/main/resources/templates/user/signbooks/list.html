@@ -61,7 +61,7 @@
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signBook.createBy}"></span></td>
                                     <td class="utilbox">
-                                        <a class="btn btn-info far fa-eye" title="Voir" th:href="'/user/signbooks/' + ${signBook.id}"></a>
+                                        <a class="btn btn-info far fa-eye" title="Voir" th:href="'/user/signbooks/' + ${signBook.id} + '/0'"></a>
                                     </td>
                                 </tr>
                             </th:block>

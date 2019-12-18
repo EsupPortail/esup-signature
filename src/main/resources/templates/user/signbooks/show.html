@@ -13,10 +13,7 @@
                 <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
-                <a role="button" th:if="${signOk}" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:href="'/user/signrequests/sign-by-token/'">
-                    <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
-                </a>
-                <a th:unless="${referer != null}" title="Abandonner" type="button" class="btn btn-light col-12 mb-1 text-left" value="Retour" href="/user/signbooks">
+                <a th:unless="${referer != null}" title="Abandonner" class="btn btn-light col-12 mb-1 text-left" value="Retour" href="/user/signbooks">
                     <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
                 </a>
             </div>
@@ -34,7 +31,10 @@
                     <a th:classappend="${doc == iterator.index} ? 'active'" class="nav-item nav-link" th:href="'/user/signbooks/' + ${signBook.id} + '/' + ${iterator.index}" th:text="${signRequestTab.title}"></a>
                 </th:block>
             </nav>
-            <h5 th:text="${signRequest.title}"></h5>
+            <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
+            <a role="button" target="_blank" th:if="${signOk}" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.token}">
+                <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
+            </a>
             <div class="row">
                 <div class="col-lg-6">
                     <script th:inline="javascript">
@@ -88,11 +88,6 @@
                         /*<![CDATA[*/
                         var c = document.getElementById("log[[${log.id}]]");
                         c.style.setProperty("--angle", Math.round(Math.random()) * 6 - 3 + "deg");
-                        // var ctx = c.getContext("2d");
-                        // ctx.beginPath();
-                        // ctx.moveTo([[${log.posX}]], [[${log.posY}]]);
-                        // ctx.lineTo(0, 0);
-                        // ctx.stroke();
                         /*]]>*/
                     </script>
                 </th:block>

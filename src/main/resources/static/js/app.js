@@ -45,7 +45,6 @@ $(document).ready(function () {
 	function toggleSideBar() {
 		$('#sidebar').toggleClass('active');
 		$('.sidebar-label').toggleClass('d-none');
-		$('.fa-arrow-left').toggleClass('fa-arrow-right')
 		$('#logo').toggleClass('logooverflow');
 		$('#content').toggleClass('content content2');
 	}
