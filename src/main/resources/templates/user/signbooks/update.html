@@ -26,7 +26,7 @@
             </nav>
             <div class="card rounded-0">
                 <div class="card-header">
-                    Documents à signer
+                    Documents du parapheur
                 </div>
                 <div class="card-body">
                     <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
@@ -40,6 +40,8 @@
                                 <th class="d-none d-lg-table-cell">Créé par</th>
                                 <th>Voir</th>
                                 <th>Signer</th>
+                                <th>Modifier</th>
+                                <th>Supprimer</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -59,6 +61,19 @@
                                             <!--  -->
                                         </a>
                                     </td>
+                                    <td class="utilbox">
+                                        <button class="btn btn-warning fas fa-pen" title="Modifier" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '?form\''">
+                                            <!--  -->
+                                        </button>
+                                    </td>
+                                    <td class="utilbox">
+                                        <form class="delete" th:action="'/user/signrequests/' + ${signRequest.id}" method="post">
+                                            <input type="hidden" name="_method" value="DELETE"/>
+                                            <button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" value="Supprimer Sign Request" type="submit" title="Supprimer Sign Request"
+                                                    class="btn btn-danger far fa-trash-alt"></button>
+                                        </form>
+                                    </td>
+
                                 </tr>
                             </th:block>
                             </tbody>

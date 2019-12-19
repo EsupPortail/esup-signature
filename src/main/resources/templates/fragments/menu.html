@@ -11,7 +11,7 @@
 	<img src="/images/logo.png" height="41"/>
 	<div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
 		<ul class="navbar-nav">
-			<li class="nav-item"><a title="Utilisateur" href="/user/signrequests/" th:class="'nav-link ' + ${userMenu}">Utilisateur</a></li>
+			<li class="nav-item"><a title="Utilisateur" href="/user/signbooks/" th:class="'nav-link ' + ${userMenu}">Utilisateur</a></li>
 			<th:block th:if="${#authorization != null}">
 				<li class="nav-item" sec:authorize="hasRole('ROLE_MANAGER')"></li>
 				<li class="nav-item dropdown">
