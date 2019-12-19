@@ -195,15 +195,6 @@ public class SignBookController {
                     model.addAttribute("pdfWidth", pdfParameters.getWidth());
                     model.addAttribute("pdfHeight", pdfParameters.getHeight());
                     model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-                    if (user.getSignImage() != null && user.getSignImage().getSize() > 0) {
-                        model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-                        int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
-                        model.addAttribute("signWidth", size[0]);
-                        model.addAttribute("signHeight", size[1]);
-                    } else {
-                        model.addAttribute("signWidth", 100);
-                        model.addAttribute("signHeight", 75);
-                    }
                 }
                 model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
                 model.addAttribute("documentId", toDisplayDocument.getId());

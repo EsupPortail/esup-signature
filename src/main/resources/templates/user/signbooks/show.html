@@ -28,13 +28,11 @@
             </nav>
             <nav class="nav nav-tabs">
                 <th:block th:each="signRequestTab, iterator : ${signBook.signRequests}">
-                    <a th:classappend="${doc == iterator.index} ? 'active'" class="nav-item nav-link" th:href="'/user/signbooks/' + ${signBook.id} + '/' + ${iterator.index}" th:text="${signRequestTab.title}"></a>
+                    <a th:classappend="${doc == iterator.index} ? 'active'" class="nav-item nav-link" th:href="'/user/signbooks/' + ${signBook.id} + '/' + ${iterator.index}">
+                        <i class="fas fa-file-pdf text-danger"></i> <span th:text="${signRequestTab.title}"></span>
+                    </a>
                 </th:block>
             </nav>
-            <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
-            <a role="button" target="_blank" th:if="${signOk}" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.token}">
-                <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
-            </a>
             <div class="row">
                 <div class="col-lg-6">
                     <script th:inline="javascript">
@@ -76,6 +74,9 @@
                         <input class="form-control form-control-sm col-6 d-none" value="0" id="xPos" type="text" name="posX"/>
                         <input class="form-control form-control-sm col-6 d-none" value="0" id="yPos" type="text" name="posY"/>
                     </form>
+                    <button th:if="${signOk}" class="mb-1 btn btn-success text-left float-right" title="Signer" th:token="${signRequest.token}" th:onclick="launchSign([[${signRequest.token}]])">
+                        <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
+                    </button>
                 </div>
                 <div class="col-lg-6">
                 <th:block th:each="log : ${logs}">
@@ -96,6 +97,35 @@
         </div>
     </div>
 </main>
+
+<div class="modal fade" id="signModal" style="min-width: 100%; min-height: 700px;" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="min-width: 80%; height: 80%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="signModalLabel">Signature du document</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="max-height: calc(100% - 120px); overflow-y: scroll;">
+                <iframe id="wizIframe" frameborder="0" th:src="'/user/signrequests/sign-by-token/' + ${signRequest.token}"  style="width: 100%; height: 1000px;" ></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function launchSign(token) {
+        console.log(token);
+        $('#signModal').modal('show');
+        var wait = $.ajax({url: "/user/signrequests/wait-for-sign/" + token, success: function(result){
+                location.reload();
+            }});
+        $('#signModal').on('hidden.bs.modal', function () {
+            console.log('abort ajax');
+            wait.abort();
+        })
+    }
+</script>
 </body>
-<script th:replace="user/signrequests/includes/scriptshow :: scriptshow"></script>
 </html>

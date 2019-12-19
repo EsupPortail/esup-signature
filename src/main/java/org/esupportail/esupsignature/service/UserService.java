@@ -54,6 +54,14 @@ public class UserService implements EvaluationContextExtension {
 		return list;
 	}
 
+	public User getUser(String email) {
+		if(userRepository.countByEmail(email) > 0) {
+			return  userRepository.findByEmail(email).get(0);
+		} else {
+			return createUser(email);
+		}
+	}
+
 	public User createUser(String email) {
 		List<PersonLdap> persons =  personDao.getPersonLdaps("mail", email);
 		String eppn = persons.get(0).getEduPersonPrincipalName();

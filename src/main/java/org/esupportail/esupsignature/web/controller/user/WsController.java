@@ -8,10 +8,7 @@ import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.ldap.PersonLdap;
-import org.esupportail.esupsignature.repository.LogRepository;
-import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsFile;
@@ -50,6 +47,9 @@ public class WsController {
     private static final Logger logger = LoggerFactory.getLogger(WsController.class);
 
     @Resource
+    private SignRequestParamsRepository signRequestParamsRepository;
+
+    @Resource
     private SignRequestRepository signRequestRepository;
 
     @Resource
@@ -82,24 +82,35 @@ public class WsController {
     @Autowired(required = false)
     private LdapPersonService ldapPersonService;
 
-    // TODO creation / recupération de demandes par WS + declenchement
-    // d'evenements + multidocs
     @ResponseBody
     @RequestMapping(value = "/create-sign-request", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public String createSignRequest(@RequestParam("file") MultipartFile file,
                                     @RequestParam String creatorEmail,
-                                    HttpServletRequest httpServletRequest) throws IOException {
-        User user;
-        if(userRepository.findByEmail(creatorEmail).size() > 0) {
-            user = userRepository.findByEmail(creatorEmail).get(0);
-        } else {
-            user = userService.createUser(creatorEmail);
-        }
+                                    @RequestParam(name = "signType", required = false) SignRequestParams.SignType signType,
+                                    @RequestParam(name = "posX", required = false) int posX,
+                                    @RequestParam(name = "posY", required = false) int posY,
+                                    @RequestParam(name = "recipientEmails", required = false) List<String> recipientEmails,
+                                    HttpServletRequest httpServletRequest) {
+        User user = userService.getUser(creatorEmail);
         user.setIp(httpServletRequest.getRemoteAddr());
         if (file != null) {
             Document documentToAdd = documentService.createDocument(file, file.getOriginalFilename());
             SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd);
             signRequest.setTitle(fileService.getNameOnly(documentToAdd.getFileName()));
+            if(signType != null) {
+                WorkflowStep workflowStep = new WorkflowStep();
+                SignRequestParams signRequestParams = new SignRequestParams();
+                signRequestParams.setSignType(signType);
+                signRequestParams.setXPos(posX);
+                signRequestParams.setYPos(posY);
+                signRequestParamsRepository.save(signRequestParams);
+                workflowStep.setSignRequestParams(signRequestParams);
+                for(String recipientEmail : recipientEmails) {
+                    User recipientUser = userService.getUser(recipientEmail);
+                    workflowStep.getRecipients().put(recipientUser.getId(), false);
+                }
+                signRequestService.pendingSignRequest(signRequest, user);
+            }
             signRequestRepository.save(signRequest);
             logger.info("adding new file into signRequest " + signRequest.getToken());
             return signRequest.getToken();
@@ -113,13 +124,7 @@ public class WsController {
     @RequestMapping(value = "/list-sign-requests", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Doc> listSignedFiles(@RequestParam("recipientEmail") String recipientEmail, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureException {
         List<Doc> signedFiles = new ArrayList<>();
-        List<User> users = userRepository.findByEmail(recipientEmail);
-        User user;
-        if(users.size() > 0){
-            user = users.get(0);
-        } else {
-            user = userService.createUser(recipientEmail);
-        }
+        User user = userService.getUser(recipientEmail);
         user.setIp(httpServletRequest.getRemoteAddr());
         List<Log> logs = new ArrayList<>();
         logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.signed.name()));

@@ -16,6 +16,8 @@ public class WorkflowStep {
 
     private String name;
 
+    private String signRequestToken;
+
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<Long, Boolean> recipients = new HashMap<>();
 
