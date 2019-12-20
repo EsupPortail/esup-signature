@@ -29,11 +29,8 @@ import org.apache.xmpbox.type.BadFieldValueException;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
 import org.esupportail.esupsignature.config.pdf.PdfProperties;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
@@ -77,14 +74,13 @@ public class PdfService {
     @Resource
     private FileService fileService;
 
-    public Document stampImage(Document toSignFile, SignRequest signRequest, User user, boolean addPage, boolean addDate) throws InvalidPasswordException, IOException {
+    public Document stampImage(Document toSignFile, SignBook signBook, User user, boolean addPage, boolean addDate) throws InvalidPasswordException, IOException {
         //TODO add ip ? + date + nom ?
-        SignRequestParams params = signRequest.getCurrentWorkflowStep().getSignRequestParams();
+        SignRequestParams params = signBook.getCurrentWorkflowStep().getSignRequestParams();
         SignRequestParams.SignType signType = params.getSignType();
         PdfParameters pdfParameters;
-        InputStream toSignInputStream = formatPdf(toSignFile.getInputStream(), params, addPage);
         try {
-            PDDocument pdDocument = PDDocument.load(toSignInputStream);
+            PDDocument pdDocument = PDDocument.load(toSignFile.getInputStream());
             pdfParameters = getPdfParameters(pdDocument);
             PDPage pdPage = pdDocument.getPage(params.getSignPageNumber() - 1);
             PDImageXObject pdImage;
@@ -144,7 +140,7 @@ public class PdfService {
             ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
             pdDocument.close();
             try {
-                InputStream file = convertGS(writeMetadatas(in, toSignFile.getFileName(), signRequest));
+                InputStream file = convertGS(writeMetadatas(in, toSignFile.getFileName(), signBook));
                 return documentService.createDocument(file, toSignFile.getFileName(), toSignFile.getContentType());
             } catch (Exception e) {
                 logger.error("unable to convert to pdf A", e);
@@ -155,28 +151,7 @@ public class PdfService {
         return null;
     }
 
-    public InputStream formatPdf(InputStream file, SignRequestParams params, boolean addPage) throws IOException {
-
-        if (!SignRequestParams.NewPageType.none.equals(params.getNewPageType()) && addPage) {
-            PDDocument pdDocument = PDDocument.load(file);
-            pdDocument.setAllSecurityToBeRemoved(true);
-            if (SignRequestParams.NewPageType.onBegin.equals(params.getNewPageType())) {
-                pdDocument = addNewPage(pdDocument, null, 0);
-                params.setSignPageNumber(1);
-            } else {
-                pdDocument = addNewPage(pdDocument, null, -1);
-                params.setSignPageNumber(getPdfParameters(pdDocument).getTotalNumberOfPages());
-            }
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            pdDocument.save(out);
-            pdDocument.close();
-            return new ByteArrayInputStream(out.toByteArray());
-        } else {
-            return file;
-        }
-    }
-
-    public InputStream writeMetadatas(InputStream inputStream, String fileName, SignRequest signRequest) {
+    public InputStream writeMetadatas(InputStream inputStream, String fileName, SignBook signBook) {
 
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
@@ -191,7 +166,7 @@ public class PdfService {
             PDDocumentInformation info = pdDocument.getDocumentInformation();
             info.setTitle(fileName);
             info.setSubject(fileName);
-            info.setAuthor(signRequest.getCreateBy());
+            info.setAuthor(signBook.getCreateBy());
             info.setCreator("GhostScript");
             info.setProducer("esup-signature");
             info.setKeywords("pdf, signed, " + fileName);

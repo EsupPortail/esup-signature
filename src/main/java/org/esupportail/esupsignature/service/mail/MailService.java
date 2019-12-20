@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service.mail;
 import org.apache.commons.compress.utils.IOUtils;
 import org.esupportail.esupsignature.config.mail.MailConfig;
 import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.UserRepository;
@@ -124,24 +125,24 @@ public class MailService {
 
     }
 
-    public void sendFile(SignRequest signRequest) {
+    public void sendFile(SignBook signBook) {
         if (!checkMailSender()) {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("rootUrl", rootUrl);
-        ctx.setVariable("signRequest", signRequest);
-        User user = userRepository.findByEppn(signRequest.getCreateBy()).get(0);
+        ctx.setVariable("signBook", signBook);
+        User user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
         ctx.setVariable("user", user);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;
         try {
             message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            message.setSubject("Esup-Signature : nouveau document  " + signRequest.getTitle());
+            message.setSubject("Esup-Signature : nouveau document  " + signBook.getName());
             message.setFrom(mailConfig.getMailFrom());
-            message.setTo(signRequest.getDocumentsTargetUri());
-            Document toSendDocument = signRequestService.getLastSignedDocument(signRequest);
+            message.setTo(signBook.getDocumentsTargetUri());
+            Document toSendDocument = signRequestService.getLastSignedDocument(signBook.getSignRequests().get(0));
             message.addAttachment(toSendDocument.getFileName(), new ByteArrayResource(IOUtils.toByteArray(toSendDocument.getInputStream())));
             String htmlContent = templateEngine.process("mail/email-file.html", ctx);
             message.setText(htmlContent, true); // true = isHtml

@@ -288,9 +288,9 @@ public class WsController {
                 SignRequest signRequest = signRequestRepository.findByToken(fileToken).get(0);
                 JsonSignInfoMessage jsonSignInfoMessage = new JsonSignInfoMessage();
                 jsonSignInfoMessage.setStatus(signRequest.getStatus().toString());
-                if(signRequest.getWorkflowSteps().size() > 0 ) {
-                    signRequestService.setWorkflowsLabels(signRequest.getWorkflowSteps());
-                    for (Long userId : signRequest.getCurrentWorkflowStep().getRecipients().keySet()) {
+                if(signRequest.getParentSignBook().getWorkflowSteps().size() > 0 ) {
+                    signRequestService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
+                    for (Long userId : signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().keySet()) {
                         User user = userRepository.findById(userId).get();
                         jsonSignInfoMessage.getNextRecipientNames().add(user.getName());
                         jsonSignInfoMessage.getNextRecipientEppns().add(user.getEppn());

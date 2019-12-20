@@ -102,9 +102,9 @@ public class SignBookService {
         signBookRepository.save(signBook);
     }
 
-    public boolean isUserInWorkflow(SignRequest signRequest, User user) {
-        if (signRequest.getCurrentWorkflowStep() != null && signRequest.getCurrentWorkflowStep().getRecipients().size() > 0) {
-            for (Map.Entry<Long, Boolean> userId : signRequest.getCurrentWorkflowStep().getRecipients().entrySet()) {
+    public boolean isUserInWorkflow(SignBook signBook, User user) {
+        if (signBook.getCurrentWorkflowStep() != null && signBook.getCurrentWorkflowStep().getRecipients().size() > 0) {
+            for (Map.Entry<Long, Boolean> userId : signBook.getCurrentWorkflowStep().getRecipients().entrySet()) {
                 if (userId.getKey().equals(user.getId())) {
                     return true;
                 }

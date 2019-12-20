@@ -58,30 +58,8 @@ public class SignRequest {
     @ElementCollection(targetClass=String.class)
     private List<String> recipientEmails = new ArrayList<>();
 
-    @OneToMany
-    @OrderColumn
-    private List<WorkflowStep> workflowSteps = new ArrayList<>();
-
-    private Integer currentWorkflowStepNumber = 1;
-
-    @Enumerated(EnumType.STRING)
-    private DocumentIOType targetType;
-
-    private String documentsTargetUri;
-
-	public void setStatus(SignRequestStatus status) {
+   	public void setStatus(SignRequestStatus status) {
         this.status = status;
-    }
-
-    public int countSignOk() {
-    	int nbSign = 0;
-		for(WorkflowStep workflowStep : workflowSteps) {
-			if(workflowStep.isCompleted()) {
-				nbSign++;
-			}
-		}
-		nbSign += signedDocuments.size();
-		return nbSign;
     }
 
     public Long getId() {
@@ -168,14 +146,6 @@ public class SignRequest {
         this.signedDocuments = signedDocuments;
     }
 
-    public Integer getCurrentWorkflowStepNumber() {
-        return this.currentWorkflowStepNumber;
-    }
-
-    public void setCurrentWorkflowStepNumber(Integer signBooksWorkflowStep) {
-        this.currentWorkflowStepNumber = signBooksWorkflowStep;
-    }
-
 	public String getExportedDocumentURI() {
 		return exportedDocumentURI;
 	}
@@ -183,34 +153,6 @@ public class SignRequest {
 	public void setExportedDocumentURI(String exportedDocumentURI) {
 		this.exportedDocumentURI = exportedDocumentURI;
 	}
-
-    public List<WorkflowStep> getWorkflowSteps() {
-        return workflowSteps;
-    }
-
-    public WorkflowStep getCurrentWorkflowStep() {
-        if(workflowSteps.size() >= currentWorkflowStepNumber) {
-            return workflowSteps.get(currentWorkflowStepNumber - 1);
-        } else {
-            return new WorkflowStep();
-        }
-    }
-
-    public DocumentIOType getTargetType() {
-        return targetType;
-    }
-
-    public void setTargetType(DocumentIOType targetType) {
-        this.targetType = targetType;
-    }
-
-    public String getDocumentsTargetUri() {
-        return documentsTargetUri;
-    }
-
-    public void setDocumentsTargetUri(String documentsTargetUri) {
-        this.documentsTargetUri = documentsTargetUri;
-    }
 
     public SignBook getParentSignBook() {
         return parentSignBook;

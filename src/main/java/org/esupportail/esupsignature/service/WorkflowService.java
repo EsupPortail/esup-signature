@@ -189,17 +189,6 @@ public class WorkflowService {
         workflowRepository.save(workflow);
     }
 
-    public boolean isUserInWorkflow(SignRequest signRequest, User user) {
-        if (signRequest.getCurrentWorkflowStep() != null && signRequest.getCurrentWorkflowStep().getRecipients().size() > 0) {
-            for (Map.Entry<Long, Boolean> userId : signRequest.getCurrentWorkflowStep().getRecipients().entrySet()) {
-                if (userId.getKey().equals(user.getId())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     public boolean checkUserManageRights(User user, Workflow workflow) {
         if (workflow.getCreateBy().equals(user.getEppn()) || workflow.getModeratorEmails().contains(user.getEmail()) || workflow.getCreateBy().equals("System")) {
             return true;

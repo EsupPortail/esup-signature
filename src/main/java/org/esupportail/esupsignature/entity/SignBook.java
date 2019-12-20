@@ -219,4 +219,13 @@ public class SignBook {
         }
         return signRequestStatus;
     }
+
+    public WorkflowStep getCurrentWorkflowStep() {
+        if(workflowSteps.size() >= currentWorkflowStepNumber) {
+            return workflowSteps.get(currentWorkflowStepNumber - 1);
+        } else {
+            return new WorkflowStep();
+        }
+    }
+    
 }
