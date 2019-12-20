@@ -1,8 +1,8 @@
 package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
 import org.esupportail.esupsignature.entity.WorkflowStep;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
@@ -22,7 +22,7 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     Page<SignRequest> findByCreateBy(String createBy, Pageable pageable);
     Page<SignRequest> findById(Long id, Pageable pageable);
     Page<SignRequest> findAll(Pageable pageable);
-    List<SignRequest> findByStatusAndDocumentsTargetUriIsNotNull(SignRequest.SignRequestStatus status);
+    List<SignRequest> findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus status);
     List<SignRequest> findByCreateByAndStatus(String createBy, SignRequestStatus status);
 
 }

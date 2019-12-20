@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
@@ -62,7 +63,7 @@ public class ScheduledTaskService {
 	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.trace("scan all signRequest to export");
-		List<SignRequest> signRequests = signRequestRepository.findByStatusAndDocumentsTargetUriIsNotNull(SignRequest.SignRequestStatus.completed);
+		List<SignRequest> signRequests = signRequestRepository.findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus.completed);
 		for(SignRequest signRequest : signRequests) {
 			try {
 				signRequestService.exportFilesToTarget(signRequest, getSchedulerUser());

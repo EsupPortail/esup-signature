@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;

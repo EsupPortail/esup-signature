@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.service.fs;
 
-import org.esupportail.esupsignature.entity.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.service.fs.opencmis.CmisAccessImpl;
 import org.esupportail.esupsignature.service.fs.smb.SmbAccessImpl;
 import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;

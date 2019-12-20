@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -58,6 +60,17 @@ public class SignBook {
 
     @ElementCollection(targetClass=String.class)
     private List<String> recipientEmails = new ArrayList<>();
+
+    @OneToMany
+    @OrderColumn
+    private List<WorkflowStep> workflowSteps = new ArrayList<>();
+
+    private Integer currentWorkflowStepNumber = 1;
+
+    @Enumerated(EnumType.STRING)
+    private DocumentIOType targetType;
+
+    private String documentsTargetUri;
 
 	@Enumerated(EnumType.STRING)
 	private SignBookType signBookType;
@@ -155,5 +168,55 @@ public class SignBook {
 
     public void setWorkflow(Workflow workflow) {
         this.workflow = workflow;
+    }
+
+    public Boolean getExternal() {
+        return external;
+    }
+
+    public void setRecipientEmails(List<String> recipientEmails) {
+        this.recipientEmails = recipientEmails;
+    }
+
+    public List<WorkflowStep> getWorkflowSteps() {
+        return workflowSteps;
+    }
+
+    public void setWorkflowSteps(List<WorkflowStep> workflowSteps) {
+        this.workflowSteps = workflowSteps;
+    }
+
+    public Integer getCurrentWorkflowStepNumber() {
+        return currentWorkflowStepNumber;
+    }
+
+    public void setCurrentWorkflowStepNumber(Integer currentWorkflowStepNumber) {
+        this.currentWorkflowStepNumber = currentWorkflowStepNumber;
+    }
+
+    public DocumentIOType getTargetType() {
+        return targetType;
+    }
+
+    public void setTargetType(DocumentIOType targetType) {
+        this.targetType = targetType;
+    }
+
+    public String getDocumentsTargetUri() {
+        return documentsTargetUri;
+    }
+
+    public void setDocumentsTargetUri(String documentsTargetUri) {
+        this.documentsTargetUri = documentsTargetUri;
+    }
+
+    public SignRequestStatus getStatus() {
+        SignRequestStatus signRequestStatus = SignRequestStatus.completed;
+        for(SignRequest signRequest : signRequests) {
+            if(signRequest.getStatus().equals(SignRequestStatus.pending)) {
+                signRequestStatus = SignRequestStatus.pending;
+            }
+        }
+        return signRequestStatus;
     }
 }

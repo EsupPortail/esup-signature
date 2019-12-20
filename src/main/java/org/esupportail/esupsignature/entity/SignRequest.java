@@ -1,10 +1,14 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Entity
 public class SignRequest {
@@ -51,6 +55,9 @@ public class SignRequest {
     @ManyToOne
     private SignBook parentSignBook;
 
+    @ElementCollection(targetClass=String.class)
+    private List<String> recipientEmails = new ArrayList<>();
+
     @OneToMany
     @OrderColumn
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
@@ -61,10 +68,6 @@ public class SignRequest {
     private DocumentIOType targetType;
 
     private String documentsTargetUri;
-
-    public enum SignRequestStatus {
-		draft, pending, canceled, checked, signed, refused, deleted, exported, completed;
-	}
 
 	public void setStatus(SignRequestStatus status) {
         this.status = status;
@@ -183,10 +186,6 @@ public class SignRequest {
 
     public List<WorkflowStep> getWorkflowSteps() {
         return workflowSteps;
-    }
-
-    public void setWorkflowSteps(List<WorkflowStep> workflowSteps) {
-        this.workflowSteps = workflowSteps;
     }
 
     public WorkflowStep getCurrentWorkflowStep() {
