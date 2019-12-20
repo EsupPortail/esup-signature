@@ -3,7 +3,7 @@
 <head th:replace="fragments/head :: head"></head>
 
 <body>
-<form th:action="'/user/wizard/wiz4/' + ${signBook.id}" method="post">
+<form th:action="'/user/signbooks/wizard/wiz4/' + ${signBook.id}" method="post">
     <h5>Paramétrage du circuit de visas</h5>
     <div class="form-group">
         <select id="workflowId" name="workflowId" class="form-control" required>
@@ -19,7 +19,7 @@
     </div>
 </form>
 <h5 class="hr">ou</h5>
-<form th:action="'/user/signrequests/wizard/wiz4/' + ${signBook.id}" method="post">
+<form th:action="'/user/signbooks/wizard/wiz4/' + ${signBook.id}" method="post">
     <div class="form-group">
         <button type="submit" class="btn btn-success">
             Ajouter les étapes manuellement <i class="fas fa-hand-paper"></i>

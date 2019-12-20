@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.pdf;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
@@ -245,11 +246,15 @@ public class PdfService {
         if (!isPdfAComplient(file) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
             String defFile = PdfService.class.getResource("/PDFA_def.ps").getFile();
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + "gs -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
             logger.info("GhostScript PDF/A convertion : " + cmd);
 
             ProcessBuilder processBuilder = new ProcessBuilder();
-            processBuilder.command("bash", "-c", cmd);
+            if(SystemUtils.IS_OS_WINDOWS) {
+                processBuilder.command("cmd", "/C", cmd);
+            } else {
+                processBuilder.command("bash", "-c", cmd);
+            }
             //processBuilder.directory(new File("/tmp"));
             try {
                 Process process = processBuilder.start();
@@ -269,7 +274,7 @@ public class PdfService {
                     logger.debug(output.toString());
                     return null;
                 }
-            } catch (IOException | InterruptedException e) {
+            } catch (Exception e) {
                 logger.error("GhostScript launc error", e);
             }
             InputStream convertedInputStream = new FileInputStream(targetFile);

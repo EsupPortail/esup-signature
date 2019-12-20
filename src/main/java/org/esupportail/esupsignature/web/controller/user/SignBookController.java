@@ -12,7 +12,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.export.SedaExportService;
+//import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
@@ -42,10 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequestMapping("/user/signbooks")
@@ -133,8 +130,8 @@ public class SignBookController {
     @Resource
     private SignService signService;
 
-    @Resource
-    private SedaExportService sedaExportService;
+//    @Resource
+//    private SedaExportService sedaExportService;
 
     @RequestMapping(produces = "text/html")
     public String list(@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
@@ -182,9 +179,6 @@ public class SignBookController {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
         model.addAttribute("signBook", signBook);
-        if(signBook.getSignRequests().size() == 1) {
-            return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
-        }
         SignRequest signRequest = signBook.getSignRequests().get(doc);
         if ((signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest))) {
             Document toDisplayDocument;
@@ -437,28 +431,73 @@ public class SignBookController {
         }
     }
 
-    @RequestMapping(value = "/get-last-file-seda/{id}", method = RequestMethod.GET)
-    public void getLastFileSeda(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
-        SignRequest signRequest = signRequestRepository.findById(id).get();
+
+    @ResponseBody
+    @RequestMapping(value = "/add-doc/{name}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Object addDocument(@PathVariable("name") String name,
+                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest request) throws EsupSignatureException {
+        logger.info("start add documents");
         User user = userService.getUserFromAuthentication();
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
-            List<Document> documents = signRequestService.getToSignDocuments(signRequest);
-            try {
-                if (documents.size() > 1) {
-                    response.sendRedirect("/user/signbooks/" + id);
-                } else {
-                    Document document = documents.get(0);
-                    response.setHeader("Content-Disposition", "inline;filename=test-seda.zip");
-                    response.setContentType("application/zip");
-                    IOUtils.copy(sedaExportService.generateSip(signRequest), response.getOutputStream());
-                }
-            } catch (Exception e) {
-                logger.error("get file error", e);
-            }
+        user.setIp(request.getRemoteAddr());
+        SignBook signBook = signBookService.getSignBook(name, user);
+        SignRequest signRequest;
+        if (signBook.getSignRequests().size() > 0) {
+            signRequest = signBook.getSignRequests().get(0);
         } else {
-            logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
+            signRequest = new SignRequest();
+            signRequest.setTitle(signBook.getName());
+            signRequest.setCreateBy(user.getEppn());
+            signRequest.setCreateDate(new Date());
+            signRequest.setParentSignBook(signBook);
         }
+        List<Document> documents = documentService.createDocuments(multipartFiles);
+        signRequestService.addOriginalDocuments(signRequest, documents);
+        signRequestRepository.save(signRequest);
+        signBook.getSignRequests().add(signRequest);
+        signBookRepository.save(signBook);
+        String[] ok = {"ok"};
+        return ok;
     }
+
+
+    @ResponseBody
+    @RequestMapping(value = "/add-doc-new-signrequest/{name}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Object addDocumentToNewSignRequest(@PathVariable("name") String name,
+                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest request) throws EsupSignatureException {
+        logger.info("start add documents");
+        User user = userService.getUserFromAuthentication();
+        user.setIp(request.getRemoteAddr());
+        SignBook signBook = signBookService.getSignBook(name, user);
+        for (MultipartFile multipartFile : multipartFiles) {
+            Document document = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
+            signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), signBook, user, Arrays.asList(document));
+        }
+        String[] ok = {"ok"};
+        return ok;
+    }
+
+//    @RequestMapping(value = "/get-last-file-seda/{id}", method = RequestMethod.GET)
+//    public void getLastFileSeda(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
+//        SignRequest signRequest = signRequestRepository.findById(id).get();
+//        User user = userService.getUserFromAuthentication();
+//        if (signRequestService.checkUserViewRights(user, signRequest)) {
+//            List<Document> documents = signRequestService.getToSignDocuments(signRequest);
+//            try {
+//                if (documents.size() > 1) {
+//                    response.sendRedirect("/user/signbooks/" + id);
+//                } else {
+//                    Document document = documents.get(0);
+//                    response.setHeader("Content-Disposition", "inline;filename=test-seda.zip");
+//                    response.setContentType("application/zip");
+//                    IOUtils.copy(sedaExportService.generateSip(signRequest), response.getOutputStream());
+//                }
+//            } catch (Exception e) {
+//                logger.error("get file error", e);
+//            }
+//        } else {
+//            logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
+//        }
+//    }
 
 
     @RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)

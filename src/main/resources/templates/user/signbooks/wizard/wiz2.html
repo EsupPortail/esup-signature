@@ -4,8 +4,8 @@
 
 <body>
 <a onclick="location.reload();">refresh</a>
-<form id="wiz2Form" th:action="'/user/wizard/wiz3/' + ${signBook.id}">
-
+<form id="wiz2Form" th:action="'/user/signbooks/wizard/wiz3'" method="post">
+    <input type="hidden" name="name" th:value="${name}">
     <div class="file-loading">
         <input id="multipartFile" name="multipartFiles" type="file" multiple="multiple"/>
     </div>
@@ -26,12 +26,12 @@
             console.log('change');
             if ($('#unique :checkbox').is(":checked")){
                 $('#multipartFile').fileinput('refresh', {
-                    uploadUrl: '[['/user/signrequests/add-doc/' + ${signBook.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}]]'
+                    uploadUrl: '[['/user/signbooks/add-doc/' + ${name} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}]]'
                 });
             } else {
                 console.log('uncheck');
                 $('#multipartFile').fileinput('refresh', {
-                    uploadUrl: '[['/user/signrequests/add-doc-new-signrequest/' + ${signBook.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}]]'
+                    uploadUrl: '[['/user/signbooks/add-doc-new-signrequest/' + ${name} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}]]'
                 });
             }
             }
@@ -43,7 +43,7 @@
             showClose: false,
             showBrowse: true,
             showUpload: false,
-            uploadUrl: '[['/user/signrequests/add-doc-new-signrequest/' + ${signBook.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}]]',
+            uploadUrl: '[['/user/signbooks/add-doc-new-signrequest/' + ${name} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}]]',
             showRemove: false,
             browseOnZoneClick: true,
             uploadAsync: false,

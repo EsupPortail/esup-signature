@@ -3,7 +3,7 @@
 <head th:replace="fragments/head :: head"></head>
 
 <body>
-<form th:action="'/user/wizard/wizX/' + ${signBook.id}" method="post">
+<form th:action="'/user/signbooks/wizard/wizX/' + ${signBook.id}" method="post">
     <input type="hidden" name="step" th:value="${step}">
     <th:block th:if="${workflowStep != null}">
     <h5 th:text="'Etape ' + ${step + 1}"></h5>
@@ -71,12 +71,13 @@
     </button>
     </th:block>
     <th:block th:if="${workflowStep == null}">
+        <h5>Vous pouvez ajouter une nouvelle étape ou poursuivre la procédure</h5>
         <button type="submit" name="addNew" value="true" class="btn btn-primary" style="position: absolute;left: 0;bottom: 0;">
             <i class="fas fa-plus"></i> Ajouter une étape
         </button>
-        <button th:onclick="'parent.location.href=\'/user/signbooks/' + ${signBook.id} + '\''" type="submit" class="btn btn-success">
-            Terminer <i class="fas fa-flag-checkered"></i>
-        </button>
+        <a th:href="'/user/signbooks/wizard/wizend/' + ${signBook.id}"class="btn btn-success" style="position: absolute;right: 0;bottom: 0;">
+            Suivant <i class="fas fa-arrow-right"></i>
+        </a>
         </button>
     </th:block>
 </form>

@@ -79,6 +79,14 @@ public class SignBookService {
         }
     }
 
+    public SignBook getSignBook(String name, User user) throws EsupSignatureException {
+        if (signBookRepository.countByName(name) == 0) {
+            return createSignBook(name, SignBookType.workflow, user, false);
+        } else {
+            return signBookRepository.findByName(name).get(0);
+        }
+    }
+
     public void addSignRequest(SignBook signBook, SignRequest signRequest) {
         signBook.getSignRequests().add(signRequest);
         signBookRepository.save(signBook);

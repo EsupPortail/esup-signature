@@ -2,19 +2,11 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
-<th:block th:if="${referer == null}">
-    <nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-</th:block>
-<th:block th:unless="${referer == null}">
-    <nav th:replace="fragments/emptyBar :: emptyBar"></nav>
-</th:block>
+<nav th:replace="fragments/emptyBar :: emptyBar"></nav>
 <main role="main">
     <div class="wrapper">
         <nav id="sidebar">
             <div class="m-1">
-                <button th:if="${referer == null}" title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
-                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
-                </button>
                 <div th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'nexuSign'}">
                     <script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
                     <script type="text/javascript" th:replace="user/signrequests/includes/scriptnexu :: scriptnexu"></script>
@@ -64,11 +56,8 @@
                         onclick="document.getElementById('signForm').submit();">
                     <i class="fas fa-check"></i><span class="sidebar-label"> Valider le document</span>
                 </button>
-                <button th:if="${referer != null}" title="Abandonner" type="button" class="btn btn-light col-12 mb-1 text-left" value="Retour" th:onclick="@{'location.href=\'' + ${referer} + '\''}">
-                    <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
-                </button>
-                <button th:unless="${referer != null}" title="Abandonner" type="button" class="btn btn-light col-12 mb-1 text-left" value="Retour" onclick="window.history.back()">
-                    <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
+                <button title="Abandonner" type="button" class="btn btn-light col-12 mb-1 text-left" value="Fermer" onclick="window.close();">
+                    <i class="fas fa-times"></i><span class="sidebar-label"> Fermer</span>
                 </button>
             </div>
         </nav>

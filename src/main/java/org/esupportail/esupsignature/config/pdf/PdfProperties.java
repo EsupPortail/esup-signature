@@ -9,7 +9,7 @@ public class PdfProperties {
     private int height = 842;
     private int pdfToImageDpi = 150;
     private int signWidthThreshold = 150;
-    private String pathToGS = "/usr/bin/";
+    private String pathToGS = "/usr/bin/gs";
     private boolean convertToPdfA = true;
     private int pdfALevel = 2;
 

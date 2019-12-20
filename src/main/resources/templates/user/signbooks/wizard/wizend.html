@@ -7,7 +7,7 @@
         Signer <i class="fas fa-signature"></i>
     </button>
 
-    <button th:onclick="'parent.location.href=\'/user/signbooks/\''" type="submit" class="btn btn-success">
+    <button th:onclick="'parent.location.href=\'/user/signbooks/'+ ${signBook.id} +'/0\''" type="submit" class="btn btn-success">
         Terminer <i class="fas fa-flag-checkered"></i>
     </button>
 
