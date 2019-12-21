@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service;
 
-import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;

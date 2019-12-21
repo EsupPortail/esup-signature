@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -55,8 +54,8 @@ public class SignRequest {
     @ManyToOne
     private SignBook parentSignBook;
 
-    @ElementCollection(targetClass=String.class)
-    private List<String> recipientEmails = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.REMOVE)
+    private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
    	public void setStatus(SignRequestStatus status) {
         this.status = status;
@@ -160,5 +159,13 @@ public class SignRequest {
 
     public void setParentSignBook(SignBook parentSignBook) {
         this.parentSignBook = parentSignBook;
+    }
+
+    public List<SignRequestParams> getSignRequestParams() {
+        return signRequestParams;
+    }
+
+    public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
+        this.signRequestParams = signRequestParams;
     }
 }

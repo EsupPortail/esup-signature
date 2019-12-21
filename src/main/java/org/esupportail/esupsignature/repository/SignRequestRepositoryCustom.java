@@ -5,8 +5,6 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 public interface SignRequestRepositoryCustom {
 
     Page<SignRequest> findBySignResquestByCreateBy(String createBy, Pageable pageable);

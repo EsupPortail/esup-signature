@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service.file;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,6 @@ import java.awt.font.TextAttribute;
 import java.awt.image.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 import java.util.Base64;
 import java.util.Hashtable;
 import java.util.Map;

@@ -4,15 +4,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
-import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
-import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
-//import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
@@ -27,11 +25,8 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -47,10 +42,11 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
+
+//import org.esupportail.esupsignature.service.export.SedaExportService;
 
 @RequestMapping("/user/signrequests")
 @Controller
@@ -488,9 +484,9 @@ public class SignRequestController {
                     setPassword(password);
                 }
                 try {
-                    if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignRequestParams.SignType.visa)) {
+                    if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.visa)) {
                         signRequestService.updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", comment);
-                    } else if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignRequestParams.SignType.nexuSign)) {
+                    } else if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
                         logger.error("no multiple nexu sign");
                         progress = "not_autorized";
                     } else {
@@ -797,7 +793,7 @@ public class SignRequestController {
 
     void populateEditForm(Model model, SignRequest signRequest) {
         model.addAttribute("signRequest", signRequest);
-        model.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
+        model.addAttribute("signTypes", Arrays.asList(SignType.values()));
         model.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
     }
 

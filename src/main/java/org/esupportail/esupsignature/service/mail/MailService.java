@@ -7,7 +7,7 @@ import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -24,6 +23,7 @@ import org.springframework.util.FileCopyUtils;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
@@ -63,8 +63,8 @@ public class MailService {
     @Autowired
     private TemplateEngine templateEngine;
 
-    @Autowired
-    private SignRequestService signRequestService;
+    @Resource
+    private SignBookService signBookService;
 
     @Autowired
     private FileService fileService;
@@ -72,13 +72,13 @@ public class MailService {
     @Value("${root.url}")
     private String rootUrl;
 
-    public void sendCompletedMail(SignRequest signRequest) {
+    public void sendCompletedMail(SignBook signBook) {
         if (!checkMailSender()) {
             return;
         }
-        User user = userRepository.findByEppn(signRequest.getCreateBy()).get(0);
+        User user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("signRequest", signRequest);
+        ctx.setVariable("signRequest", signBook);
         ctx.setVariable("rootUrl", rootUrl);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -142,8 +142,10 @@ public class MailService {
             message.setSubject("Esup-Signature : nouveau document  " + signBook.getName());
             message.setFrom(mailConfig.getMailFrom());
             message.setTo(signBook.getDocumentsTargetUri());
-            Document toSendDocument = signRequestService.getLastSignedDocument(signBook.getSignRequests().get(0));
-            message.addAttachment(toSendDocument.getFileName(), new ByteArrayResource(IOUtils.toByteArray(toSendDocument.getInputStream())));
+            List<Document> toSendDocuments = signBookService.getLastSignedDocuments(signBook);
+            for (Document toSendDocument : toSendDocuments) {
+                message.addAttachment(toSendDocument.getFileName(), new ByteArrayResource(IOUtils.toByteArray(toSendDocument.getInputStream())));
+            }
             String htmlContent = templateEngine.process("mail/email-file.html", ctx);
             message.setText(htmlContent, true); // true = isHtml
             mailSender.send(mimeMessage);

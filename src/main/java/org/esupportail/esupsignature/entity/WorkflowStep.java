@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
+import org.esupportail.esupsignature.entity.enums.SignType;
+
 import javax.persistence.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,14 +18,15 @@ public class WorkflowStep {
 
     private String name;
 
-    private String signRequestToken;
-
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<Long, Boolean> recipients = new HashMap<>();
 
     transient Map<String, Boolean> recipientsNames;
 
     private Boolean allSignToComplete = false;
+
+    @Enumerated(EnumType.STRING)
+    private SignType signType;
 
     @OneToOne
     private SignRequestParams signRequestParams;
@@ -74,6 +77,14 @@ public class WorkflowStep {
 
     public void setSignRequestParams(SignRequestParams signRequestParams) {
         this.signRequestParams = signRequestParams;
+    }
+
+    public SignType getSignType() {
+        return this.signType;
+    }
+
+    public void setSignType(SignType signType) {
+        this.signType = signType;
     }
 
     public Boolean isCompleted() {

@@ -14,20 +14,6 @@ public class SignRequestParams {
 
 	@Version
     private Integer version;
-	
-	public enum SignType {
-		visa, pdfImageStamp, certSign, nexuSign;
-	}
-
-	public enum NewPageType {
-		none, onBegin;
-	}
-	
-	@Enumerated(EnumType.STRING)
-	private SignType signType;
-    
-	@Enumerated(EnumType.STRING)
-	private NewPageType newPageType;
 
 	private String pdSignatureFieldName;
 	
@@ -36,26 +22,6 @@ public class SignRequestParams {
 	private int xPos;
 
 	private int yPos;
-	
-    public SignType getSignType() {
-        return this.signType;
-    }
-
-    public String getSignTypeLabel() {
-        return this.signType.toString();
-    }
-    
-    public void setSignType(SignType signType) {
-        this.signType = signType;
-    }
-    
-    public NewPageType getNewPageType() {
-        return this.newPageType;
-    }
-    
-    public void setNewPageType(NewPageType newPageType) {
-        this.newPageType = newPageType;
-    }
 
 	public int getSignPageNumber() {
         return this.signPageNumber;

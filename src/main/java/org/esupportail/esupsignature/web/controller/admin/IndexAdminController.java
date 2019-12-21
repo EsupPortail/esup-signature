@@ -17,29 +17,11 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.repository.*;
-import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.file.FileService;
-import org.esupportail.esupsignature.service.pdf.PdfService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.SortDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import javax.annotation.Resource;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @RequestMapping("/admin")
 @Controller

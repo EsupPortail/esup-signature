@@ -4,16 +4,18 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
-import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
-import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.repository.BigFileRepository;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.DocumentService;
+import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.UserKeystoreService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.sign.SignService;
@@ -108,7 +110,6 @@ public class UserController {
 		if(user != null) {
 	        model.addAttribute("user", user);
         	model.addAttribute("signTypes", Arrays.asList(SignType.values()));
-        	model.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
         	model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
         	model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
         	if(referer != null && !"".equals(referer) && !"null".equals(referer)) {

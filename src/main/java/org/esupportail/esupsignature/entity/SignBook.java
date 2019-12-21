@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -72,6 +73,8 @@ public class SignBook {
 
     private String documentsTargetUri;
 
+    private String exportedDocumentURI;
+
 	@Enumerated(EnumType.STRING)
 	private SignBookType signBookType;
 	
@@ -83,8 +86,9 @@ public class SignBook {
     @OrderColumn
     private List<SignRequest> signRequests = new ArrayList<>();
 
-    @ManyToOne
-    private Workflow workflow;
+    @JsonIgnore
+    @Transient
+    transient String comment;
 
     public void setSignBookType(SignBookType signBookType) {
         this.signBookType = signBookType;
@@ -146,7 +150,15 @@ public class SignBook {
         return this.signBookType;
     }
 
-	public Boolean isExternal() {
+    public String getExportedDocumentURI() {
+        return exportedDocumentURI;
+    }
+
+    public void setExportedDocumentURI(String exportedDocumentURI) {
+        this.exportedDocumentURI = exportedDocumentURI;
+    }
+
+    public Boolean isExternal() {
 		return external;
 	}
 
@@ -160,14 +172,6 @@ public class SignBook {
 
     public void setSignRequests(List<SignRequest> signRequests) {
         this.signRequests = signRequests;
-    }
-
-    public Workflow getWorkflow() {
-        return workflow;
-    }
-
-    public void setWorkflow(Workflow workflow) {
-        this.workflow = workflow;
     }
 
     public Boolean getExternal() {
@@ -208,6 +212,14 @@ public class SignBook {
 
     public void setDocumentsTargetUri(String documentsTargetUri) {
         this.documentsTargetUri = documentsTargetUri;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public SignRequestStatus getStatus() {

@@ -3,16 +3,12 @@ package org.esupportail.esupsignature.web.controller.user;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.SignBook.SignBookType;
-import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
-import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
-import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
-//import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
@@ -21,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -39,11 +34,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+//import org.esupportail.esupsignature.service.export.SedaExportService;
 
 @RequestMapping("/user/signbooks")
 @Controller
@@ -219,9 +215,9 @@ public class SignBookController {
                     setPassword(password);
                 }
                 try {
-                    if (signBook.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.visa)) {
+                    if (signBook.getCurrentWorkflowStep().getSignType().equals(SignType.visa)) {
                         signRequestService.updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", comment);
-                    } else if (signBook.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
+                    } else if (signBook.getCurrentWorkflowStep().getSignType().equals(SignType.nexuSign)) {
                         logger.error("no multiple nexu sign");
                         progress = "not_autorized";
                     } else {
@@ -406,7 +402,7 @@ public class SignBookController {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
         if(user.getEppn().equals(signBook.getCreateBy()) && signBook.getCurrentWorkflowStepNumber() <= step + 1) {
-            signRequestService.changeSignType(signBook, step, null, signType);
+            signBookService.changeSignType(signBook, step, null, signType);
             return "redirect:/user/signbooks/" + id + "/?form";
         }
         return "redirect:/user/signbooks/";
@@ -424,8 +420,8 @@ public class SignBookController {
             if(allSignToComplete == null) {
                 allSignToComplete = false;
             }
-            signRequestService.changeSignType(signBook, step, name, signType);
-            signRequestService.toggleNeedAllSign(signBook, step, allSignToComplete);
+            signBookService.changeSignType(signBook, step, name, signType);
+            signBookService.toggleNeedAllSign(signBook, step, allSignToComplete);
             return "redirect:/user/signbooks/" + id + "/?form";
         }
         return "redirect:/user/signbooks/";
@@ -438,8 +434,9 @@ public class SignBookController {
                           @RequestParam("signType") String signType) {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
-        if (signRequestService.checkUserViewRights(user, signBook)) {
-            signRequestService.addWorkflowStep(null, name, allSignToComplete, SignType.valueOf(signType), signRequest);
+        if (signBookService.checkUserViewRights(user, signBook)) {
+            WorkflowStep workflowStep = workflowService.createWorkflowStep(null, name, allSignToComplete, SignType.valueOf(signType));
+            signBook.getWorkflowSteps().add(workflowStep);
         }
         return "redirect:/user/signbooks/" + id + "/?form";
     }
@@ -449,7 +446,7 @@ public class SignBookController {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
         if(user.getEppn().equals(signBook.getCreateBy()) && signBook.getCurrentWorkflowStepNumber() <= step + 1) {
-            signRequestService.removeStep(signBook, step);
+            signBookService.removeStep(signBook, step);
         }
         return "redirect:/user/signbooks/" + id + "/?form";
     }
@@ -458,32 +455,32 @@ public class SignBookController {
     public String addWorkflow(@PathVariable("id") Long id,
                           @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) {
         User user = userService.getUserFromAuthentication();
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
+        SignBook signBook = signBookRepository.findById(id).get();
+        if (signBookService.checkUserViewRights(user, signBook)) {
             Workflow workflow = workflowRepository.findById(workflowSignBookId).get();
-            signRequestService.importWorkflow(signRequest, workflow);
+            signBookService.importWorkflow(signBook, workflow);
         }
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
-    @RequestMapping(value = "/send-to-signbook/{id}/{workflowStepId}", method = RequestMethod.GET)
-    public String sendToSignBook(@PathVariable("id") Long id,
-                                 @PathVariable("workflowStepId") Long workflowStepId,
-                                 @RequestParam(value = "signBookNames", required = true) String[] signBookNames,
-                                 RedirectAttributes redirectAttrs, HttpServletRequest request) {
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
-            WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-            if (signBookNames != null && signBookNames.length > 0) {
-                signRequestService.addRecipientsToWorkflowStep(signRequest, Arrays.asList(signBookNames), workflowStep, user);
-            }
-        } else {
-            logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
-        }
-        return "redirect:/user/signbooks/" + id + "/?form";
-    }
+//    @RequestMapping(value = "/send-to-signbook/{id}/{workflowStepId}", method = RequestMethod.GET)
+//    public String sendToSignBook(@PathVariable("id") Long id,
+//                                 @PathVariable("workflowStepId") Long workflowStepId,
+//                                 @RequestParam(value = "signBookNames", required = true) String[] signBookNames,
+//                                 RedirectAttributes redirectAttrs, HttpServletRequest request) {
+//        User user = userService.getUserFromAuthentication();
+//        user.setIp(request.getRemoteAddr());
+//        SignRequest signRequest = signRequestRepository.findById(id).get();
+//        if (signRequestService.checkUserViewRights(user, signRequest)) {
+//            WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
+//            if (signBookNames != null && signBookNames.length > 0) {
+//                signRequestService.addRecipientsToWorkflowStep(signRequest, Arrays.asList(signBookNames), workflowStep, user);
+//            }
+//        } else {
+//            logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
+//        }
+//        return "redirect:/user/signbooks/" + id + "/?form";
+//    }
 
     @DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
     public String removeStepRecipient(@PathVariable("id") Long id,
@@ -577,7 +574,6 @@ public class SignBookController {
     void populateEditForm(Model model, SignRequest signRequest) {
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("signTypes", Arrays.asList(SignType.values()));
-        model.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
     }
 
     @Scheduled(fixedDelay = 5000)

@@ -1,10 +1,13 @@
 package org.esupportail.esupsignature.web.controller.manager;
 
 import com.google.common.collect.ImmutableList;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
-import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
+import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -93,7 +96,7 @@ public class SignBookManagerController {
 		List<SignBookType> signBookTypes = new LinkedList<>(Arrays.asList(SignBookType.values()));
 		signBookTypes.remove(SignBookType.system);
 		uiModel.addAttribute("signBookTypes", signBookTypes);
-		uiModel.addAttribute("signTypes", Arrays.asList(SignRequestParams.SignType.values()));
+		uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
 		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
 		uiModel.addAttribute("signrequests", signRequestRepository.findAll());
 	}

@@ -6,6 +6,7 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.repository.*;
@@ -83,10 +84,10 @@ public class WsController {
     private LdapPersonService ldapPersonService;
 
     @ResponseBody
-    @RequestMapping(value = "/create-sign-request", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/create-sign-book", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public String createSignRequest(@RequestParam("file") MultipartFile file,
                                     @RequestParam String creatorEmail,
-                                    @RequestParam(name = "signType", required = false) SignRequestParams.SignType signType,
+                                    @RequestParam(name = "signType", required = false) SignType signType,
                                     @RequestParam(name = "posX", required = false) int posX,
                                     @RequestParam(name = "posY", required = false) int posY,
                                     @RequestParam(name = "recipientEmails", required = false) List<String> recipientEmails,
@@ -94,13 +95,13 @@ public class WsController {
         User user = userService.getUser(creatorEmail);
         user.setIp(httpServletRequest.getRemoteAddr());
         if (file != null) {
+            //TODO : create signBook
             Document documentToAdd = documentService.createDocument(file, file.getOriginalFilename());
             SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd);
             signRequest.setTitle(fileService.getNameOnly(documentToAdd.getFileName()));
             if(signType != null) {
                 WorkflowStep workflowStep = new WorkflowStep();
                 SignRequestParams signRequestParams = new SignRequestParams();
-                signRequestParams.setSignType(signType);
                 signRequestParams.setXPos(posX);
                 signRequestParams.setYPos(posY);
                 signRequestParamsRepository.save(signRequestParams);
@@ -160,24 +161,24 @@ public class WsController {
     public String addWorkflowStep(@RequestParam String token,
                                   @RequestParam String jsonWorkflowStepString) throws IOException {
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
-        SignRequestParams.SignType signType = null;
+        SignType signType = null;
         ObjectMapper mapper = new ObjectMapper();
         JsonWorkflowStep jsonWorkflowStep = mapper.readValue(jsonWorkflowStepString, JsonWorkflowStep.class);
         switch (jsonWorkflowStep.getSignLevel()) {
             case 0:
-                signType = SignRequestParams.SignType.visa;
+                signType = SignType.visa;
                 break;
             case 1:
-                signType = SignRequestParams.SignType.pdfImageStamp;
+                signType = SignType.pdfImageStamp;
                 break;
             case 2:
-                signType = SignRequestParams.SignType.certSign;
+                signType = SignType.certSign;
                 break;
             case 3:
-                signType = SignRequestParams.SignType.nexuSign;
+                signType = SignType.nexuSign;
                 break;
         }
-        signRequestService.addWorkflowStep(jsonWorkflowStep.getRecipientEmails(), "name", jsonWorkflowStep.getAllSignToComplete(), signType, signRequest);
+        //signRequestService.addWorkflowStep(jsonWorkflowStep.getRecipientEmails(), "name", jsonWorkflowStep.getAllSignToComplete(), signType, signRequest);
         return null;
     }
 

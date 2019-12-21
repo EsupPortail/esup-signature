@@ -1,19 +1,18 @@
 package org.esupportail.esupsignature.service.scheduler;
 
-import org.apache.fop.fonts.type1.AdobeStandardEncoding;
 import org.esupportail.esupsignature.dss.web.service.OJService;
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +27,9 @@ import java.util.List;
 public class ScheduledTaskService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ScheduledTaskService.class);
+
+	@Resource
+	private SignBookRepository signBookRepository;
 
 	@Resource
 	private SignBookService signBookService;
@@ -63,10 +65,10 @@ public class ScheduledTaskService {
 	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.trace("scan all signRequest to export");
-		List<SignRequest> signRequests = signRequestRepository.findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus.completed);
-		for(SignRequest signRequest : signRequests) {
+		List<SignBook> signBooks = signBookRepository.findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus.completed);
+		for(SignBook signBook : signBooks) {
 			try {
-				signRequestService.exportFilesToTarget(signRequest, getSchedulerUser());
+				signBookService.exportFilesToTarget(signBook, getSchedulerUser());
 			} catch (EsupSignatureException e) {
 				logger.error(e.getMessage());
 			}

@@ -2,14 +2,15 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.BigFileRepository;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.DocumentService;
+import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;

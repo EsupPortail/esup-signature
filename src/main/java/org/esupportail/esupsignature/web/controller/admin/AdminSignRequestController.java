@@ -1,17 +1,21 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.SignBook.SignBookType;
-import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
-import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.Log;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.DocumentService;
+import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
@@ -169,7 +173,6 @@ public class AdminSignRequestController {
 				model.addAttribute("signable", "ok");
 			}
 			model.addAttribute("allSignBooks", signBookRepository.findByNotCreateBy("System"));
-			model.addAttribute("nbSignOk", signRequest.countSignOk());
 			model.addAttribute("baseUrl", baseUrl);
 			model.addAttribute("nexuVersion", nexuVersion);
 			model.addAttribute("nexuUrl", nexuUrl);
@@ -187,7 +190,7 @@ public class AdminSignRequestController {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
 			if(signRequest.getOriginalDocuments().size() > 0 &&
-			(signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.pdfImageStamp) || signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.visa))
+			(signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.pdfImageStamp) || signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.visa))
 			) {
 				signRequest.getOriginalDocuments().remove(signRequest.getOriginalDocuments().get(0));
 			}
@@ -309,7 +312,6 @@ public class AdminSignRequestController {
 	void populateEditForm(Model model, SignRequest signRequest) {
 		model.addAttribute("signRequest", signRequest);
 		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
-		model.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
 	}
 
 }

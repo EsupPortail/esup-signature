@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -16,7 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 @Service
 public class WorkflowService {
@@ -172,7 +176,7 @@ public class WorkflowService {
                         signRequest.setParentSignBook(signBook);
                         signRequest.setTitle(documentToAdd.getFileName());
                         signRequestRepository.save(signRequest);
-                        signRequestService.importWorkflow(signRequest, workflow);
+                        signBookService.importWorkflow(signBook, workflow);
                         signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Import depuis " + workflow.getSourceType() + " : " + workflow.getDocumentsSourceUri(), user, "SUCCESS", null);
                         fsAccessService.remove(fsFile);
                     }
@@ -195,6 +199,70 @@ public class WorkflowService {
         } else {
             return false;
         }
+    }
+
+    public void changeSignType(Workflow workflow, int step, String name, SignType signType) {
+        WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
+        if(name != null) {
+            workflowStep.setName(name);
+        }
+        setSignTypeForWorkflowStep(signType, workflowStep);
+        workflowStepRepository.save(workflowStep);
+    }
+
+    public Long setSignTypeForWorkflowStep(SignType signType, WorkflowStep workflowStep) {
+        workflowStep.setSignType(signType);
+        workflowStepRepository.save(workflowStep);
+        return workflowStep.getId();
+    }
+
+    public Long toggleNeedAllSign(Workflow workflow, int step) {
+        WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
+        return toggleAllSignToCompleteForWorkflowStep(workflowStep);
+    }
+
+    public Long toggleAllSignToCompleteForWorkflowStep(WorkflowStep workflowStep) {
+        if(workflowStep.isAllSignToComplete()) {
+            workflowStep.setAllSignToComplete(false);
+        } else {
+            workflowStep.setAllSignToComplete(true);
+        }
+        workflowStepRepository.save(workflowStep);
+        return workflowStep.getId();
+    }
+
+
+    public void addRecipientsToWorkflowStep(List<String> recipientsEmail, WorkflowStep workflowStep, User user) {
+        for (String recipientEmail : recipientsEmail) {
+            User recipientUser;
+            if (userRepository.countByEmail(recipientEmail) == 0) {
+                recipientUser = userService.createUser(recipientEmail);
+            } else {
+                recipientUser = userRepository.findByEmail(recipientEmail).get(0);
+            }
+            workflowStep.getRecipients().put(recipientUser.getId(), false);
+            //TODO : log
+            //updateStatus(signRequest, signRequest.getStatus(), "Envoyé dans le parapheur " + recipientUser.getName(), user, "SUCCESS", "");
+        }
+    }
+
+    public WorkflowStep createWorkflowStep(List<String> recipientEmails, String name, Boolean allSignToComplete, SignType signType) {
+        WorkflowStep workflowStep = new WorkflowStep();
+        if(name != null) {
+            workflowStep.setName(name);
+        }
+        if(allSignToComplete ==null) {
+            workflowStep.setAllSignToComplete(false);
+        } else {
+            workflowStep.setAllSignToComplete(allSignToComplete);
+        }
+        workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
+        workflowStep.setSignType(signType);
+        workflowStepRepository.save(workflowStep);
+        if(recipientEmails != null) {
+            addRecipientsToWorkflowStep(recipientEmails, workflowStep, userService.getSystemUser());
+        }
+        return workflowStep;
     }
 
 }

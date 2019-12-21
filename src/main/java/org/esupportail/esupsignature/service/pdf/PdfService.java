@@ -16,7 +16,9 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
-import org.apache.pdfbox.pdmodel.interactive.form.*;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
@@ -28,15 +30,15 @@ import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.type.BadFieldValueException;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
-import org.esupportail.esupsignature.config.pdf.PdfProperties;
-import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.verapdf.pdfa.Foundries;
@@ -56,7 +58,6 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 
@@ -74,10 +75,10 @@ public class PdfService {
     @Resource
     private FileService fileService;
 
-    public Document stampImage(Document toSignFile, SignBook signBook, User user, boolean addPage, boolean addDate) throws InvalidPasswordException, IOException {
+    public Document stampImage(Document toSignFile, SignBook signBook, User user, boolean addDate) {
         //TODO add ip ? + date + nom ?
         SignRequestParams params = signBook.getCurrentWorkflowStep().getSignRequestParams();
-        SignRequestParams.SignType signType = params.getSignType();
+        SignType signType = signBook.getCurrentWorkflowStep().getSignType();
         PdfParameters pdfParameters;
         try {
             PDDocument pdDocument = PDDocument.load(toSignFile.getInputStream());

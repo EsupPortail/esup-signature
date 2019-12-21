@@ -11,11 +11,10 @@ import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
-import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
@@ -25,7 +24,6 @@ import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
-import org.esupportail.esupsignature.service.fs.UploadActionType;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.sign.SignService;
@@ -101,13 +99,12 @@ public class SignRequestService {
 		for(WorkflowStep workflowStep : workflowSteps) {
 			if(!workflowStep.getRecipients().get(user.getId()) && signRequestRepository.findByWorkflowSteps(Arrays.asList(workflowStep)).size() > 0) {
 				SignRequest signRequest = signRequestRepository.findByWorkflowSteps(Arrays.asList(workflowStep)).get(0);
-				if (signRequest.getCurrentWorkflowStep().equals(workflowStep) && signRequest.getStatus().equals(SignRequestStatus.pending)) {
+				if (signRequest.getParentSignBook().getCurrentWorkflowStep().equals(workflowStep) && signRequest.getStatus().equals(SignRequestStatus.pending)) {
 					signRequestsToSign.add(signRequest);
 				}
 			}
 		}
 		return signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
-
 	}
 
 	public SignRequest createSignRequest(String title, User user) throws EsupSignatureException {
@@ -167,25 +164,17 @@ public class SignRequestService {
 	public void sign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException, IOException {
 		step = "Demarrage de la signature";
 		boolean addPage = false;
-		if(!SignRequestParams.NewPageType.none.equals(signRequest.getCurrentWorkflowStep().getSignRequestParams().getNewPageType())) {
-			int nbSignOk = signRequest.countSignOk();
-			signRequest.getCurrentWorkflowStep().getSignRequestParams().setXPos(95 + ((nbSignOk - (Math.abs(nbSignOk / 3) * 3)) * 150));
-			signRequest.getCurrentWorkflowStep().getSignRequestParams().setYPos(188 +(Math.abs(nbSignOk / 3) * 100));
-			if(nbSignOk == 0) {
-				addPage = true;
-			}
-		}
 		Document signedFile = null;
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
-		SignType signType = signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType();
+		SignType signType = signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType();
 		if (signType.equals(SignType.visa)) {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, user, addPage, addDate);
+				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest.getParentSignBook(), user, addPage, addDate);
 			} else {
 				signedFile = toSignDocuments.get(0);
 			}
-		} else if(signType.equals(SignRequestParams.SignType.pdfImageStamp)) {
-			signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, user, addPage, addDate);
+		} else if(signType.equals(SignType.pdfImageStamp)) {
+			signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest.getParentSignBook(), user, addPage, addDate);
 		} else {
 			signedFile = certSign(signRequest, user, password, addDate, visual);
 		}
@@ -195,7 +184,11 @@ public class SignRequestService {
 			signRequest.getSignedDocuments().add(signedFile);
 			signedFile.setParentId(signRequest.getId());
 			//signedFile.delete();
-			applyEndOfStepRules(signRequest, user);
+			if(signType.equals(SignType.visa)) {
+				updateStatus(signRequest, SignRequestStatus.pending, "Visa", user, "SUCCESS", signRequest.getComment());
+			} else {
+				updateStatus(signRequest, SignRequestStatus.pending, "Signature", user, "SUCCESS", signRequest.getComment());
+			}
 			step = "end";
 		}
 	}
@@ -213,11 +206,7 @@ public class SignRequestService {
 		InMemoryDocument signedDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 
 		addSignedFile(signRequest, signedDocument.openStream(), signedDocument.getName(), signedDocument.getMimeType().getMimeTypeString(), user);
-		try {
-			applyEndOfStepRules(signRequest, user);
-		} catch (EsupSignatureException | IOException e) {
-			throw new EsupSignatureSignException("error on apply signBook rules", e);
-		}
+		updateStatus(signRequest, SignRequestStatus.pending, "Signature", user, "SUCCESS", signRequest.getComment());
 	}
 
 	public Document certSign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureKeystoreException, IOException {
@@ -228,7 +217,7 @@ public class SignRequestService {
 		}
 		step = "Préparation de la signature";
 		try {
-			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest, visual);
+			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest.getParentSignBook(), visual);
 			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 			
@@ -255,18 +244,14 @@ public class SignRequestService {
 			} else if(signatureForm.equals(SignatureForm.PAdES)) {
 				//TODO fix problème png (premier upload ?)
 				step = "Formatage du PDF";
-				boolean addPage = false;
-				if(signRequest.countSignOk() == 0) {
-					addPage = true;
-				}
 				InputStream toSignInputStream;
 				Document toSignFile = toSignFiles.get(0);
-				toSignInputStream = pdfService.formatPdf(toSignFile.getInputStream(), signRequest.getCurrentWorkflowStep().getSignRequestParams(), addPage);
-				if(signRequest.getCurrentWorkflowStepNumber() == 1) {
-					toSignInputStream = pdfService.convertGS(pdfService.writeMetadatas(toSignFile.getInputStream(), toSignFile.getFileName(), signRequest));
+				toSignInputStream = toSignFile.getInputStream();
+				if(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() == 1) {
+					toSignInputStream = pdfService.convertGS(pdfService.writeMetadatas(toSignFile.getInputStream(), toSignFile.getFileName(), signRequest.getParentSignBook()));
 				}
 				MultipartFile multipartFile = fileService.toMultipartFile(toSignInputStream, toSignFile.getFileName(), "application/pdf");
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentWorkflowStep().getSignRequestParams(), multipartFile, user, addDate);
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getCurrentWorkflowStep().getSignRequestParams(), multipartFile, user, addDate);
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
 				documentForm.setDocumentToSign(multipartFile);
 				signatureDocumentForm = documentForm;
@@ -294,82 +279,48 @@ public class SignRequestService {
 		}
 	}
 	
-	public void addSignedFile(SignRequest signRequest, InputStream signedInputStream, String fileName, String mimeType, User user) throws EsupSignatureIOException {
+	public void addSignedFile(SignRequest signRequest, InputStream signedInputStream, String fileName, String mimeType, User user) {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-		Document document = documentService.createDocument(signedInputStream, signRequest.getTitle() + "_" + signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType() + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(fileName), mimeType);
+		Document document = documentService.createDocument(signedInputStream, signRequest.getTitle() + "_" + signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType() + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(fileName), mimeType);
 		signRequest.getSignedDocuments().add(document);
 		document.setParentId(signRequest.getId());
 	}
+//
+//	public void applyEndOfStepRules(SignRequest signRequest, User user) throws EsupSignatureException {
+//		//SignBook recipientSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
+//		SignType signType = signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType();
+//		signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().put(user.getId(), true);
+//		if (isSignRequestCompleted(signRequest)) {
+//			if(signType.equals(SignType.visa)) {
+//				updateStatus(signRequest, SignRequestStatus.checked, "Visa" , user, "SUCCESS", signRequest.getComment());
+//			} else {
+//				updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
+//			}
+//			//signBookService.removeSignRequestFromSignBook(signRequest, recipientSignBook);
+//			if(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() == signRequest.getParentSignBook().getWorkflowSteps().size()) {
+//				completeSignRequest(signRequest, user);
+//				setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
+//				mailService.sendCompletedMail(signRequest);
+//			} else {
+//				nextWorkFlowStep(signRequest.getParentSignBook(), user);
+//				updateStatus(signRequest, SignRequestStatus.pending, "Passage à l'étape suivante", user, "SUCCESS", signRequest.getComment());
+//			}
+//		} else {
+//			if(signType.equals(SignType.visa)) {
+//				updateStatus(signRequest, SignRequestStatus.pending, "Visa", user, "SUCCESS", signRequest.getComment());
+//			} else {
+//				updateStatus(signRequest, SignRequestStatus.pending, "Signature", user, "SUCCESS", signRequest.getComment());
+//			}
+//		}
+//		//signRequest.setNbSign(signRequest.getNbSign() + 1);
+//	}
 
-	public void applyEndOfStepRules(SignRequest signRequest, User user) throws EsupSignatureException, IOException {
-		//SignBook recipientSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
-		SignRequestParams.SignType signType = signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType();
-		signRequest.getCurrentWorkflowStep().getRecipients().put(user.getId(), true);
-		if (isSignRequestCompleted(signRequest)) {
-			if(signType.equals(SignType.visa)) {
-				updateStatus(signRequest, SignRequestStatus.checked, "Visa" , user, "SUCCESS", signRequest.getComment());
-			} else {
-				updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
-			}
-			//signBookService.removeSignRequestFromSignBook(signRequest, recipientSignBook);
-			if(signRequest.getCurrentWorkflowStepNumber() == signRequest.getWorkflowSteps().size()) {
-				completeSignRequest(signRequest, user);
-				setWorkflowsLabels(signRequest.getWorkflowSteps());
-				mailService.sendCompletedMail(signRequest);
-			} else {
-				nextWorkFlowStep(signRequest, user);
-				updateStatus(signRequest, SignRequestStatus.pending, "Passage à l'étape suivante", user, "SUCCESS", signRequest.getComment());
-			}
-		} else {
-			if(signType.equals(SignType.visa)) {
-				updateStatus(signRequest, SignRequestStatus.pending, "Visa", user, "SUCCESS", signRequest.getComment());
-			} else {
-				updateStatus(signRequest, SignRequestStatus.pending, "Signature", user, "SUCCESS", signRequest.getComment());
-			}
-		}
-		//signRequest.setNbSign(signRequest.getNbSign() + 1);
-	}
 
-	public void addWorkflowStep(List<String> recipientEmails, String name, Boolean allSignToComplete, SignType signType, SignRequest signRequest) {
-		WorkflowStep workflowStep = new WorkflowStep();
-		if(name != null) {
-			workflowStep.setName(name);
-		}
-		if(allSignToComplete ==null) {
-			workflowStep.setAllSignToComplete(false);
-		} else {
-			workflowStep.setAllSignToComplete(allSignToComplete);
-		}
-		workflowStep.setSignRequestParams(getEmptySignRequestParams());
-		workflowStep.getSignRequestParams().setSignType(signType);
-		workflowStepRepository.save(workflowStep);
-		signRequest.getWorkflowSteps().add(workflowStep);
-		if(recipientEmails != null) {
-			addRecipientsToWorkflowStep(signRequest, recipientEmails, workflowStep, userService.getSystemUser());
-		}
-	}
-
-	public void addRecipientsToWorkflowStep(SignRequest signRequest, List<String> recipientsEmail, WorkflowStep workflowStep, User user) {
-		for (String recipientEmail : recipientsEmail) {
-			User recipientUser;
-			if (userRepository.countByEmail(recipientEmail) == 0) {
-				recipientUser = userService.createUser(recipientEmail);
-			} else {
-				recipientUser = userRepository.findByEmail(recipientEmail).get(0);
-			}
-			workflowStep.getRecipients().put(recipientUser.getId(), false);
-			updateStatus(signRequest, signRequest.getStatus(), "Envoyé dans le parapheur " + recipientUser.getName(), user, "SUCCESS", "");
-		}
-	}
-
-	public void nextWorkFlowStep(SignRequest signRequest, User user) {
-		signRequest.setCurrentWorkflowStepNumber(signRequest.getCurrentWorkflowStepNumber() + 1);
-	}
 
 	public void pendingSignRequest(SignRequest signRequest, User user) {
 		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
-			for (Long recipientId : signRequest.getCurrentWorkflowStep().getRecipients().keySet()) {
+			for (Long recipientId : signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().keySet()) {
 				User recipientUser = userRepository.findById(recipientId).get();
 				if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
 					userService.sendEmailAlert(recipientUser);
@@ -382,29 +333,11 @@ public class SignRequestService {
 
 	public int scanSignatureFields(SignRequest signRequest, PDDocument pdDocument) {
 		List<SignRequestParams> signRequestParamsList = pdfService.pdSignatureFieldsToSignRequestParams(pdDocument);
-		int stepNumber = 0;
-		if(signRequestParamsList.size() > 0) {
-			for (SignRequestParams signRequestParams : signRequestParamsList) {
-				signRequestParams.setNewPageType(NewPageType.none);
-				signRequestParams.setSignType(SignType.visa);
-				signRequestParamsRepository.save(signRequestParams);
-				if(signRequest.getWorkflowSteps().size() > stepNumber){
-					signRequest.getWorkflowSteps().get(stepNumber).getSignRequestParams().setXPos(signRequestParams.getXPos());
-					signRequest.getWorkflowSteps().get(stepNumber).getSignRequestParams().setYPos(signRequestParams.getYPos());
-				} else {
-					WorkflowStep workflowStep = new WorkflowStep();
-					workflowStep.setSignRequestParams(signRequestParams);
-					workflowStepRepository.save(workflowStep);
-					signRequest.getWorkflowSteps().add(workflowStep);
-				}
-				stepNumber++;
-			}
-		}
-		return stepNumber;
+		signRequest.getSignRequestParams().addAll(signRequestParamsList);
+		return signRequestParamsList.size();
 	}
 
-	public void completeSignRequest(SignRequest signRequest, User user) throws EsupSignatureException {
-		signRequest.setCurrentWorkflowStepNumber(signRequest.getCurrentWorkflowStepNumber() + 1);
+	public void completeSignRequest(SignRequest signRequest, User user) {
 		updateStatus(signRequest, SignRequestStatus.completed, "Terminé automatiquement", user, "SUCCESS", signRequest.getComment());
 	}
 
@@ -449,65 +382,6 @@ public class SignRequestService {
 		}
 	}
 
-	public void clearAllDocuments(SignRequest signRequest) {
-		logger.info("clear all documents from " + signRequest.getToken());
-		List<Document> originalDocuments = new ArrayList<Document>();
-		originalDocuments.addAll(signRequest.getOriginalDocuments());
-		signRequest.getOriginalDocuments().clear();
-		for(Document document : originalDocuments) {
-			documentService.deleteDocument(document);
-		}
-		List<Document> signedDocuments = new ArrayList<Document>();
-		signedDocuments.addAll(signRequest.getSignedDocuments());
-		signRequest.getSignedDocuments().clear();
-		for(Document document : signedDocuments) {
-			documentService.deleteDocument(document);
-		}
-		signRequestRepository.save(signRequest);
-	}
-
-
-	public void exportFilesToTarget(SignRequest signRequest, User user) throws EsupSignatureException {
-		logger.trace("export signRequest to : " + signRequest.getTargetType() + "://" + signRequest.getDocumentsTargetUri());
-		if (signRequest.getStatus().equals(SignRequestStatus.completed) /* && signRequestService.isSignRequestCompleted(signRequest)*/) {
-			setWorkflowsLabels(signRequest.getWorkflowSteps());
-			boolean exportOk = exportFileToTarget(signRequest, user);
-			if (exportOk) {
-					updateStatus(signRequest, SignRequestStatus.exported, "Copié vers la destination " + signRequest.getExportedDocumentURI(), user, "SUCCESS", "");
-				if (!signRequest.getTargetType().equals(DocumentIOType.mail)) {
-					clearAllDocuments(signRequest);
-				}
-			}
-		}
-	}
-
-	public boolean exportFileToTarget(SignRequest signRequest, User user) throws EsupSignatureException {
-		if (signRequest.getTargetType() != null && !signRequest.getTargetType().equals(DocumentIOType.none)) {
-			Document signedFile = getLastSignedDocument(signRequest);
-			if (signRequest.getTargetType().equals(DocumentIOType.mail)) {
-				logger.info("send by email to " + signRequest.getDocumentsTargetUri());
-				mailService.sendFile(signRequest);
-				signRequest.setExportedDocumentURI("mail://" + signRequest.getDocumentsTargetUri());
-				return true;
-			} else {
-				try {
-					logger.info("send to " + signRequest.getTargetType() + " in /" + signRequest.getDocumentsTargetUri() + "/signed");
-					FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signRequest.getTargetType());
-					InputStream inputStream = signedFile.getInputStream();
-					fsAccessService.createFile("/", signRequest.getDocumentsTargetUri(), "folder");
-					fsAccessService.createFile("/" + signRequest.getDocumentsTargetUri() + "/", "signed", "folder");
-					signRequest.setExportedDocumentURI(fsAccessService.getUri() + "/" + signRequest.getDocumentsTargetUri() + "/signed/" + signedFile.getFileName());
-					return fsAccessService.putFile( "/" + signRequest.getDocumentsTargetUri() + "/signed/", signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE);
-				} catch (Exception e) {
-					throw new EsupSignatureException("write fsaccess error : ", e);
-				}
-			}
-		} else {
-			logger.debug("no target type for this signbook");
-		}
-		return false;
-	}
-
 	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, User user, String returnCode, String comment) {
 		updateStatus(signRequest, signRequestStatus, action, user, returnCode, comment, null, null, null);
 	}
@@ -536,89 +410,13 @@ public class SignRequestService {
 		logRepository.save(log);
 	}
 
-	public boolean isSignRequestCompleted(SignRequest signRequest) {
-		if (signRequest.getCurrentWorkflowStep().getRecipients() != null) {
-			for (Map.Entry<Long, Boolean> userId : signRequest.getCurrentWorkflowStep().getRecipients().entrySet()) {
-				if (!signRequest.getCurrentWorkflowStep().getRecipients().get(userId.getKey()) && signRequest.getCurrentWorkflowStep().isAllSignToComplete()) {
-					return false;
-				}
-				if (signRequest.getCurrentWorkflowStep().getRecipients().get(userId.getKey()) && !signRequest.getCurrentWorkflowStep().isAllSignToComplete()) {
-					return true;
-				}
-			}
-			if (signRequest.getCurrentWorkflowStep().isAllSignToComplete()) {
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			return false;
-		}
-	}
-
 	public void refuse(SignRequest signRequest, User user) {
 		updateStatus(signRequest, SignRequestStatus.refused, "Refusé", user, "SUCCESS", signRequest.getComment());
 	}
 
-	public Long toggleNeedAllSign(Workflow workflow, int step) {
-		WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
-		return toggleAllSignToCompleteForWorkflowStep(workflowStep);
-	}
-
-	public void toggleNeedAllSign(SignRequest signRequest, int step, Boolean allSignToComplete) {
-		WorkflowStep workflowStep = signRequest.getWorkflowSteps().get(step);
-		if(allSignToComplete != null && !allSignToComplete.equals(workflowStep.isAllSignToComplete())) {
-			toggleAllSignToCompleteForWorkflowStep(workflowStep);
-		}
-	}
-
-	public void removeStep(SignRequest signRequest, int step) {
-		WorkflowStep workflowStep = signRequest.getWorkflowSteps().get(step);
-		signRequest.getWorkflowSteps().remove(step);
-		if(signRequest.getWorkflowSteps().size() < signRequest.getCurrentWorkflowStepNumber() && signRequest.getStatus().equals(SignRequestStatus.pending)) {
-			signRequest.setStatus(SignRequestStatus.completed);
-		}
-		signRequestRepository.save(signRequest);
-		workflowStepRepository.delete(workflowStep);
-
-	}
-
-	private Long toggleAllSignToCompleteForWorkflowStep(WorkflowStep workflowStep) {
-		if(workflowStep.isAllSignToComplete()) {
-			workflowStep.setAllSignToComplete(false);
-		} else {
-			workflowStep.setAllSignToComplete(true);
-		}
-		workflowStepRepository.save(workflowStep);
-		return workflowStep.getId();
-	}
-
-	public void changeSignType(Workflow workflow, int step, String name, SignType signType) {
-		WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
-		if(name != null) {
-			workflowStep.setName(name);
-		}
-		setSignTypeForWorkflowStep(signType, workflowStep);
-		workflowStepRepository.save(workflowStep);
-	}
-
-	public void changeSignType(SignRequest signRequest, int step, String name, SignType signType) {
-		WorkflowStep workflowStep = signRequest.getWorkflowSteps().get(step);
-		if(name != null) {
-			workflowStep.setName(name);
-		}
-		setSignTypeForWorkflowStep(signType, workflowStep);
-		workflowStepRepository.save(workflowStep);
-	}
-
-	private Long setSignTypeForWorkflowStep(SignType signType, WorkflowStep workflowStep) {
-		workflowStep.getSignRequestParams().setSignType(signType);
-		return workflowStep.getId();
-	}
-
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {
 		if ((signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
-				&& signRequest.getCurrentWorkflowStep().getRecipients().containsKey(user.getId()) &&  !signRequest.getCurrentWorkflowStep().getRecipients().get(user.getId())) {
+				&& signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().containsKey(user.getId()) &&  !signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().get(user.getId())) {
 			return true;
 		} else {
 			return false;
@@ -628,7 +426,7 @@ public class SignRequestService {
 	public boolean checkUserViewRights(User user, SignRequest signRequest) {
 		if(signRequest != null) {
 			List<Log> log = logRepository.findByEppnAndSignRequestId(user.getEppn(), signRequest.getId());
-			if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0 || signBookService.isUserInWorkflow(signRequest, user)) {
+			if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0 || signBookService.isUserInWorkflow(signRequest.getParentSignBook(), user)) {
 				return true;
 			}
 		}
@@ -638,8 +436,8 @@ public class SignRequestService {
 	public SignRequestParams getEmptySignRequestParams() {
 		SignRequestParams signRequestParams = new SignRequestParams();
 		signRequestParams.setSignPageNumber(1);
-		signRequestParams.setNewPageType(NewPageType.none);
-		signRequestParams.setSignType(SignType.visa);
+		signRequestParams.setXPos(0);
+		signRequestParams.setYPos(0);
 		signRequestParamsRepository.save(signRequestParams);
 		return signRequestParams;
 	}
@@ -668,34 +466,7 @@ public class SignRequestService {
 	}
 
 
-	public void importWorkflow(SignRequest signRequest, Workflow workflow) {
-		int i = 0;
-		for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
-			WorkflowStep newWorkflowStep;
-			if(signRequest.getWorkflowSteps().size() > i) {
-				newWorkflowStep = signRequest.getWorkflowSteps().get(i);
-			} else {
-				newWorkflowStep = new WorkflowStep();
-			}
-			newWorkflowStep.setSignRequestParams(workflowStep.getSignRequestParams());
-			newWorkflowStep.setAllSignToComplete(workflowStep.isAllSignToComplete());
-			for(Long userId : workflowStep.getRecipients().keySet()){
-				User recipient = userRepository.findById(userId).get();
-				if(recipient.getEppn().equals("creator")) {
-					recipient = userRepository.findByEmail(userService.getUserFromAuthentication().getEmail()).get(0);
-				}
-				newWorkflowStep.getRecipients().put(recipient.getId(), false);
-			}
-			if(newWorkflowStep.getId() == null) {
-				workflowStepRepository.save(newWorkflowStep);
-				signRequest.getWorkflowSteps().add(newWorkflowStep);
-			}
-			i++;
-		}
-		signRequest.setTargetType(workflow.getTargetType());
-		signRequest.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
-		signRequestRepository.save(signRequest);
-	}
+
 
 	public void delete(SignRequest signRequest) {
 		List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
