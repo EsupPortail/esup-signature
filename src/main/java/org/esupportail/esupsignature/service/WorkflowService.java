@@ -241,6 +241,7 @@ public class WorkflowService {
                 recipientUser = userRepository.findByEmail(recipientEmail).get(0);
             }
             workflowStep.getRecipients().put(recipientUser.getId(), false);
+            workflowStepRepository.save(workflowStep);
             //TODO : log
             //updateStatus(signRequest, signRequest.getStatus(), "Envoyé dans le parapheur " + recipientUser.getName(), user, "SUCCESS", "");
         }

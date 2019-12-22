@@ -6,10 +6,7 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.repository.WorkflowStepRepository;
+import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
@@ -55,6 +52,9 @@ public class SignBookService {
 
     @Resource
     private DocumentService documentService;
+
+    @Resource
+    private LogRepository logRepository;
 
     @Resource
     private WorkflowService workflowService;
@@ -316,4 +316,50 @@ public class SignBookService {
             return false;
         }
     }
+
+    public void pendingSignRequest(SignBook signBook, User user) {
+        if(!signBook.getStatus().equals(SignRequestStatus.pending)) {
+            updateStatus(signBook, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signBook.getComment());
+            for(SignRequest signRequest : signBook.getSignRequests()) {
+                signRequest.setStatus(SignRequestStatus.pending);
+            }
+            for (Long recipientId : signBook.getCurrentWorkflowStep().getRecipients().keySet()) {
+                User recipientUser = userRepository.findById(recipientId).get();
+                if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(User.EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
+                    userService.sendEmailAlert(recipientUser);
+                }
+            }
+        } else {
+            logger.warn("allready pending");
+        }
+    }
+
+    public void updateStatus(SignBook signBook, SignRequestStatus signRequestStatus, String action, User user, String returnCode, String comment) {
+        updateStatus(signBook, signRequestStatus, action, user, returnCode, comment, null, null, null);
+    }
+
+    public void updateStatus(SignBook signBook, SignRequestStatus signRequestStatus, String action, User user, String returnCode, String comment, Integer pageNumber, Integer posX, Integer posY ) {
+        Log log = new Log();
+        log.setSignRequestId(signBook.getId());
+        log.setEppn(user.getEppn());
+        log.setIp(user.getIp());
+        log.setInitialStatus(signBook.getStatus().toString());
+        log.setLogDate(new Date());
+        log.setAction(action);
+        log.setReturnCode(returnCode);
+        log.setComment(comment);
+        if(pageNumber != null) {
+            log.setPageNumber(pageNumber);
+            log.setPosX(posX);
+            log.setPosY(posY);
+        }
+        if(signRequestStatus != null) {
+            log.setFinalStatus(signRequestStatus.toString());
+            signBook.setStatus(signRequestStatus);
+        } else {
+            log.setFinalStatus(signBook.getStatus().toString());
+        }
+        logRepository.save(log);
+    }
+
 }

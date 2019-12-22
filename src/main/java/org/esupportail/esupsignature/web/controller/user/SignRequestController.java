@@ -160,7 +160,7 @@ public class SignRequestController {
         Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByCreateByAndStatus(user.getEppn(), this.statusFilter, pageable);
 
         for (SignRequest signRequest : signRequests) {
-            signRequestService.setWorkflowsLabels(signRequest.getWorkflowSteps());
+            signRequestService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
         }
         if (user.getKeystore() != null) {
             model.addAttribute("keystore", user.getKeystore().getFileName());
@@ -195,17 +195,15 @@ public class SignRequestController {
             if (user.getKeystore() != null) {
                 model.addAttribute("keystore", user.getKeystore().getFileName());
             }
-            signRequestService.setWorkflowsLabels(signRequest.getWorkflowSteps());
+            signRequestService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
             model.addAttribute("signRequest", signRequest);
 
             if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                 model.addAttribute("signable", "ok");
             }
             model.addAttribute("signTypes", SignType.values());
-            model.addAttribute("newPageTypes", NewPageType.values());
             model.addAttribute("allSignBooks", signBookRepository.findBySignBookType(SignBookType.group));
             model.addAttribute("workflows", workflowRepository.findAll());
-            model.addAttribute("nbSignOk", signRequest.countSignOk());
             model.addAttribute("baseUrl", baseUrl);
             model.addAttribute("nexuVersion", nexuVersion);
             model.addAttribute("nexuUrl", nexuUrl);
@@ -340,7 +338,7 @@ public class SignRequestController {
                         model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
                         model.addAttribute("signWidth", 100);
                         model.addAttribute("signHeight", 75);
-                        if(signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.pdfImageStamp)
+                        if(signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.pdfImageStamp)
                             && user.getSignImage() != null
                             && user.getSignImage().getSize() > 0) {
                             model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
@@ -348,7 +346,7 @@ public class SignRequestController {
                             model.addAttribute("signWidth", size[0]);
                             model.addAttribute("signHeight", size[1]);
                         }
-                        if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.certSign) && user.getKeystore() == null) {
+                        if (signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.certSign) && user.getKeystore() == null) {
                             paramsOk = false;
                         }
                     }
@@ -364,7 +362,7 @@ public class SignRequestController {
                 if (user.getKeystore() != null) {
                     model.addAttribute("keystore", user.getKeystore().getFileName());
                 }
-                signRequestService.setWorkflowsLabels(signRequest.getWorkflowSteps());
+                signRequestService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
                 model.addAttribute("signRequest", signRequest);
                 if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                     model.addAttribute("signable", "ok");
@@ -395,7 +393,7 @@ public class SignRequestController {
             SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd);
             signRequest.setTitle(fileService.getNameOnly(documentToAdd.getFileName()));
             signRequestRepository.save(signRequest);
-            signRequestService.addWorkflowStep(Arrays.asList(user.getEmail()), "Ma signature", true, signType, signRequest);
+            //workflowService.addWorkflowStep(Arrays.asList(user.getEmail()), "Ma signature", true, signType, signRequest);
             signRequestService.pendingSignRequest(signRequest, user);
             logger.info("adding new file into signRequest " + signRequest.getToken());
             return "redirect:/user/signrequests/sign-by-token/" + signRequest.getToken();
@@ -427,13 +425,13 @@ public class SignRequestController {
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserSignRights(user, signRequest)) {
-            if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
+            if (signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.nexuSign)) {
                 return "redirect:/user/nexu-sign/" + id + "?referer=" + referer;
             }
             if (signPageNumber != null && xPos != null && yPos != null) {
-                signRequest.getCurrentWorkflowStep().getSignRequestParams().setSignPageNumber(signPageNumber);
-                signRequest.getCurrentWorkflowStep().getSignRequestParams().setXPos(xPos);
-                signRequest.getCurrentWorkflowStep().getSignRequestParams().setYPos(yPos);
+                signRequest.getParentSignBook().getCurrentWorkflowStep().getSignRequestParams().setSignPageNumber(signPageNumber);
+                signRequest.getParentSignBook().getCurrentWorkflowStep().getSignRequestParams().setXPos(xPos);
+                signRequest.getParentSignBook().getCurrentWorkflowStep().getSignRequestParams().setYPos(yPos);
                 signRequestRepository.save(signRequest);
             }
             if (!"".equals(password)) {
@@ -484,9 +482,9 @@ public class SignRequestController {
                     setPassword(password);
                 }
                 try {
-                    if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.visa)) {
+                    if (signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.visa)) {
                         signRequestService.updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", comment);
-                    } else if (signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.nexuSign)) {
+                    } else if (signRequest.getParentSignBook().getCurrentWorkflowStep().getSignRequestParams().equals(SignType.nexuSign)) {
                         logger.error("no multiple nexu sign");
                         progress = "not_autorized";
                     } else {
@@ -624,8 +622,8 @@ public class SignRequestController {
     public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name = "signType") SignType signType) {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getCurrentWorkflowStepNumber() <= step + 1) {
-            signRequestService.changeSignType(signRequest, step, null, signType);
+        if (user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getParentSignBook().getCurrentWorkflowStepNumber() <= step + 1) {
+            signBookService.changeSignType(signRequest.getParentSignBook(), step, null, signType);
             return "redirect:/user/signrequests/" + id + "/?form";
         }
         return "redirect:/user/signrequests/";
@@ -639,12 +637,12 @@ public class SignRequestController {
                                      @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getCurrentWorkflowStepNumber() <= step + 1) {
+        if (user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getParentSignBook().getCurrentWorkflowStepNumber() <= step + 1) {
             if (allSignToComplete == null) {
                 allSignToComplete = false;
             }
-            signRequestService.changeSignType(signRequest, step, name, signType);
-            signRequestService.toggleNeedAllSign(signRequest, step, allSignToComplete);
+            signBookService.changeSignType(signRequest.getParentSignBook(), step, name, signType);
+            signBookService.toggleNeedAllSign(signRequest.getParentSignBook(), step, allSignToComplete);
             return "redirect:/user/signrequests/" + id + "/?form";
         }
         return "redirect:/user/signrequests/";
@@ -658,7 +656,8 @@ public class SignRequestController {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
-            signRequestService.addWorkflowStep(null, name, allSignToComplete, SignType.valueOf(signType), signRequest);
+            WorkflowStep workflowStep = workflowService.createWorkflowStep(null, name, allSignToComplete, SignType.valueOf(signType));
+            signRequest.getParentSignBook().getWorkflowSteps().add(workflowStep);
         }
         return "redirect:/user/signrequests/" + id + "/?form";
     }
@@ -667,8 +666,8 @@ public class SignRequestController {
     public String removeStep(@PathVariable("id") Long id, @PathVariable("step") Integer step) {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getCurrentWorkflowStepNumber() <= step + 1) {
-            signRequestService.removeStep(signRequest, step);
+        if (user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getParentSignBook().getCurrentWorkflowStepNumber() <= step + 1) {
+            signBookService.removeStep(signRequest.getParentSignBook(), step);
         }
         return "redirect:/user/signrequests/" + id + "/?form";
     }
@@ -680,7 +679,7 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
             Workflow workflow = workflowRepository.findById(workflowSignBookId).get();
-            signRequestService.importWorkflow(signRequest, workflow);
+            signBookService.importWorkflow(signRequest.getParentSignBook(), workflow);
         }
         return "redirect:/user/signrequests/" + id + "/?form";
     }
@@ -696,7 +695,7 @@ public class SignRequestController {
         if (signRequestService.checkUserViewRights(user, signRequest)) {
             WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
             if (signBookNames != null && signBookNames.length > 0) {
-                signRequestService.addRecipientsToWorkflowStep(signRequest, Arrays.asList(signBookNames), workflowStep, user);
+                workflowService.addRecipientsToWorkflowStep(Arrays.asList(signBookNames), workflowStep, user);
             }
         } else {
             logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
@@ -762,7 +761,7 @@ public class SignRequestController {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signRequest.getCurrentWorkflowStepNumber() == 1 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
+        if (signRequest.getParentSignBook().getCurrentWorkflowStepNumber() == 1 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
             try {
                 int nbSignFound = signRequestService.scanSignatureFields(signRequest, PDDocument.load(signRequest.getOriginalDocuments().get(0).getInputStream()));
                 redirectAttrs.addFlashAttribute("messageInfo", "Scan terminé, " + nbSignFound + " signature(s) trouvée(s)");
@@ -794,7 +793,6 @@ public class SignRequestController {
     void populateEditForm(Model model, SignRequest signRequest) {
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("signTypes", Arrays.asList(SignType.values()));
-        model.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
     }
 
     @Scheduled(fixedDelay = 5000)

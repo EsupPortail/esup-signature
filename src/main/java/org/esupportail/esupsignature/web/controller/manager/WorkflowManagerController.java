@@ -110,7 +110,6 @@ public class WorkflowManagerController {
 		uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
 		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
 		uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
-		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
 		uiModel.addAttribute("signrequests", signRequestRepository.findAll());
 	}
 
@@ -255,7 +254,7 @@ public class WorkflowManagerController {
 			workflowStep.setAllSignToComplete(allSignToComplete);
 		}
 		workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
-		workflowStep.getSignRequestParams().setSignType(SignType.valueOf(signType));
+		workflowStep.setSignType(SignType.valueOf(signType));
 		workflowStepRepository.save(workflowStep);
 		workflow.getWorkflowSteps().add(workflowStep);
 		return "redirect:/manager/workflows/" + id;
@@ -285,7 +284,7 @@ public class WorkflowManagerController {
 		User user = userService.getUserFromAuthentication();
 		Workflow workflow = workflowRepository.findById(id).get();
 		if(user.getEppn().equals(workflow.getCreateBy())) {
-			Long stepId = signRequestService.toggleNeedAllSign(workflow, step);
+			Long stepId = workflowService.toggleNeedAllSign(workflow, step);
 			return "redirect:/manager/workflows/" + id + "#" + stepId;
 		}
 		return "redirect:/manager/workflows/";
@@ -296,7 +295,7 @@ public class WorkflowManagerController {
 		User user = userService.getUserFromAuthentication();
 		Workflow workflow = workflowRepository.findById(id).get();
 		if(user.getEppn().equals(workflow.getCreateBy())) {
-			signRequestService.changeSignType(workflow, step, null, signType);
+			workflowService.changeSignType(workflow, step, null, signType);
 			return "redirect:/manager/workflows/" + id;
 		}
 		return "redirect:/manager/workflows/";

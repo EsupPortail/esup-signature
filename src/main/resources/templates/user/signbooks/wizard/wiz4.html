@@ -5,15 +5,15 @@
 <body>
 <form th:action="'/user/signbooks/wizard/wizX/' + ${signBook.id}" method="post">
     <input type="hidden" name="step" th:value="${step}">
-    <th:block th:if="${workflowStep != null}">
+    <th:block th:if="${workflowStepForm}">
     <h5 th:text="'Etape ' + ${step + 1}"></h5>
     <label>Nom de l'étape :</label>
-    <input type="text" name="name" class="form-control" th:value="${workflowStep.name}" required>
+    <input type="text" name="name" class="form-control" required>
     <br>
     <label>Type de signature :</label>
     <select name="signType" class="form-control">
         <th:block th:each="signType : ${signTypes}">
-            <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${workflowStep.signRequestParams.signType == signType}"></option>
+            <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
         </th:block>
     </select>
     <br>
@@ -21,20 +21,19 @@
         Tous les participants doivent-ils signer ?
     </label>
     <label class="switch">
-        <input type="checkbox" name="allSignToComplete"
-               th:checked="${workflowStep.allSignToComplete}"/>
+        <input type="checkbox" name="allSignToComplete" />
         <span class="slider round"></span>
     </label>
     <br/>
-    <label for="signBookNames">Choisir les participants</label>
-    <select onchange="checkNbRecipients();" name="signBookNames" id="signBookNames" size="5" multiple="multiple" required="required">
+    <label for="recipientsEmail">Choisir les participants</label>
+    <select onchange="checkNbRecipients();" name="recipientsEmail" id="recipientsEmail" size="5" multiple="multiple" required="required">
         <th:block th:each="signBook : ${allSignBooks}">
             <option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
         </th:block>
     </select>
     <script language="JavaScript">
         new SlimSelect({
-            select: "#signBookNames",
+            select: "#recipientsEmail",
             placeholder: 'Choisir un ou plusieurs parapheur(s)',
             searchText: 'Aucun résultat',
             searchPlaceholder: 'Rechercher',
@@ -70,7 +69,7 @@
         <i class="fas fa-angle-left"></i> Précédent
     </button>
     </th:block>
-    <th:block th:if="${workflowStep == null}">
+    <th:block th:unless="${workflowStepForm}">
         <h5>Vous pouvez ajouter une nouvelle étape ou poursuivre la procédure</h5>
         <button type="submit" name="addNew" value="true" class="btn btn-primary" style="position: absolute;left: 0;bottom: 0;">
             <i class="fas fa-plus"></i> Ajouter une étape

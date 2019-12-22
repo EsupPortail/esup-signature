@@ -2,6 +2,8 @@ package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +17,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long>, Sign
 	Long countById(Long id);
     List<SignBook> findByName(String name);
     List<SignBook> findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus signRequestStatus);
+    List<SignBook> findByWorkflowSteps(List<WorkflowStep> workflowSteps);
     Long countByName(String name);
     Page<SignBook> findByCreateByAndSignBookType(String createBy, SignBookType signBookType, Pageable pageable);
     List<SignBook> findByRecipientEmailsAndSignBookType(List<String> recipientEmails, SignBookType signBookType);

@@ -54,7 +54,7 @@ public class SignRequestService {
 
 	@Resource
 	private LogRepository logRepository;
-	
+
 	@Resource
 	private UserKeystoreService userKeystoreService;
 
@@ -97,10 +97,10 @@ public class SignRequestService {
 		List<SignRequest> signRequestsToSign = new ArrayList<>();
 		List<WorkflowStep> workflowSteps = workflowStepRepository.findByRecipients(user.getId());
 		for(WorkflowStep workflowStep : workflowSteps) {
-			if(!workflowStep.getRecipients().get(user.getId()) && signRequestRepository.findByWorkflowSteps(Arrays.asList(workflowStep)).size() > 0) {
-				SignRequest signRequest = signRequestRepository.findByWorkflowSteps(Arrays.asList(workflowStep)).get(0);
-				if (signRequest.getParentSignBook().getCurrentWorkflowStep().equals(workflowStep) && signRequest.getStatus().equals(SignRequestStatus.pending)) {
-					signRequestsToSign.add(signRequest);
+			if(!workflowStep.getRecipients().get(user.getId()) && signBookRepository.findByWorkflowSteps(Arrays.asList(workflowStep)).size() > 0) {
+				SignBook signBook = signBookRepository.findByWorkflowSteps(Arrays.asList(workflowStep)).get(0);
+				if (signBook.getCurrentWorkflowStep().equals(workflowStep) && signBook.getStatus().equals(SignRequestStatus.pending)) {
+					signRequestsToSign.addAll(signBook.getSignRequests());
 				}
 			}
 		}
@@ -169,12 +169,12 @@ public class SignRequestService {
 		SignType signType = signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType();
 		if (signType.equals(SignType.visa)) {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest.getParentSignBook(), user, addPage, addDate);
+				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest.getParentSignBook(), user, addDate);
 			} else {
 				signedFile = toSignDocuments.get(0);
 			}
 		} else if(signType.equals(SignType.pdfImageStamp)) {
-			signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest.getParentSignBook(), user, addPage, addDate);
+			signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest.getParentSignBook(), user, addDate);
 		} else {
 			signedFile = certSign(signRequest, user, password, addDate, visual);
 		}

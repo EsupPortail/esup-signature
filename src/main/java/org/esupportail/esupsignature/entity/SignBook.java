@@ -59,6 +59,9 @@ public class SignBook {
     @Size(max = 500)
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    private SignRequestStatus status;
+
     @ElementCollection(targetClass=String.class)
     private List<String> recipientEmails = new ArrayList<>();
 
@@ -89,6 +92,10 @@ public class SignBook {
     @JsonIgnore
     @Transient
     transient String comment;
+
+    public void setStatus(SignRequestStatus status) {
+        this.status = status;
+    }
 
     public void setSignBookType(SignBookType signBookType) {
         this.signBookType = signBookType;

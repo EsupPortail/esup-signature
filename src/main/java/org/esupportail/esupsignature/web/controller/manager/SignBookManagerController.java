@@ -97,7 +97,6 @@ public class SignBookManagerController {
 		signBookTypes.remove(SignBookType.system);
 		uiModel.addAttribute("signBookTypes", signBookTypes);
 		uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
-		uiModel.addAttribute("newPageTypes", Arrays.asList(SignRequestParams.NewPageType.values()));
 		uiModel.addAttribute("signrequests", signRequestRepository.findAll());
 	}
 

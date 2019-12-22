@@ -117,9 +117,9 @@ public class SignBookWizardController {
             return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId() + "/0";
         }
         //model.addAttribute("allSignBooks", signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user));
-        //model.addAttribute("workflowStep", signBook.getWorkflowSteps().get(0));
+        model.addAttribute("workflowStepForm", true);
         model.addAttribute("signTypes", SignType.values());
-        model.addAttribute("step", 0);
+        model.addAttribute("step", 1);
         return "user/signbooks/wizard/wiz4";
     }
 
@@ -129,7 +129,7 @@ public class SignBookWizardController {
                        @RequestParam(name="name", required = false) String name,
                        @RequestParam(name="signType", required = false) SignType signType,
                        @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
-                       @RequestParam(value = "signBookNames", required = false) String[] signBookNames,
+                       @RequestParam(value = "recipientsEmail", required = false) String[] recipientsEmail,
                        @RequestParam(name="addNew", required = false) Boolean addNew,
                        Model model) {
         User user = userService.getUserFromAuthentication();
@@ -142,7 +142,7 @@ public class SignBookWizardController {
         } else {
             if (user.getEppn().equals(signBook.getCreateBy())) {
                 if (signBook.getWorkflowSteps().size() < step) {
-                    WorkflowStep workflowStep = workflowService.createWorkflowStep(Arrays.asList(signBookNames), name, allSignToComplete, signType);
+                    WorkflowStep workflowStep = workflowService.createWorkflowStep(Arrays.asList(recipientsEmail), name, allSignToComplete, signType);
                     signBook.getWorkflowSteps().add(workflowStep);
                 } else {
                     if (allSignToComplete == null) {
@@ -151,8 +151,8 @@ public class SignBookWizardController {
                     signBookService.changeSignType(signBook, step, name, signType);
                     signBookService.toggleNeedAllSign(signBook, step, allSignToComplete);
                     WorkflowStep workflowStep = signBook.getWorkflowSteps().get(step);
-                    if (signBookNames != null && signBookNames.length > 0) {
-                        workflowService.addRecipientsToWorkflowStep(Arrays.asList(signBookNames), workflowStep, user);
+                    if (recipientsEmail != null && recipientsEmail.length > 0) {
+                        workflowService.addRecipientsToWorkflowStep(Arrays.asList(recipientsEmail), workflowStep, user);
                     }
                 }
             }
@@ -160,7 +160,7 @@ public class SignBookWizardController {
         }
         model.addAttribute("signBook", signBook);
         if(signBook.getWorkflowSteps().size() > step + 1) {
-            model.addAttribute("workflowStep", signBook.getWorkflowSteps().get(step + 1));
+            model.addAttribute("workflowStepForm", true);
             model.addAttribute("signTypes", SignType.values());
             model.addAttribute("step", step + 1);
         } else {
