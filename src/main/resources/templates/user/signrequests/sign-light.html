@@ -17,15 +17,15 @@
                         </div>
                     </div>
                     <div class="col-lg-6">
-                        <div class="alert alert-danger" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'pdfImageStamp'}">
+                        <div class="alert alert-danger" th:if="${signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'pdfImageStamp'}">
                             <h6>Une signature visuelle est obligatoire pour signer ce document mais votre profil ne contient pas d'image de votre signature</h6>
                             Vous pouvez ajouter une image en accédant à vos paramètres : <a href="/user/users/?form" target="_blank">Modifier vos paramètres</a>
                         </div>
-                        <div class="alert alert-danger" th:if="${keystore == null && signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign'}">
+                        <div class="alert alert-danger" th:if="${keystore == null && signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'certSign'}">
                             <h6>La signature demandée requière un certificat</h6>
                             Vous pouvez ajouter un keystore en accédant à vos paramètres : <a href="/user/users/?form" target="_blank">Modifier vos paramètres</a>
                         </div>
-                        <div class="alert alert-warning" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'pdfImageStamp' && user.signImage == null}">
+                        <div class="alert alert-warning" th:if="${signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'pdfImageStamp' && user.signImage == null}">
                             <h6>Une signature visuelle est possible pour signer ce document mais votre profil ne contient pas d'image de votre signature</h6>
                             Vous pouvez signer aussi signer sans marque visuelle
                             <a href="/user/users/?form" target="_blank">Modifier vos paramètres</a>
@@ -43,7 +43,7 @@
                 <input type="hidden" name="referer" th:value="${referer}">
                 <div th:if="${documentType == 'pdf'}">
                     <div class="sign-menu">
-                        <div class="btn btn-light col-3 col-md-12 m-1" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'pdfImageStamp'}">
+                        <div class="btn btn-light col-3 col-md-12 m-1" th:if="${signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'pdfImageStamp'}">
                             <label class="control-label" for="_visual" >Insérer un visuel</label>
                             <br/>
                             <label class="switch">
@@ -88,18 +88,18 @@
                     <div class="sign-preview">
                         <div th:if="${documentType == 'pdf'}">
                             <div id="pointer_div" onmouseup="savePosition();" ontouchend="savePosition();" ontouchmove="pointIt(event);" onmousemove="pointIt(event);"
-                                 th:style="'background-size: ' + ${pdfWidth} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/' + ${signRequest.currentWorkflowStep.signRequestParams.signPageNumber -1} + '\');width:' + ${pdfWidth} + 'px;height:' + ${pdfHeight} + 'px;border:1px solid #CCC;pointer-events: none;'">
-                                <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.currentWorkflowStep.signRequestParams.newPageType.name() == 'none' && signRequest.currentWorkflowStep.signRequestParams.signType.name() != 'visa'}">
+                                 th:style="'background-size: ' + ${pdfWidth} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/' + ${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.signPageNumber -1} + '\');width:' + ${pdfWidth} + 'px;height:' + ${pdfHeight} + 'px;border:1px solid #CCC;pointer-events: none;'">
+                                <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'visa'}">
                                     <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();" ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
                                          onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                                          onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
-                                         th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center; left: ' + ${signRequest.currentWorkflowStep.signRequestParams.XPos} + 'px;top: ' + ${signRequest.currentWorkflowStep.signRequestParams.YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
+                                         th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center; left: ' + ${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.XPos} + 'px;top: ' + ${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
                                         <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
                                     </div>
                                 </th:block>
-                                <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.currentWorkflowStep.signRequestParams.newPageType.name() == 'none' && signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'visa'}">
+                                <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'visa'}">
                                     <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();" ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
-                                         th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${signRequest.currentWorkflowStep.signRequestParams.XPos} + 'px;top: ' + ${signRequest.currentWorkflowStep.signRequestParams.YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
+                                         th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.XPos} + 'px;top: ' + ${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
                                         <div id="borders" class="anim-border"
                                              style="text-align:left;line-height:normal;width: 100px; height: 75px;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;">
                                             <span id="textVisa" style="font-size: 8px;" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span>
@@ -112,14 +112,14 @@
                     </div>
                     <div class="d-none">
                         <div class="col-lg-4">
-                            Page : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" th:value="${signRequest.currentWorkflowStep.signRequestParams.signPageNumber}" id="signPageNumber" type="text"
+                            Page : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" th:value="${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.signPageNumber}" id="signPageNumber" type="text"
                                           name="signPageNumber"/>
                         </div>
                         <div class="col-lg-4">
-                            X position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" th:value="${signRequest.currentWorkflowStep.signRequestParams.XPos}" id="xPos" type="text" name="xPos"/>
+                            X position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" th:value="${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.XPos}" id="xPos" type="text" name="xPos"/>
                         </div>
                         <div class="col-lg-4">
-                            Y position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" th:value="${signRequest.currentWorkflowStep.signRequestParams.YPos}" id="yPos" type="text" name="yPos"/>
+                            Y position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" th:value="${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.YPos}" id="yPos" type="text" name="yPos"/>
                         </div>
                     </div>
                 </div>
@@ -133,7 +133,7 @@
                 </div>
                 <input id="csrf" th:value="${_csrf.token}" th:name="${_csrf.parameterName}" type="hidden"/>
                 <div class="m-1">
-                    <div th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'nexuSign'}">
+                    <div th:if="${signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'nexuSign'}">
                         <script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
                         <script type="text/javascript" th:replace="user/signrequests/includes/scriptnexu :: scriptnexu"></script>
                         <div id="nexu_version_alert" style="display: none;">
@@ -170,15 +170,15 @@
                         </div>
                     </div>
                     <button title="Valider la signature" type="button" class="btn btn-success col-12 mb-1 text-left"
-                            th:unless="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'visa' || signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'nexuSign' || signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign' || paramsOk == false}"
+                            th:unless="${signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'visa' || signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'nexuSign' || signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'certSign' || paramsOk == false}"
                             onclick="document.getElementById('signForm').submit();">
                         <i class="fas fa-signature"></i><span class="sidebar-label"> Valider la signature</span>
                     </button>
-                    <button class="btn btn-success col-12 mb-1 text-left" th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'certSign' && keystore != null}" type="button" data-toggle="modal" data-target="#signModal">
+                    <button class="btn btn-success col-12 mb-1 text-left" th:if="${signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'certSign' && keystore != null}" type="button" data-toggle="modal" data-target="#signModal">
                         <i class="fas fa-signature"></i><span class="sidebar-label"> Valider la signature</span>
                     </button>
                     <button title="Valider le document" type="button" class="btn btn-success col-12 mb-1 text-left"
-                            th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'visa'}"
+                            th:if="${signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'visa'}"
                             onclick="document.getElementById('signForm').submit();">
                         <i class="fas fa-check"></i><span class="sidebar-label"> Valider le document</span>
                     </button>
@@ -200,7 +200,7 @@
     /*<![CDATA[*/
     var zoom = 1;
     var nbImagePage = [[${imagePagesSize}]];
-    var currentImagePage = [[${signRequest.currentWorkflowStep.signRequestParams.signPageNumber}]] - 1;
+    var currentImagePage = [[${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.signPageNumber}]] - 1;
     var documentUrl = "/user/documents/[[${documentId}]]/getimagepdfpage/";
     var signId = [[${signRequest.id}]];
 
@@ -246,7 +246,7 @@
             <div class="modal-body text-center">
                 <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" cols="" rows=""></textarea>
 
-                <div th:switch="${signRequest.currentWorkflowStep.signRequestParams.signType.name()}">
+                <div th:switch="${signRequest.parentSignBook.currentWorkflowStep.signType.name()}">
                     <div th:case="'certSign'">
                         <div class="input-group">
                             <div class="input-group-prepend">
@@ -262,10 +262,10 @@
                         <button type="submit" class="btn btn-success  text-center" data-target="#signatureModal">Signer</button>
                     </div>
                     <div th:case="*">
-                        <div th:if="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'visa'}">
+                        <div th:if="${signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'visa'}">
                             <input alt="${visaLabel}" class="btn btn-success  text-center" id="signe" onclick="document.getElementById('signForm').submit();" type="button" value="Viser"/>
                         </div>
-                        <div th:unless="${signRequest.currentWorkflowStep.signRequestParams.signType.name() == 'visa'}">
+                        <div th:unless="${signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'visa'}">
                             <div th:if="${user.signImage != null}">
                                 <input alt="${signLabel}" class="btn btn-success  text-center" id="signe" onclick="document.getElementById('signForm').submit();" type="button" value="Signer"/>
                             </div>

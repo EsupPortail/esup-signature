@@ -32,10 +32,16 @@
                 <div class="btn btn-secondary col-3 col-md-12 mb-1">
                     <label class="control-label">Zoom</label>
                     <br/>
-                <button id="zoomout" class="btn btn-light"><i class="fas fa-search-minus"></i></button>
-                <button id="zoomin" class="btn btn-light"><i class="fas fa-search-plus"></i></button>
+                    <a id="zoomout" class="btn btn-outline-dark"><i class="fas fa-search-minus"></i></a>
+                    <a id="zoomin" class="btn btn-outline-dark"><i class="fas fa-search-plus"></i></a>
                 </div>
-                <a target="_blank" th:if="${signOk}" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:token="${signRequest.token}" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.token}">
+                <div class="btn btn-secondary col-3 col-md-12 mb-1">
+                    <label class="control-label">Rotation</label>
+                    <br/>
+                    <a id="rotateleft" class="btn btn-outline-dark"><i class="fas fa-undo"></i></a>
+                    <a id="rotateright" class="btn btn-outline-dark"><i class="fas fa-redo"></i></a>
+                </div>
+                <a target="_blank" th:if="${signOk}" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
                     <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                 </a>
                 <a th:unless="${referer != null}" title="Abandonner" class="btn btn-light col-12 mb-1 text-left" value="Retour" href="/user/signbooks">
@@ -61,132 +67,26 @@
             <div class="row">
                 <div class="col-lg-9">
                     <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
-                            <canvas id="pdf" style="border : 1px solid black;" onmouseup="displayComment();" ontouchend="displayComment();" ontouchmove="pointIt2(event);" onmousemove="pointIt2(event);">
-                            </canvas>
-                            <script>
-                                var url = '/user/documents/getfile/[[${documentId}]]';
+                        <canvas title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" onmouseup="displayComment();" ontouchend="displayComment();" ontouchmove="pointIt2(event);" onmousemove="pointIt2(event);">
+                        </canvas>
+                        <script>
+                            var url = '/user/documents/getfile/[[${documentId}]]';
 
-                                // Loaded via <script> tag, create shortcut to access PDF.js exports.
-                                var pdfjsLib = window['pdfjs-dist/build/pdf'];
+                            var pdfDoc = null,
+                                pageNum = 1,
+                                pageRendering = false,
+                                pageNumPending = null,
+                                scale = 1,
+                                rotation = 0;
 
-                                // The workerSrc property shall be specified.
-                                pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
-
-                                var pdfDoc = null,
-                                    pageNum = 1,
-                                    pageRendering = false,
-                                    pageNumPending = null,
-                                    scale = 1,
-                                    canvas = document.getElementById('pdf'),
-                                    ctx = canvas.getContext('2d');
-
-                                /**
-                                 * Get page info from document, resize canvas accordingly, and render page.
-                                 * @param num Page number.
-                                 */
-                                function renderPage(num) {
-                                    document.getElementById('signPageNumber').value = num;
-                                    pageRendering = true;
-                                    // Using promise to fetch the page
-                                    pdfDoc.getPage(num).then(function(page) {
-                                        var viewport = page.getViewport({scale: scale});
-                                        canvas.height = viewport.height;
-                                        canvas.width = viewport.width;
-
-                                        // Render PDF page into canvas context
-                                        var renderContext = {
-                                            canvasContext: ctx,
-                                            viewport: viewport
-                                        };
-                                        var renderTask = page.render(renderContext);
-
-                                        // Wait for rendering to finish
-                                        renderTask.promise.then(function() {
-                                            pageRendering = false;
-                                            if (pageNumPending !== null) {
-                                                // New page rendering is pending
-                                                renderPage(pageNumPending);
-                                                pageNumPending = null;
-                                            }
-                                        });
-                                    });
-
-                                    // Update page counters
-                                    document.getElementById('page_num').textContent = num;
-                                }
-
-                                /**
-                                 * If another page rendering in progress, waits until the rendering is
-                                 * finised. Otherwise, executes rendering immediately.
-                                 */
-                                function queueRenderPage(num) {
-                                    if (pageRendering) {
-                                        pageNumPending = num;
-                                    } else {
-                                        renderPage(num);
-                                    }
-                                }
-
-                                /**
-                                 * Displays previous page.
-                                 */
-                                function prevPage() {
-                                    if (pageNum <= 1) {
-                                        return;
-                                    }
-                                    pageNum--;
-                                    queueRenderPage(pageNum);
-                                }
-                                document.getElementById('prev').addEventListener('click', prevPage);
-
-                                /**
-                                 * Displays next page.
-                                 */
-                                function nextPage() {
-                                    if (pageNum >= pdfDoc.numPages) {
-                                        return;
-                                    }
-                                    pageNum++;
-                                    queueRenderPage(pageNum);
-                                }
-                                document.getElementById('next').addEventListener('click', nextPage);
-
-                                function zoomIn() {
-                                    if (scale >= 1.75) {
-                                        return;
-                                    }
-                                    scale = scale + 0.25;
-                                    queueRenderPage(pageNum);
-                                }
-                                document.getElementById('zoomin').addEventListener('click', zoomIn);
-
-                                function zoomOut() {
-                                    if (scale <= 0.75) {
-                                        return;
-                                    }
-                                    scale = scale - 0.25;
-                                    queueRenderPage(pageNum);
-                                }
-                                document.getElementById('zoomout').addEventListener('click', zoomOut);
-
-                                /**
-                                 * Asynchronously downloads PDF.
-                                 */
-                                pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
-                                    pdfDoc = pdfDoc_;
-                                    document.getElementById('page_count').textContent = pdfDoc.numPages;
-
-                                    // Initial/first page rendering
-                                    renderPage(pageNum);
-                                });
-                            </script>
-                            <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">
-                                Nouvelle annotation <span onclick="hideComment()" class="float-right" style="cursor: pointer;">X</span>
-                                <textarea name="comment" class="postitarea"></textarea>
-                                <button type="submit" class="btn btn-sm float-right">
-                                    <i class="fas fa-save"></i>
-                                </button>
-                            </div>
+                        </script>
+                        <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">
+                            <span onclick="hideComment()" class="float-right" style="cursor: pointer;">X</span>
+                            <textarea id="comment" name="comment" class="postitarea" placeholder="Saisir une annotation"></textarea>
+                            <button type="submit" class="btn btn-sm float-right">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </div>
                         <th:block th:each="log : ${logs}">
                             <div th:id="${log.id}" class="circle" th:style="'position: absolute;z-index:1000;left:' + ${log.posX} + 'px; top:' + ${log.posY} + 'px;'"></div>
                         </th:block>
@@ -202,7 +102,7 @@
 
 
                             function pointIt2(e) {
-                                if(pointItEnable) {
+                                if (pointItEnable) {
                                     console.log("mouse");
                                     posX = e.offsetX ? (e.offsetX)
                                         : e.clientX - pointerDiv.offsetLeft;
@@ -214,7 +114,7 @@
                                 }
                             }
 
-                            function displayComment(){
+                            function displayComment() {
                                 pointItEnable = false;
                                 document.getElementById("postit").style.left = posX + "px";
                                 document.getElementById("postit").style.top = posY + "px";
@@ -222,30 +122,32 @@
                                 //document.getElementById("postit").style.display = "block";
                             }
 
-                            function hideComment(){
+                            function hideComment() {
                                 pointItEnable = true;
                                 $("#postit").hide();
                             }
+
                             /*]]>*/
                         </script>
                     </form>
                 </div>
                 <div class="col-lg-3">
-                <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
-                <br/>
-                <th:block th:each="log : ${logs}">
-                    <div th:id="'log' + ${log.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer" th:onmouseover="'$(\'#' + ${log.id} + '\').show(); queueRenderPage(' + ${log.pageNumber} + ')'" th:onmouseout="'$(\'#' + ${log.id} + '\').hide()'">
-                        <b th:text="${@userService.getNameFromEppn(log.eppn)}"></b>
-                        <span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span>
-                        <p class="postitarea" th:text="${log.comment}"></p>
-                    </div>
-                    <script>
-                        /*<![CDATA[*/
-                        var c = document.getElementById("log[[${log.id}]]");
-                        c.style.setProperty("--angle", Math.round(Math.random()) * 6 - 3 + "deg");
-                        /*]]>*/
-                    </script>
-                </th:block>
+                    <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
+                    <br/>
+                    <th:block th:each="log : ${logs}">
+                        <div th:id="'log' + ${log.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
+                             th:onmouseover="'$(\'#' + ${log.id} + '\').show(); queueRenderPage(' + ${log.pageNumber} + ')'" th:onmouseout="'$(\'#' + ${log.id} + '\').hide()'">
+                            <b th:text="${@userService.getNameFromEppn(log.eppn)}"></b>
+                            <span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span>
+                            <p class="postitarea" th:text="${log.comment}"></p>
+                        </div>
+                        <script>
+                            /*<![CDATA[*/
+                            var c = document.getElementById("log[[${log.id}]]");
+                            c.style.setProperty("--angle", Math.round(Math.random()) * 6 - 3 + "deg");
+                            /*]]>*/
+                        </script>
+                    </th:block>
                 </div>
             </div>
         </div>
@@ -262,7 +164,7 @@
                 </button>
             </div>
             <div class="modal-body" style="max-height: calc(100% - 120px); overflow-y: scroll;">
-                <iframe id="wizIframe" frameborder="0" th:src="'/user/signrequests/sign-by-token/' + ${signRequest.token}"  style="width: 100%; height: 1000px;" ></iframe>
+                <iframe id="wizIframe" frameborder="0" th:src="'/user/signrequests/sign-by-token/' + ${signRequest.token}" style="width: 100%; height: 1000px;"></iframe>
             </div>
         </div>
     </div>
@@ -270,11 +172,16 @@
 
 <script>
     function launchSign(token) {
+
+        //TODO : Faire apparaitre le signature !!!!
+
         console.log(token);
         $('#signModal').modal('show');
-        var wait = $.ajax({url: "/user/signrequests/wait-for-sign/" + token, success: function(result){
+        var wait = $.ajax({
+            url: "/user/signrequests/wait-for-sign/" + token, success: function (result) {
                 location.reload();
-            }});
+            }
+        });
         $('#signModal').on('hidden.bs.modal', function () {
             console.log('abort ajax');
             wait.abort();
