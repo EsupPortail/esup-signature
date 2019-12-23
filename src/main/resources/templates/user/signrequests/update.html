@@ -104,9 +104,6 @@
                 </ol>
             </nav>
             <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
-            <th:block th:if="${signRequest.originalDocuments.size() > 0 || signRequest.status.name() == 'exported'}">
-                <div th:replace="user/signrequests/cards/stepscard :: stepscard"></div>
-            </th:block>
             <div class="card rounded-0 mb-1" th:if="${signRequest.status.name() != 'exported'}">
                 <div class="card-header">
                     Liste des documents originaux

@@ -206,40 +206,6 @@ function activeDate() {
 	}
 }
 
-function pointIt2(e) {
-	if(pointItEnable) {
-		if (e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel') {
-			e.preventDefault();
-			var rect = pointerDiv.getBoundingClientRect();
-			var touch = e.touches[0] || e.changedTouches[0];
-			posX = touch.pageX - rect.left;
-			posY = touch.pageY - rect.top - window.scrollY;
-		} else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover' || e.type == 'mouseout' || e.type == 'mouseenter' || e.type == 'mouseleave') {
-			console.log("mouse");
-			posX = e.offsetX ? (e.offsetX)
-				: e.clientX - pointerDiv.offsetLeft;
-			posY = e.offsetY ? (e.offsetY)
-				: e.clientY - pointerDiv.offsetTop;
-		}
-		console.log('point' + posX + ' : ' + posY);
-		document.getElementById("xPos").value = Math.round(posX / zoom);
-		document.getElementById("yPos").value = Math.round(posY / zoom);
-	}
-}
-
-function displayComment(){
-	pointItEnable = false;
-	document.getElementById("postit").style.left = document.getElementById("xPos").value + "px";
-	document.getElementById("postit").style.top = document.getElementById("yPos").value + "px";
-	$("#postit").show();
-	//document.getElementById("postit").style.display = "block";
-}
-
-function hideComment(){
-	pointItEnable = true;
-	$("#postit").hide();
-}
-
 function pointIt(e) {
 	console.log('point')
 	if(pointItEnable) {
@@ -343,21 +309,6 @@ function nextImage() {
 		document.getElementById("previous").disabled = false
 	}
 	document.getElementById("signPageNumber").value = currentImagePage;
-}
-
-function gotoImage(pageNumber) {
-	currentImagePage = pageNumber;
-	console.info("url('" + documentUrl + "" + currentImagePage + "')");
-	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
-	if (currentImagePage == nbImagePage - 1) {
-		document.getElementById("next").classList.add("disabled");
-		document.getElementById("next").disabled = true;
-	}
-	if (currentImagePage > 0) {
-		document.getElementById("previous").classList.remove("disabled");
-		document.getElementById("previous").disabled = false
-	}
-	document.getElementById("signPageNumber").value = currentImagePage + 1;
 }
 
 function previousImage() {

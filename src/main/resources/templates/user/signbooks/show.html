@@ -13,6 +13,28 @@
                 <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
+                <div th:if="${imagePagesSize > 1}" class="btn btn-secondary col-12 mb-1">
+                    <label class="control-label">Navigation : </label>
+                    <span>page <span id="page_num"></span> / <span id="page_count"></span></span>
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item">
+                            <a id="prev" class="btn btn-outline-dark m-1" aria-label="Précédent">
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a id="next" class="btn btn-outline-dark m-1" aria-label="Prochain">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="btn btn-secondary col-3 col-md-12 mb-1">
+                    <label class="control-label">Zoom</label>
+                    <br/>
+                <button id="zoomout" class="btn btn-light"><i class="fas fa-search-minus"></i></button>
+                <button id="zoomin" class="btn btn-light"><i class="fas fa-search-plus"></i></button>
+                </div>
                 <a target="_blank" th:if="${signOk}" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:token="${signRequest.token}" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.token}">
                     <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                 </a>
@@ -36,85 +58,183 @@
                     </a>
                 </th:block>
             </nav>
-
-           <script>
-               var url = '/user/documents/getfile/[[${documentId}]]';
-               var pdfjsLib = window['pdfjs-dist/build/pdf'];
-               pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
-               var loadingTask = pdfjsLib.getDocument(url);
-               loadingTask.promise.then(function(pdf) {
-                   console.log('PDF loaded');
-                   var pageNumber = 1;
-                   pdf.getPage(pageNumber).then(function(page) {
-                       console.log('Page loaded');
-                       var scale = 1.5;
-                       var viewport = page.getViewport({scale: scale});
-                       var canvas = document.getElementById('pdf');
-                       var context = canvas.getContext('2d');
-                       canvas.height = viewport.height;
-                       canvas.width = viewport.width;
-                       var renderContext = {
-                           canvasContext: context,
-                           viewport: viewport
-                       };
-                       var renderTask = page.render(renderContext);
-                       renderTask.promise.then(function () {
-                           console.log('Page rendered');
-                       });
-                   });
-               }, function (reason) {
-                   console.error(reason);
-               });
-           </script>
             <div class="row">
-                <div class="col-lg-5">
-                    <script th:inline="javascript">
-                        /*<![CDATA[*/
-                        var zoom = 1;
-                        var nbImagePage = [[${imagePagesSize}]];
-                        var currentImagePage = 0;
-                        var documentUrl = "/user/documents/[[${documentId}]]/getimagepdfpage/";
-                        var signId = [[${signRequest.id}]];
-
-                        pointItEnable = true;
-
-                        function toggleZoom() {
-                            if (zoom == 1) {
-                                zoom = 2;
-                            } else {
-                                zoom = 1;
-                            }
-
-                            document.getElementById("pointer_div").style = "background-size: " + [[${pdfWidth}]] * zoom + "px;background-image:url('/user/documents/[[${documentId}]]/getimagepdfpage/" + currentImagePage + "');width:" + ([[${pdfWidth}]] * zoom) + "px;height: " + ([[${pdfHeight}]] * zoom) + "px;border:1px solid #CCC;";
-                        }
-
-                        /*]]>*/
-                    </script>
+                <div class="col-lg-9">
                     <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
-                        <div id="pointer_div" onmouseup="displayComment();" ontouchend="displayComment();" ontouchmove="pointIt2(event);" onmousemove="pointIt2(event);">
-                        <canvas id="pdf" style="border : 1px solid black;"></canvas>
-                            <div id="postit" class="postit" style="display: none;position: relative;left: 0px;top: 0px;z-index: 2;">
+                            <canvas id="pdf" style="border : 1px solid black;" onmouseup="displayComment();" ontouchend="displayComment();" ontouchmove="pointIt2(event);" onmousemove="pointIt2(event);">
+                            </canvas>
+                            <script>
+                                var url = '/user/documents/getfile/[[${documentId}]]';
+
+                                // Loaded via <script> tag, create shortcut to access PDF.js exports.
+                                var pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+                                // The workerSrc property shall be specified.
+                                pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+
+                                var pdfDoc = null,
+                                    pageNum = 1,
+                                    pageRendering = false,
+                                    pageNumPending = null,
+                                    scale = 1,
+                                    canvas = document.getElementById('pdf'),
+                                    ctx = canvas.getContext('2d');
+
+                                /**
+                                 * Get page info from document, resize canvas accordingly, and render page.
+                                 * @param num Page number.
+                                 */
+                                function renderPage(num) {
+                                    document.getElementById('signPageNumber').value = num;
+                                    pageRendering = true;
+                                    // Using promise to fetch the page
+                                    pdfDoc.getPage(num).then(function(page) {
+                                        var viewport = page.getViewport({scale: scale});
+                                        canvas.height = viewport.height;
+                                        canvas.width = viewport.width;
+
+                                        // Render PDF page into canvas context
+                                        var renderContext = {
+                                            canvasContext: ctx,
+                                            viewport: viewport
+                                        };
+                                        var renderTask = page.render(renderContext);
+
+                                        // Wait for rendering to finish
+                                        renderTask.promise.then(function() {
+                                            pageRendering = false;
+                                            if (pageNumPending !== null) {
+                                                // New page rendering is pending
+                                                renderPage(pageNumPending);
+                                                pageNumPending = null;
+                                            }
+                                        });
+                                    });
+
+                                    // Update page counters
+                                    document.getElementById('page_num').textContent = num;
+                                }
+
+                                /**
+                                 * If another page rendering in progress, waits until the rendering is
+                                 * finised. Otherwise, executes rendering immediately.
+                                 */
+                                function queueRenderPage(num) {
+                                    if (pageRendering) {
+                                        pageNumPending = num;
+                                    } else {
+                                        renderPage(num);
+                                    }
+                                }
+
+                                /**
+                                 * Displays previous page.
+                                 */
+                                function prevPage() {
+                                    if (pageNum <= 1) {
+                                        return;
+                                    }
+                                    pageNum--;
+                                    queueRenderPage(pageNum);
+                                }
+                                document.getElementById('prev').addEventListener('click', prevPage);
+
+                                /**
+                                 * Displays next page.
+                                 */
+                                function nextPage() {
+                                    if (pageNum >= pdfDoc.numPages) {
+                                        return;
+                                    }
+                                    pageNum++;
+                                    queueRenderPage(pageNum);
+                                }
+                                document.getElementById('next').addEventListener('click', nextPage);
+
+                                function zoomIn() {
+                                    if (scale >= 1.75) {
+                                        return;
+                                    }
+                                    scale = scale + 0.25;
+                                    queueRenderPage(pageNum);
+                                }
+                                document.getElementById('zoomin').addEventListener('click', zoomIn);
+
+                                function zoomOut() {
+                                    if (scale <= 0.75) {
+                                        return;
+                                    }
+                                    scale = scale - 0.25;
+                                    queueRenderPage(pageNum);
+                                }
+                                document.getElementById('zoomout').addEventListener('click', zoomOut);
+
+                                /**
+                                 * Asynchronously downloads PDF.
+                                 */
+                                pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
+                                    pdfDoc = pdfDoc_;
+                                    document.getElementById('page_count').textContent = pdfDoc.numPages;
+
+                                    // Initial/first page rendering
+                                    renderPage(pageNum);
+                                });
+                            </script>
+                            <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">
                                 Nouvelle annotation <span onclick="hideComment()" class="float-right" style="cursor: pointer;">X</span>
                                 <textarea name="comment" class="postitarea"></textarea>
                                 <button type="submit" class="btn btn-sm float-right">
                                     <i class="fas fa-save"></i>
                                 </button>
                             </div>
-                            <th:block th:each="log : ${logs}">
-                                <div th:id="${log.id}" class="circle" th:style="'left:' + ${log.posX} + 'px; top:' + ${log.posY} + 'px;'"></div>
-                                <div th:id="${log.id}" class="circle" th:style="'left:' + ${log.posX} + 'px; top:' + ${log.posY} + 'px;'"></div>
-                            </th:block>
-                        </div>
+                        <th:block th:each="log : ${logs}">
+                            <div th:id="${log.id}" class="circle" th:style="'position: absolute;z-index:1000;left:' + ${log.posX} + 'px; top:' + ${log.posY} + 'px;'"></div>
+                        </th:block>
                         <input class="form-control form-control-sm col-6 d-none" value="0" id="signPageNumber" type="text" name="pageNumber"/>
                         <input class="form-control form-control-sm col-6 d-none" value="0" id="xPos" type="text" name="posX"/>
                         <input class="form-control form-control-sm col-6 d-none" value="0" id="yPos" type="text" name="posY"/>
+                        <script th:inline="javascript">
+                            /*<![CDATA[*/
+                            pointItEnable = true;
+
+                            var posX,
+                                posY;
+
+
+                            function pointIt2(e) {
+                                if(pointItEnable) {
+                                    console.log("mouse");
+                                    posX = e.offsetX ? (e.offsetX)
+                                        : e.clientX - pointerDiv.offsetLeft;
+                                    posY = e.offsetY ? (e.offsetY)
+                                        : e.clientY - pointerDiv.offsetTop;
+                                    console.log('point' + posX + ' : ' + posY);
+                                    document.getElementById("xPos").value = Math.round(posX / scale);
+                                    document.getElementById("yPos").value = Math.round(posY / scale);
+                                }
+                            }
+
+                            function displayComment(){
+                                pointItEnable = false;
+                                document.getElementById("postit").style.left = posX + "px";
+                                document.getElementById("postit").style.top = posY + "px";
+                                $("#postit").show();
+                                //document.getElementById("postit").style.display = "block";
+                            }
+
+                            function hideComment(){
+                                pointItEnable = true;
+                                $("#postit").hide();
+                            }
+                            /*]]>*/
+                        </script>
                     </form>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-3">
                 <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
                 <br/>
                 <th:block th:each="log : ${logs}">
-                    <div th:id="'log' + ${log.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer" th:onmouseover="'$(\'#' + ${log.id} + '\').show(); gotoImage(' + ${log.pageNumber} + ')'" th:onmouseout="'$(\'#' + ${log.id} + '\').hide()'">
+                    <div th:id="'log' + ${log.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer" th:onmouseover="'$(\'#' + ${log.id} + '\').show(); queueRenderPage(' + ${log.pageNumber} + ')'" th:onmouseout="'$(\'#' + ${log.id} + '\').hide()'">
                         <b th:text="${@userService.getNameFromEppn(log.eppn)}"></b>
                         <span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span>
                         <p class="postitarea" th:text="${log.comment}"></p>

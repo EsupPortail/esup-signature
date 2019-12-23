@@ -3,78 +3,80 @@
 <head th:replace="fragments/head :: head"></head>
 
 <body>
+<h5>Paramétrage de le nouvelle étape</h5>
 <form th:action="'/user/signbooks/wizard/wizX/' + ${signBook.id}" method="post">
     <th:block th:if="${workflowStepForm}">
-    <h5>Paramétrage de le nouvelle étape</h5>
-    <label>Nom de l'étape :</label>
-    <input type="text" name="name" class="form-control" required>
-    <br>
-    <label>Type de signature :</label>
-    <select name="signType" class="form-control">
-        <th:block th:each="signType : ${signTypes}">
-            <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
-        </th:block>
-    </select>
-    <br>
-    <label>
-        Tous les participants doivent-ils signer ?
-    </label>
-    <label class="switch">
-        <input type="checkbox" name="allSignToComplete" />
-        <span class="slider round"></span>
-    </label>
-    <br/>
-    <label for="recipientsEmail">Choisir les participants</label>
-    <select onchange="checkNbRecipients();" name="recipientsEmail" id="recipientsEmail" size="5" multiple="multiple" required="required">
-        <th:block th:each="signBook : ${allSignBooks}">
-            <option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
-        </th:block>
-    </select>
-    <script language="JavaScript">
-        new SlimSelect({
-            select: "#recipientsEmail",
-            placeholder: 'Choisir un ou plusieurs parapheur(s)',
-            searchText: 'Aucun résultat',
-            searchPlaceholder: 'Rechercher',
-            searchHighlight: true,
-            searchFilter: (option, search) => {
-                return true;
-            },
-            ajax: function (search, callback) {
-                if (search.length < 3) {
-                    callback('Merci de saisir au moins 3 caractères')
-                } else {
-                    fetch('/user/users/searchLdap?searchString=' + search)
-                        .then(function (response) {
-                            return response.json()
-                        })
-                        .then(function (json) {
-                            let data = []
-                            for (let i = 0; i < json.length; i++) {
-                                data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
-                            }
-                            callback(data)
-                        })
-                        .catch(function (error) {
-                            callback(false)
-                        })
-                }
-            }
-        });
-    </script>
-    <button type="submit" class="btn btn-success" style="position: absolute;right: 0;bottom: 0;">
-        Suivant <i class="fas fa-angle-right"></i>
-    </button>
-    <button type="button" onclick="window.history.back();" class="btn btn-success" style="position: absolute;left: 0;bottom: 0;">
-        <i class="fas fa-angle-left"></i> Précédent
-    </button>
+        <div class="col-lg-12">
+            <label>Nom de l'étape :</label>
+            <input type="text" name="name" class="form-control" required>
+            <br>
+            <label>Type de signature :</label>
+            <select name="signType" class="form-control">
+                <th:block th:each="signType : ${signTypes}">
+                    <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                </th:block>
+            </select>
+            <br>
+            <label>
+                Tous les participants doivent-ils signer ?
+            </label>
+            <label class="switch">
+                <input type="checkbox" name="allSignToComplete"/>
+                <span class="slider round"></span>
+            </label>
+            <br/>
+            <label for="recipientsEmail">Choisir les participants</label>
+            <select onchange="checkNbRecipients();" name="recipientsEmail" id="recipientsEmail" size="5" multiple="multiple" required="required">
+                <th:block th:each="signBook : ${allSignBooks}">
+                    <option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
+                </th:block>
+            </select>
+            <script language="JavaScript">
+                new SlimSelect({
+                    select: "#recipientsEmail",
+                    placeholder: 'Choisir un ou plusieurs parapheur(s)',
+                    searchText: 'Aucun résultat',
+                    searchPlaceholder: 'Rechercher',
+                    searchHighlight: true,
+                    searchFilter: (option, search) => {
+                        return true;
+                    },
+                    ajax: function (search, callback) {
+                        if (search.length < 3) {
+                            callback('Merci de saisir au moins 3 caractères')
+                        } else {
+                            fetch('/user/users/searchLdap?searchString=' + search)
+                                .then(function (response) {
+                                    return response.json()
+                                })
+                                .then(function (json) {
+                                    let data = []
+                                    for (let i = 0; i < json.length; i++) {
+                                        data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
+                                    }
+                                    callback(data)
+                                })
+                                .catch(function (error) {
+                                    callback(false)
+                                })
+                        }
+                    }
+                });
+            </script>
+        </div>
+        <button type="submit" class="btn btn-success" style="position: absolute;right: 10px;bottom: 10px;">
+            Suivant <i class="fas fa-angle-right"></i>
+        </button>
+        <button type="button" onclick="window.history.back();" class="btn btn-success" style="position: absolute;left: 10px;bottom: 10px;">
+            <i class="fas fa-angle-left"></i> Précédent
+        </button>
     </th:block>
     <th:block th:unless="${workflowStepForm}">
-        <h5>Vous pouvez ajouter une nouvelle étape ou poursuivre la procédure</h5>
-        <button type="submit" name="addNew" value="true" class="btn btn-primary" style="position: absolute;left: 0;bottom: 0;">
+        <div class="alert alert-info">Vous pouvez ajouter une nouvelle étape ou poursuivre la procédure</div>
+        <button type="submit" name="addNew" value="true" class="btn btn-primary" style="position: absolute;left: 10px;bottom: 10px;">
             <i class="fas fa-plus"></i> Ajouter une étape
         </button>
-        <a th:onclick="'parent.location.href=\'/user/signbooks/'+ ${signBook.id} +'/0\''" class="btn btn-success" style="position: absolute;right: 0;bottom: 0;">
+        <button th:onclick="'parent.location.href=\'/user/signbooks/'+ ${signBook.id} +'/0\''" class="btn btn-success" style="position: absolute;right: 10px;bottom: 10px;">
             Terminer <i class="fas fa-flag-checkered"></i>
         </button>
     </th:block>

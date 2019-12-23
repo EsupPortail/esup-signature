@@ -787,7 +787,7 @@ public class SignRequestController {
         } else {
             logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
         }
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/user/signbooks/" + signRequest.getParentSignBook().getId() + "/" + signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
     }
 
     void populateEditForm(Model model, SignRequest signRequest) {
