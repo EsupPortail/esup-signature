@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     List<Workflow> findByName(String name);
+    List<Workflow> findByCreateBy(String eppn);
     Long countByName(String name);
     List<Workflow> findByExternal(Boolean external);
 }

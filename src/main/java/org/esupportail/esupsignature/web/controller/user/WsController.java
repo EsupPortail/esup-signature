@@ -200,7 +200,7 @@ public class WsController {
         User user = userService.getSystemUser();
         user.setIp(httpServletRequest.getRemoteAddr());
         ObjectMapper mapper = new ObjectMapper();
-        Workflow workflow = workflowService.createWorkflow(mapper.readValue(workflowString, Workflow.class), user, null, true);
+        Workflow workflow = workflowService.createWorkflow(mapper.readValue(workflowString, Workflow.class).getName(), user, null, true);
         return workflow.getName();
     }
 

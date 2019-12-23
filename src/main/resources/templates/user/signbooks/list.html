@@ -11,7 +11,10 @@
                 <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
             </button>
             <button title="Assistant de demande de signature"  type="button" data-toggle="modal" data-target="#wizardModal" class="mb-1 col-12 btn btn-primary text-left">
-                <i class="fas fa-plus"></i> <span class="sidebar-label">Nouveau parapheur</span>
+                <i class="fas fa-magic"></i> <span class="sidebar-label">Nouvelle demande</span>
+            </button>
+            <button title="Assistant de demande de signature"  type="button" data-toggle="modal" data-target="#wizardModal" class="mb-1 col-12 btn btn-primary text-left">
+                <i class="fas fa-project-diagram"></i> <span class="sidebar-label">Nouveau circuit de signature</span>
             </button>
             <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="d-none mb-1 col-12 btn btn-primary text-left">
                 <i class="fas fa-plus"></i> <span class="sidebar-label">Signature rapide</span>
@@ -20,7 +23,7 @@
                 <i class="fas fa-plus"></i> <span class="sidebar-label">Signature rapide</span>
             </button>
             <button title="Valider la signature d'un document" type="button" onclick="location.href='/user/validation'" class="mb-1 col-12 btn btn-warning text-left">
-                <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Valider la signature d'un document</span>
+                <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Controler un document signé</span>
             </button>
             <button id="opendocs" class="mb-1 btn btn-outline-dark btn-light float-left" onclick="openCheckedDocs()" title="open docs" style="display: none;">
                 <i class="far fa-eye fa-2x"></i> Ouvrir les documents sélectionnés
@@ -76,7 +79,7 @@
             <br/>
             <div class="card rounded-0">
                 <div class="card-header">
-                    <h5>Parapheurs créés par moi</h5>
+                    <h5>Mes demandes</h5>
                     <form class="" action="" method="get">
                         <div class="card">
                             <div class="input-group">
@@ -102,7 +105,7 @@
                             <tr>
                                 <th class="none">Titre</th>
                                 <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
-                                <th class="d-none d-xl-table-cell">Créé par</th>
+                                <th class="d-none d-xl-table-cell">Status</th>
                                 <th>Voir</th>
                                 <th>Modifier</th>
                                 <th>Supprimer</th>
@@ -113,7 +116,7 @@
                                 <tr>
                                     <td class="text-break" th:title="${signBook.name}" th:text="${signBook.name}"></td>
                                     <td class="d-none d-xl-table-cell"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                    <td class="d-none d-xl-table-cell"><span th:text="${signBook.createBy}"></span></td>
+                                    <td class="d-none d-xl-table-cell"><span th:text="${signBook.status}"></span></td>
                                     <td class="utilbox">
                                         <button class="btn btn-info fas fa-eye" title="Voir" th:onclick="'location.href=\'/user/signbooks/' + ${signBook.id} + '/0\''">
                                             <!--  -->
@@ -147,7 +150,7 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Assistant de création de parapheurs</h5>
+                <h5 class="modal-title">Création d'une demande</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>

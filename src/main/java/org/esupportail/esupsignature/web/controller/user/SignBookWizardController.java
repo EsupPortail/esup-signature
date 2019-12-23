@@ -93,8 +93,7 @@ public class SignBookWizardController {
         SignBook signBook = signBookService.getSignBook(name, user);
         model.addAttribute("signBook", signBook);
         List<Workflow> workflows = new ArrayList<>();
-        workflows.add(workflowRepository.findByName("Ma signature").get(0));
-        for(Workflow workflow : workflowRepository.findAll()) {
+        for(Workflow workflow : workflowRepository.findByCreateBy(user.getEppn())) {
             if(!workflows.contains(workflow)) {
                 workflows.add(workflow);
             }
@@ -114,7 +113,7 @@ public class SignBookWizardController {
         if (workflowId != null) {
             Workflow workflow = workflowRepository.findById(workflowId).get();
             signBookService.importWorkflow(signBook, workflow);
-            return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId() + "/0";
+            return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
         }
         //model.addAttribute("allSignBooks", signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user));
         model.addAttribute("workflowStepForm", true);
@@ -124,25 +123,37 @@ public class SignBookWizardController {
 
     @PostMapping(value = "/wizX/{id}", produces = "text/html")
     public String wizX(@PathVariable("id") Long id,
-                       @RequestParam(name="name", required = false) String name,
+                       @RequestParam(name="name") String name,
                        @RequestParam(name="signType", required = false) SignType signType,
                        @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                        @RequestParam(value = "recipientsEmail", required = false) String[] recipientsEmail,
                        @RequestParam(name="addNew", required = false) Boolean addNew,
-                       Model model) {
+                       @RequestParam(name="end", required = false) Boolean end,
+                       Model model) throws EsupSignatureException {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
+        Workflow workflow;
+        if(workflowRepository.countByName(name) > 0 ) {
+            workflow = workflowRepository.findByName(name).get(0);
+        } else {
+            workflow = workflowService.createWorkflow(name, user, null, false);
+        }
+        if (user.getEppn().equals(signBook.getCreateBy())) {
+            WorkflowStep workflowStep = workflowService.createWorkflowStep(Arrays.asList(recipientsEmail), "", allSignToComplete, signType);
+            signBook.getWorkflowSteps().add(workflowStep);
+            workflow.getWorkflowSteps().add(workflowStep);
+            signBookRepository.save(signBook);
+            //workflowRepository.save(workflow);
+        }
         if (addNew != null) {
             model.addAttribute("workflowStepForm", true);
             model.addAttribute("signTypes", SignType.values());
-        } else {
-            if (user.getEppn().equals(signBook.getCreateBy())) {
-                WorkflowStep workflowStep = workflowService.createWorkflowStep(Arrays.asList(recipientsEmail), name, allSignToComplete, signType);
-                signBook.getWorkflowSteps().add(workflowStep);
-                signBookRepository.save(signBook);
-            }
+        }
+        if(end != null) {
+            return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
         }
         model.addAttribute("signBook", signBook);
+        model.addAttribute("name", name);
         return "user/signbooks/wizard/wiz4";
     }
 

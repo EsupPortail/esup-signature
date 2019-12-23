@@ -108,8 +108,10 @@ public class WorkflowService {
 
     }
 
-    public Workflow createWorkflow(Workflow workflow, User user, MultipartFile multipartFile, boolean external) throws EsupSignatureException {
-        if (workflowRepository.countByName(workflow.getName()) == 0) {
+    public Workflow createWorkflow(String name, User user, MultipartFile multipartFile, boolean external) throws EsupSignatureException {
+        if (workflowRepository.countByName(name) == 0) {
+            Workflow workflow = new Workflow();
+            workflow.setName(name);
             workflow.setCreateBy(user.getEppn());
             workflow.setCreateDate(new Date());
             workflow.setExternal(external);
@@ -129,7 +131,7 @@ public class WorkflowService {
             }
             return workflow;
         } else {
-            throw new EsupSignatureException("all ready exist");
+            throw new EsupSignatureException("already exist");
         }
     }
 

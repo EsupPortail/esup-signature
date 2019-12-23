@@ -18,7 +18,7 @@
                                         <form th:action="'/manager/workflows/change-step-sign-type/' + ${id} + '/'  + ${iterator.index}">
                                             <select name="signType" class="form-control" onchange="submit();">
                                                 <th:block th:each="signType : ${signTypes}">
-                                                    <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${workflowStep.signRequestParams.signType == signType}"></option>
+                                                    <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${workflowStep.signType == signType}"></option>
                                                 </th:block>
                                             </select>
                                         </form>

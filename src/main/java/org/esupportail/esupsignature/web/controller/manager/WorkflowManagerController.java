@@ -141,7 +141,7 @@ public class WorkflowManagerController {
 		newWorkflow.setName(name);
 		Workflow workflow;
 		try {
-			workflow = workflowService.createWorkflow(newWorkflow, user, multipartFile, false);
+			workflow = workflowService.createWorkflow(name, user, multipartFile, false);
 		} catch (EsupSignatureException e) {
 			redirectAttrs.addAttribute("messageError", "Ce parapheur existe déjà");
 			return "redirect:/manager/workflows/";

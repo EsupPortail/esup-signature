@@ -435,3 +435,7 @@ input:checked + .slider:before {
     background:#ffc;
     opacity:0.75;
 }
+
+.kv-file-upload {
+    display: none;
+}
