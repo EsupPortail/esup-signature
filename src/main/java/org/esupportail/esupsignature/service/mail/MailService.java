@@ -2,12 +2,10 @@ package org.esupportail.esupsignature.service.mail;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.esupportail.esupsignature.config.mail.MailConfig;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +64,9 @@ public class MailService {
     @Resource
     private SignBookService signBookService;
 
+    @Resource
+    private WorkflowService workflowService;
+
     @Autowired
     private FileService fileService;
 
@@ -73,12 +74,13 @@ public class MailService {
     private String rootUrl;
 
     public void sendCompletedMail(SignBook signBook) {
+        workflowService.setWorkflowsLabels(signBook.getWorkflowSteps());
         if (!checkMailSender()) {
             return;
         }
         User user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("signRequest", signBook);
+        ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", rootUrl);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();

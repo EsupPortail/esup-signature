@@ -97,7 +97,7 @@ public class WorkflowManagerController {
 				}
 			}
 		}
-		signRequestService.setWorkflowsLabels(workflow.getWorkflowSteps());
+		workflowService.setWorkflowsLabels(workflow.getWorkflowSteps());
 		uiModel.addAttribute("workflow", workflow);
 		uiModel.addAttribute("signTypes", SignType.values());
 		uiModel.addAttribute("itemId", id);
@@ -126,7 +126,7 @@ public class WorkflowManagerController {
     	List<Workflow> workflows = ImmutableList.copyOf(workflowRepository.findAll());
 
 		for (Workflow workflow : workflows) {
-			signRequestService.setWorkflowsLabels(workflow.getWorkflowSteps());
+			workflowService.setWorkflowsLabels(workflow.getWorkflowSteps());
 		}
 		uiModel.addAttribute("workflows", workflows);
 		return "manager/workflows/list";

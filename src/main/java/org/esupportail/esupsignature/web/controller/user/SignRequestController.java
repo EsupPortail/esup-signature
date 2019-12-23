@@ -160,7 +160,7 @@ public class SignRequestController {
         Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByCreateByAndStatus(user.getEppn(), this.statusFilter, pageable);
 
         for (SignRequest signRequest : signRequests) {
-            signRequestService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
+            workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
         }
         if (user.getKeystore() != null) {
             model.addAttribute("keystore", user.getKeystore().getFileName());
@@ -195,7 +195,7 @@ public class SignRequestController {
             if (user.getKeystore() != null) {
                 model.addAttribute("keystore", user.getKeystore().getFileName());
             }
-            signRequestService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
+            workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
             model.addAttribute("signRequest", signRequest);
 
             if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
@@ -362,7 +362,7 @@ public class SignRequestController {
                 if (user.getKeystore() != null) {
                     model.addAttribute("keystore", user.getKeystore().getFileName());
                 }
-                signRequestService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
+                workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
                 model.addAttribute("signRequest", signRequest);
                 if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                     model.addAttribute("signable", "ok");

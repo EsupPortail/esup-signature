@@ -17,10 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class WorkflowService {
@@ -264,6 +261,16 @@ public class WorkflowService {
             addRecipientsToWorkflowStep(recipientEmails, workflowStep, userService.getSystemUser());
         }
         return workflowStep;
+    }
+
+    public void setWorkflowsLabels(List<WorkflowStep> workflowSteps) {
+        for(WorkflowStep workflowStep : workflowSteps) {
+            Map<String, Boolean> signBookNames = new HashMap<>();
+            for (Map.Entry<Long, Boolean> userMap : workflowStep.getRecipients().entrySet()) {
+                signBookNames.put(userRepository.findById(userMap.getKey()).get().getFirstname() + " " + userRepository.findById(userMap.getKey()).get().getName(), userMap.getValue());
+            }
+            workflowStep.setRecipientsNames(signBookNames);
+        }
     }
 
 }

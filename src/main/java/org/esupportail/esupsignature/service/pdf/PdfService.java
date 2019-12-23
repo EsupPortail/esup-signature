@@ -35,6 +35,7 @@ import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
@@ -217,7 +218,7 @@ public class PdfService {
         return inputStream;
     }
 
-    public InputStream convertGS(InputStream inputStream) throws IOException {
+    public InputStream convertGS(InputStream inputStream) throws IOException, EsupSignatureSignException {
         File file = inputStreamToPdfTempFile(inputStream);
         if (!isPdfAComplient(file) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
@@ -248,10 +249,11 @@ public class PdfService {
                 } else {
                     logger.warn("Convert fail");
                     logger.debug(output.toString());
-                    return null;
+                    throw new EsupSignatureSignException("PDF/A convertion failure");
                 }
-            } catch (Exception e) {
-                logger.error("GhostScript launc error", e);
+            } catch (InterruptedException e) {
+                logger.error("GhostScript launcs error : check installation or path", e);
+                throw new EsupSignatureSignException("GhostScript launch error");
             }
             InputStream convertedInputStream = new FileInputStream(targetFile);
             file.delete();

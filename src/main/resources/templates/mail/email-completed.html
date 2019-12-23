@@ -12,19 +12,19 @@
         </div>
         <div class="card-body">
             <h4>Bonjour,</h4>
-            <h5>La demande de signature "<b><span th:text="${signRequest.title}"></span></b>" est terminée.</h5>
+            <h5>La demande de signature "<b><span th:text="${signBook.name}"></span></b>" est terminée.</h5>
             <p>Liste des signataires</p>
             <ul>
-            <th:block th:each="workflowStep : ${signRequest.workflowSteps}">
+            <th:block th:each="workflowStep : ${signBook.workflowSteps}">
                  <li th:text="${workflowStep.recipientsNames.keySet()}"></li>
             </th:block>
             </ul>
-            <p th:if="${signRequest.exportedDocumentURI != null}">
-                Le document sera transmise à cette adresse : <span th:text="${signRequest.exportedDocumentURI}"></span>
+            <p th:if="${signBook.exportedDocumentURI != null}">
+                Le document sera transmise à cette adresse : <span th:text="${signBook.exportedDocumentURI}"></span>
             </p>
 
             <p>
-                <a th:href="@{|${rootUrl}/user/signrequests/get-last-file-by-token/${signRequest.token}|}" class="btn btn-primary">Télécharger le document</a>
+                <a th:href="@{|${rootUrl}/user/signBooks/${signBook.id}|}" class="btn btn-primary">Voir le parapheur</a>
             </p>
         </div>
         <div class="card-footer bg-secondary">

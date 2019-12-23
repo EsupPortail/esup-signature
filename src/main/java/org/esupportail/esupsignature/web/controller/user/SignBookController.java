@@ -313,6 +313,7 @@ public class SignBookController {
             signRequest.setCreateBy(user.getEppn());
             signRequest.setCreateDate(new Date());
             signRequest.setParentSignBook(signBook);
+            signRequest.setStatus(SignRequestStatus.pending);
         }
         List<Document> documents = documentService.createDocuments(multipartFiles);
         signRequestService.addOriginalDocuments(signRequest, documents);
@@ -334,7 +335,8 @@ public class SignBookController {
         SignBook signBook = signBookService.getSignBook(name, user);
         for (MultipartFile multipartFile : multipartFiles) {
             Document document = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-            signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), signBook, user, Arrays.asList(document));
+            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), signBook, user, Arrays.asList(document));
+            signRequest.setStatus(SignRequestStatus.pending);
         }
         String[] ok = {"ok"};
         return ok;

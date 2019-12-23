@@ -111,7 +111,7 @@
                     </form>
                 </div>
                 <div class="col-lg-6">
-                <div th:replace="user/signbooks/includes/statusdetails2 :: statusdetails2"></div>
+                <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
                 <br/>
                 <th:block th:each="log : ${logs}">
                     <div th:id="'log' + ${log.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer" th:onmouseover="'$(\'#' + ${log.id} + '\').show(); gotoImage(' + ${log.pageNumber} + ')'" th:onmouseout="'$(\'#' + ${log.id} + '\').hide()'">

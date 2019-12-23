@@ -290,7 +290,7 @@ public class WsController {
                 JsonSignInfoMessage jsonSignInfoMessage = new JsonSignInfoMessage();
                 jsonSignInfoMessage.setStatus(signRequest.getStatus().toString());
                 if(signRequest.getParentSignBook().getWorkflowSteps().size() > 0 ) {
-                    signRequestService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
+                    workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
                     for (Long userId : signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().keySet()) {
                         User user = userRepository.findById(userId).get();
                         jsonSignInfoMessage.getNextRecipientNames().add(user.getName());

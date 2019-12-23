@@ -1,9 +1,8 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
-
 <body>
-<a onclick="location.reload();">refresh</a>
+<h5>Ajouter les documents au parapheur</h5>
 <form id="wiz2Form" th:action="'/user/signbooks/wizard/wiz3'" method="post">
     <input type="hidden" name="name" th:value="${name}">
     <div class="file-loading">

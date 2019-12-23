@@ -80,7 +80,7 @@ public class SignBookWizardController {
     @PostMapping(value = "/wiz2", produces = "text/html")
     public String wiz2(@RequestParam("name") String name, Model model, RedirectAttributes redirectAttributes) {
         if(signBookRepository.countByName(name) > 0) {
-            redirectAttributes.addFlashAttribute("messageError", "Un parapheur portant ce nom exxiste déjà");
+            redirectAttributes.addFlashAttribute("messageError", "Un parapheur portant ce nom existe déjà");
             return "redirect:/user/signbooks/wizard/wiz1";
         }
         model.addAttribute("name", name);
@@ -119,13 +119,11 @@ public class SignBookWizardController {
         //model.addAttribute("allSignBooks", signBookRepository.findByRecipientEmailsAndSignBookType(Arrays.asList(user.getEmail()), SignBookType.user));
         model.addAttribute("workflowStepForm", true);
         model.addAttribute("signTypes", SignType.values());
-        model.addAttribute("step", 1);
         return "user/signbooks/wizard/wiz4";
     }
 
     @PostMapping(value = "/wizX/{id}", produces = "text/html")
     public String wizX(@PathVariable("id") Long id,
-                       @RequestParam("step") Integer step,
                        @RequestParam(name="name", required = false) String name,
                        @RequestParam(name="signType", required = false) SignType signType,
                        @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
@@ -135,37 +133,16 @@ public class SignBookWizardController {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
         if (addNew != null) {
-            WorkflowStep workflowStep = new WorkflowStep();
-            workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
-            workflowStepRepository.save(workflowStep);
-            signBook.getWorkflowSteps().add(workflowStep);
-        } else {
-            if (user.getEppn().equals(signBook.getCreateBy())) {
-                if (signBook.getWorkflowSteps().size() < step) {
-                    WorkflowStep workflowStep = workflowService.createWorkflowStep(Arrays.asList(recipientsEmail), name, allSignToComplete, signType);
-                    signBook.getWorkflowSteps().add(workflowStep);
-                } else {
-                    if (allSignToComplete == null) {
-                        allSignToComplete = false;
-                    }
-                    signBookService.changeSignType(signBook, step, name, signType);
-                    signBookService.toggleNeedAllSign(signBook, step, allSignToComplete);
-                    WorkflowStep workflowStep = signBook.getWorkflowSteps().get(step);
-                    if (recipientsEmail != null && recipientsEmail.length > 0) {
-                        workflowService.addRecipientsToWorkflowStep(Arrays.asList(recipientsEmail), workflowStep, user);
-                    }
-                }
-            }
-            signBookRepository.save(signBook);
-        }
-        model.addAttribute("signBook", signBook);
-        if(signBook.getWorkflowSteps().size() > step + 1) {
             model.addAttribute("workflowStepForm", true);
             model.addAttribute("signTypes", SignType.values());
-            model.addAttribute("step", step + 1);
         } else {
-            model.addAttribute("step", step);
+            if (user.getEppn().equals(signBook.getCreateBy())) {
+                WorkflowStep workflowStep = workflowService.createWorkflowStep(Arrays.asList(recipientsEmail), name, allSignToComplete, signType);
+                signBook.getWorkflowSteps().add(workflowStep);
+                signBookRepository.save(signBook);
+            }
         }
+        model.addAttribute("signBook", signBook);
         return "user/signbooks/wizard/wiz4";
     }
 

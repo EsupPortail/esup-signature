@@ -88,9 +88,6 @@ public class SignRequestService {
 	@Resource
 	private UserService userService;
 
-	@Resource
-	private MailService mailService;
-
 	private String step = "";
 
 	public List<SignRequest> getTosignRequests(User user) {
@@ -163,8 +160,7 @@ public class SignRequestService {
 
 	public void sign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException, IOException {
 		step = "Demarrage de la signature";
-		boolean addPage = false;
-		Document signedFile = null;
+		Document signedFile;
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
 		SignType signType = signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType();
 		if (signType.equals(SignType.visa)) {
@@ -180,16 +176,16 @@ public class SignRequestService {
 		}
 		
 		if (signedFile != null) {
-			//addSignedFile(signRequest, signedFile, signedFile.getName(), Files.probeContentType(signedFile.toPath()) , user);
 			signRequest.getSignedDocuments().add(signedFile);
 			signedFile.setParentId(signRequest.getId());
-			//signedFile.delete();
 			if(signType.equals(SignType.visa)) {
-				updateStatus(signRequest, SignRequestStatus.pending, "Visa", user, "SUCCESS", signRequest.getComment());
+				updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", signRequest.getComment());
 			} else {
-				updateStatus(signRequest, SignRequestStatus.pending, "Signature", user, "SUCCESS", signRequest.getComment());
+				updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
 			}
+			signRequestRepository.save(signRequest);
 			step = "end";
+			signBookService.applyEndOfStepRules(signRequest.getParentSignBook(), user);
 		}
 	}
 
@@ -416,7 +412,7 @@ public class SignRequestService {
 
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {
 		if ((signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
-				&& signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().containsKey(user.getId()) &&  !signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().get(user.getId())) {
+				&& signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().containsKey(user.getId())) {
 			return true;
 		} else {
 			return false;
@@ -454,19 +450,6 @@ public class SignRequestService {
         } 
         return val;
     }
-	
-	public void setWorkflowsLabels(List<WorkflowStep> workflowSteps) {
-		for(WorkflowStep workflowStep : workflowSteps) {
-			Map<String, Boolean> signBookNames = new HashMap<>();
-			for (Map.Entry<Long, Boolean> userMap : workflowStep.getRecipients().entrySet()) {
-				signBookNames.put(userRepository.findById(userMap.getKey()).get().getFirstname() + " " + userRepository.findById(userMap.getKey()).get().getName(), userMap.getValue());
-			}
-			workflowStep.setRecipientsNames(signBookNames);
-		}
-	}
-
-
-
 
 	public void delete(SignRequest signRequest) {
 		List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());

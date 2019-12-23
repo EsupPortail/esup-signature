@@ -3,8 +3,14 @@
 <head th:replace="fragments/head :: head"></head>
 
 <body>
+<h5>Paramétrage du circuit de visas</h5>
+<form>
+    <button type="submit" class="btn btn-success">
+        Je signe ce document <i class="fas fa-signature"></i>
+    </button>
+</form>
+<h5 class="hr">ou</h5>
 <form th:action="'/user/signbooks/wizard/wiz4/' + ${signBook.id}" method="post">
-    <h5>Paramétrage du circuit de visas</h5>
     <div class="form-group">
         <select id="workflowId" name="workflowId" class="form-control" required>
             <option value="" disabled selected>Choisir un circuit de visas</option>

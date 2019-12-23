@@ -71,7 +71,7 @@ public class NexuProcessController {
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String showSignatureParameters(@PathVariable("id") Long id, Model model,
 										  @RequestParam(value = "referer", required = false) String referer,
-										  HttpServletRequest request, RedirectAttributes redirectAttrs) throws InvalidPasswordException, IOException {
+										  HttpServletRequest request, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureSignException {
     	User user = userService.getUserFromAuthentication();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {

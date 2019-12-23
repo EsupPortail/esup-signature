@@ -4,9 +4,8 @@
 
 <body>
 <form th:action="'/user/signbooks/wizard/wizX/' + ${signBook.id}" method="post">
-    <input type="hidden" name="step" th:value="${step}">
     <th:block th:if="${workflowStepForm}">
-    <h5 th:text="'Etape ' + ${step + 1}"></h5>
+    <h5>Paramétrage de le nouvelle étape</h5>
     <label>Nom de l'étape :</label>
     <input type="text" name="name" class="form-control" required>
     <br>
@@ -44,21 +43,22 @@
             ajax: function (search, callback) {
                 if (search.length < 3) {
                     callback('Merci de saisir au moins 3 caractères')
+                } else {
+                    fetch('/user/users/searchLdap?searchString=' + search)
+                        .then(function (response) {
+                            return response.json()
+                        })
+                        .then(function (json) {
+                            let data = []
+                            for (let i = 0; i < json.length; i++) {
+                                data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
+                            }
+                            callback(data)
+                        })
+                        .catch(function (error) {
+                            callback(false)
+                        })
                 }
-                fetch('/user/users/searchLdap?searchString=' + search)
-                    .then(function (response) {
-                        return response.json()
-                    })
-                    .then(function (json) {
-                        let data = []
-                        for (let i = 0; i < json.length; i++) {
-                            data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
-                        }
-                        callback(data)
-                    })
-                    .catch(function (error) {
-                        callback(false)
-                    })
             }
         });
     </script>
@@ -74,9 +74,8 @@
         <button type="submit" name="addNew" value="true" class="btn btn-primary" style="position: absolute;left: 0;bottom: 0;">
             <i class="fas fa-plus"></i> Ajouter une étape
         </button>
-        <a th:href="'/user/signbooks/wizard/wizend/' + ${signBook.id}"class="btn btn-success" style="position: absolute;right: 0;bottom: 0;">
-            Suivant <i class="fas fa-arrow-right"></i>
-        </a>
+        <a th:onclick="'parent.location.href=\'/user/signbooks/'+ ${signBook.id} +'/0\''" class="btn btn-success" style="position: absolute;right: 0;bottom: 0;">
+            Terminer <i class="fas fa-flag-checkered"></i>
         </button>
     </th:block>
 </form>
