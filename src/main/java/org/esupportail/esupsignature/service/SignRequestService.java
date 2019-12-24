@@ -88,6 +88,9 @@ public class SignRequestService {
 	@Resource
 	private UserService userService;
 
+	@Resource
+	private MailService mailService;
+
 	private String step = "";
 
 	public List<SignRequest> getTosignRequests(User user) {
@@ -185,7 +188,7 @@ public class SignRequestService {
 			}
 			signRequestRepository.save(signRequest);
 			step = "end";
-			signBookService.applyEndOfStepRules(signRequest.getParentSignBook(), user);
+			applyEndOfStepRules(signRequest, user);
 		}
 	}
 
@@ -281,6 +284,18 @@ public class SignRequestService {
 		signRequest.getSignedDocuments().add(document);
 		document.setParentId(signRequest.getId());
 	}
+
+
+	public void applyEndOfStepRules(SignRequest signRequest, User user) {
+		signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().put(user.getId(), true);
+		signBookService.nextWorkFlowStep(signRequest.getParentSignBook(), user);
+		if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed)) {
+			mailService.sendCompletedMail(signRequest.getParentSignBook());
+		} else {
+			updateStatus(signRequest, SignRequestStatus.pending, "Passage à l'étape " + signRequest.getParentSignBook().getCurrentWorkflowStepNumber(), user, "SUCCESS","");
+		}
+	}
+
 //
 //	public void applyEndOfStepRules(SignRequest signRequest, User user) throws EsupSignatureException {
 //		//SignBook recipientSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
@@ -329,6 +344,9 @@ public class SignRequestService {
 
 	public int scanSignatureFields(SignRequest signRequest, PDDocument pdDocument) {
 		List<SignRequestParams> signRequestParamsList = pdfService.pdSignatureFieldsToSignRequestParams(pdDocument);
+		for(SignRequestParams signRequestParams : signRequestParamsList) {
+			signRequestParamsRepository.save(signRequestParams);
+		}
 		signRequest.getSignRequestParams().addAll(signRequestParamsList);
 		return signRequestParamsList.size();
 	}

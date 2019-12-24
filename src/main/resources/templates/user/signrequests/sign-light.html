@@ -93,13 +93,13 @@
                                     <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();" ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
                                          onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                                          onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
-                                         th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center; left: ' + ${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.XPos} + 'px;top: ' + ${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
+                                         th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center; left: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos} + 'px;top: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
                                         <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
                                     </div>
                                 </th:block>
                                 <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'visa'}">
                                     <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();" ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
-                                         th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.XPos} + 'px;top: ' + ${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
+                                         th:style="'background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos} + 'px;top: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
                                         <div id="borders" class="anim-border"
                                              style="text-align:left;line-height:normal;width: 100px; height: 75px;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;">
                                             <span id="textVisa" style="font-size: 8px;" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span>
@@ -116,10 +116,10 @@
                                           name="signPageNumber"/>
                         </div>
                         <div class="col-lg-4">
-                            X position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" th:value="${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.XPos}" id="xPos" type="text" name="xPos"/>
+                            X position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" th:value="${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos}" id="xPos" type="text" name="xPos"/>
                         </div>
                         <div class="col-lg-4">
-                            Y position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" th:value="${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.YPos}" id="yPos" type="text" name="yPos"/>
+                            Y position : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" th:value="${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos}" id="yPos" type="text" name="yPos"/>
                         </div>
                     </div>
                 </div>

@@ -80,11 +80,6 @@
                                 <div class="card">
                                     <div class="card-body border-1 bg-light">
                                         <h5><span th:text="'Etape ' + ${iterator.index + 1}"></span> : <span th:text="${workflowStep.name}"></span></h5>
-                                        <th:block th:if="${signBook.signedDocuments.size() > iterator.index}">
-                                            <a class="btn btn-success" th:href="'/user/documents/getfile/' + ${signBook.signedDocuments.get(iterator.index).id}" target="_blank">
-                                                <i class="fas fa-download"></i> Ouvrir le document signé
-                                            </a>
-                                        </th:block>
                                         <table>
                                         <th:block th:each="recipient : ${workflowStep.recipientsNames}">
                                             <tr>
@@ -117,12 +112,12 @@
                                                 <br>
                                                 <label>Type de signature :</label>
                                                 <div th:unless="${iterator.index + 1 > signBook.currentWorkflowStepNumber || iterator.index + 1 == signBook.currentWorkflowStepNumber}">
-                                                    <b><span th:text="#{'signbook.signtype.' + ${workflowStep.signBookParams.signType}}"></span></b>
+                                                    <b><span th:text="#{'signbook.signtype.' + ${workflowStep.signType}}"></span></b>
                                                 </div>
                                                 <div th:if="${iterator.index + 1 > signBook.currentWorkflowStepNumber || iterator.index + 1 == signBook.currentWorkflowStepNumber}">
                                                     <select name="signType" class="form-control">
                                                         <th:block th:each="signType : ${signTypes}">
-                                                            <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${workflowStep.signBookParams.signType == signType}"></option>
+                                                            <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${workflowStep.signType == signType}"></option>
                                                         </th:block>
                                                     </select>
                                                     <br>

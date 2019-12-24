@@ -112,9 +112,6 @@ public class SignBookController {
     private LogRepository logRepository;
 
     @Resource
-    private DocumentRepository documentRepository;
-
-    @Resource
     private DocumentService documentService;
 
     @Resource
@@ -154,9 +151,10 @@ public class SignBookController {
     }
 
     @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
-    public String updateForm(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
+    public String updateForm(@PathVariable("id") Long id, Model model) {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
+        workflowService.setWorkflowsLabels(signBook.getWorkflowSteps());
         model.addAttribute("signBook", signBook);
         return "user/signbooks/update";
 

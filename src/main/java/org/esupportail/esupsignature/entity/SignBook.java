@@ -65,7 +65,7 @@ public class SignBook {
     @ElementCollection(targetClass=String.class)
     private List<String> recipientEmails = new ArrayList<>();
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.REMOVE)
     @OrderColumn
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
@@ -231,10 +231,8 @@ public class SignBook {
 
     public SignRequestStatus getStatus() {
         SignRequestStatus signRequestStatus = SignRequestStatus.completed;
-        for(SignRequest signRequest : signRequests) {
-            if(signRequest.getStatus().equals(SignRequestStatus.pending)) {
-                signRequestStatus = SignRequestStatus.pending;
-            }
+        if(currentWorkflowStepNumber <= workflowSteps.size()) {
+            signRequestStatus = SignRequestStatus.pending;
         }
         return signRequestStatus;
     }

@@ -11,7 +11,7 @@
                 <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
-                <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="mb-1 col-12 btn btn-primary text-left">
+                <button title="Signature rapide" type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="mb-1 col-12 btn btn-primary text-left">
                     <i class="fas fa-plus"></i> <span class="sidebar-label">Ajouter un document</span>
                 </button>
                 <a class="btn btn-light col-12 mb-1 text-left" href="/">
@@ -29,7 +29,7 @@
             </nav>
             <div class="card rounded-0">
                 <div class="card-header">
-                    Documents du parapheur
+                    Documents à signer
                 </div>
                 <div class="card-body">
                     <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
@@ -37,43 +37,37 @@
                         <table class="table table-sm table-bordered table-striped table-hover">
                             <thead>
                             <tr>
-                                <th data-type="html"><input id="selectall" type="checkbox"/></th>
                                 <th class="">Titre</th>
                                 <th class="d-none d-md-table-cell">Date de création</th>
                                 <th class="d-none d-lg-table-cell">Créé par</th>
-                                <th>Voir</th>
                                 <th>Signer</th>
-                                <th>Modifier</th>
+                                <th>Details</th>
                                 <th>Supprimer</th>
                             </tr>
                             </thead>
                             <tbody>
-                            <th:block th:each="signRequest : ${signBook.signRequests}">
+                            <th:block th:each="signRequest,iterator : ${signBook.signRequests}">
                                 <tr>
-                                    <td><input th:value="${signRequest.id}" name="check" type="checkbox" class="check"/></td>
                                     <td class="text-break" th:text="${signRequest.title}"></td>
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy}"></span></td>
                                     <td class="utilbox">
-                                        <a class="btn btn-info far fa-eye" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}">
-                                            <!--  -->
+                                        <a class="btn btn-success" title="Signer" th:href="'/user/signbooks/' + ${signBook.id} + '/' + ${iterator.index}">
+                                            <i class="fas fa-signature"></i>
                                         </a>
                                     </td>
                                     <td class="utilbox">
-                                        <a role="button" class="btn btn-success fas fa-signature" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.token}">
-                                            <!--  -->
-                                        </a>
-                                    </td>
-                                    <td class="utilbox">
-                                        <button class="btn btn-warning fas fa-pen" title="Modifier" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '?form\''">
-                                            <!--  -->
+                                        <button class="btn btn-info" title="Modifier" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '?form\''">
+                                            <i class="fas fa-eye"></i>
                                         </button>
                                     </td>
                                     <td class="utilbox">
                                         <form class="delete" th:action="'/user/signrequests/' + ${signRequest.id}" method="post">
                                             <input type="hidden" name="_method" value="DELETE"/>
                                             <button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" value="Supprimer Sign Request" type="submit" title="Supprimer Sign Request"
-                                                    class="btn btn-danger far fa-trash-alt"></button>
+                                                    class="btn btn-danger">
+                                                <i class=" far fa-trash-alt"></i>
+                                            </button>
                                         </form>
                                     </td>
 
@@ -83,14 +77,14 @@
                         </table>
                     </div>
                     <span th:unless="${#lists.size(signBook.signRequests) > 0}" class="table-responsive">
-				Aucun document à signer pour le moment
-			</span>
+                        Aucun document à signer pour le moment
+                    </span>
                 </div>
             </div>
+            <br>
             <div th:replace="user/signbooks/cards/stepscard2 :: stepscard2"></div>
         </div>
     </div>
-</div>
 </main>
 <div class="modal fade" id="fastSignRequestModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -112,13 +106,13 @@
                                 </label>
                             </div>
                         </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                    <button type="submit" id="fast-form-submit" class="btn btn-success">
-                        Suivant <i class="fas fa-angle-right"></i>
-                    </button>
-                </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                        <button type="submit" id="fast-form-submit" class="btn btn-success">
+                            Suivant <i class="fas fa-angle-right"></i>
+                        </button>
+                    </div>
             </form>
         </div>
     </div>

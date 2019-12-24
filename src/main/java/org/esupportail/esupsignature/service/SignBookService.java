@@ -285,16 +285,13 @@ public class SignBookService {
         workflowService.setSignTypeForWorkflowStep(signType, workflowStep);
     }
 
-    public void applyEndOfStepRules(SignBook signBook, User user) {
-        signBook.getCurrentWorkflowStep().getRecipients().put(user.getId(), true);
-        if (signBook.getStatus().equals(SignRequestStatus.completed)) {
-            //signBookService.removeSignRequestFromSignBook(signRequest, recipientSignBook);
-            if(signBook.getCurrentWorkflowStepNumber() == signBook.getWorkflowSteps().size()) {
-                mailService.sendCompletedMail(signBook);
-            } else {
-                nextWorkFlowStep(signBook, user);
+    public boolean isStepDone(SignBook signBook) {
+        for (SignRequest signRequest : signBook.getSignRequests()) {
+            if (signRequest.getStatus().equals(SignRequestStatus.pending)) {
+                return false;
             }
         }
+        return true;
     }
 
     public void nextWorkFlowStep(SignBook signBook, User user) {
