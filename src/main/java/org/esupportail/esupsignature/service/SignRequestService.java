@@ -288,11 +288,13 @@ public class SignRequestService {
 
 	public void applyEndOfStepRules(SignRequest signRequest, User user) {
 		signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().put(user.getId(), true);
-		signBookService.nextWorkFlowStep(signRequest.getParentSignBook(), user);
-		if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed)) {
-			mailService.sendCompletedMail(signRequest.getParentSignBook());
-		} else {
-			updateStatus(signRequest, SignRequestStatus.pending, "Passage à l'étape " + signRequest.getParentSignBook().getCurrentWorkflowStepNumber(), user, "SUCCESS","");
+		if(signBookService.isStepDone(signRequest.getParentSignBook())) {
+			signBookService.nextWorkFlowStep(signRequest.getParentSignBook(), user);
+			if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed)) {
+				mailService.sendCompletedMail(signRequest.getParentSignBook());
+			} else {
+				updateStatus(signRequest, SignRequestStatus.pending, "Passage à l'étape " + signRequest.getParentSignBook().getCurrentWorkflowStepNumber(), user, "SUCCESS","");
+			}
 		}
 	}
 

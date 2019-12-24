@@ -169,17 +169,7 @@ public class SignBookWizardController {
             model.addAttribute("messageError", "Un circuit de signature porte déjà ce nom");
             return "redirect:/user/signbooks/wizard/wiz5/" + signBook.getId();
         } else {
-            workflow = workflowService.createWorkflow(name, user, null, false);
-            for(WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
-                WorkflowStep toSaveWorkflowStep = new WorkflowStep();
-                toSaveWorkflowStep.getRecipients().putAll(workflowStep.getRecipients());
-                toSaveWorkflowStep.setSignType(workflowStep.getSignType());
-                workflowStepRepository.save(toSaveWorkflowStep);
-                workflow.getWorkflowSteps().add(toSaveWorkflowStep);
-            }
-            workflow.setCreateDate(new Date());
-            workflow.setCreateBy(user.getEppn());
-            workflowRepository.save(workflow);
+            signBookService.saveWorkflow(name, user, signBook);
         }
         return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
     }

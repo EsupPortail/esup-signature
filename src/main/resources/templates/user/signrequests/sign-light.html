@@ -88,7 +88,7 @@
                     <div class="sign-preview">
                         <div th:if="${documentType == 'pdf'}">
                             <div id="pointer_div" onmouseup="savePosition();" ontouchend="savePosition();" ontouchmove="pointIt(event);" onmousemove="pointIt(event);"
-                                 th:style="'background-size: ' + ${pdfWidth} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/' + ${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.signPageNumber -1} + '\');width:' + ${pdfWidth} + 'px;height:' + ${pdfHeight} + 'px;border:1px solid #CCC;pointer-events: none;'">
+                                 th:style="'background-size: ' + ${pdfWidth} + 'px;background-image:url(\'/user/documents/' + ${documentId} + '/getimagepdfpage/' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).signPageNumber -1} + '\');width:' + ${pdfWidth} + 'px;height:' + ${pdfHeight} + 'px;border:1px solid #CCC;pointer-events: none;'">
                                 <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'visa'}">
                                     <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();" ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
                                          onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
@@ -112,7 +112,7 @@
                     </div>
                     <div class="d-none">
                         <div class="col-lg-4">
-                            Page : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" th:value="${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.signPageNumber}" id="signPageNumber" type="text"
+                            Page : <input readonly="readonly" autocomplete="off" class="form-control form-control-sm col-6" th:value="${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).signPageNumber}" id="signPageNumber" type="text"
                                           name="signPageNumber"/>
                         </div>
                         <div class="col-lg-4">
@@ -200,7 +200,7 @@
     /*<![CDATA[*/
     var zoom = 1;
     var nbImagePage = [[${imagePagesSize}]];
-    var currentImagePage = [[${signRequest.parentSignBook.currentWorkflowStep.signRequestParams.signPageNumber}]] - 1;
+    var currentImagePage = [[${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).signPageNumber}]] - 1;
     var documentUrl = "/user/documents/[[${documentId}]]/getimagepdfpage/";
     var signId = [[${signRequest.id}]];
 

@@ -152,7 +152,7 @@ public class SignBook {
     public List<String> getRecipientEmails() {
         return this.recipientEmails;
     }
-    
+
     public SignBookType getSignBookType() {
         return this.signBookType;
     }
@@ -183,10 +183,6 @@ public class SignBook {
 
     public Boolean getExternal() {
         return external;
-    }
-
-    public void setRecipientEmails(List<String> recipientEmails) {
-        this.recipientEmails = recipientEmails;
     }
 
     public List<WorkflowStep> getWorkflowSteps() {

@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.service.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import java.io.InputStream;
@@ -32,11 +33,15 @@ public class SignBookService {
 
     @Resource
     private SignRequestRepository signRequestRepository;
+
     @Resource
     private SignRequestService signRequestService;
 
     @Resource
     private UserRepository userRepository;
+
+    @Resource
+    private WorkflowRepository workflowRepository;
 
     @Resource
     private WorkflowStepRepository workflowStepRepository;
@@ -140,14 +145,9 @@ public class SignBookService {
     }
 
     public void importWorkflow(SignBook signBook, Workflow workflow) {
-        int i = 0;
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
-            WorkflowStep newWorkflowStep;
-            if(signBook.getWorkflowSteps().size() > i) {
-                newWorkflowStep = signBook.getWorkflowSteps().get(i);
-            } else {
-                newWorkflowStep = new WorkflowStep();
-            }
+            WorkflowStep newWorkflowStep = new WorkflowStep();
+            newWorkflowStep.setSignType(workflowStep.getSignType());
             newWorkflowStep.setSignRequestParams(workflowStep.getSignRequestParams());
             newWorkflowStep.setAllSignToComplete(workflowStep.isAllSignToComplete());
             for(Long userId : workflowStep.getRecipients().keySet()){
@@ -157,11 +157,8 @@ public class SignBookService {
                 }
                 newWorkflowStep.getRecipients().put(recipient.getId(), false);
             }
-            if(newWorkflowStep.getId() == null) {
-                workflowStepRepository.save(newWorkflowStep);
-                signBook.getWorkflowSteps().add(newWorkflowStep);
-            }
-            i++;
+            workflowStepRepository.save(newWorkflowStep);
+            signBook.getWorkflowSteps().add(newWorkflowStep);
         }
         signBook.setTargetType(workflow.getTargetType());
         signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
@@ -169,6 +166,20 @@ public class SignBookService {
     }
 
 
+    public void saveWorkflow(String name, User user, SignBook signBook) throws EsupSignatureException {
+        Workflow workflow;
+        workflow = workflowService.createWorkflow(name, user, null, false);
+        for(WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
+            WorkflowStep toSaveWorkflowStep = new WorkflowStep();
+            toSaveWorkflowStep.getRecipients().putAll(workflowStep.getRecipients());
+            toSaveWorkflowStep.setSignType(workflowStep.getSignType());
+            workflowStepRepository.save(toSaveWorkflowStep);
+            workflow.getWorkflowSteps().add(toSaveWorkflowStep);
+        }
+        workflow.setCreateDate(new Date());
+        workflow.setCreateBy(user.getEppn());
+        workflowRepository.save(workflow);
+    }
 
     public void exportFilesToTarget(SignBook signBook, User user) throws EsupSignatureException {
         logger.trace("export signRequest to : " + signBook.getTargetType() + "://" + signBook.getDocumentsTargetUri());
