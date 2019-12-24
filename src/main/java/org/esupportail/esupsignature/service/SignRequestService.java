@@ -168,12 +168,12 @@ public class SignRequestService {
 		SignType signType = signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType();
 		if (signType.equals(SignType.visa)) {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest.getParentSignBook(), user, addDate);
+				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, user, addDate);
 			} else {
 				signedFile = toSignDocuments.get(0);
 			}
 		} else if(signType.equals(SignType.pdfImageStamp)) {
-			signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest.getParentSignBook(), user, addDate);
+			signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, user, addDate);
 		} else {
 			signedFile = certSign(signRequest, user, password, addDate, visual);
 		}
@@ -216,7 +216,7 @@ public class SignRequestService {
 		}
 		step = "Préparation de la signature";
 		try {
-			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest.getParentSignBook(), visual);
+			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest, visual);
 			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 			
@@ -247,10 +247,10 @@ public class SignRequestService {
 				Document toSignFile = toSignFiles.get(0);
 				toSignInputStream = toSignFile.getInputStream();
 				if(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() == 1) {
-					toSignInputStream = pdfService.convertGS(pdfService.writeMetadatas(toSignFile.getInputStream(), toSignFile.getFileName(), signRequest.getParentSignBook()));
+					toSignInputStream = pdfService.convertGS(pdfService.writeMetadatas(toSignFile.getInputStream(), toSignFile.getFileName(), signRequest));
 				}
 				MultipartFile multipartFile = fileService.toMultipartFile(toSignInputStream, toSignFile.getFileName(), "application/pdf");
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getCurrentWorkflowStep().getSignRequestParams(), multipartFile, user, addDate);
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber()), multipartFile, user, addDate);
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
 				documentForm.setDocumentToSign(multipartFile);
 				signatureDocumentForm = documentForm;
@@ -293,7 +293,9 @@ public class SignRequestService {
 			if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed)) {
 				mailService.sendCompletedMail(signRequest.getParentSignBook());
 			} else {
-				updateStatus(signRequest, SignRequestStatus.pending, "Passage à l'étape " + signRequest.getParentSignBook().getCurrentWorkflowStepNumber(), user, "SUCCESS","");
+				for(SignRequest childSignRequest : signRequest.getParentSignBook().getSignRequests()) {
+					updateStatus(childSignRequest, SignRequestStatus.pending, "Passage à l'étape " + signRequest.getParentSignBook().getCurrentWorkflowStepNumber(), user, "SUCCESS", "");
+				}
 			}
 		}
 	}

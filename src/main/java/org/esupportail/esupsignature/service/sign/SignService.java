@@ -27,10 +27,7 @@ import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.ExtensionForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
@@ -317,7 +314,7 @@ public class SignService {
 		}
 	}
 
-	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignBook signBook, boolean visual) throws IOException, EsupSignatureSignException {
+	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest, boolean visual) throws IOException, EsupSignatureSignException {
 		SignatureForm signatureForm;
 		AbstractSignatureForm abstractSignatureForm;
 		if(documents.size() > 1) {
@@ -336,8 +333,8 @@ public class SignService {
 			if(toSignFile.getContentType().equals("application/pdf") && visual) {
 				signatureForm = SignatureForm.PAdES;
 				inputStream = toSignFile.getInputStream();
-				if(signBook.getCurrentWorkflowStepNumber() == 1) {
-					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signBook));
+				if(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() == 1) {
+					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest));
 				}
 			} else {
 				signatureForm = signConfig.getSignProperties().getDefaultSignatureForm();

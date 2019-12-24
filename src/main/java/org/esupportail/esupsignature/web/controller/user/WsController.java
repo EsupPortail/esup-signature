@@ -105,7 +105,6 @@ public class WsController {
                 signRequestParams.setXPos(posX);
                 signRequestParams.setYPos(posY);
                 signRequestParamsRepository.save(signRequestParams);
-                workflowStep.setSignRequestParams(signRequestParams);
                 for(String recipientEmail : recipientEmails) {
                     User recipientUser = userService.getUser(recipientEmail);
                     workflowStep.getRecipients().put(recipientUser.getId(), false);

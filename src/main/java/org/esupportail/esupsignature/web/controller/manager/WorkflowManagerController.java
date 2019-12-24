@@ -253,7 +253,6 @@ public class WorkflowManagerController {
 		} else {
 			workflowStep.setAllSignToComplete(allSignToComplete);
 		}
-		workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
 		workflowStep.setSignType(SignType.valueOf(signType));
 		workflowStepRepository.save(workflowStep);
 		workflow.getWorkflowSteps().add(workflowStep);

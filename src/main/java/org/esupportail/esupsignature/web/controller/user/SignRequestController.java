@@ -429,9 +429,9 @@ public class SignRequestController {
                 return "redirect:/user/nexu-sign/" + id + "?referer=" + referer;
             }
             if (signPageNumber != null && xPos != null && yPos != null) {
-                signRequest.getParentSignBook().getCurrentWorkflowStep().getSignRequestParams().setSignPageNumber(signPageNumber);
-                signRequest.getParentSignBook().getCurrentWorkflowStep().getSignRequestParams().setXPos(xPos);
-                signRequest.getParentSignBook().getCurrentWorkflowStep().getSignRequestParams().setYPos(yPos);
+                signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber()).setSignPageNumber(signPageNumber);
+                signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber()).setXPos(xPos);
+                signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber()).setYPos(yPos);
                 signRequestRepository.save(signRequest);
             }
             if (!"".equals(password)) {
@@ -484,7 +484,7 @@ public class SignRequestController {
                 try {
                     if (signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.visa)) {
                         signRequestService.updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", comment);
-                    } else if (signRequest.getParentSignBook().getCurrentWorkflowStep().getSignRequestParams().equals(SignType.nexuSign)) {
+                    } else if (signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.nexuSign)) {
                         logger.error("no multiple nexu sign");
                         progress = "not_autorized";
                     } else {

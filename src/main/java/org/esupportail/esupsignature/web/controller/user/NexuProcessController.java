@@ -80,7 +80,7 @@ public class NexuProcessController {
 			for(Document document : signRequestService.getToSignDocuments(signRequest)) {
 				toSignFiles.add(document);
 			}
-			signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest.getParentSignBook(), true);
+			signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest, true);
 			model.addAttribute("signRequestId", signRequest.getId());
 			model.addAttribute("signatureDocumentForm", signatureDocumentForm);
 			model.addAttribute("digestAlgorithm", signatureDocumentForm.getDigestAlgorithm());
@@ -112,7 +112,7 @@ public class NexuProcessController {
 			} else {
 				if(signatureDocumentForm.getSignatureForm().equals(SignatureForm.PAdES)) {
 					SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
-					parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getCurrentWorkflowStep().getSignRequestParams(), documentForm.getDocumentToSign(), user, false);
+					parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber()), documentForm.getDocumentToSign(), user, false);
 				} else {
 					parameters = signService.fillParameters((SignatureDocumentForm) signatureDocumentForm);
 				}

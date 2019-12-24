@@ -63,25 +63,19 @@ public class WorkflowService {
     public void initCreatorWorkflow() {
         if (userRepository.countByEppn("creator") == 0) {
             User creator = userService.createUser("creator", "Createur de la demande", "", "");
-
             Workflow workflowWorkflow = new Workflow();
             workflowWorkflow.setName("Ma signature");
             workflowWorkflow.setCreateDate(new Date());
             workflowWorkflow.setModelFile(null);
             workflowWorkflow.setSourceType(DocumentIOType.none);
             workflowWorkflow.setTargetType(DocumentIOType.none);
-
             WorkflowStep workflowStep = new WorkflowStep();
             workflowStep.setName("Ma signature");
-            workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
             workflowStep.getRecipients().put(creator.getId(), false);
             workflowStepRepository.save(workflowStep);
-
             workflowWorkflow.getWorkflowSteps().add(workflowStep);
             workflowRepository.save(workflowWorkflow);
-
         }
-
     }
 
     public void updateWorkflow(Workflow workflow, Workflow workflowToUpdate, MultipartFile multipartFile) throws EsupSignatureException {
@@ -256,7 +250,6 @@ public class WorkflowService {
         } else {
             workflowStep.setAllSignToComplete(allSignToComplete);
         }
-        workflowStep.setSignRequestParams(signRequestService.getEmptySignRequestParams());
         workflowStep.setSignType(signType);
         workflowStepRepository.save(workflowStep);
         if(recipientEmails != null) {

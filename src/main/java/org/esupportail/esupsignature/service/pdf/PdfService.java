@@ -30,10 +30,7 @@ import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.type.BadFieldValueException;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.DocumentService;
@@ -76,10 +73,10 @@ public class PdfService {
     @Resource
     private FileService fileService;
 
-    public Document stampImage(Document toSignFile, SignBook signBook, User user, boolean addDate) {
+    public Document stampImage(Document toSignFile, SignRequest signRequest, User user, boolean addDate) {
         //TODO add ip ? + date + nom ?
-        SignRequestParams params = signBook.getCurrentWorkflowStep().getSignRequestParams();
-        SignType signType = signBook.getCurrentWorkflowStep().getSignType();
+        SignRequestParams params = signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber());
+        SignType signType = signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType();
         PdfParameters pdfParameters;
         try {
             PDDocument pdDocument = PDDocument.load(toSignFile.getInputStream());
@@ -142,7 +139,7 @@ public class PdfService {
             ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
             pdDocument.close();
             try {
-                InputStream file = convertGS(writeMetadatas(in, toSignFile.getFileName(), signBook));
+                InputStream file = convertGS(writeMetadatas(in, toSignFile.getFileName(), signRequest));
                 return documentService.createDocument(file, toSignFile.getFileName(), toSignFile.getContentType());
             } catch (Exception e) {
                 logger.error("unable to convert to pdf A", e);
@@ -153,7 +150,7 @@ public class PdfService {
         return null;
     }
 
-    public InputStream writeMetadatas(InputStream inputStream, String fileName, SignBook signBook) {
+    public InputStream writeMetadatas(InputStream inputStream, String fileName, SignRequest signRequest) {
 
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
@@ -168,7 +165,7 @@ public class PdfService {
             PDDocumentInformation info = pdDocument.getDocumentInformation();
             info.setTitle(fileName);
             info.setSubject(fileName);
-            info.setAuthor(signBook.getCreateBy());
+            info.setAuthor(signRequest.getCreateBy());
             info.setCreator("GhostScript");
             info.setProducer("esup-signature");
             info.setKeywords("pdf, signed, " + fileName);

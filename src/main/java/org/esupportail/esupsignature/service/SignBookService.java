@@ -148,7 +148,6 @@ public class SignBookService {
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
             WorkflowStep newWorkflowStep = new WorkflowStep();
             newWorkflowStep.setSignType(workflowStep.getSignType());
-            newWorkflowStep.setSignRequestParams(workflowStep.getSignRequestParams());
             newWorkflowStep.setAllSignToComplete(workflowStep.isAllSignToComplete());
             for(Long userId : workflowStep.getRecipients().keySet()){
                 User recipient = userRepository.findById(userId).get();

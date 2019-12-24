@@ -28,9 +28,6 @@ public class WorkflowStep {
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
-    @OneToOne
-    private SignRequestParams signRequestParams;
-
     public Long getId() {
         return id;
     }
@@ -69,14 +66,6 @@ public class WorkflowStep {
 
     public void setAllSignToComplete(Boolean allSignToComplete) {
         this.allSignToComplete = allSignToComplete;
-    }
-
-    public SignRequestParams getSignRequestParams() {
-        return signRequestParams;
-    }
-
-    public void setSignRequestParams(SignRequestParams signRequestParams) {
-        this.signRequestParams = signRequestParams;
     }
 
     public SignType getSignType() {
