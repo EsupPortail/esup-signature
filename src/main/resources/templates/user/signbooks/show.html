@@ -122,6 +122,140 @@
                             signMode = false;
                             pointItEnable = true;
 
+                            // Loaded via <script> tag, create shortcut to access PDF.js exports.
+                            var pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+                            // The workerSrc property shall be specified.
+                            pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+
+                            var canvas = document.getElementById('pdf');
+                            var ctx = canvas.getContext('2d');
+
+                            /**
+                             * Get page info from document, resize canvas accordingly, and render page.
+                             * @param num Page number.
+                             */
+                            function renderPage(num) {
+                                document.getElementById('signPageNumber').value = num;
+                                pageRendering = true;
+                                // Using promise to fetch the page
+                                pdfDoc.getPage(num).then(function (page) {
+                                    var viewport = page.getViewport(scale, rotation);
+                                    canvas.height = viewport.height;
+                                    canvas.width = viewport.width;
+
+                                    // Render PDF page into canvas context
+                                    var renderContext = {
+                                        canvasContext: ctx,
+                                        viewport: viewport
+                                    };
+                                    var renderTask = page.render(renderContext);
+
+                                    // Wait for rendering to finish
+                                    renderTask.promise.then(function () {
+                                        pageRendering = false;
+                                        if (pageNumPending !== null) {
+                                            // New page rendering is pending
+                                            renderPage(pageNumPending);
+                                            pageNumPending = null;
+                                        }
+                                    });
+                                });
+                                // Update page counters
+                                document.getElementById('page_num').textContent = num;
+                                refreshSign();
+                            }
+
+                            /**
+                             * If another page rendering in progress, waits until the rendering is
+                             * finised. Otherwise, executes rendering immediately.
+                             */
+                            function queueRenderPage(num) {
+                                if (pageRendering) {
+                                    pageNumPending = num;
+                                } else {
+                                    renderPage(num);
+                                }
+                            }
+
+                            /**
+                             * Displays previous page.
+                             */
+                            function prevPage() {
+                                if (pageNum <= 1) {
+                                    return;
+                                }
+                                pageNum--;
+                                queueRenderPage(pageNum);
+                            }
+
+                            document.getElementById('prev').addEventListener('click', prevPage);
+
+                            /**
+                             * Displays next page.
+                             */
+                            function nextPage() {
+                                if (pageNum >= pdfDoc.numPages) {
+                                    return;
+                                }
+                                pageNum++;
+                                queueRenderPage(pageNum);
+                            }
+
+                            document.getElementById('next').addEventListener('click', nextPage);
+
+                            function zoomIn() {
+                                if (scale >= 1.75) {
+                                    return;
+                                }
+                                scale = scale + 0.25;
+                                queueRenderPage(pageNum);
+                            }
+
+                            document.getElementById('zoomin').addEventListener('click', zoomIn);
+
+                            function zoomOut() {
+                                if (scale <= 0.75) {
+                                    return;
+                                }
+                                scale = scale - 0.25;
+                                queueRenderPage(pageNum);
+                            }
+
+                            document.getElementById('zoomout').addEventListener('click', zoomOut);
+
+                            function rotateLeft() {
+                                if (rotation < -90) {
+                                    return;
+                                }
+                                rotation = rotation - 90;
+                                queueRenderPage(pageNum);
+                            }
+
+                            document.getElementById('rotateleft').addEventListener('click', rotateLeft);
+
+                            function rotateRight() {
+                                if (rotation > 90) {
+                                    return;
+                                }
+                                rotation = rotation + 90;
+                                queueRenderPage(pageNum);
+                            }
+
+                            document.getElementById('rotateright').addEventListener('click', rotateRight);
+
+
+                            /**
+                             * Asynchronously downloads PDF.
+                             */
+                            pdfjsLib.getDocument(url).promise.then(function (pdfDoc_) {
+                                pdfDoc = pdfDoc_;
+                                document.getElementById('page_count').textContent = pdfDoc.numPages;
+
+                                // Initial/first page rendering
+                                renderPage(pageNum);
+                            });
+
                             var posX,
                                 posY;
 
@@ -188,6 +322,9 @@
                                 } else {
                                     signMode = true;
                                     pointItEnable = false;
+                                    scale = 1;
+                                    rotation = 0;
+                                    queueRenderPage(pageNum);
                                     $('#cross').show();
                                     $('#comments').hide();
                                     $('#rotateleft').prop('disabled', true);
@@ -195,7 +332,6 @@
                                     $('#signtools').show();
                                 }
                             }
-
 
                             function refreshSign() {
                                 $('#cross').css('left', [[${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos}]] * scale);
@@ -245,6 +381,7 @@
                 <div class="col-lg-3">
                     <div id="signtools" style="display: none;">
                         <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
+                        <div th:if="${signOk}">
                         <div class="btn btn-light col-3 col-md-12 m-1" th:if="${signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'pdfImageStamp'}">
                             <label class="control-label" for="_visual" >Insérer un visuel</label>
                             <br/>
@@ -261,9 +398,10 @@
                                 <span class="slider round"></span>
                             </label>
                         </div>
-                        <a target="_blank" th:if="${signOk}" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
+                        <a target="_blank" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
                             <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                         </a>
+                        </div>
                     </div>
                     <div id="comments">
                     <div class="alert alert-warning">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
