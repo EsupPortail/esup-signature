@@ -11,30 +11,15 @@
                 <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
-
-                <button title="Modifier les paramètres" type="button" th:onclick="'location.href=\'/manager/signbooks/' + ${signBook.id} + '?form\''" class="mb-1 col-12 btn btn-warning text-left">
-                <i class="far fa-edit"></i><span class="sidebar-label"> Modifier les paramètres</span>
-            </button>
-            <form th:action="'/manager/signbooks/' + ${signBook.id}" th:method="delete">
-                <button title="Supprimer" type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="mb-1 col-12 btn btn-danger text-left">
-                    <i class="fas fa-trash"></i><span class="sidebar-label"> Supprimer</span>
+                <form th:action="'/manager/signbooks/' + ${signBook.id}" th:method="delete">
+                    <button title="Supprimer" type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="mb-1 col-12 btn btn-danger text-left">
+                        <i class="fas fa-trash"></i><span class="sidebar-label"> Supprimer</span>
+                    </button>
+                </form>
+                <button title="Retour" type="button" class="mb-1 col-12 btn btn-light text-left"
+                        value="Retour" onclick="location.href='/manager/signbooks'">
+                    <i class="fas fa-door-open"></i><span class="sidebar-label"> Retour à la liste</span>
                 </button>
-            </form>
-            <button title="Ajouter une étape" th:if="${signBook.signBookType.name() == 'workflow'}" type="button" class="mb-1 col-12 btn btn-primary text-left"
-                    data-toggle="modal" data-target="#addStep">
-                <i class="fa fa-shoe-prints"></i><span class="sidebar-label"> Ajouter une étape</span>
-            </button>
-            <a th:if="${signBook.sourceType.name() != 'none'}" class="mb-1 col-12 btn btn-primary text-left" th:href="'/manager/signbooks/get-files-from-source/' + ${id}">
-                <i class="fas fa-file-import"></i> Importer manuellement
-            </a>
-            <button title="Ajouter un destinataire" th:if="${signBook.signBookType.name() == 'group'}" type="button" class="mb-1 col-12 btn btn-primary text-left"
-                    data-toggle="modal" data-target="#addRecipients">
-                <i class="fa fa-plus"></i><span class="sidebar-label"> Ajouter un destinataire</span>
-            </button>
-            <button title="Retour" type="button" class="mb-1 col-12 btn btn-light text-left"
-                    value="Retour" onclick="location.href='/manager/signbooks'">
-                <i class="fas fa-door-open"></i><span class="sidebar-label"> Retour à la liste</span>
-            </button>
             </div>
         </nav>
         <div id="content" class="content">
@@ -60,9 +45,6 @@
                         <dt class="col-lg-5">Type de parapheur</dt>
                         <dd th:text="#{'signbook.signbooktype.' + ${signBook.signBookType}}"></dd>
                     </dl>
-                    <div th:if="${signBook.signBookType.name() == 'workflow'}">
-                        <div th:replace="manager/signbooks/cards/stepscard :: stepscard"></div>
-                    </div>
                     <div th:if="${signBook.signBookType.name() == 'group'}">
                         <dl class="row border-bottom m-0">
                             <dt class="col-lg-5">Destinataires</dt>
@@ -86,38 +68,6 @@
                                     </table>
                                 </div>
                             </dd>
-                        </dl>
-                    </div>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Gestionnaire(s) du parapheur</dt>
-                        <dd>
-                            <div class="alert alert-dark col-12">
-                                <th:block th:each="moderatorEmail : ${signBook.moderatorEmails}">
-                                    <i class="fas fa-users-cog"></i> ${moderatorEmail}
-                                    <br/>
-                                </th:block>
-                            </div>
-                        </dd>
-                    </dl>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Protocole pour la source des documents</dt>
-                        <dd th:text="#{'signbook.documentiotype.' + ${signBook.sourceType}}"></dd>
-                    </dl>
-                    <div th:if="${signBook.sourceType.name() != 'none'}">
-                        <dl class="row border-bottom m-0">
-                            <dt class="col-lg-5">Lien pour la source des documents</dt>
-                            <dd th:text="${signBook.documentsSourceUri}"></dd>
-                        </dl>
-                    </div>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Protocole pour la destination des documents
-                        </dt>
-                        <dd th:text="#{'signbook.documentiotype.' + ${signBook.targetType}}"></dd>
-                    </dl>
-                    <div th:if="${signBook.targetType.name() != 'none'}">
-                        <dl class="row border-bottom m-0">
-                            <dt class="col-lg-5">Lien pour la destination des documents</dt>
-                            <dd th:text="${signBook.documentsTargetUri}"></dd>
                         </dl>
                     </div>
                 </div>

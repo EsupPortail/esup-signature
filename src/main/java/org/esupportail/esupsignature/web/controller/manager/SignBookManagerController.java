@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,13 +66,10 @@ public class SignBookManagerController {
 	private SignRequestRepository signRequestRepository;
 	
 	@Resource
-	private SignRequestService signRequestService;
+	private WorkflowService workflowService;
 	
 	@Resource
 	private SignRequestParamsRepository signRequestParamsRepository; 
-
-	@Resource
-	private PdfService pdfService;
 
 	@ModelAttribute("user")
 	public User getUser() {
@@ -111,6 +109,9 @@ public class SignBookManagerController {
     	}
 
     	List<SignBook> signBooks = ImmutableList.copyOf(signBookRepository.findAll());
+    	for (SignBook signBook : signBooks) {
+			workflowService.setWorkflowsLabels(signBook.getWorkflowSteps());
+		}
 		uiModel.addAttribute("signBooks", signBooks);
 		return "manager/signbooks/list";
 	}

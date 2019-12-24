@@ -32,7 +32,6 @@
                             <th class="none">Type</th>
                             <th class="none">Créé par</th>
                             <th class="none">Destinataires</th>
-                            <th class="none">Gestionnaire(s) du parapheur</th>
                             <th>Voir</th>
                         </tr>
                         </thead>
@@ -55,17 +54,10 @@
                                     <div class="alert alert-secondary">
                                         <th:block th:each="workflowSignBooks : ${signBook.workflowSteps}">
                                             <i class="fas fa-book"></i>
-                                            <span th:text="${workflowSignBooks.signBooksLabels.keySet()}"></span>
+                                            <span th:text="${workflowSignBooks.recipientsNames.keySet()}"></span>
                                             <br/>
                                         </th:block>
                                     </div>
-                                </td>
-                                <td class="none">
-                                    <th:block th:each="moderatorEmail : ${signBook.moderatorEmails}">
-                                        <i class="far fa-people"></i>
-                                        <span th:text="${moderatorEmail}"></span>
-                                        <br/>
-                                    </th:block>
                                 </td>
                                 <td class="utilbox">
                                     <button class="btn btn-info far fa-eye" title="Voir" th:onclick="'location.href=\'/manager/signbooks/' + ${signBook.id} + '\';'" type="button"></button>

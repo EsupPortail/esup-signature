@@ -192,7 +192,7 @@ public class WorkflowManagerController {
         uiModel.asMap().clear();
         uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
         uiModel.addAttribute("size", (size == null) ? "10" : size.toString());
-        return "redirect:/manager/signbooks";
+        return "redirect:/manager/workflows";
     }
 	
 	@RequestMapping(value = "/update-params/{id}", method = RequestMethod.POST)

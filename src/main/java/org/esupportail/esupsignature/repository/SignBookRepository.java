@@ -19,7 +19,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long>, Sign
     List<SignBook> findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus signRequestStatus);
     List<SignBook> findByWorkflowSteps(List<WorkflowStep> workflowSteps);
     Long countByName(String name);
-    Page<SignBook> findByCreateByAndSignBookType(String createBy, SignBookType signBookType, Pageable pageable);
+    Page<SignBook> findByCreateBy(String createBy, Pageable pageable);
     List<SignBook> findByRecipientEmailsAndSignBookType(List<String> recipientEmails, SignBookType signBookType);
     Long countByRecipientEmailsAndSignBookType(List<String> recipientEmails, SignBookType signBookType);
     @Query("select s from SignBook s where :recipientEmail in elements(s.recipientEmails) and :signBookType = s.signBookType")

@@ -27,6 +27,7 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 @RequestMapping("/user/signbooks/wizard")
@@ -71,7 +72,7 @@ public class SignBookWizardController {
     @Resource
     private SignBookService signBookService;
 
-    @RequestMapping(value = "/wiz1", produces = "text/html")
+    @GetMapping(value = "/wiz1")
     public String wiz1() {
         //User user = userService.getUserFromAuthentication();
         return "user/signbooks/wizard/wiz1";
@@ -123,7 +124,6 @@ public class SignBookWizardController {
 
     @PostMapping(value = "/wizX/{id}", produces = "text/html")
     public String wizX(@PathVariable("id") Long id,
-                       @RequestParam(name="name") String name,
                        @RequestParam(name="signType", required = false) SignType signType,
                        @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                        @RequestParam(value = "recipientsEmail", required = false) String[] recipientsEmail,
@@ -132,31 +132,46 @@ public class SignBookWizardController {
                        Model model) throws EsupSignatureException {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
-        Workflow workflow;
-        if(workflowRepository.countByName(name) > 0 ) {
-            workflow = workflowRepository.findByName(name).get(0);
-        } else {
-            workflow = workflowService.createWorkflow(name, user, null, false);
-        }
+
         if (user.getEppn().equals(signBook.getCreateBy())) {
             WorkflowStep workflowStep = workflowService.createWorkflowStep(Arrays.asList(recipientsEmail), "", allSignToComplete, signType);
             signBook.getWorkflowSteps().add(workflowStep);
-            workflow.getWorkflowSteps().add(workflowStep);
             signBookRepository.save(signBook);
-            //workflowRepository.save(workflow);
         }
         if (addNew != null) {
             model.addAttribute("workflowStepForm", true);
             model.addAttribute("signTypes", SignType.values());
         }
         if(end != null) {
-            return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
+            return "redirect:/user/signbooks/wizard/wiz5/" + signBook.getId();
         }
         model.addAttribute("signBook", signBook);
-        model.addAttribute("name", name);
         return "user/signbooks/wizard/wiz4";
     }
 
+    @GetMapping(value = "/wiz5/{id}")
+    public String saveForm(@PathVariable("id") Long id, Model model) {
+        SignBook signBook = signBookRepository.findById(id).get();
+        model.addAttribute("signBook", signBook);
+        return "user/signbooks/wizard/wiz5";
+    }
+
+    @PostMapping(value = "/wiz5/{id}")
+    public String saveWorkflow(@PathVariable("id") Long id, @RequestParam(name="name") String name) throws EsupSignatureException {
+        User user = userService.getUserFromAuthentication();
+        SignBook signBook = signBookRepository.findById(id).get();
+        Workflow workflow;
+        if(workflowRepository.countByName(name) > 0 ) {
+            workflow = workflowRepository.findByName(name).get(0);
+        } else {
+            workflow = workflowService.createWorkflow(name, user, null, false);
+        }
+        workflow.getWorkflowSteps().addAll(signBook.getWorkflowSteps());
+        workflow.setCreateDate(new Date());
+        workflow.setCreateBy(user.getEppn());
+        workflowRepository.save(workflow);
+        return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
+    }
 
     @RequestMapping(value = "/wizend/{id}", produces = "text/html")
     public String wizEnd(@PathVariable("id") Long id, Model model) {

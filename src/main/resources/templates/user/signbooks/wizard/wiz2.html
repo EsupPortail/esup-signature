@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
-<div class="alert alert-info">Ajouter les documents au parapheur</div>
+<div class="alert alert-info">Déposez les documents à ajouter à la demande.<br><small>D'autres documents pourrons être déposés par la suite</small></div>
 <form id="wiz2Form" th:action="'/user/signbooks/wizard/wiz3'" method="post">
     <input type="hidden" name="name" th:value="${name}">
     <div class="col-lg-12">

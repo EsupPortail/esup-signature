@@ -145,16 +145,8 @@ public class SignBookController {
             }
         }
 
-        List<SignRequest> signRequests = signRequestRepository.findByCreateBy(user.getEppn());
-        List<SignBook> signBooksCreateByCurrentUser = new ArrayList<>();
-        for(SignRequest signRequest : signRequests) {
-            if(signRequest.getParentSignBook() != null && !signBooksCreateByCurrentUser.contains(signRequest.getParentSignBook())) {
-                signBooksCreateByCurrentUser.add(signRequest.getParentSignBook());
-            }
-        }
-
         model.addAttribute("signBooksToView", signBooksToView);
-        model.addAttribute("signBooksCreateByCurrentUser", new PageImpl<>(signBooksCreateByCurrentUser, pageable, signBooksCreateByCurrentUser.size()));
+        model.addAttribute("signBooksCreateByCurrentUser", signBookRepository.findByCreateBy(user.getEppn(), pageable));
         model.addAttribute("statusFilter", this.statusFilter);
         model.addAttribute("statuses", SignRequestStatus.values());
         populateEditForm(model, new SignRequest());
