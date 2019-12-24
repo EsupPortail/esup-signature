@@ -171,7 +171,6 @@ function getStep() {
 var pointerDiv;
 var startPosX;
 var startPosY;
-var pointItEnable = false;
 var pointItMove = false;
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -207,7 +206,6 @@ function activeDate() {
 }
 
 function pointIt(e) {
-	console.log('point')
 	if(pointItEnable) {
 		pointItMove = true;
 		console.log('point enable')
@@ -229,8 +227,8 @@ function pointIt(e) {
 			cross.style.backgroundColor= 'rgba(0, 255, 0, .5)';
 			cross.style.left = posX + "px";
 			cross.style.top = posY + "px";
-			document.getElementById("xPos").value = Math.round(posX / zoom);
-			document.getElementById("yPos").value = Math.round(posY / zoom);
+			document.getElementById("xPos").value = Math.round(posX * scale);
+			document.getElementById("yPos").value = Math.round(posY * scale);
 		}
 	}
 }
@@ -257,8 +255,8 @@ function resetPosition() {
 function savePosition() {
 	if(pointItEnable && pointItMove) {
 		console.log("save");
-		startPosX = Math.round(posX / zoom);
-		startPosY = Math.round(posY / zoom);
+		startPosX = Math.round(posX * scale);
+		startPosY = Math.round(posY * scale);
 	}
 	cross.style.backgroundColor= 'rgba(0, 255, 0, 0)';
 	cross.style.pointerEvents = "auto";
@@ -270,7 +268,7 @@ function savePosition() {
 function dragSignature() {
 	console.log("drag");
 	cross.style.pointerEvents = "none";
-	pointerDiv.style.pointerEvents = "auto";
+	pdf.style.pointerEvents = "auto";
 	document.body.style.cursor = "move";
 	pointItEnable = true;
 }
@@ -281,107 +279,107 @@ function startPointIt() {
 }
 
 //pdf navigation
-document.addEventListener('DOMContentLoaded', function() {
-	if(document.getElementById("next") != null) {
-
-		if (currentImagePage == nbImagePage - 1) {
-			document.getElementById("next").classList.add("disabled");
-			document.getElementById("next").disabled = true;
-		}
-		if (currentImagePage > 0) {
-			document.getElementById("previous").classList.remove("disabled");
-			document.getElementById("previous").disabled = false
-		}
-	}
-});
-
-function nextImage() {
-	currentImagePage++;
-	hideSigns(currentImagePage)
-	console.info("url('" + documentUrl + "" + currentImagePage + "')");
-	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
-	if (currentImagePage == nbImagePage - 1) {
-		document.getElementById("next").classList.add("disabled");
-		document.getElementById("next").disabled = true;
-	}
-	if (currentImagePage > 0) {
-		document.getElementById("previous").classList.remove("disabled");
-		document.getElementById("previous").disabled = false
-	}
-	document.getElementById("signPageNumber").value = currentImagePage;
-}
-
-function previousImage() {
-	currentImagePage--;
-	hideSigns(currentImagePage)
-	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
-	if (currentImagePage == 0) {
-		document.getElementById("previous").classList.add("disabled");
-		document.getElementById("previous").disabled = true;
-	}
-	if (nbImagePage - 1 > currentImagePage) {
-		document.getElementById("next").classList.remove("disabled");
-		document.getElementById("next").disabled = false;
-	}
-	document.getElementById("signPageNumber").value = currentImagePage;
-}
-
-function hideSigns(currentImagePage) {
-	var signImages = document.querySelectorAll('[id^="signParam_"]');
-	[].forEach.call(signImages, function(signImage) {
-		if(signImage.id.includes(currentImagePage + 1)) {
-			signImage.style.display = "block";
-		} else {
-			signImage.style.display = "none";
-		}
-	});
-}
-
-//toggle overloadsignparams
-var overloadSignParams;
-var signTypeSelector;
-var signTypeDiv;
-var newPageTypeSelector;
-var newPageTypeDiv;
-var overloadYes;
-var overloadNo;
-
-document.addEventListener('DOMContentLoaded', function() {
-	signTypeSelector = document.getElementById("_signType_id");
-	signTypeDiv = document.getElementById("_signType_div_id");
-	newPageTypeSelector = document.getElementById("_newPageType_id");
-	newPageTypeDiv = document.getElementById("_newPageType_div_id");
-});
-
-function toggleOverload() {
-	overloadSignParams = document.getElementById("_overloadSignParams");
-	if(!overloadSignParams.checked) {
-		signTypeDiv.classList.add("d-none");
-		newPageTypeDiv.classList.add("d-none");
-		signTypeSelector.disabled = true;
-		newPageTypeSelector.disabled = true;
-	} else {
-		signTypeDiv.classList.remove("d-none");
-		newPageTypeDiv.classList.remove("d-none");
-		signTypeSelector.disabled = false;
-		newPageTypeSelector.disabled = false;
-	}
-}
-
-function getSelectValues(select) {
-	  var result = [];
-	  var options = select && select.options;
-	  var opt;
-
-	  for (var i=0, iLen=options.length; i<iLen; i++) {
-	    opt = options[i];
-
-	    if (opt.selected) {
-	      result.push(opt.value || opt.text);
-	    }
-	  }
-	  return result;
-	}
+// document.addEventListener('DOMContentLoaded', function() {
+// 	if(document.getElementById("next") != null) {
+//
+// 		if (currentImagePage == nbImagePage - 1) {
+// 			document.getElementById("next").classList.add("disabled");
+// 			document.getElementById("next").disabled = true;
+// 		}
+// 		if (currentImagePage > 0) {
+// 			document.getElementById("previous").classList.remove("disabled");
+// 			document.getElementById("previous").disabled = false
+// 		}
+// 	}
+// });
+//
+// function nextImage() {
+// 	currentImagePage++;
+// 	hideSigns(currentImagePage)
+// 	console.info("url('" + documentUrl + "" + currentImagePage + "')");
+// 	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
+// 	if (currentImagePage == nbImagePage - 1) {
+// 		document.getElementById("next").classList.add("disabled");
+// 		document.getElementById("next").disabled = true;
+// 	}
+// 	if (currentImagePage > 0) {
+// 		document.getElementById("previous").classList.remove("disabled");
+// 		document.getElementById("previous").disabled = false
+// 	}
+// 	document.getElementById("signPageNumber").value = currentImagePage;
+// }
+//
+// function previousImage() {
+// 	currentImagePage--;
+// 	hideSigns(currentImagePage)
+// 	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
+// 	if (currentImagePage == 0) {
+// 		document.getElementById("previous").classList.add("disabled");
+// 		document.getElementById("previous").disabled = true;
+// 	}
+// 	if (nbImagePage - 1 > currentImagePage) {
+// 		document.getElementById("next").classList.remove("disabled");
+// 		document.getElementById("next").disabled = false;
+// 	}
+// 	document.getElementById("signPageNumber").value = currentImagePage;
+// }
+//
+// function hideSigns(currentImagePage) {
+// 	var signImages = document.querySelectorAll('[id^="signParam_"]');
+// 	[].forEach.call(signImages, function(signImage) {
+// 		if(signImage.id.includes(currentImagePage + 1)) {
+// 			signImage.style.display = "block";
+// 		} else {
+// 			signImage.style.display = "none";
+// 		}
+// 	});
+// }
+//
+// //toggle overloadsignparams
+// var overloadSignParams;
+// var signTypeSelector;
+// var signTypeDiv;
+// var newPageTypeSelector;
+// var newPageTypeDiv;
+// var overloadYes;
+// var overloadNo;
+//
+// document.addEventListener('DOMContentLoaded', function() {
+// 	signTypeSelector = document.getElementById("_signType_id");
+// 	signTypeDiv = document.getElementById("_signType_div_id");
+// 	newPageTypeSelector = document.getElementById("_newPageType_id");
+// 	newPageTypeDiv = document.getElementById("_newPageType_div_id");
+// });
+//
+// function toggleOverload() {
+// 	overloadSignParams = document.getElementById("_overloadSignParams");
+// 	if(!overloadSignParams.checked) {
+// 		signTypeDiv.classList.add("d-none");
+// 		newPageTypeDiv.classList.add("d-none");
+// 		signTypeSelector.disabled = true;
+// 		newPageTypeSelector.disabled = true;
+// 	} else {
+// 		signTypeDiv.classList.remove("d-none");
+// 		newPageTypeDiv.classList.remove("d-none");
+// 		signTypeSelector.disabled = false;
+// 		newPageTypeSelector.disabled = false;
+// 	}
+// }
+//
+// function getSelectValues(select) {
+// 	  var result = [];
+// 	  var options = select && select.options;
+// 	  var opt;
+//
+// 	  for (var i=0, iLen=options.length; i<iLen; i++) {
+// 	    opt = options[i];
+//
+// 	    if (opt.selected) {
+// 	      result.push(opt.value || opt.text);
+// 	    }
+// 	  }
+// 	  return result;
+// 	}
 
 //Hack to convert panel to card (bootstrap 4)
 document.addEventListener('DOMContentLoaded', function() {
@@ -634,8 +632,8 @@ $(document).ready(function() {
 // The workerSrc property shall be specified.
 	pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
 
-	canvas = document.getElementById('pdf'),
-		ctx = canvas.getContext('2d');
+	var canvas = document.getElementById('pdf');
+	var ctx = canvas.getContext('2d');
 
 	/**
 	 * Get page info from document, resize canvas accordingly, and render page.
@@ -667,10 +665,9 @@ $(document).ready(function() {
 				}
 			});
 		});
-
-
 		// Update page counters
 		document.getElementById('page_num').textContent = num;
+		refreshSign();
 	}
 
 	/**
