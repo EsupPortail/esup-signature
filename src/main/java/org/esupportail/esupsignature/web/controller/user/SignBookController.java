@@ -196,6 +196,10 @@ public class SignBookController {
                 model.addAttribute("signWidth", 100);
                 model.addAttribute("signHeight", 75);
             }
+            if(signRequest.getSignRequestParams().size() < signRequest.getParentSignBook().getCurrentWorkflowStepNumber()) {
+                signRequest.getSignRequestParams().add(signRequestService.getEmptySignRequestParams());
+                signRequestRepository.save(signRequest);
+            }
         }
         model.addAttribute("logs", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
         model.addAttribute("signRequest", signRequest);

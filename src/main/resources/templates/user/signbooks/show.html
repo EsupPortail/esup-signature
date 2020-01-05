@@ -119,6 +119,8 @@
                         <script th:inline="javascript">
                             /*<![CDATA[*/
 
+                            var signId = [[${signRequest.id}]];
+
                             signMode = false;
                             pointItEnable = true;
 
@@ -322,7 +324,7 @@
                                 } else {
                                     signMode = true;
                                     pointItEnable = false;
-                                    scale = 1;
+                                    //scale = 1;
                                     rotation = 0;
                                     queueRenderPage(pageNum);
                                     $('#cross').show();
@@ -398,9 +400,10 @@
                                 <span class="slider round"></span>
                             </label>
                         </div>
-                        <a target="_blank" class="mb-1 col-12 btn btn-success text-left" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
+                            <input type="text" id="password" name="password" value=""/>
+                        <button class="mb-1 col-12 btn btn-success text-left" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
                             <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
-                        </a>
+                        </button>
                         </div>
                     </div>
                     <div id="comments">
@@ -426,17 +429,29 @@
     </div>
 </main>
 
-<div class="modal fade" id="signModal" style="min-width: 100%; min-height: 700px;" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document" style="min-width: 80%; height: 80%;">
+<div id="wait" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="signModalLabel">Signature du document</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+            <div class="modal-body text-center">
+                <h5>Signature en cours</h5>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated active" style="width: 100%;" id="bar">
+                        <strong> <span id="bar-text"></span>
+                        </strong>
+                    </div>
+                </div>
+                <div style="display: none;" id="passwordError" class="alert alert-danger" role="alert">
+                    Mauvais mot de passe
+                </div>
+                <div style="display: none;" id="signError" class="alert alert-danger" role="alert">
+                    Erreur du système de signature
+                </div>
             </div>
-            <div class="modal-body" style="max-height: calc(100% - 120px); overflow-y: scroll;">
-                <iframe id="wizIframe" frameborder="0" th:src="'/user/signrequests/sign-by-token/' + ${signRequest.token}" style="width: 100%; height: 1000px;"></iframe>
+            <div class="modal-footer">
+                <button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">
+                    Fermer
+                </button>
+                <a id="validModal" th:href="${referer != null} ? ${referer} : '/user/signrequests/' + ${signRequest.id}" class="btn btn-success align-self-center">Terminer</a>
             </div>
         </div>
     </div>
@@ -448,16 +463,20 @@
         //TODO : Faire apparaitre le signature !!!!
 
         console.log(token);
-        $('#signModal').modal('show');
+        submitSignRequest();
+        $('#wait').modal('show');
+        /*
         var wait = $.ajax({
             url: "/user/signrequests/wait-for-sign/" + token, success: function (result) {
                 location.reload();
             }
         });
-        $('#signModal').on('hidden.bs.modal', function () {
+        $('#wait').on('hidden.bs.modal', function () {
             console.log('abort ajax');
             wait.abort();
         })
+
+         */
     }
 </script>
 </body>
