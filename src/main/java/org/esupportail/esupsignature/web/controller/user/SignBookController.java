@@ -184,17 +184,17 @@ public class SignBookController {
             }
             if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                 model.addAttribute("signable", "ok");
-            }
-            if(signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.pdfImageStamp)
-                    && user.getSignImage() != null
-                    && user.getSignImage().getSize() > 0) {
-                model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-                int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
-                model.addAttribute("signWidth", size[0]);
-                model.addAttribute("signHeight", size[1]);
-            } else {
-                model.addAttribute("signWidth", 100);
-                model.addAttribute("signHeight", 75);
+                if(signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.pdfImageStamp)
+                        && user.getSignImage() != null
+                        && user.getSignImage().getSize() > 0) {
+                    model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+                    int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
+                    model.addAttribute("signWidth", size[0]);
+                    model.addAttribute("signHeight", size[1]);
+                } else {
+                    model.addAttribute("signWidth", 100);
+                    model.addAttribute("signHeight", 75);
+                }
             }
             if(signRequest.getSignRequestParams().size() < signRequest.getParentSignBook().getCurrentWorkflowStepNumber()) {
                 signRequest.getSignRequestParams().add(signRequestService.getEmptySignRequestParams());

@@ -213,6 +213,7 @@ input:checked + .slider:before {
     min-height: 100vh;
     background: #555555;
     color: #fff;
+    transition: all 0.3s;
 }
 
 #sidebar.active {

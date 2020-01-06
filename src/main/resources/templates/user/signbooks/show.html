@@ -36,7 +36,7 @@
                     <button id="rotateleft" class="btn btn-secondary btn-outline-light"><i class="fas fa-undo"></i></button>
                     <button id="rotateright" class="btn btn-secondary btn-outline-light"><i class="fas fa-redo"></i></button>
                 </div>
-                <div class="btn btn-success col-3 col-md-12 mb-1">
+                <div class="alert alert-success col-3 col-md-12 mb-1 p-1" th:classappend="${signable != 'ok'} ? 'd-none' ">
                     <div id="signmode" class="form-check">
                         <label>Activer le mode signature</label>
                         <label class="switch">
@@ -65,363 +65,371 @@
                     </a>
                 </th:block>
             </nav>
-            <div class="row">
-                <div class="col-lg-9">
-                    <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
-                        <canvas title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" onmouseup="action();" ontouchend="action();" ontouchmove="point(event);" onmousemove="point(event);">
-                        </canvas>
-                        <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'visa'}">
-                            <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();" ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
-                                 onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                                 onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
-                                 th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center; left: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos} + 'px;top: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
-                                <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
-                            </div>
-                        </th:block>
-                        <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'visa'}">
-                            <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();" ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
-                                 th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos} + 'px;top: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
-                                <div id="borders" class="anim-border"
-                                     th:style="'text-align:left;line-height:normal;width:  ' + ${signWidth} + 'px; height:  ' + ${signHeight} + 'px;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;'">
-                                    <span id="textVisa" style="font-size: 8px;" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span>
-                                    <br>
+            <div id="workspace" class="alert alert-warning fadein" style="transition: all 0.3s;">
+                <div class="row">
+                    <div class="col-lg-9">
+                        <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
+                            <canvas th:if="${signable != 'ok'}" title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;">
+                            </canvas>
+                            <canvas th:if="${signable == 'ok'}" title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" onmouseup="action();" ontouchend="action();" ontouchmove="point(event);" onmousemove="point(event);">
+                            </canvas>
+                            <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'visa'}">
+                                <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();" ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
+                                     onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
+                                     onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
+                                     th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center; left: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos} + 'px;top: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
+                                    <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
                                 </div>
+                            </th:block>
+                            <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'visa'}">
+                                <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();" ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
+                                     th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos} + 'px;top: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
+                                    <div id="borders" class="anim-border"
+                                         th:style="'text-align:left;line-height:normal;width:  ' + ${signWidth} + 'px; height:  ' + ${signHeight} + 'px;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;'">
+                                        <span id="textVisa" style="font-size: 8px;" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span>
+                                        <br>
+                                    </div>
+                                </div>
+                            </th:block>
+                            <script>
+                                var url = '/user/documents/getfile/[[${documentId}]]';
+
+                                var pdfDoc = null,
+                                    pageNum = 1,
+                                    pageRendering = false,
+                                    pageNumPending = null,
+                                    scale = 0.75,
+                                    rotation = 0;
+
+                            </script>
+                            <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">
+                                <span onclick="hideComment()" class="float-right" style="cursor: pointer;">X</span>
+                                <textarea id="comment" name="comment" class="postitarea" placeholder="Saisir une annotation"></textarea>
+                                <button type="submit" class="btn btn-sm float-right">
+                                    <i class="fas fa-save"></i>
+                                </button>
                             </div>
-                        </th:block>
-                        <script>
-                            var url = '/user/documents/getfile/[[${documentId}]]';
+                            <th:block th:each="log : ${logs}">
+                                <div th:id="${log.id}" class="circle" th:style="'position: absolute;z-index:1000;left:' + ${log.posX} + 'px; top:' + ${log.posY} + 'px;'"></div>
+                            </th:block>
 
-                            var pdfDoc = null,
-                                pageNum = 1,
-                                pageRendering = false,
-                                pageNumPending = null,
-                                scale = 0.75,
-                                rotation = 0;
+                            <input class="form-control form-control-sm col-6 d-none" value="0" id="signPageNumber" type="text" name="pageNumber"/>
+                            <input class="form-control form-control-sm col-6 d-none" value="0" id="xPos" type="text" name="posX"/>
+                            <input class="form-control form-control-sm col-6 d-none" value="0" id="yPos" type="text" name="posY"/>
+                            <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="visual" id="visual"/>
+                            <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="addDate" id="addDate"/>
 
-                        </script>
-                        <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">
-                            <span onclick="hideComment()" class="float-right" style="cursor: pointer;">X</span>
-                            <textarea id="comment" name="comment" class="postitarea" placeholder="Saisir une annotation"></textarea>
-                            <button type="submit" class="btn btn-sm float-right">
-                                <i class="fas fa-save"></i>
+                            <script th:inline="javascript">
+                                /*<![CDATA[*/
+
+                                var signId = [[${signRequest.id}]];
+
+                                signMode = false;
+                                pointItEnable = true;
+
+                                // Loaded via <script> tag, create shortcut to access PDF.js exports.
+                                var pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+                                // The workerSrc property shall be specified.
+                                pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+
+                                var canvas = document.getElementById('pdf');
+                                var ctx = canvas.getContext('2d');
+
+                                /**
+                                 * Get page info from document, resize canvas accordingly, and render page.
+                                 * @param num Page number.
+                                 */
+                                function renderPage(num) {
+                                    document.getElementById('signPageNumber').value = num;
+                                    pageRendering = true;
+                                    // Using promise to fetch the page
+                                    pdfDoc.getPage(num).then(function (page) {
+                                        var viewport = page.getViewport(scale, rotation);
+                                        canvas.height = viewport.height;
+                                        canvas.width = viewport.width;
+
+                                        // Render PDF page into canvas context
+                                        var renderContext = {
+                                            canvasContext: ctx,
+                                            viewport: viewport
+                                        };
+                                        var renderTask = page.render(renderContext);
+
+                                        // Wait for rendering to finish
+                                        renderTask.promise.then(function () {
+                                            pageRendering = false;
+                                            if (pageNumPending !== null) {
+                                                // New page rendering is pending
+                                                renderPage(pageNumPending);
+                                                pageNumPending = null;
+                                            }
+                                        });
+                                    });
+                                    // Update page counters
+                                    document.getElementById('page_num').textContent = num;
+                                    refreshSign();
+                                }
+
+                                /**
+                                 * If another page rendering in progress, waits until the rendering is
+                                 * finised. Otherwise, executes rendering immediately.
+                                 */
+                                function queueRenderPage(num) {
+                                    if (pageRendering) {
+                                        pageNumPending = num;
+                                    } else {
+                                        renderPage(num);
+                                    }
+                                }
+
+                                /**
+                                 * Displays previous page.
+                                 */
+                                function prevPage() {
+                                    if (pageNum <= 1) {
+                                        return;
+                                    }
+                                    pageNum--;
+                                    queueRenderPage(pageNum);
+                                }
+
+                                document.getElementById('prev').addEventListener('click', prevPage);
+
+                                /**
+                                 * Displays next page.
+                                 */
+                                function nextPage() {
+                                    if (pageNum >= pdfDoc.numPages) {
+                                        return;
+                                    }
+                                    pageNum++;
+                                    queueRenderPage(pageNum);
+                                }
+
+                                document.getElementById('next').addEventListener('click', nextPage);
+
+                                function zoomIn() {
+                                    if (scale >= 1.75) {
+                                        return;
+                                    }
+                                    scale = scale + 0.25;
+                                    queueRenderPage(pageNum);
+                                }
+
+                                document.getElementById('zoomin').addEventListener('click', zoomIn);
+
+                                function zoomOut() {
+                                    if (scale <= 0.75) {
+                                        return;
+                                    }
+                                    scale = scale - 0.25;
+                                    queueRenderPage(pageNum);
+                                }
+
+                                document.getElementById('zoomout').addEventListener('click', zoomOut);
+
+                                function rotateLeft() {
+                                    if (rotation < -90) {
+                                        return;
+                                    }
+                                    rotation = rotation - 90;
+                                    queueRenderPage(pageNum);
+                                }
+
+                                document.getElementById('rotateleft').addEventListener('click', rotateLeft);
+
+                                function rotateRight() {
+                                    if (rotation > 90) {
+                                        return;
+                                    }
+                                    rotation = rotation + 90;
+                                    queueRenderPage(pageNum);
+                                }
+
+                                document.getElementById('rotateright').addEventListener('click', rotateRight);
+
+
+                                /**
+                                 * Asynchronously downloads PDF.
+                                 */
+                                pdfjsLib.getDocument(url).promise.then(function (pdfDoc_) {
+                                    pdfDoc = pdfDoc_;
+                                    document.getElementById('page_count').textContent = pdfDoc.numPages;
+
+                                    // Initial/first page rendering
+                                    renderPage(pageNum);
+                                });
+
+                                var posX,
+                                    posY;
+
+                                function action() {
+                                    if(signMode) {
+                                        savePosition();
+                                    } else {
+                                        displayComment();
+                                    }
+                                }
+
+                                function point(e) {
+                                    if(signMode) {
+                                        pointIt(e);
+                                    } else {
+                                        pointIt2(e)
+                                    }
+
+                                }
+
+                                function pointIt2(e) {
+                                    if (pointItEnable) {
+                                        console.log("mouse");
+                                        posX = e.offsetX ? (e.offsetX)
+                                            : e.clientX - pointerDiv.offsetLeft;
+                                        posY = e.offsetY ? (e.offsetY)
+                                            : e.clientY - pointerDiv.offsetTop;
+                                        console.log('point' + posX + ' : ' + posY);
+                                        document.getElementById("xPos").value = Math.round(posX / scale);
+                                        document.getElementById("yPos").value = Math.round(posY / scale);
+                                    }
+                                }
+
+                                function displayComment() {
+                                    if(signMode) {
+
+                                        return;
+                                    }
+                                    pointItEnable = false;
+                                    document.getElementById("postit").style.left = posX + "px";
+                                    document.getElementById("postit").style.top = posY + "px";
+                                    $("#postit").show();
+                                    //document.getElementById("postit").style.display = "block";
+                                }
+
+                                function hideComment() {
+                                    if(signMode) {
+                                        return;
+                                    }
+                                    pointItEnable = true;
+                                    $("#postit").hide();
+                                }
+
+                                function toggleSignMode() {
+                                    $('#workspace').toggleClass('alert-success alert-warning');
+
+                                    if(signMode) {
+                                        signMode = false;
+                                        pointItEnable = true;
+                                        $('#cross').hide();
+                                        $('#comments').show();
+                                        $('#rotateleft').prop('disabled', false);
+                                        $('#rotateright').prop('disabled', false);
+                                        $('#signtools').fadeTo(300, 0);
+                                        $('#signtools').hide();
+                                    } else {
+                                        signMode = true;
+                                        pointItEnable = false;
+                                        //scale = 1;
+                                        rotation = 0;
+                                        queueRenderPage(pageNum);
+                                        $('#cross').show();
+                                        $('#comments').hide();
+                                        $('#rotateleft').prop('disabled', true);
+                                        $('#rotateright').prop('disabled', true);
+                                        $('#signtools').show();
+                                        $('#signtools').fadeTo(300, 1);
+                                        document.getElementById("xPos").value = Math.round([[${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos}]]);
+                                        document.getElementById("yPos").value = Math.round([[${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos}]]);
+
+                                    }
+                                }
+
+                                function refreshSign() {
+                                    $('#cross').css('left', [[${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos}]] * scale);
+                                    $('#cross').css('top', [[${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos}]] * scale);
+                                    $('#cross').css('backgroundSize', [[${signWidth}]] * scale);
+                                    $('#cross').css('width', [[${signWidth}]] * scale);
+                                    $('#cross').css('height', [[${signHeight}]] * scale);
+                                    $('#borders').css('width', [[${signWidth}]] * scale);
+                                    $('#borders').css('height', [[${signHeight}]] * scale);
+                                    $('#textVisa').css('font-size', 8 * scale);
+                                }
+
+                                function toggleVisual() {
+                                    document.getElementById("cross").classList.toggle('d-none');
+                                    document.getElementById("_visual").toggleAttribute("checked");
+                                }
+
+                                function activeDate() {
+
+                                    var addDate = document.getElementById("_addDate");
+                                    var cross = document.getElementById("cross");
+                                    var borders = document.getElementById("borders");
+                                    var textDate;
+
+                                    if(addDate.checked) {
+                                        cross.style.width = 200;
+                                        cross.style.height = cross.offsetHeight + 20;
+                                        borders.style.width = 200;
+                                        borders.style.height = borders.offsetHeight + 20;
+                                        borders.insertAdjacentHTML("beforeend", "<span id='textDate' class='align-top' style='font-size:" + 8 * scale + "px;'>Le XX/XX/XXXX XX:XX</span>");
+
+                                    } else {
+                                        cross.style.width = 100;
+                                        cross.style.height = cross.offsetHeight - 20;
+                                        borders.style.width = 100;
+                                        borders.style.height = borders.offsetHeight - 20;
+                                        textDate = document.getElementById("textDate");
+                                        textDate.remove();
+                                    }
+                                }
+
+
+                                /*]]>*/
+                            </script>
+                        </form>
+                    </div>
+                    <div class="col-lg-3">
+                        <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
+                        <div id="signtools" style="display: none; opacity : 0;transition: all 0.3s;">
+                            <div class="btn btn-light col-3 col-md-12 m-1" th:if="${signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'pdfImageStamp'}">
+                                <label class="control-label" for="_visual" >Insérer un visuel</label>
+                                <br/>
+                                <label class="switch">
+                                    <input onclick="toggleVisual();" type="checkbox" name="visual" id="_visual" checked/>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="btn btn-light col-3 col-md-12 m-1">
+                                <label class="control-label" for="_addDate">Afficher la date</label>
+                                <br/>
+                                <label class="switch">
+                                    <input onclick="activeDate();" type="checkbox" name="addDate" id="_addDate"/>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <input th:classappend="${signRequest.parentSignBook.currentWorkflowStep.signType != 'certSign' && signRequest.parentSignBook.currentWorkflowStep.signType != 'nexuSign'} ? 'd-none'" class="form-control" type="text" id="password" name="password" value=""/>
+                            <button class="mb-1 col-12 btn btn-success text-left" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
+                                <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                             </button>
                         </div>
-                        <th:block th:each="log : ${logs}">
-                            <div th:id="${log.id}" class="circle" th:style="'position: absolute;z-index:1000;left:' + ${log.posX} + 'px; top:' + ${log.posY} + 'px;'"></div>
-                        </th:block>
-
-                        <input class="form-control form-control-sm col-6 d-none" value="0" id="signPageNumber" type="text" name="pageNumber"/>
-                        <input class="form-control form-control-sm col-6 d-none" value="0" id="xPos" type="text" name="posX"/>
-                        <input class="form-control form-control-sm col-6 d-none" value="0" id="yPos" type="text" name="posY"/>
-                        <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="visual" id="visual"/>
-                        <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="addDate" id="addDate"/>
-
-                        <script th:inline="javascript">
-                            /*<![CDATA[*/
-
-                            var signId = [[${signRequest.id}]];
-
-                            signMode = false;
-                            pointItEnable = true;
-
-                            // Loaded via <script> tag, create shortcut to access PDF.js exports.
-                            var pdfjsLib = window['pdfjs-dist/build/pdf'];
-
-                            // The workerSrc property shall be specified.
-                            pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
-
-                            var canvas = document.getElementById('pdf');
-                            var ctx = canvas.getContext('2d');
-
-                            /**
-                             * Get page info from document, resize canvas accordingly, and render page.
-                             * @param num Page number.
-                             */
-                            function renderPage(num) {
-                                document.getElementById('signPageNumber').value = num;
-                                pageRendering = true;
-                                // Using promise to fetch the page
-                                pdfDoc.getPage(num).then(function (page) {
-                                    var viewport = page.getViewport(scale, rotation);
-                                    canvas.height = viewport.height;
-                                    canvas.width = viewport.width;
-
-                                    // Render PDF page into canvas context
-                                    var renderContext = {
-                                        canvasContext: ctx,
-                                        viewport: viewport
-                                    };
-                                    var renderTask = page.render(renderContext);
-
-                                    // Wait for rendering to finish
-                                    renderTask.promise.then(function () {
-                                        pageRendering = false;
-                                        if (pageNumPending !== null) {
-                                            // New page rendering is pending
-                                            renderPage(pageNumPending);
-                                            pageNumPending = null;
-                                        }
-                                    });
-                                });
-                                // Update page counters
-                                document.getElementById('page_num').textContent = num;
-                                refreshSign();
-                            }
-
-                            /**
-                             * If another page rendering in progress, waits until the rendering is
-                             * finised. Otherwise, executes rendering immediately.
-                             */
-                            function queueRenderPage(num) {
-                                if (pageRendering) {
-                                    pageNumPending = num;
-                                } else {
-                                    renderPage(num);
-                                }
-                            }
-
-                            /**
-                             * Displays previous page.
-                             */
-                            function prevPage() {
-                                if (pageNum <= 1) {
-                                    return;
-                                }
-                                pageNum--;
-                                queueRenderPage(pageNum);
-                            }
-
-                            document.getElementById('prev').addEventListener('click', prevPage);
-
-                            /**
-                             * Displays next page.
-                             */
-                            function nextPage() {
-                                if (pageNum >= pdfDoc.numPages) {
-                                    return;
-                                }
-                                pageNum++;
-                                queueRenderPage(pageNum);
-                            }
-
-                            document.getElementById('next').addEventListener('click', nextPage);
-
-                            function zoomIn() {
-                                if (scale >= 1.75) {
-                                    return;
-                                }
-                                scale = scale + 0.25;
-                                queueRenderPage(pageNum);
-                            }
-
-                            document.getElementById('zoomin').addEventListener('click', zoomIn);
-
-                            function zoomOut() {
-                                if (scale <= 0.75) {
-                                    return;
-                                }
-                                scale = scale - 0.25;
-                                queueRenderPage(pageNum);
-                            }
-
-                            document.getElementById('zoomout').addEventListener('click', zoomOut);
-
-                            function rotateLeft() {
-                                if (rotation < -90) {
-                                    return;
-                                }
-                                rotation = rotation - 90;
-                                queueRenderPage(pageNum);
-                            }
-
-                            document.getElementById('rotateleft').addEventListener('click', rotateLeft);
-
-                            function rotateRight() {
-                                if (rotation > 90) {
-                                    return;
-                                }
-                                rotation = rotation + 90;
-                                queueRenderPage(pageNum);
-                            }
-
-                            document.getElementById('rotateright').addEventListener('click', rotateRight);
-
-
-                            /**
-                             * Asynchronously downloads PDF.
-                             */
-                            pdfjsLib.getDocument(url).promise.then(function (pdfDoc_) {
-                                pdfDoc = pdfDoc_;
-                                document.getElementById('page_count').textContent = pdfDoc.numPages;
-
-                                // Initial/first page rendering
-                                renderPage(pageNum);
-                            });
-
-                            var posX,
-                                posY;
-
-                            function action() {
-                                if(signMode) {
-                                    savePosition();
-                                } else {
-                                    displayComment();
-                                }
-                            }
-
-                            function point(e) {
-                                if(signMode) {
-                                    pointIt(e);
-                                } else {
-                                    pointIt2(e)
-                                }
-
-                            }
-
-                            function pointIt2(e) {
-                                if (pointItEnable) {
-                                    console.log("mouse");
-                                    posX = e.offsetX ? (e.offsetX)
-                                        : e.clientX - pointerDiv.offsetLeft;
-                                    posY = e.offsetY ? (e.offsetY)
-                                        : e.clientY - pointerDiv.offsetTop;
-                                    console.log('point' + posX + ' : ' + posY);
-                                    document.getElementById("xPos").value = Math.round(posX / scale);
-                                    document.getElementById("yPos").value = Math.round(posY / scale);
-                                }
-                            }
-
-                            function displayComment() {
-                                if(signMode) {
-
-                                    return;
-                                }
-                                pointItEnable = false;
-                                document.getElementById("postit").style.left = posX + "px";
-                                document.getElementById("postit").style.top = posY + "px";
-                                $("#postit").show();
-                                //document.getElementById("postit").style.display = "block";
-                            }
-
-                            function hideComment() {
-                                if(signMode) {
-                                    return;
-                                }
-                                pointItEnable = true;
-                                $("#postit").hide();
-                            }
-
-                            function toggleSignMode() {
-                                if(signMode) {
-                                    signMode = false;
-                                    pointItEnable = true;
-                                    $('#cross').hide();
-                                    $('#comments').show();
-                                    $('#rotateleft').prop('disabled', false);
-                                    $('#rotateright').prop('disabled', false);
-                                    $('#signtools').hide();
-
-                                } else {
-                                    signMode = true;
-                                    pointItEnable = false;
-                                    //scale = 1;
-                                    rotation = 0;
-                                    queueRenderPage(pageNum);
-                                    $('#cross').show();
-                                    $('#comments').hide();
-                                    $('#rotateleft').prop('disabled', true);
-                                    $('#rotateright').prop('disabled', true);
-                                    $('#signtools').show();
-                                }
-                            }
-
-                            function refreshSign() {
-                                $('#cross').css('left', [[${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos}]] * scale);
-                                $('#cross').css('top', [[${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos}]] * scale);
-                                $('#cross').css('backgroundSize', [[${signWidth}]] * scale);
-                                $('#cross').css('width', [[${signWidth}]] * scale);
-                                $('#cross').css('height', [[${signHeight}]] * scale);
-                                $('#borders').css('width', [[${signWidth}]] * scale);
-                                $('#borders').css('height', [[${signHeight}]] * scale);
-                                $('#textVisa').css('font-size', 8 * scale);
-                            }
-
-                            function toggleVisual() {
-                                document.getElementById("cross").classList.toggle('d-none');
-                                document.getElementById("_visual").toggleAttribute("checked");
-                            }
-
-                            function activeDate() {
-
-                                var addDate = document.getElementById("_addDate");
-                                var cross = document.getElementById("cross");
-                                var borders = document.getElementById("borders");
-                                var textDate;
-
-                                if(addDate.checked) {
-                                    cross.style.width = 200;
-                                    cross.style.height = cross.offsetHeight + 20;
-                                    borders.style.width = 200;
-                                    borders.style.height = borders.offsetHeight + 20;
-                                    borders.insertAdjacentHTML("beforeend", "<span id='textDate' class='align-top' style='font-size:" + 8 * scale + "px;'>Le XX/XX/XXXX XX:XX</span>");
-
-                                } else {
-                                    cross.style.width = 100;
-                                    cross.style.height = cross.offsetHeight - 20;
-                                    borders.style.width = 100;
-                                    borders.style.height = borders.offsetHeight - 20;
-                                    textDate = document.getElementById("textDate");
-                                    textDate.remove();
-                                }
-                            }
-
-
-                            /*]]>*/
-                        </script>
-                    </form>
-                </div>
-                <div class="col-lg-3">
-                    <div id="signtools" style="display: none;">
-                        <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
-                        <div th:if="${signOk}">
-                        <div class="btn btn-light col-3 col-md-12 m-1" th:if="${signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'pdfImageStamp'}">
-                            <label class="control-label" for="_visual" >Insérer un visuel</label>
-                            <br/>
-                            <label class="switch">
-                                <input onclick="toggleVisual();" type="checkbox" name="visual" id="_visual" checked/>
-                                <span class="slider round"></span>
-                            </label>
+                        <div id="comments" th:if="${signable == 'ok'}" style="transition: all 0.3s;">
+                            <div class="alert alert-info">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
+                            <th:block th:each="log : ${logs}">
+                            <div th:id="'log' + ${log.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
+                                 th:onmouseover="'$(\'#' + ${log.id} + '\').show(); queueRenderPage(' + ${log.pageNumber} + ')'" th:onmouseout="'$(\'#' + ${log.id} + '\').hide()'">
+                                <b th:text="${@userService.getNameFromEppn(log.eppn)}"></b>
+                                <span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                <p class="postitarea" th:text="${log.comment}"></p>
+                            </div>
+                            <script>
+                                /*<![CDATA[*/
+                                var c = document.getElementById("log[[${log.id}]]");
+                                c.style.setProperty("--angle", Math.round(Math.random()) * 6 - 3 + "deg");
+                                /*]]>*/
+                            </script>
+                            </th:block>
                         </div>
-                        <div class="btn btn-light col-3 col-md-12 m-1">
-                            <label class="control-label" for="_addDate">Afficher la date</label>
-                            <br/>
-                            <label class="switch">
-                                <input onclick="activeDate();" type="checkbox" name="addDate" id="_addDate"/>
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                            <input type="text" id="password" name="password" value=""/>
-                        <button class="mb-1 col-12 btn btn-success text-left" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
-                            <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
-                        </button>
-                        </div>
-                    </div>
-                    <div id="comments">
-                    <div class="alert alert-warning">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
-                        <th:block th:each="log : ${logs}">
-                        <div th:id="'log' + ${log.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
-                             th:onmouseover="'$(\'#' + ${log.id} + '\').show(); queueRenderPage(' + ${log.pageNumber} + ')'" th:onmouseout="'$(\'#' + ${log.id} + '\').hide()'">
-                            <b th:text="${@userService.getNameFromEppn(log.eppn)}"></b>
-                            <span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span>
-                            <p class="postitarea" th:text="${log.comment}"></p>
-                        </div>
-                        <script>
-                            /*<![CDATA[*/
-                            var c = document.getElementById("log[[${log.id}]]");
-                            c.style.setProperty("--angle", Math.round(Math.random()) * 6 - 3 + "deg");
-                            /*]]>*/
-                        </script>
-                    </th:block>
                     </div>
                 </div>
             </div>
@@ -451,7 +459,7 @@
                 <button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">
                     Fermer
                 </button>
-                <a id="validModal" th:href="${referer != null} ? ${referer} : '/user/signrequests/' + ${signRequest.id}" class="btn btn-success align-self-center">Terminer</a>
+                <button id="validModal" onclick="location.reload();" class="btn btn-success">Terminer</button>
             </div>
         </div>
     </div>
