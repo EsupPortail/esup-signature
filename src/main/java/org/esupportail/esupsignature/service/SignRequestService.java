@@ -247,7 +247,7 @@ public class SignRequestService {
 				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else if(signatureForm.equals(SignatureForm.PAdES)) {
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber()), ((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign(), user, addDate);
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentSignRequestParams(), ((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign(), user, addDate);
 			}
 			step = "Signature du/des documents(s)";
 

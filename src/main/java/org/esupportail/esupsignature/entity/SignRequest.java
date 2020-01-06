@@ -165,6 +165,10 @@ public class SignRequest {
         return signRequestParams;
     }
 
+    public SignRequestParams getCurrentSignRequestParams() {
+        return signRequestParams.get(getParentSignBook().getCurrentWorkflowStepNumber() - 1);
+    }
+
     public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
         this.signRequestParams = signRequestParams;
     }

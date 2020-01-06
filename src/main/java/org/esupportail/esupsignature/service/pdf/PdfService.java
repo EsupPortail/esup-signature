@@ -75,7 +75,7 @@ public class PdfService {
 
     public Document stampImage(Document toSignFile, SignRequest signRequest, User user, boolean addDate) {
         //TODO add ip ? + date + nom ?
-        SignRequestParams params = signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1);
+        SignRequestParams params = signRequest.getCurrentSignRequestParams();
         SignType signType = signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType();
         PdfParameters pdfParameters;
         try {

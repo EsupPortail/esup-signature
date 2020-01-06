@@ -13,28 +13,28 @@
                 <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
-                <div class="btn btn-secondary col-12 mb-1">
+                <div class="alert alert-secondary col-12 mb-1 p-2">
                     <label class="control-label">Navigation : </label>
                     <span>page <span id="page_num"></span> / <span id="page_count"></span></span>
                     <br/>
-                        <button id="prev" class="btn btn-secondary btn-outline-light" aria-label="Précédent">
+                        <button id="prev" class="btn btn-light btn-outline-dark" aria-label="Précédent">
                             <i class="fas fa-arrow-left"></i>
                         </button>
-                        <button id="next" class="btn btn-secondary btn-outline-light" aria-label="Prochain">
+                        <button id="next" class="btn btn-light btn-outline-dark" aria-label="Prochain">
                             <i class="fas fa-arrow-right"></i>
                         </button>
                 </div>
-                <div class="btn btn-secondary col-3 col-md-12 mb-1">
+                <div class="alert alert-secondary col-3 col-md-12 mb-1 p-2">
                     <label class="control-label">Zoom</label>
                     <br/>
-                    <button id="zoomout" class="btn btn-secondary btn-outline-light"><i class="fas fa-search-minus"></i></button>
-                    <button id="zoomin" class="btn btn-secondary btn-outline-light"><i class="fas fa-search-plus"></i></button>
+                    <button id="zoomout" class="btn btn-light btn-outline-dark"><i class="fas fa-search-minus"></i></button>
+                    <button id="zoomin" class="btn btn-light btn-outline-dark"><i class="fas fa-search-plus"></i></button>
                 </div>
-                <div class="btn btn-secondary col-3 col-md-12 mb-1">
+                <div class="alert alert-secondary col-3 col-md-12 mb-1 p-2">
                     <label class="control-label">Rotation</label>
                     <br/>
-                    <button id="rotateleft" class="btn btn-secondary btn-outline-light"><i class="fas fa-undo"></i></button>
-                    <button id="rotateright" class="btn btn-secondary btn-outline-light"><i class="fas fa-redo"></i></button>
+                    <button id="rotateleft" class="btn btn-light btn-outline-dark"><i class="fas fa-undo"></i></button>
+                    <button id="rotateright" class="btn btn-light btn-outline-dark"><i class="fas fa-redo"></i></button>
                 </div>
                 <div class="alert alert-success col-3 col-md-12 mb-1 p-1" th:classappend="${signable != 'ok'} ? 'd-none' ">
                     <div id="signmode" class="form-check">
@@ -65,7 +65,7 @@
                     </a>
                 </th:block>
             </nav>
-            <div id="workspace" class="alert alert-warning fadein" style="transition: all 0.3s;">
+            <div id="workspace" class="alert alert-secondary fadein" style="transition: all 0.3s;">
                 <div class="row">
                     <div class="col-lg-9">
                         <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
@@ -78,7 +78,7 @@
                                      ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
                                      onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                                      onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
-                                     th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center; left: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos} + 'px;top: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
+                                     th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center; left: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos + 100} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
                                     <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
                                 </div>
                             </th:block>
@@ -118,8 +118,8 @@
                             </th:block>
 
                             <input class="form-control form-control-sm col-6 d-none" value="0" id="signPageNumber" type="text" name="pageNumber"/>
-                            <input class="form-control form-control-sm col-6 " value="0" id="xPos" type="text" name="posX"/>
-                            <input class="form-control form-control-sm col-6 " value="0" id="yPos" type="text" name="posY"/>
+                            <input class="form-control form-control-sm col-6 d-none" value="0" id="xPos" type="text" name="posX"/>
+                            <input class="form-control form-control-sm col-6 d-none" value="0" id="yPos" type="text" name="posY"/>
                             <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="visual" id="visual"/>
                             <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="addDate" id="addDate"/>
 
@@ -292,7 +292,7 @@
                                 }
 
                                 function toggleSignMode() {
-                                    $('#workspace').toggleClass('alert-success alert-warning');
+                                    $('#workspace').toggleClass('alert-success alert-secondary');
 
                                     if(signMode) {
                                         signMode = false;
@@ -322,7 +322,7 @@
                                 }
 
                                 function refreshSign() {
-                                    $('#cross').css('left', [[${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos}]] * scale);
+                                    $('#cross').css('left', [[${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos}]] * scale + 15);
                                     $('#cross').css('top', [[${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos}]] * scale);
                                     $('#cross').css('backgroundSize', [[${signWidth}]] * scale);
                                     $('#cross').css('width', [[${signWidth}]] * scale);
@@ -391,7 +391,7 @@
                             </button>
                         </div>
                         <div id="comments" th:if="${signable == 'ok'}" style="transition: all 0.3s;">
-                            <div class="alert alert-info">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
+                            <div class="alert alert-warning">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
                             <th:block th:each="log : ${logs}">
                             <div th:id="'log' + ${log.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
                                  th:onmouseover="'$(\'#' + ${log.id} + '\').show(); queueRenderPage(' + ${log.pageNumber} + ')'" th:onmouseout="'$(\'#' + ${log.id} + '\').hide()'">
@@ -414,7 +414,7 @@
     </div>
 </main>
 
-<div id="wait" class="modal fade" tabindex="-1" role="dialog">
+<div id="wait" class="modal fade" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-body text-center">
@@ -450,6 +450,8 @@
         console.log(token);
         submitSignRequest();
         $('#wait').modal('show');
+        $('#wait').modal({backdrop: 'static', keyboard: false})
+
         /*
         var wait = $.ajax({
             url: "/user/signrequests/wait-for-sign/" + token, success: function (result) {

@@ -429,9 +429,9 @@ public class SignRequestController {
                 return "redirect:/user/nexu-sign/" + id + "?referer=" + referer;
             }
             if (signPageNumber != null && xPos != null && yPos != null) {
-                signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1).setSignPageNumber(signPageNumber);
-                signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1).setXPos(xPos);
-                signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1).setYPos(yPos);
+                signRequest.getCurrentSignRequestParams().setSignPageNumber(signPageNumber);
+                signRequest.getCurrentSignRequestParams().setXPos(xPos);
+                signRequest.getCurrentSignRequestParams().setYPos(yPos);
                 signRequestRepository.save(signRequest);
             }
             if (!"".equals(password)) {
