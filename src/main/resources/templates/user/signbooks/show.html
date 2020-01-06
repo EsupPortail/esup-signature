@@ -74,15 +74,19 @@
                             <canvas th:if="${signable == 'ok'}" title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" onmouseup="action();" ontouchend="action();" ontouchmove="point(event);" onmousemove="point(event);">
                             </canvas>
                             <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'visa'}">
-                                <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();" ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
+                                <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();"
+                                     ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
                                      onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                                      onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
-                                     th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center; left: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos} + 'px;top: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos} + 'px;position:relative;pointer-events: auto;cursor: move;'">
+                                     th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center; left: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos} + 'px;top: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
                                     <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
                                 </div>
                             </th:block>
                             <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'visa'}">
-                                <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();" ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
+                                <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();"
+                                     ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
+                                     onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
+                                     onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
                                      th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).XPos} + 'px;top: ' + ${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
                                     <div id="borders" class="anim-border"
                                          th:style="'text-align:left;line-height:normal;width:  ' + ${signWidth} + 'px; height:  ' + ${signHeight} + 'px;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;'">
@@ -114,8 +118,8 @@
                             </th:block>
 
                             <input class="form-control form-control-sm col-6 d-none" value="0" id="signPageNumber" type="text" name="pageNumber"/>
-                            <input class="form-control form-control-sm col-6 d-none" value="0" id="xPos" type="text" name="posX"/>
-                            <input class="form-control form-control-sm col-6 d-none" value="0" id="yPos" type="text" name="posY"/>
+                            <input class="form-control form-control-sm col-6 " value="0" id="xPos" type="text" name="posX"/>
+                            <input class="form-control form-control-sm col-6 " value="0" id="yPos" type="text" name="posY"/>
                             <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="visual" id="visual"/>
                             <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="addDate" id="addDate"/>
 
@@ -127,36 +131,24 @@
                                 signMode = false;
                                 pointItEnable = true;
 
-                                // Loaded via <script> tag, create shortcut to access PDF.js exports.
                                 var pdfjsLib = window['pdfjs-dist/build/pdf'];
-
-                                // The workerSrc property shall be specified.
                                 pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
 
                                 var canvas = document.getElementById('pdf');
                                 var ctx = canvas.getContext('2d');
 
-                                /**
-                                 * Get page info from document, resize canvas accordingly, and render page.
-                                 * @param num Page number.
-                                 */
                                 function renderPage(num) {
                                     document.getElementById('signPageNumber').value = num;
                                     pageRendering = true;
-                                    // Using promise to fetch the page
                                     pdfDoc.getPage(num).then(function (page) {
                                         var viewport = page.getViewport(scale, rotation);
                                         canvas.height = viewport.height;
                                         canvas.width = viewport.width;
-
-                                        // Render PDF page into canvas context
                                         var renderContext = {
                                             canvasContext: ctx,
                                             viewport: viewport
                                         };
                                         var renderTask = page.render(renderContext);
-
-                                        // Wait for rendering to finish
                                         renderTask.promise.then(function () {
                                             pageRendering = false;
                                             if (pageNumPending !== null) {
@@ -166,15 +158,10 @@
                                             }
                                         });
                                     });
-                                    // Update page counters
                                     document.getElementById('page_num').textContent = num;
                                     refreshSign();
                                 }
 
-                                /**
-                                 * If another page rendering in progress, waits until the rendering is
-                                 * finised. Otherwise, executes rendering immediately.
-                                 */
                                 function queueRenderPage(num) {
                                     if (pageRendering) {
                                         pageNumPending = num;
@@ -183,9 +170,6 @@
                                     }
                                 }
 
-                                /**
-                                 * Displays previous page.
-                                 */
                                 function prevPage() {
                                     if (pageNum <= 1) {
                                         return;
@@ -196,9 +180,6 @@
 
                                 document.getElementById('prev').addEventListener('click', prevPage);
 
-                                /**
-                                 * Displays next page.
-                                 */
                                 function nextPage() {
                                     if (pageNum >= pdfDoc.numPages) {
                                         return;
@@ -249,10 +230,6 @@
 
                                 document.getElementById('rotateright').addEventListener('click', rotateRight);
 
-
-                                /**
-                                 * Asynchronously downloads PDF.
-                                 */
                                 pdfjsLib.getDocument(url).promise.then(function (pdfDoc_) {
                                     pdfDoc = pdfDoc_;
                                     document.getElementById('page_count').textContent = pdfDoc.numPages;
@@ -408,8 +385,8 @@
                                     <span class="slider round"></span>
                                 </label>
                             </div>
-                            <input th:classappend="${signRequest.parentSignBook.currentWorkflowStep.signType != 'certSign' && signRequest.parentSignBook.currentWorkflowStep.signType != 'nexuSign'} ? 'd-none'" class="form-control" type="text" id="password" name="password" value=""/>
-                            <button class="mb-1 col-12 btn btn-success text-left" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
+                            <input th:classappend="${signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'certSign' && signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
+                            <button class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
                                 <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                             </button>
                         </div>

@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.file;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,15 @@ import java.util.Map;
 public class FileService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
+
+	public File inputStreamToTempFile(InputStream inputStream, String name) throws IOException {
+		File file = getTempFile(name);
+		OutputStream outputStream = new FileOutputStream(file);
+		IOUtils.copy(inputStream, outputStream);
+		outputStream.close();
+		inputStream.close();
+		return file;
+	}
 
 	public MultipartFile toMultipartFile(InputStream file, String name, String mimeType) {
 		try {

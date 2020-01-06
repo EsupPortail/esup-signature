@@ -204,23 +204,39 @@ public class SignService {
 		return fileImage;
 	}
 
+	public File getFileImage(InputStream imageStream) throws IOException {
+		final BufferedImage signImage = ImageIO.read(imageStream);
+		BufferedImage  image = new BufferedImage(300, 150, BufferedImage.TYPE_INT_RGB);
+		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
+		graphics2D.setColor(Color.white);
+		graphics2D.fillRect(0, 0, 300, 150);
+		graphics2D.drawImage(signImage, 0, 0, null);
+		graphics2D.setRenderingHint(
+				RenderingHints.KEY_TEXT_ANTIALIASING,
+				RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+		graphics2D.setColor(Color.black);
+		File fileImage = fileService.getTempFile("sign.png");
+		ImageIO.write(image, "png", fileImage);
+		graphics2D.dispose();
+		return fileImage;
+	}
+
 	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user, boolean addDate) throws IOException {
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
 		int[] signSize;
-
+		File signImage;
 		if(addDate) {
-			File signImage = addTextToImage(user.getSignImage().getInputStream());
-			fileDocumentImage = new InMemoryDocument(new FileInputStream(signImage));
-			signSize = pdfService.getSignSize(new FileInputStream(signImage));
+			signImage = addTextToImage(user.getSignImage().getInputStream());
 		} else {
-			fileDocumentImage = new InMemoryDocument(user.getSignImage().getInputStream());
-			signSize = pdfService.getSignSize(user.getSignImage().getInputStream());
+			signImage = getFileImage(user.getSignImage().getInputStream());
 		}
 
+		fileDocumentImage = new InMemoryDocument(new FileInputStream(signImage), "sign.png");
+		signSize = pdfService.getSignSize(new FileInputStream(signImage));
+
 		fileDocumentImage.setMimeType(MimeType.PNG);
-		// TODO ajout date et nom
 		imageParameters.setImage(fileDocumentImage);
 		imageParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);

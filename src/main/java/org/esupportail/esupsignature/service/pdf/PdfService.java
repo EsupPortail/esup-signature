@@ -216,7 +216,7 @@ public class PdfService {
     }
 
     public InputStream convertGS(InputStream inputStream) throws IOException, EsupSignatureSignException {
-        File file = inputStreamToPdfTempFile(inputStream);
+        File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
         if (!isPdfAComplient(file) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
             String defFile = PdfService.class.getResource("/PDFA_def.ps").getFile();
@@ -271,7 +271,7 @@ public class PdfService {
     }
 
     public List<String> checkPDFA(InputStream inputStream, boolean fillResults) throws IOException {
-        File file = inputStreamToPdfTempFile(inputStream);
+        File file = fileService.inputStreamToTempFile(inputStream, "tmp.pdf");
         List<String> checkResult = checkPDFA(file, fillResults);
         file.delete();
         return checkResult;
@@ -467,15 +467,6 @@ public class PdfService {
         PDPage pdPage = pdDocument.getPage(0);
         PdfParameters pdfParameters = new PdfParameters((int) pdPage.getMediaBox().getWidth(), (int) pdPage.getMediaBox().getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
         return pdfParameters;
-    }
-
-    public File inputStreamToPdfTempFile(InputStream inputStream) throws IOException {
-        File file = fileService.getTempFile("tmp.pdf");
-        OutputStream outputStream = new FileOutputStream(file);
-        IOUtils.copy(inputStream, outputStream);
-        outputStream.close();
-        inputStream.close();
-        return file;
     }
 
     public BufferedImage pageAsBufferedImage(InputStream pdfFile, int page) {

@@ -208,22 +208,28 @@ public class SignRequestService {
 		updateStatus(signRequest, SignRequestStatus.pending, "Signature", user, "SUCCESS", signRequest.getComment());
 	}
 
-	public Document certSign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureKeystoreException, IOException {
+	public Document certSign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException, IOException {
 		SignatureForm signatureForm;
 		List<Document> toSignFiles = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest)) {
 			toSignFiles.add(document);
 		}
-		step = "Préparation de la signature";
+		step = "Initialisation de la procédure";
 		try {
+			step = "Formatage des documents";
+
 			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest, visual);
 			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
-			
+
+			step = "Déverouillage du keystore";
+
 			SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(user.getKeystore().getInputStream(), password);
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(user.getKeystore().getInputStream(), password);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(user.getKeystore().getInputStream(), password);
-	
+
+			step = "Préparation de la signature";
+
 			signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
 			List<String> base64CertificateChain = new ArrayList<>();
 			for (CertificateToken token : certificateTokenChain) {
@@ -241,19 +247,7 @@ public class SignRequestService {
 				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else if(signatureForm.equals(SignatureForm.PAdES)) {
-				//TODO fix problème png (premier upload ?)
-				step = "Formatage du PDF";
-				InputStream toSignInputStream;
-				Document toSignFile = toSignFiles.get(0);
-				toSignInputStream = toSignFile.getInputStream();
-				if(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() == 1) {
-					toSignInputStream = pdfService.convertGS(pdfService.writeMetadatas(toSignFile.getInputStream(), toSignFile.getFileName(), signRequest));
-				}
-				MultipartFile multipartFile = fileService.toMultipartFile(toSignInputStream, toSignFile.getFileName(), "application/pdf");
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber()), multipartFile, user, addDate);
-				SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
-				documentForm.setDocumentToSign(multipartFile);
-				signatureDocumentForm = documentForm;
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber()), ((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign(), user, addDate);
 			}
 			step = "Signature du/des documents(s)";
 
@@ -274,7 +268,7 @@ public class SignRequestService {
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
 		} catch (Exception e) {
 			step = "sign_system_error";
-			throw new EsupSignatureKeystoreException(e.getMessage(), e);
+			throw new EsupSignatureException(e.getMessage(), e);
 		}
 	}
 	

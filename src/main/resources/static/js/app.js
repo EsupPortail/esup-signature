@@ -227,8 +227,8 @@ function pointIt(e) {
 			cross.style.backgroundColor= 'rgba(0, 255, 0, .5)';
 			cross.style.left = posX + "px";
 			cross.style.top = posY + "px";
-			document.getElementById("xPos").value = Math.round(posX * scale);
-			document.getElementById("yPos").value = Math.round(posY * scale);
+			document.getElementById("xPos").value = Math.round(posX / scale);
+			document.getElementById("yPos").value = Math.round(posY / scale);
 		}
 	}
 }
@@ -625,6 +625,5 @@ $(window).resize(function() {
 // PDF.JS
 
 $(document).ready(function() {
-
 
 });

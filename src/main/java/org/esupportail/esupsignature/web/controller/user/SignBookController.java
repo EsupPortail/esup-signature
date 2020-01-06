@@ -184,7 +184,7 @@ public class SignBookController {
             }
             if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                 model.addAttribute("signable", "ok");
-                if(signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.pdfImageStamp)
+                if(!signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.pdfImageStamp)
                         && user.getSignImage() != null
                         && user.getSignImage().getSize() > 0) {
                     model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
