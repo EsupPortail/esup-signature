@@ -40,11 +40,14 @@
                     <div id="signmode" class="form-check">
                         <label>Activer le mode signature</label>
                         <label class="switch">
-                            <input type="checkbox" name="signmod" onchange="toggleSignMode();">
+                            <input type="checkbox" id="signmod" name="signmod" onchange="toggleSignMode();">
                             <span class="slider round"></span>
                         </label>
                     </div>
                 </div>
+                <button class="btn btn-danger col-3 col-md-12 mb-1 text-left" th:classappend="${signable != 'ok'} ? 'd-none'" onclick="toggleSignRefuseMode();">
+                    <i class="fas fa-ban"></i><span class="sidebar-label"> Refuser</span>
+                </button>
                 <a th:unless="${referer != null}" title="Abandonner" class="btn btn-light col-12 mb-1 text-left" value="Retour" href="/user/signbooks">
                     <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
                 </a>
@@ -129,6 +132,7 @@
                                 var signId = [[${signRequest.id}]];
 
                                 signMode = false;
+                                refuseMode = false;
                                 pointItEnable = true;
 
                                 var pdfjsLib = window['pdfjs-dist/build/pdf'];
@@ -291,10 +295,32 @@
                                     $("#postit").hide();
                                 }
 
+                                function toggleSignRefuseMode() {
+                                    $('#workspace').toggleClass('alert-danger alert-secondary');
+                                    if(signMode) {
+                                        toggleSignMode();
+                                    }
+                                    if(!refuseMode) {
+                                        refuseMode = true;
+                                        $('#signtools').fadeTo(300, 0);
+                                        $('#signtools').hide();
+                                        $('#refusetools').fadeTo(300, 1);
+                                        $('#refusetools').show();
+                                    }else{
+                                        refuseMode = false;
+                                        $('#refusetools').fadeTo(300, 0);
+                                        $('#refusetools').hide();
+                                    }
+
+                                }
+
                                 function toggleSignMode() {
                                     $('#workspace').toggleClass('alert-success alert-secondary');
-
+                                    if(refuseMode) {
+                                        toggleSignRefuseMode();
+                                    }
                                     if(signMode) {
+                                        $('#signmod').prop( "checked", false );
                                         signMode = false;
                                         pointItEnable = true;
                                         $('#cross').hide();
@@ -388,6 +414,11 @@
                             <input th:classappend="${signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'certSign' && signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
                             <button class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
                                 <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
+                            </button>
+                        </div>
+                        <div id="refusetools" style="display: none; opacity : 0;transition: all 0.3s;">
+                            <button class="mb-1 col-12 btn btn-lg btn-danger" title="Refuser" th:token="${signRequest.token}" onclick="refuse(this.getAttribute('token'));">
+                                <i class="fas fa-ban"></i> <span class="sidebar-label">Confirmer le refus</span>
                             </button>
                         </div>
                         <div id="comments" th:if="${signable == 'ok'}" style="transition: all 0.3s;">
