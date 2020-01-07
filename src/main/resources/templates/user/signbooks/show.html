@@ -64,14 +64,14 @@
             <nav class="nav nav-tabs">
                 <th:block th:each="signRequestTab, iterator : ${signBook.signRequests}">
                     <a th:classappend="${doc == iterator.index} ? 'active'" class="nav-item nav-link" th:href="'/user/signbooks/' + ${signBook.id} + '/' + ${iterator.index}">
-                        <i class="fas fa-file-pdf text-danger"></i> <span th:text="${signRequestTab.title}"></span>
+                        <i class="fas fa-file text-dark"></i> <span th:text="${signRequestTab.title}"></span>
                     </a>
                 </th:block>
             </nav>
             <div id="workspace" class="alert alert-secondary fadein" style="transition: all 0.3s;">
                 <div class="row">
                     <div class="col-lg-9">
-                        <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
+                        <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post" th:if="${documentType == 'pdf'}">
                             <canvas th:if="${signable != 'ok'}" title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" class="drop-shadows ">
                             </canvas>
                             <canvas th:if="${signable == 'ok'}" title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" onmouseup="action();" ontouchend="action();" ontouchmove="point(event);" onmousemove="point(event);" class="drop-shadows ">
@@ -130,10 +130,9 @@
                                 /*<![CDATA[*/
 
                                 var signId = [[${signRequest.id}]];
-
-                                signMode = false;
-                                refuseMode = false;
-                                pointItEnable = true;
+                                var signMode = false;
+                                var refuseMode = false;
+                                var pointItEnable = true;
 
                                 var pdfjsLib = window['pdfjs-dist/build/pdf'];
                                 pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
@@ -299,25 +298,6 @@
                                     $("#postit").hide();
                                 }
 
-                                function toggleSignRefuseMode() {
-                                    $('#workspace').toggleClass('alert-danger alert-secondary');
-                                    if(signMode) {
-                                        toggleSignMode();
-                                    }
-                                    if(!refuseMode) {
-                                        refuseMode = true;
-                                        $('#signtools').fadeTo(300, 0);
-                                        $('#signtools').hide();
-                                        $('#refusetools').fadeTo(300, 1);
-                                        $('#refusetools').show();
-                                    }else{
-                                        refuseMode = false;
-                                        $('#refusetools').fadeTo(300, 0);
-                                        $('#refusetools').hide();
-                                    }
-
-                                }
-
                                 function toggleSignMode() {
                                     $('#workspace').toggleClass('alert-success alert-secondary');
                                     if(refuseMode) {
@@ -349,6 +329,25 @@
                                         document.getElementById("yPos").value = Math.round([[${signRequest.signRequestParams.get(signRequest.parentSignBook.currentWorkflowStepNumber - 1).YPos}]]);
 
                                     }
+                                }
+
+                                function toggleSignRefuseMode() {
+                                    $('#workspace').toggleClass('alert-danger alert-secondary');
+                                    if(signMode) {
+                                        toggleSignMode();
+                                    }
+                                    if(!refuseMode) {
+                                        refuseMode = true;
+                                        $('#signtools').fadeTo(300, 0);
+                                        $('#signtools').hide();
+                                        $('#refusetools').fadeTo(300, 1);
+                                        $('#refusetools').show();
+                                    }else{
+                                        refuseMode = false;
+                                        $('#refusetools').fadeTo(300, 0);
+                                        $('#refusetools').hide();
+                                    }
+
                                 }
 
                                 function refreshSign() {
@@ -395,10 +394,71 @@
                                 /*]]>*/
                             </script>
                         </form>
+                        <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post" th:if="${documentType != 'pdf'}">
+                            <script>
+                                /*<![CDATA[*/
+
+                                var signId = [[${signRequest.id}]];
+
+                                var signMode = false;
+                                var refuseMode = false;
+
+                                function toggleSignMode() {
+                                    $('#workspace').toggleClass('alert-success alert-secondary');
+                                    if(refuseMode) {
+                                        toggleSignRefuseMode();
+                                    }
+                                    if(signMode) {
+                                        $('#signmod').prop( "checked", false );
+                                        signMode = false;
+                                        $('#comments').show();
+                                        $('#signtools').fadeTo(300, 0);
+                                        $('#signtools').hide();
+                                    } else {
+                                        signMode = true;
+                                        $('#comments').hide();
+                                        $('#signtools').show();
+                                        $('#signtools').fadeTo(300, 1);
+
+                                    }
+                                }
+
+                                function toggleSignRefuseMode() {
+                                    $('#workspace').toggleClass('alert-danger alert-secondary');
+                                    if(signMode) {
+                                        toggleSignMode();
+                                    }
+                                    if(!refuseMode) {
+                                        refuseMode = true;
+                                        $('#signtools').fadeTo(300, 0);
+                                        $('#signtools').hide();
+                                        $('#refusetools').fadeTo(300, 1);
+                                        $('#refusetools').show();
+                                    }else{
+                                        refuseMode = false;
+                                        $('#refusetools').fadeTo(300, 0);
+                                        $('#refusetools').hide();
+                                    }
+
+                                }
+                                /*]]>*/
+                            </script>
+                        </form>
+                        <a class="btn btn-primary" th:href="'/user/documents/getfile/' + ${documentId}" target="_blank"><i class="fas fa-download"></i> Recupérer le document</a>
                     </div>
                     <div class="col-lg-3">
                         <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
-                        <div id="signtools" style="display: none; opacity : 0;transition: all 0.3s;">
+                        <th:block th:if="${documentType != 'pdf'}">
+
+                            <div id="signtools" style="display: none; opacity : 0;transition: all 0.3s;" >
+                                <button class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
+                                    <input th:classappend="${signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'certSign' && signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
+                                    <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
+                                </button>
+                            </div>
+
+                        </th:block>
+                        <div id="signtools" style="display: none; opacity : 0;transition: all 0.3s;" th:if="${documentType == 'pdf'}">
                             <div class="btn btn-light col-3 col-md-12 m-1" th:if="${signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'pdfImageStamp'}">
                                 <label class="control-label" for="_visual" >Insérer un visuel</label>
                                 <br/>
@@ -428,7 +488,7 @@
                                 <i class="fas fa-times"></i> <span class="sidebar-label">Annuler</span>
                             </button>
                         </div>
-                        <div id="comments" th:if="${signable == 'ok'}" style="transition: all 0.3s;">
+                        <div id="comments" th:if="${signable == 'ok' && documentType == 'pdf'}" style="transition: all 0.3s;">
                             <div class="alert alert-warning">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
                             <div class="alert alert-warning clearfix">
                             <th:block th:each="postit : ${postits}">

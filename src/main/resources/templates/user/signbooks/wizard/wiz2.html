@@ -72,7 +72,17 @@
                 'gif': '<i class="fas fa-file-image text-muted fa-2x"></i>',
                 'png': '<i class="fas fa-file-image text-primary fa-2x"></i>'
             },
-
+            previewFileExtSettings: {
+                'doc': function(ext) {
+                    return ext.match(/(doc|docx|odt)$/i);
+                },
+                'xls': function(ext) {
+                    return ext.match(/(xls|xlsx)$/i);
+                },
+                'ppt': function(ext) {
+                    return ext.match(/(ppt|pptx)$/i);
+                }
+            }
         });
 
         $('#multipartFile').on('filebatchuploadsuccess', function(event, previewId, index, fileId) {

@@ -46,6 +46,12 @@ code {
   100% { transform: rotate(360deg); }
 }
 
+.file-preview-frame {
+    width: 100%;
+}
+.file-details-cell {
+    width: 100%;
+}
 .custom-file-label {
     justify-content: left !important;
 }
