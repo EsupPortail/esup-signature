@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.pdf;
 
+import org.apache.batik.transcoder.TranscoderException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.pdfbox.cos.COSBase;

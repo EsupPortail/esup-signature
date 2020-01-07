@@ -1,5 +1,9 @@
 package org.esupportail.esupsignature.service.file;
 
+import org.apache.batik.transcoder.TranscoderException;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
@@ -16,10 +20,14 @@ import java.awt.*;
 import java.awt.font.TextAttribute;
 import java.awt.image.*;
 import java.io.*;
+import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static org.apache.fop.render.pcl.fonts.PCLCharacterDefinition.PCLCharacterClass.Bitmap;
 
 @Service
 public class FileService {
@@ -248,5 +256,11 @@ public class FileService {
 		graphics2D.dispose();
 		return fileImage;
 	}
+
+		public InputStream svgToPng(InputStream svgInputStream) throws IOException {
+			File file = getTempFile("sceau.png");
+			ImageIO.write(ImageIO.read(svgInputStream), "PNG", file);
+			return new FileInputStream(file);
+		}
 
 }
