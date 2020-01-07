@@ -180,29 +180,7 @@ public class SignService {
 		return parameters;
 	}
 
-	public File addTextToImage(InputStream imageStream) throws IOException {
-		final BufferedImage signImage = ImageIO.read(imageStream);
-		BufferedImage  image = new BufferedImage(300, 150, BufferedImage.TYPE_INT_RGB);
-		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
-		graphics2D.setColor(Color.white);
-		graphics2D.fillRect(0, 0, 300, 150);
-		graphics2D.drawImage(signImage, 0, 0, null);
-		DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
-		Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
-		map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
-		Font font = new Font("Helvetica", Font.BOLD, 15);
-		font = font.deriveFont(map);
-		graphics2D.setFont(font);
-		graphics2D.setRenderingHint(
-				RenderingHints.KEY_TEXT_ANTIALIASING,
-				RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
-		graphics2D.setColor(Color.black);
-		graphics2D.drawString("Le " + dateFormat.format(new Date()), 0, 15);
-		File fileImage = fileService.getTempFile("sign.png");
-		ImageIO.write(image, "png", fileImage);
-		graphics2D.dispose();
-		return fileImage;
-	}
+
 
 	public File getFileImage(InputStream imageStream) throws IOException {
 		final BufferedImage signImage = ImageIO.read(imageStream);
@@ -228,7 +206,7 @@ public class SignService {
 		int[] signSize;
 		File signImage;
 		if(addDate) {
-			signImage = addTextToImage(user.getSignImage().getInputStream());
+			signImage = fileService.addTextToImage(user.getSignImage().getInputStream());
 		} else {
 			signImage = getFileImage(user.getSignImage().getInputStream());
 		}

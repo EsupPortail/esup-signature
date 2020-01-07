@@ -17,9 +17,9 @@ import java.awt.font.TextAttribute;
 import java.awt.image.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Hashtable;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
 public class FileService {
@@ -219,6 +219,30 @@ public class FileService {
 	    } catch (final IOException ioe) {
 	        throw new UncheckedIOException(ioe);
 	    }
+	}
+
+	public File addTextToImage(InputStream imageStream) throws IOException {
+		final BufferedImage signImage = ImageIO.read(imageStream);
+		BufferedImage  image = new BufferedImage(300, 150, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
+		graphics2D.setColor(new Color(255,255,255,0 ));
+		graphics2D.fillRect(0, 0, 300, 150);
+		graphics2D.drawImage(signImage, 0, 0, null);
+		DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
+		Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
+		map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+		Font font = new Font("Helvetica", Font.BOLD, 15);
+		font = font.deriveFont(map);
+		graphics2D.setFont(font);
+		graphics2D.setRenderingHint(
+				RenderingHints.KEY_TEXT_ANTIALIASING,
+				RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+		graphics2D.setColor(Color.black);
+		graphics2D.drawString("Le " + dateFormat.format(new Date()), 0, 15);
+		File fileImage = getTempFile("sign.png");
+		ImageIO.write(image, "png", fileImage);
+		graphics2D.dispose();
+		return fileImage;
 	}
 
 }

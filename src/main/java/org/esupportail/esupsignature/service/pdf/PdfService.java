@@ -74,7 +74,6 @@ public class PdfService {
     private FileService fileService;
 
     public Document stampImage(Document toSignFile, SignRequest signRequest, User user, boolean addDate) {
-        //TODO add ip ? + date + nom ?
         SignRequestParams params = signRequest.getCurrentSignRequestParams();
         SignType signType = signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType();
         PdfParameters pdfParameters;
@@ -91,13 +90,17 @@ public class PdfService {
             int xPos = params.getXPos();
             int yPos = params.getYPos();
             DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
-            InputStream signImage = PdfService.class.getResourceAsStream("/sceau.png");
+            File signImage = null;
             if (signType.equals(SignType.visa)) {
                 try {
+                    signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"));
+                    /*
                     addText(contentStream, "Visé par " + user.getFirstname() + " " + user.getName(), xPos, yPos, PDType1Font.HELVETICA);
                     if (addDate) {
                         addText(contentStream, "Le " + dateFormat.format(new Date()), xPos, yPos + 20, PDType1Font.HELVETICA);
                     }
+
+                     */
                 } catch (IOException e) {
                     logger.error(e.getMessage(), e);
                 }
@@ -105,10 +108,11 @@ public class PdfService {
                 //TODO add nom prenom ?
                 //addText(contentStream, "Signé par " + user.getFirstname() + " " + user.getName(), xPos, yPos, PDType1Font.HELVETICA);
                 if (addDate) {
-                    addText(contentStream, "Le " + dateFormat.format(new Date()), xPos, yPos, PDType1Font.HELVETICA);
+                    //addText(contentStream, "Le " + dateFormat.format(new Date()), xPos, yPos, PDType1Font.HELVETICA);
+
                     //topHeight = 20;
                 }
-                signImage = user.getSignImage().getInputStream();
+                signImage = fileService.addTextToImage(user.getSignImage().getInputStream());
             }
             int topHeight = 0;
             BufferedImage bufferedImage = ImageIO.read(signImage);
