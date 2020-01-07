@@ -91,28 +91,26 @@ public class PdfService {
             int yPos = params.getYPos();
             DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
             File signImage = null;
+            String text = "";
             if (signType.equals(SignType.visa)) {
                 try {
-                    signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"));
-                    /*
-                    addText(contentStream, "Visé par " + user.getFirstname() + " " + user.getName(), xPos, yPos, PDType1Font.HELVETICA);
+                    text += "Visé par " + user.getFirstname() + " " + user.getName() + "\n";
                     if (addDate) {
-                        addText(contentStream, "Le " + dateFormat.format(new Date()), xPos, yPos + 20, PDType1Font.HELVETICA);
+                        text +="Le " + dateFormat.format(new Date());
                     }
-
-                     */
+                    signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), text);
                 } catch (IOException e) {
                     logger.error(e.getMessage(), e);
                 }
             } else {
                 //TODO add nom prenom ?
-                //addText(contentStream, "Signé par " + user.getFirstname() + " " + user.getName(), xPos, yPos, PDType1Font.HELVETICA);
+//                if(addName) {
+//
+//                }
                 if (addDate) {
-                    //addText(contentStream, "Le " + dateFormat.format(new Date()), xPos, yPos, PDType1Font.HELVETICA);
-
-                    //topHeight = 20;
+                    text +="Le " + dateFormat.format(new Date());
                 }
-                signImage = fileService.addTextToImage(user.getSignImage().getInputStream());
+                signImage = fileService.addTextToImage(user.getSignImage().getInputStream(), text);
             }
             int topHeight = 0;
             BufferedImage bufferedImage = ImageIO.read(signImage);

@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<!--/*@thymesVar id="log" type="org.esupportail.esupsignature.entity.Log"*/-->
+<!--/*@thymesVar id="postit" type="org.esupportail.esupsignature.entity.Log"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
@@ -116,8 +116,8 @@
                                     <i class="fas fa-save"></i>
                                 </button>
                             </div>
-                            <th:block th:each="log : ${logs}">
-                                <div th:id="${log.id}" class="circle" th:style="'position: absolute;z-index:1000;left:' + ${log.posX} + 'px; top:' + ${log.posY} + 'px;'"></div>
+                            <th:block th:each="postit : ${postits}">
+                                <div th:id="${postit.id}" class="circle" th:style="'position: absolute;z-index:1000;left:' + ${postit.posX} + 'px; top:' + ${postit.posY} + 'px;'"></div>
                             </th:block>
 
                             <input class="form-control form-control-sm col-6 d-none" value="0" id="signPageNumber" type="text" name="pageNumber"/>
@@ -164,6 +164,10 @@
                                     });
                                     document.getElementById('page_num').textContent = num;
                                     refreshSign();
+                                    if(pdfDoc.numPages == 1) {
+                                        $('#prev').prop('disabled', true);
+                                        $('#next').prop('disabled', true);
+                                    }
                                 }
 
                                 function queueRenderPage(num) {
@@ -417,7 +421,7 @@
                             </button>
                         </div>
                         <div id="refusetools" style="display: none; opacity : 0;transition: all 0.3s;">
-                            <button class="mb-1 col-12 btn btn-lg btn-danger" title="Refuser" th:token="${signRequest.token}" onclick="refuse(this.getAttribute('token'));">
+                            <button class="mb-1 col-12 btn btn-lg btn-danger" title="Refuser" th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal">
                                 <i class="fas fa-ban"></i> <span class="sidebar-label">Confirmer le refus</span>
                             </button>
                             <button class="mb-1 col-12 btn btn-lg btn-secondary" title="Annuler" onclick="toggleSignRefuseMode()">
@@ -427,16 +431,16 @@
                         <div id="comments" th:if="${signable == 'ok'}" style="transition: all 0.3s;">
                             <div class="alert alert-warning">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
                             <div class="alert alert-warning clearfix">
-                            <th:block th:each="log : ${logs}">
-                            <div th:id="'log' + ${log.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
-                                 th:onmouseover="'$(\'#' + ${log.id} + '\').show(); queueRenderPage(' + ${log.pageNumber} + ')'" th:onmouseout="'$(\'#' + ${log.id} + '\').hide()'">
-                                <b th:text="${@userService.getNameFromEppn(log.eppn)}"></b>
-                                <span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                <p class="postitarea" th:text="${log.comment}"></p>
+                            <th:block th:each="postit : ${postits}">
+                            <div th:id="'log' + ${postit.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
+                                 th:onmouseover="'$(\'#' + ${postit.id} + '\').show(); queueRenderPage(' + ${postit.pageNumber} + ')'" th:onmouseout="'$(\'#' + ${postit.id} + '\').hide()'">
+                                <b th:text="${@userService.getNameFromEppn(postit.eppn)}"></b>
+                                <span th:text="${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                <p class="postitarea" th:text="${postit.comment}"></p>
                             </div>
                             <script>
                                 /*<![CDATA[*/
-                                var c = document.getElementById("log[[${log.id}]]");
+                                var c = document.getElementById("postit[[${postit.id}]]");
                                 c.style.setProperty("--angle", Math.round(Math.random()) * 6 - 3 + "deg");
                                 /*]]>*/
                             </script>
@@ -474,6 +478,28 @@
                 </button>
                 <button id="validModal" onclick="location.reload();" class="btn btn-success">Terminer</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="refuseModal" tabindex="-1" role="dialog" aria-labelledby="refuseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/signrequests/refuse/' + ${signRequest.id}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Refuser</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

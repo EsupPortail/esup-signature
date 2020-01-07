@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style th:text="${css}"></style>
+</head>
+<body class="bg-light">
+<div class="container">
+    <div class="card m-4  rounded-0">
+        <div class="card-header bg-dark">
+            <img class="mx-auto" th:src="@{|data:image/png;base64, ${logo}|}" />
+        </div>
+        <div class="card-body">
+            <h4>Bonjour,</h4>
+            <h5>La demande de signature "<b><span th:text="${signBook.name}"></span></b>" à été refusée par :</h5>
+            <ul>
+            <th:block th:each="workflowStep : ${signBook.workflowSteps}">
+                 <li th:text="${workflowStep.recipientsNames.keySet()}"></li>
+            </th:block>
+            </ul>
+            <p>
+                <a th:href="@{|${rootUrl}/user/signBooks/${signBook.id}|}" class="btn btn-primary">Voir la demande concernée</a>
+            </p>
+        </div>
+        <div class="card-footer bg-secondary">
+            <span class="text-white">Université de Rouen</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

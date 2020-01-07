@@ -5,9 +5,9 @@
 		<div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
 			<div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.parentSignBook.currentWorkflowStep.recipients.size() == 0}">
 				<div class="alert alert-secondary mb-1" th:if="${signRequest.status.name() == 'draft'}">
-					<h6 class="alert-heading">
+					<h5 class="alert-heading">
 						Le document en cours de création
-					</h6>
+					</h5>
 				</div>
 			</div>
 		</div>
@@ -16,18 +16,18 @@
 		<div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
 			<div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.parentSignBook.currentWorkflowStep.recipients.size() == 0}">
 				<div class="alert alert-info mb-1">
-					<h6 class="alert-heading">
+					<h5 class="alert-heading">
 						Demande prête pour la mise en signature
-					</h6>
+					</h5>
 				</div>
 			</div>
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'pending'}">
 		<div class="alert alert-primary mb-1">
-			<h6 class="alert-heading">
+			<h5 class="alert-heading">
 				Le document est en cours de signature
-			</h6>
+			</h5>
 			<div th:if="${signable == 'ok'}">
 				Vous devez signer cette demande
 			</div>
@@ -35,17 +35,19 @@
 	</div>
 	<div th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked'}">
 		<div class="alert alert-success mb-1">
-			<h6 class="alert-heading">Le document est signé</h6>
+			<h5 class="alert-heading">Le document est signé</h5>
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'refused'}">
 		<div class="alert alert-danger mb-1">
-			<h6 class="alert-heading">La demande à été refusée</h6>
+			<h5 class="alert-heading">La demande à été refusée</h5>
+			Motif :
+			<span th:text="${refusLogs.get(0).comment}"></span>
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'exported'}">
 		<div class="alert alert-success mb-1">
-			<h6>Le document signé à été exporté vers son emplacement définitif :</h6>
+			<h5>Le document signé à été exporté vers son emplacement définitif :</h5>
 			<span th:text="${signRequest.exportedDocumentURI}"></span>
 		</div>
 	</div>

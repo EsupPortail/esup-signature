@@ -522,18 +522,18 @@ public class SignRequestController {
     }
 
     @RequestMapping(value = "/refuse/{id}")
-    public String refuse(@PathVariable("id") Long id, @RequestParam(value = "comment", required = true) String comment, RedirectAttributes redirectAttrs, HttpServletResponse response,
+    public String refuse(@PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttrs, HttpServletResponse response,
                          Model model, HttpServletRequest request) throws SQLException {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (!signRequestService.checkUserSignRights(user, signRequest)) {
             redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
-            return "redirect:/user/signrequests/" + id;
+            return "redirect:/";
         }
         signRequest.setComment(comment);
         signRequestService.refuse(signRequest, user);
-        return "redirect:/user/signrequests/";
+        return "redirect:/user/signbooks/" + signRequest.getParentSignBook().getId() + "/0";
     }
 
     @DeleteMapping(value = "/{id}", produces = "text/html")

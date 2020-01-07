@@ -96,7 +96,31 @@ public class MailService {
         } catch (MessagingException e) {
             logger.error("unable to sens email", e);
         }
+    }
 
+    public void sendRefusedMail(SignBook signBook) {
+        workflowService.setWorkflowsLabels(signBook.getWorkflowSteps());
+        if (!checkMailSender()) {
+            return;
+        }
+        User user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
+        final Context ctx = new Context(Locale.FRENCH);
+        ctx.setVariable("signBook", signBook);
+        ctx.setVariable("rootUrl", rootUrl);
+        setTemplate(ctx);
+        final MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper message;
+        try {
+            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            message.setSubject("Esup-Signature : demande signature refusée");
+            message.setFrom(mailConfig.getMailFrom());
+            message.setTo(user.getEmail());
+            String htmlContent = templateEngine.process("mail/email-refused.html", ctx);
+            message.setText(htmlContent, true);
+            mailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            logger.error("unable to sens email", e);
+        }
     }
 
     public void sendSignRequestAlert(String recipientEmail, List<SignRequest> signRequests) {

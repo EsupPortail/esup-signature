@@ -206,7 +206,9 @@ public class SignService {
 		int[] signSize;
 		File signImage;
 		if(addDate) {
-			signImage = fileService.addTextToImage(user.getSignImage().getInputStream());
+			DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
+			String text = "Le " + dateFormat.format(new Date());
+			signImage = fileService.addTextToImage(user.getSignImage().getInputStream(), text);
 		} else {
 			signImage = getFileImage(user.getSignImage().getInputStream());
 		}

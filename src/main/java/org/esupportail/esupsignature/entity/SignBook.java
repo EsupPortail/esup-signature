@@ -226,6 +226,11 @@ public class SignBook {
     }
 
     public SignRequestStatus getStatus() {
+        for(SignRequest signRequest : signRequests) {
+            if(signRequest.getStatus().equals(SignRequestStatus.refused)) {
+                return SignRequestStatus.refused;
+            }
+        }
         if(currentWorkflowStepNumber <= workflowSteps.size() && status.equals(SignRequestStatus.pending) || status.equals(SignRequestStatus.draft)) {
             return status;
         }

@@ -221,24 +221,28 @@ public class FileService {
 	    }
 	}
 
-	public File addTextToImage(InputStream imageStream) throws IOException {
+	public File addTextToImage(InputStream imageStream, String text) throws IOException {
 		final BufferedImage signImage = ImageIO.read(imageStream);
 		BufferedImage  image = new BufferedImage(300, 150, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
 		graphics2D.setColor(new Color(255,255,255,0 ));
 		graphics2D.fillRect(0, 0, 300, 150);
 		graphics2D.drawImage(signImage, 0, 0, null);
-		DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
 		Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
+		int fontSize = 18;
 		map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
-		Font font = new Font("Helvetica", Font.BOLD, 15);
+		Font font = new Font("Helvetica", Font.PLAIN, fontSize);
 		font = font.deriveFont(map);
 		graphics2D.setFont(font);
 		graphics2D.setRenderingHint(
 				RenderingHints.KEY_TEXT_ANTIALIASING,
 				RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
 		graphics2D.setColor(Color.black);
-		graphics2D.drawString("Le " + dateFormat.format(new Date()), 0, 15);
+		int x = 0;
+		int y = fontSize;
+		for (String line : text.split("\n")) {
+			graphics2D.drawString(line, x, y += graphics2D.getFontMetrics().getHeight());
+		}
 		File fileImage = getTempFile("sign.png");
 		ImageIO.write(image, "png", fileImage);
 		graphics2D.dispose();

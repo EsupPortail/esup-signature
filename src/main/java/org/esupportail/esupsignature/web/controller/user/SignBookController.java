@@ -181,9 +181,9 @@ public class SignBookController {
             if(signRequestService.checkUserSignRights(user, signRequest)) {
                 model.addAttribute("signOk", true);
             }
-            if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
+            if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) && signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                 model.addAttribute("signable", "ok");
-                if(!signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.pdfImageStamp)
+                if(!signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.visa)
                         && user.getSignImage() != null
                         && user.getSignImage().getSize() > 0) {
                     model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
@@ -200,7 +200,8 @@ public class SignBookController {
                 signRequestRepository.save(signRequest);
             }
         }
-        model.addAttribute("logs", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
+        model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
+        model.addAttribute("refusLogs", logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name()));
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("doc", doc);
         return "user/signbooks/show";

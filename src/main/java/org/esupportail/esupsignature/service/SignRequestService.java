@@ -425,6 +425,7 @@ public class SignRequestService {
 
 	public void refuse(SignRequest signRequest, User user) {
 		updateStatus(signRequest, SignRequestStatus.refused, "Refusé", user, "SUCCESS", signRequest.getComment());
+		mailService.sendRefusedMail(signRequest.getParentSignBook());
 	}
 
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {
