@@ -86,6 +86,7 @@ public class SignBookService {
     public SignBook createSignBook(String name, SignBookType signBookType, User user, boolean external) throws EsupSignatureException {
         if (signBookRepository.countByName(name) == 0) {
             SignBook signBook = new SignBook();
+            signBook.setStatus(SignRequestStatus.draft);
             signBook.setName(name);
             signBook.setSignBookType(signBookType);
             signBook.setCreateBy(user.getEppn());
@@ -337,7 +338,7 @@ public class SignBookService {
                 }
             }
         } else {
-            logger.warn("allready pending");
+            logger.warn("already pending");
         }
     }
 

@@ -72,9 +72,9 @@
                 <div class="row">
                     <div class="col-lg-9">
                         <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
-                            <canvas th:if="${signable != 'ok'}" title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;">
+                            <canvas th:if="${signable != 'ok'}" title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" class="drop-shadows ">
                             </canvas>
-                            <canvas th:if="${signable == 'ok'}" title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" onmouseup="action();" ontouchend="action();" ontouchmove="point(event);" onmousemove="point(event);">
+                            <canvas th:if="${signable == 'ok'}" title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" onmouseup="action();" ontouchend="action();" ontouchmove="point(event);" onmousemove="point(event);" class="drop-shadows ">
                             </canvas>
                             <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'visa'}">
                                 <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();"
@@ -420,9 +420,13 @@
                             <button class="mb-1 col-12 btn btn-lg btn-danger" title="Refuser" th:token="${signRequest.token}" onclick="refuse(this.getAttribute('token'));">
                                 <i class="fas fa-ban"></i> <span class="sidebar-label">Confirmer le refus</span>
                             </button>
+                            <button class="mb-1 col-12 btn btn-lg btn-secondary" title="Annuler" onclick="toggleSignRefuseMode()">
+                                <i class="fas fa-times"></i> <span class="sidebar-label">Annuler</span>
+                            </button>
                         </div>
                         <div id="comments" th:if="${signable == 'ok'}" style="transition: all 0.3s;">
                             <div class="alert alert-warning">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
+                            <div class="alert alert-warning clearfix">
                             <th:block th:each="log : ${logs}">
                             <div th:id="'log' + ${log.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
                                  th:onmouseover="'$(\'#' + ${log.id} + '\').show(); queueRenderPage(' + ${log.pageNumber} + ')'" th:onmouseout="'$(\'#' + ${log.id} + '\').hide()'">
@@ -437,6 +441,7 @@
                                 /*]]>*/
                             </script>
                             </th:block>
+                            </div>
                         </div>
                     </div>
                 </div>

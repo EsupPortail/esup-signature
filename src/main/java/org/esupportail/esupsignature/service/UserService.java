@@ -92,7 +92,7 @@ public class UserService implements EvaluationContextExtension {
 	    	user = new User();
 			user.setSignImage(null);
 			user.setKeystore(null);
-			user.setEmailAlertFrequency(EmailAlertFrequency.never);
+			//user.setEmailAlertFrequency(EmailAlertFrequency.never);
     	}
 		user.setName(name);
 		user.setFirstname(firstName);
