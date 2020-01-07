@@ -97,8 +97,9 @@ public class SignRequestService {
 		List<SignRequest> signRequestsToSign = new ArrayList<>();
 		List<WorkflowStep> workflowSteps = workflowStepRepository.findByRecipients(user.getId());
 		for(WorkflowStep workflowStep : workflowSteps) {
-			if(!workflowStep.getRecipients().get(user.getId()) && signBookRepository.findByWorkflowSteps(Arrays.asList(workflowStep)).size() > 0) {
-				SignBook signBook = signBookRepository.findByWorkflowSteps(Arrays.asList(workflowStep)).get(0);
+			List<SignBook> kkj = signBookRepository.findByWorkflowStepsContains(workflowStep);
+			if(!workflowStep.getRecipients().get(user.getId()) && signBookRepository.findByWorkflowStepsContains(workflowStep).size() > 0) {
+				SignBook signBook = signBookRepository.findByWorkflowStepsContains(workflowStep).get(0);
 				if (signBook.getCurrentWorkflowStep().equals(workflowStep) && signBook.getStatus().equals(SignRequestStatus.pending)) {
 					signRequestsToSign.addAll(signBook.getSignRequests());
 				}
@@ -281,8 +282,8 @@ public class SignRequestService {
 
 
 	public void applyEndOfStepRules(SignRequest signRequest, User user) {
-		signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().put(user.getId(), true);
 		if(signBookService.isStepDone(signRequest.getParentSignBook())) {
+			signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().put(user.getId(), true);
 			signBookService.nextWorkFlowStep(signRequest.getParentSignBook(), user);
 			if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed)) {
 				mailService.sendCompletedMail(signRequest.getParentSignBook());
