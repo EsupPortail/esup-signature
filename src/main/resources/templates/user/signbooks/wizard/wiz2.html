@@ -33,12 +33,12 @@
             console.log('change');
             if ($('#unique :checkbox').is(":checked")){
                 $('#multipartFile').fileinput('refresh', {
-                    uploadUrl: '[['/user/signbooks/add-doc/' + ${name} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}]]'
+                    uploadUrl: '[['/ws/add-doc/' + ${name} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}]]'
                 });
             } else {
                 console.log('uncheck');
                 $('#multipartFile').fileinput('refresh', {
-                    uploadUrl: '[['/user/signbooks/add-doc-new-signrequest/' + ${name} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}]]'
+                    uploadUrl: '[['/ws/add-doc-in-new-signrequest/' + ${name} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}]]'
                 });
             }
             }
@@ -50,7 +50,7 @@
             showClose: false,
             showBrowse: true,
             showUpload: false,
-            uploadUrl: '[['/user/signbooks/add-doc-new-signrequest/' + ${name} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}]]',
+            uploadUrl: '[['/ws/add-doc-in-new-signrequest/' + ${name} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}]]',
             showRemove: false,
             browseOnZoneClick: true,
             uploadAsync: false,

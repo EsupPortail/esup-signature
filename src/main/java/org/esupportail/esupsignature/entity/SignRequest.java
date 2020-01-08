@@ -166,7 +166,11 @@ public class SignRequest {
     }
 
     public SignRequestParams getCurrentSignRequestParams() {
-        return signRequestParams.get(getParentSignBook().getCurrentWorkflowStepNumber() - 1);
+   	    if(signRequestParams.size() > getParentSignBook().getCurrentWorkflowStepNumber() - 1) {
+            return signRequestParams.get(getParentSignBook().getCurrentWorkflowStepNumber() - 1);
+        } else {
+   	        return new SignRequestParams();
+        }
     }
 
     public void setSignRequestParams(List<SignRequestParams> signRequestParams) {

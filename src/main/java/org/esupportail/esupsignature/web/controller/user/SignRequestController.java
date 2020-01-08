@@ -160,7 +160,7 @@ public class SignRequestController {
         Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByCreateByAndStatus(user.getEppn(), this.statusFilter, pageable);
 
         for (SignRequest signRequest : signRequests) {
-            workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
+            //workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
         }
         if (user.getKeystore() != null) {
             model.addAttribute("keystore", user.getKeystore().getFileName());

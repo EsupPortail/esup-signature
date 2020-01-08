@@ -303,53 +303,6 @@ public class SignBookController {
         }
     }
 
-
-    @ResponseBody
-    @RequestMapping(value = "/add-doc/{name}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocument(@PathVariable("name") String name,
-                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest request) throws EsupSignatureException {
-        logger.info("start add documents");
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        SignBook signBook = signBookService.getSignBook(name, user);
-        SignRequest signRequest;
-        if (signBook.getSignRequests().size() > 0) {
-            signRequest = signBook.getSignRequests().get(0);
-        } else {
-            signRequest = new SignRequest();
-            signRequest.setTitle(signBook.getName());
-            signRequest.setCreateBy(user.getEppn());
-            signRequest.setCreateDate(new Date());
-            signRequest.setParentSignBook(signBook);
-            signRequest.setStatus(SignRequestStatus.pending);
-        }
-        List<Document> documents = documentService.createDocuments(multipartFiles);
-        signRequestService.addOriginalDocuments(signRequest, documents);
-        signRequestRepository.save(signRequest);
-        signBook.getSignRequests().add(signRequest);
-        signBookRepository.save(signBook);
-        String[] ok = {"ok"};
-        return ok;
-    }
-
-
-    @ResponseBody
-    @RequestMapping(value = "/add-doc-new-signrequest/{name}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentToNewSignRequest(@PathVariable("name") String name,
-                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest request) throws EsupSignatureException {
-        logger.info("start add documents");
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        SignBook signBook = signBookService.getSignBook(name, user);
-        for (MultipartFile multipartFile : multipartFiles) {
-            Document document = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), signBook, user, Arrays.asList(document));
-            signRequest.setStatus(SignRequestStatus.pending);
-        }
-        String[] ok = {"ok"};
-        return ok;
-    }
-
 //    @RequestMapping(value = "/get-last-file-seda/{id}", method = RequestMethod.GET)
 //    public void getLastFileSeda(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
 //        SignRequest signRequest = signRequestRepository.findById(id).get();
