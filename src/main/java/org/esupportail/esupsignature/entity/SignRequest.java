@@ -165,15 +165,15 @@ public class SignRequest {
         return signRequestParams;
     }
 
+    public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
+        this.signRequestParams = signRequestParams;
+    }
+
     public SignRequestParams getCurrentSignRequestParams() {
    	    if(signRequestParams.size() > getParentSignBook().getCurrentWorkflowStepNumber() - 1) {
             return signRequestParams.get(getParentSignBook().getCurrentWorkflowStepNumber() - 1);
         } else {
    	        return new SignRequestParams();
         }
-    }
-
-    public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
-        this.signRequestParams = signRequestParams;
     }
 }

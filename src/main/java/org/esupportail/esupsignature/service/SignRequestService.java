@@ -97,7 +97,6 @@ public class SignRequestService {
 		List<SignRequest> signRequestsToSign = new ArrayList<>();
 		List<WorkflowStep> workflowSteps = workflowStepRepository.findByRecipients(user.getId());
 		for(WorkflowStep workflowStep : workflowSteps) {
-			List<SignBook> kkj = signBookRepository.findByWorkflowStepsContains(workflowStep);
 			if(!workflowStep.getRecipients().get(user.getId()) && signBookRepository.findByWorkflowStepsContains(workflowStep).size() > 0) {
 				SignBook signBook = signBookRepository.findByWorkflowStepsContains(workflowStep).get(0);
 				if (signBook.getCurrentWorkflowStep().equals(workflowStep) && signBook.getStatus().equals(SignRequestStatus.pending)) {
@@ -131,12 +130,12 @@ public class SignRequestService {
 	}
 
 	public SignRequest createSignRequest(SignRequest signRequest, User user) {
-			return createSignRequest(signRequest, user, new ArrayList<>());
+		return createSignRequest(signRequest, user, new ArrayList<>());
 	}
 
 
 	public SignRequest createSignRequest(SignRequest signRequest, User user, Document document) {
-		List<Document> documents = new ArrayList<Document>();
+		List<Document> documents = new ArrayList<>();
 		documents.add(document);
 		return createSignRequest(signRequest, user, documents);
 	}

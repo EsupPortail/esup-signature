@@ -82,10 +82,20 @@ public class WsController {
     @Autowired(required = false)
     private LdapPersonService ldapPersonService;
 
+    @ResponseBody
+    @RequestMapping(value = "/create-sign-request", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public String createSignRequest(@RequestParam String name, @RequestParam String createBy, HttpServletRequest httpServletRequest) throws EsupSignatureException {
+        User user = userRepository.findByEppn(createBy).get(0);
+        user.setIp(httpServletRequest.getRemoteAddr());
+        SignRequest newSignRequest = new SignRequest();
+        newSignRequest.setTitle(name);
+        SignRequest signRequest = signRequestService.createSignRequest(newSignRequest, user);
+        return signRequest.getToken();
+    }
 
     @ResponseBody
     @RequestMapping(value = "/create-sign-book", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public String createSignRequest(@RequestParam String name, @RequestParam String createBy, HttpServletRequest httpServletRequest) throws EsupSignatureException {
+    public String createSignBook(@RequestParam String name, @RequestParam String createBy, HttpServletRequest httpServletRequest) throws EsupSignatureException {
         User user = userRepository.findByEppn(createBy).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
         SignBook signBook = signBookService.getSignBook(name, user);
@@ -220,7 +230,7 @@ public class WsController {
 
     @ResponseBody
     @RequestMapping(value = "/create-workflow", method = RequestMethod.POST)
-    public String createSignBook(@RequestParam String workflowString, @RequestParam String signBookType, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
+    public String createWorkflow(@RequestParam String workflowString, @RequestParam String signBookType, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
         User user = userService.getSystemUser();
         user.setIp(httpServletRequest.getRemoteAddr());
         ObjectMapper mapper = new ObjectMapper();
@@ -360,13 +370,6 @@ public class WsController {
             logger.error(e.getMessage(), e);
         }
         return null;
-    }
-
-    @ResponseBody
-    @RequestMapping(value = "/delete-sign-book", method = RequestMethod.GET)
-    public void deleteSignRequest(@RequestParam String name, HttpServletResponse response, Model model) {
-        SignBook signBook = signBookRepository.findByName(name).get(0);
-        signBookService.deleteSignBook(signBook);
     }
 
     @RequestMapping(value = "/sign-by-token/{token}")
