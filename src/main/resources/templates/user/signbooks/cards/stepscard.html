@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="stepscard">
+    <div class="card rounded-0 mb-1 bg-transparent">
+        <div class="card-body">
+            <th:block th:if="${signBook.workflowSteps != null}">
+                <div id="stepper" class="bs-stepper">
+                    <div class="bs-stepper-header container" role="tablist">
+                        <th:block th:each="workflowStep,iterator : ${signBook.workflowSteps}">
+                            <div class="step" th:name="'step_' + ${iterator.index}" th:data-target="'#step_' + ${iterator.index}">
+                                <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab" aria-selected="false" style="border: 2px solid #555555;">
+                                    <span th:if="${iterator.index + 1 == signBook.currentWorkflowStepNumber}" class="bs-stepper-circle"><i class="fa fa-play"></i></span>
+                                    <span th:if="${iterator.index + 1 > signBook.currentWorkflowStepNumber}" class="bs-stepper-circle"><i class="fa fa-pause"></i></span>
+                                    <span th:unless="${iterator.index + 1 > signBook.currentWorkflowStepNumber || iterator.index + 1 == signBook.currentWorkflowStepNumber}" class="bs-stepper-circle"><i class="fa fa-check"></i></span>
+                                    <div class="bs-stepper-label">
+                                        <span  th:text="'Etape ' + ${iterator.index + 1}"></span>
+                                        <br/>
+                                        <span th:if="${workflowStep.name != null}" th:text="${workflowStep.name}"></span>
+                                        <table>
+                                            <th:block th:each="recipient : ${workflowStep.recipientsNames}">
+                                                <tr>
+                                                    <td>
+                                                        <span th:text="${recipient.key}"></span>
+                                                    </td>
+                                                    <td>
+                                                        <div th:switch="${recipient.value}">
+                                                            <span th:case="true" class="text-success"><i class="fas fa-check-circle" title="Signature effectuée"></i></span>
+                                                            <span th:case="false" class="text-danger"><i class="fas fa-exclamation-circle text-danger" title=" En attente de signature"></i></span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </th:block>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:if="${signBook.workflowSteps.size() > iterator.index + 1}" class="line"></div>
+                        </th:block>
+                        <th:block th:if="${signBook.documentsTargetUri != null}">
+                            <div class="line"></div>
+                            <div class="step" name="target" data-target="#target">
+                                <div aria-controls="target" class="step-trigger bg-light" role="tab" aria-selected="false" style="border: 2px solid #555555">
+                                    <span th:classappend="${signBook.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></span>
+                                    <span class="bs-stepper-label"><p>Export</p></span>
+                                </div>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+    </div>
+</div>
+</html>

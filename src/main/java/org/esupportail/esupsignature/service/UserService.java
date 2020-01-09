@@ -140,7 +140,7 @@ public class UserService implements EvaluationContextExtension {
 		if (userRepository.countByEppn(eppn) > 0) {
 			return userRepository.findByEppn(eppn).get(0);
 		} else {
-			return null;
+			return getSystemUser();
 		}
     	
     }

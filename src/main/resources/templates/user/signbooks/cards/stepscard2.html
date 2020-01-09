@@ -4,7 +4,7 @@
     <div class="card rounded-0 mb-1">
         <div class="card-header">
             Circuit de signature
-            <button th:if="${signBook.status.name() == 'draft' || signBook.status.name() == 'completed'}" type="button" class="btn btn-sm btn-primary float-right" data-toggle="modal" data-target="#addStep">
+            <button type="button" class="btn btn-sm btn-primary float-right" data-toggle="modal" data-target="#addStep">
                 <i class="fas fa-plus"></i> Ajouter une étape manuellement
             </button>
             <button th:if="${signBook.status.name() == 'draft' && signBook.workflowSteps.size() == 0}" type="button" class="btn btn-sm btn-primary float-right mr-1" data-toggle="modal" data-target="#addWorkflow">
@@ -101,7 +101,7 @@
                                         <span th:if="${workflowStep.recipientsNames.size() == 0}">Aucun participant affecté</span>
                                         <div class="collapse" th:id="'stepDetail_' + ${iterator.index}">
                                             <hr/>
-                                            <form th:action="'/user/signBooks/update-step/' + ${id} + '/'  + ${iterator.index}">
+                                            <form th:action="'/user/signbooks/update-step/' + ${id} + '/'  + ${iterator.index}">
                                                 <label>Nom de l'étape :</label>
                                                 <div th:unless="${iterator.index + 1 > signBook.currentWorkflowStepNumber || iterator.index + 1 == signBook.currentWorkflowStepNumber}">
                                                     <b><span th:text="${workflowStep.name}"></span></b>
@@ -147,7 +147,7 @@
                                                             <div class="modal fade" th:id="'reSendModal' + ${workflowStep.id}" tabindex="-1" role="dialog" th:aria-labelledby="'reSendModal' + ${workflowStep.id}" aria-hidden="true">
                                                                 <div class="modal-dialog modal-lg" role="document">
                                                                     <div class="modal-content">
-                                                                        <form class="form-group" th:action="'/user/signBooks/send-to-signbook/' + ${id} + '/' + ${workflowStep.id}" method="get">
+                                                                        <form class="form-group" th:action="'/user/signbooks/send-to-signbook/' + ${id} + '/' + ${workflowStep.id}" method="get">
                                                                             <div class="modal-header">
                                                                                 <h5 class="modal-title">Ajout de participants</h5>
                                                                             </div>

@@ -52,7 +52,7 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 		        .clientId(clientId)
 		        .clientSecret(clientSecret)
 		        .scope("profile", "email")
-		        .redirectUriTemplate("http://dsi-7.univ-rouen.fr:8080/login/oauth2/code/google")
+		        .redirectUriTemplate("http://localhost:8080:8080/login/oauth2/code/google")
 		        .build();
 
         return new InMemoryClientRegistrationRepository(Arrays.asList(registration));

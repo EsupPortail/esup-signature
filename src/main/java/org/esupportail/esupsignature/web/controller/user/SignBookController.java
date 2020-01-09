@@ -155,6 +155,7 @@ public class SignBookController {
         SignBook signBook = signBookRepository.findById(id).get();
         workflowService.setWorkflowsLabels(signBook.getWorkflowSteps());
         model.addAttribute("signBook", signBook);
+        model.addAttribute("signTypes", SignType.values());
         return "user/signbooks/update";
 
     }
@@ -163,6 +164,7 @@ public class SignBookController {
     public String show(@PathVariable("id") Long id, @PathVariable("doc") int doc, Model model) throws Exception {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
+        workflowService.setWorkflowsLabels(signBook.getWorkflowSteps());
         model.addAttribute("signBook", signBook);
         SignRequest signRequest = signBook.getSignRequests().get(doc);
         if ((signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest))) {
@@ -426,24 +428,24 @@ public class SignBookController {
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
-//    @RequestMapping(value = "/send-to-signbook/{id}/{workflowStepId}", method = RequestMethod.GET)
-//    public String sendToSignBook(@PathVariable("id") Long id,
-//                                 @PathVariable("workflowStepId") Long workflowStepId,
-//                                 @RequestParam(value = "signBookNames", required = true) String[] signBookNames,
-//                                 RedirectAttributes redirectAttrs, HttpServletRequest request) {
-//        User user = userService.getUserFromAuthentication();
-//        user.setIp(request.getRemoteAddr());
-//        SignRequest signRequest = signRequestRepository.findById(id).get();
-//        if (signRequestService.checkUserViewRights(user, signRequest)) {
-//            WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-//            if (signBookNames != null && signBookNames.length > 0) {
-//                signRequestService.addRecipientsToWorkflowStep(signRequest, Arrays.asList(signBookNames), workflowStep, user);
-//            }
-//        } else {
-//            logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
-//        }
-//        return "redirect:/user/signbooks/" + id + "/?form";
-//    }
+    @RequestMapping(value = "/send-to-signbook/{id}/{workflowStepId}", method = RequestMethod.GET)
+    public String sendToSignBook(@PathVariable("id") Long id,
+                                 @PathVariable("workflowStepId") Long workflowStepId,
+                                 @RequestParam(value = "signBookNames", required = true) String[] signBookNames,
+                                 RedirectAttributes redirectAttrs, HttpServletRequest request) {
+        User user = userService.getUserFromAuthentication();
+        user.setIp(request.getRemoteAddr());
+        SignBook signBook = signBookRepository.findById(id).get();
+        if (signBookService.checkUserViewRights(user, signBook)) {
+            WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
+            if (signBookNames != null && signBookNames.length > 0) {
+                workflowService.addRecipientsToWorkflowStep(Arrays.asList(signBookNames), workflowStep, user);
+            }
+        } else {
+            logger.warn(user.getEppn() + " try to move " + signBook.getId() + " without rights");
+        }
+        return "redirect:/user/signbooks/" + id + "/?form";
+    }
 
     @DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
     public String removeStepRecipient(@PathVariable("id") Long id,

@@ -92,11 +92,7 @@ public class SignBookService {
             signBook.setCreateBy(user.getEppn());
             signBook.setCreateDate(new Date());
             signBook.setExternal(external);
-            Document model = null;
             signBookRepository.save(signBook);
-            if (model != null) {
-                model.setParentId(signBook.getId());
-            }
             return signBook;
         } else {
             throw new EsupSignatureException("Un parapheur porte déjà ce nom");

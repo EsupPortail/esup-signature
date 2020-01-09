@@ -111,16 +111,17 @@ public class WsController {
         user.setIp(request.getRemoteAddr());
         SignBook signBook = signBookService.getSignBook(name, user);
         SignRequest signRequest;
-        if (signBook.getSignRequests().size() > 0) {
-            signRequest = signBook.getSignRequests().get(0);
-        } else {
+//        if (signBook.getSignRequests().size() > 0) {
+//            signRequest = signBook.getSignRequests().get(0);
+//        } else {
             signRequest = new SignRequest();
             signRequest.setTitle(signBook.getName());
             signRequest.setCreateBy(user.getEppn());
             signRequest.setCreateDate(new Date());
             signRequest.setParentSignBook(signBook);
             signRequest.setStatus(SignRequestStatus.pending);
-        }
+            signRequestRepository.save(signRequest);
+//        }
         List<Document> documents = documentService.createDocuments(multipartFiles);
         signRequestService.addOriginalDocuments(signRequest, documents);
         signRequestRepository.save(signRequest);
@@ -136,8 +137,9 @@ public class WsController {
     public Object addDocumentToNewSignRequest(@PathVariable("name") String name,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest request) throws EsupSignatureException {
         logger.info("start add documents");
-        SignBook signBook = signBookRepository.findByName(name).get(0);
-        User user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
+        User user = userService.getUserFromAuthentication();
+        SignBook signBook = signBookService.getSignBook(name, user);
+        user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
         user.setIp(request.getRemoteAddr());
         for (MultipartFile multipartFile : multipartFiles) {
             Document document = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());

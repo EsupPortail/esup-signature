@@ -86,6 +86,7 @@
         </div>
     </div>
 </main>
+
 <div class="modal fade" id="fastSignRequestModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -113,10 +114,68 @@
                             Suivant <i class="fas fa-angle-right"></i>
                         </button>
                     </div>
+                </div>
             </form>
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="addStep" tabindex="-1" role="dialog" aria-labelledby="addStep" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/signbooks/add-step/' + ${id}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ajouter une étape</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" id="_signType_div_id">
+                        <label for="_signType_id"> <strong> Type de signature
+                            par défaut
+                            <button data-target="#collapseHelpSignType"
+                                    data-toggle="collapse" type="button"
+                                    class="btn btn-sm btn-info">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                        </strong>
+                            <div class="collapse" id="collapseHelpSignType">
+                                <div class="alert alert-info">
+                                    <ul>
+                                        <li>PAdES/XAdES : s'appuie sur le certificat P12
+                                            uploader au niveau de vos paramètres
+                                        </li>
+                                        <li>Apposition de la signature : ajoute simplement
+                                            l'image de votre signature sur un PDF à l'endroit voulu
+                                        </li>
+                                        <li>PAdES/XAdES avec NexU : s'appuie l'application NexU
+                                            qui permet l'utilisation d'un certificat matériel
+                                        </li>
+                                        <li>Confirmation de lecture : permet de valider la
+                                            lecture d'un document
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </label>
+                        <div class="col-lg-8">
+                            <select id="_signType_id" name="signType" class="form-control" size="1">
+                                <th:block th:each="signType : ${signTypes}">
+                                    <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-paper-plane" aria-hidden="true"></i> Envoyer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

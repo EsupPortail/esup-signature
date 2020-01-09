@@ -207,7 +207,6 @@ public class SignRequestController {
             model.addAttribute("baseUrl", baseUrl);
             model.addAttribute("nexuVersion", nexuVersion);
             model.addAttribute("nexuUrl", nexuUrl);
-
             return "user/signrequests/update";
         } else {
             logger.warn(user.getEppn() + " attempted to access signRequest " + id + " without write access");

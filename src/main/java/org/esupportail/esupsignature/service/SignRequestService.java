@@ -163,14 +163,14 @@ public class SignRequestService {
 
 	public void sign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException, IOException {
 		step = "Demarrage de la signature";
-		Document signedFile;
+		Document signedFile = null;
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
 		SignType signType = signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType();
 		if (signType.equals(SignType.visa)) {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
 				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, user, addDate);
 			} else {
-				signedFile = toSignDocuments.get(0);
+				signedFile = new Document();
 			}
 		} else if(signType.equals(SignType.pdfImageStamp)) {
 			signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, user, addDate);
@@ -179,8 +179,10 @@ public class SignRequestService {
 		}
 		
 		if (signedFile != null) {
-			signRequest.getSignedDocuments().add(signedFile);
-			signedFile.setParentId(signRequest.getId());
+			if(signedFile.getFileName() != null) {
+				signRequest.getSignedDocuments().add(signedFile);
+				signedFile.setParentId(signRequest.getId());
+			}
 			if(signType.equals(SignType.visa)) {
 				updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", signRequest.getComment());
 			} else {

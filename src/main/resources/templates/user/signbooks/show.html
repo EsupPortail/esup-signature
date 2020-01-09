@@ -13,6 +13,7 @@
                 <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
+                <th:block th:if="${documentType == 'pdf'}">
                 <div class="alert alert-secondary col-12 mb-1 p-2">
                     <label class="control-label">Navigation : </label>
                     <span>page <span id="page_num"></span> / <span id="page_count"></span></span>
@@ -36,6 +37,7 @@
                     <button id="rotateleft" class="btn btn-light btn-outline-dark"><i class="fas fa-undo"></i></button>
                     <button id="rotateright" class="btn btn-light btn-outline-dark"><i class="fas fa-redo"></i></button>
                 </div>
+                </th:block>
                 <div class="alert alert-success col-3 col-md-12 mb-1 p-1" th:classappend="${signable != 'ok'} ? 'd-none' ">
                     <div id="signmode" class="form-check">
                         <label>Activer le mode signature</label>
@@ -69,6 +71,9 @@
                 </th:block>
             </nav>
             <div id="workspace" class="alert alert-secondary fadein" style="transition: all 0.3s;">
+                <div class="collapse">
+                <div th:replace="user/signbooks/cards/stepscard :: stepscard"></div>
+                </div>
                 <div class="row">
                     <div class="col-lg-9">
                         <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post" th:if="${documentType == 'pdf'}">
@@ -444,15 +449,30 @@
                                 /*]]>*/
                             </script>
                         </form>
-                        <a class="btn btn-primary" th:href="'/user/documents/getfile/' + ${documentId}" target="_blank"><i class="fas fa-download"></i> Recupérer le document</a>
+<!--                        <ul class="list-group">-->
+<!--                            <li class="list-group-item list-group-item-primary">Liste des documents originaux</li>-->
+<!--                            <th:block th:each="document : ${signRequest.originalDocuments}">-->
+<!--                            <li class="list-group-item">-->
+<!--                                <a th:href="'/user/documents/getfile/' + ${document.id}" target="_blank"><i class="fas fa-file"></i> <span th:text="${document.fileName}"></span></a>-->
+<!--                            </li>-->
+<!--                        </th:block>-->
+<!--                            <br/>-->
+<!--                        </ul>-->
+<!--                        <ul class="list-group">-->
+<!--                            <li class="list-group-item list-group-item-success">Documents signés</li>-->
+<!--                            <th:block th:each="document : ${signRequest.signedDocuments}">-->
+<!--                                <li class="list-group-item">-->
+<!--                                    <a th:href="'/user/documents/getfile/' + ${document.id}" target="_blank"><i class="fas fa-file"></i> <span th:text="${document.fileName}"></span></a>-->
+<!--                                </li>-->
+<!--                            </th:block>-->
+<!--                        </ul>-->
                     </div>
                     <div class="col-lg-3">
                         <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
                         <th:block th:if="${documentType != 'pdf'}">
-
                             <div id="signtools" style="display: none; opacity : 0;transition: all 0.3s;" >
+                                <input th:classappend="${signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'certSign' && signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
                                 <button class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
-                                    <input th:classappend="${signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'certSign' && signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
                                     <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                                 </button>
                             </div>
@@ -492,7 +512,7 @@
                             <div class="alert alert-warning">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
                             <div class="alert alert-warning clearfix">
                             <th:block th:each="postit : ${postits}">
-                            <div th:id="'log' + ${postit.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
+                            <div th:id="'postit' + ${postit.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
                                  th:onmouseover="'$(\'#' + ${postit.id} + '\').show(); queueRenderPage(' + ${postit.pageNumber} + ')'" th:onmouseout="'$(\'#' + ${postit.id} + '\').hide()'">
                                 <b th:text="${@userService.getNameFromEppn(postit.eppn)}"></b>
                                 <span th:text="${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></span>
