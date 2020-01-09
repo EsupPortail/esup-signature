@@ -25,59 +25,18 @@
                 <div th:if="${signRequest.status.name() == 'exported'}">
                     <a class="btn btn-success col-12 mb-1 text-left" th:href="'/ws/get-last-file?name=' + ${signRequest.token}"><i class="fa fa-download"></i> Télécharger le document signé</a>
                 </div>
-                <div th:if="${signRequest.status.name() == 'pending'}">
-                    <div th:if="${signable == 'ok'}">
-                        <button title="Refuser" type="button" class="btn btn-danger col-12 mb-1 text-left" data-toggle="modal" data-target="#refuseModal">
-                            <i class="fas fa-ban"></i><span class="sidebar-label"> Refuser</span>
-                        </button>
-                        <a title="Signer" class="btn btn-success col-12 mb-1 text-left" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.token}">
-                            <i class="fas fa-signature"></i><span class="sidebar-label"> Signer</span>
-                        </a>
-                    </div>
-                </div>
                 <div th:if="${user.eppn == signRequest.createBy}">
-                    <div th:switch="${signRequest.status.name()}">
-                        <div th:case="'signed'">
-                            <dl class="display-group border-bottom m-0">
-                                <dt class="col-lg-5">
-                                    Terminer
-                                    <button data-target="#collapseHelp1" data-toggle="collapse"
-                                            type="button" class="btn btn-sm btn-info">
-                                        <span class="fas fa-info-circle"></span>
-                                    </button>
-                                    <div class="collapse" id="collapseHelp1">
-                                        <div class="alert alert-info">
-                                            <small> La cloture de la demande permet de liberer
-                                                le parapheur. La demande sera supprimée dans un délai
-                                                défini par l'administrateur. </small>
-                                        </div>
-                                    </div>
-                                </dt>
-                                <dd class="col-lg-7">
-                                    <form class="form-group"
-                                          th:action="'/user/signrequests/complete/' +  ${id}"
-                                          method="get">
-                                        <div class="input-group">
-                                            <button type="submit" class="btn btn-warning">
-                                                <i class="fas fa-flag-checkered"> </i> Terminer
-                                            </button>
-                                        </div>
-                                    </form>
-                                </dd>
-                            </dl>
-                        </div>
-                        <th:block th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked'}">
-                            <a class="col-12 btn btn-success mb-1 text-left" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
-                                <i class="fas fa-download"></i><span class="sidebar-label"> Enregistrer le document signé sous</span>
-                            </a>
-                            <a title="Export SEDA" class="col-12 btn btn-success mb-1 text-left" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
-                                <i class="fa fa-file-archive"></i><span class="sidebar-label"> Export SEDA</span>
-                            </a>
-                            <a class="col-12 btn btn-success mb-1 text-left" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
-                                <i class="fas fa-shield-alt "></i><span class="sidebar-label"> Contrôler le document</span>
-                            </a>
-                        </th:block>
-                    </div>
+                    <th:block th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked'}">
+                        <a class="col-12 btn btn-success mb-1 text-left" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
+                            <i class="fas fa-download"></i><span class="sidebar-label"> Enregistrer le document signé sous</span>
+                        </a>
+                        <a title="Export SEDA" class="col-12 btn btn-success mb-1 text-left" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
+                            <i class="fa fa-file-archive"></i><span class="sidebar-label"> Export SEDA</span>
+                        </a>
+                        <a class="col-12 btn btn-success mb-1 text-left" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+                            <i class="fas fa-shield-alt "></i><span class="sidebar-label"> Contrôler le document</span>
+                        </a>
+                    </th:block>
                 </div>
                 <a class="btn btn-light col-12 mb-1 text-left" href="/">
                     <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>

@@ -106,10 +106,10 @@
                             <td class="none"><p class="truncate" th:title="${signRequest.title}" th:text="${signRequest.title}"></p></td>
                             <td class="none"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                             <td class="none"><span th:text="${signRequest.createBy}"></span></td>
-                            <td class="d-none d-lg-table-cell">
+                            <td class="none">
                                 <table class="table table-sm">
                                     <tbody>
-                                    <th:block th:each="signBooksLabel : ${signRequest.currentWorkflowStep.recipientsNames}">
+                                    <th:block th:each="signBooksLabel : ${signRequest.parentSignBook.currentWorkflowStep.recipientsNames}">
                                         <tr>
                                             <td width="100%" th:text="${signBooksLabel.key}"></td>
                                             <td align="center">

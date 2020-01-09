@@ -170,10 +170,11 @@ public class SignRequest {
     }
 
     public SignRequestParams getCurrentSignRequestParams() {
+   	    //TODO move to signrequestservice
    	    if(signRequestParams.size() > getParentSignBook().getCurrentWorkflowStepNumber() - 1) {
             return signRequestParams.get(getParentSignBook().getCurrentWorkflowStepNumber() - 1);
         } else {
-   	        return new SignRequestParams();
+   	        return signRequestParams.get(0);
         }
     }
 }

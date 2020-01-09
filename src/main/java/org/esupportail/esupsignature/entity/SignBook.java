@@ -226,6 +226,7 @@ public class SignBook {
     }
 
     public SignRequestStatus getStatus() {
+        //TODO move to signbookservice
         for(SignRequest signRequest : signRequests) {
             if(signRequest.getStatus().equals(SignRequestStatus.refused)) {
                 return SignRequestStatus.refused;
@@ -238,6 +239,7 @@ public class SignBook {
     }
 
     public WorkflowStep getCurrentWorkflowStep() {
+        //TODO move to signbookservice
         if(workflowSteps.size() >= currentWorkflowStepNumber) {
             return workflowSteps.get(currentWorkflowStepNumber - 1);
         } else {

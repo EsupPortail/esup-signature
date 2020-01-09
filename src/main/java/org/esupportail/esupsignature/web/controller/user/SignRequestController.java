@@ -373,7 +373,7 @@ public class SignRequestController {
                     String ref = request.getHeader("referer");
                     model.addAttribute("referer", ref);
                 }
-                return "user/signrequests/sign-light";
+                return "user/signrequests/sign";
             } else {
                 return "user/signrequests/sign-end";
             }

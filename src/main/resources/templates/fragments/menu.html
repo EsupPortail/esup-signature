@@ -17,12 +17,12 @@
 			<th:block th:if="${#authorization != null}">
 				<li class="nav-item" sec:authorize="hasRole('ROLE_MANAGER')"></li>
 				<li class="nav-item dropdown">
-					<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<a th:class="'nav-link dropdown-toggle ' + ${managerMenu}" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 						Gestionnaire
 					</a>
 					<div class="dropdown-menu" aria-labelledby="navbarDropdown">
-						<a class="nav-link" title="Parapheurs" href="/manager/signbooks" th:class="'nav-link ' + ${managerMenu}">Parapheurs</a>
-						<a class="nav-link" title="Circuits de visas" href="/manager/workflows" th:class="'nav-link ' + ${managerMenu}">Circuits de visas</a>
+						<a title="Parapheurs" href="/manager/signbooks" class="dropdown-item">Parapheurs</a>
+						<a title="Circuits de visas" href="/manager/workflows" class="dropdown-item">Circuits de visas</a>
 					</div>
 				</li>
 				<li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')"><a title="Admin" href="/admin/signrequests" th:class="'nav-link ' + ${adminMenu}">Admin</a></li>

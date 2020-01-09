@@ -50,9 +50,9 @@
                 <button class="btn btn-danger col-3 col-md-12 mb-1 text-left" th:classappend="${signable != 'ok'} ? 'd-none'" onclick="toggleSignRefuseMode();">
                     <i class="fas fa-ban"></i><span class="sidebar-label"> Refuser</span>
                 </button>
-                <a th:unless="${referer != null}" title="Abandonner" class="btn btn-light col-12 mb-1 text-left" value="Retour" href="/user/signbooks">
+                <button th:unless="${referer != null}" title="Abandonner" class="btn btn-light col-12 mb-1 text-left" value="Retour" onclick="window.history.back();">
                     <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
-                </a>
+                </button>
             </div>
         </nav>
         <div id="content" class="content">
@@ -487,6 +487,9 @@
                                     <span class="slider round"></span>
                                 </label>
                             </div>
+
+                            <input th:if="${signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'pdfImageStamp'}" class="d-none" type="checkbox" name="visual" id="_visual" checked/>
+
                             <div class="btn btn-light col-3 col-md-12 m-1">
                                 <label class="control-label" for="_addDate">Afficher la date</label>
                                 <br/>

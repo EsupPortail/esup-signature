@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div th:fragment="statusdetails">
 	<div th:if="${user.eppn == signRequest.createBy}">
 		<div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
@@ -26,10 +27,16 @@
 	<div th:if="${signRequest.status.name() == 'pending'}">
 		<div class="alert alert-primary mb-1">
 			<h5 class="alert-heading">
-				Le document est en cours de signature
+				Le document est en cours de signature par :
 			</h5>
 			<div th:if="${signable == 'ok'}">
 				Vous devez signer cette demande
+			</div>
+			<div th:if="${signable != 'ok'}">
+				<th:block th:each="recipient : ${signRequest.parentSignBook.currentWorkflowStep.recipientsNames}">
+					<li th:text="${recipient.key}"></li>
+				</th:block>
+
 			</div>
 		</div>
 	</div>
