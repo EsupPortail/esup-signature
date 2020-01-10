@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.*;
@@ -337,7 +338,7 @@ public class SignRequestController {
                         model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
                         model.addAttribute("signWidth", 100);
                         model.addAttribute("signHeight", 75);
-                        if(signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.pdfImageStamp)
+                        if(signRequestService.getCurrentSignType(signRequest).equals(SignType.pdfImageStamp)
                             && user.getSignImage() != null
                             && user.getSignImage().getSize() > 0) {
                             model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
@@ -345,7 +346,7 @@ public class SignRequestController {
                             model.addAttribute("signWidth", size[0]);
                             model.addAttribute("signHeight", size[1]);
                         }
-                        if (signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.certSign) && user.getKeystore() == null) {
+                        if (signRequestService.getCurrentSignType(signRequest).equals(SignType.certSign) && user.getKeystore() == null) {
                             paramsOk = false;
                         }
                     }
@@ -361,7 +362,6 @@ public class SignRequestController {
                 if (user.getKeystore() != null) {
                     model.addAttribute("keystore", user.getKeystore().getFileName());
                 }
-                workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
                 model.addAttribute("signRequest", signRequest);
                 if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                     model.addAttribute("signable", "ok");
@@ -384,7 +384,7 @@ public class SignRequestController {
     }
 
     @RequestMapping(value = "/fast-sign-request", method = RequestMethod.POST)
-    public String createSignRequest(@RequestParam("multipartFile") MultipartFile multipartFile, @RequestParam("signType") SignType signType) {
+    public String createSignRequest(@RequestParam("multipartFile") MultipartFile multipartFile, @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
         logger.info("création rapide demande de signature");
         User user = userService.getUserFromAuthentication();
         if (multipartFile != null) {
@@ -424,7 +424,7 @@ public class SignRequestController {
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserSignRights(user, signRequest)) {
-            if (signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.nexuSign)) {
+            if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
                 return "redirect:/user/nexu-sign/" + id + "?referer=" + referer;
             }
             if (signPageNumber != null && xPos != null && yPos != null) {
@@ -605,7 +605,7 @@ public class SignRequestController {
     @RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
     public String pending(@PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
-                          HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) throws IOException {
+                          HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) throws IOException, EsupSignatureIOException {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         //TODO controle signType
@@ -640,18 +640,12 @@ public class SignRequestController {
 
     @RequestMapping(value = "/scan-pdf-sign/{id}", method = RequestMethod.GET)
     public String scanPdfSign(@PathVariable("id") Long id,
-                              RedirectAttributes redirectAttrs, HttpServletRequest request) throws IOException {
+                              RedirectAttributes redirectAttrs, HttpServletRequest request) throws IOException, EsupSignatureIOException {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signRequest.getParentSignBook().getCurrentWorkflowStepNumber() == 1 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
-            try {
-                int nbSignFound = signRequestService.scanSignatureFields(signRequest, PDDocument.load(signRequest.getOriginalDocuments().get(0).getInputStream()));
-                redirectAttrs.addFlashAttribute("messageInfo", "Scan terminé, " + nbSignFound + " signature(s) trouvée(s)");
-            } catch (IOException e) {
-                logger.error("unable to scan the pdf document", e);
-            }
-        }
+        int nbSignFound = signRequestService.scanSignatureFields(signRequest);
+        redirectAttrs.addFlashAttribute("messageInfo", "Scan terminé, " + nbSignFound + " signature(s) trouvée(s)");
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 

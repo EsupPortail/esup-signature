@@ -74,9 +74,8 @@ public class PdfService {
     @Resource
     private FileService fileService;
 
-    public Document stampImage(Document toSignFile, SignRequest signRequest, User user, boolean addDate) {
+    public Document stampImage(Document toSignFile, SignRequest signRequest, SignType signType,  User user, boolean addDate) {
         SignRequestParams params = signRequest.getCurrentSignRequestParams();
-        SignType signType = signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType();
         PdfParameters pdfParameters;
         try {
             PDDocument pdDocument = PDDocument.load(toSignFile.getInputStream());

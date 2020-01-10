@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
@@ -207,11 +208,11 @@ public class WsController {
 
     @ResponseBody
     @RequestMapping(value = "/pending-sign-book", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public String pendingSignRequest(@RequestParam String name) throws IOException {
+    public String pendingSignRequest(@RequestParam String name) throws EsupSignatureIOException {
         SignBook signBook = signBookRepository.findByName(name).get(0);
         for (SignRequest signRequest : signBook.getSignRequests()) {
             if(signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().equals("application/pdf")) {
-                signRequestService.scanSignatureFields(signRequest, PDDocument.load(signRequest.getOriginalDocuments().get(0).getInputStream()));
+                signRequestService.scanSignatureFields(signRequest);
             }
         }
         signBookService.pendingSignRequest(signBook, userService.getSystemUser());
@@ -360,7 +361,7 @@ public class WsController {
                 jsonSignInfoMessage.setStatus(signRequest.getStatus().toString());
                 if(signRequest.getParentSignBook().getWorkflowSteps().size() > 0 ) {
                     workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
-                    for (Long userId : signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().keySet()) {
+                    for (Long userId : signRequestService.getCurrentRecipients(signRequest).keySet()) {
                         User user = userRepository.findById(userId).get();
                         jsonSignInfoMessage.getNextRecipientNames().add(user.getName());
                         jsonSignInfoMessage.getNextRecipientEppns().add(user.getEppn());

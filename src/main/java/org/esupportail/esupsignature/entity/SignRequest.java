@@ -180,28 +180,10 @@ public class SignRequest {
 
     public SignRequestParams getCurrentSignRequestParams() {
    	    //TODO move to signrequestservice
-   	    if(signRequestParams.size() > getParentSignBook().getCurrentWorkflowStepNumber() - 1) {
+   	    if(getParentSignBook() != null && signRequestParams.size() > getParentSignBook().getCurrentWorkflowStepNumber() - 1) {
             return signRequestParams.get(getParentSignBook().getCurrentWorkflowStepNumber() - 1);
         } else {
    	        return signRequestParams.get(0);
-        }
-    }
-
-    public Map<String, Boolean> getCurrentRecipientsNames() {
-        //TODO move to signrequestservice
-        if(getParentSignBook() != null) {
-            return getParentSignBook().getCurrentWorkflowStep().getRecipientsNames();
-        } else {
-            return getRecipientsNames();
-        }
-    }
-
-    public Map<Long, Boolean> getCurrentRecipients() {
-        //TODO move to signrequestservice
-        if(getParentSignBook() != null) {
-            return getParentSignBook().getCurrentWorkflowStep().getRecipients();
-        } else {
-            return getRecipients();
         }
     }
 

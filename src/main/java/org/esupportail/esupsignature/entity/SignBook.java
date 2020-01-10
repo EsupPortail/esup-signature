@@ -238,13 +238,4 @@ public class SignBook {
         return SignRequestStatus.completed;
     }
 
-    public WorkflowStep getCurrentWorkflowStep() {
-        //TODO move to signbookservice
-        if(workflowSteps.size() >= currentWorkflowStepNumber) {
-            return workflowSteps.get(currentWorkflowStepNumber - 1);
-        } else {
-            return new WorkflowStep();
-        }
-    }
-    
 }

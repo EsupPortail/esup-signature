@@ -81,7 +81,7 @@
                             </canvas>
                             <canvas th:if="${signable == 'ok'}" title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" onmouseup="action();" ontouchend="action();" ontouchmove="point(event);" onmousemove="point(event);" class="drop-shadows ">
                             </canvas>
-                            <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'visa'}">
+                            <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && @signRequestService.getCurrentSignType(signRequest).name() != 'visa'}">
                                 <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();"
                                      ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
                                      onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
@@ -90,7 +90,7 @@
                                     <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
                                 </div>
                             </th:block>
-                            <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'visa'}">
+                            <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && @signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
                                 <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();"
                                      ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
                                      onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
@@ -471,7 +471,7 @@
                         <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
                         <th:block th:if="${documentType != 'pdf'}">
                             <div id="signtools" style="display: none; opacity : 0;transition: all 0.3s;" >
-                                <input th:classappend="${signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'certSign' && signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
+                                <input th:classappend="${@signRequestService.getCurrentSignType(signRequest).name() != 'certSign' && @signRequestService.getCurrentSignType(signRequest).name() != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
                                 <button class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
                                     <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                                 </button>
@@ -479,7 +479,7 @@
 
                         </th:block>
                         <div id="signtools" style="display: none; opacity : 0;transition: all 0.3s;" th:if="${documentType == 'pdf'}">
-                            <div class="btn btn-light col-3 col-md-12 m-1" th:if="${signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'pdfImageStamp'}">
+                            <div class="btn btn-light col-3 col-md-12 m-1" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}">
                                 <label class="control-label" for="_visual" >Insérer un visuel</label>
                                 <br/>
                                 <label class="switch">
@@ -488,7 +488,7 @@
                                 </label>
                             </div>
 
-                            <input th:if="${signRequest.parentSignBook.currentWorkflowStep.signType.name() == 'pdfImageStamp'}" class="d-none" type="checkbox" name="visual" id="_visual" checked/>
+                            <input th:if="${@signRequestService.getCurrentSignType(signRequest).name() == 'pdfImageStamp'}" class="d-none" type="checkbox" name="visual" id="_visual" checked/>
 
                             <div class="btn btn-light col-3 col-md-12 m-1">
                                 <label class="control-label" for="_addDate">Afficher la date</label>
@@ -498,7 +498,7 @@
                                     <span class="slider round"></span>
                                 </label>
                             </div>
-                            <input th:classappend="${signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'certSign' && signRequest.parentSignBook.currentWorkflowStep.signType.name() != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
+                            <input th:classappend="${@signRequestService.getCurrentSignType(signRequest).name() != 'certSign' && @signRequestService.getCurrentSignType(signRequest).name() != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
                             <button class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
                                 <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                             </button>

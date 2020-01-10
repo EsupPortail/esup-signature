@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
@@ -185,7 +186,7 @@ public class SignBookController {
             }
             if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) && signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                 model.addAttribute("signable", "ok");
-                if(!signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.visa)
+                if(!signRequestService.getCurrentSignType(signRequest).equals(SignType.visa)
                         && user.getSignImage() != null
                         && user.getSignImage().getSize() > 0) {
                     model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
@@ -225,9 +226,9 @@ public class SignBookController {
                     setPassword(password);
                 }
                 try {
-                    if (signBook.getCurrentWorkflowStep().getSignType().equals(SignType.visa)) {
+                    if (signBookService.getCurrentWorkflowStep(signBook).getSignType().equals(SignType.visa)) {
                         signRequestService.updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", comment);
-                    } else if (signBook.getCurrentWorkflowStep().getSignType().equals(SignType.nexuSign)) {
+                    } else if (signBookService.getCurrentWorkflowStep(signBook).getSignType().equals(SignType.nexuSign)) {
                         logger.error("no multiple nexu sign");
                         progress = "not_autorized";
                     } else {
@@ -508,10 +509,10 @@ public class SignBookController {
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if (signBook.getCurrentWorkflowStepNumber() == 1 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
                 try {
-                    int nbSignFound = signRequestService.scanSignatureFields(signRequest, PDDocument.load(signRequest.getOriginalDocuments().get(0).getInputStream()));
+                    int nbSignFound = signRequestService.scanSignatureFields(signRequest);
                     redirectAttrs.addFlashAttribute("messageInfo", "Scan terminé, " + nbSignFound + " signature(s) trouvée(s)");
-                } catch (IOException e) {
-                    logger.error("unable to scan the pdf document", e);
+                } catch (EsupSignatureIOException e) {
+                    logger.error("unable to scan the pdf document from " + signRequest.getId(), e);
                 }
             }
         }

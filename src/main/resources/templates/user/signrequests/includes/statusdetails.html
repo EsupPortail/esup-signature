@@ -33,7 +33,7 @@
 				Vous devez signer cette demande
 			</div>
 			<div th:if="${signable != 'ok'}">
-				<th:block th:each="recipient : ${signRequest.currentRecipientsNames}">
+				<th:block th:each="recipient : ${@signRequestService.getCurrentRecipientsNames(signRequest)}">
 					<li th:text="${recipient.key}"></li>
 				</th:block>
 

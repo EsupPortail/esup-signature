@@ -123,8 +123,8 @@ public class SignBookService {
     }
 
     public boolean isUserInWorkflow(SignBook signBook, User user) {
-        if (signBook.getCurrentWorkflowStep() != null && signBook.getCurrentWorkflowStep().getRecipients().size() > 0) {
-            for (Map.Entry<Long, Boolean> userId : signBook.getCurrentWorkflowStep().getRecipients().entrySet()) {
+        if (getCurrentWorkflowStep(signBook) != null && getCurrentWorkflowStep(signBook).getRecipients().size() > 0) {
+            for (Map.Entry<Long, Boolean> userId : getCurrentWorkflowStep(signBook).getRecipients().entrySet()) {
                 if (userId.getKey().equals(user.getId())) {
                     return true;
                 }
@@ -248,16 +248,16 @@ public class SignBookService {
     }
 
     public boolean isSignBookCompleted(SignBook signBook) {
-        if (signBook.getCurrentWorkflowStep().getRecipients() != null) {
-            for (Map.Entry<Long, Boolean> userId : signBook.getCurrentWorkflowStep().getRecipients().entrySet()) {
-                if (!signBook.getCurrentWorkflowStep().getRecipients().get(userId.getKey()) && signBook.getCurrentWorkflowStep().isAllSignToComplete()) {
+        if (getCurrentWorkflowStep(signBook).getRecipients() != null) {
+            for (Map.Entry<Long, Boolean> userId : getCurrentWorkflowStep(signBook).getRecipients().entrySet()) {
+                if (!getCurrentWorkflowStep(signBook).getRecipients().get(userId.getKey()) && getCurrentWorkflowStep(signBook).isAllSignToComplete()) {
                     return false;
                 }
-                if (signBook.getCurrentWorkflowStep().getRecipients().get(userId.getKey()) && !signBook.getCurrentWorkflowStep().isAllSignToComplete()) {
+                if (getCurrentWorkflowStep(signBook).getRecipients().get(userId.getKey()) && !getCurrentWorkflowStep(signBook).isAllSignToComplete()) {
                     return true;
                 }
             }
-            if (signBook.getCurrentWorkflowStep().isAllSignToComplete()) {
+            if (getCurrentWorkflowStep(signBook).isAllSignToComplete()) {
                 return true;
             } else {
                 return false;
@@ -314,7 +314,7 @@ public class SignBookService {
 
     public boolean checkUserSignRights(User user, SignBook signBook) {
         if ((signBook.getStatus().equals(SignRequestStatus.pending) || signBook.getStatus().equals(SignRequestStatus.draft))
-                && signBook.getCurrentWorkflowStep().getRecipients().containsKey(user.getId()) &&  !signBook.getCurrentWorkflowStep().getRecipients().get(user.getId())) {
+                && getCurrentWorkflowStep(signBook).getRecipients().containsKey(user.getId()) &&  !getCurrentWorkflowStep(signBook).getRecipients().get(user.getId())) {
             return true;
         } else {
             return false;
@@ -327,7 +327,7 @@ public class SignBookService {
             for(SignRequest signRequest : signBook.getSignRequests()) {
                 signRequest.setStatus(SignRequestStatus.pending);
             }
-            for (Long recipientId : signBook.getCurrentWorkflowStep().getRecipients().keySet()) {
+            for (Long recipientId : getCurrentWorkflowStep(signBook).getRecipients().keySet()) {
                 User recipientUser = userRepository.findById(recipientId).get();
                 if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(User.EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
                     userService.sendEmailAlert(recipientUser);
@@ -364,6 +364,14 @@ public class SignBookService {
             log.setFinalStatus(signBook.getStatus().toString());
         }
         logRepository.save(log);
+    }
+
+    public WorkflowStep getCurrentWorkflowStep(SignBook signBook) {
+        if(signBook.getWorkflowSteps().size() >= signBook.getCurrentWorkflowStepNumber()) {
+            return signBook.getWorkflowSteps().get(signBook.getCurrentWorkflowStepNumber() - 1);
+        } else {
+            return new WorkflowStep();
+        }
     }
 
 }

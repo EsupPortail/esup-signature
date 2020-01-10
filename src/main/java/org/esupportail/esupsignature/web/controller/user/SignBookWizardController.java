@@ -4,6 +4,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
@@ -87,12 +88,12 @@ public class SignBookWizardController {
     }
 
     @PostMapping(value = "/wiz3", produces = "text/html")
-    public String wiz3(@RequestParam("name") String name, Model model) throws EsupSignatureException, IOException {
+    public String wiz3(@RequestParam("name") String name, Model model) throws EsupSignatureException, IOException, EsupSignatureIOException {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookService.getSignBook(name, user);
         for (SignRequest signRequest : signBook.getSignRequests()) {
             if(signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().equals("application/pdf")) {
-                signRequestService.scanSignatureFields(signRequest, PDDocument.load(signRequest.getOriginalDocuments().get(0).getInputStream()));
+                signRequestService.scanSignatureFields(signRequest);
             }
         }
         model.addAttribute("signBook", signBook);
@@ -180,7 +181,7 @@ public class SignBookWizardController {
         SignBook signBook = signBookRepository.findById(id).get();
         model.addAttribute("signBook", signBook);
         boolean mySign = false;
-        if(signBook.getCurrentWorkflowStep().getRecipients().containsKey(user.getId())) {
+        if(signBookService.getCurrentWorkflowStep(signBook).getRecipients().containsKey(user.getId())) {
             mySign = true;
         }
         signBookService.pendingSignRequest(signBook, user);

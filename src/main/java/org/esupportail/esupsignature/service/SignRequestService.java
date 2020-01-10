@@ -104,7 +104,7 @@ public class SignRequestService implements EvaluationContextExtension {
 		for(WorkflowStep workflowStep : workflowSteps) {
 			if(!workflowStep.getRecipients().get(user.getId()) && signBookRepository.findByWorkflowStepsContains(workflowStep).size() > 0) {
 				SignBook signBook = signBookRepository.findByWorkflowStepsContains(workflowStep).get(0);
-				if (signBook.getCurrentWorkflowStep().equals(workflowStep) && signBook.getStatus().equals(SignRequestStatus.pending)) {
+				if (signBookService.getCurrentWorkflowStep(signBook).equals(workflowStep) && signBook.getStatus().equals(SignRequestStatus.pending)) {
 					signRequestsToSign.addAll(signBook.getSignRequests());
 				}
 			}
@@ -170,15 +170,15 @@ public class SignRequestService implements EvaluationContextExtension {
 		step = "Demarrage de la signature";
 		Document signedFile = null;
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
-		SignType signType = signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType();
+		SignType signType = getCurrentSignType(signRequest);
 		if (signType.equals(SignType.visa)) {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, user, addDate);
+				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, getCurrentSignType(signRequest), user, addDate);
 			} else {
 				signedFile = new Document();
 			}
 		} else if(signType.equals(SignType.pdfImageStamp)) {
-			signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, user, addDate);
+			signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, getCurrentSignType(signRequest), user, addDate);
 		} else {
 			signedFile = certSign(signRequest, user, password, addDate, visual);
 		}
@@ -281,7 +281,7 @@ public class SignRequestService implements EvaluationContextExtension {
 	
 	public void addSignedFile(SignRequest signRequest, InputStream signedInputStream, String fileName, String mimeType, User user) {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-		Document document = documentService.createDocument(signedInputStream, signRequest.getTitle() + "_" + signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType() + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(fileName), mimeType);
+		Document document = documentService.createDocument(signedInputStream, signRequest.getTitle() + "_" + getCurrentSignType(signRequest) + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(fileName), mimeType);
 		signRequest.getSignedDocuments().add(document);
 		document.setParentId(signRequest.getId());
 	}
@@ -289,7 +289,7 @@ public class SignRequestService implements EvaluationContextExtension {
 
 	public void applyEndOfStepRules(SignRequest signRequest, User user) {
 		if(signBookService.isStepDone(signRequest.getParentSignBook())) {
-			signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().put(user.getId(), true);
+			getCurrentRecipients(signRequest).put(user.getId(), true);
 			signBookService.nextWorkFlowStep(signRequest.getParentSignBook(), user);
 			if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed)) {
 				mailService.sendCompletedMail(signRequest.getParentSignBook());
@@ -304,7 +304,7 @@ public class SignRequestService implements EvaluationContextExtension {
 //
 //	public void applyEndOfStepRules(SignRequest signRequest, User user) throws EsupSignatureException {
 //		//SignBook recipientSignBook = signBookService.getSignBookBySignRequestAndUser(signRequest, user);
-//		SignType signType = signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType();
+//		SignType signType = getCurrentSignType(signRequest);
 //		signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().put(user.getId(), true);
 //		if (isSignRequestCompleted(signRequest)) {
 //			if(signType.equals(SignType.visa)) {
@@ -344,8 +344,9 @@ public class SignRequestService implements EvaluationContextExtension {
 		signRequestRepository.save(signRequest);
 	}
 
-	public void pendingSignRequest(SignRequest signRequest, User user) {
+	public void pendingSignRequest(SignRequest signRequest, User user) throws EsupSignatureIOException {
 		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
+			scanSignatureFields(signRequest);
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 			for (Long recipientId : signRequest.getRecipients().keySet()) {
 				User recipientUser = userRepository.findById(recipientId).get();
@@ -372,13 +373,23 @@ public class SignRequestService implements EvaluationContextExtension {
 //		}
 //	}
 
-	public int scanSignatureFields(SignRequest signRequest, PDDocument pdDocument) {
-		List<SignRequestParams> signRequestParamsList = pdfService.pdSignatureFieldsToSignRequestParams(pdDocument);
-		for(SignRequestParams signRequestParams : signRequestParamsList) {
-			signRequestParamsRepository.save(signRequestParams);
+	public int scanSignatureFields(SignRequest signRequest) throws EsupSignatureIOException {
+		int nbSignFound = 0;
+		try {
+			PDDocument pdDocument = PDDocument.load(signRequest.getOriginalDocuments().get(0).getInputStream());
+			if (signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
+				List<SignRequestParams> signRequestParamsList = pdfService.pdSignatureFieldsToSignRequestParams(pdDocument);
+				for(SignRequestParams signRequestParams : signRequestParamsList) {
+					signRequestParamsRepository.save(signRequestParams);
+				}
+				signRequest.getSignRequestParams().addAll(signRequestParamsList);
+				nbSignFound = signRequestParamsList.size();
+			}
+		} catch (IOException e) {
+			throw new EsupSignatureIOException("unable to open pdf document");
 		}
-		signRequest.getSignRequestParams().addAll(signRequestParamsList);
-		return signRequestParamsList.size();
+		logger.info(nbSignFound + " signature fields found on " + signRequest.getOriginalDocuments().get(0).getFileName() + " from signrequest " + signRequest.getId());
+		return nbSignFound;
 	}
 
 	public void completeSignRequest(SignRequest signRequest, User user) {
@@ -461,7 +472,7 @@ public class SignRequestService implements EvaluationContextExtension {
 
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {
 		if ((signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
-				&& signRequest.getCurrentRecipients().containsKey(user.getId())) {
+				&& getCurrentRecipients(signRequest).containsKey(user.getId())) {
 			return true;
 		} else {
 			return false;
@@ -520,7 +531,7 @@ public class SignRequestService implements EvaluationContextExtension {
 		//TODO move to signrequestservice
 		if(signRequest.getParentSignBook() != null) {
 			workflowStepService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
-			return signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipientsNames();
+			return signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook()).getRecipientsNames();
 		} else {
 			Map<String, Boolean> signBookNames = new HashMap<>();
 			for (Map.Entry<Long, Boolean> userMap : signRequest.getRecipients().entrySet()) {
@@ -528,6 +539,22 @@ public class SignRequestService implements EvaluationContextExtension {
 			}
 			signRequest.setRecipientsNames(signBookNames);
 			return signRequest.getRecipientsNames();
+		}
+	}
+
+	public Map<Long, Boolean> getCurrentRecipients(SignRequest signRequest) {
+		if(signRequest.getParentSignBook() != null) {
+			return signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook()).getRecipients();
+		} else {
+			return signRequest.getRecipients();
+		}
+	}
+
+	public SignType getCurrentSignType(SignRequest signRequest) {
+		if(signRequest.getParentSignBook() != null) {
+			return signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook()).getSignType();
+		} else {
+			return signRequest.getSignType();
 		}
 	}
 

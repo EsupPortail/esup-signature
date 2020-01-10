@@ -164,7 +164,7 @@
                                     <td class="d-none d-lg-table-cell">
                                         <table class="table table-sm">
                                             <tbody>
-                                            <th:block th:each="signBooksLabel : ${signRequest.currentRecipientsNames}">
+                                            <th:block th:each="signBooksLabel : ${@signRequestService.getCurrentRecipientsNames(signRequest)}">
                                                 <tr>
                                                     <td width="100%" th:text="${signBooksLabel.key}"></td>
                                                     <td align="center">

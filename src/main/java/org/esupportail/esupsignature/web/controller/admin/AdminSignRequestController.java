@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
@@ -190,7 +191,7 @@ public class AdminSignRequestController {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserViewRights(user, signRequest)) {
 			if(signRequest.getOriginalDocuments().size() > 0 &&
-			(signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.pdfImageStamp) || signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.visa))
+			(signRequestService.getCurrentSignType(signRequest).equals(SignType.pdfImageStamp) || signRequestService.getCurrentSignType(signRequest).equals(SignType.visa))
 			) {
 				signRequest.getOriginalDocuments().remove(signRequest.getOriginalDocuments().get(0));
 			}
@@ -281,7 +282,7 @@ public class AdminSignRequestController {
 
 	@RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
 	public String pending(@PathVariable("id") Long id,
-			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) throws IOException {
+			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) throws IOException, EsupSignatureIOException {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();
