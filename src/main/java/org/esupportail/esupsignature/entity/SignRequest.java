@@ -64,8 +64,6 @@ public class SignRequest {
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<Long, Boolean> recipients = new HashMap<>();
 
-    transient Map<String, Boolean> recipientsNames;
-
    	public void setStatus(SignRequestStatus status) {
         this.status = status;
     }
@@ -178,29 +176,12 @@ public class SignRequest {
         this.signRequestParams = signRequestParams;
     }
 
-    public SignRequestParams getCurrentSignRequestParams() {
-   	    //TODO move to signrequestservice
-   	    if(getParentSignBook() != null && signRequestParams.size() > getParentSignBook().getCurrentWorkflowStepNumber() - 1) {
-            return signRequestParams.get(getParentSignBook().getCurrentWorkflowStepNumber() - 1);
-        } else {
-   	        return signRequestParams.get(0);
-        }
-    }
-
     public Map<Long, Boolean> getRecipients() {
         return recipients;
     }
 
     public void setRecipients(Map<Long, Boolean> recipients) {
         this.recipients = recipients;
-    }
-
-    public Map<String, Boolean> getRecipientsNames() {
-        return recipientsNames;
-    }
-
-    public void setRecipientsNames(Map<String, Boolean> recipientsNames) {
-        this.recipientsNames = recipientsNames;
     }
 
     public SignType getSignType() {

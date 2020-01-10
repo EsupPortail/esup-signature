@@ -1,5 +1,7 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.thymeleaf.org/spring-data">
+<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
@@ -10,17 +12,17 @@
             <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                 <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
             </button>
-            <button title="Nouvelle demande de signature"  type="button" data-toggle="modal" data-target="#addSignRequestModal" class="mb-1 col-12 btn btn-primary text-left">
-                <i class="fas fa-plus"></i> <span class="sidebar-label">Créer une demande de signature manuellement</span>
+            <button title="Assistant de demande de signature"  type="button" data-toggle="modal" data-target="#wizardModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left">
+                <i class="fas fa-magic"></i> <span class="sidebar-label">Assistant de creation de parapheur</span>
             </button>
-            <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left">
-                <i class="fas fa-plus"></i> <span class="sidebar-label">Signature rapide</span>
+                <button title="Je signe un document"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left">
+                    <i class="fas fa-bolt"></i> <span class="sidebar-label">Signature rapide</span>
+                </button>
+            <button title="Nouvelle demande de signature"  type="button" data-toggle="modal" data-target="#addSignRequestModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left">
+                <i class="fas fa-plus"></i> <span class="sidebar-label">Créer une demande de signature manuellement</span>
             </button>
             <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="d-none mb-1 col-12 btn btn-primary text-left">
                 <i class="fas fa-plus"></i> <span class="sidebar-label">Signature rapide</span>
-            </button>
-            <button title="Valider la signature d'un document" type="button" onclick="location.href='/user/validation'" class="mb-1 col-12 btn btn-warning text-left">
-                <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Valider la signature d'un document</span>
             </button>
             <button id="opendocs" class="mb-1 btn btn-outline-dark btn-light float-left" onclick="openCheckedDocs()" title="open docs" style="display: none;">
                 <i class="far fa-eye fa-2x"></i> Ouvrir les documents sélectionnés
@@ -71,7 +73,7 @@
             </div>
            <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item active">Liste des demandes</li>
+                    <li class="breadcrumb-item active">Liste des documents</li>
                 </ol>
             </nav>
             <div class="card rounded-0">
@@ -83,30 +85,24 @@
                         <table class="table table-sm table-bordered table-striped table-hover">
                             <thead>
                             <tr>
-                                <th data-type="html"><input id="selectall" type="checkbox"/></th>
+                                <th class="">Parapheur</th>
                                 <th class="">Titre</th>
                                 <th class="d-none d-md-table-cell">Date de création</th>
                                 <th class="d-none d-lg-table-cell">Créé par</th>
                                 <th>Voir</th>
-                                <th>Signer</th>
                             </tr>
                             </thead>
                             <tbody>
                             <th:block th:each="signRequest : ${signRequestsToSign}">
                                 <tr>
-                                    <td><input th:value="${signRequest.id}" name="check" type="checkbox" class="check"/></td>
+                                    <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
+                                    <td class="text-break" th:unless="${signRequest.parentSignBook != null}">Hors parapheur</td>
                                     <td class="text-break" th:text="${signRequest.title}"></td>
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy}"></span></td>
                                     <td class="utilbox">
-                                        <a class="btn btn-info far fa-eye" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}">
-                                            <!--  -->
-                                        </a>
-                                    </td>
-                                    <td class="utilbox">
-                                        <a role="button" class="btn btn-success fas fa-signature" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.token}">
-                                            <!--  -->
-                                        </a>
+                                        <a th:if="${signRequest.parentSignBook != null}" class="btn btn-info" title="ouvrir" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '/' + ${signRequest.id}"><i class="fas fa-book"></i> </a>
+                                        <a th:unless="${signRequest.parentSignBook != null}" class="btn btn-info" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="far fa-eye"></i> </a>
                                     </td>
                                 </tr>
                             </th:block>
@@ -145,9 +141,9 @@
                         <table class="table table-sm table-bordered table-striped table-hover">
                             <thead>
                             <tr>
+                                <th class="">Parapheur</th>
                                 <th class="none">Titre</th>
                                 <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
-                                <th class="d-none d-xl-table-cell">Créé par</th>
                                 <th class="d-none d-lg-table-cell">Participants</th>
                                 <th class="d-none d-md-table-cell">Statut</th>
                                 <th>Voir</th>
@@ -158,9 +154,10 @@
                             <tbody>
                             <th:block th:each="signRequest : ${signRequests}">
                                 <tr>
+                                    <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
+                                    <td class="text-break" th:unless="${signRequest.parentSignBook != null}">Hors parapheur</td>
                                     <td class="text-break" th:title="${signRequest.title}" th:text="${signRequest.title}"></td>
                                     <td class="d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                    <td class="d-none d-xl-table-cell"><span th:text="${signRequest.createBy}"></span></td>
                                     <td class="d-none d-lg-table-cell">
                                         <table class="table table-sm">
                                             <tbody>
@@ -215,13 +212,13 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Assistant de création de demande de signature</h5>
+                <h5 class="modal-title">Création d'une demande</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <iframe frameborder="0" src="/user/signrequests/wizard/wiz1"  style="width: 100%; height: 500px;" ></iframe>
+                <iframe id="wizIframe" frameborder="0" src="/user/signbooks/wizard/wiz1"  style="width: 100%; height: 500px;" ></iframe>
             </div>
         </div>
     </div>

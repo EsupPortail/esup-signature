@@ -13,18 +13,18 @@ import org.esupportail.esupsignature.service.fs.UploadActionType;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.spel.spi.EvaluationContextExtension;
+import org.springframework.data.spel.spi.Function;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-public class SignBookService {
+public class SignBookService implements EvaluationContextExtension {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookService.class);
 
@@ -68,6 +68,20 @@ public class SignBookService {
         List<SignBook> list = new ArrayList<SignBook>();
         signBookRepository.findAll().forEach(e -> list.add(e));
         return list;
+    }
+
+    public List<SignBook> getTosignRequests(User user) {
+        List<SignBook> signBooksToSign = new ArrayList<>();
+        List<WorkflowStep> workflowSteps = workflowStepRepository.findByRecipients(user.getId());
+        for(WorkflowStep workflowStep : workflowSteps) {
+            if(!workflowStep.getRecipients().get(user.getId()) && signBookRepository.findByWorkflowStepsContains(workflowStep).size() > 0) {
+                SignBook signBook = signBookRepository.findByWorkflowStepsContains(workflowStep).get(0);
+                if (getCurrentWorkflowStep(signBook).equals(workflowStep) && getStatus(signBook).equals(SignRequestStatus.pending)) {
+                    signBooksToSign.add(signBook);
+                }
+            }
+        }
+        return signBooksToSign.stream().sorted(Comparator.comparing(SignBook::getCreateDate).reversed()).collect(Collectors.toList());
     }
 
     public void addRecipient(SignBook signBook, List<String> recipientEmails) {
@@ -179,7 +193,7 @@ public class SignBookService {
 
     public void exportFilesToTarget(SignBook signBook, User user) throws EsupSignatureException {
         logger.trace("export signRequest to : " + signBook.getTargetType() + "://" + signBook.getDocumentsTargetUri());
-        if (signBook.getStatus().equals(SignRequestStatus.completed) /* && signRequestService.isSignRequestCompleted(signRequest)*/) {
+        if (getStatus(signBook).equals(SignRequestStatus.completed) /* && signRequestService.isSignRequestCompleted(signRequest)*/) {
             boolean exportOk = exportFileToTarget(signBook, user);
             if (exportOk) {
                 if (!signBook.getTargetType().equals(DocumentIOType.mail)) {
@@ -270,7 +284,7 @@ public class SignBookService {
     public void removeStep(SignBook signBook, int step) {
         WorkflowStep workflowStep = signBook.getWorkflowSteps().get(step);
         signBook.getWorkflowSteps().remove(step);
-//        if(signBook.getWorkflowSteps().size() < signBook.getCurrentWorkflowStepNumber() && signBook.getStatus().equals(SignRequestStatus.pending)) {
+//        if(signBook.getWorkflowSteps().size() < signBook.getCurrentWorkflowStepNumber() && getStatus(signBook).equals(SignRequestStatus.pending)) {
 //            signBook.setStatus(SignRequestStatus.completed);
 //        }
         signBookRepository.save(signBook);
@@ -313,7 +327,7 @@ public class SignBookService {
     }
 
     public boolean checkUserSignRights(User user, SignBook signBook) {
-        if ((signBook.getStatus().equals(SignRequestStatus.pending) || signBook.getStatus().equals(SignRequestStatus.draft))
+        if ((getStatus(signBook).equals(SignRequestStatus.pending) || getStatus(signBook).equals(SignRequestStatus.draft))
                 && getCurrentWorkflowStep(signBook).getRecipients().containsKey(user.getId()) &&  !getCurrentWorkflowStep(signBook).getRecipients().get(user.getId())) {
             return true;
         } else {
@@ -322,7 +336,7 @@ public class SignBookService {
     }
 
     public void pendingSignRequest(SignBook signBook, User user) {
-        if(!signBook.getStatus().equals(SignRequestStatus.pending)) {
+        if(!getStatus(signBook).equals(SignRequestStatus.pending)) {
             updateStatus(signBook, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signBook.getComment());
             for(SignRequest signRequest : signBook.getSignRequests()) {
                 signRequest.setStatus(SignRequestStatus.pending);
@@ -347,7 +361,7 @@ public class SignBookService {
         log.setSignRequestId(signBook.getId());
         log.setEppn(user.getEppn());
         log.setIp(user.getIp());
-        log.setInitialStatus(signBook.getStatus().toString());
+        log.setInitialStatus(getStatus(signBook).toString());
         log.setLogDate(new Date());
         log.setAction(action);
         log.setReturnCode(returnCode);
@@ -361,7 +375,7 @@ public class SignBookService {
             log.setFinalStatus(signRequestStatus.toString());
             signBook.setStatus(signRequestStatus);
         } else {
-            log.setFinalStatus(signBook.getStatus().toString());
+            log.setFinalStatus(getStatus(signBook).toString());
         }
         logRepository.save(log);
     }
@@ -374,4 +388,36 @@ public class SignBookService {
         }
     }
 
+    public SignRequestStatus getStatus(SignBook signBook) {
+        //TODO move to signbookservice
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            if(signRequest.getStatus().equals(SignRequestStatus.refused)) {
+                return SignRequestStatus.refused;
+            }
+        }
+        if(signBook.getCurrentWorkflowStepNumber() <= signBook.getWorkflowSteps().size() && signBook.getRealStatus().equals(SignRequestStatus.pending) || signBook.getRealStatus().equals(SignRequestStatus.draft)) {
+            return signBook.getRealStatus();
+        }
+        return SignRequestStatus.completed;
+    }
+
+    @Override
+    public String getExtensionId() {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> getProperties() {
+        return null;
+    }
+
+    @Override
+    public Map<String, Function> getFunctions() {
+        return null;
+    }
+
+    @Override
+    public Object getRootObject() {
+        return null;
+    }
 }

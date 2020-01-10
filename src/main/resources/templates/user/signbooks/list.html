@@ -11,7 +11,7 @@
                 <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
             </button>
             <button title="Assistant de demande de signature"  type="button" data-toggle="modal" data-target="#wizardModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left">
-                <i class="fas fa-magic"></i> <span class="sidebar-label">Nouvelle demande</span>
+                <i class="fas fa-magic"></i> <span class="sidebar-label">Créer une nouvelle demande</span>
             </button>
             <button title="Assistant de demande de signature"  type="button" data-toggle="modal" data-target="#wizardModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left d-none">
                 <i class="fas fa-project-diagram"></i> <span class="sidebar-label">Nouveau circuit de signature</span>
@@ -21,9 +21,6 @@
             </button>
             <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="d-none mb-1 col-12 btn btn-light btn-outline-dark text-left">
                 <i class="fas fa-plus"></i> <span class="sidebar-label">Signature rapide</span>
-            </button>
-            <button title="Valider la signature d'un document" type="button" onclick="location.href='/user/validation'" class="mb-1 col-12 btn btn-light btn-outline-dark text-left">
-                <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Controler un document signé</span>
             </button>
             <button id="opendocs" class="mb-1 btn btn-outline-dark btn-light float-left" onclick="openCheckedDocs()" title="open docs" style="display: none;">
                 <i class="far fa-eye fa-2x"></i> Ouvrir les documents sélectionnés
@@ -39,7 +36,7 @@
         <div id="content" class="content">
            <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item active">Liste des demandes</li>
+                    <li class="breadcrumb-item active">Mes parapheurs</li>
                 </ol>
             </nav>
             <div class="card rounded-0">
@@ -47,7 +44,7 @@
                     Documents à signer
                 </div>
                 <div class="card-body">
-                    <div th:if="${#lists.size(signBooksToView) > 0}" class="table-responsive">
+                    <div th:if="${#lists.size(signBooksToSign) > 0}" class="table-responsive">
                         <table class="table table-sm table-bordered table-striped table-hover">
                             <thead>
                             <tr>
@@ -58,7 +55,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <th:block th:each="signBook : ${signBooksToView}">
+                            <th:block th:each="signBook : ${signBooksToSign}">
                                 <tr>
                                     <td class="text-break" th:text="${signBook.name}"></td>
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
@@ -71,7 +68,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <span th:unless="${#lists.size(signBooksToView) > 0}" class="table-responsive">
+                    <span th:unless="${#lists.size(signBooksToSign) > 0}" class="table-responsive">
 				Aucun document à signer pour le moment
 			</span>
                 </div>
@@ -116,7 +113,8 @@
                                 <tr>
                                     <td class="text-break" th:title="${signBook.name}" th:text="${signBook.name}"></td>
                                     <td class="d-none d-xl-table-cell"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                    <td class="d-none d-xl-table-cell"><span th:text="${signBook.status}"></span></td>
+                                    <td class="d-none d-xl-table-cell" style="width: 150px;">
+                                        <div th:replace="user/signbooks/includes/status :: status"></div>
                                     <td class="utilbox">
                                         <button class="btn btn-info fas fa-eye" title="Voir" th:onclick="'location.href=\'/user/signbooks/' + ${signBook.id} + '/0\''">
                                             <!--  -->

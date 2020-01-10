@@ -57,7 +57,7 @@ public class IndexController {
 		User user = userService.getUserFromAuthentication();
 		model.addAttribute("user", user);
 		if(user != null) {
-			return "redirect:/user/signbooks/";
+			return "redirect:/user/signrequests/";
 		} else {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			if("anonymousUser".equals(auth.getName())) {

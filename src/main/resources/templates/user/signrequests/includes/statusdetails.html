@@ -4,7 +4,7 @@
 <div th:fragment="statusdetails">
 	<div th:if="${user.eppn == signRequest.createBy}">
 		<div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
-			<div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.currentRecipients.size() == 0}">
+			<div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.recipients.size() == 0}">
 				<div class="alert alert-secondary mb-1" th:if="${signRequest.status.name() == 'draft'}">
 					<h5 class="alert-heading">
 						Le document en cours de création
@@ -15,7 +15,7 @@
 	</div>
 	<div th:if="${user.eppn == signRequest.createBy}">
 		<div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
-			<div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.currentRecipients.size() == 0}">
+			<div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.recipients.size() == 0}">
 				<div class="alert alert-info mb-1">
 					<h5 class="alert-heading">
 						Demande prête pour la mise en signature

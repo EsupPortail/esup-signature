@@ -225,17 +225,11 @@ public class SignBook {
         this.comment = comment;
     }
 
-    public SignRequestStatus getStatus() {
-        //TODO move to signbookservice
-        for(SignRequest signRequest : signRequests) {
-            if(signRequest.getStatus().equals(SignRequestStatus.refused)) {
-                return SignRequestStatus.refused;
-            }
-        }
-        if(currentWorkflowStepNumber <= workflowSteps.size() && status.equals(SignRequestStatus.pending) || status.equals(SignRequestStatus.draft)) {
-            return status;
-        }
-        return SignRequestStatus.completed;
+    public SignRequestStatus getRealStatus() {
+        return status;
     }
 
+    public void setRecipientEmails(List<String> recipientEmails) {
+        this.recipientEmails = recipientEmails;
+    }
 }

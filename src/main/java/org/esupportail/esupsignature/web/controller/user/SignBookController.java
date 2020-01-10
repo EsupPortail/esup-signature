@@ -131,18 +131,8 @@ public class SignBookController {
     public String list(@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
         User user = userService.getUserFromAuthentication();
         workflowService.initCreatorWorkflow();
-        List<SignRequest> signRequestsToSign = signRequestService.getTosignRequests(user);
-        signRequestsToSign = signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
-
-        List<SignBook> signBooksToView = new ArrayList<>();
-
-        for(SignRequest signRequest : signRequestsToSign) {
-            if(!signBooksToView.contains(signRequest.getParentSignBook())) {
-                signBooksToView.add(signRequest.getParentSignBook());
-            }
-        }
-
-        model.addAttribute("signBooksToView", signBooksToView);
+        List<SignBook> signBooksToSign = signBookService.getTosignRequests(user);
+        model.addAttribute("signBooksToSign", signBooksToSign);
         model.addAttribute("signBooksCreateByCurrentUser", signBookRepository.findByCreateBy(user.getEppn(), pageable));
         model.addAttribute("statusFilter", this.statusFilter);
         model.addAttribute("statuses", SignRequestStatus.values());
@@ -161,14 +151,14 @@ public class SignBookController {
 
     }
 
-    @RequestMapping(value = "/{id}/{doc}", produces = "text/html")
-    public String show(@PathVariable("id") Long id, @PathVariable("doc") int doc, Model model) throws Exception {
+    @RequestMapping(value = "/{id}/{signRequestId}", produces = "text/html")
+    public String show(@PathVariable("id") Long id, @PathVariable("signRequestId") Long signRequestId, Model model) throws Exception {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
         workflowService.setWorkflowsLabels(signBook.getWorkflowSteps());
         model.addAttribute("signBook", signBook);
-        SignRequest signRequest = signBook.getSignRequests().get(doc);
-        if ((signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest))) {
+        SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
+        if (signBook.getSignRequests().contains(signRequest) && (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest))) {
             Document toDisplayDocument;
             if (signRequestService.getToSignDocuments(signRequest).size() == 1) {
                 toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
@@ -184,7 +174,7 @@ public class SignBookController {
             if(signRequestService.checkUserSignRights(user, signRequest)) {
                 model.addAttribute("signOk", true);
             }
-            if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) && signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
+            if (signBookService.getStatus(signRequest.getParentSignBook()).equals(SignRequestStatus.pending) && signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                 model.addAttribute("signable", "ok");
                 if(!signRequestService.getCurrentSignType(signRequest).equals(SignType.visa)
                         && user.getSignImage() != null
@@ -206,7 +196,7 @@ public class SignBookController {
         model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
         model.addAttribute("refusLogs", logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name()));
         model.addAttribute("signRequest", signRequest);
-        model.addAttribute("doc", doc);
+        model.addAttribute("signRequestId", signRequestId);
         return "user/signbooks/show";
     }
 
@@ -534,7 +524,7 @@ public class SignBookController {
         } else {
             logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
         }
-        return "redirect:/user/signbooks/" + id;
+        return "redirect:/user/signbooks/" + signRequest.getParentSignBook().getId() + "/" + signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
     }
 
     void populateEditForm(Model model, SignRequest signRequest) {

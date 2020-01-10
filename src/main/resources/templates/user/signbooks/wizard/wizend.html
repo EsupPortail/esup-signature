@@ -1,9 +1,8 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
-
 <body>
-    <button th:if="${signRequest != null}" th:data1="${signRequest.token}" onclick="parent.location.href='/user/signrequests/sign-by-token/' + this.getAttribute('data1')" type="button" class="btn btn-success">
+    <button th:if="${signRequest != null}" th:data1="${signRequest.id}" onclick="parent.location.href='/user/signrequests/' + this.getAttribute('data1')" type="button" class="btn btn-success">
         Signer <i class="fas fa-signature"></i>
     </button>
 

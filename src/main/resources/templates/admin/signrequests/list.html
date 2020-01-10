@@ -109,7 +109,7 @@
                             <td class="none">
                                 <table class="table table-sm">
                                     <tbody>
-                                    <th:block th:each="signBooksLabel : ${signRequest.parentSignBook.currentWorkflowStep.recipientsNames}">
+                                    <th:block th:each="signBooksLabel : ${@signRequestService.getCurrentRecipientsNames(signRequest)}">
                                         <tr>
                                             <td width="100%" th:text="${signBooksLabel.key}"></td>
                                             <td align="center">

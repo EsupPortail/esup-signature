@@ -30,7 +30,7 @@
 						<td th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></td>
 						<td th:text="${signRequest.creator.firstname} + ' ' + ${signRequest.creator.name}"></td>
 						<td>
-							<a class="btn btn-primary mx-auto mt-2" th:href="@{|${rootUrl}/user/signrequests/sign-by-token/${signRequest.token}|}">Accéder au document</a>
+							<a class="btn btn-primary mx-auto mt-2" th:href="@{|${rootUrl}/user/signrequests/${signRequest.id}|}">Accéder au document</a>
 						</td>
 					</tr>
 				</th:block>

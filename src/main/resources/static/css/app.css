@@ -20,6 +20,9 @@ code {
     margin-top: 10px;
 }
 
+.nav-item {
+    margin-right: 5px;
+}
 
 .loader {
     border: 5px solid #f3f3f3;

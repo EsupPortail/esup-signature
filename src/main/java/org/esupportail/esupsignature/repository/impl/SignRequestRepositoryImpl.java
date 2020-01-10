@@ -59,7 +59,6 @@ public class SignRequestRepositoryImpl implements SignRequestRepositoryCustom {
         CriteriaQuery<Long> count = criteriaBuilder.createQuery(Long.class);
         Root<SignRequest> countRoot = count.from(SignRequest.class);
 
-        
         final List<Predicate> predicates = new ArrayList<Predicate>();
         final List<Predicate> predicatesCount = new ArrayList<Predicate>();
        
@@ -69,7 +68,8 @@ public class SignRequestRepositoryImpl implements SignRequestRepositoryCustom {
         	predicates.add(criteriaBuilder.or(criteriaBuilder.equal(queryRoot.get("status"), status)));
         	predicatesCount.add(criteriaBuilder.or(criteriaBuilder.equal(countRoot.get("status"), status)));
         }
-
+//        predicates.add(criteriaBuilder.isNotEmpty(queryRoot.get("recipients")));
+//        predicatesCount.add(criteriaBuilder.isNotEmpty(queryRoot.get("recipients")));
         query.select(queryRoot);
         query.where(criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()])));
         query.orderBy(QueryUtils.toOrders(pageable.getSort(), queryRoot, criteriaBuilder));

@@ -375,11 +375,6 @@ public class WsController {
         return null;
     }
 
-    @RequestMapping(value = "/sign-by-token/{token}")
-    public String signByToken(@PathVariable("token") String token, HttpServletRequest request) {
-        return "redirect:/user/signrequests/sign-by-token/" + token;
-    }
-
     @ResponseBody
     @RequestMapping(value = "/check-user-status", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public String checkUserStatus(@RequestParam String eppn, HttpServletResponse response, Model model) throws JsonProcessingException {

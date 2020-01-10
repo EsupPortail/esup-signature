@@ -142,7 +142,7 @@ public class SignRequestController {
             @RequestParam(value = "statusFilter", required = false) String statusFilter,
             @RequestParam(value = "signBookId", required = false) Long signBookId,
             @RequestParam(value = "messageError", required = false) String messageError,
-            @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, RedirectAttributes redirectAttrs, Model model) {
+            @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
         User user = userService.getUserFromAuthentication();
         workflowService.initCreatorWorkflow();
 
@@ -154,15 +154,16 @@ public class SignRequestController {
             }
         }
 
-        List<SignRequest> signRequestsToSign = signRequestService.getTosignRequests(user);
+        List<SignRequest> signRequestsToSign = signRequestRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.pending);
 
         signRequestsToSign = signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
-
-        Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByCreateByAndStatus(user.getEppn(), this.statusFilter, pageable);
-
-        for (SignRequest signRequest : signRequests) {
-            //workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
+        Page<SignRequest> signRequests;
+        if(this.statusFilter != null) {
+            signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), this.statusFilter, pageable);
+        } else {
+            signRequests = signRequestRepository.findByCreateBy(user.getEppn(), pageable);
         }
+
         if (user.getKeystore() != null) {
             model.addAttribute("keystore", user.getKeystore().getFileName());
         }
@@ -222,6 +223,9 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         model.addAttribute("signRequest", signRequest);
         if ((signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest))) {
+            if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
+                model.addAttribute("signable", "ok");
+            }
             Document toDisplayDocument;
             if (signRequestService.getToSignDocuments(signRequest).size() == 1) {
                 toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
@@ -244,12 +248,9 @@ public class SignRequestController {
                 model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
                 model.addAttribute("documentId", toDisplayDocument.getId());
             }
-            if (signRequestService.checkUserSignRights(user, signRequest)) {
-                model.addAttribute("signOk", true);
-            }
         }
         List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNull(id);
-        model.addAttribute("logs", logs);
+        model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
         return "user/signrequests/show";
     }
 
@@ -317,72 +318,6 @@ public class SignRequestController {
         return output;
     }
 
-    @RequestMapping(value = "/sign-by-token/{token}")
-    public String signByToken(
-            @RequestParam(value = "referer", required = false) String referer,
-            @PathVariable("token") String token, RedirectAttributes redirectAttrs,
-            Model model, HttpServletRequest request) throws IOException {
-
-        User user = userService.getUserFromAuthentication();
-        if (signRequestRepository.countByToken(token) > 0) {
-            SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
-            if ((signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) && signRequest.getStatus().equals(SignRequestStatus.pending)) {
-                Document toDisplayDocument;
-                boolean paramsOk = true;
-                if (signRequestService.getToSignDocuments(signRequest).size() == 1) {
-                    toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
-                    if (toDisplayDocument.getContentType().equals("application/pdf")) {
-                        PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
-                        model.addAttribute("pdfWidth", pdfParameters.getWidth());
-                        model.addAttribute("pdfHeight", pdfParameters.getHeight());
-                        model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-                        model.addAttribute("signWidth", 100);
-                        model.addAttribute("signHeight", 75);
-                        if(signRequestService.getCurrentSignType(signRequest).equals(SignType.pdfImageStamp)
-                            && user.getSignImage() != null
-                            && user.getSignImage().getSize() > 0) {
-                            model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-                            int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
-                            model.addAttribute("signWidth", size[0]);
-                            model.addAttribute("signHeight", size[1]);
-                        }
-                        if (signRequestService.getCurrentSignType(signRequest).equals(SignType.certSign) && user.getKeystore() == null) {
-                            paramsOk = false;
-                        }
-                    }
-                    model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
-                    model.addAttribute("documentId", toDisplayDocument.getId());
-                }
-                model.addAttribute("paramsOk", paramsOk);
-
-
-                if (user.getSignImage() != null) {
-                    model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-                }
-                if (user.getKeystore() != null) {
-                    model.addAttribute("keystore", user.getKeystore().getFileName());
-                }
-                model.addAttribute("signRequest", signRequest);
-                if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
-                    model.addAttribute("signable", "ok");
-                }
-                model.addAttribute("baseUrl", baseUrl);
-                model.addAttribute("nexuVersion", nexuVersion);
-                model.addAttribute("nexuUrl", nexuUrl);
-                if (referer != null && !"".equals(referer) && !"null".equals(referer)) {
-                    String ref = request.getHeader("referer");
-                    model.addAttribute("referer", ref);
-                }
-                return "user/signrequests/sign";
-            } else {
-                return "user/signrequests/sign-end";
-            }
-        } else {
-            redirectAttrs.addAttribute("messageError", "Cette demande de signature n'existe pas");
-            return "redirect:/user/signrequests";
-        }
-    }
-
     @RequestMapping(value = "/fast-sign-request", method = RequestMethod.POST)
     public String createSignRequest(@RequestParam("multipartFile") MultipartFile multipartFile, @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
         logger.info("création rapide demande de signature");
@@ -391,11 +326,12 @@ public class SignRequestController {
             Document documentToAdd = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
             SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd);
             signRequest.setTitle(fileService.getNameOnly(documentToAdd.getFileName()));
+            signRequest.setSignType(signType);
+            signRequest.getRecipients().put(user.getId(), false);
             signRequestRepository.save(signRequest);
-            //workflowService.addWorkflowStep(Arrays.asList(user.getEmail()), "Ma signature", true, signType, signRequest);
             signRequestService.pendingSignRequest(signRequest, user);
             logger.info("adding new file into signRequest " + signRequest.getToken());
-            return "redirect:/user/signrequests/sign-by-token/" + signRequest.getToken();
+            return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             logger.warn("no file to import");
         }
@@ -428,9 +364,9 @@ public class SignRequestController {
                 return "redirect:/user/nexu-sign/" + id + "?referer=" + referer;
             }
             if (signPageNumber != null && xPos != null && yPos != null) {
-                signRequest.getCurrentSignRequestParams().setSignPageNumber(signPageNumber);
-                signRequest.getCurrentSignRequestParams().setXPos(xPos);
-                signRequest.getCurrentSignRequestParams().setYPos(yPos);
+                signRequestService.getCurrentSignRequestParams(signRequest).setSignPageNumber(signPageNumber);
+                signRequestService.getCurrentSignRequestParams(signRequest).setXPos(xPos);
+                signRequestService.getCurrentSignRequestParams(signRequest).setYPos(yPos);
                 signRequestRepository.save(signRequest);
             }
             if (!"".equals(password)) {
@@ -455,7 +391,7 @@ public class SignRequestController {
             if (referer != null && !"".equals(referer) && !"null".equals(referer)) {
                 return "redirect:" + referer;
             } else {
-                return "redirect:/user/signrequests/sign-by-token/" + signRequest.getToken();
+                return "redirect:/user/signrequests/" + signRequest.getId();
             }
         } else {
             redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
@@ -664,7 +600,7 @@ public class SignRequestController {
         } else {
             logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
         }
-        return "redirect:/user/signbooks/" + signRequest.getParentSignBook().getId() + "/" + signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
+        return "redirect:/user/signrequest/" + signRequest.getId();
     }
 
     void populateEditForm(Model model, SignRequest signRequest) {
