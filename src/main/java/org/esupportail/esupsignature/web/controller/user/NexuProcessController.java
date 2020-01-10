@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.web.controller.user;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.SignatureForm;
 import eu.europa.esig.dss.ToBeSigned;
-import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.esupportail.esupsignature.dss.web.model.*;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
