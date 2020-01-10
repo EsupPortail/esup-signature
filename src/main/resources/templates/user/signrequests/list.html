@@ -10,13 +10,10 @@
             <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                 <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
             </button>
-            <button title="Assistant de demande de signature"  type="button" data-toggle="modal" data-target="#wizardModal" class="mb-1 col-12 btn btn-primary text-left">
-                <i class="fas fa-magic"></i> <span class="sidebar-label">Assistant de demande de signature</span>
-            </button>
             <button title="Nouvelle demande de signature"  type="button" data-toggle="modal" data-target="#addSignRequestModal" class="mb-1 col-12 btn btn-primary text-left">
                 <i class="fas fa-plus"></i> <span class="sidebar-label">Créer une demande de signature manuellement</span>
             </button>
-            <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="d-none mb-1 col-12 btn btn-primary text-left">
+            <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left">
                 <i class="fas fa-plus"></i> <span class="sidebar-label">Signature rapide</span>
             </button>
             <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="d-none mb-1 col-12 btn btn-primary text-left">
@@ -167,7 +164,7 @@
                                     <td class="d-none d-lg-table-cell">
                                         <table class="table table-sm">
                                             <tbody>
-                                            <th:block th:each="signBooksLabel : ${signRequest.currentWorkflowStep.recipientsNames}">
+                                            <th:block th:each="signBooksLabel : ${signRequest.currentRecipientsNames}">
                                                 <tr>
                                                     <td width="100%" th:text="${signBooksLabel.key}"></td>
                                                     <td align="center">

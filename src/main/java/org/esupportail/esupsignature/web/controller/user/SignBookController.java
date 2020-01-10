@@ -481,23 +481,23 @@ public class SignBookController {
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
-    @RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
-    public String pending(@PathVariable("id") Long id,
-                          @RequestParam(value = "comment", required = false) String comment,
-                          HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) throws IOException {
-        logger.info("démarrage de la demande");
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        //TODO controle signType
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        signRequest.setComment(comment);
-        if (signRequestService.checkUserViewRights(user, signRequest) && (signRequest.getStatus().equals(SignRequestStatus.draft) || signRequest.getStatus().equals(SignRequestStatus.completed))) {
-            signRequestService.pendingSignRequest(signRequest, user);
-        } else {
-            logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");
-        }
-        return "redirect:/user/signbooks/" + id + "/?form";
-    }
+//    @RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
+//    public String pending(@PathVariable("id") Long id,
+//                          @RequestParam(value = "comment", required = false) String comment,
+//                          HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) throws IOException {
+//        logger.info("démarrage de la demande");
+//        User user = userService.getUserFromAuthentication();
+//        user.setIp(request.getRemoteAddr());
+//        //TODO controle signType
+//        SignRequest signRequest = signRequestRepository.findById(id).get();
+//        signRequest.setComment(comment);
+//        if (signRequestService.checkUserViewRights(user, signRequest) && (signRequest.getStatus().equals(SignRequestStatus.draft) || signRequest.getStatus().equals(SignRequestStatus.completed))) {
+//            signRequestService.pendingSignRequest(signRequest, user);
+//        } else {
+//            logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");
+//        }
+//        return "redirect:/user/signbooks/" + id + "/?form";
+//    }
 
     @RequestMapping(value = "/scan-pdf-sign/{id}", method = RequestMethod.GET)
     public String scanPdfSign(@PathVariable("id") Long id,

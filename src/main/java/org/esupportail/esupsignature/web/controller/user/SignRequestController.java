@@ -195,7 +195,7 @@ public class SignRequestController {
             if (user.getKeystore() != null) {
                 model.addAttribute("keystore", user.getKeystore().getFileName());
             }
-            workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
+            //workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
             model.addAttribute("signRequest", signRequest);
 
             if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
@@ -464,48 +464,6 @@ public class SignRequestController {
         }
     }
 
-    @RequestMapping(value = "/sign-multiple", method = RequestMethod.POST)
-    public void signMultiple(
-            @RequestParam(value = "ids", required = true) Long[] ids,
-            @RequestParam(value = "comment", required = false) String comment,
-            @RequestParam(value = "password", required = false) String password, HttpServletRequest request) throws IOException {
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        float totalToSign = ids.length;
-        float nbSigned = 0;
-        progress = "0";
-        for (Long id : ids) {
-            SignRequest signRequest = signRequestRepository.findById(id).get();
-            if (signRequestService.checkUserSignRights(user, signRequest)) {
-                if (!"".equals(password)) {
-                    setPassword(password);
-                }
-                try {
-                    if (signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.visa)) {
-                        signRequestService.updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", comment);
-                    } else if (signRequest.getParentSignBook().getCurrentWorkflowStep().getSignType().equals(SignType.nexuSign)) {
-                        logger.error("no multiple nexu sign");
-                        progress = "not_autorized";
-                    } else {
-                        signRequestService.sign(signRequest, user, this.password, false, false);
-                    }
-                } catch (EsupSignatureKeystoreException e) {
-                    logger.error("keystore error", e);
-                    progress = "security_bad_password";
-                    break;
-                } catch (EsupSignatureException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            } else {
-                logger.error("not autorized to sign");
-                progress = "not_autorized";
-            }
-            nbSigned++;
-            float percent = (nbSigned / totalToSign) * 100;
-            progress = String.valueOf((int) percent);
-        }
-    }
-
     @ResponseBody
     @RequestMapping(value = "/get-step")
     public String getStep() {
@@ -617,106 +575,14 @@ public class SignRequestController {
             return "redirect:/user/signrequests/" + id;
         }
     */
+
     @RequestMapping(value = "/change-step-sign-type/{id}/{step}", method = RequestMethod.GET)
     public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name = "signType") SignType signType) {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getParentSignBook().getCurrentWorkflowStepNumber() <= step + 1) {
-            signBookService.changeSignType(signRequest.getParentSignBook(), step, null, signType);
-            return "redirect:/user/signrequests/" + id + "/?form";
-        }
-        return "redirect:/user/signrequests/";
-    }
-
-    @RequestMapping(value = "/update-step/{id}/{step}", method = RequestMethod.GET)
-    public String changeStepSignType(@PathVariable("id") Long id,
-                                     @PathVariable("step") Integer step,
-                                     @RequestParam(name = "name", required = false) String name,
-                                     @RequestParam(name = "signType") SignType signType,
-                                     @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) {
-        User user = userService.getUserFromAuthentication();
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getParentSignBook().getCurrentWorkflowStepNumber() <= step + 1) {
-            if (allSignToComplete == null) {
-                allSignToComplete = false;
-            }
-            signBookService.changeSignType(signRequest.getParentSignBook(), step, name, signType);
-            signBookService.toggleNeedAllSign(signRequest.getParentSignBook(), step, allSignToComplete);
-            return "redirect:/user/signrequests/" + id + "/?form";
-        }
-        return "redirect:/user/signrequests/";
-    }
-
-    @PostMapping(value = "/add-step/{id}")
-    public String addStep(@PathVariable("id") Long id,
-                          @RequestParam(value = "name", required = false) String name,
-                          @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
-                          @RequestParam("signType") String signType) {
-        User user = userService.getUserFromAuthentication();
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
-            WorkflowStep workflowStep = workflowService.createWorkflowStep(null, name, allSignToComplete, SignType.valueOf(signType));
-            signRequest.getParentSignBook().getWorkflowSteps().add(workflowStep);
-        }
-        return "redirect:/user/signrequests/" + id + "/?form";
-    }
-
-    @DeleteMapping(value = "/remove-step/{id}/{step}")
-    public String removeStep(@PathVariable("id") Long id, @PathVariable("step") Integer step) {
-        User user = userService.getUserFromAuthentication();
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (user.getEppn().equals(signRequest.getCreateBy()) && signRequest.getParentSignBook().getCurrentWorkflowStepNumber() <= step + 1) {
-            signBookService.removeStep(signRequest.getParentSignBook(), step);
-        }
-        return "redirect:/user/signrequests/" + id + "/?form";
-    }
-
-    @PostMapping(value = "/add-workflow/{id}")
-    public String addWorkflow(@PathVariable("id") Long id,
-                              @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) {
-        User user = userService.getUserFromAuthentication();
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
-            Workflow workflow = workflowRepository.findById(workflowSignBookId).get();
-            signBookService.importWorkflow(signRequest.getParentSignBook(), workflow);
-        }
-        return "redirect:/user/signrequests/" + id + "/?form";
-    }
-
-    @RequestMapping(value = "/send-to-signbook/{id}/{workflowStepId}", method = RequestMethod.GET)
-    public String sendToSignBook(@PathVariable("id") Long id,
-                                 @PathVariable("workflowStepId") Long workflowStepId,
-                                 @RequestParam(value = "signBookNames", required = true) String[] signBookNames,
-                                 RedirectAttributes redirectAttrs, HttpServletRequest request) {
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
-            WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-            if (signBookNames != null && signBookNames.length > 0) {
-                workflowService.addRecipientsToWorkflowStep(Arrays.asList(signBookNames), workflowStep, user);
-            }
-        } else {
-            logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
-        }
-        return "redirect:/user/signrequests/" + id + "/?form";
-    }
-
-    @DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
-    public String removeStepRecipient(@PathVariable("id") Long id,
-                                      @PathVariable("workflowStepId") Long workflowStepId,
-                                      @RequestParam(value = "recipientName") String recipientEmail,
-                                      RedirectAttributes redirectAttrs, HttpServletRequest request) {
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
-            User userToRemove = userRepository.findByEmail(recipientEmail).get(0);
-            workflowStep.getRecipients().remove(userToRemove.getId());
-            workflowStepRepository.save(workflowStep);
-        } else {
-            logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
+        if(signRequest.getCreateBy().equals(user.getEppn())) {
+            signRequest.setSignType(signType);
+            signRequestRepository.save(signRequest);
         }
         return "redirect:/user/signrequests/" + id + "/?form";
     }
@@ -740,7 +606,6 @@ public class SignRequestController {
     public String pending(@PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
                           HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) throws IOException {
-        logger.info("démarrage de la demande");
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         //TODO controle signType
@@ -750,6 +615,25 @@ public class SignRequestController {
             signRequestService.pendingSignRequest(signRequest, user);
         } else {
             logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");
+        }
+        return "redirect:/user/signrequests/" + id + "/?form";
+    }
+
+    @PostMapping(value = "/add-recipients/{id}")
+    public String pending(@PathVariable("id") Long id,
+                          @RequestParam(value = "recipientsEmail", required = false) String[] recipientsEmail,
+                          @RequestParam(name = "signType") SignType signType,
+                          @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) {
+        System.err.println(allSignToComplete);
+        User user = userService.getUserFromAuthentication();
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        if (signRequestService.checkUserViewRights(user, signRequest)) {
+            signRequest.getRecipients().clear();
+            signRequestService.addRecipients(signRequest, Arrays.asList(recipientsEmail));
+            signRequest.setSignType(signType);
+            signRequest.setAllSignToComplete(false);
+        } else {
+            logger.warn(user.getEppn() + " try to update signRiquets " + signRequest.getId() + " without rights");
         }
         return "redirect:/user/signrequests/" + id + "/?form";
     }

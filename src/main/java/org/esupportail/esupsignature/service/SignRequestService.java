@@ -29,6 +29,8 @@ import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.spel.spi.EvaluationContextExtension;
+import org.springframework.data.spel.spi.Function;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,7 +44,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class SignRequestService {
+public class SignRequestService implements EvaluationContextExtension {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestService.class);
 
@@ -87,6 +89,9 @@ public class SignRequestService {
 
 	@Resource
 	private UserService userService;
+
+	@Resource
+	private WorkflowService workflowStepService;
 
 	@Resource
 	private MailService mailService;
@@ -326,21 +331,46 @@ public class SignRequestService {
 //		//signRequest.setNbSign(signRequest.getNbSign() + 1);
 //	}
 
-
+	public void addRecipients(SignRequest signRequest, List<String> recipientsEmail) {
+		for (String recipientEmail : recipientsEmail) {
+			User recipientUser;
+			if (userRepository.countByEmail(recipientEmail) == 0) {
+				recipientUser = userService.createUser(recipientEmail);
+			} else {
+				recipientUser = userRepository.findByEmail(recipientEmail).get(0);
+			}
+			signRequest.getRecipients().put(recipientUser.getId(), false);
+		}
+		signRequestRepository.save(signRequest);
+	}
 
 	public void pendingSignRequest(SignRequest signRequest, User user) {
 		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
-			for (Long recipientId : signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().keySet()) {
+			for (Long recipientId : signRequest.getRecipients().keySet()) {
 				User recipientUser = userRepository.findById(recipientId).get();
 				if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
 					userService.sendEmailAlert(recipientUser);
 				}
 			}
 		} else {
-			logger.warn("allready pending");
+			logger.warn("already pending");
 		}
 	}
+
+//	public void pendingSignRequest(SignRequest signRequest, User user) {
+//		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
+//			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
+//			for (Long recipientId : signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().keySet()) {
+//				User recipientUser = userRepository.findById(recipientId).get();
+//				if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
+//					userService.sendEmailAlert(recipientUser);
+//				}
+//			}
+//		} else {
+//			logger.warn("allready pending");
+//		}
+//	}
 
 	public int scanSignatureFields(SignRequest signRequest, PDDocument pdDocument) {
 		List<SignRequestParams> signRequestParamsList = pdfService.pdSignatureFieldsToSignRequestParams(pdDocument);
@@ -431,7 +461,7 @@ public class SignRequestService {
 
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {
 		if ((signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
-				&& signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().containsKey(user.getId())) {
+				&& signRequest.getCurrentRecipients().containsKey(user.getId())) {
 			return true;
 		} else {
 			return false;
@@ -485,5 +515,39 @@ public class SignRequestService {
 	public String getStep() {
 		return step;
 	}
-	
+
+	public Map<String, Boolean> getCurrentRecipientsNames(SignRequest signRequest) {
+		//TODO move to signrequestservice
+		if(signRequest.getParentSignBook() != null) {
+			workflowStepService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
+			return signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipientsNames();
+		} else {
+			Map<String, Boolean> signBookNames = new HashMap<>();
+			for (Map.Entry<Long, Boolean> userMap : signRequest.getRecipients().entrySet()) {
+				signBookNames.put(userRepository.findById(userMap.getKey()).get().getFirstname() + " " + userRepository.findById(userMap.getKey()).get().getName(), userMap.getValue());
+			}
+			signRequest.setRecipientsNames(signBookNames);
+			return signRequest.getRecipientsNames();
+		}
+	}
+
+	@Override
+	public String getExtensionId() {
+		return null;
+	}
+
+	@Override
+	public Map<String, Object> getProperties() {
+		return null;
+	}
+
+	@Override
+	public Map<String, Function> getFunctions() {
+		return null;
+	}
+
+	@Override
+	public Object getRootObject() {
+		return null;
+	}
 }

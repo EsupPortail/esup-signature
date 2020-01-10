@@ -2,12 +2,11 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 public class SignRequest {
@@ -54,8 +53,18 @@ public class SignRequest {
     @ManyToOne
     private SignBook parentSignBook;
 
+    @Enumerated(EnumType.STRING)
+    private SignType signType;
+
+    private Boolean allSignToComplete = false;
+
     @OneToMany(cascade = CascadeType.REMOVE)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Map<Long, Boolean> recipients = new HashMap<>();
+
+    transient Map<String, Boolean> recipientsNames;
 
    	public void setStatus(SignRequestStatus status) {
         this.status = status;
@@ -176,5 +185,55 @@ public class SignRequest {
         } else {
    	        return signRequestParams.get(0);
         }
+    }
+
+    public Map<String, Boolean> getCurrentRecipientsNames() {
+        //TODO move to signrequestservice
+        if(getParentSignBook() != null) {
+            return getParentSignBook().getCurrentWorkflowStep().getRecipientsNames();
+        } else {
+            return getRecipientsNames();
+        }
+    }
+
+    public Map<Long, Boolean> getCurrentRecipients() {
+        //TODO move to signrequestservice
+        if(getParentSignBook() != null) {
+            return getParentSignBook().getCurrentWorkflowStep().getRecipients();
+        } else {
+            return getRecipients();
+        }
+    }
+
+    public Map<Long, Boolean> getRecipients() {
+        return recipients;
+    }
+
+    public void setRecipients(Map<Long, Boolean> recipients) {
+        this.recipients = recipients;
+    }
+
+    public Map<String, Boolean> getRecipientsNames() {
+        return recipientsNames;
+    }
+
+    public void setRecipientsNames(Map<String, Boolean> recipientsNames) {
+        this.recipientsNames = recipientsNames;
+    }
+
+    public SignType getSignType() {
+        return signType;
+    }
+
+    public void setSignType(SignType signType) {
+        this.signType = signType;
+    }
+
+    public Boolean getAllSignToComplete() {
+        return allSignToComplete;
+    }
+
+    public void setAllSignToComplete(Boolean allSignToComplete) {
+        this.allSignToComplete = allSignToComplete;
     }
 }
