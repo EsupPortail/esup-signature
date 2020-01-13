@@ -17,7 +17,7 @@ public class BigFileRepositoryImpl implements BigFileRepositoryCustom {
 	private EntityManager entityManager;
 	
 	@Override
-	public void addBinaryFileStream(BigFile bigFile, InputStream inputStream, long length) {
+	public void addBinaryFileStream(BigFile bigFile, InputStrea inputStream, long length) {
         Session session = (Session) this.entityManager.getDelegate(); 
         LobHelper helper = session.getLobHelper(); 
         bigFile.setBinaryFile(helper.createBlob(inputStream, length)); 
