@@ -305,7 +305,7 @@ public class SignBookService implements EvaluationContextExtension {
         return false;
     }
 
-    public void pendingSignRequest(SignBook signBook, User user) {
+    public void pendingSignBook(SignBook signBook, User user) {
         if(!getStatus(signBook).equals(SignRequestStatus.pending)) {
             updateStatus(signBook, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signBook.getComment());
             for(SignRequest signRequest : signBook.getSignRequests()) {

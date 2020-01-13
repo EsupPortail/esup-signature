@@ -84,12 +84,18 @@ public class WsController {
 
     @ResponseBody
     @RequestMapping(value = "/create-sign-request", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public String createSignRequest(@RequestParam String name, @RequestParam String createBy, HttpServletRequest httpServletRequest) throws EsupSignatureException {
+    public String createSignRequest(@RequestParam String name,
+                                    @RequestParam String createBy,
+                                    @RequestParam("recipientsEmail") String recipientsEmail,
+                                    @RequestParam("multipartFile") MultipartFile multipartFile,
+                                    @RequestParam("signLevel") int signLevel, HttpServletRequest httpServletRequest) throws EsupSignatureIOException, IOException {
         User user = userRepository.findByEppn(createBy).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
-        SignRequest newSignRequest = new SignRequest();
-        newSignRequest.setTitle(name);
-        SignRequest signRequest = signRequestService.createSignRequest(newSignRequest, user);
+        logger.info("new signRequest created by " + user.getEppn());
+        ObjectMapper mapper = new ObjectMapper();
+        List<String> recipientsEmailList = mapper.readValue(recipientsEmail, List.class);
+        SignRequest signRequest = signRequestService.createSignRequest(name, multipartFile, recipientsEmailList, signRequestService.getSignTypeByLevel(signLevel), user);
+        logger.info("new signRequest created by " + user.getEppn());
         return signRequest.getToken();
     }
 
@@ -105,23 +111,19 @@ public class WsController {
     @ResponseBody
     @RequestMapping(value = "/add-doc/{name}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public Object addDocument(@PathVariable("name") String name,
-                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest request) throws EsupSignatureException {
+                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest request) throws EsupSignatureException, EsupSignatureIOException {
         logger.info("start add documents");
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignBook signBook = signBookService.getSignBook(name, user);
-        SignRequest signRequest;
-//        if (signBook.getSignRequests().size() > 0) {
-//            signRequest = signBook.getSignRequests().get(0);
-//        } else {
-            signRequest = new SignRequest();
-            signRequest.setTitle(signBook.getName());
-            signRequest.setCreateBy(user.getEppn());
-            signRequest.setCreateDate(new Date());
-            signRequest.setParentSignBook(signBook);
-            signRequest.setStatus(SignRequestStatus.pending);
-            signRequestRepository.save(signRequest);
-//        }
+        SignRequest signRequest = new SignRequest();
+        signRequest.setTitle(signBook.getName());
+        signRequest.setCreateBy(user.getEppn());
+        signRequest.setCreateDate(new Date());
+        signRequest.setParentSignBook(signBook);
+        signRequest.setStatus(SignRequestStatus.pending);
+        signRequestRepository.save(signRequest);
+        signRequestService.scanSignatureFields(signRequest);
         List<Document> documents = documentService.createDocuments(multipartFiles);
         signRequestService.addOriginalDocuments(signRequest, documents);
         signRequestRepository.save(signRequest);
@@ -144,6 +146,7 @@ public class WsController {
         for (MultipartFile multipartFile : multipartFiles) {
             Document document = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
             SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), signBook, user, Arrays.asList(document));
+
             signRequest.setStatus(SignRequestStatus.pending);
         }
         String[] ok = {"ok"};
@@ -158,20 +161,8 @@ public class WsController {
         SignType signType = null;
         ObjectMapper mapper = new ObjectMapper();
         JsonWorkflowStep jsonWorkflowStep = mapper.readValue(jsonWorkflowStepString, JsonWorkflowStep.class);
-        switch (jsonWorkflowStep.getSignLevel()) {
-            case 0:
-                signType = SignType.visa;
-                break;
-            case 1:
-                signType = SignType.pdfImageStamp;
-                break;
-            case 2:
-                signType = SignType.certSign;
-                break;
-            case 3:
-                signType = SignType.nexuSign;
-                break;
-        }
+        int level = jsonWorkflowStep.getSignLevel();
+        signType = signRequestService.getSignTypeByLevel(level);
         WorkflowStep workflowStep = workflowService.createWorkflowStep(jsonWorkflowStep.getRecipientEmails(), "", jsonWorkflowStep.getAllSignToComplete(), signType);
         signBook.getWorkflowSteps().add(workflowStep);
         signBookRepository.save(signBook);
@@ -207,15 +198,28 @@ public class WsController {
 
     @ResponseBody
     @RequestMapping(value = "/pending-sign-book", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public String pendingSignRequest(@RequestParam String name) throws EsupSignatureIOException {
+    public String pendingSignBook(@RequestParam String name) throws EsupSignatureIOException {
         SignBook signBook = signBookRepository.findByName(name).get(0);
         for (SignRequest signRequest : signBook.getSignRequests()) {
             if(signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().equals("application/pdf")) {
                 signRequestService.scanSignatureFields(signRequest);
             }
         }
-        signBookService.pendingSignRequest(signBook, userService.getSystemUser());
+        signBookService.pendingSignBook(signBook, userService.getSystemUser());
         return signBook.getSignRequests().get(0).getToken();
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/pending-sign-request", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public void pendingSignRequest(@RequestParam String token,
+                                   @RequestParam("recipientsEmail") String recipientsEmail,
+                                   @RequestParam("signLevel") int signLevel) throws EsupSignatureIOException, IOException {
+        if (signRequestRepository.countByToken(token) > 0) {
+            SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
+            ObjectMapper mapper = new ObjectMapper();
+            List<String> recipientsEmailList = mapper.readValue(recipientsEmail, List.class);
+            signRequestService.pendingSignRequest(signRequest, recipientsEmailList, signRequestService.getSignTypeByLevel(signLevel), userService.getSystemUser());
+        }
     }
 
     @ResponseBody
@@ -242,11 +246,11 @@ public class WsController {
 
     @ResponseBody
     @RequestMapping(value = "/delete-sign-book", method = RequestMethod.POST)
-    public ResponseEntity<String> deleteSignBook(@RequestParam String signBookName, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
+    public ResponseEntity<String> deleteSignBook(@RequestParam String name, HttpServletRequest httpServletRequest) {
         User user = userService.getSystemUser();
         user.setIp(httpServletRequest.getRemoteAddr());
-        if (signBookRepository.countByName(signBookName) > 0) {
-            SignBook signBook = signBookRepository.findByName(signBookName).get(0);
+        if (signBookRepository.countByName(name) > 0) {
+            SignBook signBook = signBookRepository.findByName(name).get(0);
             if(signBook.isExternal()) {
                 signBookService.deleteSignBook(signBook);
             }
@@ -280,6 +284,34 @@ public class WsController {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
         } catch (NoResultException e) {
+            logger.error(e.getMessage(), e);
+        }
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Transactional
+    @RequestMapping(value = "/get-last-file-from-signrequest", method = RequestMethod.GET)
+    public ResponseEntity<Void> getLastFileFromSignRequest(@RequestParam String token, HttpServletResponse response) {
+        try {
+            //TODO add user to check right
+            if (signRequestRepository.countByToken(token) > 0) {
+                SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
+                    FsFile file = signRequestService.getLastSignedFile(signRequest);
+                    if (file == null) {
+                        response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+                        response.setContentType(signRequest.getOriginalDocuments().get(0).getContentType());
+                        IOUtils.copy(signRequest.getOriginalDocuments().get(0).getInputStream(), response.getOutputStream());
+                    } else {
+                        response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+                        response.setContentType(file.getContentType());
+                        IOUtils.copy(file.getInputStream(), response.getOutputStream());
+                    }
+                    return new ResponseEntity<>(HttpStatus.OK);
+            } else {
+                logger.warn("no signRequest " + token);
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (NoResultException | IOException e) {
             logger.error(e.getMessage(), e);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -353,6 +385,27 @@ public class WsController {
     @ResponseBody
     @RequestMapping(value = "/check-sign-request", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public JsonSignInfoMessage checkSignRequest(@RequestParam String fileToken) {
+        try {
+            if (signRequestRepository.countByToken(fileToken) > 0) {
+                SignRequest signRequest = signRequestRepository.findByToken(fileToken).get(0);
+                JsonSignInfoMessage jsonSignInfoMessage = new JsonSignInfoMessage();
+                jsonSignInfoMessage.setStatus(signRequest.getStatus().toString());
+                for (Long userId : signRequestService.getCurrentRecipients(signRequest).keySet()) {
+                    User user = userRepository.findById(userId).get();
+                    jsonSignInfoMessage.getNextRecipientNames().add(user.getName());
+                    jsonSignInfoMessage.getNextRecipientEppns().add(user.getEppn());
+                }
+                return jsonSignInfoMessage;
+            }
+        } catch (NoResultException e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/check-sign-book", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public JsonSignInfoMessage checkSignBook(@RequestParam String fileToken) {
         try {
             if (signRequestRepository.countByToken(fileToken) > 0) {
                 SignRequest signRequest = signRequestRepository.findByToken(fileToken).get(0);

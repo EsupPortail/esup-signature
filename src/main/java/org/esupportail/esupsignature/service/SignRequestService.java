@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.Function;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -102,15 +103,33 @@ public class SignRequestService implements EvaluationContextExtension {
 		return signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 	}
 
-	public SignRequest createSignRequest(String title, User user) throws EsupSignatureException {
-		SignRequest signRequest = new SignRequest();
-		signRequest.setTitle(title);
-		createSignRequest(signRequest, user);
-		SignBook signBook = signBookService.createSignBook(title, SignBook.SignBookType.workflow, user, false);
-		signBook.getSignRequests().add(signRequest);
-		signBookRepository.save(signBook);
-		signRequest.setParentSignBook(signBook);
+
+	public SignType getSignTypeByLevel(int level) {
+		SignType signType = null;
+		switch (level) {
+			case 0:
+				signType = SignType.visa;
+				break;
+			case 1:
+				signType = SignType.pdfImageStamp;
+				break;
+			case 2:
+				signType = SignType.certSign;
+				break;
+			case 3:
+				signType = SignType.nexuSign;
+				break;
+		}
+		return signType;
+	}
+
+	public SignRequest createSignRequest(String title, MultipartFile multipartFile, List<String> recipientsEmail, SignType signType, User user) throws EsupSignatureIOException {
+		Document documentToAdd = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
+		SignRequest signRequest = createSignRequest(new SignRequest(), user, documentToAdd);
+		signRequest.setTitle(title + fileService.getNameOnly(documentToAdd.getFileName()));
 		signRequestRepository.save(signRequest);
+		pendingSignRequest(signRequest, recipientsEmail, signType, user);
+		logger.info("adding new file into signRequest " + signRequest.getToken());
 		return signRequest;
 	}
 
@@ -145,6 +164,11 @@ public class SignRequestService implements EvaluationContextExtension {
 		updateStatus(signRequest, SignRequestStatus.draft, "Création de la demande", user, "SUCCESS", "");
 		for(Document document : documents) {
 			document.setParentId(signRequest.getId());
+		}
+		try {
+			scanSignatureFields(signRequest);
+		} catch (EsupSignatureIOException e) {
+			logger.error("error on scan pdf", e);
 		}
 		return signRequest;
 	}
@@ -340,9 +364,13 @@ public class SignRequestService implements EvaluationContextExtension {
 		signRequestRepository.save(signRequest);
 	}
 
-	public void pendingSignRequest(SignRequest signRequest, User user) throws EsupSignatureIOException {
+	public void pendingSignRequest(SignRequest signRequest, List<String> recipientsEmail, SignType signType, User user) throws EsupSignatureIOException {
 		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
-			scanSignatureFields(signRequest);
+			signRequest.setSignType(signType);
+			for(String recipientEmail : recipientsEmail) {
+				User recipientUser = userRepository.findByEmail(recipientEmail).get(0);
+				signRequest.getRecipients().put(recipientUser.getId(), false);
+			}
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 			for (Long recipientId : signRequest.getRecipients().keySet()) {
 				User recipientUser = userRepository.findById(recipientId).get();
@@ -389,7 +417,7 @@ public class SignRequestService implements EvaluationContextExtension {
 		return documents;
 	}
 
-	public FsFile getLastSignedFile(SignRequest signRequest) throws Exception {
+	public FsFile getLastSignedFile(SignRequest signRequest) {
 		if(signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			FsAccessService fsAccessService = null;
 			if (signRequest.getExportedDocumentURI().startsWith("smb")) {

@@ -332,18 +332,12 @@ public class SignRequestController {
     }
 
     @RequestMapping(value = "/fast-sign-request", method = RequestMethod.POST)
-    public String createSignRequest(@RequestParam("multipartFile") MultipartFile multipartFile, @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
+    public String createSignRequest(@RequestParam("multipartFile") MultipartFile multipartFile,
+                                    @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
         logger.info("création rapide demande de signature");
         User user = userService.getUserFromAuthentication();
         if (multipartFile != null) {
-            Document documentToAdd = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-            SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd);
-            signRequest.setTitle(fileService.getNameOnly(documentToAdd.getFileName()));
-            signRequest.setSignType(signType);
-            signRequest.getRecipients().put(user.getId(), false);
-            signRequestRepository.save(signRequest);
-            signRequestService.pendingSignRequest(signRequest, user);
-            logger.info("adding new file into signRequest " + signRequest.getToken());
+            SignRequest signRequest = signRequestService.createSignRequest("", multipartFile, Arrays.asList(user.getEmail()), signType, user);
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             logger.warn("no file to import");
@@ -554,14 +548,14 @@ public class SignRequestController {
     @RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
     public String pending(@PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
-                          HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) throws IOException, EsupSignatureIOException {
+                          HttpServletRequest request) throws EsupSignatureIOException {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         //TODO controle signType
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
         if (signRequestService.checkUserViewRights(user, signRequest) && (signRequest.getStatus().equals(SignRequestStatus.draft) || signRequest.getStatus().equals(SignRequestStatus.completed))) {
-            signRequestService.pendingSignRequest(signRequest, user);
+            signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
         } else {
             logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");
         }

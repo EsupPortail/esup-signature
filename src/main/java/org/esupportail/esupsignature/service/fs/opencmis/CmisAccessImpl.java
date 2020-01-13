@@ -308,7 +308,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public FsFile getFileFromURI(String uri) throws Exception {
+	public FsFile getFileFromURI(String uri) {
 		// TODO Auto-generated method stub
 		return null;
 	}

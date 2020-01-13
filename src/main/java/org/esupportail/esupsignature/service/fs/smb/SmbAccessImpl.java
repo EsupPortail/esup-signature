@@ -240,7 +240,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	}
 	
 	@Override
-	public FsFile getFileFromURI(String uri) throws Exception {
+	public FsFile getFileFromURI(String uri) {
 		try {
 			open();
 			SmbFile smbFile = new SmbFile(uri, cifsContext);

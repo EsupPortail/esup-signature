@@ -182,7 +182,7 @@ public class SignBookWizardController {
         if(signBookService.getCurrentWorkflowStep(signBook).getRecipients().containsKey(user.getId())) {
             mySign = true;
         }
-        signBookService.pendingSignRequest(signBook, user);
+        signBookService.pendingSignBook(signBook, user);
         model.addAttribute("mySign", mySign);
         return "user/signbooks/wizard/wizend";
     }

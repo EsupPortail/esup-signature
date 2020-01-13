@@ -105,7 +105,7 @@ public abstract class FsAccessService {
 
 	public abstract Object cd(String dir);
 
-	public abstract FsFile getFileFromURI(String uri) throws Exception;
+	public abstract FsFile getFileFromURI(String uri);
 	
 	public abstract boolean putFile(String dir, String filename,InputStream inputStream, UploadActionType uploadOption) throws EsupSignatureFsException;
 
