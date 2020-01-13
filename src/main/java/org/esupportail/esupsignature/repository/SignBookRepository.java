@@ -16,16 +16,9 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long>, Sign
 	Long countById(Long id);
     List<SignBook> findByName(String name);
     List<SignBook> findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus signRequestStatus);
-    List<SignBook> findByWorkflowSteps(List<WorkflowStep> workflowSteps);
     List<SignBook> findByWorkflowStepsContains(WorkflowStep workflowStep);
     Long countByName(String name);
     Page<SignBook> findByCreateBy(String createBy, Pageable pageable);
-    List<SignBook> findByRecipientEmailsAndSignBookType(List<String> recipientEmails, SignBookType signBookType);
-    Long countByRecipientEmailsAndSignBookType(List<String> recipientEmails, SignBookType signBookType);
-    @Query("select s from SignBook s where :recipientEmail in elements(s.recipientEmails) and :signBookType = s.signBookType")
-    List<SignBook> findByRecipientEmailsContainAndSignBookType(@Param("recipientEmail") String recipientEmail, @Param("signBookType") SignBookType signBookType);
-    @Query("select count(s) from SignBook s where :recipientEmail in elements(s.recipientEmails) and :signBookType = s.signBookType")
-    Long countByRecipientEmailsContainAndSignBookType(@Param("recipientEmail") String recipientEmail, @Param("signBookType") SignBookType signBookType);
     List<SignBook> findBySignBookType(SignBookType signBookType);
     List<SignBook> findByExternal(Boolean external);
 }

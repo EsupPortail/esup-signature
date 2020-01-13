@@ -47,13 +47,13 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <th:block th:each="signRequest,iterator : ${signBook.signRequests}">
+                            <th:block th:each="signRequest : ${signBook.signRequests}">
                                 <tr>
                                     <td class="text-break" th:text="${signRequest.title}"></td>
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy}"></span></td>
                                     <td class="utilbox">
-                                        <a class="btn btn-success" title="Signer" th:href="'/user/signbooks/' + ${signBook.id} + '/' + ${iterator.index}">
+                                        <a class="btn btn-success" title="Signer" th:href="'/user/signbooks/' + ${signBook.id} + '/' + ${signRequest.id}">
                                             <i class="fas fa-signature"></i>
                                         </a>
                                     </td>

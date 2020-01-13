@@ -96,7 +96,7 @@
                             <th:block th:each="signRequest : ${signRequestsToSign}">
                                 <tr>
                                     <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
-                                    <td class="text-break" th:unless="${signRequest.parentSignBook != null}">Hors parapheur</td>
+                                    <td class="text-break" th:unless="${signRequest.parentSignBook != null}"></td>
                                     <td class="text-break" th:text="${signRequest.title}"></td>
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy}"></span></td>
@@ -155,7 +155,7 @@
                             <th:block th:each="signRequest : ${signRequests}">
                                 <tr>
                                     <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
-                                    <td class="text-break" th:unless="${signRequest.parentSignBook != null}">Hors parapheur</td>
+                                    <td class="text-break" th:unless="${signRequest.parentSignBook != null}"></td>
                                     <td class="text-break" th:title="${signRequest.title}" th:text="${signRequest.title}"></td>
                                     <td class="d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell">
@@ -179,14 +179,13 @@
                                         <div th:replace="user/signrequests/includes/status :: status"></div>
                                     </td>
                                     <td class="utilbox">
-                                        <button class="btn btn-info fas fa-eye" title="Voir" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '\''">
-                                            <!--  -->
-                                        </button>
+                                        <button class="btn btn-info fas fa-eye" title="Voir" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '\''"></button>
                                     </td>
-                                    <td class="utilbox">
-                                        <button class="btn btn-warning fas fa-pen" title="Modifier" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '?form\''">
-                                            <!--  -->
-                                        </button>
+                                    <td class="utilbox" th:if="${signRequest.parentSignBook != null}">
+                                        <button class="btn btn-warning fas fa-pen" title="Modifier" th:onclick="'location.href=\'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form\''"></button>
+                                    </td>
+                                    <td class="utilbox" th:unless="${signRequest.parentSignBook != null}">
+                                        <button class="btn btn-warning fas fa-pen" title="Modifier" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '?form\''"></button>
                                     </td>
                                     <td class="utilbox">
                                         <form class="delete" th:action="'/user/signrequests/' + ${signRequest.id}" method="post">

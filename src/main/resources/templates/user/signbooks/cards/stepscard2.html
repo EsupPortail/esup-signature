@@ -7,19 +7,19 @@
             <button type="button" class="btn btn-sm btn-primary float-right" data-toggle="modal" data-target="#addStep">
                 <i class="fas fa-plus"></i> Ajouter une étape manuellement
             </button>
-            <button th:if="${signBook.status.name() == 'draft' && signBook.workflowSteps.size() == 0}" type="button" class="btn btn-sm btn-primary float-right mr-1" data-toggle="modal" data-target="#addWorkflow">
+            <button th:if="${@signBookService.getStatus(signBook).name() == 'draft' && signBook.workflowSteps.size() == 0}" type="button" class="btn btn-sm btn-primary float-right mr-1" data-toggle="modal" data-target="#addWorkflow">
                 <i class="fas fa-project-diagram"></i> Charger un modèle de circuit
             </button>
-            <a th:if="${signBook.status.name() == 'draft' && signBook.workflowSteps.size() == 0 && signBook.signRequests.size() == 1 && signBook.signRequests.get(0).originalDocuments.get(0).contentType == 'application/pdf'}"
+            <a th:if="${@signBookService.getStatus(signBook).name() == 'draft' && signBook.workflowSteps.size() == 0 && signBook.signRequests.size() == 1 && signBook.signRequests.get(0).originalDocuments.get(0).contentType == 'application/pdf'}"
                th:href="'/user/signBooks/scan-pdf-sign/' + ${id}" class="btn btn-sm btn-primary float-right mr-1">
                 <i class="fas fa-binoculars"></i> Rechercher les champs signature
             </a>
         </div>
         <div class="card-body">
             <div th:if="${user.eppn == signBook.createBy}">
-                <div th:if="${(signBook.status.name() == 'draft' || signBook.status.name() == 'completed')}">
+                <div th:if="${(@signBookService.getStatus(signBook).name() == 'draft' || @signBookService.getStatus(signBook).name() == 'completed')}">
                     <div th:if="${#lists.size(signBook.signRequests) == 0 || signBook.currentWorkflowStep.recipients.size() == 0}">
-                        <div class="alert alert-warning mb-1" th:if="${signBook.status.name() == 'draft'}">
+                        <div class="alert alert-warning mb-1" th:if="${@signBookService.getStatus(signBook).name() == 'draft'}">
                             <div th:if="${signBook.currentWorkflowStep.recipients.size() == 0}">
                                 <p>
                                     Vous devez ajouter des étapes ainsi que des participants pour chaque étape du circuit de signature

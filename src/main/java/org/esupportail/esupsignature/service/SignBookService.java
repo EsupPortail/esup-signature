@@ -260,26 +260,6 @@ public class SignBookService implements EvaluationContextExtension {
         }
     }
 
-    public boolean isSignBookCompleted(SignBook signBook) {
-        if (getCurrentWorkflowStep(signBook).getRecipients() != null) {
-            for (Map.Entry<Long, Boolean> userId : getCurrentWorkflowStep(signBook).getRecipients().entrySet()) {
-                if (!getCurrentWorkflowStep(signBook).getRecipients().get(userId.getKey()) && getCurrentWorkflowStep(signBook).isAllSignToComplete()) {
-                    return false;
-                }
-                if (getCurrentWorkflowStep(signBook).getRecipients().get(userId.getKey()) && !getCurrentWorkflowStep(signBook).isAllSignToComplete()) {
-                    return true;
-                }
-            }
-            if (getCurrentWorkflowStep(signBook).isAllSignToComplete()) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
-
     public void removeStep(SignBook signBook, int step) {
         WorkflowStep workflowStep = signBook.getWorkflowSteps().get(step);
         signBook.getWorkflowSteps().remove(step);
@@ -323,15 +303,6 @@ public class SignBookService implements EvaluationContextExtension {
             return true;
         }
         return false;
-    }
-
-    public boolean checkUserSignRights(User user, SignBook signBook) {
-        if ((getStatus(signBook).equals(SignRequestStatus.pending) || getStatus(signBook).equals(SignRequestStatus.draft))
-                && getCurrentWorkflowStep(signBook).getRecipients().containsKey(user.getId()) &&  !getCurrentWorkflowStep(signBook).getRecipients().get(user.getId())) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public void pendingSignRequest(SignBook signBook, User user) {

@@ -15,11 +15,8 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
 	Long countById(Long id);
     List<SignRequest> findByToken(String token);
     Long countByToken(String token);
-    List<SignRequest> findDistinctByStatus(String category);
     @Query("select s from SignRequest s join s.recipients r where key(r) = :recipientId and value(r) is false")
     List<SignRequest> findByRecipientsContains(@Param("recipientId") Long recipientId);
-    Long countByCreateByAndStatus(String createBy, SignRequestStatus status);
-    List<SignRequest> findByCreateBy(String createBy);
     Page<SignRequest> findByCreateBy(String createBy, Pageable pageable);
     Page<SignRequest> findByCreateByAndStatus(String createBy, SignRequestStatus status, Pageable pageable);
     Page<SignRequest> findByCreateByAndStatusNot(String createBy, SignRequestStatus statusNot, Pageable pageable);

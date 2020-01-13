@@ -6,7 +6,7 @@
         <div class="row">
             <div class="col-lg-9">
                 <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post" th:if="${documentType == 'pdf'}">
-                    <canvas th:if="${signable != 'ok'}" title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" class="drop-shadows ">
+                    <canvas th:if="${signable != 'ok'}" id="pdf" style="border : 1px solid black;" class="drop-shadows ">
                     </canvas>
                     <canvas th:if="${signable == 'ok'}" title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" onmouseup="action();" ontouchend="action();" ontouchmove="point(event);" onmousemove="point(event);" class="drop-shadows ">
                     </canvas>
@@ -50,17 +50,12 @@
                             <i class="fas fa-save"></i>
                         </button>
                     </div>
-                    <th:block th:each="postit : ${postits}">
-                        <div th:id="${postit.id}" class="circle" th:style="'position: absolute;z-index:1000;left:' + ${postit.posX} + 'px; top:' + ${postit.posY} + 'px;'"></div>
-                    </th:block>
-
                     <input class="form-control form-control-sm col-6 d-none" value="0" id="signPageNumber" type="text" name="pageNumber"/>
                     <input class="form-control form-control-sm col-6 d-none" value="0" id="xPos" type="text" name="posX"/>
                     <input class="form-control form-control-sm col-6 d-none" value="0" id="yPos" type="text" name="posY"/>
                     <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="visual" id="visual"/>
                     <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="addDate" id="addDate"/>
-
-                    <script th:inline="javascript" th:if="${signable == 'ok'}" >
+                    <script th:inline="javascript" >
                         /*<![CDATA[*/
 
                         var signId = [[${signRequest.id}]];
@@ -95,12 +90,24 @@
                                     }
                                 });
                             });
+                            pageNum = num;
                             document.getElementById('page_num').textContent = num;
                             refreshSign();
                             if(pdfDoc.numPages == 1) {
                                 $('#prev').prop('disabled', true);
                                 $('#next').prop('disabled', true);
                             }
+
+                            [# th:each="postit : ${postits}"]
+                                if([[${postit.pageNumber}]] == num && !signMode) {
+                                    $("#[[${postit.id}]]").show();
+                                    $("#postit[[${postit.id}]]").css("background-color", "#FFC");
+                                } else {
+                                    $("#[[${postit.id}]]").hide();
+                                    $("#postit[[${postit.id}]]").css("background-color", "#EEE");
+                                }
+                            [/]
+
                         }
 
                         function queueRenderPage(num) {
@@ -112,6 +119,7 @@
                         }
 
                         function prevPage() {
+                            console.error(pageNum);
                             if (pageNum <= 1) {
                                 return;
                             }
@@ -135,6 +143,13 @@
                             if (scale >= 1.75) {
                                 return;
                             }
+                            $(".circle").each(function( index ) {
+                                var left = Math.round($(this).css('left').replace("px", "") / scale * (scale + 0.25));
+                                var top = Math.round((($(this).css('top').replace("px", "") / scale) - 20) * (scale + 0.25)) + 20 * (scale + 0.25);
+                                console.log(top);
+                                $(this).css('left', left);
+                                $(this).css('top', top);
+                            });
                             scale = scale + 0.25;
                             queueRenderPage(pageNum);
                         }
@@ -145,6 +160,13 @@
                             if (scale <= 0.75) {
                                 return;
                             }
+                            $(".circle").each(function( index ) {
+                                var left = Math.round($(this).css('left').replace("px", "") / scale * (scale - 0.25));
+                                var top = Math.round((($(this).css('top').replace("px", "") / scale) - 20) * (scale - 0.25)) + 20 * (scale - 0.25);
+                                console.log(top);
+                                $(this).css('left', left);
+                                $(this).css('top', top);
+                            });
                             scale = scale - 0.25;
                             queueRenderPage(pageNum);
                         }
@@ -247,12 +269,12 @@
                                 $('#rotateright').prop('disabled', false);
                                 $('#signtools').fadeTo(300, 0);
                                 $('#signtools').hide();
+                                queueRenderPage(pageNum);
                             } else {
                                 signMode = true;
                                 pointItEnable = false;
                                 //scale = 1;
                                 rotation = 0;
-                                queueRenderPage(pageNum);
                                 $('#cross').show();
                                 $('#comments').hide();
                                 $('#rotateleft').prop('disabled', true);
@@ -261,7 +283,10 @@
                                 $('#signtools').fadeTo(300, 1);
                                 document.getElementById("xPos").value = Math.round([[${@signRequestService.getCurrentSignRequestParams(signRequest).XPos}]]);
                                 document.getElementById("yPos").value = Math.round([[${@signRequestService.getCurrentSignRequestParams(signRequest).YPos}]]);
-
+                                $(".circle").each(function( index ) {
+                                    $(this).hide();
+                                });
+                                queueRenderPage(pageNum);
                             }
                         }
 
@@ -323,10 +348,19 @@
                                 textDate.remove();
                             }
                         }
-
-
                         /*]]>*/
                     </script>
+                    <th:block th:each="postit : ${postits}">
+                        <div th:id="${postit.id}" class="circle">
+                            <i class="far fa-comment-alt fa-3x"></i>
+                        </div>
+                        <script th:inline="javascript" >
+                            /*<![CDATA[*/
+                            $('#[[${postit.id}]]').css('left', [[${postit.posX}]] * scale);
+                            $('#[[${postit.id}]]').css('top', [[${postit.posY}]] * scale - 20 * scale);
+                            /*]]>*/
+                        </script>
+                    </th:block>
                 </form>
                 <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post" th:if="${documentType != 'pdf'}">
                     <script>
@@ -442,10 +476,10 @@
                 </div>
                 <div id="comments" th:if="${signable == 'ok' && documentType == 'pdf'}" style="transition: all 0.3s;">
                     <div class="alert alert-warning">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
-                    <div class="alert alert-warning clearfix">
+                    <div class="alert alert-warning clearfix position-fixed">
                         <th:block th:each="postit : ${postits}">
                             <div th:id="'postit' + ${postit.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
-                                 th:onmouseover="'$(\'#' + ${postit.id} + '\').show(); queueRenderPage(' + ${postit.pageNumber} + ')'" th:onmouseout="'$(\'#' + ${postit.id} + '\').hide()'">
+                                 th:onclick="'queueRenderPage(' + ${postit.pageNumber} + ');$(\'html,body\').animate({scrollTop: $(\'#' + ${postit.id} + '\').css(\'top\').replace(\'px\', \'\')}, \'slow\');'">
                                 <b th:text="${@userService.getNameFromEppn(postit.eppn)}"></b>
                                 <span th:text="${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></span>
                                 <p class="postitarea" th:text="${postit.comment}"></p>

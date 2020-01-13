@@ -320,6 +320,17 @@ public class SignRequestController {
         return output;
     }
 
+    @GetMapping("/sign-by-token/{token}")
+    public String signByToken(@PathVariable("token") String token) {
+        User user = userService.getUserFromAuthentication();
+        SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
+        if(signRequestService.checkUserSignRights(user, signRequest)) {
+            return "redirect:/user/signrequests/" + signRequest.getId();
+        } else {
+            return "redirect:/";
+        }
+    }
+
     @RequestMapping(value = "/fast-sign-request", method = RequestMethod.POST)
     public String createSignRequest(@RequestParam("multipartFile") MultipartFile multipartFile, @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
         logger.info("création rapide demande de signature");
@@ -602,7 +613,7 @@ public class SignRequestController {
         } else {
             logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
         }
-        return "redirect:/user/signrequest/" + signRequest.getId();
+        return "redirect:/user/signrequests/" + signRequest.getId();
     }
 
     void populateEditForm(Model model, SignRequest signRequest) {

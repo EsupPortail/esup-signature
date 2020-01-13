@@ -38,7 +38,7 @@
                     <button id="rotateright" class="btn btn-light btn-outline-dark"><i class="fas fa-redo"></i></button>
                 </div>
                 </th:block>
-                <div class="alert alert-success col-3 col-md-12 mb-1 p-1" th:classappend="${signable != 'ok'} ? 'd-none' ">
+                <div class="alert bg-success col-3 col-md-12 mb-1 p-1" th:classappend="${signable != 'ok'} ? 'd-none' ">
                     <div id="signmode" class="form-check">
                         <label>Activer le mode signature</label>
                         <label class="switch">
@@ -50,9 +50,9 @@
                 <button class="btn btn-danger col-3 col-md-12 mb-1 text-left" th:classappend="${signable != 'ok'} ? 'd-none'" onclick="toggleSignRefuseMode();">
                     <i class="fas fa-ban"></i><span class="sidebar-label"> Refuser</span>
                 </button>
-                <a title="Abandonner" class="btn btn-light col-12 mb-1 text-left" value="Retour" href="/user/signbooks">
+                <button title="Abandonner" class="btn btn-light col-12 mb-1 text-left" value="Retour" onclick="window.history.back();">
                     <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
-                </a>
+                </button>
             </div>
         </nav>
         <div id="content" class="content">

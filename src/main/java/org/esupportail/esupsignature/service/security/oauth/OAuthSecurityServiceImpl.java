@@ -78,7 +78,6 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 		
 	}
 
-    @Bean
     public OAuth2AuthorizedClientService authorizedClientService(
             ClientRegistrationRepository clientRegistrationRepository) {
         return new InMemoryOAuth2AuthorizedClientService(clientRegistrationRepository);

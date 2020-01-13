@@ -66,17 +66,17 @@ public class SignRequestService implements EvaluationContextExtension {
 	private DocumentService documentService;
 
 	@Resource
-	private SignRequestParamsRepository signRequestParamsRepository; 
-	
+	private SignRequestParamsRepository signRequestParamsRepository;
+
 	@Resource
 	private SignBookRepository signBookRepository;
-	
+
 	@Resource
 	private FsAccessFactory fsAccessFactory;
-	
+
 	@Resource
 	private SignBookService signBookService;
-	
+
 	@Resource
 	private SignService signService;
 
@@ -134,7 +134,7 @@ public class SignRequestService implements EvaluationContextExtension {
 		documents.add(document);
 		return createSignRequest(signRequest, user, documents);
 	}
-	
+
 	public SignRequest createSignRequest(SignRequest signRequest, User user, List<Document> documents) {
 		signRequest.setToken(String.valueOf(generateUniqueId()));
 		signRequest.setCreateBy(user.getEppn());
@@ -148,7 +148,7 @@ public class SignRequestService implements EvaluationContextExtension {
 		}
 		return signRequest;
 	}
-	
+
 	public void addOriginalDocuments(SignRequest signRequest, List<Document> documents) {
 		for(Document document : documents) {
 			signRequest.getOriginalDocuments().add(document);
@@ -172,7 +172,7 @@ public class SignRequestService implements EvaluationContextExtension {
 		} else {
 			signedFile = certSign(signRequest, user, password, addDate, visual);
 		}
-		
+
 		if (signedFile != null) {
 			if(signedFile.getFileName() != null) {
 				signRequest.getSignedDocuments().add(signedFile);
@@ -192,13 +192,13 @@ public class SignRequestService implements EvaluationContextExtension {
 	public void nexuSign(SignRequest signRequest, User user, AbstractSignatureForm signatureDocumentForm, AbstractSignatureParameters parameters) throws EsupSignatureKeystoreException, EsupSignatureIOException, EsupSignatureSignException {
 		logger.info(user.getEppn() + " launch nexu signature for signRequest : " + signRequest.getId());
 		DSSDocument dssDocument;
-		
+
 		if(signatureDocumentForm.getClass().equals(SignatureMultipleDocumentsForm.class)) {
 			dssDocument = signService.signDocument((SignatureMultipleDocumentsForm) signatureDocumentForm);
 		} else {
 			dssDocument = signService.nexuSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters);
 		}
-		
+
 		InMemoryDocument signedDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 
 		addSignedFile(signRequest, signedDocument.openStream(), signedDocument.getName(), signedDocument.getMimeType().getMimeTypeString(), user);
@@ -233,7 +233,7 @@ public class SignRequestService implements EvaluationContextExtension {
 				base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
 			}
 			signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
-			
+
 			AbstractSignatureParameters parameters = null;
 			if(signatureForm.equals(SignatureForm.CAdES)) {
 				ASiCWithCAdESSignatureParameters aSiCWithCAdESSignatureParameters = new ASiCWithCAdESSignatureParameters();
@@ -268,7 +268,7 @@ public class SignRequestService implements EvaluationContextExtension {
 			throw new EsupSignatureException(e.getMessage(), e);
 		}
 	}
-	
+
 	public void addSignedFile(SignRequest signRequest, InputStream signedInputStream, String fileName, String mimeType, User user) {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 		Document document = documentService.createDocument(signedInputStream, signRequest.getTitle() + "_" + getCurrentSignType(signRequest) + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(fileName), mimeType);
@@ -292,6 +292,7 @@ public class SignRequestService implements EvaluationContextExtension {
 			}
 		} else {
 			getCurrentRecipients(signRequest).put(user.getId(), true);
+			//TODO si tout a true ou si pas allsign
 			//completeSignRequest(signRequest, user);
 		}
 	}
@@ -354,20 +355,6 @@ public class SignRequestService implements EvaluationContextExtension {
 		}
 	}
 
-//	public void pendingSignRequest(SignRequest signRequest, User user) {
-//		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
-//			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
-//			for (Long recipientId : signRequest.getParentSignBook().getCurrentWorkflowStep().getRecipients().keySet()) {
-//				User recipientUser = userRepository.findById(recipientId).get();
-//				if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
-//					userService.sendEmailAlert(recipientUser);
-//				}
-//			}
-//		} else {
-//			logger.warn("allready pending");
-//		}
-//	}
-
 	public int scanSignatureFields(SignRequest signRequest) throws EsupSignatureIOException {
 		int nbSignFound = 0;
 		try {
@@ -401,7 +388,7 @@ public class SignRequestService implements EvaluationContextExtension {
 		}
 		return documents;
 	}
-	
+
 	public FsFile getLastSignedFile(SignRequest signRequest) throws Exception {
 		if(signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			FsAccessService fsAccessService = null;
@@ -413,7 +400,7 @@ public class SignRequestService implements EvaluationContextExtension {
 		Document lastSignedDocument = getLastSignedDocument(signRequest);
 		return new FsFile(lastSignedDocument.getInputStream(), lastSignedDocument.getFileName(), lastSignedDocument.getContentType());
 	}
-	
+
 	public Document getLastSignedDocument(SignRequest signRequest) {
 		if(signRequest.getSignedDocuments().size() > 0) {
 			signRequest.setSignedDocuments(signRequest.getSignedDocuments().stream().sorted(Comparator.comparing(Document::getCreateDate).reversed()).collect(Collectors.toList()));
@@ -452,7 +439,7 @@ public class SignRequestService implements EvaluationContextExtension {
 			log.setPosY(posY);
 		}
 		if(signRequestStatus != null) {
-			log.setFinalStatus(signRequestStatus.toString());		
+			log.setFinalStatus(signRequestStatus.toString());
 			signRequest.setStatus(signRequestStatus);
 		} else {
 			log.setFinalStatus(signRequest.getStatus().toString());
@@ -483,7 +470,7 @@ public class SignRequestService implements EvaluationContextExtension {
 		}
 		return false;
 	}
-	
+
 	public SignRequestParams getEmptySignRequestParams() {
 		SignRequestParams signRequestParams = new SignRequestParams();
 		signRequestParams.setSignPageNumber(1);
@@ -492,7 +479,7 @@ public class SignRequestService implements EvaluationContextExtension {
 		signRequestParamsRepository.save(signRequestParams);
 		return signRequestParams;
 	}
-	
+
 	public long generateUniqueId() {
         long val = -1;
         while (val < 0) {
@@ -502,7 +489,7 @@ public class SignRequestService implements EvaluationContextExtension {
             buffer.putLong(uid.getMostSignificantBits());
             final BigInteger bi = new BigInteger(buffer.array());
             val = bi.longValue();
-        } 
+        }
         return val;
     }
 

@@ -340,17 +340,7 @@ public class SignBookController {
             logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
         }
     }
-/*
-    @RequestMapping(value = "/toggle-need-all-sign/{id}/{step}", method = RequestMethod.GET)
-    public String toggleNeedAllSign(@PathVariable("id") Long id,@PathVariable("step") Integer step) {
-        User user = userService.getUserFromAuthentication();
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        if(user.getEppn().equals(signRequest.getCreateBy())) {
-            signRequestService.toggleNeedAllSign(signRequest, step);
-        }
-        return "redirect:/user/signbooks/" + id;
-    }
-*/
+
     @RequestMapping(value = "/change-step-sign-type/{id}/{step}", method = RequestMethod.GET)
     public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
         User user = userService.getUserFromAuthentication();
