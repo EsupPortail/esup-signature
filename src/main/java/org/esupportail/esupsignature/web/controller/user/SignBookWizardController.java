@@ -145,6 +145,7 @@ public class SignBookWizardController {
             model.addAttribute("signTypes", SignType.values());
         }
         if(end != null) {
+            signBookService.setNextRecipients(signBook);
             return "redirect:/user/signbooks/wizard/wiz5/" + signBook.getId();
         }
         model.addAttribute("signBook", signBook);
@@ -162,7 +163,6 @@ public class SignBookWizardController {
     public String saveWorkflow(@PathVariable("id") Long id, @RequestParam(name="name") String name, Model model) throws EsupSignatureException {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
-        Workflow workflow;
         if(workflowRepository.countByName(name) > 0 ) {
             model.addAttribute("signBook", signBook);
             model.addAttribute("messageError", "Un circuit de signature porte déjà ce nom");

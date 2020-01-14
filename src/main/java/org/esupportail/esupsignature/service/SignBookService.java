@@ -172,6 +172,7 @@ public class SignBookService implements EvaluationContextExtension {
         signBook.setTargetType(workflow.getTargetType());
         signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
         signBookRepository.save(signBook);
+        setNextRecipients(signBook);
     }
 
 
@@ -296,6 +297,17 @@ public class SignBookService implements EvaluationContextExtension {
 
     public void nextWorkFlowStep(SignBook signBook, User user) {
         signBook.setCurrentWorkflowStepNumber(signBook.getCurrentWorkflowStepNumber() + 1);
+        setNextRecipients(signBook);
+    }
+
+    public void setNextRecipients(SignBook signBook) {
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            signRequest.getRecipients().clear();
+            for(Map.Entry<Long, Boolean> recipient : getCurrentWorkflowStep(signBook).getRecipients().entrySet()) {
+                signRequest.getRecipients().put(recipient.getKey(), recipient.getValue());
+            }
+            signRequestRepository.save(signRequest);
+        }
     }
 
     public boolean checkUserViewRights(User user, SignBook signBook) {

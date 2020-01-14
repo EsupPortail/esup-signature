@@ -198,46 +198,46 @@ public class SignBookController {
         return "user/signbooks/show";
     }
 
-    @RequestMapping(value = "/sign/{id}", method = RequestMethod.POST)
-    public void sign(
-            @PathVariable("id") Long id,
-            @RequestParam(value = "comment", required = false) String comment,
-            @RequestParam(value = "password", required = false) String password, HttpServletRequest request) throws IOException {
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        float nbSigned = 0;
-        progress = "0";
-        SignBook signBook = signBookRepository.findById(id).get();
-        for (SignRequest signRequest : signBook.getSignRequests()) {
-            if (signRequestService.checkUserSignRights(user, signRequest)) {
-                if (!"".equals(password)) {
-                    setPassword(password);
-                }
-                try {
-                    if (signBookService.getCurrentWorkflowStep(signBook).getSignType().equals(SignType.visa)) {
-                        signRequestService.updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", comment);
-                    } else if (signBookService.getCurrentWorkflowStep(signBook).getSignType().equals(SignType.nexuSign)) {
-                        logger.error("no multiple nexu sign");
-                        progress = "not_autorized";
-                    } else {
-                        signRequestService.sign(signRequest, user, this.password, false, false);
-                    }
-                } catch (EsupSignatureKeystoreException e) {
-                    logger.error("keystore error", e);
-                    progress = "security_bad_password";
-                    break;
-                } catch (EsupSignatureException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            } else {
-                logger.error("not autorized to sign");
-                progress = "not_autorized";
-            }
-            nbSigned++;
-            float percent = (nbSigned / signBook.getSignRequests().size()) * 100;
-            progress = String.valueOf((int) percent);
-        }
-    }
+//    @RequestMapping(value = "/sign/{id}", method = RequestMethod.POST)
+//    public void sign(
+//            @PathVariable("id") Long id,
+//            @RequestParam(value = "comment", required = false) String comment,
+//            @RequestParam(value = "password", required = false) String password, HttpServletRequest request) throws IOException {
+//        User user = userService.getUserFromAuthentication();
+//        user.setIp(request.getRemoteAddr());
+//        float nbSigned = 0;
+//        progress = "0";
+//        SignBook signBook = signBookRepository.findById(id).get();
+//        for (SignRequest signRequest : signBook.getSignRequests()) {
+//            if (signRequestService.checkUserSignRights(user, signRequest)) {
+//                if (!"".equals(password)) {
+//                    setPassword(password);
+//                }
+//                try {
+//                    if (signBookService.getCurrentWorkflowStep(signBook).getSignType().equals(SignType.visa)) {
+//                        signRequestService.updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", comment);
+//                    } else if (signBookService.getCurrentWorkflowStep(signBook).getSignType().equals(SignType.nexuSign)) {
+//                        logger.error("no multiple nexu sign");
+//                        progress = "not_autorized";
+//                    } else {
+//                        signRequestService.sign(signRequest, user, this.password, false, false);
+//                    }
+//                } catch (EsupSignatureKeystoreException e) {
+//                    logger.error("keystore error", e);
+//                    progress = "security_bad_password";
+//                    break;
+//                } catch (EsupSignatureException e) {
+//                    logger.error(e.getMessage(), e);
+//                }
+//            } else {
+//                logger.error("not autorized to sign");
+//                progress = "not_autorized";
+//            }
+//            nbSigned++;
+//            float percent = (nbSigned / signBook.getSignRequests().size()) * 100;
+//            progress = String.valueOf((int) percent);
+//        }
+//    }
 
     @ResponseBody
     @RequestMapping(value = "/get-step")
@@ -280,7 +280,7 @@ public class SignBookController {
         signBook.getSignRequests().clear();
         signBookRepository.delete(signBook);
         model.asMap().clear();
-        return "redirect:/user/signbooks/";
+        return "redirect:/user/signrequests/";
     }
 
     @RequestMapping(value = "/get-last-file-by-token/{token}", method = RequestMethod.GET)

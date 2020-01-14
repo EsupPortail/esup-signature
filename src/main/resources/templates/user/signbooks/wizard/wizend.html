@@ -6,7 +6,7 @@
         Signer <i class="fas fa-signature"></i>
     </button>
 
-    <button th:onclick="'parent.location.href=\'/user/signbooks/'+ ${signBook.id} +'/0\''" type="button" class="btn btn-success" style="position: absolute;right: 10px;bottom: 10px;">
+    <button th:onclick="'parent.location.href=\'/user/signbooks/'+ ${signBook.id} +'/' + ${signBook.signRequests.get(0).id} + '\''" type="button" class="btn btn-success" style="position: absolute;right: 10px;bottom: 10px;">
         <i class="fas fa-door-open"></i> Fermer
     </button>
 
