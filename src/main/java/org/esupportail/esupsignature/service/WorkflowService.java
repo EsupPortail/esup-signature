@@ -71,6 +71,7 @@ public class WorkflowService {
             workflowWorkflow.setTargetType(DocumentIOType.none);
             WorkflowStep workflowStep = new WorkflowStep();
             workflowStep.setName("Ma signature");
+            workflowStep.setSignType(SignType.certSign);
             workflowStep.getRecipients().put(creator.getId(), false);
             workflowStepRepository.save(workflowStep);
             workflowWorkflow.getWorkflowSteps().add(workflowStep);
@@ -169,7 +170,7 @@ public class WorkflowService {
                         signRequest.setParentSignBook(signBook);
                         signRequest.setTitle(documentToAdd.getFileName());
                         signRequestRepository.save(signRequest);
-                        signBookService.importWorkflow(signBook, workflow);
+                        signBookService.importWorkflow(signBook, workflow, user);
                         signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Import depuis " + workflow.getSourceType() + " : " + workflow.getDocumentsSourceUri(), user, "SUCCESS", null);
                         fsAccessService.remove(fsFile);
                     }

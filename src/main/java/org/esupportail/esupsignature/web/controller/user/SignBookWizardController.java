@@ -96,14 +96,21 @@ public class SignBookWizardController {
     }
 
     @RequestMapping(value = "/wiz4/{id}", produces = "text/html")
-    public String wiz4(@PathVariable("id") Long id, @RequestParam(value = "workflowId", required = false) Long workflowId,  Model model) throws IOException {
+    public String wiz4(@PathVariable("id") Long id,
+                       @RequestParam(value = "workflowId", required = false) Long workflowId,
+                       @RequestParam(value = "selfSign", required = false) Boolean selfSign,
+                       Model model) {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user.getEppn())) {
             model.addAttribute("signBook", signBook);
             if (workflowId != null) {
                 Workflow workflow = workflowRepository.findById(workflowId).get();
-                signBookService.importWorkflow(signBook, workflow);
+                signBookService.importWorkflow(signBook, workflow, user);
+                return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
+            } else if(selfSign) {
+                Workflow workflow = workflowRepository.findByName("Ma signature").get(0);
+                signBookService.importWorkflow(signBook, workflow, user);
                 return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
             }
             model.addAttribute("workflowStepForm", true);

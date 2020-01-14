@@ -168,27 +168,35 @@ public class WsController {
     public List<Doc> listSignedFiles(@RequestParam("recipientEmail") String recipientEmail, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureException {
         List<Doc> signedFiles = new ArrayList<>();
         User user = userService.getUser(recipientEmail);
-        user.setIp(httpServletRequest.getRemoteAddr());
-        List<Log> logs = new ArrayList<>();
-        logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.signed.name()));
-		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.checked.name()));
-        logs:
-		for (Log log : logs) {
-            logger.debug("find log : " + log.getSignRequestId() + ", " + log.getFinalStatus());
-            try {
-                SignRequest signRequest = signRequestRepository.findById(log.getSignRequestId()).get();
-                for(Doc doc : signedFiles) {
-                    if (doc.getToken().equals(signRequest.getToken())) {
-                        continue logs;
-                    }
-                }
-                signedFiles.add(new Doc(signRequest.getTitle(), signRequest.getSignedDocuments().get(0).getContentType(), signRequest.getToken(), signRequest.getStatus().name(), log.getLogDate()));
-            } catch (Exception e) {
-                logger.debug(e.getMessage());
-            }
+        List<SignRequest> signRequests = signRequestService.getSignRequestsSignedByUser(user);
+
+        for (SignRequest signRequest : signRequests) {
+            signedFiles.add(new Doc(signRequest.getTitle(), signRequest.getSignedDocuments().get(0).getContentType(), signRequest.getToken(), signRequest.getStatus().name(), signRequest.getCreateDate()));
+
         }
         return signedFiles;
     }
+
+//    private void getSignRequestSignedByUser(List<Doc> signedFiles, User user) {
+//        List<Log> logs = new ArrayList<>();
+//        logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.signed.name()));
+//        logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.checked.name()));
+//        logs:
+//		for (Log log : logs) {
+//            logger.debug("find log : " + log.getSignRequestId() + ", " + log.getFinalStatus());
+//            try {
+//                SignRequest signRequest = signRequestRepository.findById(log.getSignRequestId()).get();
+//                for(Doc doc : signedFiles) {
+//                    if (doc.getToken().equals(signRequest.getToken())) {
+//                        continue logs;
+//                    }
+//                }
+//                signedFiles.add(new Doc(signRequest.getTitle(), signRequest.getSignedDocuments().get(0).getContentType(), signRequest.getToken(), signRequest.getStatus().name(), log.getLogDate()));
+//            } catch (Exception e) {
+//                logger.debug(e.getMessage());
+//            }
+//        }
+//    }
 
     @ResponseBody
     @RequestMapping(value = "/pending-sign-book", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)

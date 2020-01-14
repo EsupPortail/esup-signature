@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="stepscard">
-    <div class="card rounded-0 mb-1 bg-transparent">
-        <div class="card-body">
+    <div class="alert alert-light mb-1">
+        <h5>Etapes de la signature</h5>
             <th:block th:if="${signRequest.parentSignBook.workflowSteps != null}">
                 <div id="stepper" class="bs-stepper vertical">
                     <div class="bs-stepper-header" role="tablist">
@@ -48,7 +48,6 @@
                     </div>
                 </div>
             </th:block>
-        </div>
     </div>
 </div>
 </html>

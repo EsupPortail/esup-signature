@@ -155,7 +155,7 @@ public class SignBookService implements EvaluationContextExtension {
         }
     }
 
-    public void importWorkflow(SignBook signBook, Workflow workflow) {
+    public void importWorkflow(SignBook signBook, Workflow workflow, User user) {
         logger.info("import workflow steps in signBook " + signBook.getName() + " - " +signBook.getId());
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
             WorkflowStep newWorkflowStep = new WorkflowStep();
@@ -174,7 +174,7 @@ public class SignBookService implements EvaluationContextExtension {
         signBook.setTargetType(workflow.getTargetType());
         signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
         signBookRepository.save(signBook);
-        setNextRecipients(signBook);
+        pendingSignBook(signBook, user);
     }
 
 

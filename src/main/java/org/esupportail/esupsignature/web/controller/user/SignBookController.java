@@ -399,7 +399,7 @@ public class SignBookController {
         SignBook signBook = signBookRepository.findById(id).get();
         if (signBookService.checkUserViewRights(user, signBook)) {
             Workflow workflow = workflowRepository.findById(workflowSignBookId).get();
-            signBookService.importWorkflow(signBook, workflow);
+            signBookService.importWorkflow(signBook, workflow, user);
         }
         return "redirect:/user/signbooks/" + id + "/?form";
     }

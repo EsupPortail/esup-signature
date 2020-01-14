@@ -40,7 +40,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -160,6 +159,7 @@ public class SignRequestController {
         signRequestsToSign = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
 
         signRequestsToSign = signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
+
         Page<SignRequest> signRequests;
         if(this.statusFilter != null) {
             signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), this.statusFilter, pageable);
@@ -172,6 +172,7 @@ public class SignRequestController {
         }
         model.addAttribute("mydocs", "active");
         model.addAttribute("signRequestsToSign", signRequestsToSign);
+        model.addAttribute("signRequestsSignedByMe", signRequestService.getSignRequestsSignedByUser(user));
         model.addAttribute("signBookId", signBookId);
         model.addAttribute("signRequests", signRequests);
         model.addAttribute("statusFilter", this.statusFilter);

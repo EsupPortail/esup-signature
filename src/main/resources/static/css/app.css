@@ -388,12 +388,11 @@ input:checked + .slider:before {
 }
 
 .drop-shadows {
-    /* Firefox */
-    -moz-box-shadow:5px 5px 7px rgba(33,33,33,1);
+    -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);
     /* Safari+Chrome */
-    -webkit-box-shadow: 5px 5px 7px rgba(33,33,33,.7);
+    -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);
     /* Opera */
-    box-shadow: 5px 5px 7px rgba(33,33,33,.7);
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.5), 0 2px 10px 0 rgba(0, 0, 0, 0.5);
 }
 
 .angle-3 {
@@ -478,4 +477,12 @@ input:checked + .slider:before {
 
 .file-zoom-content {
     height: 80vh;
+}
+
+.card {
+    -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);
+    /* Safari+Chrome */
+    -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);
+    /* Opera */
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);
 }
