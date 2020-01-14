@@ -18,9 +18,9 @@
         <div class="card-body">
             <div th:if="${user.eppn == signBook.createBy}">
                 <div th:if="${(@signBookService.getStatus(signBook).name() == 'draft' || @signBookService.getStatus(signBook).name() == 'completed')}">
-                    <div th:if="${#lists.size(signBook.signRequests) == 0 || signBook.currentWorkflowStep.recipients.size() == 0}">
+                    <div th:if="${#lists.size(signBook.signRequests) == 0 || @signBookService.getCurrentWorkflowStep(signBook).recipients.size() == 0}">
                         <div class="alert alert-warning mb-1" th:if="${@signBookService.getStatus(signBook).name() == 'draft'}">
-                            <div th:if="${signBook.currentWorkflowStep.recipients.size() == 0}">
+                            <div th:if="${@signBookService.getCurrentWorkflowStep(signBook).recipients.size() == 0}">
                                 <p>
                                     Vous devez ajouter des étapes ainsi que des participants pour chaque étape du circuit de signature
                                 </p>

@@ -30,7 +30,7 @@
             <div th:replace="user/signbooks/cards/stepscard2 :: stepscard2"></div>
             <div class="card rounded-0">
                 <div class="card-header">
-                    Documents à signer
+                    Demandes à signer
                 </div>
                 <div class="card-body">
                     <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
@@ -41,7 +41,6 @@
                                 <th class="">Titre</th>
                                 <th class="d-none d-md-table-cell">Date de création</th>
                                 <th class="d-none d-lg-table-cell">Créé par</th>
-                                <th>Signer</th>
                                 <th>Details</th>
                                 <th>Supprimer</th>
                             </tr>
@@ -52,11 +51,6 @@
                                     <td class="text-break" th:text="${signRequest.title}"></td>
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy}"></span></td>
-                                    <td class="utilbox">
-                                        <a class="btn btn-success" title="Signer" th:href="'/user/signbooks/' + ${signBook.id} + '/' + ${signRequest.id}">
-                                            <i class="fas fa-signature"></i>
-                                        </a>
-                                    </td>
                                     <td class="utilbox">
                                         <button class="btn btn-info" title="Détails" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '?form\''">
                                             <i class="fas fa-info"></i>

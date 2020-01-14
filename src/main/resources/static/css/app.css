@@ -460,3 +460,22 @@ input:checked + .slider:before {
 .kv-file-upload {
     display: none;
 }
+
+
+.file-zoom-dialog .modal-dialog {
+    min-width: 90%;
+    height: auto;
+    min-height: 100vh;
+}
+
+.file-zoom-dialog .modal-content {
+    min-height: 80vh;
+}
+
+.file-zoom-dialog .modal-body {
+    overflow-y: auto;
+}
+
+.file-zoom-content {
+    height: 80vh;
+}

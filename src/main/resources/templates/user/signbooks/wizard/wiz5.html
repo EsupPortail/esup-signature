@@ -12,7 +12,7 @@
         </button>
     </form>
 
-    <button th:onclick="'parent.location.href=\'/user/signbooks/'+ ${signBook.id} +'/0\''" type="button" class="btn btn-secondary">
+    <button th:onclick="'parent.location.href=\'/user/signbooks/'+ ${signBook.id} +'/' + ${signBook.signRequests.get(0).id} + '\''" type="button" class="btn btn-secondary">
         <i class="fas fa-door-open"></i> Fermer
     </button>
 

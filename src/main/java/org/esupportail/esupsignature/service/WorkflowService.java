@@ -164,7 +164,7 @@ public class WorkflowService {
                         List<String> workflowRecipientsEmails = new ArrayList<>();
                         workflowRecipientsEmails.add(user.getEmail());
                         SignBook signBook = signBookService.createSignBook("Auto import : " + workflow.getName(), SignBook.SignBookType.workflow, user, false);
-                        SignRequest signRequest = signRequestService.createSignRequest(new SignRequest(), user, documentToAdd);
+                        SignRequest signRequest = signRequestService.createSignRequest(documentToAdd, user);
                         signBook.getSignRequests().add(signRequest);
                         signRequest.setParentSignBook(signBook);
                         signRequest.setTitle(documentToAdd.getFileName());
@@ -179,11 +179,6 @@ public class WorkflowService {
             }
         }
         return fsFiles;
-    }
-
-    public void removeSignRequestFromWorkflow(SignRequest signRequest, Workflow workflow) {
-        signRequestRepository.save(signRequest);
-        workflowRepository.save(workflow);
     }
 
     public boolean checkUserManageRights(User user, Workflow workflow) {

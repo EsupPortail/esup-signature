@@ -114,6 +114,7 @@ public class SignBookService implements EvaluationContextExtension {
 
     public SignBook getSignBook(String name, User user) throws EsupSignatureException {
         if (signBookRepository.countByName(name) == 0) {
+            logger.info("create new signBook : " + name);
             return createSignBook(name, SignBookType.workflow, user, false);
         } else {
             return signBookRepository.findByName(name).get(0);
@@ -155,6 +156,7 @@ public class SignBookService implements EvaluationContextExtension {
     }
 
     public void importWorkflow(SignBook signBook, Workflow workflow) {
+        logger.info("import workflow steps in signBook " + signBook.getName() + " - " +signBook.getId());
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
             WorkflowStep newWorkflowStep = new WorkflowStep();
             newWorkflowStep.setSignType(workflowStep.getSignType());
@@ -329,6 +331,7 @@ public class SignBookService implements EvaluationContextExtension {
                     userService.sendEmailAlert(recipientUser);
                 }
             }
+            setNextRecipients(signBook);
         } else {
             logger.warn("already pending");
         }

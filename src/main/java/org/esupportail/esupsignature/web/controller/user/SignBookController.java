@@ -169,9 +169,6 @@ public class SignBookController {
                 model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
                 model.addAttribute("documentId", toDisplayDocument.getId());
             }
-            if(signRequestService.checkUserSignRights(user, signRequest)) {
-                model.addAttribute("signOk", true);
-            }
             if (signBookService.getStatus(signRequest.getParentSignBook()).equals(SignRequestStatus.pending) && signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                 model.addAttribute("signable", "ok");
                 if(!signRequestService.getCurrentSignType(signRequest).equals(SignType.visa)

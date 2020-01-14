@@ -224,6 +224,9 @@ public class SignRequestController {
     public String show(@PathVariable("id") Long id, Model model) throws Exception {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
+        if(signRequest.getParentSignBook() != null) {
+            workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
+        }
         model.addAttribute("signRequest", signRequest);
         if ((signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest))) {
             if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
@@ -255,31 +258,6 @@ public class SignRequestController {
         List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNull(id);
         model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
         return "user/signrequests/show";
-    }
-
-    @PostMapping(produces = "text/html")
-    public String create(@Valid SignRequest signRequest, HttpServletRequest request) {
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        signRequest = signRequestService.createSignRequest(signRequest, user);
-        return "redirect:/user/signrequests/" + signRequest.getId() + "/?form";
-    }
-
-    @ResponseBody
-    @RequestMapping(value = "/add-doc/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocument(@PathVariable("id") Long id,
-                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest request) {
-        logger.info("start add documents");
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
-            List<Document> documents = documentService.createDocuments(multipartFiles);
-            signRequestService.addOriginalDocuments(signRequest, documents);
-            signRequestRepository.save(signRequest);
-        }
-        String[] ok = {"ok"};
-        return ok;
     }
 
     @ResponseBody
@@ -333,12 +311,12 @@ public class SignRequestController {
     }
 
     @RequestMapping(value = "/fast-sign-request", method = RequestMethod.POST)
-    public String createSignRequest(@RequestParam("multipartFile") MultipartFile multipartFile,
+    public String createSignRequest(@RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                     @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
         logger.info("création rapide demande de signature");
         User user = userService.getUserFromAuthentication();
-        if (multipartFile != null) {
-            SignRequest signRequest = signRequestService.createSignRequest("", multipartFile, Arrays.asList(user.getEmail()), signType, user);
+        if (multipartFiles != null) {
+            SignRequest signRequest = signRequestService.createSignRequest("", multipartFiles, Arrays.asList(user.getEmail()), signType, user);
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             logger.warn("no file to import");

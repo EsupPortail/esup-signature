@@ -3,15 +3,15 @@
 <div th:fragment="stepscard">
     <div class="card rounded-0 mb-1 bg-transparent">
         <div class="card-body">
-            <th:block th:if="${signBook.workflowSteps != null}">
-                <div id="stepper" class="bs-stepper">
-                    <div class="bs-stepper-header container" role="tablist">
-                        <th:block th:each="workflowStep,iterator : ${signBook.workflowSteps}">
+            <th:block th:if="${signRequest.parentSignBook.workflowSteps != null}">
+                <div id="stepper" class="bs-stepper vertical">
+                    <div class="bs-stepper-header" role="tablist">
+                        <th:block th:each="workflowStep,iterator : ${signRequest.parentSignBook.workflowSteps}">
                             <div class="step" th:name="'step_' + ${iterator.index}" th:data-target="'#step_' + ${iterator.index}">
                                 <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab" aria-selected="false" style="border: 2px solid #555555;">
-                                    <span th:if="${iterator.index + 1 == signBook.currentWorkflowStepNumber}" class="bs-stepper-circle"><i class="fa fa-play"></i></span>
-                                    <span th:if="${iterator.index + 1 > signBook.currentWorkflowStepNumber}" class="bs-stepper-circle"><i class="fa fa-pause"></i></span>
-                                    <span th:unless="${iterator.index + 1 > signBook.currentWorkflowStepNumber || iterator.index + 1 == signBook.currentWorkflowStepNumber}" class="bs-stepper-circle"><i class="fa fa-check"></i></span>
+                                    <span th:if="${iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle"><i class="fa fa-play"></i></span>
+                                    <span th:if="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle"><i class="fa fa-pause"></i></span>
+                                    <span th:unless="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber || iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle"><i class="fa fa-check"></i></span>
                                     <div class="bs-stepper-label">
                                         <span  th:text="'Etape ' + ${iterator.index + 1}"></span>
                                         <br/>
@@ -34,13 +34,13 @@
                                     </div>
                                 </div>
                             </div>
-                            <div th:if="${signBook.workflowSteps.size() > iterator.index + 1}" class="line"></div>
+                            <div th:if="${signRequest.parentSignBook.workflowSteps.size() > iterator.index + 1}" class="line"></div>
                         </th:block>
-                        <th:block th:if="${signBook.documentsTargetUri != null}">
+                        <th:block th:if="${signRequest.parentSignBook.documentsTargetUri != null}">
                             <div class="line"></div>
                             <div class="step" name="target" data-target="#target">
                                 <div aria-controls="target" class="step-trigger bg-light" role="tab" aria-selected="false" style="border: 2px solid #555555">
-                                    <span th:classappend="${signBook.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></span>
+                                    <span th:classappend="${signRequest.parentSignBook.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></span>
                                     <span class="bs-stepper-label"><p>Export</p></span>
                                 </div>
                             </div>

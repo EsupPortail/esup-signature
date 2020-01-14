@@ -182,28 +182,6 @@ public class AdminSignRequestController {
 	}
 
 	@ResponseBody
-	@RequestMapping(value = "/add-doc/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-	public Object addDocument(@PathVariable("id") Long id,
-			@RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest request) {
-		logger.info("start add documents");
-		User user = userService.getUserFromAuthentication();
-		user.setIp(request.getRemoteAddr());
-		SignRequest signRequest = signRequestRepository.findById(id).get();
-		if (signRequestService.checkUserViewRights(user, signRequest)) {
-			if(signRequest.getOriginalDocuments().size() > 0 &&
-			(signRequestService.getCurrentSignType(signRequest).equals(SignType.pdfImageStamp) || signRequestService.getCurrentSignType(signRequest).equals(SignType.visa))
-			) {
-				signRequest.getOriginalDocuments().remove(signRequest.getOriginalDocuments().get(0));
-			}
-			List<Document> documents =  documentService.createDocuments(multipartFiles);
-			signRequestService.addOriginalDocuments(signRequest, documents);
-			signRequestRepository.save(signRequest);
-		}
-		String[] ok = {"ok"};
-		return ok;
-	}
-
-	@ResponseBody
 	@RequestMapping(value = "/remove-doc/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public Object removeDocument(@PathVariable("id") Long id, HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
