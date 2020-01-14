@@ -108,7 +108,7 @@ public class SignBookWizardController {
                 Workflow workflow = workflowRepository.findById(workflowId).get();
                 signBookService.importWorkflow(signBook, workflow, user);
                 return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
-            } else if(selfSign) {
+            } else if(selfSign != null) {
                 Workflow workflow = workflowRepository.findByName("Ma signature").get(0);
                 signBookService.importWorkflow(signBook, workflow, user);
                 return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
