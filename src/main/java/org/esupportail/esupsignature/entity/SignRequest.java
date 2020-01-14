@@ -53,6 +53,8 @@ public class SignRequest {
     @ManyToOne
     private SignBook parentSignBook;
 
+    private Integer currentStepNumber = 0;
+
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
@@ -174,6 +176,14 @@ public class SignRequest {
 
     public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
         this.signRequestParams = signRequestParams;
+    }
+
+    public Integer getCurrentStepNumber() {
+        return currentStepNumber;
+    }
+
+    public void setCurrentStepNumber(Integer currentStepNumber) {
+        this.currentStepNumber = currentStepNumber;
     }
 
     public Map<Long, Boolean> getRecipients() {

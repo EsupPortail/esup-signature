@@ -364,13 +364,16 @@ public class SignRequestService implements EvaluationContextExtension {
 		signRequestRepository.save(signRequest);
 	}
 
-	public void pendingSignRequest(SignRequest signRequest, List<String> recipientsEmail, SignType signType, User user) throws EsupSignatureIOException {
+	public void pendingSignRequest(SignRequest signRequest, List<String> recipientsEmail, SignType signType, User user) {
 		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
 			signRequest.setSignType(signType);
+			signRequest.getRecipients().clear();
+			signRequest.setCurrentStepNumber(signRequest.getCurrentStepNumber() + 1);
 			for(String recipientEmail : recipientsEmail) {
 				User recipientUser = userRepository.findByEmail(recipientEmail).get(0);
 				signRequest.getRecipients().put(recipientUser.getId(), false);
 			}
+			signRequestRepository.save(signRequest);
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 			for (Long recipientId : signRequest.getRecipients().keySet()) {
 				User recipientUser = userRepository.findById(recipientId).get();
@@ -492,7 +495,7 @@ public class SignRequestService implements EvaluationContextExtension {
 	public boolean checkUserViewRights(User user, SignRequest signRequest) {
 		if(signRequest != null) {
 			List<Log> log = logRepository.findByEppnAndSignRequestId(user.getEppn(), signRequest.getId());
-			if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0 || signBookService.isUserInWorkflow(signRequest.getParentSignBook(), user)) {
+			if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0 || getCurrentRecipients(signRequest).containsKey(user.getId())) {
 				return true;
 			}
 		}
@@ -570,8 +573,8 @@ public class SignRequestService implements EvaluationContextExtension {
 		if(signRequest.getParentSignBook() != null && signRequest.getSignRequestParams().size() > signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1) {
 			return signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1);
 		} else {
-			if(signRequest.getSignRequestParams().size() > 0) {
-				return signRequest.getSignRequestParams().get(0);
+			if(signRequest.getSignRequestParams().size() > signRequest.getCurrentStepNumber() - 1) {
+				return signRequest.getSignRequestParams().get(signRequest.getCurrentStepNumber() - 1);
 			} else {
 				return getEmptySignRequestParams();
 			}

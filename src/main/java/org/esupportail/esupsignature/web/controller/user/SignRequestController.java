@@ -156,7 +156,8 @@ public class SignRequestController {
             }
         }
 
-        List<SignRequest> signRequestsToSign = signRequestRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.pending);
+        List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientsContains(user.getId());
+        signRequestsToSign = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
 
         signRequestsToSign = signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
         Page<SignRequest> signRequests;
