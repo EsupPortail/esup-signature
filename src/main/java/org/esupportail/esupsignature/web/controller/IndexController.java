@@ -56,7 +56,7 @@ public class IndexController {
 	public String index(HttpServletRequest request, Model model) {
 		User user = userService.getUserFromAuthentication();
 		model.addAttribute("user", user);
-		if(user != null) {
+		if(user != null && !user.getEppn().equals("System")) {
 			return "redirect:/user/signrequests/";
 		} else {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();

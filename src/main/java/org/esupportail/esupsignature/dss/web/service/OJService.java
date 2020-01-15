@@ -68,7 +68,7 @@ public class OJService {
 	private FileService fileService;
 	
 	//TODO reactive
-	@PostConstruct
+	//@PostConstruct
 	public void getCertificats() throws MalformedURLException, IOException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
 		Security.addProvider(new BouncyCastleProvider());
 		List<ServiceInfo> serviceInfos = getServicesInfos();

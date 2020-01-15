@@ -614,7 +614,7 @@
 	    		    if (search.length < 3) {
 	    		      callback('Merci de saisir au moins 3 caractères')
 	    		    }
-	    		    fetch('/admin/admins/searchLdap?searchString=' + search)
+	    		    fetch('/admin/admins/searchUser?searchString=' + search)
 	    		    .then(function (response) {
 	    		      return response.json()
 	    		    })

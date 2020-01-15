@@ -199,21 +199,22 @@
             ajax: function (search, callback) {
                 if (search.length < 3) {
                     callback('Merci de saisir au moins 3 caractères')
+                } else {
+                    fetch('/user/users/searchUser?searchString=' + search)
+                        .then(function (response) {
+                            return response.json()
+                        })
+                        .then(function (json) {
+                            let data = []
+                            for (let i = 0; i < json.length; i++) {
+                                data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
+                            }
+                            callback(data)
+                        })
+                        .catch(function (error) {
+                            callback(false)
+                        })
                 }
-                fetch('/user/users/searchLdap?searchString=' + search)
-                    .then(function (response) {
-                        return response.json()
-                    })
-                    .then(function (json) {
-                        let data = []
-                        for (let i = 0; i < json.length; i++) {
-                            data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
-                        }
-                        callback(data)
-                    })
-                    .catch(function (error) {
-                        callback(false)
-                    })
             }
         });
     }

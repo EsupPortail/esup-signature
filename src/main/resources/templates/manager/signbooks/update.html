@@ -66,7 +66,7 @@
                                         callback('Merci de saisir au moins 3 caractères')
                                         return
                                     }
-                                    fetch('/ws/searchLdap?searchString=' + search)
+                                    fetch('/ws/searchUser?searchString=' + search)
                                         .then(function (response) {
                                             return response.json()
                                         })
@@ -167,7 +167,7 @@
                 callback('Merci de saisir au moins 3 caractères')
                 return
             }
-            fetch('/user/users/searchLdap?searchString=' + search)
+            fetch('/user/users/searchUser?searchString=' + search)
                 .then(function (response) {
                     return response.json()
                 })

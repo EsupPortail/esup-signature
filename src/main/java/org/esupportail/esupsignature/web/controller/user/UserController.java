@@ -196,31 +196,30 @@ public class UserController {
 	}
 
 	//TODO refactor with WsController
-	@RequestMapping(value="/searchLdap")
+	@RequestMapping(value="/searchUser")
 	@ResponseBody
 	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString, @RequestParam(required=false) String ldapTemplateName) {
 
-		logger.info("ldap search for : " + searchString);
-		HttpHeaders headers = new HttpHeaders();
-		headers.add("Content-Type", "application/json; charset=utf-8");
-		List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
-		List<SignBook> signBooks = signBookRepository.findBySignBookType(SignBookType.group);
-		signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.system));
-		for(SignBook signBook : signBooks) {
-			PersonLdap personLdap = new PersonLdap();
-			personLdap.setUid("parapheur");
-			personLdap.setMail(signBook.getName());
-			personLdap.setDisplayName(signBook.getName());
-			ldapList.add(personLdap);
-		}
-		if(ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
-			List<PersonLdap> ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
-			ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
+		logger.debug("ldap search for : " + searchString);
+//		HttpHeaders headers = new HttpHeaders();
+//		headers.add("Content-Type", "application/json; charset=utf-8");
+//		List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
+//		List<SignBook> signBooks = signBookRepository.findBySignBookType(SignBookType.group);
+//		signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.system));
+//		for(SignBook signBook : signBooks) {
+//			PersonLdap personLdap = new PersonLdap();
+//			personLdap.setUid("parapheur");
+//			personLdap.setMail(signBook.getName());
+//			personLdap.setDisplayName(signBook.getName());
+//			ldapList.add(personLdap);
+//		}
+//		if(ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
+//			List<PersonLdap> ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
+//			ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
+//
+//		}
 
-		}
-
-
-		return ldapList;
+		return userService.getPersonLdaps(searchString, ldapTemplateName);
    }
 	
     void populateEditForm(Model uiModel, User user) {

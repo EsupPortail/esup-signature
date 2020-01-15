@@ -347,6 +347,20 @@
                             textDate.remove();
                         }
                     }
+
+                    $(window).bind('mousewheel DOMMouseScroll', function(event)
+                    {
+                        if(event.ctrlKey == true)
+                        {
+                            event.preventDefault();
+                            if(event.originalEvent.detail > 0) {
+                                zoomOut();
+                            }else {
+                                zoomIn();
+                            }
+                        }
+                    });
+
                     /*]]>*/
                 </script>
                 <th:block th:each="postit : ${postits}">

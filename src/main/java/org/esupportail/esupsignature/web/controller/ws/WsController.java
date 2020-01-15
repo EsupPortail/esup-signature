@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller.user;
+package org.esupportail.esupsignature.web.controller.ws;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -75,10 +75,6 @@ public class WsController {
 
     @Resource
     private LogRepository logRepository;
-
-    @Autowired(required = false)
-    private LdapPersonService ldapPersonService;
-
 
     @ResponseBody
     @RequestMapping(value = "/create-sign-book", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -502,46 +498,38 @@ public class WsController {
     }
 
     //TODO refactor with UserController
-    @RequestMapping(value = "/searchLdap")
     @ResponseBody
-    public List<PersonLdap> searchLdap(@RequestParam(value = "searchString") String searchString, @RequestParam(required = false) String ldapTemplateName) {
+    @RequestMapping(value = "/searchUser")
+    public List<PersonLdap> searchUser(@RequestParam(value = "searchString") String searchString, @RequestParam(required = false) String ldapTemplateName) {
         logger.debug("ldap search for : " + searchString);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", "application/json; charset=utf-8");
-        List<PersonLdap> ldapList = new ArrayList<>();
-        if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
-            List<PersonLdap> ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
-            ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
-
-        }
-        return ldapList;
+        return userService.getPersonLdaps(searchString, ldapTemplateName);
     }
 
-    @RequestMapping(value = "/search-signbook")
-    @ResponseBody
-    public List<PersonLdap> searchSignBook(@RequestParam(value = "searchString") String searchString, @RequestParam(required = false) String ldapTemplateName) {
-        logger.debug("signBook search for : " + searchString);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", "application/json; charset=utf-8");
-        List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
-        if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
-            List<PersonLdap> ldapSearchList = ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
-            ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
-
-        }
-
-        List<SignBook> signBooks = new ArrayList<>();
-        signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.system));
-        signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.group));
-
-        for (SignBook signBook : signBooks) {
-            PersonLdap personLdap = new PersonLdap();
-            personLdap.setUid(signBook.getSignBookType().toString());
-            personLdap.setMail(signBook.getName());
-            personLdap.setDisplayName(signBook.getName());
-            ldapList.add(personLdap);
-        }
-        return ldapList;
-    }
+//    @RequestMapping(value = "/search-signbook")
+//    @ResponseBody
+//    public List<PersonLdap> searchSignBook(@RequestParam(value = "searchString") String searchString, @RequestParam(required = false) String ldapTemplateName) {
+//        logger.debug("signBook search for : " + searchString);
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.add("Content-Type", "application/json; charset=utf-8");
+//        List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
+//        if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
+//            List<PersonLdap> ldapSearchList = ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
+//            ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
+//
+//        }
+//
+//        List<SignBook> signBooks = new ArrayList<>();
+//        signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.system));
+//        signBooks.addAll(signBookRepository.findBySignBookType(SignBookType.group));
+//
+//        for (SignBook signBook : signBooks) {
+//            PersonLdap personLdap = new PersonLdap();
+//            personLdap.setUid(signBook.getSignBookType().toString());
+//            personLdap.setMail(signBook.getName());
+//            personLdap.setDisplayName(signBook.getName());
+//            ldapList.add(personLdap);
+//        }
+//        return ldapList;
+//    }
 
 }

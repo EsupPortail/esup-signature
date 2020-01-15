@@ -7,17 +7,21 @@ import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.Function;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService implements EvaluationContextExtension {
@@ -32,14 +36,8 @@ public class UserService implements EvaluationContextExtension {
 	@Resource
 	private UserRepository userRepository;
 
-	@Resource
-	private DocumentService documentService;
-
-	@Resource
-	private SignBookRepository signBookRepository;
-
-	@Resource
-	private SignBookService signBookService;
+	@Autowired(required = false)
+	private LdapPersonService ldapPersonService;
 
 	@Resource
 	private SignRequestService signRequestService;
@@ -59,6 +57,14 @@ public class UserService implements EvaluationContextExtension {
 		} else {
 			return createUser(email);
 		}
+	}
+
+	//For thymeleaf
+	public User getUserByEppn(String eppn) {
+		if(userRepository.countByEppn(eppn) > 0) {
+			return  userRepository.findByEppn(eppn).get(0);
+		}
+		return null;
 	}
 
 	public User createUser(String email) {
@@ -151,8 +157,37 @@ public class UserService implements EvaluationContextExtension {
 		return user;
 	}
 
-	public String getNameFromEppn(String eppn) {
-		return userRepository.findByEppn(eppn).get(0).getFirstname() + " " + userRepository.findByEppn(eppn).get(0).getName();
+	public List<PersonLdap> getPersonLdaps(@RequestParam("searchString") String searchString, @RequestParam(required = false) String ldapTemplateName) {
+		List<PersonLdap> ldapList = new ArrayList<>();
+		List<User> users = new ArrayList<>();
+		addAllUnique(users, userRepository.findByEppnStartingWith(searchString));
+		addAllUnique(users, userRepository.findByNameStartingWith(searchString));
+		addAllUnique(users, userRepository.findByEmailStartingWith(searchString));
+		for (User user : users) {
+			ldapList.add(getPersonLdapFromUser(user));
+		}
+		if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
+			List<PersonLdap> ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
+			ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
+		}
+		return ldapList;
+	}
+
+	public void addAllUnique(List<User> users, List<User> usersToAdd) {
+		for (User user : usersToAdd) {
+			if(!users.contains(user)) {
+				users.add(user);
+			}
+		}
+	}
+
+	public PersonLdap getPersonLdapFromUser(User user) {
+		PersonLdap personLdap = new PersonLdap();
+		personLdap.setUid(user.getEmail());
+		personLdap.setDisplayName(user.getFirstname() + " " + user.getName());
+		personLdap.setMail(user.getEmail());
+		personLdap.setEduPersonPrincipalName(user.getEppn());
+		return personLdap;
 	}
 
 	@Override
