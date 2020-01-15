@@ -87,7 +87,7 @@ public class ScheduledTaskService {
 		}
 	}
 						   
-	//@Scheduled(initialDelay = 10000, fixedRate = 8640000)
+	@Scheduled(initialDelay = 8640000, fixedRate = 8640000)
 	public void refreshOJKeystore() {
 		oJService.refresh();
 	}

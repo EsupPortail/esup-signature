@@ -125,7 +125,7 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public TrustedListsCertificateSource trustedListSource() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
+	public TrustedListsCertificateSource trustedListSource() {
 		TSLRepository tslRepository = new TSLRepository();
 		TrustedListsCertificateSource certificateSource = new TrustedListsCertificateSource();
 		tslRepository.setTrustedListsCertificateSource(certificateSource);

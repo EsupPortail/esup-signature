@@ -387,7 +387,7 @@ public class SignRequestService implements EvaluationContextExtension {
 			signRequest.getRecipients().clear();
 			signRequest.setCurrentStepNumber(signRequest.getCurrentStepNumber() + 1);
 			for(String recipientEmail : recipientsEmail) {
-				User recipientUser = userRepository.findByEmail(recipientEmail).get(0);
+				User recipientUser = userService.getUser(recipientEmail);
 				signRequest.getRecipients().put(recipientUser.getId(), false);
 			}
 			signRequestRepository.save(signRequest);
