@@ -52,9 +52,9 @@ public class ScheduledTaskService {
 	@Resource
 	private OJService oJService;
 
-	//@Scheduled(fixedRate = 100000)
+	//@Scheduled(fixedRate = 10000)
 	@Transactional
-	public void scanAllSignbooksSources() throws EsupSignatureFsException {
+	public void scanAllSignbooksSources() {
 		Iterable<Workflow> workflows = workflowRepository.findAll();
 		for(Workflow workflow : workflows) {
 			workflowService.importFilesFromSource(workflow, getSchedulerUser());

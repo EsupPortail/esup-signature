@@ -448,11 +448,11 @@ public class SignBookController {
                            HttpServletResponse response, RedirectAttributes redirectAttrs, HttpServletRequest request) throws EsupSignatureException {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
-            signRequestService.completeSignRequest(signRequest, user);
+        SignBook signBook = signBookRepository.findById(id).get();
+        if (signBook.getCreateBy().equals(user.getEppn()) && (signBook.getRealStatus().equals(SignRequestStatus.signed) || signBook.getRealStatus().equals(SignRequestStatus.checked))) {
+            signBookService.completeSignBook(signBook, user);
         } else {
-            logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
+            logger.warn(user.getEppn() + " try to complete " + signBook.getId() + " without rights");
         }
         return "redirect:/user/signbooks/" + id + "/?form";
     }

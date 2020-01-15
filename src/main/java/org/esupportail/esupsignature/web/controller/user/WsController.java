@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
+import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -230,7 +231,7 @@ public class WsController {
         List<Doc> signedFiles = new ArrayList<>();
         User user = userRepository.findByEmail(recipientEmail).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
-        for (SignRequest signRequest : signRequestService.getTosignRequests(user)) {
+        for (SignRequest signRequest : signRequestService.getToSignRequests(user)) {
             signedFiles.add(new Doc(signRequest.getTitle(), signRequestService.getToSignDocuments(signRequest).get(0).getContentType(), signRequest.getToken(), signRequest.getStatus().name(), signRequest.getCreateDate()));
         }
         return signedFiles;
@@ -256,6 +257,18 @@ public class WsController {
             if(signBook.isExternal()) {
                 signBookService.deleteSignBook(signBook);
             }
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/delete-sign-request", method = RequestMethod.POST)
+    public ResponseEntity<String> deleteSignRequest(@RequestParam String token, HttpServletRequest httpServletRequest) {
+        User user = userService.getSystemUser();
+        user.setIp(httpServletRequest.getRemoteAddr());
+        if (signRequestRepository.countByToken(token) > 0) {
+            SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
+            signRequestRepository.delete(signRequest);
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -441,8 +454,8 @@ public class WsController {
     }
 
     @Transactional
-    @RequestMapping(value = "/complete-sign-request", method = RequestMethod.POST)
-    public ResponseEntity<Void> completeSignRequest(@RequestParam String signBookName, @RequestParam String name, HttpServletRequest httpServletRequest, HttpServletResponse response, Model model) {
+    @RequestMapping(value = "/complete-sign-book", method = RequestMethod.POST)
+    public ResponseEntity<Void> completeSignBook(@RequestParam String signBookName, @RequestParam String name, HttpServletRequest httpServletRequest, HttpServletResponse response, Model model) {
         try {
             SignBook signBook = signBookRepository.findByName(signBookName).get(0);
             SignRequest signRequest = signRequestRepository.findByToken(name).get(0);
@@ -465,6 +478,29 @@ public class WsController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @Transactional
+    @ResponseBody
+    @RequestMapping(value = "/complete-sign-request", method = RequestMethod.POST)
+    public String completeSignRequest(@RequestParam String token,
+                                                    @RequestParam(required = false) String documentIOTypeName,
+                                                    @RequestParam(required = false) String targetUri,
+                                                    HttpServletRequest httpServletRequest) {
+        String result = "";
+        try {
+            SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
+            User user = userService.getSystemUser();
+            user.setIp(httpServletRequest.getRemoteAddr());
+            if (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked)) {
+                result = signRequestService.completeSignRequest(signRequest, DocumentIOType.valueOf(documentIOTypeName), targetUri, user);
+            } else {
+                logger.warn("no signed version of signRequest : " + token);
+            }
+        } catch (NoResultException | EsupSignatureException e) {
+            logger.error(e.getMessage(), e);
+        }
+        return result;
+    }
+
     //TODO refactor with UserController
     @RequestMapping(value = "/searchLdap")
     @ResponseBody
@@ -472,7 +508,7 @@ public class WsController {
         logger.debug("ldap search for : " + searchString);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json; charset=utf-8");
-        List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
+        List<PersonLdap> ldapList = new ArrayList<>();
         if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
             List<PersonLdap> ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
             ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));

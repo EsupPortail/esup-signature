@@ -3,8 +3,7 @@
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="workflowStep" type="java.util.List<org.esupportail.esupsignature.entity.WorkflowStep>"*/-->
 <div th:fragment="stepscard">
-    <div class="card rounded-0 mb-1">
-        <div class="card-body">
+    <div class="alert alert-light">
             <div th:if="${workflow.workflowSteps != null}" style="height: 100%; display: flex; align-items: center; justify-content: center;">
                 <div class="bs-stepper vertical linear">
                     <div class="bs-stepper-header" role="tablist">
@@ -127,7 +126,6 @@
                     </div>
                 </div>
             </div>
-        </div>
     </div>
 </div>
 </html>

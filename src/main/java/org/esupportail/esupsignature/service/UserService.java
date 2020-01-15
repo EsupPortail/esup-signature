@@ -120,7 +120,7 @@ public class UserService implements EvaluationContextExtension {
 
 	public void sendEmailAlert(User user) {
 		Date date = new Date();
-		List<SignRequest> signRequests = signRequestService.getTosignRequests(user);
+		List<SignRequest> signRequests = signRequestService.getToSignRequests(user);
 		if(signRequests.size() > 0) {
 			mailService.sendSignRequestAlert(user.getEmail(), signRequests);
 		}

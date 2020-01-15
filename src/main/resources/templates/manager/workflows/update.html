@@ -25,12 +25,12 @@
                         <li class="breadcrumb-item"><a href="/manager">Liste des
                             parapheurs</a></li>
                         <li aria-current="page" class="breadcrumb-item active">Parapheur
-                            : <span th:text="${signBook.name}"></span>
+                            : <span th:text="${workflow.name}"></span>
                         </li>
                     </ol>
                 </div>
             </nav>
-    <form th:object="${signBook}" th:action="'/manager/signbooks/update/' + ${signBook.id}" method="post" id="updateSignBook">
+    <form th:object="${workflow}" th:action="'/manager/workflows/update/' + ${workflow.id}" method="post" id="updateSignBook">
         <input type="hidden" th:field="*{id}">
         <div class="card card-body bg-light">
             <div class="row">
@@ -47,7 +47,7 @@
                             </div>
                         </label>
                         <select id="moderatoremailsSelect" multiple="multiple" name="moderatorEmails">
-                            <th:block th:each="moderatorEmail : ${signBook.moderatorEmails}">
+                            <th:block th:each="moderatorEmail : ${workflow.moderatorEmails}">
                                 <option selected="selected" th:value="${moderatorEmail}" th:text="${moderatorEmail}"></option>
                             </th:block>
                         </select>
@@ -91,7 +91,7 @@
                         </label>
                         <select class="form-control" id="_sourceType_id" th:field="*{sourceType}" size="1">
                             <th:block th:each="sourceType : ${sourceTypes}">
-                                <option th:selected="${signBook.sourceType == sourceType}" th:value="${sourceType}" th:text="#{'signbook.documentiotype.' + ${sourceType}}"></option>
+                                <option th:selected="${workflow.sourceType == sourceType}" th:value="${sourceType}" th:text="#{'signbook.documentiotype.' + ${sourceType}}"></option>
                             </th:block>
                         </select>
                     </div>
@@ -105,7 +105,7 @@
                         </label>
                         <select class="form-control" id="_targetType_id" th:field="*{targetType}" size="1">
                             <th:block th:each="targetType : ${targetTypes}">
-                                <option th:selected="${signBook.targetType == targetType}" th:value="${targetType}" th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
+                                <option th:selected="${workflow.targetType == targetType}" th:value="${targetType}" th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
                             </th:block>
                         </select>
                     </div>

@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
@@ -66,6 +67,9 @@ public class MailService {
 
     @Resource
     private SignBookService signBookService;
+
+    @Resource
+    private SignRequestService signRequestService;
 
     @Resource
     private WorkflowService workflowService;
@@ -154,25 +158,54 @@ public class MailService {
 
     }
 
-    public void sendFile(SignBook signBook) {
+//    public void sendFile(SignBook signBook) {
+//        if (!checkMailSender()) {
+//            return;
+//        }
+//        final Context ctx = new Context(Locale.FRENCH);
+//        ctx.setVariable("rootUrl", rootUrl);
+//        ctx.setVariable("signBook", signBook);
+//        User user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
+//        ctx.setVariable("user", user);
+//        setTemplate(ctx);
+//        final MimeMessage mimeMessage = mailSender.createMimeMessage();
+//        MimeMessageHelper message;
+//        try {
+//            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+//            message.setSubject("Esup-Signature : nouveau document  " + signBook.getName());
+//            message.setFrom(mailConfig.getMailFrom());
+//            message.setTo(signBook.getDocumentsTargetUri());
+//            List<Document> toSendDocuments = signBookService.getLastSignedDocuments(signBook);
+//            for (Document toSendDocument : toSendDocuments) {
+//                message.addAttachment(toSendDocument.getFileName(), new ByteArrayResource(IOUtils.toByteArray(toSendDocument.getInputStream())));
+//            }
+//            String htmlContent = templateEngine.process("mail/email-file.html", ctx);
+//            message.setText(htmlContent, true); // true = isHtml
+//            mailSender.send(mimeMessage);
+//        } catch (MessagingException | IOException e) {
+//            logger.error("unable to sens email", e);
+//        }
+//    }
+
+    public void sendFile(String title, List<SignRequest> signRequests, String targetUri) {
         if (!checkMailSender()) {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("rootUrl", rootUrl);
-        ctx.setVariable("signBook", signBook);
-        User user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
+        ctx.setVariable("signRequests", signRequests);
+        User user = userRepository.findByEppn(signRequests.get(0).getCreateBy()).get(0);
         ctx.setVariable("user", user);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;
         try {
             message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            message.setSubject("Esup-Signature : nouveau document  " + signBook.getName());
+            message.setSubject("Esup-Signature : nouveau document  " + title);
             message.setFrom(mailConfig.getMailFrom());
-            message.setTo(signBook.getDocumentsTargetUri());
-            List<Document> toSendDocuments = signBookService.getLastSignedDocuments(signBook);
-            for (Document toSendDocument : toSendDocuments) {
+            message.setTo(targetUri);
+            for(SignRequest signRequest : signRequests) {
+                Document toSendDocument = signRequestService.getLastSignedDocument(signRequest);
                 message.addAttachment(toSendDocument.getFileName(), new ByteArrayResource(IOUtils.toByteArray(toSendDocument.getInputStream())));
             }
             String htmlContent = templateEngine.process("mail/email-file.html", ctx);

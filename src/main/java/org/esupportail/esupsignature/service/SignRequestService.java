@@ -24,6 +24,7 @@ import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
+import org.esupportail.esupsignature.service.fs.UploadActionType;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.sign.SignService;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.Function;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -95,7 +97,7 @@ public class SignRequestService implements EvaluationContextExtension {
 
 	private String step = "";
 
-	public List<SignRequest> getTosignRequests(User user) {
+	public List<SignRequest> getToSignRequests(User user) {
 		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientsContains(user.getId());
 		return signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 	}
@@ -420,8 +422,38 @@ public class SignRequestService implements EvaluationContextExtension {
 		return nbSignFound;
 	}
 
-	public void completeSignRequest(SignRequest signRequest, User user) {
+	public String completeSignRequest(SignRequest signRequest, DocumentIOType documentIOType, String targetUri, User user) throws EsupSignatureException {
+		String result = "";
+		if(documentIOType != null) {
+			result = sendSignRequestsToTarget(signRequest.getTitle(), Arrays.asList(signRequest), documentIOType, targetUri);
+		}
 		updateStatus(signRequest, SignRequestStatus.completed, "Terminé automatiquement", user, "SUCCESS", signRequest.getComment());
+		return result;
+	}
+
+	public String sendSignRequestsToTarget(String title, List<SignRequest> signRequests, DocumentIOType documentIOType, String targetUrl) throws EsupSignatureException {
+		if (documentIOType.equals(DocumentIOType.mail)) {
+			logger.info("send by email to " + targetUrl);
+			mailService.sendFile(title, signRequests, targetUrl);
+			return "mail://" + targetUrl;
+		} else {
+			for(SignRequest signRequest : signRequests) {
+				Document signedFile = getLastSignedDocument(signRequest);
+				try {
+					logger.info("send to " + documentIOType.name() + " in /" + targetUrl + "/signed");
+					FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(documentIOType);
+					InputStream inputStream = signedFile.getInputStream();
+					fsAccessService.createFile("/", targetUrl, "folder");
+					fsAccessService.createFile("/" + targetUrl + "/", "signed", "folder");
+					if(fsAccessService.putFile("/" + targetUrl + "/signed/", signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE)){
+						return fsAccessService.getUri() + "/" + targetUrl + "/signed/" + signedFile.getFileName();
+					}
+				} catch (Exception e) {
+					throw new EsupSignatureException("write fsaccess error : ", e);
+				}
+			}
+		}
+		return null;
 	}
 
 	public List<Document> getToSignDocuments(SignRequest signRequest) {

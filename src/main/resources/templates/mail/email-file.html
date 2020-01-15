@@ -12,15 +12,19 @@
         </div>
         <div class="card-body">
             <h4>Bonjour</h4>
-            <h5>En pièce jointe, un nouveau document signé</h5>
-            <p th:text="'Titre du document : ' + ${signRequest.title}"></p>
-            <p th:text="'Auteur : ' + ${user.firstname} + ' ' + ${user.name}"></p>
-            <p>Signé par :</p>
-            <ul>
-                <th:block th:each="workflowStep : ${signRequest.workflowSteps}">
-                    <li th:text="${workflowStep.recipientsNames.keySet()}"></li>
+            <h5>En pièce jointe vos documents signés</h5>
+            <table>
+                <tr>
+                    <th>Titre du document</th>
+                    <th>Auteur</th>
+                </tr>
+                <th:block th:each="signRequest : ${signRequests}">
+                    <tr>
+                        <td th:text="${signRequest.title}"></td>
+                        <td th:text="${user.name}"></td>
+                    </tr>
                 </th:block>
-            </ul>
+            </table>
         </div>
         <div class="card-footer bg-secondary">
             <span class="text-white">Université de Rouen</span>

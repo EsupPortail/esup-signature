@@ -193,6 +193,11 @@ public class SignBookService implements EvaluationContextExtension {
         workflowRepository.save(workflow);
     }
 
+    public void completeSignBook(SignBook signBook, User user) throws EsupSignatureException {
+        signBook.setStatus(SignRequestStatus.completed);
+        exportFilesToTarget(signBook, user);
+    }
+
     public void exportFilesToTarget(SignBook signBook, User user) throws EsupSignatureException {
         logger.trace("export signRequest to : " + signBook.getTargetType() + "://" + signBook.getDocumentsTargetUri());
         if (getStatus(signBook).equals(SignRequestStatus.completed) /* && signRequestService.isSignRequestCompleted(signRequest)*/) {
@@ -205,30 +210,10 @@ public class SignBookService implements EvaluationContextExtension {
         }
     }
 
-
     public boolean exportFileToTarget(SignBook signBook, User user) throws EsupSignatureException {
         if (signBook.getTargetType() != null && !signBook.getTargetType().equals(DocumentIOType.none)) {
-            if (signBook.getTargetType().equals(DocumentIOType.mail)) {
-                logger.info("send by email to " + signBook.getDocumentsTargetUri());
-                mailService.sendFile(signBook);
-                signBook.setExportedDocumentURI("mail://" + signBook.getDocumentsTargetUri());
-                return true;
-            } else {
-                for(SignRequest signRequest : signBook.getSignRequests()) {
-                    Document signedFile = signRequestService.getLastSignedDocument(signRequest);
-                    try {
-                        logger.info("send to " + signBook.getTargetType() + " in /" + signBook.getDocumentsTargetUri() + "/signed");
-                        FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signBook.getTargetType());
-                        InputStream inputStream = signedFile.getInputStream();
-                        fsAccessService.createFile("/", signBook.getDocumentsTargetUri(), "folder");
-                        fsAccessService.createFile("/" + signBook.getDocumentsTargetUri() + "/", "signed", "folder");
-                        signBook.setExportedDocumentURI(fsAccessService.getUri() + "/" + signBook.getDocumentsTargetUri() + "/signed/" + signedFile.getFileName());
-                        return fsAccessService.putFile("/" + signBook.getDocumentsTargetUri() + "/signed/", signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE);
-                    } catch (Exception e) {
-                        throw new EsupSignatureException("write fsaccess error : ", e);
-                    }
-                }
-            }
+            String documentUrl = signRequestService.sendSignRequestsToTarget(signBook.getName(), signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri());
+            signBook.setExportedDocumentURI(documentUrl);
         } else {
             logger.debug("no target type for this signbook");
         }
@@ -328,7 +313,7 @@ public class SignBookService implements EvaluationContextExtension {
             for (Long recipientId : getCurrentWorkflowStep(signBook).getRecipients().keySet()) {
                 User recipientUser = userRepository.findById(recipientId).get();
                 if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(User.EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
-                    userService.sendEmailAlert(recipientUser);
+                    //userService.sendEmailAlert(recipientUser);
                 }
             }
             setNextRecipients(signBook);

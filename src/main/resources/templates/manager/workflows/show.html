@@ -51,7 +51,10 @@
                         <dt class="col-lg-5">Description</dt>
                         <dd th:text="${workflow.description}"></dd>
                     </dl>
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Circuit de signatures</dt>
                     <div th:replace="manager/workflows/cards/stepscard :: stepscard"></div>
+                    </dl>
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Gestionnaire(s) du parapheur</dt>
                         <dd>
@@ -166,25 +169,10 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="form-group" id="_newPageType_div_id">
-                                    <label for="_newPageType_id">
-                                        <strong> Insérer unepage de garde </strong>
-                                    </label>
-                                    <div class="col-lg-8">
-                                        <select id="_newPageType_id" name="newPageType"
-                                                class="form-control" size="1">
-                                            <th:block th:each="newPageType : ${newPageTypes}">
-                                                <option th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}"></option>
-                                            </th:block>
-                                        </select>
-                                    </div>
-                                </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fa fa-paper-plane" aria-hidden="true"></i> Ajouter
-                                </button>
+                                <button type="submit" class="btn btn-success">Ajouter</button>
                             </div>
                         </form>
                     </div>
