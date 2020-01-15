@@ -59,7 +59,8 @@
 
                     var signId = [[${signRequest.id}]];
                     var signMode = false;
-                    var refuseMode = false;
+                    var dateActive = false;
+                    var visualActive = true;
                     var pointItEnable = true;
 
                     var pdfjsLib = window['pdfjs-dist/build/pdf'];
@@ -91,6 +92,7 @@
                         });
                         pageNum = num;
                         document.getElementById('page_num').textContent = num;
+                        document.getElementById('zoom').textContent = 100 * scale;
                         refreshSign();
                         if(pdfDoc.numPages == 1) {
                             $('#prev').prop('disabled', true);
@@ -150,6 +152,8 @@
                             $(this).css('top', top);
                         });
                         scale = scale + 0.25;
+                        //textDate = document.getElementById("textDate");
+                        $('#textDate').css('font-size', 8 * scale + 'px')
                         queueRenderPage(pageNum);
                     }
 
@@ -167,6 +171,7 @@
                             $(this).css('top', top);
                         });
                         scale = scale - 0.25;
+                        $('#textDate').css('font-size', 8 * scale + 'px')
                         queueRenderPage(pageNum);
                     }
 
@@ -235,7 +240,6 @@
 
                     function displayComment() {
                         if(signMode) {
-
                             return;
                         }
                         pointItEnable = false;
@@ -253,60 +257,137 @@
                         $("#postit").hide();
                     }
 
-                    function toggleSignMode() {
+                    function enableCommentMode() {
+                        //$('#pdf').awesomeCursor('comment-alt');
+                        disableAllModes();
+                        pointItEnable = true;
+                        $('#workspace').toggleClass('alert-warning alert-secondary');
+                        $('#commentButton').toggleClass('btn-light btn-warning');
+                        $('#comments').show();
+                        queueRenderPage(pageNum);
+                    }
+
+                    function enableSignMode() {
+                        disableAllModes();
+                        signMode = true;
+                        pointItEnable = false;
                         $('#workspace').toggleClass('alert-success alert-secondary');
-                        if(refuseMode) {
-                            toggleSignRefuseMode();
-                        }
-                        if(signMode) {
-                            $('#signmod').prop( "checked", false );
-                            signMode = false;
-                            pointItEnable = true;
-                            $('#cross').hide();
-                            $('#comments').show();
-                            $('#rotateleft').prop('disabled', false);
-                            $('#rotateright').prop('disabled', false);
-                            $('#signtools').fadeTo(300, 0);
-                            $('#signtools').hide();
-                            queueRenderPage(pageNum);
-                        } else {
-                            signMode = true;
-                            pointItEnable = false;
-                            //scale = 1;
-                            rotation = 0;
-                            $('#cross').show();
-                            $('#comments').hide();
-                            $('#rotateleft').prop('disabled', true);
-                            $('#rotateright').prop('disabled', true);
-                            $('#signtools').show();
-                            $('#signtools').fadeTo(300, 1);
-                            document.getElementById("xPos").value = Math.round([[${@signRequestService.getCurrentSignRequestParams(signRequest).XPos}]]);
-                            document.getElementById("yPos").value = Math.round([[${@signRequestService.getCurrentSignRequestParams(signRequest).YPos}]]);
-                            $(".circle").each(function( index ) {
-                                $(this).hide();
-                            });
-                            queueRenderPage(pageNum);
-                        }
+                        $(".circle").each(function( index ) {
+                            $(this).hide();
+                        });
+                        document.getElementById("xPos").value = Math.round([[${@signRequestService.getCurrentSignRequestParams(signRequest).XPos}]]);
+                        document.getElementById("yPos").value = Math.round([[${@signRequestService.getCurrentSignRequestParams(signRequest).YPos}]]);
+                        $('#rotateleft').prop('disabled', true);
+                        $('#rotateright').prop('disabled', true);
+                        $('#signButton').toggleClass('btn-light btn-success');
+                        $('#signtools').show();
+                        $('#pen').removeClass('btn-outline-secondary').addClass('btn-outline-success');
+                        $('#cross').show();
+                        visualActive = true;
+                        rotation = 0;
+                        queueRenderPage(pageNum)
+
                     }
 
-                    function toggleSignRefuseMode() {
+                    function enableRefuseMode() {
+                        disableAllModes();
                         $('#workspace').toggleClass('alert-danger alert-secondary');
-                        if(signMode) {
-                            toggleSignMode();
-                        }
-                        if(!refuseMode) {
-                            refuseMode = true;
-                            $('#signtools').fadeTo(300, 0);
-                            $('#signtools').hide();
-                            $('#refusetools').fadeTo(300, 1);
-                            $('#refusetools').show();
-                        }else{
-                            refuseMode = false;
-                            $('#refusetools').fadeTo(300, 0);
-                            $('#refusetools').hide();
-                        }
-
+                        $('#refuseButton').toggleClass('btn-light btn-danger');
+                        $('#refusetools').show();
                     }
+
+                    function disableAllModes() {
+                        signMode = false;
+                        $('#workspace').removeClass('alert-danger').removeClass('alert-warning').removeClass('alert-success').addClass('alert-secondary');
+                        $('#commentButton').addClass('btn-light').removeClass('btn-warning');
+                        $('#signButton').addClass('btn-light').removeClass('btn-success');
+                        $('#refuseButton').addClass('btn-light').removeClass('btn-danger');
+                        $('#comments').hide();
+                        $('#signtools').hide();
+                        $('#cross').hide();
+                        $('#refusetools').hide();
+                        $('#rotateleft').prop('disabled', false);
+                        $('#rotateright').prop('disabled', false);
+                    }
+
+
+                    // function toggleCommentMode() {
+                    //     if(!commentMode) {
+                    //         if(refuseMode) {
+                    //             refuseMode = false;
+                    //             toggleSignRefuseMode();
+                    //         }
+                    //         if(signMode) {
+                    //             signMode = false;
+                    //             toggleSignMode();
+                    //         }
+                    //         commentMode = true;
+                    //         $('#workspace').toggleClass('alert-success alert-warning');
+                    //         $('#signButton').toggleClass('btn-light btn-success');
+                    //         $('#commentButton').toggleClass('btn-light btn-warning');
+                    //         $('#signmod').prop("checked", false);
+                    //         signMode = false;
+                    //         pointItEnable = true;
+                    //         $('#cross').hide();
+                    //         $('#comments').show();
+                    //         $('#rotateleft').prop('disabled', false);
+                    //         $('#rotateright').prop('disabled', false);
+                    //         $('#signtools').fadeTo(300, 0);
+                    //         $('#signtools').hide();
+                    //         queueRenderPage(pageNum);
+                    //     }
+                    // }
+
+                    // function toggleSignMode() {
+                    //     if(!signMode) {
+                    //         if(refuseMode) {
+                    //             refuseMode = false;
+                    //             toggleSignRefuseMode();
+                    //         }
+                    //         if(commentMode) {
+                    //             commentMode = false;
+                    //             toggleCommentMode();
+                    //         }
+                    //
+                    //         $('#workspace').toggleClass('alert-success alert-secondary');
+                    //         $('#signButton').toggleClass('btn-light btn-success');
+                    //         signMode = true;
+                    //         pointItEnable = false;
+                    //         //scale = 1;
+                    //         rotation = 0;
+                    //         $('#cross').show();
+                    //         $('#comments').hide();
+                    //         $('#rotateleft').prop('disabled', true);
+                    //         $('#rotateright').prop('disabled', true);
+                    //         $('#signtools').show();
+                    //         $('#signtools').fadeTo(300, 1);
+                    //         document.getElementById("xPos").value = Math.round([[${@signRequestService.getCurrentSignRequestParams(signRequest).XPos}]]);
+                    //         document.getElementById("yPos").value = Math.round([[${@signRequestService.getCurrentSignRequestParams(signRequest).YPos}]]);
+                    //         $(".circle").each(function( index ) {
+                    //             $(this).hide();
+                    //         });
+                    //         queueRenderPage(pageNum);
+                    //     }
+                    // }
+                    //
+                    // function toggleSignRefuseMode() {
+                    //     $('#workspace').toggleClass('alert-danger alert-secondary');
+                    //     if(signMode) {
+                    //         toggleSignMode();
+                    //     }
+                    //     if(!refuseMode) {
+                    //         refuseMode = true;
+                    //         $('#signtools').fadeTo(300, 0);
+                    //         $('#signtools').hide();
+                    //         $('#refusetools').fadeTo(300, 1);
+                    //         $('#refusetools').show();
+                    //     }else{
+                    //         refuseMode = false;
+                    //         $('#refusetools').fadeTo(300, 0);
+                    //         $('#refusetools').hide();
+                    //     }
+                    //
+                    // }
 
                     function refreshSign() {
                         $('#cross').css('left', [[${@signRequestService.getCurrentSignRequestParams(signRequest).XPos}]] * scale + 15);
@@ -320,25 +401,30 @@
                     }
 
                     function toggleVisual() {
-                        document.getElementById("cross").classList.toggle('d-none');
-                        document.getElementById("_visual").toggleAttribute("checked");
+                        if(visualActive) {
+                            visualActive = false;
+                        } else {
+                            visualActive = true;
+                        }
+                        $('#cross').toggle();
+                        $('#pen').toggleClass('btn-outline-success btn-outline-secondary');
                     }
 
-                    function activeDate() {
-
-                        var addDate = document.getElementById("_addDate");
+                    function toggleDate() {
+                        $('#clock').toggleClass('btn-outline-success btn-outline-secondary');
                         var cross = document.getElementById("cross");
                         var borders = document.getElementById("borders");
                         var textDate;
 
-                        if(addDate.checked) {
+                        if(!dateActive) {
+                            dateActive = true;
                             cross.style.width = 200;
                             cross.style.height = cross.offsetHeight + 20;
                             borders.style.width = 200;
                             borders.style.height = borders.offsetHeight + 20;
                             borders.insertAdjacentHTML("beforeend", "<span id='textDate' class='align-top' style='font-size:" + 8 * scale + "px;'>Le XX/XX/XXXX XX:XX</span>");
-
                         } else {
+                            dateActive = false;
                             cross.style.width = 100;
                             cross.style.height = cross.offsetHeight - 20;
                             borders.style.width = 100;
@@ -359,6 +445,10 @@
                                 zoomIn();
                             }
                         }
+                    });
+
+                    $(document).ready(function () {
+                        enableSignMode();
                     });
 
                     /*]]>*/
@@ -467,54 +557,13 @@
                     <a th:href="'/user/documents/getfile/' + ${signRequest.signedDocuments.get(0).id}" target="_blank"><i class="fas fa-file"></i><span th:text="${signRequest.signedDocuments.get(0).fileName}"></span></a>
                 </li>
              </ul>
-            <th:block th:if="${documentType != 'pdf'}">
-                <div id="signtools" style="display: none; opacity : 0;transition: all 0.3s;" >
-                    <input th:classappend="${@signRequestService.getCurrentSignType(signRequest).name() != 'certSign' && @signRequestService.getCurrentSignType(signRequest).name() != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
-                    <button class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
-                        <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
-                    </button>
-                </div>
-            </th:block>
-            <div id="signtools" style="display: none; opacity : 0;transition: all 0.3s;" th:if="${documentType == 'pdf'}">
-                <div class="btn btn-light col-3 col-md-12 m-1" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}">
-                    <label class="control-label" for="_visual" >Insérer un visuel</label>
-                    <br/>
-                    <label class="switch">
-                        <input onclick="toggleVisual();" type="checkbox" name="visual" id="_visual" checked/>
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-
-                <input th:if="${@signRequestService.getCurrentSignType(signRequest).name() == 'pdfImageStamp'}" class="d-none" type="checkbox" name="visual" id="_visual" checked/>
-
-                <div class="btn btn-light col-3 col-md-12 m-1">
-                    <label class="control-label" for="_addDate">Afficher la date</label>
-                    <br/>
-                    <label class="switch">
-                        <input onclick="activeDate();" type="checkbox" name="addDate" id="_addDate"/>
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-                <input th:classappend="${@signRequestService.getCurrentSignType(signRequest).name() != 'certSign' && @signRequestService.getCurrentSignType(signRequest).name() != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
-                <button class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
-                    <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
-                </button>
-            </div>
-            <div id="refusetools" style="display: none; opacity : 0;transition: all 0.3s;">
-                <button class="mb-1 col-12 btn btn-lg btn-danger" title="Refuser" th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal">
-                    <i class="fas fa-ban"></i> <span class="sidebar-label">Confirmer le refus</span>
-                </button>
-                <button class="mb-1 col-12 btn btn-lg btn-secondary" title="Annuler" onclick="toggleSignRefuseMode()">
-                    <i class="fas fa-times"></i> <span class="sidebar-label">Annuler</span>
-                </button>
-            </div>
             <div id="comments" th:if="${signable == 'ok' && documentType == 'pdf'}" style="transition: all 0.3s;">
-                <div class="alert alert-warning">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
+                <div class="alert alert-light">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
                 <div th:if="${postits.size() > 0}" class="alert alert-warning clearfix position-fixed">
                     <th:block th:each="postit : ${postits}">
                         <div th:id="'postit' + ${postit.id}" class="postit angle" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
                              th:onclick="'queueRenderPage(' + ${postit.pageNumber} + ');$(\'html,body\').animate({scrollTop: $(\'#' + ${postit.id} + '\').css(\'top\').replace(\'px\', \'\')}, \'slow\');'">
-                            <b th:text="${@userService.getNameFromEppn(postit.eppn)}"></b>
+                            <b th:text="${@userService.getUserByEppn(postit.eppn).firstname + ' ' + @userService.getUserByEppn(postit.eppn).name}"></b>
                             <span th:text="${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></span>
                             <p class="postitarea" th:text="${postit.comment}"></p>
                         </div>

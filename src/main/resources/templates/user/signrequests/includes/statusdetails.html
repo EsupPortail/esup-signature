@@ -25,19 +25,13 @@
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'pending'}">
-		<div class="alert alert-primary mb-1">
+		<div class="alert alert-dark mb-1">
 			<h5 class="alert-heading">
 				Le document est en cours de signature par :
 			</h5>
-			<div th:if="${signable == 'ok'}">
-				Vous devez signer cette demande
-			</div>
-			<div th:if="${signable != 'ok'}">
-				<th:block th:each="recipient : ${@signRequestService.getCurrentRecipientsNames(signRequest)}">
-					<li th:text="${recipient.key}"></li>
-				</th:block>
-
-			</div>
+			<th:block th:each="recipient : ${@signRequestService.getCurrentRecipientsNames(signRequest)}">
+				<li th:text="${recipient.key}"></li>
+			</th:block>
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'checked'}">

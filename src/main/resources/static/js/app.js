@@ -101,8 +101,8 @@ function submitSignRequest() {
 	var signRequestParams;
 	if(signPageNumber != null) {
 		signRequestParams = "password=" + document.getElementById("password").value +
-							"&addDate=" + document.getElementById("_addDate").checked +
-							"&visual=" + document.getElementById("_visual").checked +
+							"&addDate=" + dateActive +
+							"&visual=" + visualActive +
 							"&xPos=" + document.getElementById("xPos").value +
 							"&yPos=" + document.getElementById("yPos").value +
 							"&signPageNumber=" + document.getElementById("signPageNumber").value +
@@ -180,30 +180,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		startPosY = document.getElementById("yPos").value;
 	}
 });
-
-function activeDate() {
-	
-	var addDate = document.getElementById("_addDate");
-	var cross = document.getElementById("cross");
-	var borders = document.getElementById("borders");
-	var textDate;
-
-	if(addDate.checked) {
-		cross.style.width = 200;
-		cross.style.height = cross.offsetHeight + 20;
-		borders.style.width = 200;
-		borders.style.height = borders.offsetHeight + 20;
-		borders.insertAdjacentHTML("beforeend", "<span id='textDate' class='align-top' style='font-size:" + 8 * zoom + "px;'>Le XX/XX/XXXX XX:XX</span>");
-
-	} else {
-		cross.style.width = 100;
-		cross.style.height = cross.offsetHeight - 20;
-		borders.style.width = 100;
-		borders.style.height = borders.offsetHeight - 20;
-		textDate = document.getElementById("textDate");
-		textDate.remove();
-	}
-}
 
 function pointIt(e) {
 	if(pointItEnable) {

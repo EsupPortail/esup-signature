@@ -101,7 +101,7 @@
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${@userService.getUserByEppn(signRequest.createBy).firstname} + ' ' + ${@userService.getUserByEppn(signRequest.createBy).name}"></span></td>
                                     <td class="utilbox">
-                                        <a th:if="${signRequest.parentSignBook != null}" class="btn btn-info" title="ouvrir" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '/' + ${signRequest.id}"><i class="fas fa-book"></i> </a>
+                                        <a th:if="${signRequest.parentSignBook != null}" class="btn btn-info" title="ouvrir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="fas fa-book"></i> </a>
                                         <a th:unless="${signRequest.parentSignBook != null}" class="btn btn-info" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="far fa-eye"></i> </a>
                                     </td>
                                 </tr>
