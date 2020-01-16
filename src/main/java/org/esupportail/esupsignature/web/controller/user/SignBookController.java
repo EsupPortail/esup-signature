@@ -276,7 +276,7 @@ public class SignBookController {
             signRequestService.delete(signRequest);
         }
         signBook.getSignRequests().clear();
-        signBookRepository.delete(signBook);
+        signBookService.delete(signBook);
         model.asMap().clear();
         return "redirect:/user/signrequests/";
     }
@@ -401,6 +401,7 @@ public class SignBookController {
         if (signBookService.checkUserViewRights(user, signBook)) {
             Workflow workflow = workflowRepository.findById(workflowSignBookId).get();
             signBookService.importWorkflow(signBook, workflow, user);
+            signBookService.pendingSignBook(signBook, user);
         }
         return "redirect:/user/signbooks/" + id + "/?form";
     }

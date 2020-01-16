@@ -16,7 +16,7 @@
 	<div th:if="${user.eppn == signRequest.createBy}">
 		<div th:if="${(signRequest.status.name() == 'draft')}">
 			<div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.recipients.size() == 0}">
-				<div class="alert alert-info mb-1">
+				<div class="alert alert-dark mb-1">
 					<h5 class="alert-heading">
 						Demande prête pour la mise en signature
 					</h5>
@@ -52,7 +52,7 @@
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'exported'}">
-		<div class="alert alert-success mb-1">
+		<div class="alert alert-dark mb-1">
 			<h5>Le document signé à été exporté vers son emplacement définitif :</h5>
 			<span th:text="${signRequest.exportedDocumentURI}"></span>
 		</div>

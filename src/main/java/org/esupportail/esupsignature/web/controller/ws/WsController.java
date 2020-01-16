@@ -136,9 +136,7 @@ public class WsController {
         user.setIp(httpServletRequest.getRemoteAddr());
         for (MultipartFile multipartFile : multipartFiles) {
             Document document = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), signBook, user, Arrays.asList(document));
-
-            signRequest.setStatus(SignRequestStatus.pending);
+            signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), signBook, user, Arrays.asList(document));
         }
         String[] ok = {"ok"};
         return ok;

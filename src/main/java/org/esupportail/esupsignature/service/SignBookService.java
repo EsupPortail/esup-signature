@@ -174,9 +174,7 @@ public class SignBookService implements EvaluationContextExtension {
         signBook.setTargetType(workflow.getTargetType());
         signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
         signBookRepository.save(signBook);
-        pendingSignBook(signBook, user);
     }
-
 
     public void saveWorkflow(String name, User user, SignBook signBook) throws EsupSignatureException {
         Workflow workflow;
@@ -306,6 +304,7 @@ public class SignBookService implements EvaluationContextExtension {
 
     public void pendingSignBook(SignBook signBook, User user) {
         if(!getStatus(signBook).equals(SignRequestStatus.pending)) {
+            setNextRecipients(signBook);
             updateStatus(signBook, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signBook.getComment());
             for(SignRequest signRequest : signBook.getSignRequests()) {
                 signRequest.setStatus(SignRequestStatus.pending);
@@ -313,10 +312,9 @@ public class SignBookService implements EvaluationContextExtension {
             for (Long recipientId : getCurrentWorkflowStep(signBook).getRecipients().keySet()) {
                 User recipientUser = userRepository.findById(recipientId).get();
                 if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(User.EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
-                    //userService.sendEmailAlert(recipientUser);
+                    userService.sendEmailAlert(recipientUser);
                 }
             }
-            setNextRecipients(signBook);
         } else {
             logger.warn("already pending");
         }
@@ -369,6 +367,13 @@ public class SignBookService implements EvaluationContextExtension {
             return signBook.getRealStatus();
         }
         return SignRequestStatus.completed;
+    }
+
+    public void delete(SignBook signBook) {
+        for(WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
+            workflowStepRepository.delete(workflowStep);
+        }
+        signBookRepository.delete(signBook);
     }
 
     @Override

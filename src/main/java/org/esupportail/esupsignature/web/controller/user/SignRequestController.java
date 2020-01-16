@@ -1,11 +1,8 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.Log;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.SignBook.SignBookType;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -100,10 +97,7 @@ public class SignRequestController {
     private SignRequestService signRequestService;
 
     @Resource
-    private WorkflowStepRepository workflowStepRepository;
-
-    @Resource
-    private UserRepository userRepository;
+    private SignRequestParamsRepository signRequestParamsRepository;
 
     @Resource
     private SignBookRepository signBookRepository;
@@ -155,10 +149,7 @@ public class SignRequestController {
             }
         }
 
-        List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientsContains(user.getId());
-        signRequestsToSign = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
-
-        signRequestsToSign = signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
+        List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
 
         Page<SignRequest> signRequests;
         if(this.statusFilter != null) {
@@ -351,10 +342,11 @@ public class SignRequestController {
                 return "redirect:/user/nexu-sign/" + id + "?referer=" + referer;
             }
             if (signPageNumber != null && xPos != null && yPos != null) {
-                signRequestService.getCurrentSignRequestParams(signRequest).setSignPageNumber(signPageNumber);
-                signRequestService.getCurrentSignRequestParams(signRequest).setXPos(xPos);
-                signRequestService.getCurrentSignRequestParams(signRequest).setYPos(yPos);
-                signRequestRepository.save(signRequest);
+                SignRequestParams signRequestParams = signRequestService.getCurrentSignRequestParams(signRequest);
+                signRequestParams.setSignPageNumber(signPageNumber);
+                signRequestParams.setXPos(xPos);
+                signRequestParams.setYPos(yPos);
+                signRequestParamsRepository.save(signRequestParams);
             }
             if (!"".equals(password)) {
                 setPassword(password);
@@ -419,12 +411,8 @@ public class SignRequestController {
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@PathVariable("id") Long id, Model model) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        List<Log> logs = logRepository.findBySignRequestId(id);
-        for (Log log : logs) {
-            logRepository.delete(log);
-        }
         signRequestRepository.save(signRequest);
-        signRequestRepository.delete(signRequest);
+        signRequestService.delete(signRequest);
         model.asMap().clear();
         return "redirect:/user/signrequests/";
     }

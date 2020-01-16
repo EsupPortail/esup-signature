@@ -99,7 +99,9 @@ public class SignRequestService implements EvaluationContextExtension {
 
 	public List<SignRequest> getToSignRequests(User user) {
 		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientsContains(user.getId());
-		return signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
+		signRequestsToSign = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
+		signRequestsToSign = signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
+		return  signRequestsToSign;
 	}
 
 
@@ -392,14 +394,18 @@ public class SignRequestService implements EvaluationContextExtension {
 			}
 			signRequestRepository.save(signRequest);
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
-			for (Long recipientId : signRequest.getRecipients().keySet()) {
-				User recipientUser = userRepository.findById(recipientId).get();
-				if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
-					userService.sendEmailAlert(recipientUser);
-				}
-			}
+			sendEmailAlerts(signRequest);
 		} else {
 			logger.warn("already pending");
+		}
+	}
+
+	public void sendEmailAlerts(SignRequest signRequest) {
+		for (Long recipientId : signRequest.getRecipients().keySet()) {
+			User recipientUser = userRepository.findById(recipientId).get();
+			if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
+				userService.sendEmailAlert(recipientUser);
+			}
 		}
 	}
 
@@ -419,6 +425,11 @@ public class SignRequestService implements EvaluationContextExtension {
 			throw new EsupSignatureIOException("unable to open pdf document");
 		}
 		logger.info(nbSignFound + " signature fields found on " + signRequest.getOriginalDocuments().get(0).getFileName() + " from signrequest " + signRequest.getId());
+		if(nbSignFound == 0) {
+			SignRequestParams signRequestParams = getEmptySignRequestParams();
+			signRequestParamsRepository.save(signRequestParams);
+			signRequest.getSignRequestParams().add(signRequestParams);
+		}
 		return nbSignFound;
 	}
 
@@ -554,7 +565,6 @@ public class SignRequestService implements EvaluationContextExtension {
 		signRequestParams.setSignPageNumber(1);
 		signRequestParams.setXPos(0);
 		signRequestParams.setYPos(0);
-		signRequestParamsRepository.save(signRequestParams);
 		return signRequestParams;
 	}
 
@@ -575,6 +585,9 @@ public class SignRequestService implements EvaluationContextExtension {
 		List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
 		for (Log log : logs) {
 			logRepository.delete(log);
+		}
+		for(SignRequestParams signRequestParams: signRequest.getSignRequestParams()) {
+			signRequestParamsRepository.delete(signRequestParams);
 		}
 		for(Document document : signRequest.getOriginalDocuments()) {
 			documentService.deleteDocument(document);

@@ -83,11 +83,11 @@ public class SignBookWizardController {
     public String wiz3(@RequestParam("name") String name, Model model) throws EsupSignatureException, IOException, EsupSignatureIOException {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookService.getSignBook(name, user);
-        for (SignRequest signRequest : signBook.getSignRequests()) {
-            if(signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().equals("application/pdf")) {
-                signRequestService.scanSignatureFields(signRequest);
-            }
-        }
+//        for (SignRequest signRequest : signBook.getSignRequests()) {
+//            if(signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().equals("application/pdf")) {
+//                signRequestService.scanSignatureFields(signRequest);
+//            }
+//        }
         model.addAttribute("signBook", signBook);
         //TODO display system workflows
         List<Workflow> workflows = workflowRepository.findByCreateBy(user.getEppn());
@@ -170,11 +170,16 @@ public class SignBookWizardController {
     }
 
     @RequestMapping(value = "/wizend/{id}", produces = "text/html")
-    public String wizEnd(@PathVariable("id") Long id, Model model) {
+    public String wizEnd(@PathVariable("id") Long id, Model model) throws EsupSignatureException {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
-        model.addAttribute("signBook", signBook);
-        return "user/signbooks/wizard/wizend";
+        if(signBook.getCreateBy().equals(user.getEppn())) {
+            model.addAttribute("signBook", signBook);
+            signBookService.pendingSignBook(signBook, user);
+            return "user/signbooks/wizard/wizend";
+        } else {
+            throw new EsupSignatureException("not autorized");
+        }
     }
 
 }

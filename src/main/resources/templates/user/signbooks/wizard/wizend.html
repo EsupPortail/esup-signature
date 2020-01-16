@@ -2,13 +2,11 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
-    <button th:if="${signRequest != null}" th:data1="${signRequest.id}" onclick="parent.location.href='/user/signrequests/' + this.getAttribute('data1')" type="button" class="btn btn-success">
-        Signer <i class="fas fa-signature"></i>
-    </button>
-
-    <button th:onclick="'parent.location.href=\'/user/signbooks/'+ ${signBook.id} +'/' + ${signBook.signRequests.get(0).id} + '\''" type="button" class="btn btn-success" style="position: absolute;right: 10px;bottom: 10px;">
-        <i class="fas fa-door-open"></i> Fermer
-    </button>
-
+    <script>
+        /*<![CDATA[*/
+        parent.location.href='/user/signrequests/[[${signBook.signRequests.get(0).id}]]';
+        location.href='/user/signbooks/wizard/wiz1';
+        /*]]>*/
+    </script>
 </body>
 </html>

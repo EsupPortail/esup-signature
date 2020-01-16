@@ -33,7 +33,7 @@ $(document).ready(function () {
 	}
 
 	$('#sidebarCollapse').on('click', function () {
-		sideBarStatus = sideBarStatus = localStorage.getItem('sideBarStatus');
+		sideBarStatus = localStorage.getItem('sideBarStatus');
 		toggleSideBar();
 		if(sideBarStatus == 'on') {
 			localStorage.setItem('sideBarStatus', 'off');
@@ -176,34 +176,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		startPosY = document.getElementById("yPos").value;
 	}
 });
-
-function pointIt(e) {
-	if(pointItEnable) {
-		pointItMove = true;
-		console.log('point enable')
-		if(e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel'){
-			e.preventDefault();
-			var rect = pointerDiv.getBoundingClientRect();
-			var touch = e.touches[0] || e.changedTouches[0];
-			posX = touch.pageX - rect.left;
-			posY = touch.pageY - rect.top - window.scrollY;
-		} else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover'|| e.type=='mouseout' || e.type=='mouseenter' || e.type=='mouseleave') {
-			console.log("mouse");
-			posX = e.offsetX ? (e.offsetX)
-				: e.clientX - pointerDiv.offsetLeft;
-			posY = e.offsetY ? (e.offsetY)
-				: e.clientY - pointerDiv.offsetTop;
-		}
-
-		if (cross != null && posX > 0 && posY > 0 && pointItEnable) {
-			cross.style.backgroundColor= 'rgba(0, 255, 0, .5)';
-			cross.style.left = posX + "px";
-			cross.style.top = posY + "px";
-			document.getElementById("xPos").value = Math.round(posX / scale);
-			document.getElementById("yPos").value = Math.round(posY / scale);
-		}
-	}
-}
 
 function animBorder() {
 	document.getElementById("borders").classList.add("anim-border");
