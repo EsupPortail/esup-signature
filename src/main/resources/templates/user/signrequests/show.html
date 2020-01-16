@@ -105,10 +105,9 @@
                 <h5>Signature en cours</h5>
                 <div class="progress">
                     <div class="progress-bar progress-bar-striped progress-bar-animated active" style="width: 100%;" id="bar">
-                        <strong> <span id="bar-text"></span>
-                        </strong>
                     </div>
                 </div>
+                <span id="bar-text"></span>
                 <div style="display: none;" id="passwordError" class="alert alert-danger" role="alert">
                     Mauvais mot de passe
                 </div>
@@ -136,10 +135,46 @@
                 </button>
             </div>
             <div class="modal-body">
-                <input th:classappend="${@signRequestService.getCurrentSignType(signRequest).name() != 'certSign' && @signRequestService.getCurrentSignType(signRequest).name() != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
+                <div th:if="${@signRequestService.getCurrentSignType(signRequest).name() == 'nexuSign'}">
+                    <script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
+                    <script type="text/javascript" th:replace="user/signrequests/includes/scriptnexu :: scriptnexu"></script>
+                    <div id="nexu_version_alert" style="display: none;">
+                        <a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left">
+                            <i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
+                        </a>
+                        <div class="alert alert-warning float-left">
+                            L'application NexU n'a pas la bonne version.
+                            <span th:text="${nexuVersion} + 'nécessaire'"></span>
+                            <br>
+                        </div>
+                    </div>
+                    <div id="nexu_missing_alert" style="display: none;">
+                        <a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left">
+                            <i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
+                        </a>
+                        <div class="alert alert-warning float-left">
+                            L'application NexU n'a pas été détectée
+                            <br>
+                            <small>Merci de lancer l'application sur votre poste.
+                                <a href="https://github.com/nowina-solutions/nexu/releases/">Téléchargement</a>
+                            </small>
+                        </div>
+                    </div>
+                    <div id="nexu_ready_alert" style="display: none;">
+                        <div class="alert alert-success float-left mb-1">
+                            L'application NexU est fonctionnelle
+                            <br/>
+                            <small>Vous pouvez utiliser une clé materielle ou un keystore</small>
+                        </div>
+                        <button class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.getId()} + ');'">
+                            <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
+                        </button>
+                    </div>
+                </div>
+                <input th:classappend="${@signRequestService.getCurrentSignType(signRequest).name() != 'certSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
             </div>
             <div class="modal-footer">
-                <button class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
+                <button th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'nexuSign'}" class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.getId()} + ');'">
                     <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                 </button>
             </div>
@@ -189,42 +224,5 @@
         </div>
     </div>
 </div>
-
-<script>
-    function launchSign(token) {
-        console.log(token);
-        submitSignRequest();
-        $('#signModal').modal('hide');
-        $('#wait').modal('show');
-        $('#wait').modal({backdrop: 'static', keyboard: false})
-
-        /*
-        var wait = $.ajax({
-            url: "/user/signrequests/wait-for-sign/" + token, success: function (result) {
-                location.reload();
-            }
-        });
-        $('#wait').on('hidden.bs.modal', function () {
-            console.log('abort ajax');
-            wait.abort();
-        })
-
-         */
-    }
-
-    function launchSignAll(id) {
-        $('#signAllModal').modal('hide');
-        $('#wait').modal('show');
-        $('#wait').modal({backdrop: 'static', keyboard: false})
-        var csrf = document.getElementsByName("_csrf")[0];
-        var signRequestParams = "password=" + document.getElementById("passwordAll").value +
-            "&" + csrf.name + "=" + csrf.value;
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open('POST', '/user/signbooks/sign/' + id, true);
-        xmlHttp.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-        xmlHttp.send(signRequestParams);
-    }
-
-</script>
 </body>
 </html>

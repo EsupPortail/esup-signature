@@ -93,9 +93,46 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 });
 
-//sign wait
+//sign launch
 
-function submitSignRequest() {
+var percent = 0;
+
+function launchSign(id) {
+	percent = 0;
+	console.log('launch sign for : ' + id);
+	$('#signModal').modal('hide');
+	$('#wait').modal('show');
+	$('#wait').modal({backdrop: 'static', keyboard: false})
+	submitSignRequest(id);
+
+	/*
+    var wait = $.ajax({
+        url: "/user/signrequests/wait-for-sign/" + token, success: function (result) {
+            location.reload();
+        }
+    });
+    $('#wait').on('hidden.bs.modal', function () {
+        console.log('abort ajax');
+        wait.abort();
+    })
+
+     */
+}
+
+function launchSignAll(id) {
+	$('#signAllModal').modal('hide');
+	$('#wait').modal('show');
+	$('#wait').modal({backdrop: 'static', keyboard: false})
+	var csrf = document.getElementsByName("_csrf")[0];
+	var signRequestParams = "password=" + document.getElementById("passwordAll").value +
+		"&" + csrf.name + "=" + csrf.value;
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open('POST', '/user/signbooks/sign/' + id, true);
+	xmlHttp.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+	xmlHttp.send(signRequestParams);
+}
+
+function submitSignRequest(id) {
 	var csrf = document.getElementsByName("_csrf")[0];
 	var signPageNumber = document.getElementById("signPageNumber");
 	var signRequestParams;
@@ -112,25 +149,26 @@ function submitSignRequest() {
 		signRequestParams = "password=" + document.getElementById("password").value +
 							"&" + csrf.name + "=" + csrf.value;
 	}
-	sendData(signRequestParams);
+	sendData(id, signRequestParams);
 
 }
 
-function sendData(signRequestParams) {
+function sendData(id, signRequestParams) {
 	document.getElementById("passwordError").style.display = "none";
 	document.getElementById("signError").style.display = "none";
 	document.getElementById("closeModal").style.display = "none";
 	document.getElementById("validModal").style.display = "none";
 	document.getElementById("bar").style.display = "none";
 	document.getElementById("bar").classList.add("progress-bar-animated");
-	getProgressTimer = setInterval(function() { getStep(); }, 500);
+	getProgressTimer = setInterval(function() { getStep(id, signRequestParams); }, 500);
 	var xmlHttp = new XMLHttpRequest();
-	xmlHttp.open('POST', '/user/signrequests/sign/' + signId, true);
+	xmlHttp.open('POST', '/user/signrequests/sign/' + id, true);
 	xmlHttp.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
 	xmlHttp.send(signRequestParams);
 }
 
-function getStep() {
+function getStep(id, signRequestParams) {
+	percent++;
 	console.log("getStep");
 	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.open("GET", "/user/signrequests/get-step", false);
@@ -142,20 +180,24 @@ function getStep() {
 			document.getElementById("bar").classList.remove("progress-bar-animated");
 			clearInterval(getProgressTimer);
 		} else if(result == "sign_system_error") {
+			clearInterval(getProgressTimer);
 			document.getElementById("signError").style.display = "block";
 			document.getElementById("closeModal").style.display = "block";
 			document.getElementById("bar").classList.remove("progress-bar-animated");
+		} else if(result == "initNexu") {
 			clearInterval(getProgressTimer);
+			document.location.href="/user/nexu-sign/" + id;
 		} else if (result == "end") {
 			clearInterval(getProgressTimer);
 			document.getElementById("validModal").style.display = "block";
 			document.getElementById("bar").classList.remove("progress-bar-animated");
 			document.getElementById("bar-text").innerHTML = "Signature terminée";
-			clearInterval(getProgressTimer);
+			document.getElementById("bar").style.width = 100 + "%";
+			document.location.reload();
 		} else {
 			document.getElementById("bar").style.display = "block";
-			document.getElementById("bar").style.width = 100 + "%";
-			document.getElementById("bar-text").innerHTML = result;				
+			document.getElementById("bar").style.width = percent + "%";
+			document.getElementById("bar-text").innerHTML = result;
 		}
 	}
 	xmlHttp.send(null);

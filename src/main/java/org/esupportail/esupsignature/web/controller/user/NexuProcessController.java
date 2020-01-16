@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.dss.web.model.*;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
@@ -148,7 +149,9 @@ public class NexuProcessController {
 			} catch (EsupSignatureIOException | EsupSignatureSignException e) {
 				logger.error(e.getMessage(), e);
 			}
-	        signRequestRepository.save(signRequest);
+			signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
+			signRequestRepository.save(signRequest);
+			signRequestService.applyEndOfStepRules(signRequest, user);
 	        signedDocumentResponse = new SignDocumentResponse();
 	        signedDocumentResponse.setUrlToDownload("download");
 	        return signedDocumentResponse;

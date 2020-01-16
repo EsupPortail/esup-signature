@@ -195,7 +195,7 @@ public class SignRequestService implements EvaluationContextExtension {
 		return signRequests;
 	}
 
-	public void sign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException, IOException {
+	public void sign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException {
 		step = "Demarrage de la signature";
 		Document signedFile = null;
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
@@ -227,7 +227,7 @@ public class SignRequestService implements EvaluationContextExtension {
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
 			}
 			signRequestRepository.save(signRequest);
-			step = "end";
+			step = "Paramétrage de la prochaine étape";
 			applyEndOfStepRules(signRequest, user);
 		}
 	}
@@ -245,10 +245,9 @@ public class SignRequestService implements EvaluationContextExtension {
 		InMemoryDocument signedDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 
 		addSignedFile(signRequest, signedDocument.openStream(), signedDocument.getName(), signedDocument.getMimeType().getMimeTypeString(), user);
-		updateStatus(signRequest, SignRequestStatus.pending, "Signature", user, "SUCCESS", signRequest.getComment());
 	}
 
-	public Document certSign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException, IOException {
+	public Document certSign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException {
 		SignatureForm signatureForm;
 		List<Document> toSignFiles = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest)) {
@@ -256,17 +255,17 @@ public class SignRequestService implements EvaluationContextExtension {
 		}
 		step = "Initialisation de la procédure";
 		try {
-			step = "Formatage des documents";
-
-			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest, visual);
-			signatureForm = signatureDocumentForm.getSignatureForm();
-			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
-
 			step = "Déverouillage du keystore";
 
 			SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(user.getKeystore().getInputStream(), password);
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(user.getKeystore().getInputStream(), password);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(user.getKeystore().getInputStream(), password);
+
+			step = "Formatage des documents";
+
+			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest, visual);
+			signatureForm = signatureDocumentForm.getSignatureForm();
+			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 
 			step = "Préparation de la signature";
 
@@ -598,6 +597,10 @@ public class SignRequestService implements EvaluationContextExtension {
 
 	public String getStep() {
 		return step;
+	}
+
+	public void setStep(String step) {
+		this.step = step;
 	}
 
 	public Map<String, Boolean> getCurrentRecipientsNames(SignRequest signRequest) {

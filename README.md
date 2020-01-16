@@ -45,3 +45,5 @@ Dossier de travail service tomcat : WorkingDirectory=/opt/tomcat-esup-signature/
 Configuration :
 
 path ojService
+
+launch nexu: java -Djdk.gtk.version=2.2 -jar nexu.jar

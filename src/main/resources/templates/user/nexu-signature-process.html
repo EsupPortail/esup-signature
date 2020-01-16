@@ -45,8 +45,7 @@
 				id="success">
 				<strong>Signature effectuée</strong>
 				<br />
-				<a th:if="${referer != 'null'}" th:href="${referer}" class="btn btn-success btnSeccion" id="return1">Retour</a>
-				<a th:unless="${referer != 'null'}" th:href="'/user/signrequests/' + ${signRequestId}" class="btn btn-success btnSeccion" id="return2">Retour</a>
+				<a th:href="'/user/signrequests/' + ${signRequestId}" class="btn btn-success btnSeccion" id="return2">Retour</a>
 			</div>
 		</div>
 	</div>

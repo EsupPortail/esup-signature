@@ -223,6 +223,7 @@ public class SignRequestController {
         if ((signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest))) {
             if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                 model.addAttribute("signable", "ok");
+                model.addAttribute("nexuUrl", nexuUrl);
             }
             Document toDisplayDocument;
             if (signRequestService.getToSignDocuments(signRequest).size() == 1) {
@@ -317,7 +318,7 @@ public class SignRequestController {
     }
 
     @RequestMapping(value = "/sign/{id}", method = RequestMethod.POST)
-    public String sign(@PathVariable("id") Long id,
+    public void sign(@PathVariable("id") Long id,
                        @RequestParam(value = "xPos", required = false) Integer xPos,
                        @RequestParam(value = "yPos", required = false) Integer yPos,
                        @RequestParam(value = "comment", required = false) String comment,
@@ -325,8 +326,7 @@ public class SignRequestController {
                        @RequestParam(value = "visual", required = false) Boolean visual,
                        @RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
                        @RequestParam(value = "password", required = false) String password,
-                       @RequestParam(value = "referer", required = false) String referer,
-                       RedirectAttributes redirectAttrs, HttpServletRequest request) {
+                       HttpServletRequest request) {
         if (addDate == null) {
             addDate = false;
         }
@@ -339,7 +339,9 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserSignRights(user, signRequest)) {
             if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
-                return "redirect:/user/nexu-sign/" + id + "?referer=" + referer;
+                signRequestService.setStep("Démarrage de l'application NexU");
+                signRequestService.setStep("initNexu");
+                return;
             }
             if (signPageNumber != null && xPos != null && yPos != null) {
                 SignRequestParams signRequestParams = signRequestService.getCurrentSignRequestParams(signRequest);
@@ -354,28 +356,12 @@ public class SignRequestController {
             try {
                 signRequest.setComment(comment);
                 signRequestService.sign(signRequest, user, this.password, addDate, visual);
-            } catch (EsupSignatureKeystoreException e) {
-                logger.error("keystore error", e);
-                redirectAttrs.addFlashAttribute("messageError", "security_bad_password");
-                progress = "security_bad_password";
-            } catch (EsupSignatureSignException e) {
-                redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
-                logger.error(e.getMessage(), e);
-            } catch (IOException e) {
-                logger.error(e.getMessage());
+                signRequestService.setStep("end");
             } catch (EsupSignatureException e) {
-                redirectAttrs.addFlashAttribute("messageCustom", e.getMessage());
                 logger.error(e.getMessage(), e);
-            }
-            if (referer != null && !"".equals(referer) && !"null".equals(referer)) {
-                return "redirect:" + referer;
-            } else {
-                return "redirect:/user/signrequests/" + signRequest.getId();
             }
         } else {
-            redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
-            progress = "not_autorized";
-            return "redirect:/user/signrequests/";
+            signRequestService.setStep("not_autorized");
         }
     }
 
@@ -405,7 +391,7 @@ public class SignRequestController {
         }
         signRequest.setComment(comment);
         signRequestService.refuse(signRequest, user);
-        return "redirect:/user/signbooks/" + signRequest.getParentSignBook().getId() + "/0";
+        return "redirect:/user/signrequests/" + signRequest.getId();
     }
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
