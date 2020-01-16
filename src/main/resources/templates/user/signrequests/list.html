@@ -116,44 +116,6 @@
             </div>
             <div class="card rounded-0 mb-3">
                 <div class="card-header">
-                    Documents signés par moi
-                </div>
-                <div class="card-body">
-                    <div th:if="${#lists.size(signRequestsSignedByMe) > 0}" class="table-responsive">
-                        <table class="table table-sm table-bordered table-striped table-hover">
-                            <thead>
-                            <tr>
-                                <th class="">Parapheur</th>
-                                <th class="">Titre</th>
-                                <th class="d-none d-md-table-cell">Date de création</th>
-                                <th class="d-none d-lg-table-cell">Créé par</th>
-                                <th>Voir</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <th:block th:each="signRequest : ${signRequestsSignedByMe}">
-                                <tr>
-                                    <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
-                                    <td class="text-break" th:unless="${signRequest.parentSignBook != null}"></td>
-                                    <td class="text-break" th:text="${signRequest.title}"></td>
-                                    <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                    <td class="d-none d-lg-table-cell"><span th:text="${@userService.getUserByEppn(signRequest.createBy).firstname} + ' ' + ${@userService.getUserByEppn(signRequest.createBy).name}"></span></td>
-                                    <td class="utilbox">
-                                        <a th:if="${signRequest.parentSignBook != null}" class="btn btn-info" title="ouvrir" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '/' + ${signRequest.id}"><i class="fas fa-book"></i> </a>
-                                        <a th:unless="${signRequest.parentSignBook != null}" class="btn btn-info" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="far fa-eye"></i> </a>
-                                    </td>
-                                </tr>
-                            </th:block>
-                            </tbody>
-                        </table>
-                    </div>
-                    <span th:unless="${#lists.size(signRequestsSignedByMe) > 0}" class="table-responsive">
-				Aucun document signer pour le moment
-			</span>
-                </div>
-            </div>
-            <div class="card rounded-0">
-                <div class="card-header">
                     Documents envoyés
                     <form class="" action="" method="get">
                             <div class="input-group">
@@ -244,6 +206,46 @@
                 </div>
                 <div c lass="card-footer">
                     <nav th:replace="fragments/pagination :: pagination"></nav>
+                </div>
+            </div>
+            <div class="card rounded-0 mb-3">
+                <div class="card-header">
+                    <a data-toggle="collapse" href="#mySignedDocs" role="button" aria-expanded="false" aria-controls="mySignedDocs">
+                        Documents signés par moi<i class="fa fa-arrow-down float-right"></i>
+                    </a>
+                </div>
+                <div id="mySignedDocs" class="card-body collapse">
+                    <div th:if="${#lists.size(signRequestsSignedByMe) > 0}" class="table-responsive">
+                        <table class="table table-sm table-bordered table-striped table-hover">
+                            <thead>
+                            <tr>
+                                <th class="">Parapheur</th>
+                                <th class="">Titre</th>
+                                <th class="d-none d-md-table-cell">Date de création</th>
+                                <th class="d-none d-lg-table-cell">Créé par</th>
+                                <th>Voir</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <th:block th:each="signRequest : ${signRequestsSignedByMe}">
+                                <tr>
+                                    <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
+                                    <td class="text-break" th:unless="${signRequest.parentSignBook != null}"></td>
+                                    <td class="text-break" th:text="${signRequest.title}"></td>
+                                    <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
+                                    <td class="d-none d-lg-table-cell"><span th:text="${@userService.getUserByEppn(signRequest.createBy).firstname} + ' ' + ${@userService.getUserByEppn(signRequest.createBy).name}"></span></td>
+                                    <td class="utilbox">
+                                        <a th:if="${signRequest.parentSignBook != null}" class="btn btn-info" title="ouvrir" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '/' + ${signRequest.id}"><i class="fas fa-book"></i> </a>
+                                        <a th:unless="${signRequest.parentSignBook != null}" class="btn btn-info" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="far fa-eye"></i> </a>
+                                    </td>
+                                </tr>
+                            </th:block>
+                            </tbody>
+                        </table>
+                    </div>
+                    <span th:unless="${#lists.size(signRequestsSignedByMe) > 0}" class="table-responsive">
+				Aucun document signer pour le moment
+			</span>
                 </div>
             </div>
         </div>
