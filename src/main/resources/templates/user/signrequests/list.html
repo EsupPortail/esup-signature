@@ -265,6 +265,11 @@
         </div>
     </div>
 </div>
+<script>
+    $('#wizardModal').on('shown.bs.modal', function () {
+        $(this).modal({backdrop: 'none', keyboard: false})
+    });
+</script>
 
 <div class="modal fade" id="addSignRequestModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">

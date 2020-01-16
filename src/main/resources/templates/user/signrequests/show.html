@@ -13,6 +13,9 @@
                 <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
+                <button data-toggle="modal" data-target="#signAllModal" class="btn btn-light col-3 col-md-12 mb-1 text-left" th:classappend="${signable != 'ok' || signRequest.parentSignBook == null || signRequest.parentSignBook .signRequests.size() < 2} ? 'd-none' ">
+                    <i class="fas fa-bolt"></i> Tout signer
+                </button>
                 <button id="signButton" onclick="enableSignMode()" class="btn btn-light col-3 col-md-12 mb-1 text-left" th:classappend="${signable != 'ok'} ? 'd-none' ">
                     <i class="fas fa-signature"></i> Signer
                 </button>
@@ -37,7 +40,7 @@
             </nav>
             <nav class="nav nav-tabs" th:if="${signRequest.parentSignBook != null}">
                 <th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
-                    <a th:classappend="${signRequest.id == signRequestTab.id} ? 'active'" class="nav-item nav-link" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '/' + ${signRequestTab.id}">
+                    <a th:classappend="${signRequest.id == signRequestTab.id} ? 'active'" class="nav-item nav-link" th:href="'/user/signrequests/' + ${signRequestTab.id}">
                         <i class="fas fa-file text-dark"></i> <span th:text="${signRequestTab.title}"></span>
                     </a>
                 </th:block>
@@ -66,7 +69,7 @@
                         </button>
                     </div>
                     <div id="refusetools" th:if="${signable == 'ok'}" style="display: none;">
-                        <button class="mb-1 col-12 btn btn-danger" title="Refuser" th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal">
+                        <button class="btn btn-danger" title="Refuser" th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal">
                             <i class="fas fa-ban"></i> <span class="sidebar-label">Confirmer le refus</span>
                         </button>
                     </div>
@@ -119,7 +122,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
+<div th:if="${signable == 'ok'}" class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -133,6 +136,27 @@
             </div>
             <div class="modal-footer">
                 <button class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:token="${signRequest.token}" onclick="launchSign(this.getAttribute('token'));">
+                    <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="signAllModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="signAllModalLabel">Confirmer la signature des documents</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input th:classappend="${@signRequestService.getCurrentSignType(signRequest).name() != 'certSign' && @signRequestService.getCurrentSignType(signRequest).name() != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="passwordAll" name="passwordAll" value="" placeholder="Mot de passe du keystore"/>
+            </div>
+            <div class="modal-footer">
+                <button class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:onclick="'launchSignAll(' + ${signRequest.parentSignBook.id} + ')'">
                     <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                 </button>
             </div>
@@ -183,6 +207,20 @@
 
          */
     }
+
+    function launchSignAll(id) {
+        $('#signAllModal').modal('hide');
+        $('#wait').modal('show');
+        $('#wait').modal({backdrop: 'static', keyboard: false})
+        var csrf = document.getElementsByName("_csrf")[0];
+        var signRequestParams = "password=" + document.getElementById("passwordAll").value +
+            "&" + csrf.name + "=" + csrf.value;
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open('POST', '/user/signbooks/sign/' + id, true);
+        xmlHttp.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+        xmlHttp.send(signRequestParams);
+    }
+
 </script>
 </body>
 </html>

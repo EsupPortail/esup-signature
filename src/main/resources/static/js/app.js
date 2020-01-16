@@ -110,8 +110,7 @@ function submitSignRequest() {
 							;
 	} else {
 		signRequestParams = "password=" + document.getElementById("password").value +
-							"&" + csrf.name + "=" + csrf.value
-							;
+							"&" + csrf.name + "=" + csrf.value;
 	}
 	sendData(signRequestParams);
 
@@ -124,13 +123,10 @@ function sendData(signRequestParams) {
 	document.getElementById("validModal").style.display = "none";
 	document.getElementById("bar").style.display = "none";
 	document.getElementById("bar").classList.add("progress-bar-animated");
-	getProgressTimer = setInterval(function() {
-		getStep();
-	}, 500);
+	getProgressTimer = setInterval(function() { getStep(); }, 500);
 	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.open('POST', '/user/signrequests/sign/' + signId, true);
-	xmlHttp.setRequestHeader('Content-Type',
-			'application/x-www-form-urlencoded');
+	xmlHttp.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
 	xmlHttp.send(signRequestParams);
 }
 

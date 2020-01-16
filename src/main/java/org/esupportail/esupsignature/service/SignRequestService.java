@@ -620,7 +620,7 @@ public class SignRequestService implements EvaluationContextExtension {
 		if(signRequest.getParentSignBook() != null && signRequest.getSignRequestParams().size() > signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1) {
 			return signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1);
 		} else {
-			if(signRequest.getSignRequestParams().size() > signRequest.getCurrentStepNumber() - 1) {
+			if(signRequest.getCurrentStepNumber()> 0 && signRequest.getSignRequestParams().size() > signRequest.getCurrentStepNumber() - 1) {
 				return signRequest.getSignRequestParams().get(signRequest.getCurrentStepNumber() - 1);
 			} else {
 				return getEmptySignRequestParams();
