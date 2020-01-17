@@ -74,9 +74,6 @@ public class Workflow {
     
     private String documentsTargetUri;    
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL }, orphanRemoval = true)
-    private Document modelFile = new Document();
-
     public void setSourceType(DocumentIOType sourceType) {
         this.sourceType = sourceType;
     }
@@ -171,14 +168,6 @@ public class Workflow {
     
     public void setDocumentsTargetUri(String documentsTargetUri) {
         this.documentsTargetUri = documentsTargetUri;
-    }
-    
-    public Document getModelFile() {
-        return this.modelFile;
-    }
-    
-    public void setModelFile(Document modelFile) {
-        this.modelFile = modelFile;
     }
 
 	public Boolean isExternal() {

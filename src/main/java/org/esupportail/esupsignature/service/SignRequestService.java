@@ -124,8 +124,13 @@ public class SignRequestService implements EvaluationContextExtension {
 		return signType;
 	}
 
-	public SignRequest createSignRequest(String title, MultipartFile[] multipartFiles, List<String> recipientsEmail, SignType signType, User user) {
+	public SignRequest createSignRequest(String title, MultipartFile[] multipartFiles, List<String> recipientsEmail, SignType signType, User user) throws IOException, EsupSignatureIOException {
+		List<SignRequestParams> signRequestParamses = new ArrayList<>();
+		if(multipartFiles.length == 1 && multipartFiles[0].getContentType().equals("application/pdf")) {
+			signRequestParamses = scanSignatureFields(multipartFiles[0].getInputStream());
+		}
 		SignRequest signRequest = createSignRequest(title, multipartFiles, user);
+		signRequest.getSignRequestParams().addAll(signRequestParamses);
 		pendingSignRequest(signRequest, recipientsEmail, signType, user);
 		logger.info("adding new file into signRequest " + signRequest.getToken());
 		return signRequest;
@@ -167,11 +172,11 @@ public class SignRequestService implements EvaluationContextExtension {
 		for(Document document : documents) {
 			document.setParentId(signRequest.getId());
 		}
-		try {
-			scanSignatureFields(signRequest);
-		} catch (EsupSignatureIOException e) {
-			logger.error("error on scan pdf", e);
-		}
+//		try {
+//			scanSignatureFields(signRequest);
+//		} catch (EsupSignatureIOException e) {
+//			logger.error("error on scan pdf", e);
+//		}
 		return signRequest;
 	}
 
@@ -408,28 +413,16 @@ public class SignRequestService implements EvaluationContextExtension {
 		}
 	}
 
-	public int scanSignatureFields(SignRequest signRequest) throws EsupSignatureIOException {
-		int nbSignFound = 0;
-		try {
-			PDDocument pdDocument = PDDocument.load(signRequest.getOriginalDocuments().get(0).getInputStream());
-			if (signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
-				List<SignRequestParams> signRequestParamsList = pdfService.pdSignatureFieldsToSignRequestParams(pdDocument);
-				for(SignRequestParams signRequestParams : signRequestParamsList) {
-					signRequestParamsRepository.save(signRequestParams);
-				}
-				signRequest.getSignRequestParams().addAll(signRequestParamsList);
-				nbSignFound = signRequestParamsList.size();
-			}
-		} catch (IOException e) {
-			throw new EsupSignatureIOException("unable to open pdf document");
-		}
-		logger.info(nbSignFound + " signature fields found on " + signRequest.getOriginalDocuments().get(0).getFileName() + " from signrequest " + signRequest.getId());
-		if(nbSignFound == 0) {
+	public List<SignRequestParams> scanSignatureFields(InputStream inputStream) throws EsupSignatureIOException {
+		List<SignRequestParams> signRequestParamses = pdfService.scanSignatureFields(inputStream);
+		if(signRequestParamses.size() == 0) {
 			SignRequestParams signRequestParams = getEmptySignRequestParams();
-			signRequestParamsRepository.save(signRequestParams);
-			signRequest.getSignRequestParams().add(signRequestParams);
+			signRequestParamses.add(signRequestParams);
 		}
-		return nbSignFound;
+		for(SignRequestParams signRequestParams : signRequestParamses) {
+			signRequestParamsRepository.save(signRequestParams);
+		}
+		return signRequestParamses;
 	}
 
 	public String completeSignRequest(SignRequest signRequest, DocumentIOType documentIOType, String targetUri, User user) throws EsupSignatureException {

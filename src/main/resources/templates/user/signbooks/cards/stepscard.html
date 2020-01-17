@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<div th:fragment="stepscard">
+<div id="stepscard" th:fragment="stepscard" style="display: none;">
     <div class="alert alert-light mb-1">
         <h5>Etapes du circuit</h5>
             <th:block th:if="${signRequest.parentSignBook.workflowSteps != null}">

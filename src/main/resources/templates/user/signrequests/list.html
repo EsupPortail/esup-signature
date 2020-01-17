@@ -24,6 +24,9 @@
             <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="d-none mb-1 col-12 btn btn-primary text-left">
                 <i class="fas fa-plus"></i> <span class="sidebar-label">Signature rapide</span>
             </button>
+            <a title="Valider la signature d'un document" type="button" href="/user/validation" class="btn btn-light btn-outline-dark text-dark">
+                <i class="fas fa-shield-alt"></i>Contrôler la signature d'un document
+            </a>
             <button id="opendocs" class="mb-1 btn btn-outline-dark btn-light float-left" onclick="openCheckedDocs()" title="open docs" style="display: none;">
                 <i class="far fa-eye fa-2x"></i> Ouvrir les documents sélectionnés
             </button>
@@ -86,7 +89,7 @@
                             <thead>
                             <tr>
                                 <th class="">Parapheur</th>
-                                <th class="">Titre</th>
+                                <th class="">Titre des documents</th>
                                 <th class="d-none d-md-table-cell">Date de création</th>
                                 <th class="d-none d-lg-table-cell">Créé par</th>
                                 <th>Voir</th>
@@ -97,7 +100,7 @@
                                 <tr>
                                     <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
                                     <td class="text-break" th:unless="${signRequest.parentSignBook != null}"></td>
-                                    <td class="text-break" th:text="${signRequest.title}"></td>
+                                    <td class="text-break"><span style="white-space: pre-line" th:text="${signRequest.viewTitle}"></span></td>
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${@userService.getUserByEppn(signRequest.createBy).firstname} + ' ' + ${@userService.getUserByEppn(signRequest.createBy).name}"></span></td>
                                     <td class="utilbox">
@@ -132,15 +135,15 @@
                                 </select>
                             </div>
                     </form>
-                    <div style="display: none;" id="alertsigndocs" class="alert alert-danger" role="alert">Impossible de signer en masse la selection actuelle</div>
                 </div>
                 <div class="card-body">
                         <table class="table table-sm table-bordered table-striped table-hover">
                             <thead>
                             <tr>
                                 <th class="">Parapheur</th>
-                                <th class="none">Titre</th>
-                                <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
+                                <th class="none">Titre des documents</th>
+<!--                                <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>-->
+                                <th class="d-none d-xl-table-cell">Date de création</th>
                                 <th class="d-none d-lg-table-cell">Participants</th>
                                 <th class="d-none d-md-table-cell">Statut</th>
                                 <th>Voir</th>
@@ -153,7 +156,7 @@
                                 <tr>
                                     <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
                                     <td class="text-break" th:unless="${signRequest.parentSignBook != null}"></td>
-                                    <td class="text-break" th:title="${signRequest.title}" th:text="${signRequest.title}"></td>
+                                    <td class="text-break"><span style="white-space: pre-line" th:text="${signRequest.viewTitle}"></span></td>
                                     <td class="d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell">
                                         <table class="table table-sm">
@@ -176,12 +179,17 @@
                                         <div th:replace="user/signrequests/includes/status :: status"></div>
                                     </td>
                                     <td class="utilbox">
-                                        <button class="btn btn-info fas fa-eye" title="Voir" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '\''"></button>
+                                        <a th:if="${signRequest.parentSignBook != null}" class="btn btn-info" title="ouvrir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="fas fa-book"></i> </a>
+                                        <a th:unless="${signRequest.parentSignBook != null}" class="btn btn-info" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="far fa-eye"></i> </a>
                                     </td>
-                                    <td class="utilbox" th:if="${signRequest.parentSignBook != null}">
+
+                                    <td class="utilbox" th:if="${signRequest.parentSignBook != null && signRequest.status.name() == 'draft'}">
                                         <button class="btn btn-warning fas fa-pen" title="Modifier" th:onclick="'location.href=\'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form\''"></button>
                                     </td>
-                                    <td class="utilbox" th:unless="${signRequest.parentSignBook != null}">
+                                    <td class="utilbox" th:unless="${signRequest.parentSignBook != null && signRequest.status.name() == 'draft'}">
+                                        <button class="btn btn-outline-secondary fas fa-pen" title="Modifier" disabled></button>
+                                    </td>
+                                    <td class="utilbox" th:if="${signRequest.parentSignBook == null && signRequest.status.name() == 'draft'}">
                                         <button class="btn btn-warning fas fa-pen" title="Modifier" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '?form\''"></button>
                                     </td>
                                     <td class="utilbox" th:if="${signRequest.parentSignBook != null}">
@@ -204,8 +212,8 @@
                             </tbody>
                         </table>
                 </div>
-                <div c lass="card-footer">
-                    <nav th:replace="fragments/pagination :: pagination"></nav>
+                <div class="card-footer">
+<!--                    <nav th:replace="fragments/pagination :: pagination"></nav>-->
                 </div>
             </div>
             <div class="card rounded-0 mb-3">
@@ -268,6 +276,7 @@
     </div>
 </div>
 <script>
+    localStorage.setItem('mode', 'sign');
     $('#wizardModal').on('shown.bs.modal', function () {
         $(this).modal({backdrop: 'none', keyboard: false})
     });
@@ -316,7 +325,7 @@
                     <div class="col-lg-12">
                         <div class="input-group">
                             <div class="custom-file">
-                                <input required aria-describedby="inputGroupFileAddon01" class="custom-file-input" data-buttontext="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file">
+                                <input required aria-describedby="inputGroupFileAddon01" class="custom-file-input" data-buttontext="Choisir fichier" id="inputGroupFile01" name="multipartFiles" type="file">
                                 <label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01">
                                     Choisir un document
                                 </label>

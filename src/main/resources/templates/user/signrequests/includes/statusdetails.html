@@ -34,9 +34,14 @@
 			</th:block>
 		</div>
 	</div>
-	<div th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'checked'}">
+	<div th:if="${signRequest.status.name() == 'signed'}">
 		<div class="alert alert-success mb-1">
 			<h5 class="alert-heading">Le document est signé</h5>
+		</div>
+	</div>
+	<div th:if="${signRequest.status.name() == 'checked'}">
+		<div class="alert alert-success mb-1">
+			<h5 class="alert-heading">Le document est visé</h5>
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'completed'}">

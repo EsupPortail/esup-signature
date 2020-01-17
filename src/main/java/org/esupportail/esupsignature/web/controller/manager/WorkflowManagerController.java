@@ -82,21 +82,6 @@ public class WorkflowManagerController {
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
 		Workflow workflow = workflowRepository.findById(id).get();
-		Document modelFile = workflow.getModelFile();
-		if (modelFile != null && modelFile.getSize() != null) {
-			uiModel.addAttribute("documentId", modelFile.getId());
-			if(modelFile.getContentType().equals("application/pdf")) {
-				PDDocument pdDocument = PDDocument.load(modelFile.getInputStream());
-				PdfParameters pdfParameters = pdfService.getPdfParameters(pdDocument);
-				uiModel.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-				int[] signFieldCoord = pdfService.getSignFieldCoord(pdDocument, 0);
-				if(signFieldCoord != null && signFieldCoord.length > 0) {
-					uiModel.addAttribute("containsSignatureFields", true);
-				} else {
-					uiModel.addAttribute("containsSignatureFields", false);
-				}
-			}
-		}
 		workflowService.setWorkflowsLabels(workflow.getWorkflowSteps());
 		uiModel.addAttribute("workflow", workflow);
 		uiModel.addAttribute("signTypes", SignType.values());
@@ -134,14 +119,13 @@ public class WorkflowManagerController {
 
 	@PostMapping(produces = "text/html")
 	public String create(@RequestParam(name = "name") String name,
-			             @RequestParam(name = "multipartFile", required = false) MultipartFile multipartFile,
 						 Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
 		Workflow newWorkflow = new Workflow();
 		newWorkflow.setName(name);
 		Workflow workflow;
 		try {
-			workflow = workflowService.createWorkflow(name, user, multipartFile, false);
+			workflow = workflowService.createWorkflow(name, user,false);
 		} catch (EsupSignatureException e) {
 			redirectAttrs.addAttribute("messageError", "Ce parapheur existe déjà");
 			return "redirect:/manager/workflows/";

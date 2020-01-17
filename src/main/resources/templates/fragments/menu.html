@@ -13,16 +13,10 @@
 </div>
 	<div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
 		<ul class="navbar-nav">
-			<li class="nav-item dropdown">
-				<a th:class="'nav-link dropdown-toggle ' + ${userMenu}" href="#" id="userMenuDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			<li class="nav-item">
+				<a th:class="'nav-link ' + ${userMenu}" href="#" role="button" aria-haspopup="true" aria-expanded="false">
 					Utilisateur
 				</a>
-				<div class="dropdown-menu" aria-labelledby="userMenuDropdown">
-					<a title="Demandes de signatures" href="/user/signrequests" class="dropdown-item">Mes documents</a>
-					<a title="Valider la signature d'un document" type="button" href="/user/validation" class="dropdown-item bg-warning text-dark">
-						<i class="fas fa-shield-alt"></i>Contrôler la signature d'un document
-					</a>
-				</div>
 			</li>
 			<th:block th:if="${#authorization != null}">
 				<li class="nav-item dropdown" sec:authorize="hasRole('ROLE_MANAGER')">

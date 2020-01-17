@@ -486,8 +486,8 @@ public class SignBookController {
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if (signBook.getCurrentWorkflowStepNumber() == 1 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
                 try {
-                    int nbSignFound = signRequestService.scanSignatureFields(signRequest);
-                    redirectAttrs.addFlashAttribute("messageInfo", "Scan terminé, " + nbSignFound + " signature(s) trouvée(s)");
+                    List<SignRequestParams> signRequestParamses = signRequestService.scanSignatureFields(signRequest.getOriginalDocuments().get(0).getInputStream());
+                    redirectAttrs.addFlashAttribute("messageInfo", "Scan terminé, " + signRequestParamses.size() + " signature(s) trouvée(s)");
                 } catch (EsupSignatureIOException e) {
                     logger.error("unable to scan the pdf document from " + signRequest.getId(), e);
                 }

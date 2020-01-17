@@ -66,7 +66,6 @@ public class WorkflowService {
             Workflow workflowWorkflow = new Workflow();
             workflowWorkflow.setName("Ma signature");
             workflowWorkflow.setCreateDate(new Date());
-            workflowWorkflow.setModelFile(null);
             workflowWorkflow.setSourceType(DocumentIOType.none);
             workflowWorkflow.setTargetType(DocumentIOType.none);
             WorkflowStep workflowStep = new WorkflowStep();
@@ -79,7 +78,7 @@ public class WorkflowService {
         }
     }
 
-    public void updateWorkflow(Workflow workflow, Workflow workflowToUpdate, MultipartFile multipartFile) throws EsupSignatureException {
+    public void updateWorkflow(Workflow workflow, Workflow workflowToUpdate) {
         workflowToUpdate.getModeratorEmails().removeAll(workflow.getModeratorEmails());
         workflowToUpdate.getModeratorEmails().addAll(workflow.getModeratorEmails());
         workflowToUpdate.setName(workflow.getName());
@@ -87,23 +86,10 @@ public class WorkflowService {
         workflowToUpdate.setSourceType(workflow.getSourceType());
         workflowToUpdate.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
         workflowToUpdate.setTargetType(workflow.getTargetType());
-        if (multipartFile != null && !multipartFile.isEmpty()) {
-            Document newModel;
-            newModel = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-            if (newModel != null) {
-                Document oldModel = workflowToUpdate.getModelFile();
-                workflowToUpdate.setModelFile(newModel);
-                if (oldModel != null) {
-                    documentRepository.delete(oldModel);
-                }
-            }
-            newModel.setParentId(workflowToUpdate.getId());
-        }
         workflowRepository.save(workflow);
-
     }
 
-    public Workflow createWorkflow(String name, User user, MultipartFile multipartFile, boolean external) throws EsupSignatureException {
+    public Workflow createWorkflow(String name, User user, boolean external) throws EsupSignatureException {
         if (workflowRepository.countByName(name) == 0) {
             Workflow workflow = new Workflow();
             workflow.setName(name);
@@ -112,12 +98,6 @@ public class WorkflowService {
             workflow.setExternal(external);
             workflow.getModeratorEmails().removeAll(Collections.singleton(""));
             Document model = null;
-            if (multipartFile != null) {
-                model = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-                workflow.setModelFile(model);
-            } else {
-                workflow.setModelFile(null);
-            }
             workflow.setSourceType(DocumentIOType.none);
             workflow.setTargetType(DocumentIOType.none);
             workflowRepository.save(workflow);

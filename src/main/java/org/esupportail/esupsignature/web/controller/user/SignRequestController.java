@@ -39,9 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
@@ -150,6 +148,7 @@ public class SignRequestController {
         }
 
         List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
+        model.addAttribute("signRequestsToSign", getSignRequestsGrouped(signRequestsToSign));
 
         Page<SignRequest> signRequests;
         if(this.statusFilter != null) {
@@ -157,20 +156,38 @@ public class SignRequestController {
         } else {
             signRequests = signRequestRepository.findByCreateBy(user.getEppn(), pageable);
         }
+        model.addAttribute("signRequests", getSignRequestsGrouped(signRequests.getContent()));
 
         if (user.getKeystore() != null) {
             model.addAttribute("keystore", user.getKeystore().getFileName());
         }
         model.addAttribute("mydocs", "active");
-        model.addAttribute("signRequestsToSign", signRequestsToSign);
         model.addAttribute("signRequestsSignedByMe", signRequestService.getSignRequestsSignedByUser(user));
         model.addAttribute("signBookId", signBookId);
-        model.addAttribute("signRequests", signRequests);
         model.addAttribute("statusFilter", this.statusFilter);
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("messageError", messageError);
         populateEditForm(model, new SignRequest());
         return "user/signrequests/list";
+    }
+
+    public List<SignRequest> getSignRequestsGrouped(List<SignRequest> signRequests) {
+        List<SignRequest> signRequestsGrouped = new ArrayList<>();
+        Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() != null).collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
+        for(Map.Entry<SignBook, List<SignRequest>> signBookListEntry : signBookSignRequestMap.entrySet()) {
+            int last = signBookSignRequestMap.size();
+            signBookListEntry.getValue().get(last).setViewTitle("");
+            for(SignRequest signRequest : signBookListEntry.getValue()) {
+                signBookListEntry.getValue().get(last).setViewTitle(signBookListEntry.getValue().get(last).getViewTitle() + signRequest.getTitle() + "\n\r");
+            }
+            signRequestsGrouped.add(signBookListEntry.getValue().get(last));
+        }
+        for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
+            signRequest.setViewTitle(signRequest.getTitle());
+            signRequestsGrouped.add(signRequest);
+        }
+        signRequestsGrouped = signRequestsGrouped.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
+        return signRequestsGrouped;
     }
 
     @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
@@ -305,11 +322,11 @@ public class SignRequestController {
 
     @RequestMapping(value = "/fast-sign-request", method = RequestMethod.POST)
     public String createSignRequest(@RequestParam("multipartFiles") MultipartFile[] multipartFiles,
-                                    @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
+                                    @RequestParam("signType") SignType signType) throws EsupSignatureIOException, IOException {
         logger.info("création rapide demande de signature");
         User user = userService.getUserFromAuthentication();
         if (multipartFiles != null) {
-            SignRequest signRequest = signRequestService.createSignRequest("", multipartFiles, Arrays.asList(user.getEmail()), signType, user);
+            SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), multipartFiles, Arrays.asList(user.getEmail()), signType, user);
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             logger.warn("no file to import");
@@ -537,12 +554,12 @@ public class SignRequestController {
 
     @RequestMapping(value = "/scan-pdf-sign/{id}", method = RequestMethod.GET)
     public String scanPdfSign(@PathVariable("id") Long id,
-                              RedirectAttributes redirectAttrs, HttpServletRequest request) throws IOException, EsupSignatureIOException {
+                              RedirectAttributes redirectAttrs, HttpServletRequest request) throws EsupSignatureIOException {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        int nbSignFound = signRequestService.scanSignatureFields(signRequest);
-        redirectAttrs.addFlashAttribute("messageInfo", "Scan terminé, " + nbSignFound + " signature(s) trouvée(s)");
+        List<SignRequestParams> signRequestParamses = signRequestService.scanSignatureFields(signRequest.getOriginalDocuments().get(0).getInputStream());
+        redirectAttrs.addFlashAttribute("messageInfo", "Scan terminé, " + signRequestParamses.size() + " signature(s) trouvée(s)");
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 

@@ -197,11 +197,11 @@ public class WsController {
     @RequestMapping(value = "/pending-sign-book", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public String pendingSignBook(@RequestParam String name) throws EsupSignatureIOException {
         SignBook signBook = signBookRepository.findByName(name).get(0);
-        for (SignRequest signRequest : signBook.getSignRequests()) {
-            if(signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().equals("application/pdf")) {
-                signRequestService.scanSignatureFields(signRequest);
-            }
-        }
+//        for (SignRequest signRequest : signBook.getSignRequests()) {
+//            if(signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().equals("application/pdf")) {
+//                signRequestService.scanSignatureFields(signRequest.getOriginalDocuments().get(0).getInputStream());
+//            }
+//        }
         signBookService.pendingSignBook(signBook, userService.getSystemUser());
         return signBook.getSignRequests().get(0).getToken();
     }
@@ -237,7 +237,7 @@ public class WsController {
         User user = userService.getSystemUser();
         user.setIp(httpServletRequest.getRemoteAddr());
         ObjectMapper mapper = new ObjectMapper();
-        Workflow workflow = workflowService.createWorkflow(mapper.readValue(workflowString, Workflow.class).getName(), user, null, true);
+        Workflow workflow = workflowService.createWorkflow(mapper.readValue(workflowString, Workflow.class).getName(), user, true);
         return workflow.getName();
     }
 

@@ -178,7 +178,7 @@ public class SignBookService implements EvaluationContextExtension {
 
     public void saveWorkflow(String name, User user, SignBook signBook) throws EsupSignatureException {
         Workflow workflow;
-        workflow = workflowService.createWorkflow(name, user, null, false);
+        workflow = workflowService.createWorkflow(name, user, false);
         for(WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
             WorkflowStep toSaveWorkflowStep = new WorkflowStep();
             toSaveWorkflowStep.getRecipients().putAll(workflowStep.getRecipients());

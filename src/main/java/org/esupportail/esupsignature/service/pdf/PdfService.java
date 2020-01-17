@@ -32,6 +32,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.file.FileService;
@@ -442,6 +443,15 @@ public class PdfService {
 			logger.error(e.getMessage(), e);
 		}
 		return signRequestParamsList.stream().sorted(Comparator.comparingInt(value -> value.getXPos())).sorted(Comparator.comparingInt(value -> value.getYPos())).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
+    }
+
+    public List<SignRequestParams> scanSignatureFields(InputStream inputStream) throws EsupSignatureIOException {
+        try {
+            PDDocument pdDocument = PDDocument.load(inputStream);
+            return pdSignatureFieldsToSignRequestParams(pdDocument);
+        } catch (IOException e) {
+            throw new EsupSignatureIOException("unable to open pdf document");
+        }
     }
 
     public PdfParameters getPdfParameters(InputStream pdfFile) {

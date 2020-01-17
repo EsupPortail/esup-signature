@@ -31,6 +31,10 @@ public class SignRequest {
 
     @JsonIgnore
     @Transient
+    transient String viewTitle;
+
+    @JsonIgnore
+    @Transient
     transient String comment;
 
     @JsonIgnore
@@ -128,6 +132,14 @@ public class SignRequest {
 
     public User getCreator() {
         return creator;
+    }
+
+    public String getViewTitle() {
+        return viewTitle;
+    }
+
+    public void setViewTitle(String viewTitle) {
+        this.viewTitle = viewTitle;
     }
 
     public void setCreator(User creator) {

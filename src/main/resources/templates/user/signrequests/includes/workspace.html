@@ -23,10 +23,9 @@
                          ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
                          onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                          onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
-                         th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.svg\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${@signRequestService.getCurrentSignRequestParams(signRequest).XPos} + 'px;top: ' + ${@signRequestService.getCurrentSignRequestParams(signRequest).YPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
-                        <div id="borders" class="anim-border"
-                             th:style="'text-align:left;line-height:normal;width:  ' + ${signWidth} + 'px; height:  ' + ${signHeight} + 'px;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;'">
-                            <span id="textVisa" style="font-size: 8px;" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span>
+                         th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${@signRequestService.getCurrentSignRequestParams(signRequest).XPos} + 'px;top: ' + ${@signRequestService.getCurrentSignRequestParams(signRequest).YPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
+                        <div id="borders" class="anim-border"th:style="'vertical-align:top; text-align:left;line-height:6px; width:  ' + ${signWidth} + 'px; height:  ' + ${signHeight} + 'px;'">
+                            <span id="textVisa" style="font-size: 6px;" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span>
                             <br>
                         </div>
                     </div>
@@ -152,6 +151,7 @@
                         scale = scale + 0.25;
                         //textDate = document.getElementById("textDate");
                         $('#textDate').css('font-size', 8 * scale + 'px')
+                        $('#borders').css('line-height', 8 * scale + 'px')
                         queueRenderPage(pageNum);
                     }
 
@@ -170,6 +170,7 @@
                         });
                         scale = scale - 0.25;
                         $('#textDate').css('font-size', 8 * scale + 'px')
+                        $('#borders').css('line-height', 8 * scale + 'px')
                         queueRenderPage(pageNum);
                     }
 
@@ -284,6 +285,19 @@
                         $("#postit").hide();
                     }
 
+                    function enableReadMode() {
+                        //$('#pdf').awesomeCursor('comment-alt');
+                        disableAllModes();
+                        mode = 'read';
+                        localStorage.setItem('mode', 'read');
+                        pointItEnable = false;
+                        scale = 1.75;
+                        $('#readButton').toggleClass('btn-light btn-secondary');
+                        $('#rotateleft').prop('disabled', false);
+                        $('#rotateright').prop('disabled', false);
+                        queueRenderPage(pageNum);
+                    }
+
                     function enableCommentMode() {
                         //$('#pdf').awesomeCursor('comment-alt');
                         disableAllModes();
@@ -292,7 +306,7 @@
                         pointItEnable = true;
                         $('#workspace').toggleClass('alert-warning alert-secondary');
                         $('#commentButton').toggleClass('btn-light btn-warning');
-                        $('#comments').show();
+                        $('#commentsTools').show();
                         queueRenderPage(pageNum);
                     }
 
@@ -307,14 +321,14 @@
                         });
                         document.getElementById("xPos").value = Math.round([[${@signRequestService.getCurrentSignRequestParams(signRequest).XPos}]]);
                         document.getElementById("yPos").value = Math.round([[${@signRequestService.getCurrentSignRequestParams(signRequest).YPos}]]);
-                        $('#rotateleft').prop('disabled', true);
-                        $('#rotateright').prop('disabled', true);
                         $('#signButton').toggleClass('btn-light btn-success');
                         $('#signtools').show();
+                        $('#stepscard').show();
                         $('#pen').removeClass('btn-outline-secondary').addClass('btn-outline-success');
                         $('#cross').show();
                         visualActive = true;
                         rotation = 0;
+                        scale = 0.75;
                         queueRenderPage(pageNum)
 
                     }
@@ -335,12 +349,14 @@
                         $('#commentButton').addClass('btn-light').removeClass('btn-warning');
                         $('#signButton').addClass('btn-light').removeClass('btn-success');
                         $('#refuseButton').addClass('btn-light').removeClass('btn-danger');
-                        $('#comments').hide();
+                        $('#readButton').addClass('btn-light').removeClass('btn-secondary');
+                        $('#commentsTools').hide();
+                        $('#stepscard').hide();
                         $('#signtools').hide();
                         $('#cross').hide();
                         $('#refusetools').hide();
-                        $('#rotateleft').prop('disabled', false);
-                        $('#rotateright').prop('disabled', false);
+                        $('#rotateleft').prop('disabled', true);
+                        $('#rotateright').prop('disabled', true);
                     }
 
                     function refreshSign() {
@@ -352,13 +368,16 @@
                         $('#borders').css('width', [[${signWidth}]] * scale);
                         $('#borders').css('height', [[${signHeight}]] * scale);
                         $('#textVisa').css('font-size', 8 * scale);
+
                     }
 
                     function toggleVisual() {
                         if(visualActive) {
                             visualActive = false;
+                            $('#clock').prop('disabled', true);
                         } else {
                             visualActive = true;
+                            $('#clock').prop('disabled', false);
                         }
                         $('#cross').toggle();
                         $('#pen').toggleClass('btn-outline-success btn-outline-secondary');
@@ -411,8 +430,10 @@
                             enableSignMode();
                         } else if(mode == 'comment') {
                             enableCommentMode();
-                        } else {
+                        } else if(mode == 'refuse') {
                             enableRefuseMode();
+                        } else {
+                            enableReadMode();
                         }
                     });
 
@@ -447,12 +468,12 @@
                         if(signMode) {
                             $('#signmod').prop( "checked", false );
                             signMode = false;
-                            $('#comments').show();
+                            $('#commentsTools').show();
                             $('#signtools').fadeTo(300, 0);
                             $('#signtools').hide();
                         } else {
                             signMode = true;
-                            $('#comments').hide();
+                            $('#commentsTools').hide();
                             $('#signtools').show();
                             $('#signtools').fadeTo(300, 1);
 
@@ -513,8 +534,10 @@
         </div>
         <div id="infos" class="d-none d-xl-block">
             <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
+            <th:block th:if="${signRequest.parentSignBook != null}">
             <div th:replace="user/signbooks/cards/stepscard :: stepscard"></div>
-            <div id="comments" th:if="${documentType == 'pdf'}" style="transition: all 0.3s;">
+            </th:block>
+            <div id="commentsTools" th:if="${documentType == 'pdf'}" style="display:none; transition: all 0.3s;">
                 <div class="alert alert-light">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
                 <div th:if="${postits.size() > 0}" class="alert alert-warning">
                     <ul class="list-group">
@@ -538,4 +561,9 @@
             </div>
         </div>
     </div>
+    <script th:if="${@signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
+        $(document).ready(function () {
+            toggleVisual();
+        });
+    </script>
 </div>
