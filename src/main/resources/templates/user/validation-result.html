@@ -64,7 +64,7 @@
                                 <li class="nav-item">
                                     <a class="nav-link" id="detailed-tab" data-toggle="tab" href="#detailed" role="tab" aria-controls="detailed" aria-selected="false">Detailed report</a>
                                 </li>
-                                <li class="nav-item">
+                                <li class="nav-item" th:if="${pdfaReport != null}">
                                     <a class="nav-link" id="pdfa-tab" data-toggle="tab" href="#pdfa" role="tab" aria-controls="pdfa" aria-selected="false">PDF/A report</a>
                                 </li>
                                 <li>
@@ -75,7 +75,7 @@
                             <div class="tab-content" id="myTabContent">
                                 <div class="tab-pane fade show active" id="simple" role="tabpanel" aria-labelledby="home-tab" th:utext="${simpleReport}"></div>
                                 <div class="tab-pane fade" id="detailed" role="tabpanel" aria-labelledby="profile-tab" th:utext="${detailedReport}"></div>
-                                <div class="tab-pane fade" id="pdfa" role="tabpanel" aria-labelledby="profile-tab">
+                                <div th:if="${pdfaReport != null}" class="tab-pane fade" id="pdfa" role="tabpanel" aria-labelledby="profile-tab">
                                     <div th:class="'alert alert-' + ${pdfaReport[0]}">
                                         <h2>PDF/A report</h2>
                                         <ul>

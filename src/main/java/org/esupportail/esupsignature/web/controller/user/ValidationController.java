@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.dss.web.service.XSLTService;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
@@ -99,7 +100,11 @@ public class ValidationController {
 			model.addAttribute("detailedReport", "<h2>Impossible de valider ce document</h2>");
 		}
 		if(multipartFile.getContentType().contains("pdf")) {
-			model.addAttribute("pdfaReport", pdfService.checkPDFA(multipartFile.getInputStream(), true));
+			try {
+				model.addAttribute("pdfaReport", pdfService.checkPDFA(multipartFile.getInputStream(), true));
+			} catch (EsupSignatureException e) {
+				e.printStackTrace();
+			}
 		} else {
 			model.addAttribute("pdfaReport", Arrays.asList("danger", "Impossible de valider ce document"));
 		}
@@ -128,7 +133,13 @@ public class ValidationController {
 		model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
 		model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
 		model.addAttribute("diagnosticTree", reports.getXmlDiagnosticData());
-		model.addAttribute("pdfaReport", pdfService.checkPDFA(toValideDocument.getInputStream(), true));
+		if(toValideDocument.getContentType().equals("application/pdf")) {
+			try {
+				model.addAttribute("pdfaReport", pdfService.checkPDFA(toValideDocument.getInputStream(), true));
+			} catch (EsupSignatureException e) {
+				logger.error("enable to check pdf");
+			}
+		}
 		return "user/validation-result";
 	}
 	

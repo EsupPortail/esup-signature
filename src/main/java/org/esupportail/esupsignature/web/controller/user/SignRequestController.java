@@ -175,7 +175,7 @@ public class SignRequestController {
         List<SignRequest> signRequestsGrouped = new ArrayList<>();
         Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() != null).collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
         for(Map.Entry<SignBook, List<SignRequest>> signBookListEntry : signBookSignRequestMap.entrySet()) {
-            int last = signBookSignRequestMap.size();
+            int last = signBookListEntry.getValue().size() - 1;
             signBookListEntry.getValue().get(last).setViewTitle("");
             for(SignRequest signRequest : signBookListEntry.getValue()) {
                 signBookListEntry.getValue().get(last).setViewTitle(signBookListEntry.getValue().get(last).getViewTitle() + signRequest.getTitle() + "\n\r");

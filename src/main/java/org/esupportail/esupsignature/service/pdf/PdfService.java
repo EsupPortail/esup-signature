@@ -32,6 +32,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.DocumentService;
@@ -216,7 +217,7 @@ public class PdfService {
         return inputStream;
     }
 
-    public InputStream convertGS(InputStream inputStream) throws IOException, EsupSignatureSignException {
+    public InputStream convertGS(InputStream inputStream) throws IOException, EsupSignatureException {
         File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
         if (!isPdfAComplient(file) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
@@ -264,21 +265,21 @@ public class PdfService {
         }
     }
 
-    public boolean isPdfAComplient(File pdfFile) {
+    public boolean isPdfAComplient(File pdfFile) throws EsupSignatureException {
         if ("success".equals(checkPDFA(pdfFile, false).get(0))) {
             return true;
         }
         return false;
     }
 
-    public List<String> checkPDFA(InputStream inputStream, boolean fillResults) throws IOException {
+    public List<String> checkPDFA(InputStream inputStream, boolean fillResults) throws IOException, EsupSignatureException {
         File file = fileService.inputStreamToTempFile(inputStream, "tmp.pdf");
         List<String> checkResult = checkPDFA(file, fillResults);
         file.delete();
         return checkResult;
     }
 
-    public List<String> checkPDFA(File pdfFile, boolean fillResults) {
+    public List<String> checkPDFA(File pdfFile, boolean fillResults) throws EsupSignatureException {
         List<String> result = new ArrayList<>();
         VeraGreenfieldFoundryProvider.initialise();
         try {
@@ -301,6 +302,7 @@ public class PdfService {
             parser.close();
         } catch (Exception e) {
             logger.error("check error", e);
+            throw new EsupSignatureException("check pdf error", e);
         }
         return result;
     }

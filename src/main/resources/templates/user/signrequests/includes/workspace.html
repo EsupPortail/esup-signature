@@ -55,7 +55,6 @@
                 <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="addDate" id="addDate"/>
                 <script th:inline="javascript" >
                     /*<![CDATA[*/
-                    //var signMode = false;
                     var mode = 'sign';
                     var dateActive = false;
                     var visualActive = true;
@@ -329,7 +328,7 @@
                         visualActive = true;
                         rotation = 0;
                         scale = 0.75;
-                        queueRenderPage(pageNum)
+                        queueRenderPage(pageNum);
 
                     }
 
@@ -340,7 +339,7 @@
                         $('#workspace').toggleClass('alert-danger alert-secondary');
                         $('#refuseButton').toggleClass('btn-light btn-danger');
                         $('#refusetools').show();
-                        queueRenderPage(pageNum)
+                        queueRenderPage(pageNum);
                     }
 
                     function disableAllModes() {
@@ -439,6 +438,11 @@
 
                     /*]]>*/
                 </script>
+                <script th:if="${@signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
+                    $(document).ready(function () {
+                        toggleVisual();
+                    });
+                </script>
                 <th:block th:each="postit : ${postits}">
                     <div th:id="${postit.id}" class="circle">
                         <i class="far fa-comment-alt fa-3x"></i>
@@ -453,55 +457,64 @@
             </form>
             <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post" th:if="${documentType != 'pdf'}">
                 <script>
-                    /*<![CDATA[*/
+                    var mode = 'sign';
 
-                    var signId = [[${signRequest.id}]];
-
-                    var signMode = false;
-                    var refuseMode = false;
-
-                    function toggleSignMode() {
+                    function enableSignMode() {
+                        disableAllModes();
+                        mode = 'sign';
+                        localStorage.setItem('mode', 'sign');
+                        pointItEnable = false;
                         $('#workspace').toggleClass('alert-success alert-secondary');
-                        if(refuseMode) {
-                            toggleSignRefuseMode();
-                        }
-                        if(signMode) {
-                            $('#signmod').prop( "checked", false );
-                            signMode = false;
-                            $('#commentsTools').show();
-                            $('#signtools').fadeTo(300, 0);
-                            $('#signtools').hide();
-                        } else {
-                            signMode = true;
-                            $('#commentsTools').hide();
-                            $('#signtools').show();
-                            $('#signtools').fadeTo(300, 1);
+                        $('#signButton').toggleClass('btn-light btn-success');
+                        $('#signtools').show();
+                        $('#stepscard').show();
 
-                        }
                     }
 
-                    function toggleSignRefuseMode() {
+                    function enableRefuseMode() {
+                        disableAllModes();
+                        mode = 'refuse';
+                        localStorage.setItem('mode', 'refuse');
                         $('#workspace').toggleClass('alert-danger alert-secondary');
-                        if(signMode) {
-                            toggleSignMode();
-                        }
-                        if(!refuseMode) {
-                            refuseMode = true;
-                            $('#signtools').fadeTo(300, 0);
-                            $('#signtools').hide();
-                            $('#refusetools').fadeTo(300, 1);
-                            $('#refusetools').show();
-                        }else{
-                            refuseMode = false;
-                            $('#refusetools').fadeTo(300, 0);
-                            $('#refusetools').hide();
-                        }
-
+                        $('#refuseButton').toggleClass('btn-light btn-danger');
+                        $('#refusetools').show();
                     }
-                    /*]]>*/
+
+                    function disableAllModes() {
+                        $('#pen').hide();
+                        $('#clock').hide();
+                        mode = 'sign';
+                        $('#workspace').removeClass('alert-danger').removeClass('alert-warning').removeClass('alert-success').addClass('alert-secondary');
+                        $('#commentButton').addClass('btn-light').removeClass('btn-warning');
+                        $('#signButton').addClass('btn-light').removeClass('btn-success');
+                        $('#refuseButton').addClass('btn-light').removeClass('btn-danger');
+                        $('#readButton').addClass('btn-light').removeClass('btn-secondary');
+                        $('#commentsTools').hide();
+                        $('#stepscard').hide();
+                        $('#signtools').hide();
+                        $('#cross').hide();
+                        $('#refusetools').hide();
+                        $('#rotateleft').prop('disabled', true);
+                        $('#rotateright').prop('disabled', true);
+                    }
+
+                    $(document).ready(function () {
+                        if (localStorage.getItem('mode') != null && localStorage.getItem('mode') != "") {
+                            mode = localStorage.getItem('mode');
+                        } else {
+                            localStorage.setItem('mode', 'sign');
+                        }
+                        if (mode == 'sign') {
+                            enableSignMode();
+                        } else if (mode == 'refuse') {
+                            enableRefuseMode();
+                        } else {
+                            enableReadMode();
+                        }
+                    });
                 </script>
             </form>
-            <div th:if="${documentType != 'pdf'}" id="originalDocs">
+            <div th:if="${documentType != 'pdf'}" id="originalDocs" class="col-6">
             <div class="card rounded-0 mb-1" th:if="${signRequest.status.name() != 'exported'}">
                 <div class="card-header">
                     Liste des documents originaux
@@ -561,9 +574,4 @@
             </div>
         </div>
     </div>
-    <script th:if="${@signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
-        $(document).ready(function () {
-            toggleVisual();
-        });
-    </script>
 </div>

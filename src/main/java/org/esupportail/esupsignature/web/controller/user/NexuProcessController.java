@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
@@ -71,7 +72,7 @@ public class NexuProcessController {
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String showSignatureParameters(@PathVariable("id") Long id, Model model,
 										  @RequestParam(value = "referer", required = false) String referer,
-										  HttpServletRequest request, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureSignException {
+										  HttpServletRequest request, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureException {
     	User user = userService.getUserFromAuthentication();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
