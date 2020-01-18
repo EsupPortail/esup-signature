@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.mail.MailService;
+import org.esupportail.esupsignature.service.scheduler.ScheduledTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.Function;
@@ -24,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
-public class UserService implements EvaluationContextExtension {
+public class UserService {
 
 	private PersonLdapDao personDao;
 
@@ -61,8 +62,11 @@ public class UserService implements EvaluationContextExtension {
 
 	//For thymeleaf
 	public User getUserByEppn(String eppn) {
+		if(eppn.equals("Scheduler")) {
+			return ScheduledTaskService.getSchedulerUser();
+		}
 		if(userRepository.countByEppn(eppn) > 0) {
-			return  userRepository.findByEppn(eppn).get(0);
+			return userRepository.findByEppn(eppn).get(0);
 		}
 		return null;
 	}
@@ -190,23 +194,4 @@ public class UserService implements EvaluationContextExtension {
 		return personLdap;
 	}
 
-	@Override
-	public Map<String, Object> getProperties() {
-		return null;
-	}
-
-	@Override
-	public Map<String, Function> getFunctions() {
-		return null;
-	}
-
-	@Override
-	public Object getRootObject() {
-		return null;
-	}
-
-	@Override
-	public String getExtensionId() {
-		return null;
-	}
 }

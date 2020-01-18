@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
@@ -125,7 +126,7 @@ public class WorkflowService {
     public List<FsFile> importFilesFromSource(Workflow workflow, User user) {
         List<FsFile> fsFiles = new ArrayList<>();
         if (workflow.getSourceType() != null && !workflow.getSourceType().equals(DocumentIOType.none)) {
-            logger.info("retrieve from " + workflow.getSourceType() + " in " + workflow.getDocumentsSourceUri());
+            logger.debug("retrieve from " + workflow.getSourceType() + " in " + workflow.getDocumentsSourceUri());
             FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(workflow.getSourceType());
             if(fsAccessService.cd(workflow.getDocumentsSourceUri()) == null) {
                 logger.info("create non existing folders : " + workflow.getDocumentsSourceUri());
@@ -144,18 +145,19 @@ public class WorkflowService {
                         }
                         List<String> workflowRecipientsEmails = new ArrayList<>();
                         workflowRecipientsEmails.add(user.getEmail());
-                        SignBook signBook = signBookService.createSignBook("Auto import : " + workflow.getName(), SignBook.SignBookType.workflow, user, false);
-                        SignRequest signRequest = signRequestService.createSignRequest(documentToAdd, user);
+                        SignBook signBook = signBookService.createSignBook("Auto import : " + signRequestService.generateUniqueId() + workflow.getName(), SignBook.SignBookType.workflow, user, false);
+                        SignRequest signRequest = signRequestService.createSignRequest(documentToAdd.getFileName(), user);
+                        signRequestService.addDocsToSignRequest(signRequest, Arrays.asList(documentToAdd));
                         signBook.getSignRequests().add(signRequest);
                         signRequest.setParentSignBook(signBook);
                         signRequest.setTitle(documentToAdd.getFileName());
                         signRequestRepository.save(signRequest);
                         signBookService.importWorkflow(signBook, workflow, user);
-                        signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Import depuis " + workflow.getSourceType() + " : " + workflow.getDocumentsSourceUri(), user, "SUCCESS", null);
+                        signBookService.pendingSignBook(signBook, user);
                         fsAccessService.remove(fsFile);
                     }
                 }
-            } catch (EsupSignatureFsException | EsupSignatureException e) {
+            } catch (EsupSignatureFsException | EsupSignatureException | EsupSignatureIOException e) {
                 throw new EsupSignatureRuntimeException("error on delete source file", e);
             }
         }

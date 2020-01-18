@@ -23,7 +23,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class SignBookService implements EvaluationContextExtension {
+public class SignBookService {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookService.class);
 
@@ -124,6 +124,8 @@ public class SignBookService implements EvaluationContextExtension {
     public void addSignRequest(SignBook signBook, SignRequest signRequest) {
         signBook.getSignRequests().add(signRequest);
         signBookRepository.save(signBook);
+        signRequest.setParentSignBook(signBook);
+        signRequestRepository.save(signRequest);
     }
 
     public void deleteSignBook(SignBook signBook) {
@@ -370,29 +372,13 @@ public class SignBookService implements EvaluationContextExtension {
     }
 
     public void delete(SignBook signBook) {
-        for(WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
+        List<WorkflowStep> workflowSteps = new ArrayList<>();
+        workflowSteps.addAll(signBook.getWorkflowSteps());
+        for(WorkflowStep workflowStep : workflowSteps) {
+            signBook.getWorkflowSteps().remove(workflowStep);
             workflowStepRepository.delete(workflowStep);
         }
         signBookRepository.delete(signBook);
     }
 
-    @Override
-    public String getExtensionId() {
-        return null;
-    }
-
-    @Override
-    public Map<String, Object> getProperties() {
-        return null;
-    }
-
-    @Override
-    public Map<String, Function> getFunctions() {
-        return null;
-    }
-
-    @Override
-    public Object getRootObject() {
-        return null;
-    }
 }

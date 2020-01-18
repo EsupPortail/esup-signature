@@ -139,17 +139,13 @@ public class NexuProcessController {
 	@ResponseBody
 	public SignDocumentResponse signDocument(Model model, @RequestBody @Valid SignatureValueAsString signatureValue,
 			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm, 
-			@ModelAttribute("signRequestId") Long signRequestId, BindingResult result) throws EsupSignatureKeystoreException {
+			@ModelAttribute("signRequestId") Long signRequestId, BindingResult result) throws EsupSignatureException {
 		User user = userService.getUserFromAuthentication();
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			SignDocumentResponse signedDocumentResponse;
 			signatureDocumentForm.setBase64SignatureValue(signatureValue.getSignatureValue());
-	        try {
-	        	signRequestService.nexuSign(signRequest, user, signatureDocumentForm, parameters);
-			} catch (EsupSignatureIOException | EsupSignatureSignException e) {
-				logger.error(e.getMessage(), e);
-			}
+	       	signRequestService.nexuSign(signRequest, user, signatureDocumentForm, parameters);
 			signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
 			signRequestRepository.save(signRequest);
 			signRequestService.applyEndOfStepRules(signRequest, user);

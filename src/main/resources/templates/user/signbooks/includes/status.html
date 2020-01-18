@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<div th:fragment="status">
+<div th:fragment="status" th:with="signBook=${signRequest.parentSignBook}">
 	<div th:switch="${@signBookService.getStatus(signBook).name()}">
 		<div th:case="'draft'" class="alert alert-secondary text-center" th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${@signBookService.getStatus(signBook)}}">
 			<small>

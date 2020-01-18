@@ -353,6 +353,7 @@
                         $('#stepscard').hide();
                         $('#signtools').hide();
                         $('#cross').hide();
+                        $('#postit').hide();
                         $('#refusetools').hide();
                         $('#rotateleft').prop('disabled', true);
                         $('#rotateright').prop('disabled', true);
@@ -438,9 +439,11 @@
 
                     /*]]>*/
                 </script>
-                <script th:if="${@signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
+                <script th:if="${@signRequestService.getCurrentSignType(signRequest) != null && @signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
                     $(document).ready(function () {
-                        toggleVisual();
+                        if(mode == 'sign') {
+                            toggleVisual();
+                        }
                     });
                 </script>
                 <th:block th:each="postit : ${postits}">

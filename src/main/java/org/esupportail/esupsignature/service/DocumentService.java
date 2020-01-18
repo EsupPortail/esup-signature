@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.BigFile;
 import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.repository.BigFileRepository;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,10 @@ public class DocumentService {
 	
 	@Resource
 	private BigFileService bigFileService;
-	
+
+	@Resource
+	private BigFileRepository bigFileRepository;
+
 	@Resource
 	private FileService fileService;
 
@@ -81,9 +85,12 @@ public class DocumentService {
 	
 	public void deleteDocument(Document document) {
 		BigFile bigFile = document.getBigFile();
-		document.setBigFile(null);
-		documentRepository.save(document);
-		bigFileService.deleteBigFile(bigFile.getId());
+		if(bigFile != null) {
+			document.setBigFile(null);
+			documentRepository.save(document);
+			bigFileRepository.delete(bigFile);
+			//bigFileService.deleteBigFile(bigFile.getId());
+		}
 		documentRepository.delete(document);
 	}
 	

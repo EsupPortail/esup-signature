@@ -266,6 +266,8 @@ public class SignRequestController {
             }
         }
         List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNull(id);
+        List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
+        model.addAttribute("refuseLogs", refuseLogs);
         model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
         return "user/signrequests/show";
     }
@@ -326,7 +328,9 @@ public class SignRequestController {
         logger.info("création rapide demande de signature");
         User user = userService.getUserFromAuthentication();
         if (multipartFiles != null) {
-            SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), multipartFiles, Arrays.asList(user.getEmail()), signType, user);
+            SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(),  user);
+            signRequestService.addDocsToSignRequest(signRequest, documentService.createDocuments(multipartFiles));
+            signRequestService.pendingSignRequest(signRequest, Arrays.asList(user.getEmail()), signType, user);
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             logger.warn("no file to import");

@@ -89,7 +89,6 @@ public class WsController {
     @RequestMapping(value = "/create-sign-request", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public String createSignRequest(@RequestParam String title,
                                     @RequestParam String createBy,
-                                    @RequestParam(required = false) String name,
                                     @RequestParam("recipientsEmail") String recipientsEmail,
                                     @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                     @RequestParam("signLevel") int signLevel, HttpServletRequest httpServletRequest) throws EsupSignatureIOException, IOException, EsupSignatureException {
@@ -97,8 +96,10 @@ public class WsController {
         user.setIp(httpServletRequest.getRemoteAddr());
         logger.info("new signRequest created by " + user.getEppn());
         ObjectMapper mapper = new ObjectMapper();
+        SignRequest signRequest = signRequestService.createSignRequest(title, user);
+        signRequestService.addDocsToSignRequest(signRequest, documentService.createDocuments(multipartFiles));
         List<String> recipientsEmailList = mapper.readValue(recipientsEmail, List.class);
-        SignRequest signRequest = signRequestService.createSignRequest(title, multipartFiles, recipientsEmailList, signRequestService.getSignTypeByLevel(signLevel), user);
+        signRequestService.pendingSignRequest(signRequest, recipientsEmailList, signRequestService.getSignTypeByLevel(signLevel), user);
         logger.info("new signRequest created by " + user.getEppn());
         return signRequest.getToken();
     }
@@ -111,15 +112,10 @@ public class WsController {
         User user = userService.getUserFromAuthentication();
         user.setIp(httpServletRequest.getRemoteAddr());
         SignBook signBook = signBookService.getSignBook(name, user);
-        SignRequest signRequest = signRequestService.createSignRequest(name, multipartFiles, user);
-        logger.info("new signRequest created by " + user.getEppn());
-        if(name != null) {
-            signRequest.setParentSignBook(signBook);
-            signRequestRepository.save(signRequest);
-            signBook.getSignRequests().add(signRequest);
-            signBookRepository.save(signBook);
-            logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
-        }
+        SignRequest signRequest = signRequestService.createSignRequest(name, user);
+        signRequestService.addDocsToSignRequest(signRequest, documentService.createDocuments(multipartFiles));
+        signBookService.addSignRequest(signBook, signRequest);
+        logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
         String[] ok = {"ok"};
         return ok;
     }
@@ -128,15 +124,17 @@ public class WsController {
     @ResponseBody
     @RequestMapping(value = "/add-docs-in-sign-book-unique/{name}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public Object addDocumentToNewSignRequest(@PathVariable("name") String name,
-                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException {
+                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException {
         logger.info("start add documents");
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookService.getSignBook(name, user);
         user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
         for (MultipartFile multipartFile : multipartFiles) {
+            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
             Document document = documentService.createDocument(multipartFile, multipartFile.getOriginalFilename());
-            signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), signBook, user, Arrays.asList(document));
+            signRequestService.addDocsToSignRequest(signRequest, Arrays.asList(document));
+            signBookService.addSignRequest(signBook, signRequest);
         }
         String[] ok = {"ok"};
         return ok;
@@ -502,6 +500,7 @@ public class WsController {
         logger.debug("ldap search for : " + searchString);
         return userService.getPersonLdaps(searchString, ldapTemplateName);
     }
+
 
 //    @RequestMapping(value = "/search-signbook")
 //    @ResponseBody

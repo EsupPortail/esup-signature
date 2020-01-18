@@ -168,7 +168,7 @@ function sendData(id, signRequestParams) {
 }
 
 function getStep(id, signRequestParams) {
-	percent++;
+	percent = percent + 2;
 	console.log("getStep");
 	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.open("GET", "/user/signrequests/get-step", false);

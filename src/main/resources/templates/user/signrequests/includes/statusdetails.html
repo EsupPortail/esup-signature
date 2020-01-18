@@ -53,7 +53,7 @@
 		<div class="alert alert-danger mb-1">
 			<h5 class="alert-heading">La demande à été refusée</h5>
 			Motif :
-			<span th:text="${refusLogs.get(0).comment}"></span>
+			<span th:text="${refuseLogs.get(0).comment}"></span>
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'exported'}">

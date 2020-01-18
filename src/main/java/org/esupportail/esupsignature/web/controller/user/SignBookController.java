@@ -189,7 +189,8 @@ public class SignBookController {
             }
         }
         model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
-        model.addAttribute("refusLogs", logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name()));
+        List<Log> logs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
+        model.addAttribute("refusLogs", logs);
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("signRequestId", signRequestId);
         return "user/signbooks/show";
@@ -444,20 +445,20 @@ public class SignBookController {
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
-    @RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
-    public String complete(@PathVariable("id") Long id,
-                           @RequestParam(value = "comment", required = false) String comment,
-                           HttpServletResponse response, RedirectAttributes redirectAttrs, HttpServletRequest request) throws EsupSignatureException {
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        SignBook signBook = signBookRepository.findById(id).get();
-        if (signBook.getCreateBy().equals(user.getEppn()) && (signBook.getRealStatus().equals(SignRequestStatus.signed) || signBook.getRealStatus().equals(SignRequestStatus.checked))) {
-            signBookService.completeSignBook(signBook, user);
-        } else {
-            logger.warn(user.getEppn() + " try to complete " + signBook.getId() + " without rights");
-        }
-        return "redirect:/user/signbooks/" + id + "/?form";
-    }
+//    @RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
+//    public String complete(@PathVariable("id") Long id,
+//                           @RequestParam(value = "comment", required = false) String comment,
+//                           HttpServletResponse response, RedirectAttributes redirectAttrs, HttpServletRequest request) throws EsupSignatureException {
+//        User user = userService.getUserFromAuthentication();
+//        user.setIp(request.getRemoteAddr());
+//        SignBook signBook = signBookRepository.findById(id).get();
+//        if (signBook.getCreateBy().equals(user.getEppn()) && (signBook.getRealStatus().equals(SignRequestStatus.signed) || signBook.getRealStatus().equals(SignRequestStatus.checked))) {
+//            signBookService.completeSignBook(signBook, user);
+//        } else {
+//            logger.warn(user.getEppn() + " try to complete " + signBook.getId() + " without rights");
+//        }
+//        return "redirect:/user/signbooks/" + id + "/?form";
+//    }
 
 //    @RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
 //    public String pending(@PathVariable("id") Long id,

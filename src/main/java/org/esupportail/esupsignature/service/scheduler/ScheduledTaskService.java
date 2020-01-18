@@ -52,7 +52,7 @@ public class ScheduledTaskService {
 	@Resource
 	private OJService oJService;
 
-	//@Scheduled(fixedRate = 10000)
+	@Scheduled(fixedRate = 10000)
 	@Transactional
 	public void scanAllSignbooksSources() {
 		Iterable<Workflow> workflows = workflowRepository.findAll();
@@ -93,10 +93,13 @@ public class ScheduledTaskService {
 	}
 	
 	
-	public User getSchedulerUser() {
+	public static User getSchedulerUser() {
 		User user = new User();
 		user.setEppn("Scheduler");
 		user.setIp("127.0.0.1");
+		user.setFirstname("Automate");
+		user.setName("");
+		user.setEmail("esup-signature@univ-rouen.fr");
 		return user;
 	}
 }

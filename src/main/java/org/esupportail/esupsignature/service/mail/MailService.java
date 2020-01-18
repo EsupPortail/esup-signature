@@ -138,7 +138,7 @@ public class MailService {
         ctx.setVariable("signRequests", signRequests);
         ctx.setVariable("rootUrl", rootUrl);
         for(SignRequest signRequest : signRequests) {
-            User user = userRepository.findByEppn(signRequest.getCreateBy()).get(0);
+            User user = userRepository.findByEmail(recipientEmail).get(0);
             signRequest.setCreator(user);
         }
         setTemplate(ctx);

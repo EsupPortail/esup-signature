@@ -445,8 +445,6 @@ input:checked + .slider:before {
 {
     width:100%;
     min-height: 60%;
-    font-family:"Reenie Beanie",arial,sans-serif;
-    font-size:150%;
     margin:5px 0;
     padding:3px;
 }
