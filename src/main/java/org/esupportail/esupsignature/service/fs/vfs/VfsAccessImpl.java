@@ -319,17 +319,9 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		return success;
 	}
 
-	/**
-	 * @param ftpControlEncoding the ftpControlEncoding to set
-	 */
-	public void setFtpControlEncoding(String ftpControlEncoding) {
-		this.ftpControlEncoding = ftpControlEncoding;
-	}
-
 	@Override
 	public FsFile getFileFromURI(String uri) {
-		// TODO Auto-generated method stub
-		return null;
+		return getFile(uri);
 	}
 
 }

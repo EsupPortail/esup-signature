@@ -522,29 +522,12 @@
                     });
                 </script>
             </form>
-            <div th:if="${documentType != 'pdf'}" class="col-6">
+            <div th:if="${documentType != 'pdf' && signRequest.originalDocuments.size() > 0}" class="col-6">
             <div class="card rounded-0 mb-1">
                 <div class="card-header">
                     Liste des documents originaux
-                    <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'draft')}">
-                        <button th:if="${signRequest.status.name() == 'draft' && user.eppn == signRequest.createBy && signRequest.signedDocuments.size() == 0}" id="browseBtn" type="button" class="mr-2 btn btn-sm btn-primary float-right"
-                                onclick="$('.clickable').click();">
-                            <i class="fa fa-plus" aria-hidden="true"></i> Ajouter un document
-                        </button>
-                    </th:block>
                 </div>
                 <div class="card-body">
-                    <div th:if="${user.eppn == signRequest.createBy}">
-                        <div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
-                            <div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.recipients.size() == 0}">
-                                <div th:if="${#lists.size(signRequest.originalDocuments) == 0}">
-                                    <div class="alert alert-warning" th:if="${signRequest.status.name() == 'draft'}">
-                                        <p>Vous devez ajouter des documents</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     <div class="file-loading">
                         <input id="multipartFile" name="multipartFiles" type="file" multiple="multiple"/>
                     </div>

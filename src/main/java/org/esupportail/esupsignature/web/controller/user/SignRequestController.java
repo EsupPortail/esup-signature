@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.sign.SignService;
@@ -264,6 +265,9 @@ public class SignRequestController {
 
                 }
                 model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
+            } else if(signRequestService.getLastSignedFsFile(signRequest) != null) {
+                FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
+                model.addAttribute("documentType", fileService.getExtension(fsFile.getName()));
             }
         }
         List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNull(id);

@@ -137,6 +137,7 @@ public class SignRequestService {
 		} else {
 			documents.addAll(signRequest.getOriginalDocuments());
 		}
+
 		return documents;
 	}
 
@@ -398,7 +399,7 @@ public class SignRequestService {
 						fsAccessService.createFile("/", targetUrl, "folder");
 					}
 					if(fsAccessService.putFile("/" + targetUrl, signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE)){
-						documentUri = fsAccessService.getUri() + "/" + targetUrl + signedFile.getFileName();
+						documentUri = "/" + targetUrl + "/" + signedFile.getFileName();
 						updateStatus(signRequest, SignRequestStatus.exported, "Exporté", userService.getSystemUser(), "SUCCESS", signRequest.getComment());
 						signRequest.setExportedDocumentURI(documentUri);
 						//signRequestRepository.save(signRequest);
@@ -434,8 +435,8 @@ public class SignRequestService {
 	public FsFile getLastSignedFsFile(SignRequest signRequest) {
 		if(signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			FsAccessService fsAccessService = null;
-			if (signRequest.getExportedDocumentURI().startsWith("smb")) {
-				fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.smb);
+			if (signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().startsWith("mail")) {
+				fsAccessService = fsAccessFactory.getFsAccessService(signRequest.getParentSignBook().getTargetType());
 				return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI());
 			}
 		}
@@ -454,7 +455,7 @@ public class SignRequestService {
 
 	public Document getLastOriginalDocument(SignRequest signRequest) {
 		List<Document> documents = signRequest.getOriginalDocuments();
-		if (documents.size() > 1) {
+		if (documents.size() != 1) {
 			return null;
 		} else {
 			return documents.get(0);
