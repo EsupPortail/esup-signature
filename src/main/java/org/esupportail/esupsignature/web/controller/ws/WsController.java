@@ -482,7 +482,7 @@ public class WsController {
             User user = userService.getSystemUser();
             user.setIp(httpServletRequest.getRemoteAddr());
             if (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked)) {
-                result = signRequestService.completeSignRequest(signRequest, DocumentIOType.valueOf(documentIOTypeName), targetUri, user);
+                result = signRequestService.completeSignRequests(Arrays.asList(signRequest), DocumentIOType.valueOf(documentIOTypeName), targetUri, user);
             } else {
                 logger.warn("no signed version of signRequest : " + token);
             }

@@ -341,7 +341,7 @@ public class SignRequestService {
 					if(!signRequest.getParentSignBook().getCreateBy().equals("Scheduler")) {
 						mailService.sendCompletedMail(signRequest.getParentSignBook());
 					}
-					signBookService.completeSignBook(signRequest.getParentSignBook());
+					signBookService.completeSignBook(signRequest.getParentSignBook(), user);
 				} else {
 					for (SignRequest childSignRequest : signRequest.getParentSignBook().getSignRequests()) {
 						updateStatus(childSignRequest, SignRequestStatus.pending, "Passage à l'étape " + signRequest.getParentSignBook().getCurrentWorkflowStepNumber(), user, "SUCCESS", "");
@@ -366,15 +366,18 @@ public class SignRequestService {
 	}
 
 	public String completeSignRequest(SignRequest signRequest, User user) throws EsupSignatureException {
-		return completeSignRequest(signRequest, null, null, user);
+		return completeSignRequests(Arrays.asList(signRequest), null, null, user);
 	}
 
-	public String completeSignRequest(SignRequest signRequest, DocumentIOType documentIOType, String targetUri, User user) throws EsupSignatureException {
+	public String completeSignRequests(List<SignRequest> signRequests, DocumentIOType documentIOType, String targetUri, User user) throws EsupSignatureException {
 		String result = "";
 		if(documentIOType != null) {
-			result = sendSignRequestsToTarget(signRequest.getTitle(), Arrays.asList(signRequest), documentIOType, targetUri);
+			result = sendSignRequestsToTarget("Demande terminée", signRequests, documentIOType, targetUri);
+		} else {
+			for(SignRequest signRequest : signRequests) {
+				updateStatus(signRequest, SignRequestStatus.completed, "Terminé", user, "SUCCESS", signRequest.getComment());
+			}
 		}
-		updateStatus(signRequest, SignRequestStatus.completed, "Terminé automatiquement", user, "SUCCESS", signRequest.getComment());
 		return result;
 	}
 
@@ -384,6 +387,7 @@ public class SignRequestService {
 			mailService.sendFile(title, signRequests, targetUrl);
 			return "mail://" + targetUrl;
 		} else {
+			String documentUri = null;
 			for(SignRequest signRequest : signRequests) {
 				Document signedFile = getLastSignedDocument(signRequest);
 				try {
@@ -394,15 +398,37 @@ public class SignRequestService {
 						fsAccessService.createFile("/", targetUrl, "folder");
 					}
 					if(fsAccessService.putFile("/" + targetUrl, signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE)){
-						updateStatus(signRequest, SignRequestStatus.exported, "Terminé automatiquement", userService.getSystemUser(), "SUCCESS", signRequest.getComment());
-						return fsAccessService.getUri() + "/" + targetUrl + signedFile.getFileName();
+						documentUri = fsAccessService.getUri() + "/" + targetUrl + signedFile.getFileName();
+						updateStatus(signRequest, SignRequestStatus.exported, "Exporté", userService.getSystemUser(), "SUCCESS", signRequest.getComment());
+						signRequest.setExportedDocumentURI(documentUri);
+						//signRequestRepository.save(signRequest);
+						clearAllDocuments(signRequest);
 					}
 				} catch (Exception e) {
 					throw new EsupSignatureException("write fsaccess error : ", e);
 				}
 			}
+			return documentUri;
 		}
-		return null;
+	}
+
+	public void clearAllDocuments(SignRequest signRequest) {
+		if(signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().isEmpty()) {
+			logger.info("clear all documents from " + signRequest.getToken());
+			List<Document> originalDocuments = new ArrayList<>();
+			originalDocuments.addAll(signRequest.getOriginalDocuments());
+			signRequest.getOriginalDocuments().clear();
+			for (Document document : originalDocuments) {
+				documentService.deleteDocument(document);
+			}
+			List<Document> signedDocuments = new ArrayList<>();
+			signedDocuments.addAll(signRequest.getSignedDocuments());
+			signRequest.getSignedDocuments().clear();
+			for (Document document : signedDocuments) {
+				documentService.deleteDocument(document);
+			}
+			signRequestRepository.save(signRequest);
+		}
 	}
 
 	public FsFile getLastSignedFsFile(SignRequest signRequest) {

@@ -193,63 +193,21 @@ public class SignBookService {
         workflowRepository.save(workflow);
     }
 
-    public void completeSignBook(SignBook signBook) throws EsupSignatureException {
+    public void completeSignBook(SignBook signBook, User user) throws EsupSignatureException {
         signBook.setStatus(SignRequestStatus.completed);
-        for(SignRequest signRequest : signBook.getSignRequests()) {
-            signRequestService.completeSignRequest(signRequest, userService.getSystemUser());
-        }
-        exportFilesToTarget(signBook);
+        signRequestService.completeSignRequests(signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri(), user);
     }
 
     public void exportFilesToTarget(SignBook signBook) throws EsupSignatureException {
         logger.trace("export signRequest to : " + signBook.getTargetType() + "://" + signBook.getDocumentsTargetUri());
-        if (getStatus(signBook).equals(SignRequestStatus.completed) /* && signRequestService.isSignRequestCompleted(signRequest)*/) {
-            boolean exportOk = exportFileToTarget(signBook);
-            if (exportOk) {
-                if (!signBook.getTargetType().equals(DocumentIOType.mail)) {
-                    clearAllDocuments(signBook);
-                }
-                signBook.setStatus(SignRequestStatus.exported);
-                signBookRepository.save(signBook);
-            }
+        if (getStatus(signBook).equals(SignRequestStatus.completed)) {
+           signRequestService.sendSignRequestsToTarget(signBook.getName(), signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri());
         }
     }
-
-    public boolean exportFileToTarget(SignBook signBook) throws EsupSignatureException {
-        if (signBook.getTargetType() != null && !signBook.getTargetType().equals(DocumentIOType.none)) {
-            String documentUrl = signRequestService.sendSignRequestsToTarget(signBook.getName(), signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri());
-            signBook.setExportedDocumentURI(documentUrl);
-        } else {
-            logger.debug("no target type for this signbook");
-        }
-        return false;
-    }
-
-    public List<Document> getLastSignedDocuments(SignBook signBook) {
-        List<Document> documents = new ArrayList<>();
-        for (SignRequest signRequest : signBook.getSignRequests()) {
-            documents.add(signRequestService.getLastSignedDocument(signRequest));
-        }
-        return documents;
-    }
-
 
     public void clearAllDocuments(SignBook signBook) {
         for (SignRequest signRequest : signBook.getSignRequests()) {
-            logger.info("clear all documents from " + signRequest.getToken());
-            List<Document> originalDocuments = new ArrayList<Document>();
-            originalDocuments.addAll(signRequest.getOriginalDocuments());
-            signRequest.getOriginalDocuments().clear();
-            for (Document document : originalDocuments) {
-                documentService.deleteDocument(document);
-            }
-            List<Document> signedDocuments = new ArrayList<Document>();
-            signedDocuments.addAll(signRequest.getSignedDocuments());
-            signRequest.getSignedDocuments().clear();
-            for (Document document : signedDocuments) {
-                documentService.deleteDocument(document);
-            }
-            signRequestRepository.save(signRequest);
+            signRequestService.clearAllDocuments(signRequest);
         }
     }
 
@@ -364,7 +322,6 @@ public class SignBookService {
     }
 
     public SignRequestStatus getStatus(SignBook signBook) {
-        //TODO move to signbookservice
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(signRequest.getStatus().equals(SignRequestStatus.refused)) {
                 return SignRequestStatus.refused;
