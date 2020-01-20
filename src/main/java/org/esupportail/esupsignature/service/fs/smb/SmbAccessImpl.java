@@ -128,7 +128,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 
 	public SmbFile cd(String path) {
 		try {
-			this.open();
+			//this.open();
 			if (path == null || path.length() == 0)
 				return root;
 			return new SmbFile(this.getUri() + path, cifsContext);
@@ -227,7 +227,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public FsFile getFile(String dir) throws Exception {
+	public FsFile getFile(String dir) {
 		try {
 			SmbFile smbFile = cd(dir);
 			return toFsFile(smbFile, dir);
@@ -242,7 +242,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	@Override
 	public FsFile getFileFromURI(String uri) {
 		try {
-			open();
+			//open();
 			SmbFile smbFile = new SmbFile(uri, cifsContext);
 			return toFsFile(smbFile, uri);
 		} catch (SmbException e) {
@@ -354,7 +354,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		return fsFile;
 	}
 
-	public void destroy() throws Exception {
+	public void destroy() {
 		this.close();
 	}
 	

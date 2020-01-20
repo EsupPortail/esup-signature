@@ -143,12 +143,15 @@ public class NexuProcessController {
 		User user = userService.getUserFromAuthentication();
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
+			Document signedFile = null;
 			SignDocumentResponse signedDocumentResponse;
 			signatureDocumentForm.setBase64SignatureValue(signatureValue.getSignatureValue());
-	       	signRequestService.nexuSign(signRequest, user, signatureDocumentForm, parameters);
-			signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
-			signRequestRepository.save(signRequest);
-			signRequestService.applyEndOfStepRules(signRequest, user);
+	       	signedFile = signRequestService.nexuSign(signRequest, user, signatureDocumentForm, parameters);
+	       	if(signedFile != null) {
+				signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
+				signRequestRepository.save(signRequest);
+				signRequestService.applyEndOfStepRules(signRequest, user);
+			}
 	        signedDocumentResponse = new SignDocumentResponse();
 	        signedDocumentResponse.setUrlToDownload("download");
 	        return signedDocumentResponse;

@@ -324,7 +324,7 @@ public class WorkflowManagerController {
 	}
 
 	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
-	public String getFileFromSource(@PathVariable("id") Long id, RedirectAttributes redirectAttrs) {
+	public String getFileFromSource(@PathVariable("id") Long id, RedirectAttributes redirectAttrs) throws Exception {
 		User user = userService.getUserFromAuthentication();
 		Workflow workflow = workflowRepository.findById(id).get();
 

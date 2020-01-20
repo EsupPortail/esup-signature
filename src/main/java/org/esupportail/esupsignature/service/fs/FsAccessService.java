@@ -70,7 +70,7 @@ public abstract class FsAccessService {
 		}
 	}
 
-	protected void open() {
+	public void open() {
 		if(!this.isOpened()) {
 			manipulateUri();
 		}
@@ -101,7 +101,7 @@ public abstract class FsAccessService {
 
 	public abstract boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws EsupSignatureFsException, IOException;
 
-	public abstract FsFile getFile(String dir) throws Exception;
+	public abstract FsFile getFile(String dir);
 
 	public abstract Object cd(String dir);
 

@@ -46,7 +46,7 @@ public class Document {
         try {
             return this.bigFile.getBinaryFile().getBinaryStream();
         } catch (SQLException e) {
-            logger.error("error get inputStream", e);
+            logger.error("unable to get inputStream", e);
         }
         return null;
     }

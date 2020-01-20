@@ -52,7 +52,7 @@ public class ScheduledTaskService {
 	@Resource
 	private OJService oJService;
 
-	@Scheduled(fixedRate = 10000)
+	//@Scheduled(fixedRate = 10000)
 	@Transactional
 	public void scanAllSignbooksSources() {
 		Iterable<Workflow> workflows = workflowRepository.findAll();

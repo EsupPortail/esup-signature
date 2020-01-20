@@ -333,7 +333,7 @@ public class SignRequestController {
         User user = userService.getUserFromAuthentication();
         if (multipartFiles != null) {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(),  user);
-            signRequestService.addDocsToSignRequest(signRequest, documentService.createDocuments(multipartFiles));
+            signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
             signRequestService.pendingSignRequest(signRequest, Arrays.asList(user.getEmail()), signType, user);
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {

@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.service.fs;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import java.io.InputStream;
 import java.util.Date;
 
@@ -64,5 +66,4 @@ public class FsFile {
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
 	}
-	
 }

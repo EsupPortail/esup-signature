@@ -44,7 +44,7 @@
                                     <span th:classappend="${signRequest.parentSignBook.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></span>
                                     <span class="bs-stepper-label">
                                         <p>Export</p>
-                                        <p th:text="${signRequest.parentSignBook.targetType} + '://' + ${signRequest.parentSignBook.documentsTargetUri}"></p>
+                                        <p th:text="${signRequest.parentSignBook.targetType} + ':/' + ${@fsAccessFactory.getFsAccessService(signRequest.parentSignBook.targetType).getUri()} + '/' + ${signRequest.parentSignBook.documentsTargetUri}"></p>
                                     </span>
                                 </div>
                             </div>

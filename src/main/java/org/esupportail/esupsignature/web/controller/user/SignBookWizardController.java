@@ -49,9 +49,6 @@ public class SignBookWizardController {
     private UserService userService;
 
     @Resource
-    private SignRequestService signRequestService;
-
-    @Resource
     private WorkflowRepository workflowRepository;
 
     @Resource

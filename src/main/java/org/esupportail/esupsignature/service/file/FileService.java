@@ -148,9 +148,10 @@ public class FileService {
 	    }
 	}
 	
-	public String base64Transparence(String base64Image) {
+	public InputStream base64Transparence(String base64Image) {
 		BufferedImage image = makeColorTransparent(base64StringToImg(base64Image));
-		return imgToBase64String(image, "png");
+		String base64ImageTransparent = imgToBase64String(image, "png");
+		return fromBase64Image(base64ImageTransparent);
 	}
 	
 	

@@ -143,13 +143,14 @@ public class UserController {
             	bigFileRepository.delete(userToUpdate.getKeystore().getBigFile());
             	documentRepository.delete(userToUpdate.getKeystore());
             }
-            userToUpdate.setKeystore(documentService.createDocument(multipartKeystore, multipartKeystore.getOriginalFilename()));
+            userToUpdate.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), multipartKeystore.getOriginalFilename(), multipartKeystore.getContentType()));
         }
         Document oldSignImage = userToUpdate.getSignImage();
         if(signImageBase64 != null && !signImageBase64.isEmpty()) {
+
         	userToUpdate.setSignImage(documentService.createDocument(fileService.base64Transparence(signImageBase64), userToUpdate.getEppn() + "_sign.png", "image/png"));
             if(oldSignImage != null) {
-            	oldSignImage.getBigFile().getBinaryFile().free();
+            	oldSignImage.getBigFile().getBinaryFile().getBinaryStream();
             	bigFileRepository.delete(oldSignImage.getBigFile());
             	documentRepository.delete(oldSignImage);
         	}

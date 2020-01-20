@@ -77,7 +77,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	protected void open() {
+	public void open() {
 		super.open();
 		try {
 			if(!isOpened()) {
@@ -249,11 +249,11 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public FsFile getFile(String dir) throws Exception {
+	public FsFile getFile(String dir) {
 		try {
 			FileObject fileObject = cd(dir);
 			return toFsFile(fileObject);
-		} catch (FileSystemException e) {
+		} catch (IOException e) {
 			logger.warn("can't download file : " + e.getMessage(), e);
 		}
 		return null;

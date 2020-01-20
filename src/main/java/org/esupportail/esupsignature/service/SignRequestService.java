@@ -37,6 +37,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -150,19 +152,29 @@ public class SignRequestService {
 		return signRequest;
 	}
 
-	public void addDocsToSignRequest(SignRequest signRequest, List<Document> documents) throws EsupSignatureIOException {
-		List<SignRequestParams> signRequestParamses = new ArrayList<>();
-		if(documents.size() == 1 && documents.get(0).getContentType().equals("application/pdf")) {
-			signRequestParamses = scanSignatureFields(documents.get(0).getInputStream());
-		}
-		signRequest.getSignRequestParams().addAll(signRequestParamses);
-		signRequest.getOriginalDocuments().addAll(documents);
-		for(Document document : documents) {
-			document.setParentId(signRequest.getId());
-			documentRepository.save(document);
+	public void addDocsToSignRequest(SignRequest signRequest, MultipartFile... multipartFiles) throws EsupSignatureIOException {
+		for(MultipartFile multipartFile : multipartFiles) {
+			try {
+				File file = fileService.inputStreamToTempFile(multipartFile.getInputStream(), multipartFile.getName());
+				if (multipartFiles.length == 1 && multipartFiles[0].getContentType().equals("application/pdf")) {
+					try {
+						signRequest.getSignRequestParams().addAll(scanSignatureFields(new FileInputStream(file)));
+					} catch (IOException e) {
+						throw new EsupSignatureIOException("unable to open multipart inputStream", e);
+					}
+				}
+				Document document = documentService.createDocument(new FileInputStream(file), multipartFile.getOriginalFilename(), multipartFile.getContentType());
+				signRequest.getOriginalDocuments().add(document);
+				document.setParentId(signRequest.getId());
+				documentRepository.save(document);
+			} catch (IOException e) {
+				throw new EsupSignatureIOException("", e);
+			}
 		}
 		signRequestRepository.save(signRequest);
 	}
+
+
 
 	public List<SignRequestParams> scanSignatureFields(InputStream inputStream) throws EsupSignatureIOException {
 		List<SignRequestParams> signRequestParamses = pdfService.scanSignatureFields(inputStream);
@@ -228,10 +240,6 @@ public class SignRequestService {
 		}
 
 		if (signedFile != null) {
-			if(signedFile.getFileName() != null) {
-				signRequest.getSignedDocuments().add(signedFile);
-				signedFile.setParentId(signRequest.getId());
-			}
 			if(signType.equals(SignType.visa)) {
 				updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", signRequest.getComment());
 			} else {
@@ -243,7 +251,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void nexuSign(SignRequest signRequest, User user, AbstractSignatureForm signatureDocumentForm, AbstractSignatureParameters parameters) {
+	public Document nexuSign(SignRequest signRequest, User user, AbstractSignatureForm signatureDocumentForm, AbstractSignatureParameters parameters) {
 		logger.info(user.getEppn() + " launch nexu signature for signRequest : " + signRequest.getId());
 		DSSDocument dssDocument;
 
@@ -255,7 +263,7 @@ public class SignRequestService {
 
 		InMemoryDocument signedDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 
-		addSignedFile(signRequest, signedDocument.openStream(), signedDocument.getName(), signedDocument.getMimeType().getMimeTypeString(), user);
+		return addSignedFile(signRequest, signedDocument.openStream(), signedDocument.getName(), signedDocument.getMimeType().getMimeTypeString(), user);
 	}
 
 	public Document certSign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException {
@@ -312,7 +320,7 @@ public class SignRequestService {
 			}
 			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 			step = "Enregistrement du/des documents(s)";
-			return documentService.createDocument(signedPdfDocument.openStream(), signedPdfDocument.getName(), signedPdfDocument.getMimeType().getMimeTypeString());
+			return addSignedFile(signRequest, signedPdfDocument.openStream(), signedPdfDocument.getName(), signedPdfDocument.getMimeType().getMimeTypeString(), user);
 		} catch (EsupSignatureKeystoreException e) {
 			step = "security_bad_password";
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
@@ -322,11 +330,18 @@ public class SignRequestService {
 		}
 	}
 
-	public void addSignedFile(SignRequest signRequest, InputStream signedInputStream, String fileName, String mimeType, User user) {
+	public Document addSignedFile(SignRequest signRequest, InputStream signedInputStream, String fileName, String mimeType, User user) {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-		Document document = documentService.createDocument(signedInputStream, signRequest.getTitle() + "_" + getCurrentSignType(signRequest) + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(fileName), mimeType);
+		Document document = null;
+		try {
+			document = documentService.createDocument(signedInputStream, signRequest.getTitle() + "_" + getCurrentSignType(signRequest) + "_" + user.getEppn() + "_" + simpleDateFormat.format(new Date()) + "." + fileService.getExtension(fileName), mimeType);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		signRequest.getSignedDocuments().add(document);
 		document.setParentId(signRequest.getId());
+		documentRepository.save(document);
+		return document;
 	}
 
 	public void applyEndOfStepRules(SignRequest signRequest, User user) throws EsupSignatureException {
@@ -417,10 +432,11 @@ public class SignRequestService {
 					logger.info("send to " + documentIOType.name() + " in /" + targetUrl + "/signed");
 					FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(documentIOType);
 					InputStream inputStream = signedFile.getInputStream();
-					fsAccessService.createFile("/", targetUrl, "folder");
-					fsAccessService.createFile("/" + targetUrl + "/", "signed", "folder");
-					if(fsAccessService.putFile("/" + targetUrl + "/signed/", signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE)){
-						return fsAccessService.getUri() + "/" + targetUrl + "/signed/" + signedFile.getFileName();
+					if(fsAccessService.cd("/" + targetUrl) == null) {
+						fsAccessService.createFile("/", targetUrl, "folder");
+					}
+					if(fsAccessService.putFile("/" + targetUrl, signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE)){
+						return fsAccessService.getUri() + "/" + targetUrl + signedFile.getFileName();
 					}
 				} catch (Exception e) {
 					throw new EsupSignatureException("write fsaccess error : ", e);
@@ -552,13 +568,12 @@ public class SignRequestService {
 		if(signRequest.getParentSignBook() != null) {
 			signRequest.getParentSignBook().getSignRequests().remove(signRequest);
 			signBookRepository.save(signRequest.getParentSignBook());
-			SignBook signBook = signRequest.getParentSignBook();
 			signRequest.setParentSignBook(null);
-			if(signBook.getSignRequests().size() == 0) {
-				signBookService.delete(signBook);
-			}
+			signRequestRepository.save(signRequest);
+//			if(signBook.getSignRequests().size() == 0) {
+//				signBookService.delete(signBook);
+//			}
 		}
-		//signRequest.getOriginalDocuments().clear();
 		signRequestRepository.delete(signRequest);
 
 	}
