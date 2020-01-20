@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<div th:fragment="workspace">
+<div th:fragment="workspace" style="height: 60vh;">
     <div class="row">
         <div class="col-lg-9">
             <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post" th:if="${documentType == 'pdf'}">
@@ -31,7 +31,7 @@
                     </div>
                 </th:block>
                 <script>
-                    var url = '/user/documents/getfile/[[${documentId}]]';
+                    var url = '/ws/get-last-file-from-signrequest/?token=[[${signRequest.token}]]';
 
                     var pdfDoc = null,
                         pageNum = 1,
@@ -517,8 +517,8 @@
                     });
                 </script>
             </form>
-            <div th:if="${documentType != 'pdf'}" id="originalDocs" class="col-6">
-            <div class="card rounded-0 mb-1" th:if="${signRequest.status.name() != 'exported'}">
+            <div th:if="${documentType != 'pdf'}" class="col-6">
+            <div class="card rounded-0 mb-1">
                 <div class="card-header">
                     Liste des documents originaux
                     <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'draft')}">
@@ -545,8 +545,19 @@
                     </div>
                 </div>
             </div>
-            <script th:replace="user/signrequests/includes/scriptshow :: scriptshow"></script>
+
+            <div class="card rounded-0 mb-1" th:if="${signRequest.status.name() == 'exported' || signRequest.status.name() == 'exported'}">
+                <div class="card-header">
+                    Liste des documents signés
+                </div>
+                <div class="card-body">
+                    </div>
+                    <div class="file-loading">
+                        <input id="signedFiles" name="multipartFiles" type="file" multiple="multiple"/>
+                    </div>
+                </div>
             </div>
+            <script th:replace="user/signrequests/includes/scriptshow :: scriptshow"></script>
         </div>
         <div id="infos" class="d-none d-xl-block">
             <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>

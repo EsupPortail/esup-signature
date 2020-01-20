@@ -96,19 +96,19 @@
                             <i class="fas fa-ban"></i> <span class="sidebar-label">Confirmer le refus</span>
                         </button>
                     </div>
-                    <div th:if="${user.eppn == signRequest.createBy}">
-                        <th:block th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked'}">
-                            <a class="btn btn-outline-dark mb-1 text-left" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
-                                <i class="fas fa-save"></i>
-                            </a>
-                            <a title="Export SEDA" class="btn btn-outline-dark mb-1 text-left" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
-                                <i class="fa fa-file-export"></i>
-                            </a>
-                            <a class="btn btn-outline-dark mb-1 text-left" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
-                                <i class="fas fa-shield-alt "></i>
-                            </a>
-                        </th:block>
-                    </div>
+                </div>
+                <div th:if="${user.eppn == signRequest.createBy}">
+                    <th:block th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked' || signRequest.status.name() == 'exported'}">
+                        <a class="btn btn-outline-dark mb-1 text-left" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
+                            <i class="fas fa-save"></i>
+                        </a>
+                        <a title="Export SEDA" class="btn btn-outline-dark mb-1 text-left" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
+                            <i class="fa fa-file-export"></i>
+                        </a>
+                        <a class="btn btn-outline-dark mb-1 text-left" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+                            <i class="fas fa-shield-alt "></i>
+                        </a>
+                    </th:block>
                 </div>
                 <nav class="nav nav-tabs" th:if="${signRequest.parentSignBook != null}">
                     <th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">

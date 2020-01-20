@@ -262,7 +262,6 @@ public class SignRequestController {
 
                 }
                 model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
-                model.addAttribute("documentId", toDisplayDocument.getId());
             }
         }
         List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNull(id);
@@ -429,11 +428,23 @@ public class SignRequestController {
     }
 
     @RequestMapping(value = "/get-last-file-by-token/{token}", method = RequestMethod.GET)
-    public void getLastFileByToken(@PathVariable("token") String token, HttpServletResponse response, Model model) {
+    public void getLastFileByToken(@PathVariable("token") String token, HttpServletResponse response) {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
         if (signRequestService.checkUserViewRights(user, signRequest)) {
-            getLastFile(signRequest.getId(), response, model);
+            List<Document> documents = signRequestService.getToSignDocuments(signRequest);
+            try {
+                if (documents.size() > 1) {
+                    response.sendRedirect("/user/signrequests/" + signRequest.getId());
+                } else {
+                    Document document = documents.get(0);
+                    response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+                    response.setContentType(document.getContentType());
+                    IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+                }
+            } catch (Exception e) {
+                logger.error("get file error", e);
+            }
         } else {
             logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
         }
@@ -464,14 +475,14 @@ public class SignRequestController {
 
 
     @RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
-    public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
+    public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         User user = userService.getUserFromAuthentication();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
             List<Document> documents = signRequestService.getToSignDocuments(signRequest);
             try {
                 if (documents.size() > 1) {
-                    response.sendRedirect("/user/signrequests/" + id);
+                    response.sendRedirect("/user/signrequests/" + signRequest.getId());
                 } else {
                     Document document = documents.get(0);
                     response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
@@ -485,18 +496,6 @@ public class SignRequestController {
             logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
         }
     }
-
-    /*
-        @RequestMapping(value = "/toggle-need-all-sign/{id}/{step}", method = RequestMethod.GET)
-        public String toggleNeedAllSign(@PathVariable("id") Long id,@PathVariable("step") Integer step) {
-            User user = userService.getUserFromAuthentication();
-            SignRequest signRequest = signRequestRepository.findById(id).get();
-            if(user.getEppn().equals(signRequest.getCreateBy())) {
-                signRequestService.toggleNeedAllSign(signRequest, step);
-            }
-            return "redirect:/user/signrequests/" + id;
-        }
-    */
 
     @RequestMapping(value = "/change-step-sign-type/{id}/{step}", method = RequestMethod.GET)
     public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name = "signType") SignType signType) {

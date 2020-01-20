@@ -137,20 +137,24 @@ public class NexuProcessController {
 
 	@RequestMapping(value = "/sign-document", method = RequestMethod.POST)
 	@ResponseBody
-	public SignDocumentResponse signDocument(Model model, @RequestBody @Valid SignatureValueAsString signatureValue,
+	public SignDocumentResponse signDocument(@RequestBody @Valid SignatureValueAsString signatureValue,
 			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm, 
-			@ModelAttribute("signRequestId") Long signRequestId, BindingResult result) throws EsupSignatureException {
+			@ModelAttribute("signRequestId") Long signRequestId) throws EsupSignatureException {
 		User user = userService.getUserFromAuthentication();
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			Document signedFile = null;
 			SignDocumentResponse signedDocumentResponse;
 			signatureDocumentForm.setBase64SignatureValue(signatureValue.getSignatureValue());
-	       	signedFile = signRequestService.nexuSign(signRequest, user, signatureDocumentForm, parameters);
-	       	if(signedFile != null) {
-				signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
-				signRequestRepository.save(signRequest);
-				signRequestService.applyEndOfStepRules(signRequest, user);
+			try {
+				signedFile = signRequestService.nexuSign(signRequest, user, signatureDocumentForm, parameters);
+				if(signedFile != null) {
+					signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
+					signRequestRepository.save(signRequest);
+					signRequestService.applyEndOfStepRules(signRequest, user);
+				}
+			} catch (IOException e) {
+				throw new EsupSignatureException("unable to sign" , e);
 			}
 	        signedDocumentResponse = new SignDocumentResponse();
 	        signedDocumentResponse.setUrlToDownload("download");

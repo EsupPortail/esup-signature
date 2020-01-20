@@ -34,10 +34,6 @@ public class Document {
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
-    
-    public String getUrl() {
-        return "/user/documents/getfile/" + getId();
-    }
 
     @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST}, orphanRemoval = true)
     private BigFile bigFile = new BigFile();

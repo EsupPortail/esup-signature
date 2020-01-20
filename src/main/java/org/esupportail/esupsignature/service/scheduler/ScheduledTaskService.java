@@ -68,7 +68,7 @@ public class ScheduledTaskService {
 		List<SignBook> signBooks = signBookRepository.findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus.completed);
 		for(SignBook signBook : signBooks) {
 			try {
-				signBookService.exportFilesToTarget(signBook, getSchedulerUser());
+				signBookService.exportFilesToTarget(signBook);
 			} catch (EsupSignatureException e) {
 				logger.error(e.getMessage());
 			}

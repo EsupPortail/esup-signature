@@ -132,7 +132,6 @@ public class WsController {
         user.setIp(httpServletRequest.getRemoteAddr());
         for (MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
-            Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
             signRequestService.addDocsToSignRequest(signRequest, multipartFile);
             signBookService.addSignRequest(signBook, signRequest);
         }

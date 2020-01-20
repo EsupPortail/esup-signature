@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -29,9 +30,12 @@ public class DocumentService {
 
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
 
-	@Autowired
+	@Resource
 	private DocumentRepository documentRepository;
-	
+
+	@Resource
+	private FileService fileService;
+
 	@Resource
 	private BigFileService bigFileService;
 
@@ -42,12 +46,12 @@ public class DocumentService {
 		Document document = new Document();
 		document.setCreateDate(new Date());
 		document.setFileName(name);
+		document.setContentType(contentType);
 		BigFile bigFile = new BigFile();
 		long size = inputStream.available();
 		bigFileService.setBinaryFileStream(bigFile, inputStream, size);
 		document.setBigFile(bigFile);
 		document.setSize(size);
-		document.setContentType(contentType);
 		documentRepository.save(document);
 		return document;
 	}
@@ -61,5 +65,20 @@ public class DocumentService {
 		}
 		documentRepository.delete(document);
 	}
-	
+
+	public String getFormatedName(String originalName, int order, boolean signed) {
+		String name = "";
+		name += String.format("%02d", order);
+		name += "_";
+		SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+		name += format.format(new Date());
+		name += "_";
+		name += fileService.getNameOnly(originalName).replaceAll(" ", "-");
+		if(signed) {
+			name += "_signed";
+		}
+		name += "." + fileService.getExtension(originalName);
+		return name;
+	}
+
 }

@@ -143,7 +143,7 @@ public class UserController {
             	bigFileRepository.delete(userToUpdate.getKeystore().getBigFile());
             	documentRepository.delete(userToUpdate.getKeystore());
             }
-            userToUpdate.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), multipartKeystore.getOriginalFilename(), multipartKeystore.getContentType()));
+            userToUpdate.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), userToUpdate.getEppn() + "_cert.p12", multipartKeystore.getContentType()));
         }
         Document oldSignImage = userToUpdate.getSignImage();
         if(signImageBase64 != null && !signImageBase64.isEmpty()) {

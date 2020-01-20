@@ -138,7 +138,7 @@ public class WorkflowService {
                         }
                         List<String> workflowRecipientsEmails = new ArrayList<>();
                         workflowRecipientsEmails.add(user.getEmail());
-                        SignBook signBook = signBookService.createSignBook("Auto import : " + signRequestService.generateUniqueId() + workflow.getName(), SignBook.SignBookType.workflow, user, false);
+                        SignBook signBook = signBookService.createSignBook("Import automatique " + signRequestService.generateUniqueId() + "_" + workflow.getName(), SignBook.SignBookType.workflow, user, false);
                         SignRequest signRequest = signRequestService.createSignRequest(fsFile.getName(), user);
                         signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(fsFile.getInputStream(), fsFile.getName(), fsFile.getContentType()));
                         signRequest.setParentSignBook(signBook);

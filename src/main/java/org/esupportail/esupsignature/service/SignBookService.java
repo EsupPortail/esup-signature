@@ -193,24 +193,26 @@ public class SignBookService {
         workflowRepository.save(workflow);
     }
 
-    public void completeSignBook(SignBook signBook, User user) throws EsupSignatureException {
+    public void completeSignBook(SignBook signBook) throws EsupSignatureException {
         signBook.setStatus(SignRequestStatus.completed);
-        exportFilesToTarget(signBook, user);
+        exportFilesToTarget(signBook);
     }
 
-    public void exportFilesToTarget(SignBook signBook, User user) throws EsupSignatureException {
+    public void exportFilesToTarget(SignBook signBook) throws EsupSignatureException {
         logger.trace("export signRequest to : " + signBook.getTargetType() + "://" + signBook.getDocumentsTargetUri());
         if (getStatus(signBook).equals(SignRequestStatus.completed) /* && signRequestService.isSignRequestCompleted(signRequest)*/) {
-            boolean exportOk = exportFileToTarget(signBook, user);
+            boolean exportOk = exportFileToTarget(signBook);
             if (exportOk) {
                 if (!signBook.getTargetType().equals(DocumentIOType.mail)) {
                     clearAllDocuments(signBook);
                 }
+                signBook.setStatus(SignRequestStatus.exported);
+                signBookRepository.save(signBook);
             }
         }
     }
 
-    public boolean exportFileToTarget(SignBook signBook, User user) throws EsupSignatureException {
+    public boolean exportFileToTarget(SignBook signBook) throws EsupSignatureException {
         if (signBook.getTargetType() != null && !signBook.getTargetType().equals(DocumentIOType.none)) {
             String documentUrl = signRequestService.sendSignRequestsToTarget(signBook.getName(), signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri());
             signBook.setExportedDocumentURI(documentUrl);
