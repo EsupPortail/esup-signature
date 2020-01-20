@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<div th:fragment="workspace" style="height: 60vh;">
+<div th:fragment="workspace">
     <div class="row">
         <div class="col-lg-9">
             <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post" th:if="${documentType == 'pdf'}">
@@ -323,9 +323,10 @@
                         $('#signButton').toggleClass('btn-light btn-success');
                         $('#signtools').show();
                         $('#stepscard').show();
-                        $('#pen').removeClass('btn-outline-secondary').addClass('btn-outline-success');
-                        $('#cross').show();
-                        visualActive = true;
+                        if(visualActive) {
+                            $('#pen').removeClass('btn-outline-secondary').addClass('btn-outline-success');
+                            $('#cross').show();
+                        }
                         rotation = 0;
                         scale = 0.75;
                         queueRenderPage(pageNum);
@@ -546,7 +547,7 @@
                 </div>
             </div>
 
-            <div class="card rounded-0 mb-1" th:if="${signRequest.status.name() == 'exported' || signRequest.status.name() == 'exported'}">
+            <div class="card rounded-0 mb-1" th:if="${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported'}">
                 <div class="card-header">
                     Liste des documents signés
                 </div>

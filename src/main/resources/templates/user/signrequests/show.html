@@ -42,7 +42,7 @@
                         </li>
                     </ol>
                 </nav>
-                <div class="d-flex mb-1" th:unless="${documentType == 'pdf'}">
+                <div class="d-flex mb-1" th:if="${documentType != 'pdf'}">
                     <div id="signtools" th:if="${signable == 'ok'}" style="display: none;">
                         <button th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="btn btn-success" title="Signer" data-toggle="modal" data-target="#signModal">
                             <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
@@ -50,19 +50,6 @@
                         <button th:unless="${@signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="btn btn-success" title="Viser" data-toggle="modal" data-target="#signModal">
                             <i class="fas fa-check"></i> <span class="sidebar-label">Viser</span>
                         </button>
-                    </div>
-                    <div th:if="${user.eppn == signRequest.createBy}">
-                        <th:block th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked'}">
-                            <a class="btn btn-outline-dark mb-1 text-left" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
-                                <i class="fas fa-save"></i>
-                            </a>
-                            <a title="Export SEDA" class="btn btn-outline-dark mb-1 text-left" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
-                                <i class="fa fa-file-export"></i>
-                            </a>
-                            <a class="btn btn-outline-dark mb-1 text-left" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
-                                <i class="fas fa-shield-alt "></i>
-                            </a>
-                        </th:block>
                     </div>
                 </div>
                 <div class="d-flex mb-1" th:if="${documentType == 'pdf'}">

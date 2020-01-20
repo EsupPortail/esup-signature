@@ -195,6 +195,9 @@ public class SignBookService {
 
     public void completeSignBook(SignBook signBook) throws EsupSignatureException {
         signBook.setStatus(SignRequestStatus.completed);
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            signRequestService.completeSignRequest(signRequest, userService.getSystemUser());
+        }
         exportFilesToTarget(signBook);
     }
 

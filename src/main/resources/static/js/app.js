@@ -193,7 +193,7 @@ function getStep(id, signRequestParams) {
 			document.getElementById("bar").classList.remove("progress-bar-animated");
 			document.getElementById("bar-text").innerHTML = "Signature terminée";
 			document.getElementById("bar").style.width = 100 + "%";
-			document.location.reload();
+			document.location.href="/user/signrequests/" + id;
 		} else {
 			document.getElementById("bar").style.display = "block";
 			document.getElementById("bar").style.width = percent + "%";

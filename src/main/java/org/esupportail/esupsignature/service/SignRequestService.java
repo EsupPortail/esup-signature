@@ -163,7 +163,7 @@ public class SignRequestService {
 						throw new EsupSignatureIOException("unable to open multipart inputStream", e);
 					}
 				}
-				String docName = documentService.getFormatedName(multipartFile.getOriginalFilename(), signRequest.getOriginalDocuments().size() + 1, false);
+				String docName = documentService.getFormatedName(multipartFile.getOriginalFilename(), signRequest.getOriginalDocuments().size(), false);
 				Document document = documentService.createDocument(new FileInputStream(file), docName, multipartFile.getContentType());
 				signRequest.getOriginalDocuments().add(document);
 				document.setParentId(signRequest.getId());
@@ -262,7 +262,7 @@ public class SignRequestService {
 
 		InMemoryDocument signedDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 
-		return addSignedFile(signRequest, signedDocument.openStream(), signedDocument.getMimeType().getMimeTypeString());
+		return addSignedFile(signRequest, signedDocument.openStream(), dssDocument.getName(), signedDocument.getMimeType().getMimeTypeString());
 	}
 
 	public Document certSign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException {
@@ -319,7 +319,7 @@ public class SignRequestService {
 			}
 			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 			step = "Enregistrement du/des documents(s)";
-			return addSignedFile(signRequest, signedPdfDocument.openStream(), signedPdfDocument.getMimeType().getMimeTypeString());
+			return addSignedFile(signRequest, signedPdfDocument.openStream(), dssDocument.getName(), signedPdfDocument.getMimeType().getMimeTypeString());
 		} catch (EsupSignatureKeystoreException e) {
 			step = "security_bad_password";
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
@@ -329,8 +329,8 @@ public class SignRequestService {
 		}
 	}
 
-	public Document addSignedFile(SignRequest signRequest, InputStream signedInputStream, String mimeType) throws IOException {
-		String docName = documentService.getFormatedName(signRequest.getTitle(), signRequest.getOriginalDocuments().size() + 1, true);
+	public Document addSignedFile(SignRequest signRequest, InputStream signedInputStream, String originalName, String mimeType) throws IOException {
+		String docName = documentService.getFormatedName(originalName, signRequest.getOriginalDocuments().size() + 1, true);
 		Document document = documentService.createDocument(signedInputStream, docName, mimeType);
 		signRequest.getSignedDocuments().add(document);
 		document.setParentId(signRequest.getId());
