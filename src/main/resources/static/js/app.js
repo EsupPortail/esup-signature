@@ -171,7 +171,7 @@ function getStep(id, signRequestParams) {
 	percent = percent + 2;
 	console.log("getStep");
 	var xmlHttp = new XMLHttpRequest();
-	xmlHttp.open("GET", "/user/signrequests/get-step", false);
+	xmlHttp.open("GET", "/user/signrequests/get-step", true);
 	xmlHttp.onreadystatechange = function() {
 		var result = xmlHttp.responseText;
 		if (result == "security_bad_password") {

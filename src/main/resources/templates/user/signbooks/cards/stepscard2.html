@@ -10,10 +10,6 @@
             <button th:if="${@signBookService.getStatus(signBook).name() == 'draft' && signBook.workflowSteps.size() == 0}" type="button" class="btn btn-sm btn-primary float-right mr-1" data-toggle="modal" data-target="#addWorkflow">
                 <i class="fas fa-project-diagram"></i> Charger un modèle de circuit
             </button>
-            <a th:if="${@signBookService.getStatus(signBook).name() == 'draft' && signBook.workflowSteps.size() == 0 && signBook.signRequests.size() == 1 && signBook.signRequests.get(0).originalDocuments.get(0).contentType == 'application/pdf'}"
-               th:href="'/user/signBooks/scan-pdf-sign/' + ${id}" class="btn btn-sm btn-primary float-right mr-1">
-                <i class="fas fa-binoculars"></i> Rechercher les champs signature
-            </a>
         </div>
         <div class="card-body">
             <div th:if="${user.eppn == signBook.createBy}">

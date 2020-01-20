@@ -217,37 +217,31 @@ public class SignRequestService {
 		}
 	}
 
-	public void sign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException {
+	public void sign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException, IOException {
 		step = "Demarrage de la signature";
-		Document signedFile = null;
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
 		SignType signType = getCurrentSignType(signRequest);
 		if (signType.equals(SignType.visa)) {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, getCurrentSignType(signRequest), getCurrentSignRequestParams(signRequest), user, addDate);
-			} else {
-				signedFile = new Document();
+				InputStream signedInputStream = pdfService.stampImage(toSignDocuments.get(0), signRequest, getCurrentSignType(signRequest), getCurrentSignRequestParams(signRequest), user, addDate);
+				addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
 			}
 		} else if(signType.equals(SignType.pdfImageStamp)) {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-				signedFile = pdfService.stampImage(toSignDocuments.get(0), signRequest, getCurrentSignType(signRequest), getCurrentSignRequestParams(signRequest), user, addDate);
-			} else {
-				signedFile = new Document();
+				InputStream signedInputStream = pdfService.stampImage(toSignDocuments.get(0), signRequest, getCurrentSignType(signRequest), getCurrentSignRequestParams(signRequest), user, addDate);
+				addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
 			}
 		} else {
-			signedFile = certSign(signRequest, user, password, addDate, visual);
+			certSign(signRequest, user, password, addDate, visual);
 		}
-
-		if (signedFile != null) {
-			if(signType.equals(SignType.visa)) {
-				updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", signRequest.getComment());
-			} else {
-				updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
-			}
-			signRequestRepository.save(signRequest);
-			step = "Paramétrage de la prochaine étape";
-			applyEndOfStepRules(signRequest, user);
+		if(signType.equals(SignType.visa)) {
+			updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", signRequest.getComment());
+		} else {
+			updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
 		}
+		signRequestRepository.save(signRequest);
+		step = "Paramétrage de la prochaine étape";
+		applyEndOfStepRules(signRequest, user);
 	}
 
 	public Document nexuSign(SignRequest signRequest, User user, AbstractSignatureForm signatureDocumentForm, AbstractSignatureParameters parameters) throws IOException {

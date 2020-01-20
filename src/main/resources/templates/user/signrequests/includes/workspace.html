@@ -33,13 +33,6 @@
                 <script>
                     var url = '/ws/get-last-file-from-signrequest/?token=[[${signRequest.token}]]';
 
-                    var pdfDoc = null,
-                        pageNum = 1,
-                        pageRendering = false,
-                        pageNumPending = null,
-                        scale = 0.75,
-                        rotation = 0;
-
                 </script>
                 <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">
                     <span onclick="hideComment()" class="float-right" style="cursor: pointer;">X</span>
@@ -59,17 +52,29 @@
                     var dateActive = false;
                     var visualActive = true;
                     var pointItEnable = true;
-                    var pdfjsLib = window['pdfjs-dist/build/pdf'];
-                    pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
-
+                    var pdfDoc = null,
+                        pageNum = 1,
+                        pageRendering = false,
+                        pageNumPending = null,
+                        scale = 0.75,
+                        rotation = 0;
+                    pdfjsLib.disableWorker = true;
+                    //var pdfjsLib = window['pdfjs-dist/build/pdf'];
+                    //pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+                    pdfjsLib.getDocument(url).promise.then(function (pdf) {
+                        pdfDoc = pdf;
+                        document.getElementById('page_count').textContent = pdfDoc.numPages;
+                        renderPage(pageNum);
+                    });
                     var canvas = document.getElementById('pdf');
                     var ctx = canvas.getContext('2d');
 
                     function renderPage(num) {
+                        if(pdfDoc != null) {
                         document.getElementById('signPageNumber').value = num;
                         pageRendering = true;
                         pdfDoc.getPage(num).then(function (page) {
-                            var viewport = page.getViewport(scale, rotation);
+                            var viewport = page.getViewport({scale, rotation});
                             canvas.height = viewport.height;
                             canvas.width = viewport.width;
                             var renderContext = {
@@ -104,7 +109,7 @@
                                 $("#postit[[${postit.id}]]").css("background-color", "#EEE");
                             }
                         [/]
-
+                        }
                     }
 
                     function queueRenderPage(num) {
@@ -194,14 +199,6 @@
                     }
 
                     document.getElementById('rotateright').addEventListener('click', rotateRight);
-
-                    pdfjsLib.getDocument(url).promise.then(function (pdfDoc_) {
-                        pdfDoc = pdfDoc_;
-                        document.getElementById('page_count').textContent = pdfDoc.numPages;
-
-                        // Initial/first page rendering
-                        renderPage(pageNum);
-                    });
 
                     var posX,
                         posY;
@@ -303,9 +300,11 @@
                         mode = 'comment';
                         localStorage.setItem('mode', 'comment');
                         pointItEnable = true;
+                        scale = 0.75;
                         $('#workspace').toggleClass('alert-warning alert-secondary');
                         $('#commentButton').toggleClass('btn-light btn-warning');
                         $('#commentsTools').show();
+                        $('#infos').show();
                         queueRenderPage(pageNum);
                     }
 
@@ -323,6 +322,7 @@
                         $('#signButton').toggleClass('btn-light btn-success');
                         $('#signtools').show();
                         $('#stepscard').show();
+                        $('#infos').show();
                         if(visualActive) {
                             $('#pen').removeClass('btn-outline-secondary').addClass('btn-outline-success');
                             $('#cross').show();
@@ -340,6 +340,7 @@
                         $('#workspace').toggleClass('alert-danger alert-secondary');
                         $('#refuseButton').toggleClass('btn-light btn-danger');
                         $('#refusetools').show();
+                        $('#infos').show();
                         queueRenderPage(pageNum);
                     }
 
@@ -354,6 +355,7 @@
                         $('#stepscard').hide();
                         $('#signtools').hide();
                         $('#cross').hide();
+                        $('#infos').hide();
                         $('#postit').hide();
                         $('#refusetools').hide();
                         $('#rotateleft').prop('disabled', true);
@@ -472,7 +474,7 @@
                         $('#signButton').toggleClass('btn-light btn-success');
                         $('#signtools').show();
                         $('#stepscard').show();
-
+                        $('#infos').show();
                     }
 
                     function enableRefuseMode() {
@@ -482,6 +484,7 @@
                         $('#workspace').toggleClass('alert-danger alert-secondary');
                         $('#refuseButton').toggleClass('btn-light btn-danger');
                         $('#refusetools').show();
+                        $('#infos').show();
                     }
 
                     function disableAllModes() {
@@ -497,6 +500,7 @@
                         $('#stepscard').hide();
                         $('#signtools').hide();
                         $('#cross').hide();
+                        $('#infos').hide();
                         $('#refusetools').hide();
                         $('#rotateleft').prop('disabled', true);
                         $('#rotateright').prop('disabled', true);
@@ -560,7 +564,7 @@
             </div>
             <script th:replace="user/signrequests/includes/scriptshow :: scriptshow"></script>
         </div>
-        <div id="infos" class="d-none d-xl-block">
+        <div id="infos">
             <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
             <th:block th:if="${signRequest.parentSignBook != null}">
             <div th:replace="user/signbooks/cards/stepscard :: stepscard"></div>

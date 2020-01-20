@@ -24,7 +24,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -341,8 +343,9 @@ public class SignRequestController {
         return "redirect:/user/signrequests";
     }
 
+    @ResponseBody
     @RequestMapping(value = "/sign/{id}", method = RequestMethod.POST)
-    public void sign(@PathVariable("id") Long id,
+    public ResponseEntity sign(@PathVariable("id") Long id,
                        @RequestParam(value = "xPos", required = false) Integer xPos,
                        @RequestParam(value = "yPos", required = false) Integer yPos,
                        @RequestParam(value = "comment", required = false) String comment,
@@ -365,7 +368,7 @@ public class SignRequestController {
             if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
                 signRequestService.setStep("Démarrage de l'application NexU");
                 signRequestService.setStep("initNexu");
-                return;
+                return new ResponseEntity(HttpStatus.OK);
             }
             if (signPageNumber != null && xPos != null && yPos != null) {
                 SignRequestParams signRequestParams = signRequestService.getCurrentSignRequestParams(signRequest);
@@ -381,12 +384,14 @@ public class SignRequestController {
                 signRequest.setComment(comment);
                 signRequestService.sign(signRequest, user, this.password, addDate, visual);
                 signRequestService.setStep("end");
-            } catch (EsupSignatureException e) {
+            } catch (EsupSignatureException | IOException e) {
                 logger.error(e.getMessage(), e);
             }
         } else {
             signRequestService.setStep("not_autorized");
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
         }
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @ResponseBody
@@ -545,7 +550,6 @@ public class SignRequestController {
                           @RequestParam(value = "recipientsEmail", required = false) String[] recipientsEmail,
                           @RequestParam(name = "signType") SignType signType,
                           @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) {
-        System.err.println(allSignToComplete);
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
@@ -556,17 +560,6 @@ public class SignRequestController {
         } else {
             logger.warn(user.getEppn() + " try to update signRiquets " + signRequest.getId() + " without rights");
         }
-        return "redirect:/user/signrequests/" + id + "/?form";
-    }
-
-    @RequestMapping(value = "/scan-pdf-sign/{id}", method = RequestMethod.GET)
-    public String scanPdfSign(@PathVariable("id") Long id,
-                              RedirectAttributes redirectAttrs, HttpServletRequest request) throws EsupSignatureIOException {
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        List<SignRequestParams> signRequestParamses = signRequestService.scanSignatureFields(signRequest.getOriginalDocuments().get(0).getInputStream());
-        redirectAttrs.addFlashAttribute("messageInfo", "Scan terminé, " + signRequestParamses.size() + " signature(s) trouvée(s)");
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 

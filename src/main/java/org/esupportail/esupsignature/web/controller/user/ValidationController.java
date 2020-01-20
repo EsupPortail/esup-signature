@@ -42,9 +42,9 @@ public class ValidationController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ValidationController.class);
 
-	@ModelAttribute("active")
+	@ModelAttribute("userMenu")
 	public String getActiveMenu() {
-		return "user/validation";
+		return "active";
 	}
 
 	@Resource

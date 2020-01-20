@@ -70,12 +70,9 @@ public class PdfService {
     private PdfConfig pdfConfig;
 
     @Resource
-    private DocumentService documentService;
-
-    @Resource
     private FileService fileService;
 
-    public Document stampImage(Document toSignFile, SignRequest signRequest, SignType signType, SignRequestParams params, User user, boolean addDate) {
+    public InputStream stampImage(Document toSignFile, SignRequest signRequest, SignType signType, SignRequestParams params, User user, boolean addDate) {
         PdfParameters pdfParameters;
         try {
             PDDocument pdDocument = PDDocument.load(toSignFile.getInputStream());
@@ -141,8 +138,8 @@ public class PdfService {
             ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
             pdDocument.close();
             try {
-                InputStream file = convertGS(writeMetadatas(in, toSignFile.getFileName(), signRequest));
-                return documentService.createDocument(file, toSignFile.getFileName(), toSignFile.getContentType());
+                return convertGS(writeMetadatas(in, toSignFile.getFileName(), signRequest));
+                //return documentService.createDocument(file, toSignFile.getFileName(), toSignFile.getContentType());
             } catch (Exception e) {
                 logger.error("unable to convert to pdf A", e);
             }
