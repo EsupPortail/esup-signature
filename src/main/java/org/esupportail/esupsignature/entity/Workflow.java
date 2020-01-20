@@ -63,7 +63,7 @@ public class Workflow {
     private String documentsSourceUri;
     
     @ElementCollection(targetClass=String.class)
-    private List<String> moderatorEmails = new ArrayList<>();
+    private List<String> managers = new ArrayList<>();
 
     @OneToMany
     @OrderColumn
@@ -142,12 +142,12 @@ public class Workflow {
         this.documentsSourceUri = documentsSourceUri;
     }
     
-    public List<String> getModeratorEmails() {
-        return this.moderatorEmails;
+    public List<String> getManagers() {
+        return this.managers;
     }
     
-    public void setModeratorEmails(List<String> moderatorEmails) {
-        this.moderatorEmails = moderatorEmails;
+    public void setManagers(List<String> managers) {
+        this.managers = managers;
     }
 
     public List<WorkflowStep> getWorkflowSteps() {

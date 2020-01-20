@@ -83,14 +83,13 @@ public class SignBookWizardController {
     public String wiz3(@RequestParam("name") String name, Model model) throws EsupSignatureException, IOException, EsupSignatureIOException {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookService.getSignBook(name, user);
-//        for (SignRequest signRequest : signBook.getSignRequests()) {
-//            if(signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().equals("application/pdf")) {
-//                signRequestService.scanSignatureFields(signRequest);
-//            }
-//        }
         model.addAttribute("signBook", signBook);
-        //TODO display system workflows
         List<Workflow> workflows = workflowRepository.findByCreateBy(user.getEppn());
+        for(Workflow workflow : workflowRepository.findByManagersContains(user.getEmail())) {
+            if(!workflows.contains(workflow)) {
+                workflows.add(workflow);
+            }
+        }
         model.addAttribute("workflows", workflows);
         return "user/signbooks/wizard/wiz3";
     }

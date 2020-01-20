@@ -146,10 +146,19 @@ public class WorkflowManagerController {
     }
 	
     @PostMapping(value = "/update/{id}")
-    public String update(@PathVariable("id") Long id, @Valid Workflow workflow, BindingResult bindingResult, Model uiModel, HttpServletRequest httpServletRequest) {
+    public String update(@PathVariable("id") Long id, @Valid Workflow workflow, @RequestParam(required = false) List<String> managers) {
 		User user = userService.getUserFromAuthentication();
 		Workflow workflowToUpdate = workflowRepository.findById(workflow.getId()).get();
 		if(workflowToUpdate.getCreateBy().equals(user.getEppn())) {
+			if(managers != null && managers.size() > 0) {
+				workflowToUpdate.getManagers().clear();
+				for(String manager : managers) {
+					User managerUser = userService.getUser(manager);
+					if(!workflowToUpdate.getManagers().contains(managerUser.getEmail())) {
+						workflowToUpdate.getManagers().add(managerUser.getEmail());
+					}
+				}
+			}
 			workflowToUpdate.setSourceType(workflow.getSourceType());
 			workflowToUpdate.setTargetType(workflow.getTargetType());
 			workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());

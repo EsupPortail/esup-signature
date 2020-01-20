@@ -55,12 +55,6 @@ public class WorkflowService {
     @Resource
     private UserService userService;
 
-    public List<Workflow> getAllWorkflows() {
-        List<Workflow> list = new ArrayList<Workflow>();
-        workflowRepository.findAll().forEach(e -> list.add(e));
-        return list;
-    }
-
     public void initCreatorWorkflow() {
         if (userRepository.countByEppn("creator") == 0) {
             User creator = userService.createUser("creator", "Createur de la demande", "", "");
@@ -79,17 +73,6 @@ public class WorkflowService {
         }
     }
 
-    public void updateWorkflow(Workflow workflow, Workflow workflowToUpdate) {
-        workflowToUpdate.getModeratorEmails().removeAll(workflow.getModeratorEmails());
-        workflowToUpdate.getModeratorEmails().addAll(workflow.getModeratorEmails());
-        workflowToUpdate.setName(workflow.getName());
-        workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
-        workflowToUpdate.setSourceType(workflow.getSourceType());
-        workflowToUpdate.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
-        workflowToUpdate.setTargetType(workflow.getTargetType());
-        workflowRepository.save(workflow);
-    }
-
     public Workflow createWorkflow(String name, User user, boolean external) throws EsupSignatureException {
         if (workflowRepository.countByName(name) == 0) {
             Workflow workflow = new Workflow();
@@ -97,7 +80,7 @@ public class WorkflowService {
             workflow.setCreateBy(user.getEppn());
             workflow.setCreateDate(new Date());
             workflow.setExternal(external);
-            workflow.getModeratorEmails().removeAll(Collections.singleton(""));
+            workflow.getManagers().removeAll(Collections.singleton(""));
             Document model = null;
             workflow.setSourceType(DocumentIOType.none);
             workflow.setTargetType(DocumentIOType.none);
@@ -165,7 +148,7 @@ public class WorkflowService {
     }
 
     public boolean checkUserManageRights(User user, Workflow workflow) {
-        if (workflow.getCreateBy().equals(user.getEppn()) || workflow.getModeratorEmails().contains(user.getEmail()) || workflow.getCreateBy().equals("System")) {
+        if (workflow.getCreateBy().equals(user.getEppn()) || workflow.getManagers().contains(user.getEmail()) || workflow.getCreateBy().equals("System")) {
             return true;
         } else {
             return false;
@@ -212,8 +195,6 @@ public class WorkflowService {
                 recipientUser = userRepository.findByEmail(recipientEmail).get(0);
             }
             workflowStep.getRecipients().put(recipientUser.getId(), false);
-            //TODO : log
-            //updateStatus(signRequest, signRequest.getStatus(), "Envoyé dans le parapheur " + recipientUser.getName(), user, "SUCCESS", "");
         }
         workflowStepRepository.save(workflowStep);
     }

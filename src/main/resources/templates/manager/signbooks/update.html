@@ -35,8 +35,8 @@
         <div class="card card-body bg-light">
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_moderatoremails">
-                        <label for="moderatoremailsSelect"><strong>Gestionnaire(s) du parapheur</strong>
+                    <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_managers">
+                        <label for="managersSelect"><strong>Gestionnaire(s) du parapheur</strong>
                             <button class="btn btn-sm btn-light" data-target="#collapseHelp1" data-toggle="collapse" type="button">
                                 <span class="fas fa-info-circle text-info"></span>
                             </button>
@@ -46,14 +46,14 @@
                                 </div>
                             </div>
                         </label>
-                        <select id="moderatoremailsSelect" multiple="multiple" name="moderatorEmails">
-                            <th:block th:each="moderatorEmail : ${signBook.moderatorEmails}">
-                                <option selected="selected" th:value="${moderatorEmail}" th:text="${moderatorEmail}"></option>
+                        <select id="managersSelect" multiple="multiple" name="managers">
+                            <th:block th:each="manager : ${signBook.managers}">
+                                <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
                             </th:block>
                         </select>
                         <script type="text/javascript">
                             new SlimSelect({
-                                select: '#moderatoremailsSelect',
+                                select: '#managersSelect',
                                 placeholder: 'Choisir un ou plusieurs utilisateurs',
                                 searchText: 'Aucun résultat',
                                 searchPlaceholder: 'Rechercher',
@@ -154,7 +154,7 @@
 
 
     new SlimSelect({
-        select: '#moderatoremailsSelect',
+        select: '#managersSelect',
         placeholder: 'Choisir un ou plusieurs utilisateurs',
         searchText: 'Aucun résultat',
         searchPlaceholder: 'Rechercher',

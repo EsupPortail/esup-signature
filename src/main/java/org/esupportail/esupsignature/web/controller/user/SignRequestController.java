@@ -230,7 +230,7 @@ public class SignRequestController {
     }
 
     @RequestMapping(value = "/{id}", produces = "text/html")
-    public String show(@PathVariable("id") Long id, Model model) throws Exception {
+    public String show(@PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if(signRequest.getParentSignBook() != null) {
@@ -269,7 +269,11 @@ public class SignRequestController {
         List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
         model.addAttribute("refuseLogs", refuseLogs);
         model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
-        return "user/signrequests/show";
+        if(frameMode != null && frameMode) {
+            return "user/signrequests/show-frame";
+        } else {
+            return "user/signrequests/show";
+        }
     }
 
     @ResponseBody

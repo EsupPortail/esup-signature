@@ -54,9 +54,9 @@
                                     rien
                                 </td>
                                 <td class="none">
-                                    <th:block th:each="moderatorEmail : ${workflow.moderatorEmails}">
+                                    <th:block th:each="manager : ${workflow.managers}">
                                         <i class="far fa-people"></i>
-                                        <span th:text="${moderatorEmail}"></span>
+                                        <span th:text="${manager}"></span>
                                         <br/>
                                     </th:block>
                                 </td>
