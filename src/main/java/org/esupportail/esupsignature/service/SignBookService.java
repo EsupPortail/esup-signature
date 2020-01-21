@@ -75,7 +75,7 @@ public class SignBookService {
         for(WorkflowStep workflowStep : workflowSteps) {
             if(!workflowStep.getRecipients().get(user.getId()) && signBookRepository.findByWorkflowStepsContains(workflowStep).size() > 0) {
                 SignBook signBook = signBookRepository.findByWorkflowStepsContains(workflowStep).get(0);
-                if (getCurrentWorkflowStep(signBook).equals(workflowStep) && getStatus(signBook).equals(SignRequestStatus.pending)) {
+                if (getCurrentWorkflowStep(signBook).equals(workflowStep) && signBook.getStatus().equals(SignRequestStatus.pending)) {
                     signBooksToSign.add(signBook);
                 }
             }
@@ -194,29 +194,20 @@ public class SignBookService {
     }
 
     public void completeSignBook(SignBook signBook, User user) throws EsupSignatureException {
-        signBook.setStatus(SignRequestStatus.completed);
+        updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", user, "SUCCESS", "");
         signRequestService.completeSignRequests(signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri(), user);
     }
 
     public void exportFilesToTarget(SignBook signBook) throws EsupSignatureException {
         logger.trace("export signRequest to : " + signBook.getTargetType() + "://" + signBook.getDocumentsTargetUri());
-        if (getStatus(signBook).equals(SignRequestStatus.completed)) {
+        if (signBook.getStatus().equals(SignRequestStatus.completed)) {
            signRequestService.sendSignRequestsToTarget(signBook.getName(), signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri());
-        }
-    }
-
-    public void clearAllDocuments(SignBook signBook) {
-        for (SignRequest signRequest : signBook.getSignRequests()) {
-            signRequestService.clearAllDocuments(signRequest);
         }
     }
 
     public void removeStep(SignBook signBook, int step) {
         WorkflowStep workflowStep = signBook.getWorkflowSteps().get(step);
         signBook.getWorkflowSteps().remove(step);
-//        if(signBook.getWorkflowSteps().size() < signBook.getCurrentWorkflowStepNumber() && getStatus(signBook).equals(SignRequestStatus.pending)) {
-//            signBook.setStatus(SignRequestStatus.completed);
-//        }
         signBookRepository.save(signBook);
         workflowStepRepository.delete(workflowStep);
     }
@@ -268,7 +259,7 @@ public class SignBookService {
     }
 
     public void pendingSignBook(SignBook signBook, User user) {
-        if(!getStatus(signBook).equals(SignRequestStatus.pending)) {
+        if(!signBook.getStatus().equals(SignRequestStatus.pending)) {
             setNextRecipients(signBook);
             updateStatus(signBook, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signBook.getComment());
             for(SignRequest signRequest : signBook.getSignRequests()) {
@@ -294,7 +285,7 @@ public class SignBookService {
         log.setSignRequestId(signBook.getId());
         log.setEppn(user.getEppn());
         log.setIp(user.getIp());
-        log.setInitialStatus(getStatus(signBook).toString());
+        log.setInitialStatus(signBook.getStatus().toString());
         log.setLogDate(new Date());
         log.setAction(action);
         log.setReturnCode(returnCode);
@@ -308,7 +299,7 @@ public class SignBookService {
             log.setFinalStatus(signRequestStatus.toString());
             signBook.setStatus(signRequestStatus);
         } else {
-            log.setFinalStatus(getStatus(signBook).toString());
+            log.setFinalStatus(signBook.getStatus().toString());
         }
         logRepository.save(log);
     }
@@ -321,18 +312,6 @@ public class SignBookService {
         }
     }
 
-    public SignRequestStatus getStatus(SignBook signBook) {
-        for(SignRequest signRequest : signBook.getSignRequests()) {
-            if(signRequest.getStatus().equals(SignRequestStatus.refused)) {
-                return SignRequestStatus.refused;
-            }
-        }
-        if(signBook.getCurrentWorkflowStepNumber() <= signBook.getWorkflowSteps().size() && signBook.getRealStatus().equals(SignRequestStatus.pending) || signBook.getRealStatus().equals(SignRequestStatus.draft)) {
-            return signBook.getRealStatus();
-        }
-        return SignRequestStatus.completed;
-    }
-
     public void delete(SignBook signBook) {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         workflowSteps.addAll(signBook.getWorkflowSteps());
@@ -343,4 +322,12 @@ public class SignBookService {
         signBookRepository.delete(signBook);
     }
 
+    public void refuse(SignBook signBook, String comment, User user) {
+        mailService.sendRefusedMail(signBook);
+        updateStatus(signBook, SignRequestStatus.refused, "Au moins un document a été refusé", user, "SUCCESS", comment);
+        signBookRepository.save(signBook);
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", user, "SUCCESS", signRequest.getComment());
+        }
+    }
 }

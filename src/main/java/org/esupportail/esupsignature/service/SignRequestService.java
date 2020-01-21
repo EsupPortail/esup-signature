@@ -164,7 +164,7 @@ public class SignRequestService {
 						throw new EsupSignatureIOException("unable to open multipart inputStream", e);
 					}
 				}
-				String docName = documentService.getFormatedName(multipartFile.getOriginalFilename(), signRequest.getOriginalDocuments().size(), false);
+				String docName = documentService.getFormatedName(multipartFile.getOriginalFilename(), signRequest.getOriginalDocuments().size());
 				Document document = documentService.createDocument(new FileInputStream(file), docName, multipartFile.getContentType());
 				signRequest.getOriginalDocuments().add(document);
 				document.setParentId(signRequest.getId());
@@ -325,7 +325,7 @@ public class SignRequestService {
 	}
 
 	public Document addSignedFile(SignRequest signRequest, InputStream signedInputStream, String originalName, String mimeType) throws IOException {
-		String docName = documentService.getFormatedName(originalName, signRequest.getOriginalDocuments().size() + 1, true);
+		String docName = documentService.getSignedName(originalName);
 		Document document = documentService.createDocument(signedInputStream, docName, mimeType);
 		signRequest.getSignedDocuments().add(document);
 		document.setParentId(signRequest.getId());
@@ -338,7 +338,7 @@ public class SignRequestService {
 			if (signBookService.isStepDone(signRequest.getParentSignBook())) {
 				getCurrentRecipients(signRequest).put(user.getId(), true);
 				signBookService.nextWorkFlowStep(signRequest.getParentSignBook(), user);
-				if (signBookService.getStatus(signRequest.getParentSignBook()).equals(SignRequestStatus.completed)) {
+				if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed)) {
 					if(!signRequest.getParentSignBook().getCreateBy().equals("Scheduler")) {
 						mailService.sendCompletedMail(signRequest.getParentSignBook());
 					}
@@ -491,9 +491,10 @@ public class SignRequestService {
 	}
 
 	public void refuse(SignRequest signRequest, User user) {
-		updateStatus(signRequest, SignRequestStatus.refused, "Refusé", user, "SUCCESS", signRequest.getComment());
 		if(signRequest.getParentSignBook() != null) {
-			mailService.sendRefusedMail(signRequest.getParentSignBook());
+			signBookService.refuse(signRequest.getParentSignBook(), signRequest.getComment(), user);
+		} else {
+			updateStatus(signRequest, SignRequestStatus.refused, "Refusé", user, "SUCCESS", signRequest.getComment());
 		}
 	}
 

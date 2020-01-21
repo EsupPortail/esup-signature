@@ -169,7 +169,7 @@ public class SignBookController {
                 model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
                 model.addAttribute("documentId", toDisplayDocument.getId());
             }
-            if (signBookService.getStatus(signRequest.getParentSignBook()).equals(SignRequestStatus.pending) && signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
+            if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) && signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
                 model.addAttribute("signable", "ok");
                 if(!signRequestService.getCurrentSignType(signRequest).equals(SignType.visa)
                         && user.getSignImage() != null
@@ -194,48 +194,6 @@ public class SignBookController {
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("signRequestId", signRequestId);
         return "user/signbooks/show";
-    }
-
-    @RequestMapping(value = "/sign/{id}", method = RequestMethod.POST)
-    public void sign(
-            @PathVariable("id") Long id,
-            @RequestParam(value = "comment", required = false) String comment,
-            @RequestParam(value = "password", required = false) String password, HttpServletRequest request) throws IOException, EsupSignatureException {
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        float nbSigned = 0;
-        progress = "0";
-        SignBook signBook = signBookRepository.findById(id).get();
-        for (SignRequest signRequest : signBook.getSignRequests()) {
-            if (signRequestService.checkUserSignRights(user, signRequest) && signRequest.getStatus().equals(SignRequestStatus.pending)) {
-                if (!"".equals(password)) {
-                    setPassword(password);
-                }
-                signRequestService.sign(signRequest, user,this.password, false, false);
-//                try {
-//                    if (signBookService.getCurrentWorkflowStep(signBook).getSignType().equals(SignType.visa)) {
-//                        signRequestService.updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", comment);
-//                    } else if (signBookService.getCurrentWorkflowStep(signBook).getSignType().equals(SignType.nexuSign)) {
-//                        logger.error("no multiple nexu sign");
-//                        progress = "not_autorized";
-//                    } else {
-//                        signRequestService.sign(signRequest, user, this.password, false, false);
-//                    }
-//                } catch (EsupSignatureKeystoreException e) {
-//                    logger.error("keystore error", e);
-//                    progress = "security_bad_password";
-//                    break;
-//                } catch (EsupSignatureException e) {
-//                    logger.error(e.getMessage(), e);
-//                }
-            } else {
-                logger.error("not autorized to sign");
-                progress = "not_autorized";
-            }
-            nbSigned++;
-            float percent = (nbSigned / signBook.getSignRequests().size()) * 100;
-            progress = String.valueOf((int) percent);
-        }
     }
 
     @ResponseBody

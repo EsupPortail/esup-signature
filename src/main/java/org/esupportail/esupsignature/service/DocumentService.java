@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.BigFile;
 import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.BigFileRepository;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.service.file.FileService;
@@ -66,7 +67,7 @@ public class DocumentService {
 		documentRepository.delete(document);
 	}
 
-	public String getFormatedName(String originalName, int order, boolean signed) {
+	public String getFormatedName(String originalName, int order) {
 		String name = "";
 		name += String.format("%02d", order);
 		name += "_";
@@ -74,9 +75,15 @@ public class DocumentService {
 		name += format.format(new Date());
 		name += "_";
 		name += fileService.getNameOnly(originalName).replaceAll(" ", "-");
-		if(signed) {
-			name += "_signed";
-		}
+		name += "." + fileService.getExtension(originalName);
+		return name;
+	}
+
+	public String getSignedName(String originalName) {
+		String name = "";
+		name += fileService.getNameOnly(originalName).replaceAll(" ", "-");
+		name += "_signed";
+		name += "_";
 		name += "." + fileService.getExtension(originalName);
 		return name;
 	}

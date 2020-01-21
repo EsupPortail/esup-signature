@@ -225,7 +225,7 @@ public class SignBook {
         this.comment = comment;
     }
 
-    public SignRequestStatus getRealStatus() {
+    public SignRequestStatus getStatus() {
         return status;
     }
 
