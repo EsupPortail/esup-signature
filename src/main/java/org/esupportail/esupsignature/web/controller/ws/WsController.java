@@ -200,6 +200,7 @@ public class WsController {
 //                signRequestService.scanSignatureFields(signRequest.getOriginalDocuments().get(0).getInputStream());
 //            }
 //        }
+        signBookService.nextWorkFlowStep(signBook);
         signBookService.pendingSignBook(signBook, userService.getSystemUser());
         return signBook.getSignRequests().get(0).getToken();
     }

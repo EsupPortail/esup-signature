@@ -365,7 +365,8 @@ public class SignBookController {
         SignBook signBook = signBookRepository.findById(id).get();
         if (signBookService.checkUserViewRights(user, signBook)) {
             Workflow workflow = workflowRepository.findById(workflowSignBookId).get();
-            signBookService.importWorkflow(signBook, workflow, user);
+            signBookService.importWorkflow(signBook, workflow);
+            signBookService.nextWorkFlowStep(signBook);
             signBookService.pendingSignBook(signBook, user);
         }
         return "redirect:/user/signbooks/" + id + "/?form";

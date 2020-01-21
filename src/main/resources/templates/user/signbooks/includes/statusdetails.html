@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<div th:fragment="statusdetails2">
+<div th:fragment="statusdetails">
 	<div th:if="${user.eppn == signRequest.createBy}">
 		<div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
 			<div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.currentWorkflowStep.recipients.size() == 0}">
@@ -24,13 +24,23 @@
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'pending'}">
-		<div class="alert alert-primary mb-1">
-			<h6 class="alert-heading">
-				Le document est en cours de signature
-			</h6>
-			<div th:if="${signable == 'ok'}">
-				Vous devez signer cette demande
-			</div>
+		<div class="alert alert-dark mb-1">
+			<h5 class="alert-heading">
+				Le document est en cours de signature par :
+			</h5>
+			<table class="table table-sm table-bordered">
+				<th:block th:each="recipient : ${@signBookService.getCurrentWorkflowStep(signRequest.parentSignBook).recipients}">
+					<tr>
+						<td width="100%" th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>
+						<td align="center">
+							<div th:switch="${recipient.signed}">
+								<i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
+								<i title="n'a pas signé le document" th:case="false" class="fas fa-exclamation-circle text-danger"></i>
+							</div>
+						</td>
+					</tr>
+				</th:block>
+			</table>
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked'}">

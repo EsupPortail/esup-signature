@@ -147,7 +147,8 @@ public class WorkflowService {
                         signRequest.setParentSignBook(signBook);
                         signRequestRepository.save(signRequest);
                         signBook.getSignRequests().add(signRequest);
-                        signBookService.importWorkflow(signBook, workflow, user);
+                        signBookService.importWorkflow(signBook, workflow);
+                        signBookService.nextWorkFlowStep(signBook);
                         signBookService.pendingSignBook(signBook, user);
                         fsAccessService.remove(fsFile);
                     }
@@ -240,6 +241,15 @@ public class WorkflowService {
             }
             workflowStep.setRecipientsNames(signBookNames);
         }
+    }
+
+    public boolean isWorkflowStepFullSigned(WorkflowStep workflowStep) {
+        for(Recipient recipient : workflowStep.getRecipients()) {
+            if(!recipient.getSigned()) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

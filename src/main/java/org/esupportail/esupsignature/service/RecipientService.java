@@ -27,6 +27,10 @@ public class RecipientService {
         return recipients.stream().filter(recipient -> recipient.getUser().equals(user)).collect(Collectors.toList()).get(0);
     }
 
+    public boolean needSign(List<Recipient> recipients, User user) {
+        return !recipients.stream().filter(recipient -> recipient.getUser().equals(user)).collect(Collectors.toList()).get(0).getSigned();
+    }
+
     public void validateRecipient(List<Recipient> recipients, User user) {
         Recipient validateRecipient = recipients.stream().filter(recipient -> recipient.getUser().equals(user)).collect(Collectors.toList()).get(0);
         validateRecipient.setSigned(true);

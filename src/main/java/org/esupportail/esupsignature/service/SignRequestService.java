@@ -212,19 +212,18 @@ public class SignRequestService {
 		for(Recipient recipient : recipients) {
 			signRequest.getRecipients().add(recipientService.createRecipient(signRequest.getId(), recipient.getUser()));
 		}
-
 		signRequestRepository.save(signRequest);
 	}
 
 	public void addRecipients(SignRequest signRequest, User user) {
-		signRequest.getRecipients().add(recipientService.createRecipient(signRequest.getId(), user));
+		Recipient recipient = recipientService.createRecipient(signRequest.getId(), user);
+		signRequest.getRecipients().add(recipient);
 		signRequestRepository.save(signRequest);
 	}
 
 	public void pendingSignRequest(SignRequest signRequest, SignType signType, User user) {
 		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
 			signRequest.setSignType(signType);
-			signRequest.getRecipients().clear();
 			signRequest.setCurrentStepNumber(signRequest.getCurrentStepNumber() + 1);
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 			sendEmailAlerts(signRequest);
@@ -349,10 +348,12 @@ public class SignRequestService {
 	}
 
 	public void applyEndOfStepRules(SignRequest signRequest, User user) throws EsupSignatureException {
+		recipientService.validateRecipient(signRequest.getRecipients(), user);
 		if(signRequest.getParentSignBook() != null) {
-			recipientService.validateRecipient(signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook()).getRecipients(), user);
+			WorkflowStep currentWorkflowStep = signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook());
+			recipientService.validateRecipient(currentWorkflowStep.getRecipients(), user);
 			if (signBookService.isStepDone(signRequest.getParentSignBook())) {
-				if (!signBookService.nextWorkFlowStep(signRequest.getParentSignBook(), user)) {
+				if (!signBookService.nextWorkFlowStep(signRequest.getParentSignBook())) {
 					if(!signRequest.getParentSignBook().getCreateBy().equals("Scheduler")) {
 						mailService.sendCompletedMail(signRequest.getParentSignBook());
 					}
@@ -360,9 +361,10 @@ public class SignRequestService {
 				} else {
 					signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
 				}
+			} else {
+				updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 			}
 		} else {
-			recipientService.validateRecipient(signRequest.getRecipients(), user);
 			if(recipientService.checkFalseRecipients(signRequest.getRecipients()) == 0 || !signRequest.getAllSignToComplete()) {
 				completeSignRequest(signRequest, user);
 			}
@@ -509,6 +511,10 @@ public class SignRequestService {
 		} else {
 			updateStatus(signRequest, SignRequestStatus.refused, "Refusé", user, "SUCCESS", signRequest.getComment());
 		}
+	}
+
+	public boolean needToSign(SignRequest signRequest, User user) {
+		return recipientService.needSign(signRequest.getRecipients(), user);
 	}
 
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {

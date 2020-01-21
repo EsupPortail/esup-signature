@@ -242,7 +242,10 @@ public class SignRequestController {
         }
         model.addAttribute("signRequest", signRequest);
         if ((signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest))) {
-            if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
+            if (signRequest.getStatus().equals(SignRequestStatus.pending)
+                    && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0
+                    && signRequestService.needToSign(signRequest, user)
+            ) {
                 model.addAttribute("signable", "ok");
                 model.addAttribute("nexuUrl", nexuUrl);
             }

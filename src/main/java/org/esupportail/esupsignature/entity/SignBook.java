@@ -69,7 +69,7 @@ public class SignBook {
     @OrderColumn
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
-    private Integer currentWorkflowStepNumber = 1;
+    private Integer currentWorkflowStepNumber = 0;
 
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;

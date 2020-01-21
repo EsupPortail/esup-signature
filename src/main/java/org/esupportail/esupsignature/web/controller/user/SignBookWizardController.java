@@ -102,11 +102,15 @@ public class SignBookWizardController {
             model.addAttribute("signBook", signBook);
             if (workflowId != null) {
                 Workflow workflow = workflowRepository.findById(workflowId).get();
-                signBookService.importWorkflow(signBook, workflow, user);
+                signBookService.importWorkflow(signBook, workflow);
+                signBookService.nextWorkFlowStep(signBook);
+                signBookService.pendingSignBook(signBook, user);
                 return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
             } else if(selfSign != null) {
                 Workflow workflow = workflowRepository.findByName("Ma signature").get(0);
-                signBookService.importWorkflow(signBook, workflow, user);
+                signBookService.importWorkflow(signBook, workflow);
+                signBookService.nextWorkFlowStep(signBook);
+                signBookService.pendingSignBook(signBook, user);
                 return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
             }
             model.addAttribute("workflowStepForm", true);
@@ -136,7 +140,7 @@ public class SignBookWizardController {
             model.addAttribute("signTypes", SignType.values());
         }
         if(end != null) {
-            logger.info("apply steps to signBook " + signBook.getName() + " - " + signBook.getId());
+            signBookService.nextWorkFlowStep(signBook);
             signBookService.pendingSignBook(signBook, user);
             return "redirect:/user/signbooks/wizard/wiz5/" + signBook.getId();
         }
@@ -171,7 +175,6 @@ public class SignBookWizardController {
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user.getEppn())) {
             model.addAttribute("signBook", signBook);
-            signBookService.pendingSignBook(signBook, user);
             return "user/signbooks/wizard/wizend";
         } else {
             throw new EsupSignatureException("not autorized");
