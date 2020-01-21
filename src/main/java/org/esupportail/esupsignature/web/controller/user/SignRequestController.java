@@ -334,13 +334,14 @@ public class SignRequestController {
 
     @RequestMapping(value = "/fast-sign-request", method = RequestMethod.POST)
     public String createSignRequest(@RequestParam("multipartFiles") MultipartFile[] multipartFiles,
-                                    @RequestParam("signType") SignType signType) throws EsupSignatureIOException, IOException {
+                                    @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
         logger.info("création rapide demande de signature");
         User user = userService.getUserFromAuthentication();
         if (multipartFiles != null) {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(),  user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
-            signRequestService.pendingSignRequest(signRequest, signType, user, user.getEmail());
+            signRequestService.addRecipients(signRequest, user);
+            signRequestService.pendingSignRequest(signRequest, signType, user);
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             logger.warn("no file to import");
@@ -561,7 +562,11 @@ public class SignRequestController {
             signRequest.getRecipients().clear();
             signRequestService.addRecipients(signRequest, recipientsEmail);
             signRequest.setSignType(signType);
-            signRequest.setAllSignToComplete(allSignToComplete);
+            if(allSignToComplete != null && allSignToComplete) {
+                signRequest.setAllSignToComplete(true);
+            } else {
+                signRequest.setAllSignToComplete(false);
+            }
         } else {
             logger.warn(user.getEppn() + " try to update signRiquets " + signRequest.getId() + " without rights");
         }

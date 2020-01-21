@@ -137,7 +137,7 @@ public class SignBookWizardController {
         }
         if(end != null) {
             logger.info("apply steps to signBook " + signBook.getName() + " - " + signBook.getId());
-            //signBookService.pendingSignBook(signBook, user);
+            signBookService.pendingSignBook(signBook, user);
             return "redirect:/user/signbooks/wizard/wiz5/" + signBook.getId();
         }
         model.addAttribute("signBook", signBook);

@@ -29,9 +29,19 @@
 			<h5 class="alert-heading">
 				Le document est en cours de signature par :
 			</h5>
-			<th:block th:each="recipient : ${@signRequestService.getCurrentRecipientsNames(signRequest)}">
-				<li th:text="${recipient.key}"></li>
+			<table class="table table-sm table-bordered">
+			<th:block th:each="recipient : ${signRequest.recipients}">
+				<tr>
+					<td width="100%" th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>
+					<td align="center">
+						<div th:switch="${recipient.signed}">
+							<i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
+							<i title="n'a pas signé le document" th:case="false" class="fas fa-exclamation-circle text-danger"></i>
+						</div>
+					</td>
+				</tr>
 			</th:block>
+			</table>
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'signed'}">

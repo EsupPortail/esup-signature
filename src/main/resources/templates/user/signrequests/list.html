@@ -158,14 +158,31 @@
                                     <td class="text-break" th:unless="${signRequest.parentSignBook != null}"></td>
                                     <td class="text-break"><span style="white-space: pre-line" th:text="${signRequest.viewTitle}"></span></td>
                                     <td class="d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                    <td class="d-none d-lg-table-cell">
+                                    <td th:if="${signRequest.parentSignBook != null}" class="d-none d-lg-table-cell">
                                         <table class="table table-sm">
                                             <tbody>
-                                            <th:block th:each="signBooksLabel : ${@signRequestService.getCurrentRecipientsNames(signRequest)}">
+                                            <th:block th:each="recipient : ${@signBookService.getCurrentWorkflowStep(signRequest.parentSignBook).recipients}">
                                                 <tr>
-                                                    <td width="100%" th:text="${signBooksLabel.key}"></td>
+                                                    <td width="100%" th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>
                                                     <td align="center">
-                                                        <div th:switch="${signBooksLabel.value}">
+                                                        <div th:switch="${recipient.signed}">
+                                                            <i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
+                                                            <i title="n'a pas signé le document" th:case="false" class="fas fa-exclamation-circle text-danger"></i>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </th:block>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                    <td th:if="${signRequest.parentSignBook == null}" class="d-none d-lg-table-cell">
+                                        <table class="table table-sm">
+                                            <tbody>
+                                            <th:block th:each="recipient : ${signRequest.recipients}">
+                                                <tr>
+                                                    <td width="100%" th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>
+                                                    <td align="center">
+                                                        <div th:switch="${recipient.signed}">
                                                             <i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
                                                             <i title="n'a pas signé le document" th:case="false" class="fas fa-exclamation-circle text-danger"></i>
                                                         </div>
@@ -193,6 +210,9 @@
                                     </td>
                                     <td class="utilbox" th:if="${signRequest.parentSignBook == null && (signRequest.status.name() == 'draft' || signRequest.status.name() == 'pending')}">
                                         <button class="btn btn-warning" title="Modifier" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '?form\''"><i class="fas fa-pen"></i></button>
+                                    </td>
+                                    <td class="utilbox" th:if="${signRequest.parentSignBook == null && !(signRequest.status.name() == 'draft' || signRequest.status.name() == 'pending')}">
+                                        <button class="btn btn-outline-secondary" title="Modifier" disabled><i class="fas fa-pen"></i></button>
                                     </td>
                                     <td class="utilbox" th:if="${signRequest.parentSignBook != null}">
                                         <form class="delete" th:action="'/user/signbooks/' + ${signRequest.parentSignBook.id}" method="post">

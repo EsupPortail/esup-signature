@@ -207,13 +207,25 @@ public class SignRequestService {
 		signRequestRepository.save(signRequest);
 	}
 
-	public void pendingSignRequest(SignRequest signRequest, SignType signType, User user, String... recipientsEmail) {
+	public void addRecipients(SignRequest signRequest, List<Recipient> recipients) {
+		signRequest.getRecipients().clear();
+		for(Recipient recipient : recipients) {
+			signRequest.getRecipients().add(recipientService.createRecipient(signRequest.getId(), recipient.getUser()));
+		}
+
+		signRequestRepository.save(signRequest);
+	}
+
+	public void addRecipients(SignRequest signRequest, User user) {
+		signRequest.getRecipients().add(recipientService.createRecipient(signRequest.getId(), user));
+		signRequestRepository.save(signRequest);
+	}
+
+	public void pendingSignRequest(SignRequest signRequest, SignType signType, User user) {
 		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
 			signRequest.setSignType(signType);
 			signRequest.getRecipients().clear();
 			signRequest.setCurrentStepNumber(signRequest.getCurrentStepNumber() + 1);
-			addRecipients(signRequest, recipientsEmail);
-			signRequestRepository.save(signRequest);
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 			sendEmailAlerts(signRequest);
 		} else {
@@ -238,12 +250,12 @@ public class SignRequestService {
 		} else {
 			certSign(signRequest, user, password, addDate, visual);
 		}
-		if(signType.equals(SignType.visa)) {
+		if (signType.equals(SignType.visa)) {
 			updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", signRequest.getComment());
 		} else {
 			updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
 		}
-		signRequestRepository.save(signRequest);
+		//signRequestRepository.save(signRequest);
 		step = "Paramétrage de la prochaine étape";
 		applyEndOfStepRules(signRequest, user);
 	}
@@ -338,18 +350,15 @@ public class SignRequestService {
 
 	public void applyEndOfStepRules(SignRequest signRequest, User user) throws EsupSignatureException {
 		if(signRequest.getParentSignBook() != null) {
+			recipientService.validateRecipient(signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook()).getRecipients(), user);
 			if (signBookService.isStepDone(signRequest.getParentSignBook())) {
-				getCurrentRecipients(signRequest).add(recipientService.createRecipient(signRequest.getId(), user));
-				signBookService.nextWorkFlowStep(signRequest.getParentSignBook(), user);
-				if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed)) {
+				if (!signBookService.nextWorkFlowStep(signRequest.getParentSignBook(), user)) {
 					if(!signRequest.getParentSignBook().getCreateBy().equals("Scheduler")) {
 						mailService.sendCompletedMail(signRequest.getParentSignBook());
 					}
 					signBookService.completeSignBook(signRequest.getParentSignBook(), user);
 				} else {
-					for (SignRequest childSignRequest : signRequest.getParentSignBook().getSignRequests()) {
-						updateStatus(childSignRequest, SignRequestStatus.pending, "Passage à l'étape " + signRequest.getParentSignBook().getCurrentWorkflowStepNumber(), user, "SUCCESS", "");
-					}
+					signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
 				}
 			}
 		} else {
@@ -375,7 +384,7 @@ public class SignRequestService {
 
 	public String completeSignRequests(List<SignRequest> signRequests, DocumentIOType documentIOType, String targetUri, User user) throws EsupSignatureException {
 		String result = "";
-		if(documentIOType != null) {
+		if(documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
 			result = sendSignRequestsToTarget("Demande terminée", signRequests, documentIOType, targetUri);
 		} else {
 			for(SignRequest signRequest : signRequests) {
@@ -491,6 +500,7 @@ public class SignRequestService {
 			log.setFinalStatus(signRequest.getStatus().toString());
 		}
 		logRepository.save(log);
+		//signRequestRepository.save(signRequest);
 	}
 
 	public void refuse(SignRequest signRequest, User user) {

@@ -10,9 +10,15 @@
                         <th:block th:each="workflowStep,iterator : ${signRequest.parentSignBook.workflowSteps}">
                             <div class="step" th:name="'step_' + ${iterator.index}" th:data-target="'#step_' + ${iterator.index}">
                                 <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab" aria-selected="false" style="border: 2px solid #555555;">
-                                    <span th:if="${iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle bg-primary"><i class="fa fa-play"></i></span>
-                                    <span th:if="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle"><i class="fa fa-pause"></i></span>
-                                    <span th:unless="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber || iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle bg-success"><i class="fa fa-check"></i></span>
+                                    <span th:if="${iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle bg-primary">
+                                        <i class="fa fa-play"></i>
+                                    </span>
+                                    <span th:if="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle">
+                                        <i class="fa fa-pause"></i>
+                                    </span>
+                                    <span th:unless="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber || iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle bg-success">
+                                        <i class="fa fa-check"></i>
+                                    </span>
                                     <div class="bs-stepper-label">
                                         <span  th:text="'Etape ' + ${iterator.index + 1}"></span>
                                         <br/>

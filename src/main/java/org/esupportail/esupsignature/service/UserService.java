@@ -132,6 +132,7 @@ public class UserService {
 	public void sendEmailAlert(User user) {
 		Date date = new Date();
 		List<SignRequest> signRequests = signRequestService.getToSignRequests(user);
+		signRequests = signRequests.stream().filter(signRequest -> !signRequest.getCreateBy().equals(user.getEppn())).collect(Collectors.toList());
 		if(signRequests.size() > 0) {
 			mailService.sendSignRequestAlert(user.getEmail(), signRequests);
 		}
