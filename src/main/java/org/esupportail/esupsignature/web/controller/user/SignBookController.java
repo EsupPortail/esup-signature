@@ -142,10 +142,16 @@ public class SignBookController {
     public String updateForm(@PathVariable("id") Long id, Model model) {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
-        workflowService.setWorkflowsLabels(signBook.getWorkflowSteps());
-        model.addAttribute("signBook", signBook);
-        model.addAttribute("signTypes", SignType.values());
-        return "user/signbooks/update";
+        if(signBookService.checkUserManageRights(user , signBook)) {
+            workflowService.setWorkflowsLabels(signBook.getWorkflowSteps());
+            List<Log> logs = logRepository.findBySignRequestId(signBook.getId());
+            model.addAttribute("logs", logs);
+            model.addAttribute("signBook", signBook);
+            model.addAttribute("signTypes", SignType.values());
+            return "user/signbooks/update";
+        } else {
+            return "redirect:/";
+        }
 
     }
 

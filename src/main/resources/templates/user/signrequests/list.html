@@ -185,13 +185,13 @@
                                         <a th:if="${signRequest.parentSignBook != null}" class="btn btn-info" title="ouvrir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="fas fa-book"></i> </a>
                                         <a th:unless="${signRequest.parentSignBook != null}" class="btn btn-info" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="far fa-eye"></i> </a>
                                     </td>
-                                    <td class="utilbox" th:if="${signRequest.parentSignBook != null && signRequest.status.name() == 'draft'}">
+                                    <td class="utilbox" th:if="${signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() == 'draft' || signRequest.parentSignBook.status.name() == 'pending')}">
                                         <button class="btn btn-warning" title="Modifier" th:onclick="'location.href=\'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form\''"><i class="fas fa-pen"></i></button>
                                     </td>
-                                    <td class="utilbox" th:unless="${signRequest.parentSignBook != null && signRequest.status.name() == 'draft'}">
+                                    <td class="utilbox" th:if="${signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() != 'draft' && signRequest.parentSignBook.status.name() != 'pending')}">
                                         <button class="btn btn-outline-secondary" title="Modifier" disabled><i class="fas fa-pen"></i></button>
                                     </td>
-                                    <td class="utilbox" th:if="${signRequest.parentSignBook == null && signRequest.status.name() == 'draft'}">
+                                    <td class="utilbox" th:if="${signRequest.parentSignBook == null && (signRequest.status.name() == 'draft' || signRequest.status.name() == 'pending')}">
                                         <button class="btn btn-warning" title="Modifier" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '?form\''"><i class="fas fa-pen"></i></button>
                                     </td>
                                     <td class="utilbox" th:if="${signRequest.parentSignBook != null}">

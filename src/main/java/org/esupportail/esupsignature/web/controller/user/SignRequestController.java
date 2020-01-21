@@ -203,9 +203,10 @@ public class SignRequestController {
             Document toDisplayDocument = null;
             List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
             logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
-
             model.addAttribute("logs", logs);
             model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
+            List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
+            model.addAttribute("refuseLogs", refuseLogs);
             if (user.getSignImage() != null) {
                 model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
             }
@@ -550,7 +551,7 @@ public class SignRequestController {
     }
 
     @PostMapping(value = "/add-recipients/{id}")
-    public String pending(@PathVariable("id") Long id,
+    public String addRecipients(@PathVariable("id") Long id,
                           @RequestParam(value = "recipientsEmail", required = false) String[] recipientsEmail,
                           @RequestParam(name = "signType") SignType signType,
                           @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) {
@@ -560,7 +561,7 @@ public class SignRequestController {
             signRequest.getRecipients().clear();
             signRequestService.addRecipients(signRequest, Arrays.asList(recipientsEmail));
             signRequest.setSignType(signType);
-            signRequest.setAllSignToComplete(false);
+            signRequest.setAllSignToComplete(allSignToComplete);
         } else {
             logger.warn(user.getEppn() + " try to update signRiquets " + signRequest.getId() + " without rights");
         }

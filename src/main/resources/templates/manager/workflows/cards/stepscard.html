@@ -86,7 +86,7 @@
                                                                                 .then(function (json) {
                                                                                     let data = []
                                                                                     for (let i = 0; i < json.length; i++) {
-                                                                                        data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
+                                                                                        data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: json[i].mail});
                                                                                     }
                                                                                     callback(data)
                                                                                 })

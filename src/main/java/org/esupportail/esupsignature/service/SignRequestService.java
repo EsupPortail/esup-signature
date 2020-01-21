@@ -587,6 +587,20 @@ public class SignRequestService {
 		}
 	}
 
+	//For thymeleaf
+	public Map<String, Boolean> getCurrentRecipientsEmails(SignRequest signRequest) {
+		if(signRequest.getParentSignBook() != null) {
+			workflowStepService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
+			return signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook()).getRecipientsNames();
+		} else {
+			Map<String, Boolean> signBookNames = new HashMap<>();
+			for (Map.Entry<Long, Boolean> userMap : signRequest.getRecipients().entrySet()) {
+				signBookNames.put(userRepository.findById(userMap.getKey()).get().getEmail(), userMap.getValue());
+			}
+			return signBookNames;
+		}
+	}
+
 	public Map<Long, Boolean> getCurrentRecipients(SignRequest signRequest) {
 		if(signRequest.getParentSignBook() != null) {
 			return signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook()).getRecipients();

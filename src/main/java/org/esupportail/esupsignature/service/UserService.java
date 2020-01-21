@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.spel.spi.EvaluationContextExtension;
 import org.springframework.data.spel.spi.Function;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.access.method.P;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -162,19 +163,26 @@ public class UserService {
 	}
 
 	public List<PersonLdap> getPersonLdaps(@RequestParam("searchString") String searchString, @RequestParam(required = false) String ldapTemplateName) {
-		List<PersonLdap> ldapList = new ArrayList<>();
+		List<PersonLdap> personLdaps = new ArrayList<>();
 		List<User> users = new ArrayList<>();
 		addAllUnique(users, userRepository.findByEppnStartingWith(searchString));
 		addAllUnique(users, userRepository.findByNameStartingWith(searchString));
 		addAllUnique(users, userRepository.findByEmailStartingWith(searchString));
 		for (User user : users) {
-			ldapList.add(getPersonLdapFromUser(user));
+			personLdaps.add(getPersonLdapFromUser(user));
 		}
 		if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
 			List<PersonLdap> ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
-			ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
+			List<PersonLdap> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
+			for(PersonLdap personLdapList : ldapList) {
+				if(personLdaps.stream().filter(personLdap -> personLdap.getMail().equals(personLdapList.getMail())).count() > 0) {
+					continue;
+				} else {
+					personLdaps.add(personLdapList);
+				}
+			}
 		}
-		return ldapList;
+		return personLdaps;
 	}
 
 	public void addAllUnique(List<User> users, List<User> usersToAdd) {
@@ -187,7 +195,7 @@ public class UserService {
 
 	public PersonLdap getPersonLdapFromUser(User user) {
 		PersonLdap personLdap = new PersonLdap();
-		personLdap.setUid(user.getEmail());
+		personLdap.setUid(user.getEppn());
 		personLdap.setDisplayName(user.getFirstname() + " " + user.getName());
 		personLdap.setMail(user.getEmail());
 		personLdap.setEduPersonPrincipalName(user.getEppn());

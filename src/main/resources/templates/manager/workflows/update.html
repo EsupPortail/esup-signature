@@ -51,40 +51,6 @@
                                 <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
                             </th:block>
                         </select>
-                        <script type="text/javascript">
-                            new SlimSelect({
-                                select: '#managersSelect',
-                                placeholder: 'Choisir un ou plusieurs utilisateurs',
-                                searchText: 'Aucun résultat',
-                                searchPlaceholder: 'Rechercher',
-                                searchHighlight: true,
-                                searchFilter: (option, search) => {
-                                    return true;
-                                },
-                                ajax: function (search, callback) {
-                                    if (search.length < 3) {
-                                        callback('Merci de saisir au moins 3 caractères')
-                                        return
-                                    } else {
-                                        fetch('/ws/searchUser?searchString=' + search)
-                                            .then(function (response) {
-                                                return response.json()
-                                            })
-                                            .then(function (json) {
-                                                let data = []
-                                                for (let i = 0; i < json.length; i++) {
-                                                    data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
-                                                }
-                                                callback(data)
-                                            })
-                                            .catch(function (error) {
-                                                callback(false)
-                                            })
-                                    }
-                                }
-
-                            });
-                        </script>
                     </div>
                     <div class="form-group">
                         <label for="_sourceType_id">
@@ -152,8 +118,8 @@
             targetUri.style.display = "none";
         }
     };
-
-
+</script>
+<script type="text/javascript">
     new SlimSelect({
         select: '#managersSelect',
         placeholder: 'Choisir un ou plusieurs utilisateurs',
@@ -165,23 +131,24 @@
         },
         ajax: function (search, callback) {
             if (search.length < 3) {
-                callback('Merci de saisir au moins 3 caractères')
-                return
+                callback('Merci de saisir au moins 3 caractères');
+                return;
+            } else {
+                fetch('/ws/searchUser?searchString=' + search)
+                    .then(function (response) {
+                        return response.json();
+                    })
+                    .then(function (json) {
+                        let data = [];
+                        for (let i = 0; i < json.length; i++) {
+                            data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: json[i].mail});
+                        }
+                        callback(data);
+                    })
+                    .catch(function (error) {
+                        callback(false);
+                    })
             }
-            fetch('/user/users/searchUser?searchString=' + search)
-                .then(function (response) {
-                    return response.json()
-                })
-                .then(function (json) {
-                    let data = []
-                    for (let i = 0; i < json.length; i++) {
-                        data.push({text: json[i].displayName, value: json[i].mail});
-                    }
-                    callback(data)
-                })
-                .catch(function (error) {
-                    callback(false)
-                })
         }
 
     });

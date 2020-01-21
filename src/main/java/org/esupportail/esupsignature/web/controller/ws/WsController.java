@@ -492,7 +492,6 @@ public class WsController {
         return result;
     }
 
-    //TODO refactor with UserController
     @ResponseBody
     @RequestMapping(value = "/searchUser")
     public List<PersonLdap> searchUser(@RequestParam(value = "searchString") String searchString, @RequestParam(required = false) String ldapTemplateName) {
