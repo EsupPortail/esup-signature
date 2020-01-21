@@ -3,7 +3,9 @@ package org.esupportail.esupsignature.entity;
 import org.esupportail.esupsignature.entity.enums.SignType;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Entity
@@ -18,8 +20,8 @@ public class WorkflowStep {
 
     private String name;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Map<Long, Boolean> recipients = new HashMap<>();
+    @OneToMany(cascade = CascadeType.REMOVE)
+    private List<Recipient> recipients = new ArrayList<>();
 
     transient Map<String, Boolean> recipientsNames;
 
@@ -52,11 +54,11 @@ public class WorkflowStep {
         this.version = version;
     }
 
-    public Map<Long, Boolean> getRecipients() {
+    public List<Recipient> getRecipients() {
         return recipients;
     }
 
-    public void setRecipients(Map<Long, Boolean> recipients) {
+    public void setRecipients(List<Recipient> recipients) {
         this.recipients = recipients;
     }
 
@@ -74,23 +76,6 @@ public class WorkflowStep {
 
     public void setSignType(SignType signType) {
         this.signType = signType;
-    }
-
-    public Boolean isCompleted() {
-        int nbSign = 0;
-        for (Map.Entry<Long, Boolean> signBookEntry : recipients.entrySet()) {
-            if(!allSignToComplete && signBookEntry.getValue()) {
-                return true;
-            }
-            if(signBookEntry.getValue()) {
-                nbSign++;
-            }
-        }
-        if(nbSign == recipients.size()) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public Map<String, Boolean> getRecipientsNames() {

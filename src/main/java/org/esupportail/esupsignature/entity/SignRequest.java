@@ -67,8 +67,8 @@ public class SignRequest {
     @OneToMany(cascade = CascadeType.REMOVE)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Map<Long, Boolean> recipients = new HashMap<>();
+    @OneToMany(cascade = CascadeType.REMOVE)
+    private List<Recipient> recipients = new ArrayList<>();
 
    	public void setStatus(SignRequestStatus status) {
         this.status = status;
@@ -198,11 +198,11 @@ public class SignRequest {
         this.currentStepNumber = currentStepNumber;
     }
 
-    public Map<Long, Boolean> getRecipients() {
+    public List<Recipient> getRecipients() {
         return recipients;
     }
 
-    public void setRecipients(Map<Long, Boolean> recipients) {
+    public void setRecipients(List<Recipient> recipients) {
         this.recipients = recipients;
     }
 

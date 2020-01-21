@@ -59,6 +59,12 @@ public class SignRequestService {
 	private LogRepository logRepository;
 
 	@Resource
+	private RecipientService recipientService;
+
+	@Resource
+	private RecipientRepository recipientRepository;
+
+	@Resource
 	private UserKeystoreService userKeystoreService;
 
 	@Resource
@@ -103,7 +109,7 @@ public class SignRequestService {
 	private String step = "";
 
 	public List<SignRequest> getToSignRequests(User user) {
-		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientsContains(user.getId());
+		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientUser(user);
 		signRequestsToSign = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
 		signRequestsToSign = signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 		return  signRequestsToSign;
@@ -188,7 +194,7 @@ public class SignRequestService {
 		return signRequestParamses;
 	}
 
-	public void addRecipients(SignRequest signRequest, List<String> recipientsEmail) {
+	public void addRecipients(SignRequest signRequest, String... recipientsEmail) {
 		for (String recipientEmail : recipientsEmail) {
 			User recipientUser;
 			if (userRepository.countByEmail(recipientEmail) == 0) {
@@ -196,20 +202,17 @@ public class SignRequestService {
 			} else {
 				recipientUser = userRepository.findByEmail(recipientEmail).get(0);
 			}
-			signRequest.getRecipients().put(recipientUser.getId(), false);
+			signRequest.getRecipients().add(recipientService.createRecipient(signRequest.getId(), recipientUser));
 		}
 		signRequestRepository.save(signRequest);
 	}
 
-	public void pendingSignRequest(SignRequest signRequest, List<String> recipientsEmail, SignType signType, User user) {
+	public void pendingSignRequest(SignRequest signRequest, SignType signType, User user, String... recipientsEmail) {
 		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
 			signRequest.setSignType(signType);
 			signRequest.getRecipients().clear();
 			signRequest.setCurrentStepNumber(signRequest.getCurrentStepNumber() + 1);
-			for(String recipientEmail : recipientsEmail) {
-				User recipientUser = userService.getUser(recipientEmail);
-				signRequest.getRecipients().put(recipientUser.getId(), false);
-			}
+			addRecipients(signRequest, recipientsEmail);
 			signRequestRepository.save(signRequest);
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 			sendEmailAlerts(signRequest);
@@ -336,7 +339,7 @@ public class SignRequestService {
 	public void applyEndOfStepRules(SignRequest signRequest, User user) throws EsupSignatureException {
 		if(signRequest.getParentSignBook() != null) {
 			if (signBookService.isStepDone(signRequest.getParentSignBook())) {
-				getCurrentRecipients(signRequest).put(user.getId(), true);
+				getCurrentRecipients(signRequest).add(recipientService.createRecipient(signRequest.getId(), user));
 				signBookService.nextWorkFlowStep(signRequest.getParentSignBook(), user);
 				if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed)) {
 					if(!signRequest.getParentSignBook().getCreateBy().equals("Scheduler")) {
@@ -350,16 +353,16 @@ public class SignRequestService {
 				}
 			}
 		} else {
-			getCurrentRecipients(signRequest).put(user.getId(), true);
-			if(!getCurrentRecipients(signRequest).values().contains(false) || !signRequest.getAllSignToComplete()) {
+			recipientService.validateRecipient(signRequest.getRecipients(), user);
+			if(recipientService.checkFalseRecipients(signRequest.getRecipients()) == 0 || !signRequest.getAllSignToComplete()) {
 				completeSignRequest(signRequest, user);
 			}
 		}
 	}
 
 	public void sendEmailAlerts(SignRequest signRequest) {
-		for (Long recipientId : signRequest.getRecipients().keySet()) {
-			User recipientUser = userRepository.findById(recipientId).get();
+		for (Recipient recipient : signRequest.getRecipients()) {
+			User recipientUser = recipient.getUser();
 			if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
 				userService.sendEmailAlert(recipientUser);
 			}
@@ -500,7 +503,7 @@ public class SignRequestService {
 
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {
 		if ((signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
-				&& getCurrentRecipients(signRequest).containsKey(user.getId())) {
+				&& recipientService.recipientsContainsUser(signRequest.getRecipients(), user) > 0) {
 			return true;
 		} else {
 			return false;
@@ -510,7 +513,7 @@ public class SignRequestService {
 	public boolean checkUserViewRights(User user, SignRequest signRequest) {
 		if(signRequest != null) {
 			List<Log> log = logRepository.findByEppnAndSignRequestId(user.getEppn(), signRequest.getId());
-			if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0 || getCurrentRecipients(signRequest).containsKey(user.getId())) {
+			if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0 || recipientService.recipientsContainsUser(signRequest.getRecipients(), user) > 0) {
 				return true;
 			}
 		}
@@ -580,8 +583,8 @@ public class SignRequestService {
 			return signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook()).getRecipientsNames();
 		} else {
 			Map<String, Boolean> signBookNames = new HashMap<>();
-			for (Map.Entry<Long, Boolean> userMap : signRequest.getRecipients().entrySet()) {
-				signBookNames.put(userRepository.findById(userMap.getKey()).get().getFirstname() + " " + userRepository.findById(userMap.getKey()).get().getName(), userMap.getValue());
+			for (Recipient recipient : signRequest.getRecipients()) {
+				signBookNames.put(recipient.getUser().getFirstname() + " " + recipient.getUser().getName(), recipient.getSigned());
 			}
 			return signBookNames;
 		}
@@ -594,14 +597,14 @@ public class SignRequestService {
 			return signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook()).getRecipientsNames();
 		} else {
 			Map<String, Boolean> signBookNames = new HashMap<>();
-			for (Map.Entry<Long, Boolean> userMap : signRequest.getRecipients().entrySet()) {
-				signBookNames.put(userRepository.findById(userMap.getKey()).get().getEmail(), userMap.getValue());
+			for (Recipient recipient : signRequest.getRecipients()) {
+				signBookNames.put(recipient.getUser().getEmail(), recipient.getSigned());
 			}
 			return signBookNames;
 		}
 	}
 
-	public Map<Long, Boolean> getCurrentRecipients(SignRequest signRequest) {
+	public List<Recipient> getCurrentRecipients(SignRequest signRequest) {
 		if(signRequest.getParentSignBook() != null) {
 			return signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook()).getRecipients();
 		} else {

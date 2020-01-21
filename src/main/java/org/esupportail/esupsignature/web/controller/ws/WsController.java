@@ -98,8 +98,8 @@ public class WsController {
         ObjectMapper mapper = new ObjectMapper();
         SignRequest signRequest = signRequestService.createSignRequest(title, user);
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
-        List<String> recipientsEmailList = mapper.readValue(recipientsEmail, List.class);
-        signRequestService.pendingSignRequest(signRequest, recipientsEmailList, signRequestService.getSignTypeByLevel(signLevel), user);
+        String[] recipientsEmailList = mapper.readValue(recipientsEmail, String[].class);
+        signRequestService.pendingSignRequest(signRequest, signRequestService.getSignTypeByLevel(signLevel), user, recipientsEmailList);
         logger.info("new signRequest created by " + user.getEppn());
         return signRequest.getToken();
     }
@@ -211,8 +211,8 @@ public class WsController {
         if (signRequestRepository.countByToken(token) > 0) {
             SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
             ObjectMapper mapper = new ObjectMapper();
-            List<String> recipientsEmailList = mapper.readValue(recipientsEmail, List.class);
-            signRequestService.pendingSignRequest(signRequest, recipientsEmailList, signRequestService.getSignTypeByLevel(signLevel), userService.getSystemUser());
+            String[] recipientsEmailList = mapper.readValue(recipientsEmail, String[].class);
+            signRequestService.pendingSignRequest(signRequest, signRequestService.getSignTypeByLevel(signLevel), userService.getSystemUser(), recipientsEmailList);
         }
     }
 
@@ -396,8 +396,8 @@ public class WsController {
                 SignRequest signRequest = signRequestRepository.findByToken(fileToken).get(0);
                 JsonSignInfoMessage jsonSignInfoMessage = new JsonSignInfoMessage();
                 jsonSignInfoMessage.setStatus(signRequest.getStatus().toString());
-                for (Long userId : signRequestService.getCurrentRecipients(signRequest).keySet()) {
-                    User user = userRepository.findById(userId).get();
+                for (Recipient recipient : signRequestService.getCurrentRecipients(signRequest)) {
+                    User user = recipient.getUser();
                     jsonSignInfoMessage.getNextRecipientNames().add(user.getName());
                     jsonSignInfoMessage.getNextRecipientEppns().add(user.getEppn());
                 }
@@ -419,8 +419,8 @@ public class WsController {
                 jsonSignInfoMessage.setStatus(signRequest.getStatus().toString());
                 if(signRequest.getParentSignBook().getWorkflowSteps().size() > 0 ) {
                     workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
-                    for (Long userId : signRequestService.getCurrentRecipients(signRequest).keySet()) {
-                        User user = userRepository.findById(userId).get();
+                    for (Recipient recipient : signRequestService.getCurrentRecipients(signRequest)) {
+                        User user = recipient.getUser();
                         jsonSignInfoMessage.getNextRecipientNames().add(user.getName());
                         jsonSignInfoMessage.getNextRecipientEppns().add(user.getEppn());
                     }

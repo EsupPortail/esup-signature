@@ -34,6 +34,9 @@ public class WorkflowService {
     private WorkflowRepository workflowRepository;
 
     @Resource
+    private RecipientService recipientService;
+
+    @Resource
     private WorkflowStepRepository workflowStepRepository;
 
     @Resource
@@ -74,8 +77,8 @@ public class WorkflowService {
             WorkflowStep workflowStep = new WorkflowStep();
             workflowStep.setName("Ma signature");
             workflowStep.setSignType(SignType.certSign);
-            workflowStep.getRecipients().put(creator.getId(), false);
             workflowStepRepository.save(workflowStep);
+            workflowStep.getRecipients().add(recipientService.createRecipient(workflowStep.getId(), creator));
             workflowWorkflow.getWorkflowSteps().add(workflowStep);
             workflowRepository.save(workflowWorkflow);
         }
@@ -206,7 +209,7 @@ public class WorkflowService {
             } else {
                 recipientUser = userRepository.findByEmail(recipientEmail).get(0);
             }
-            workflowStep.getRecipients().put(recipientUser.getId(), false);
+            workflowStep.getRecipients().add(recipientService.createRecipient(workflowStep.getId(), recipientUser));
         }
         workflowStepRepository.save(workflowStep);
     }
@@ -232,8 +235,8 @@ public class WorkflowService {
     public void setWorkflowsLabels(List<WorkflowStep> workflowSteps) {
         for(WorkflowStep workflowStep : workflowSteps) {
             Map<String, Boolean> signBookNames = new HashMap<>();
-            for (Map.Entry<Long, Boolean> userMap : workflowStep.getRecipients().entrySet()) {
-                signBookNames.put(userRepository.findById(userMap.getKey()).get().getFirstname() + " " + userRepository.findById(userMap.getKey()).get().getName(), userMap.getValue());
+            for (Recipient recipient : workflowStep.getRecipients()) {
+                signBookNames.put(recipient.getUser().getFirstname() + " " + recipient.getUser().getName(), recipient.getSigned());
             }
             workflowStep.setRecipientsNames(signBookNames);
         }

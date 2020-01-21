@@ -1,6 +1,9 @@
 package org.esupportail.esupsignature.repository;
 
+import org.esupportail.esupsignature.entity.Recipient;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,8 +18,9 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
 	Long countById(Long id);
     List<SignRequest> findByToken(String token);
     Long countByToken(String token);
-    @Query("select s from SignRequest s join s.recipients r where key(r) = :recipientId and value(r) is false")
-    List<SignRequest> findByRecipientsContains(@Param("recipientId") Long recipientId);
+    @Query("select s from SignRequest s join s.recipients r where r.user = :recipientUser and r.signed is false")
+    List<SignRequest> findByRecipientUser(@Param("recipientUser") User recipientUser);
+    List<SignRequest> findByRecipientsContains(Recipient recipients);
     Page<SignRequest> findByCreateBy(String createBy, Pageable pageable);
     Page<SignRequest> findByCreateByAndStatus(String createBy, SignRequestStatus status, Pageable pageable);
     Page<SignRequest> findByCreateByAndStatusNot(String createBy, SignRequestStatus statusNot, Pageable pageable);

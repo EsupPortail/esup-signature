@@ -37,6 +37,12 @@ public class SignBookService {
     private SignRequestService signRequestService;
 
     @Resource
+    private RecipientService recipientService;
+
+    @Resource
+    private RecipientRepository recipientRepository;
+
+    @Resource
     private UserRepository userRepository;
 
     @Resource
@@ -71,9 +77,10 @@ public class SignBookService {
 
     public List<SignBook> getTosignRequests(User user) {
         List<SignBook> signBooksToSign = new ArrayList<>();
-        List<WorkflowStep> workflowSteps = workflowStepRepository.findByRecipients(user.getId());
+        List<Recipient> recipients = recipientRepository.findByUser(user);
+        List<WorkflowStep> workflowSteps = workflowStepRepository.findByRecipients(recipients);
         for(WorkflowStep workflowStep : workflowSteps) {
-            if(!workflowStep.getRecipients().get(user.getId()) && signBookRepository.findByWorkflowStepsContains(workflowStep).size() > 0) {
+            if(!recipientService.getRecipientByUser(workflowStep.getRecipients(), user).getSigned() && signBookRepository.findByWorkflowStepsContains(workflowStep).size() > 0) {
                 SignBook signBook = signBookRepository.findByWorkflowStepsContains(workflowStep).get(0);
                 if (getCurrentWorkflowStep(signBook).equals(workflowStep) && signBook.getStatus().equals(SignRequestStatus.pending)) {
                     signBooksToSign.add(signBook);
@@ -138,17 +145,6 @@ public class SignBookService {
         signBookRepository.save(signBook);
     }
 
-    public boolean isUserInWorkflow(SignBook signBook, User user) {
-        if (getCurrentWorkflowStep(signBook) != null && getCurrentWorkflowStep(signBook).getRecipients().size() > 0) {
-            for (Map.Entry<Long, Boolean> userId : getCurrentWorkflowStep(signBook).getRecipients().entrySet()) {
-                if (userId.getKey().equals(user.getId())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     public boolean checkUserManageRights(User user, SignBook signBook) {
         if (signBook.getCreateBy().equals(user.getEppn()) || signBook.getCreateBy().equals("System")) {
             return true;
@@ -163,14 +159,17 @@ public class SignBookService {
             WorkflowStep newWorkflowStep = new WorkflowStep();
             newWorkflowStep.setSignType(workflowStep.getSignType());
             newWorkflowStep.setAllSignToComplete(workflowStep.isAllSignToComplete());
-            for(Long userId : workflowStep.getRecipients().keySet()){
-                User recipient = userRepository.findById(userId).get();
-                if(recipient.getEppn().equals("creator")) {
-                    recipient = userRepository.findByEmail(userService.getUserFromAuthentication().getEmail()).get(0);
-                }
-                newWorkflowStep.getRecipients().put(recipient.getId(), false);
-            }
             workflowStepRepository.save(newWorkflowStep);
+            for(Recipient recipient : workflowStep.getRecipients()){
+                User recipientUser;
+                if(recipient.getUser().getEppn().equals("creator")) {
+                    recipientUser = userRepository.findByEmail(userService.getUserFromAuthentication().getEmail()).get(0);
+                    newWorkflowStep.getRecipients().add(recipientService.createRecipient(newWorkflowStep.getId(), recipientUser));
+                } else {
+                    newWorkflowStep.getRecipients().add(recipient);
+                }
+
+            }
             signBook.getWorkflowSteps().add(newWorkflowStep);
         }
         signBook.setTargetType(workflow.getTargetType());
@@ -183,7 +182,7 @@ public class SignBookService {
         workflow = workflowService.createWorkflow(name, user, false);
         for(WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
             WorkflowStep toSaveWorkflowStep = new WorkflowStep();
-            toSaveWorkflowStep.getRecipients().putAll(workflowStep.getRecipients());
+            toSaveWorkflowStep.getRecipients().addAll(workflowStep.getRecipients());
             toSaveWorkflowStep.setSignType(workflowStep.getSignType());
             workflowStepRepository.save(toSaveWorkflowStep);
             workflow.getWorkflowSteps().add(toSaveWorkflowStep);
@@ -244,15 +243,16 @@ public class SignBookService {
     public void setNextRecipients(SignBook signBook) {
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequest.getRecipients().clear();
-            for(Map.Entry<Long, Boolean> recipient : getCurrentWorkflowStep(signBook).getRecipients().entrySet()) {
-                signRequest.getRecipients().put(recipient.getKey(), recipient.getValue());
+            for(Recipient recipient : getCurrentWorkflowStep(signBook).getRecipients()) {
+                signRequest.getRecipients().add(recipientService.createRecipient(signRequest.getId(), recipient.getUser()));
             }
+            //signRequest.getRecipients().addAll(getCurrentWorkflowStep(signBook).getRecipients());
             signRequestRepository.save(signRequest);
         }
     }
 
     public boolean checkUserViewRights(User user, SignBook signBook) {
-        if (signBook.getCreateBy().equals(user.getEppn()) || isUserInWorkflow(signBook, user)) {
+        if (signBook.getCreateBy().equals(user.getEppn()) || recipientService.recipientsContainsUser(getCurrentWorkflowStep(signBook).getRecipients(), user) > 0) {
             return true;
         }
         return false;
@@ -261,16 +261,18 @@ public class SignBookService {
     public void pendingSignBook(SignBook signBook, User user) {
         if(!signBook.getStatus().equals(SignRequestStatus.pending)) {
             setNextRecipients(signBook);
-            updateStatus(signBook, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signBook.getComment());
+            updateStatus(signBook, SignRequestStatus.pending, "Parapheur envoyé pour signature", user, "SUCCESS", signBook.getComment());
             for(SignRequest signRequest : signBook.getSignRequests()) {
-                signRequest.setStatus(SignRequestStatus.pending);
+                //signRequest.getRecipients().addAll(getCurrentWorkflowStep(signBook).getRecipients());
+                signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signBook.getComment());
+                signRequestRepository.save(signRequest);
             }
-            for (Long recipientId : getCurrentWorkflowStep(signBook).getRecipients().keySet()) {
-                User recipientUser = userRepository.findById(recipientId).get();
-                if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(User.EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
-                    userService.sendEmailAlert(recipientUser);
-                }
-            }
+//            for (Recipient recipient : getCurrentWorkflowStep(signBook).getRecipients()) {
+//                User recipientUser = recipient.getUser();
+//                if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(User.EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
+//                    userService.sendEmailAlert(recipientUser);
+//                }
+//            }
         } else {
             logger.warn("already pending");
         }

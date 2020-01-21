@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.*;
+import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
@@ -48,7 +49,10 @@ public class WorkflowManagerController {
 
 	@Resource
 	private UserRepository userRepository;
-	
+
+	@Resource
+	private RecipientService recipientService;
+
 	@Resource
 	private UserService userService;
 	
@@ -238,7 +242,7 @@ public class WorkflowManagerController {
 		for(String recipientEmail : recipientsEmail) {
 			if(userRepository.countByEmail(recipientEmail) > 0) {
 				User recipientUserToAdd = userRepository.findByEmail(recipientEmail).get(0);
-				workflowStep.getRecipients().put(recipientUserToAdd.getId(), false);
+				workflowStep.getRecipients().add(recipientService.createRecipient(workflowStep.getId(), recipientUserToAdd));
 			}
 		}
 		if(allSignToComplete ==null) {

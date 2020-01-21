@@ -340,7 +340,7 @@ public class SignRequestController {
         if (multipartFiles != null) {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(),  user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
-            signRequestService.pendingSignRequest(signRequest, Arrays.asList(user.getEmail()), signType, user);
+            signRequestService.pendingSignRequest(signRequest, signType, user, user.getEmail());
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             logger.warn("no file to import");
@@ -559,7 +559,7 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
             signRequest.getRecipients().clear();
-            signRequestService.addRecipients(signRequest, Arrays.asList(recipientsEmail));
+            signRequestService.addRecipients(signRequest, recipientsEmail);
             signRequest.setSignType(signType);
             signRequest.setAllSignToComplete(allSignToComplete);
         } else {

@@ -15,6 +15,7 @@
                     <span th:text="#{'signbook.signtype.' + ${signRequest.signType}}"></span>
                     <br>
                     <span th:if="${signRequest.allSignToComplete}">Tous les participants doivent signer</span>
+                    <span th:unless="${signRequest.allSignToComplete}">La signature d'un des participants est suffisante</span>
                 </div>
                 <table class="table table-sm table-bordered table-hover">
                     <thead>

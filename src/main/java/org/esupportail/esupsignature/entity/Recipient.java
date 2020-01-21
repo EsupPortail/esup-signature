@@ -12,8 +12,7 @@ public class Recipient {
     @Version
     private Integer version;
 
-    @ManyToOne
-    private SignRequest signRequest;
+    private Long parentId;
 
     @ManyToOne
     private User user;
@@ -36,12 +35,12 @@ public class Recipient {
         this.version = version;
     }
 
-    public SignRequest getSignRequest() {
-        return signRequest;
+    public Long getParentId() {
+        return parentId;
     }
 
-    public void setSignRequest(SignRequest signRequest) {
-        this.signRequest = signRequest;
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
     }
 
     public User getUser() {
