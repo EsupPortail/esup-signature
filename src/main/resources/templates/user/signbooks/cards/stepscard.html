@@ -24,17 +24,7 @@
                                         <br/>
                                         <span th:if="${workflowStep.name != null}" th:text="${workflowStep.name}"></span>
                                         <ul>
-                                        <th:block th:unless="${iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" th:each="recipient : ${signRequest.recipients}">
-                                            <li>
-                                                <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
-                                                <th:block th:switch="${recipient.signed}">
-                                                    <i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
-                                                    <i title="n'a pas signé le document" th:case="false" class="fas fa-exclamation-circle text-danger"></i>
-                                                </th:block>
-
-                                            </li>
-                                        </th:block>
-                                        <th:block th:if="${iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" th:each="recipient : ${workflowStep.recipients}">
+                                        <th:block th:each="recipient : ${workflowStep.recipients}">
                                             <li>
                                                 <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                                 <th:block th:switch="${recipient.signed}">

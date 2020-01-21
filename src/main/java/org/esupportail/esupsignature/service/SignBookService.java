@@ -219,10 +219,20 @@ public class SignBookService {
         workflowService.setSignTypeForWorkflowStep(signType, workflowStep);
     }
 
-    public boolean isStepDone(SignBook signBook) {
+    public boolean isStepallDocsDone(SignBook signBook) {
         WorkflowStep currentWorkflowStep = getCurrentWorkflowStep(signBook);
         for (SignRequest signRequest : signBook.getSignRequests()) {
-            if (signRequest.getStatus().equals(SignRequestStatus.pending) || (currentWorkflowStep.isAllSignToComplete() && !workflowStepService.isWorkflowStepFullSigned(currentWorkflowStep))) {
+            if (signRequest.getStatus().equals(SignRequestStatus.pending)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isStepAllSignDone(SignBook signBook) {
+        WorkflowStep currentWorkflowStep = getCurrentWorkflowStep(signBook);
+        for (SignRequest signRequest : signBook.getSignRequests()) {
+            if (currentWorkflowStep.isAllSignToComplete() && !workflowStepService.isWorkflowStepFullSigned(currentWorkflowStep)) {
                 return false;
             }
         }
@@ -296,6 +306,9 @@ public class SignBookService {
         workflowSteps.addAll(signBook.getWorkflowSteps());
         for(WorkflowStep workflowStep : workflowSteps) {
             signBook.getWorkflowSteps().remove(workflowStep);
+//            for(Recipient recipient : workflowStep.getRecipients()) {
+//                recipientRepository.delete(recipient);
+//            }
             workflowStepRepository.delete(workflowStep);
         }
         signBookRepository.delete(signBook);

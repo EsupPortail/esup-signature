@@ -351,18 +351,21 @@ public class SignRequestService {
 		recipientService.validateRecipient(signRequest.getRecipients(), user);
 		if(signRequest.getParentSignBook() != null) {
 			WorkflowStep currentWorkflowStep = signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook());
-			recipientService.validateRecipient(currentWorkflowStep.getRecipients(), user);
-			if (signBookService.isStepDone(signRequest.getParentSignBook())) {
-				if (!signBookService.nextWorkFlowStep(signRequest.getParentSignBook())) {
-					if(!signRequest.getParentSignBook().getCreateBy().equals("Scheduler")) {
-						mailService.sendCompletedMail(signRequest.getParentSignBook());
+			//TODO si plusieurs fichiers a part du check allsign
+			if (signBookService.isStepallDocsDone(signRequest.getParentSignBook())) {
+				recipientService.validateRecipient(currentWorkflowStep.getRecipients(), user);
+				if (signBookService.isStepAllSignDone(signRequest.getParentSignBook())) {
+					if (!signBookService.nextWorkFlowStep(signRequest.getParentSignBook())) {
+						if (!signRequest.getParentSignBook().getCreateBy().equals("Scheduler")) {
+							mailService.sendCompletedMail(signRequest.getParentSignBook());
+						}
+						signBookService.completeSignBook(signRequest.getParentSignBook(), user);
+					} else {
+						signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
 					}
-					signBookService.completeSignBook(signRequest.getParentSignBook(), user);
 				} else {
-					signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
+					updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 				}
-			} else {
-				updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 			}
 		} else {
 			if(recipientService.checkFalseRecipients(signRequest.getRecipients()) == 0 || !signRequest.getAllSignToComplete()) {
