@@ -105,6 +105,16 @@ public class WorkflowService {
         }
     }
 
+    public List<Workflow> getWorkflowsForUser(User user) {
+        List<Workflow> workflows = workflowRepository.findByCreateBy(user.getEppn());
+        for (Workflow workflow : workflowRepository.findByManagersContains(user.getEmail())) {
+            if (!workflows.contains(workflow)) {
+                workflows.add(workflow);
+            }
+        }
+        return workflows;
+    }
+
     public void deleteWorkflow(Workflow workflow) {
         List<Workflow> workflows = new ArrayList<>();
         workflowRepository.save(workflow);

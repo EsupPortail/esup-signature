@@ -27,6 +27,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
@@ -43,7 +44,7 @@ import java.util.List;
 @RequestMapping("/user/signbooks")
 @Controller
 @Transactional
-@Scope(value = "session")
+
 public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
@@ -148,6 +149,7 @@ public class SignBookController {
             model.addAttribute("logs", logs);
             model.addAttribute("signBook", signBook);
             model.addAttribute("signTypes", SignType.values());
+            model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
             return "user/signbooks/update";
         } else {
             return "redirect:/";
@@ -155,52 +157,52 @@ public class SignBookController {
 
     }
 
-    @RequestMapping(value = "/{id}/{signRequestId}", produces = "text/html")
-    public String show(@PathVariable("id") Long id, @PathVariable("signRequestId") Long signRequestId, Model model) throws Exception {
-        User user = userService.getUserFromAuthentication();
-        SignBook signBook = signBookRepository.findById(id).get();
-        workflowService.setWorkflowsLabels(signBook.getWorkflowSteps());
-        model.addAttribute("signBook", signBook);
-        SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
-        if (signBook.getSignRequests().contains(signRequest) && (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest))) {
-            Document toDisplayDocument;
-            if (signRequestService.getToSignDocuments(signRequest).size() == 1) {
-                toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
-                if (toDisplayDocument.getContentType().equals("application/pdf")) {
-                    PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
-                    model.addAttribute("pdfWidth", pdfParameters.getWidth());
-                    model.addAttribute("pdfHeight", pdfParameters.getHeight());
-                    model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-                }
-                model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
-                model.addAttribute("documentId", toDisplayDocument.getId());
-            }
-            if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) && signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
-                model.addAttribute("signable", "ok");
-                if(!signRequestService.getCurrentSignType(signRequest).equals(SignType.visa)
-                        && user.getSignImage() != null
-                        && user.getSignImage().getSize() > 0) {
-                    model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-                    int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
-                    model.addAttribute("signWidth", size[0]);
-                    model.addAttribute("signHeight", size[1]);
-                } else {
-                    model.addAttribute("signWidth", 100);
-                    model.addAttribute("signHeight", 75);
-                }
-            }
-            if(signRequest.getSignRequestParams().size() < signRequest.getParentSignBook().getCurrentWorkflowStepNumber()) {
-                signRequest.getSignRequestParams().add(signRequestService.getEmptySignRequestParams());
-                signRequestRepository.save(signRequest);
-            }
-        }
-        model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
-        List<Log> logs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
-        model.addAttribute("refusLogs", logs);
-        model.addAttribute("signRequest", signRequest);
-        model.addAttribute("signRequestId", signRequestId);
-        return "user/signbooks/show";
-    }
+//    @RequestMapping(value = "/{id}/{signRequestId}", produces = "text/html")
+//    public String show(@PathVariable("id") Long id, @PathVariable("signRequestId") Long signRequestId, Model model) throws Exception {
+//        User user = userService.getUserFromAuthentication();
+//        SignBook signBook = signBookRepository.findById(id).get();
+//        workflowService.setWorkflowsLabels(signBook.getWorkflowSteps());
+//        model.addAttribute("signBook", signBook);
+//        SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
+//        if (signBook.getSignRequests().contains(signRequest) && (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest))) {
+//            Document toDisplayDocument;
+//            if (signRequestService.getToSignDocuments(signRequest).size() == 1) {
+//                toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
+//                if (toDisplayDocument.getContentType().equals("application/pdf")) {
+//                    PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
+//                    model.addAttribute("pdfWidth", pdfParameters.getWidth());
+//                    model.addAttribute("pdfHeight", pdfParameters.getHeight());
+//                    model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+//                }
+//                model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
+//                model.addAttribute("documentId", toDisplayDocument.getId());
+//            }
+//            if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) && signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
+//                model.addAttribute("signable", "ok");
+//                if(!signRequestService.getCurrentSignType(signRequest).equals(SignType.visa)
+//                        && user.getSignImage() != null
+//                        && user.getSignImage().getSize() > 0) {
+//                    model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+//                    int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
+//                    model.addAttribute("signWidth", size[0]);
+//                    model.addAttribute("signHeight", size[1]);
+//                } else {
+//                    model.addAttribute("signWidth", 100);
+//                    model.addAttribute("signHeight", 75);
+//                }
+//            }
+//            if(signRequest.getSignRequestParams().size() < signRequest.getParentSignBook().getCurrentWorkflowStepNumber()) {
+//                signRequest.getSignRequestParams().add(signRequestService.getEmptySignRequestParams());
+//                signRequestRepository.save(signRequest);
+//            }
+//        }
+//        model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
+//        List<Log> logs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
+//        model.addAttribute("refusLogs", logs);
+//        model.addAttribute("signRequest", signRequest);
+//        model.addAttribute("signRequestId", signRequestId);
+//        return "user/signbooks/show";
+//    }
 
     @ResponseBody
     @RequestMapping(value = "/get-step")
@@ -365,6 +367,22 @@ public class SignBookController {
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
+    @PostMapping(value = "/add-docs/{id}")
+    public String addDocumentToNewSignRequest(@PathVariable("id") Long id,
+                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
+        logger.info("start add documents");
+        User user = userService.getUserFromAuthentication();
+        SignBook signBook = signBookRepository.findById(id).get();
+        if (signBookService.checkUserViewRights(user, signBook)) {
+            for (MultipartFile multipartFile : multipartFiles) {
+                SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
+                signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+                signBookService.addSignRequest(signBook, signRequest);
+            }
+        }
+        return "redirect:/user/signbooks/" + id + "/?form";
+    }
+
     @RequestMapping(value = "/send-to-signbook/{id}/{workflowStepId}", method = RequestMethod.GET)
     public String sendToSignBook(@PathVariable("id") Long id,
                                  @PathVariable("workflowStepId") Long workflowStepId,
@@ -414,7 +432,7 @@ public class SignBookController {
             signBookService.nextWorkFlowStep(signBook);
             signBookService.pendingSignBook(signBook, user);
         }
-        return "redirect:/user/signbooks/" + id + "/?form";
+        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
     }
 
 //    @RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)

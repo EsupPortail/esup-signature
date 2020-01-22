@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 @RequestMapping("/admin/signrequests")
 @Controller
-@Scope(value = "session")
+
 public class AdminSignRequestController {
 
 	private static final Logger logger = LoggerFactory.getLogger(AdminSignRequestController.class);

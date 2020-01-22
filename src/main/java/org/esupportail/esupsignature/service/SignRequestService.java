@@ -414,7 +414,7 @@ public class SignRequestService {
 			for(SignRequest signRequest : signRequests) {
 				Document signedFile = getLastSignedDocument(signRequest);
 				try {
-					logger.info("send to " + documentIOType.name() + " in /" + targetUrl + "/signed");
+					logger.info("send to " + documentIOType.name() + " in /" + targetUrl);
 					FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(documentIOType);
 					InputStream inputStream = signedFile.getInputStream();
 					if(fsAccessService.cd("/" + targetUrl) == null) {
@@ -459,7 +459,7 @@ public class SignRequestService {
 			FsAccessService fsAccessService = null;
 			if (signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().startsWith("mail")) {
 				fsAccessService = fsAccessFactory.getFsAccessService(signRequest.getParentSignBook().getTargetType());
-				return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI());
+				return fsAccessService.getFile(signRequest.getExportedDocumentURI());
 			}
 		}
 		Document lastSignedDocument = getLastSignedDocument(signRequest);
@@ -582,6 +582,9 @@ public class SignRequestService {
 		if(signRequest.getParentSignBook() != null) {
 			signRequest.getParentSignBook().getSignRequests().remove(signRequest);
 			signBookRepository.save(signRequest.getParentSignBook());
+			if(signRequest.getParentSignBook().getSignRequests().size() == 0) {
+				signBookRepository.delete(signRequest.getParentSignBook());
+			}
 			signRequest.setParentSignBook(null);
 			signRequestRepository.save(signRequest);
 		}
@@ -650,19 +653,22 @@ public class SignRequestService {
 	}
 
 	public SignRequestParams getCurrentSignRequestParams(SignRequest signRequest) {
-		if(signRequest.getCurrentStepNumber()> 0 &&  signRequest.getParentSignBook() != null && signRequest.getSignRequestParams().size() > signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1) {
-			return signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1);
-		} else {
-			if(signRequest.getCurrentStepNumber()> 0 && signRequest.getSignRequestParams().size() > signRequest.getCurrentStepNumber() - 1) {
-				return signRequest.getSignRequestParams().get(signRequest.getCurrentStepNumber() - 1);
+		if(signRequest.getCurrentStepNumber() > 0) {
+			if (signRequest.getCurrentStepNumber() > 0 && signRequest.getParentSignBook() != null && signRequest.getSignRequestParams().size() > signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1) {
+				return signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1);
 			} else {
-				SignRequestParams signRequestParams = getEmptySignRequestParams();
-				signRequestParamsRepository.save(signRequestParams);
-				signRequest.getSignRequestParams().add(signRequestParams);
-				signRequestRepository.save(signRequest);
-				return signRequest.getSignRequestParams().get(signRequest.getCurrentStepNumber() - 1);
+				if (signRequest.getCurrentStepNumber() > 0 && signRequest.getSignRequestParams().size() > signRequest.getCurrentStepNumber() - 1) {
+					return signRequest.getSignRequestParams().get(signRequest.getCurrentStepNumber() - 1);
+				} else {
+					SignRequestParams signRequestParams = getEmptySignRequestParams();
+					signRequestParamsRepository.save(signRequestParams);
+					signRequest.getSignRequestParams().add(signRequestParams);
+					signRequestRepository.save(signRequest);
+					return signRequest.getSignRequestParams().get(signRequest.getCurrentStepNumber() - 1);
+				}
 			}
 		}
+		return getEmptySignRequestParams();
 	}
 
 	public SignType getSignTypeByLevel(int level) {

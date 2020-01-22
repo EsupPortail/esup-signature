@@ -35,7 +35,7 @@ import java.util.*;
 @RequestMapping("/manager/signbooks")
 @Controller
 @Transactional
-@Scope(value = "session")
+
 public class SignBookManagerController {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignBookManagerController.class);

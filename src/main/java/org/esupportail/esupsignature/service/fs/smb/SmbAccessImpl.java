@@ -128,9 +128,10 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 
 	public SmbFile cd(String path) {
 		try {
-			//this.open();
-			if (path == null || path.length() == 0)
+			this.open();
+			if (path == null || path.length() == 0) {
 				return root;
+			}
 			return new SmbFile(this.getUri() + path, cifsContext);
 		} catch (MalformedURLException e) {
 			logger.error("unable to open" + e.getMessage());
@@ -242,7 +243,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	@Override
 	public FsFile getFileFromURI(String uri) {
 		try {
-			//open();
+			open();
 			SmbFile smbFile = new SmbFile(uri, cifsContext);
 			return toFsFile(smbFile, uri);
 		} catch (SmbException e) {

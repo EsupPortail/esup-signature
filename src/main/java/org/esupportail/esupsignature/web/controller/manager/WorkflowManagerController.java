@@ -37,7 +37,7 @@ import java.util.List;
 @RequestMapping("/manager/workflows")
 @Controller
 @Transactional
-@Scope(value = "session")
+
 public class WorkflowManagerController {
 
 	private static final Logger logger = LoggerFactory.getLogger(WorkflowManagerController.class);

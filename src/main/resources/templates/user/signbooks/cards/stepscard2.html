@@ -1,22 +1,17 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <div th:fragment="stepscard2">
     <div class="card rounded-0 mb-1">
         <div class="card-header">
             Circuit de signature
-            <button type="button" class="btn btn-sm btn-primary float-right" data-toggle="modal" data-target="#addStep">
-                <i class="fas fa-plus"></i> Ajouter une étape manuellement
-            </button>
-            <button th:if="${signBook.getStatus().name() == 'draft' && signBook.workflowSteps.size() == 0}" type="button" class="btn btn-sm btn-primary float-right mr-1" data-toggle="modal" data-target="#addWorkflow">
-                <i class="fas fa-project-diagram"></i> Charger un modèle de circuit
-            </button>
         </div>
         <div class="card-body">
             <div th:if="${user.eppn == signBook.createBy}">
                 <div th:if="${(signBook.getStatus().name() == 'draft' || signBook.getStatus().name() == 'completed')}">
                     <div th:if="${signBook.signRequests.size() == 0 || signBook.getWorkflowSteps().size() == 0}">
                         <div class="alert alert-warning mb-1" th:if="${signBook.getStatus().name() == 'draft'}">
-                            <div th:if="${@signBookService.getCurrentWorkflowStep(signBook).recipients.size() == 0}">
+                            <div th:unless="${signBook.getWorkflowSteps().size() > 0 && @signBookService.getCurrentWorkflowStep(signBook).recipients.size() > 0}">
                                 <p>
                                     Vous devez ajouter des étapes ainsi que des participants pour chaque étape du circuit de signature
                                 </p>
@@ -47,7 +42,7 @@
                                         <span th:if="${workflowStep.name != null}" th:text="${workflowStep.name}"></span>
                                     </div>
                                     <div class="bs-stepper-bottom">
-                                        <form th:id="'del_' + ${iterator.index}" th:action="'/user/signBooks/remove-step/' + ${id} + '/' + ${iterator.index}" th:method="delete" onsubmit="confirmdel();">
+                                        <form th:id="'del_' + ${iterator.index}" th:action="'/user/signbooks/remove-step/' + ${id} + '/' + ${iterator.index}" th:method="delete" onsubmit="confirmdel();">
                                             <button th:onclick="'confirmdel(\'del_' + ${iterator.index} + '\');'" class="btn btn-sm float-right">
                                                 <i class="fas fa-trash"></i>
                                             </button>
@@ -98,14 +93,6 @@
                                         <div class="collapse" th:id="'stepDetail_' + ${iterator.index}">
                                             <hr/>
                                             <form th:action="'/user/signbooks/update-step/' + ${id} + '/'  + ${iterator.index}">
-                                                <label>Nom de l'étape :</label>
-                                                <div th:unless="${iterator.index + 1 > signBook.currentWorkflowStepNumber || iterator.index + 1 == signBook.currentWorkflowStepNumber}">
-                                                    <b><span th:text="${workflowStep.name}"></span></b>
-                                                </div>
-                                                <div th:if="${iterator.index + 1 > signBook.currentWorkflowStepNumber || iterator.index + 1 == signBook.currentWorkflowStepNumber}">
-                                                    <input type="text" name="name" class="form-control" th:value="${workflowStep.name}">
-                                                </div>
-                                                <br>
                                                 <label>Type de signature :</label>
                                                 <div th:unless="${iterator.index + 1 > signBook.currentWorkflowStepNumber || iterator.index + 1 == signBook.currentWorkflowStepNumber}">
                                                     <b><span th:text="#{'signbook.signtype.' + ${workflowStep.signType}}"></span></b>
@@ -149,7 +136,7 @@
                                                                             </div>
                                                                             <div class="modal-body">
                                                                                 <div class="input-group">
-                                                                                    <select onchange="checkNbRecipients();" name="signBookNames" th:id="'signBookNames' + ${workflowStep.id}" size="5" multiple="multiple" required="required">
+                                                                                    <select onchange="checkNbRecipients();" name="signBookNames" th:id="'signBookNames' + ${workflowStep.id}" multiple="multiple" required="required">
                                                                                         <th:block th:each="signBook : ${allSignBooks}">
                                                                                             <option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
                                                                                         </th:block>

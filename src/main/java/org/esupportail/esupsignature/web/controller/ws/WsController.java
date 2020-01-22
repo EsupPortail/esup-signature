@@ -106,10 +106,23 @@ public class WsController {
     }
 
     @ResponseBody
+    @RequestMapping(value = "/add-docs/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Object addDocument(@PathVariable("id") Long id,
+                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureIOException {
+        User user = userService.getUserFromAuthentication();
+        user.setIp(httpServletRequest.getRemoteAddr());
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
+        logger.info("documents added in signRequest : " + signRequest.getId());
+        String[] ok = {"ok"};
+        return ok;
+    }
+
+    @ResponseBody
     @RequestMapping(value = "/add-docs-in-sign-book-group/{name}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocument(@PathVariable("name") String name,
+    public Object addDocumentInSignBookGroup(@PathVariable("name") String name,
                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException {
-        logger.info("start add documents");
+        logger.info("start add documents in " + name);
         User user = userService.getUserFromAuthentication();
         user.setIp(httpServletRequest.getRemoteAddr());
         SignBook signBook = signBookService.getSignBook(name, user);
@@ -121,12 +134,11 @@ public class WsController {
         return ok;
     }
 
-
     @ResponseBody
     @RequestMapping(value = "/add-docs-in-sign-book-unique/{name}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public Object addDocumentToNewSignRequest(@PathVariable("name") String name,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException, IOException {
-        logger.info("start add documents");
+        logger.info("start add documents in " + name);
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookService.getSignBook(name, user);
         user = userRepository.findByEppn(signBook.getCreateBy()).get(0);

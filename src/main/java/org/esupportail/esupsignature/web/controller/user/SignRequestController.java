@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/user/signrequests")
 @Controller
 @Transactional
-@Scope(value = "session")
+
 public class SignRequestController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignRequestController.class);
@@ -283,6 +283,22 @@ public class SignRequestController {
         } else {
             return "user/signrequests/show";
         }
+    }
+
+    @PostMapping(value = "/add-docs/{id}")
+    public String addDocumentToNewSignRequest(@PathVariable("id") Long id,
+                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
+        logger.info("start add documents");
+        User user = userService.getUserFromAuthentication();
+        SignBook signBook = signBookRepository.findById(id).get();
+        if (signBookService.checkUserViewRights(user, signBook)) {
+            for (MultipartFile multipartFile : multipartFiles) {
+                SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
+                signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+                signBookService.addSignRequest(signBook, signRequest);
+            }
+        }
+        return "redirect:/user/signbooks/" + id + "/?form";
     }
 
     @ResponseBody

@@ -7,7 +7,7 @@
 			<div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.recipients.size() == 0}">
 				<div class="alert alert-secondary mb-1" th:if="${signRequest.status.name() == 'draft'}">
 					<h5 class="alert-heading">
-						Le document en cours de création
+						La demande en cours de création
 					</h5>
 				</div>
 			</div>

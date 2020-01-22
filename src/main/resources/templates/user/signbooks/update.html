@@ -15,14 +15,20 @@
                     <div th:if="${(signBook.status.name() == 'draft' || signBook.status.name() == 'completed')}">
                         <div th:if="${signBook.signRequests.size() > 0 && signBook.workflowSteps.size() > 0}">
                             <th:block th:if="${signBook.workflowSteps.get(0).recipients.size() > 0}">
-                                <button title="Lancer la procedure de signature" type="button" class="mb-1 col-12 btn btn-primary text-left" data-toggle="modal" data-target="#sendModal">
+                                <button title="Lancer la procedure de signature" type="button" class="mb-1 col-12 btn btn-success text-left" data-toggle="modal" data-target="#sendModal">
                                     <i class="fa fa-paper-plane " aria-hidden="true"></i><span class="sidebar-label"> Lancer la procedure de signature</span>
                                 </button>
                             </th:block>
                         </div>
                     </div>
                 </div>
-                <button th:if="${signBook.status.name() == 'draft' || signBook.status.name() == 'pending'}" title="Signature rapide" type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="mb-1 col-12 btn btn-primary text-left">
+                <button type="button" class="btn btn-light btn-outline-dark text-left mb-1" data-toggle="modal" data-target="#addStep">
+                    <i class="fas fa-shoe-prints"></i> Ajouter une étape manuellement
+                </button>
+                <button th:if="${signBook.getStatus().name() == 'draft' && signBook.workflowSteps.size() == 0}" type="button" class="btn btn-light btn-outline-dark text-left mb-1" data-toggle="modal" data-target="#addWorkflow">
+                    <i class="fas fa-project-diagram"></i> Charger un modèle de circuit
+                </button>
+                <button th:if="${signBook.status.name() == 'draft' || signBook.status.name() == 'pending'}" title="Signature rapide" type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="mb-1 col-12 btn btn-light text-left">
                     <i class="fas fa-plus"></i> <span class="sidebar-label">Ajouter un document</span>
                 </button>
                 <button class="btn btn-light col-12 mb-1 text-left" onclick="window.history.back();">
@@ -96,7 +102,7 @@
 <div class="modal fade" id="fastSignRequestModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form th:action="'/user/signrequests/fast-sign-request?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
+            <form th:action="'/user/signbooks/add-docs/' + ${signBook.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title" id="fastSignRequestLabel">Créer une nouvelle demande</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -107,19 +113,19 @@
                     <div class="col-lg-12">
                         <div class="input-group">
                             <div class="custom-file">
-                                <input required aria-describedby="inputGroupFileAddon01" class="custom-file-input" data-buttontext="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file">
+                                <input required aria-describedby="inputGroupFileAddon01" class="custom-file-input" data-buttontext="Choisir fichier" id="inputGroupFile01" name="multipartFiles" type="file">
                                 <label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01">
                                     Choisir un document
                                 </label>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                        <button type="submit" id="fast-form-submit" class="btn btn-success">
-                            Suivant <i class="fas fa-angle-right"></i>
-                        </button>
-                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" id="fast-form-submit" class="btn btn-success">
+                        Suivant <i class="fas fa-angle-right"></i>
+                    </button>
                 </div>
             </form>
         </div>
@@ -205,6 +211,35 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="addWorkflow" tabindex="-1" role="dialog" aria-labelledby="Refus" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Envoi pour signature</h5>
+                </div>
+                <div class="modal-body">
+                    <form th:action="'/user/signbooks/wizard/wiz4/' + ${signBook.id}" method="post">
+                        <div class="form-group">
+                            <select id="workflowId" name="workflowId" class="form-control" required>
+                                <option value="" disabled selected>Choisir un circuit de signatures existant</option>
+                                <th:block th:each="workflow : ${workflows} ">
+                                    <option th:value="${workflow.id}" th:text="${workflow.name}"></option>
+                                </th:block>
+                            </select>
+                            <br>
+                            <button type="submit" class="btn btn-success">
+                                Appliquer les paramètres du circuit <i class="fas fa-file-import"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+        </div>
+    </div>
+</div>
+
+
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

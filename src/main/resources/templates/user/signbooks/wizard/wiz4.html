@@ -6,7 +6,7 @@
 <h5>Paramètres du circuit de signature</h5>
 <form th:action="'/user/signbooks/wizard/wizX/' + ${signBook.id}" method="post">
     <div class="col-lg-12">
-        <label for="recipientsEmail">Choisir les participants</label>
+        <label for="recipientsEmail">Choisir les participants pour l'étape <span th:text="${signBook.workflowSteps.size() + 1}"></span></label>
         <select onchange="checkNbRecipients();" name="recipientsEmail" id="recipientsEmail" size="5" multiple="multiple" required="required">
             <th:block th:each="signBook : ${allSignBooks}">
                 <option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
@@ -60,17 +60,20 @@
             </th:block>
         </select>
     </div>
-    <button type="submit" name="addNew" value="true" class="btn btn-primary" style="position: absolute;right: 150px;bottom: 10px;">
-        <i class="fas fa-plus"></i> Ajouter une étape
-    </button>
-    <button type="submit" name="end" value="true" class="btn btn-success" style="position: absolute;right: 10px;bottom: 10px;">
-        Terminer <i class="fas fa-flag-checkered"></i>
+    <button type="submit" name="addNew" value="true" class="btn btn-primary" style="position: absolute;right: 10px;bottom: 10px;">
+        <i class="fas fa-save"></i> Enregistrer l'étape
     </button>
 </form>
-<form id="wiz2Form" th:action="'/user/signbooks/wizard/wiz3'" method="post">
+<form th:if="${signBook.workflowSteps.size() == 0}" id="wiz2Form" th:action="'/user/signbooks/wizard/wiz3'" method="post">
     <input type="hidden" name="name" th:value="${name}">
     <button type="submit" class="btn btn-success" style="position: absolute;left: 10px;bottom: 10px;">
         <i class="fas fa-angle-left"></i> Précédent
+    </button>
+</form>
+<form th:action="'/user/signbooks/wizard/wizX/' + ${signBook.id}" method="post">
+    <input type="hidden" name="end" value="true"/>
+    <button th:if="${signBook.workflowSteps.size() > 0}" style="position: absolute;left: 10px;bottom: 10px;" type="submit" class="btn btn-success">
+        <i class="fas fa-flag-checkered"></i> Terminer
     </button>
 </form>
 </body>

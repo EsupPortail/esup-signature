@@ -30,7 +30,7 @@ import java.util.List;
 @RequestMapping("/user/signbooks/wizard")
 @Controller
 @Transactional
-@Scope(value = "session")
+
 public class SignBookWizardController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookWizardController.class);
@@ -81,13 +81,7 @@ public class SignBookWizardController {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookService.getSignBook(name, user);
         model.addAttribute("signBook", signBook);
-        List<Workflow> workflows = workflowRepository.findByCreateBy(user.getEppn());
-        for(Workflow workflow : workflowRepository.findByManagersContains(user.getEmail())) {
-            if(!workflows.contains(workflow)) {
-                workflows.add(workflow);
-            }
-        }
-        model.addAttribute("workflows", workflows);
+        model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
         return "user/signbooks/wizard/wiz3";
     }
 
@@ -130,28 +124,39 @@ public class SignBookWizardController {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user.getEppn())) {
-            logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
-            WorkflowStep workflowStep = workflowService.createWorkflowStep(Arrays.asList(recipientsEmail), "", allSignToComplete, signType);
-            signBook.getWorkflowSteps().add(workflowStep);
-            signBookRepository.save(signBook);
+            if(recipientsEmail != null && recipientsEmail.length > 0) {
+                logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
+                WorkflowStep workflowStep = workflowService.createWorkflowStep(Arrays.asList(recipientsEmail), "", allSignToComplete, signType);
+                signBook.getWorkflowSteps().add(workflowStep);
+                signBookRepository.save(signBook);
+                if (addNew != null) {
+                    model.addAttribute("workflowStepForm", true);
+                    model.addAttribute("signTypes", SignType.values());
+                }
+            } else {
+                end = true;
+            }
+            if(end != null) {
+                if(signBook.getWorkflowSteps().size() >  0) {
+                    signBookService.nextWorkFlowStep(signBook);
+                    signBookService.pendingSignBook(signBook, user);
+                    return "redirect:/user/signbooks/wizard/wiz5/" + signBook.getId();
+                }else {
+                    return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
+                }
+            }
+            model.addAttribute("signBook", signBook);
         }
-        if (addNew != null) {
-            model.addAttribute("workflowStepForm", true);
-            model.addAttribute("signTypes", SignType.values());
-        }
-        if(end != null) {
-            signBookService.nextWorkFlowStep(signBook);
-            signBookService.pendingSignBook(signBook, user);
-            return "redirect:/user/signbooks/wizard/wiz5/" + signBook.getId();
-        }
-        model.addAttribute("signBook", signBook);
         return "user/signbooks/wizard/wiz4";
     }
 
     @GetMapping(value = "/wiz5/{id}")
     public String saveForm(@PathVariable("id") Long id, Model model) {
+        User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
-        model.addAttribute("signBook", signBook);
+        if(signBook.getCreateBy().equals(user.getEppn())) {
+            model.addAttribute("signBook", signBook);
+        }
         return "user/signbooks/wizard/wiz5";
     }
 
