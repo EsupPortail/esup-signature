@@ -562,7 +562,6 @@ public class SignRequestController {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
-            signRequest.getRecipients().clear();
             signRequestService.addRecipients(signRequest, recipientsEmail);
             signRequest.setSignType(signType);
             if(allSignToComplete != null && allSignToComplete) {

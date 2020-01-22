@@ -313,11 +313,17 @@ public class SignBookService {
         workflowSteps.addAll(signBook.getWorkflowSteps());
         for(WorkflowStep workflowStep : workflowSteps) {
             signBook.getWorkflowSteps().remove(workflowStep);
-//            for(Recipient recipient : workflowStep.getRecipients()) {
-//                recipientRepository.delete(recipient);
-//            }
+            for(Recipient recipient : workflowStep.getRecipients()) {
+                recipientRepository.delete(recipient);
+            }
             workflowStepRepository.delete(workflowStep);
         }
+        List<SignRequest>  signRequests = new ArrayList<>();
+        signRequests.addAll(signBook.getSignRequests());
+        for(SignRequest signRequest : signRequests) {
+            signRequestService.delete(signRequest);
+        }
+        signBook.getSignRequests().clear();
         signBookRepository.delete(signBook);
     }
 

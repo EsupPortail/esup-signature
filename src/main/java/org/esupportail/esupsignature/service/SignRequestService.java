@@ -202,6 +202,9 @@ public class SignRequestService {
 	}
 
 	public void addRecipients(SignRequest signRequest, List<Recipient> recipients) {
+		for(Recipient recipient : signRequest.getRecipients()) {
+			recipientRepository.delete(recipient);
+		}
 		signRequest.getRecipients().clear();
 		for(Recipient recipient : recipients) {
 			signRequest.getRecipients().add(recipientService.createRecipient(signRequest.getId(), recipient.getUser()));
@@ -581,9 +584,9 @@ public class SignRequestService {
 			signBookRepository.save(signRequest.getParentSignBook());
 			signRequest.setParentSignBook(null);
 			signRequestRepository.save(signRequest);
-//			if(signBook.getSignRequests().size() == 0) {
-//				signBookService.delete(signBook);
-//			}
+		}
+		for(Recipient recipient : signRequest.getRecipients()) {
+			recipientRepository.delete(recipient);
 		}
 		signRequestRepository.delete(signRequest);
 
