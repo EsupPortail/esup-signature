@@ -177,6 +177,7 @@ public class SignBookService {
                 toSaveWorkflowStep.getRecipients().add(recipientService.createRecipient(workflowStep.getId(), recipient.getUser()));
             }
             toSaveWorkflowStep.setSignType(workflowStep.getSignType());
+            toSaveWorkflowStep.setAllSignToComplete(workflowStep.isAllSignToComplete());
             workflowStepRepository.save(toSaveWorkflowStep);
             workflow.getWorkflowSteps().add(toSaveWorkflowStep);
         }

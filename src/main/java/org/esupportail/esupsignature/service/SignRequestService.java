@@ -653,7 +653,11 @@ public class SignRequestService {
 			if(signRequest.getCurrentStepNumber()> 0 && signRequest.getSignRequestParams().size() > signRequest.getCurrentStepNumber() - 1) {
 				return signRequest.getSignRequestParams().get(signRequest.getCurrentStepNumber() - 1);
 			} else {
-				return getEmptySignRequestParams();
+				SignRequestParams signRequestParams = getEmptySignRequestParams();
+				signRequestParamsRepository.save(signRequestParams);
+				signRequest.getSignRequestParams().add(signRequestParams);
+				signRequestRepository.save(signRequest);
+				return signRequest.getSignRequestParams().get(signRequest.getCurrentStepNumber() - 1);
 			}
 		}
 	}

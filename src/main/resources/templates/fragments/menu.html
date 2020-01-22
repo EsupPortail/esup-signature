@@ -25,9 +25,9 @@
 				<li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')"><a title="Admin" href="/admin/signrequests" th:class="'nav-link ' + ${adminMenu}">Admin</a></li>
 			</th:block>
 		</ul>
-		<ul class="navbar-nav">
+		<ul class="navbar-nav" th:if="${user.firstname != null}">
 			<li class="nav-item">
-				<a href="/user/users/?form" class="nav-link  "> <span th:if="${user != null}" th:text="${user.firstname} + ' ' + ${user.name}"></span></a>
+				<a href="/user/users/?form" class="nav-link  "> <span th:text="${user.firstname} + ' ' + ${user.name}"></span></a>
 			</li>
 			<li class="nav-item">
 				<a title="Paramètres" href="/user/users/?form" class="btn btn-secondary mr-1" th:classappend="${paramMenu}">

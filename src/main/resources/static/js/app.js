@@ -150,7 +150,6 @@ function submitSignRequest(id) {
 							"&" + csrf.name + "=" + csrf.value;
 	}
 	sendData(id, signRequestParams);
-
 }
 
 function sendData(id, signRequestParams) {
