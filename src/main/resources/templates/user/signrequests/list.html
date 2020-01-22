@@ -158,8 +158,8 @@
                                     <td class="text-break" th:unless="${signRequest.parentSignBook != null}"></td>
                                     <td class="text-break"><span style="white-space: pre-line" th:text="${signRequest.viewTitle}"></span></td>
                                     <td class="d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                    <td th:if="${signRequest.parentSignBook != null}" class="d-none d-lg-table-cell">
-                                        <table class="table table-sm">
+                                    <td class="d-none d-lg-table-cell">
+                                        <table th:if="${signRequest.parentSignBook != null && @signBookService.getCurrentWorkflowStep(signRequest.parentSignBook) != null}" class="table table-sm">
                                             <tbody>
                                             <th:block th:each="recipient : ${@signBookService.getCurrentWorkflowStep(signRequest.parentSignBook).recipients}">
                                                 <tr>
@@ -174,9 +174,7 @@
                                             </th:block>
                                             </tbody>
                                         </table>
-                                    </td>
-                                    <td th:if="${signRequest.parentSignBook == null}" class="d-none d-lg-table-cell">
-                                        <table class="table table-sm">
+                                        <table class="table table-sm" th:if="${signRequest.parentSignBook == null}">
                                             <tbody>
                                             <th:block th:each="recipient : ${signRequest.recipients}">
                                                 <tr>

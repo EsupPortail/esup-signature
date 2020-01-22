@@ -6,7 +6,6 @@ import eu.europa.esig.dss.asic.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.x509.CertificateToken;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.pdfbox.pdmodel.PDDocument;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
@@ -18,7 +17,6 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
-import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
@@ -30,10 +28,7 @@ import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.spel.spi.EvaluationContextExtension;
-import org.springframework.data.spel.spi.Function;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -43,7 +38,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -221,9 +215,10 @@ public class SignRequestService {
 		signRequestRepository.save(signRequest);
 	}
 
-	public void pendingSignRequest(SignRequest signRequest, SignType signType, User user) {
+	public void pendingSignRequest(SignRequest signRequest, SignType signType, boolean allSignToComplete, User user) {
 		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
 			signRequest.setSignType(signType);
+			signRequest.setAllSignToComplete(allSignToComplete);
 			signRequest.setCurrentStepNumber(signRequest.getCurrentStepNumber() + 1);
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 			sendEmailAlerts(signRequest);
@@ -350,10 +345,14 @@ public class SignRequestService {
 	public void applyEndOfStepRules(SignRequest signRequest, User user) throws EsupSignatureException {
 		recipientService.validateRecipient(signRequest.getRecipients(), user);
 		if(signRequest.getParentSignBook() != null) {
-			WorkflowStep currentWorkflowStep = signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook());
-			//TODO si plusieurs fichiers a part du check allsign
-			if (signBookService.isStepallDocsDone(signRequest.getParentSignBook())) {
+			if(!isSignRequestCompleted(signRequest)) {
+				updateStatus(signRequest, SignRequestStatus.pending, "Demande incomplète", user, "SUCCESS", signRequest.getComment());
+			}
+			if(signBookService.isUserSignAllDocs(signRequest.getParentSignBook(), user)) {
+				WorkflowStep currentWorkflowStep = signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook());
 				recipientService.validateRecipient(currentWorkflowStep.getRecipients(), user);
+			}
+			if (signBookService.isStepAllDocsDone(signRequest.getParentSignBook())) {
 				if (signBookService.isStepAllSignDone(signRequest.getParentSignBook())) {
 					if (!signBookService.nextWorkFlowStep(signRequest.getParentSignBook())) {
 						if (!signRequest.getParentSignBook().getCreateBy().equals("Scheduler")) {
@@ -363,15 +362,18 @@ public class SignRequestService {
 					} else {
 						signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
 					}
-				} else {
-					updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 				}
 			}
 		} else {
-			if(recipientService.checkFalseRecipients(signRequest.getRecipients()) == 0 || !signRequest.getAllSignToComplete()) {
+			if(isSignRequestCompleted(signRequest)) {
 				completeSignRequest(signRequest, user);
 			}
 		}
+	}
+
+	public boolean isSignRequestCompleted(SignRequest signRequest) {
+		long checkRecipients = recipientService.checkFalseRecipients(signRequest.getRecipients());
+		return checkRecipients == 0 || !signRequest.getAllSignToComplete();
 	}
 
 	public void sendEmailAlerts(SignRequest signRequest) {
@@ -633,14 +635,19 @@ public class SignRequestService {
 
 	public SignType getCurrentSignType(SignRequest signRequest) {
 		if(signRequest.getParentSignBook() != null) {
-			return signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook()).getSignType();
+			WorkflowStep currentWorkflowStep = signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook());
+			if(currentWorkflowStep != null) {
+				return signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook()).getSignType();
+			} else {
+				return null;
+			}
 		} else {
 			return signRequest.getSignType();
 		}
 	}
 
 	public SignRequestParams getCurrentSignRequestParams(SignRequest signRequest) {
-		if(signRequest.getParentSignBook() != null && signRequest.getSignRequestParams().size() > signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1) {
+		if(signRequest.getCurrentStepNumber()> 0 &&  signRequest.getParentSignBook() != null && signRequest.getSignRequestParams().size() > signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1) {
 			return signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1);
 		} else {
 			if(signRequest.getCurrentStepNumber()> 0 && signRequest.getSignRequestParams().size() > signRequest.getCurrentStepNumber() - 1) {

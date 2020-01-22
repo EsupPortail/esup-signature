@@ -100,7 +100,7 @@ public class WsController {
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
         String[] recipientsEmailList = mapper.readValue(recipientsEmail, String[].class);
         signRequestService.addRecipients(signRequest, recipientsEmail);
-        signRequestService.pendingSignRequest(signRequest, signRequestService.getSignTypeByLevel(signLevel), user);
+        signRequestService.pendingSignRequest(signRequest, signRequestService.getSignTypeByLevel(signLevel), false, user);
         logger.info("new signRequest created by " + user.getEppn());
         return signRequest.getToken();
     }
@@ -215,7 +215,7 @@ public class WsController {
             ObjectMapper mapper = new ObjectMapper();
             String[] recipientsEmailList = mapper.readValue(recipientsEmail, String[].class);
             signRequestService.addRecipients(signRequest, recipientsEmail);
-            signRequestService.pendingSignRequest(signRequest, signRequestService.getSignTypeByLevel(signLevel), userService.getSystemUser());
+            signRequestService.pendingSignRequest(signRequest, signRequestService.getSignTypeByLevel(signLevel), false, userService.getSystemUser());
         }
     }
 

@@ -14,19 +14,13 @@
 	<div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
 		<ul class="navbar-nav">
 			<li class="nav-item">
-				<a th:class="'nav-link ' + ${userMenu}" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+				<a th:class="'nav-link ' + ${userMenu}" title="Utilisateur" href="#" role="button" aria-haspopup="true" aria-expanded="false">
 					Utilisateur
 				</a>
 			</li>
 			<th:block th:if="${#authorization != null}">
 				<li class="nav-item dropdown" sec:authorize="hasRole('ROLE_MANAGER')">
-					<a th:class="'nav-link dropdown-toggle ' + ${managerMenu}" href="#" id="managerMenuDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						Gestionnaire
-					</a>
-					<div class="dropdown-menu" aria-labelledby="managerMenu">
-						<a title="Parapheurs" href="/manager/signbooks" class="dropdown-item">Gestion des parapheurs</a>
-						<a title="Circuits de visas" href="/manager/workflows" class="dropdown-item">Gestion de circuits de signature</a>
-					</div>
+					<a th:class="'nav-link ' + ${managerMenu}" title="Gestionnaire" href="/manager/workflows" class="dropdown-item">Gestionnaire</a>
 				</li>
 				<li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')"><a title="Admin" href="/admin/signrequests" th:class="'nav-link ' + ${adminMenu}">Admin</a></li>
 			</th:block>

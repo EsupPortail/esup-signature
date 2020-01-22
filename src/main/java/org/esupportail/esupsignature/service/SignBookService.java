@@ -219,8 +219,16 @@ public class SignBookService {
         workflowService.setSignTypeForWorkflowStep(signType, workflowStep);
     }
 
-    public boolean isStepallDocsDone(SignBook signBook) {
-        WorkflowStep currentWorkflowStep = getCurrentWorkflowStep(signBook);
+    public boolean isUserSignAllDocs(SignBook signBook, User user) {
+        for (SignRequest signRequest : signBook.getSignRequests()) {
+            if (recipientService.needSign(signRequest.getRecipients(), user)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isStepAllDocsDone(SignBook signBook) {
         for (SignRequest signRequest : signBook.getSignRequests()) {
             if (signRequest.getStatus().equals(SignRequestStatus.pending)) {
                 return false;
@@ -231,10 +239,8 @@ public class SignBookService {
 
     public boolean isStepAllSignDone(SignBook signBook) {
         WorkflowStep currentWorkflowStep = getCurrentWorkflowStep(signBook);
-        for (SignRequest signRequest : signBook.getSignRequests()) {
-            if (currentWorkflowStep.isAllSignToComplete() && !workflowStepService.isWorkflowStepFullSigned(currentWorkflowStep)) {
-                return false;
-            }
+        if (currentWorkflowStep.isAllSignToComplete() && !workflowStepService.isWorkflowStepFullSigned(currentWorkflowStep)) {
+            return false;
         }
         return true;
     }
@@ -262,7 +268,7 @@ public class SignBookService {
         updateStatus(signBook, SignRequestStatus.pending, "Parapheur envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber(), user, "SUCCESS", signBook.getComment());
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequestService.addRecipients(signRequest, currentWorkflowStep.getRecipients());
-            signRequestService.pendingSignRequest(signRequest, currentWorkflowStep.getSignType(), user);
+            signRequestService.pendingSignRequest(signRequest, currentWorkflowStep.getSignType(), currentWorkflowStep.isAllSignToComplete(), user);
         }
         for (Recipient recipient : currentWorkflowStep.getRecipients()) {
             User recipientUser = recipient.getUser();
@@ -294,10 +300,10 @@ public class SignBookService {
     }
 
     public WorkflowStep getCurrentWorkflowStep(SignBook signBook) {
-        if(signBook.getWorkflowSteps().size() >= signBook.getCurrentWorkflowStepNumber()) {
+        if(signBook.getCurrentWorkflowStepNumber() > 0 && signBook.getWorkflowSteps().size() >= signBook.getCurrentWorkflowStepNumber()) {
             return signBook.getWorkflowSteps().get(signBook.getCurrentWorkflowStepNumber() - 1);
         } else {
-            return new WorkflowStep();
+            return null;
         }
     }
 

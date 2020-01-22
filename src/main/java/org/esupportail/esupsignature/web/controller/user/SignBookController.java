@@ -410,6 +410,20 @@ public class SignBookController {
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
+    @RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
+    public String pending(@PathVariable("id") Long id,
+                          @RequestParam(value = "comment", required = false) String comment,
+                          HttpServletRequest request) throws EsupSignatureIOException {
+        User user = userService.getUserFromAuthentication();
+        user.setIp(request.getRemoteAddr());
+        SignBook signBook = signBookRepository.findById(id).get();
+        if (signBookService.checkUserViewRights(user, signBook)) {
+            signBookService.nextWorkFlowStep(signBook);
+            signBookService.pendingSignBook(signBook, user);
+        }
+        return "redirect:/user/signbooks/" + id + "/?form";
+    }
+
 //    @RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
 //    public String complete(@PathVariable("id") Long id,
 //                           @RequestParam(value = "comment", required = false) String comment,

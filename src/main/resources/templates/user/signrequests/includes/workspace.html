@@ -442,7 +442,7 @@
 
                     /*]]>*/
                 </script>
-                <script th:if="${@signRequestService.getCurrentSignType(signRequest) != null && @signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
+                <script th:if="${signable == 'ok' && @signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
                     $(document).ready(function () {
                         if(mode == 'sign') {
                             toggleVisual();
