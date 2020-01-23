@@ -31,6 +31,7 @@ import javax.persistence.NoResultException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -335,11 +336,7 @@ public class WsController {
             if (signRequestRepository.countByToken(token) > 0) {
                 SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
                     FsFile file = signRequestService.getLastSignedFsFile(signRequest);
-                    if (file == null) {
-                        response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
-                        response.setContentType(signRequest.getOriginalDocuments().get(0).getContentType());
-                        IOUtils.copy(signRequest.getOriginalDocuments().get(0).getInputStream(), response.getOutputStream());
-                    } else {
+                    if (file != null) {
                         response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
                         response.setContentType(file.getContentType());
                         IOUtils.copy(file.getInputStream(), response.getOutputStream());
@@ -450,7 +447,6 @@ public class WsController {
                 JsonSignInfoMessage jsonSignInfoMessage = new JsonSignInfoMessage();
                 jsonSignInfoMessage.setStatus(signRequest.getStatus().toString());
                 if(signRequest.getParentSignBook().getWorkflowSteps().size() > 0 ) {
-                    workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
                     for (Recipient recipient : signRequestService.getCurrentRecipients(signRequest)) {
                         User user = recipient.getUser();
                         jsonSignInfoMessage.getNextRecipientNames().add(user.getName());

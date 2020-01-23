@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
-<!--/*@thymesVar id="workflowStep" type="java.util.List<org.esupportail.esupsignature.entity.WorkflowStep>"*/-->
+<!--/*@thymesVar id="workflowStep" type="org.esupportail.esupsignature.entity.WorkflowStep"*/-->
 <div th:fragment="stepscard">
     <div class="alert alert-light">
             <div th:if="${workflow.workflowSteps != null}" style="height: 100%; display: flex; align-items: center; justify-content: center;">
@@ -99,12 +99,12 @@
                                                     </div>
                                                 </th>
                                             </tr>
-                                            <th:block th:each="recipient : ${workflowStep.recipientsNames}">
+                                            <th:block th:each="recipient : ${workflowStep.recipients}">
                                                 <tr>
                                                     <form th:action="'/manager/signbooks/remove-step-recipent/' + ${id} + '/' + ${workflowStep.id}" th:method="'delete'">
-                                                        <input type="hidden" name="recipientName" th:value="${recipient.key}" />
+                                                        <input type="hidden" name="recipientName" th:value="${recipient.user.firstname + ' ' + recipient.user.name}" />
                                                         <td>
-                                                            <span th:text="${recipient.key}"></span>
+                                                            <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                                         </td>
                                                         <td>
                                                             <button title="Supprimer le destinataire"

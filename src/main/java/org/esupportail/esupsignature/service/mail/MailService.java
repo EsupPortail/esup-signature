@@ -81,7 +81,6 @@ public class MailService {
     private String rootUrl;
 
     public void sendCompletedMail(SignBook signBook) {
-        workflowService.setWorkflowsLabels(signBook.getWorkflowSteps());
         if (!checkMailSender()) {
             return;
         }
@@ -106,7 +105,6 @@ public class MailService {
     }
 
     public void sendRefusedMail(SignBook signBook) {
-        workflowService.setWorkflowsLabels(signBook.getWorkflowSteps());
         if (!checkMailSender()) {
             return;
         }

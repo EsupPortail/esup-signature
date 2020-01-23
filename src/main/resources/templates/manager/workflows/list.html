@@ -44,9 +44,11 @@
                                 <td th:if="${#lists.size(workflow.workflowSteps) > 0}" class="none">
                                     <div class="alert alert-secondary">
                                         <th:block th:each="workflowStep : ${workflow.workflowSteps}">
-                                            <i class="fas fa-user"></i>
-                                            <span th:text="${workflowStep.recipientsNames.keySet()}"></span>
-                                            <br/>
+                                            <th:block th:each="recipient : ${workflowStep.recipients}">
+                                                <i class="fas fa-user"></i>
+                                                <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                                <br/>
+                                            </th:block>
                                         </th:block>
                                     </div>
                                 </td>

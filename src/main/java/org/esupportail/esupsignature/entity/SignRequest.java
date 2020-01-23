@@ -47,10 +47,12 @@ public class SignRequest {
 
     @JsonIgnore
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OrderColumn
     private List<Document> originalDocuments = new ArrayList<>();
 
     @JsonIgnore
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OrderColumn
     private List<Document> signedDocuments = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
@@ -164,9 +166,9 @@ public class SignRequest {
         return this.signedDocuments;
     }
 
-//	public void setSignedDocuments(List<Document> signedDocuments) {
-//        this.signedDocuments = signedDocuments;
-//    }
+	public void setSignedDocuments(List<Document> signedDocuments) {
+        this.signedDocuments = signedDocuments;
+    }
 
 	public String getExportedDocumentURI() {
 		return exportedDocumentURI;

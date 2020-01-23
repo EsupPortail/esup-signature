@@ -132,11 +132,10 @@ public class SignRequestService {
 	public List<Document> getToSignDocuments(SignRequest signRequest) {
 		List<Document> documents = new ArrayList<>();
 		if(signRequest.getSignedDocuments() != null && signRequest.getSignedDocuments().size() > 0 ) {
-			documents.add(signRequest.getSignedDocuments().get(0));
+			documents.add(signRequest.getSignedDocuments().get(signRequest.getSignedDocuments().size() - 1));
 		} else {
 			documents.addAll(signRequest.getOriginalDocuments());
 		}
-
 		return documents;
 	}
 
@@ -195,7 +194,9 @@ public class SignRequestService {
 			} else {
 				recipientUser = userRepository.findByEmail(recipientEmail).get(0);
 			}
-			signRequest.getRecipients().add(recipientService.createRecipient(signRequest.getId(), recipientUser));
+			if(recipientRepository.findByParentIdAndUser(signRequest.getId(), recipientUser).size() == 0) {
+				signRequest.getRecipients().add(recipientService.createRecipient(signRequest.getId(), recipientUser));
+			}
 		}
 
 	}
@@ -240,7 +241,7 @@ public class SignRequestService {
 					signedInputStream = pdfService.stampImage(toSignDocuments.get(0), signRequest, getCurrentSignType(signRequest), getCurrentSignRequestParams(signRequest), user, addDate);
 				} else {
 					step = "Convertion du document";
-					if(signRequest.getCurrentStepNumber() < 2) {
+					if(signRequest.getSignedDocuments().size() == 0) {
 						signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(toSignDocuments.get(0).getInputStream(), toSignDocuments.get(0).getFileName(), signRequest));
 					} else {
 						signedInputStream = toSignDocuments.get(0).getInputStream();
@@ -461,13 +462,12 @@ public class SignRequestService {
 
 	public FsFile getLastSignedFsFile(SignRequest signRequest) {
 		if(signRequest.getStatus().equals(SignRequestStatus.exported)) {
-			FsAccessService fsAccessService = null;
 			if (signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().startsWith("mail")) {
-				fsAccessService = fsAccessFactory.getFsAccessService(signRequest.getParentSignBook().getTargetType());
+				FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signRequest.getParentSignBook().getTargetType());
 				return fsAccessService.getFile(signRequest.getExportedDocumentURI());
 			}
 		}
-		Document lastSignedDocument = getLastSignedDocument(signRequest);
+		Document lastSignedDocument = getToSignDocuments(signRequest).get(0);
 		return new FsFile(lastSignedDocument.getInputStream(), lastSignedDocument.getFileName(), lastSignedDocument.getContentType());
 	}
 
@@ -582,34 +582,6 @@ public class SignRequestService {
 
 	public void setStep(String step) {
 		this.step = step;
-	}
-
-	//For thymeleaf
-	public Map<String, Boolean> getCurrentRecipientsNames(SignRequest signRequest) {
-		if(signRequest.getParentSignBook() != null) {
-			workflowStepService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
-			return signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook()).getRecipientsNames();
-		} else {
-			Map<String, Boolean> signBookNames = new HashMap<>();
-			for (Recipient recipient : signRequest.getRecipients()) {
-				signBookNames.put(recipient.getUser().getFirstname() + " " + recipient.getUser().getName(), recipient.getSigned());
-			}
-			return signBookNames;
-		}
-	}
-
-	//For thymeleaf
-	public Map<String, Boolean> getCurrentRecipientsEmails(SignRequest signRequest) {
-		if(signRequest.getParentSignBook() != null) {
-			workflowStepService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
-			return signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook()).getRecipientsNames();
-		} else {
-			Map<String, Boolean> signBookNames = new HashMap<>();
-			for (Recipient recipient : signRequest.getRecipients()) {
-				signBookNames.put(recipient.getUser().getEmail(), recipient.getSigned());
-			}
-			return signBookNames;
-		}
 	}
 
 	public List<Recipient> getCurrentRecipients(SignRequest signRequest) {

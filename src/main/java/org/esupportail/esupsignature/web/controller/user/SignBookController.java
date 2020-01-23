@@ -77,7 +77,6 @@ public class SignBookController {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBookService.checkUserManageRights(user , signBook)) {
-            workflowService.setWorkflowsLabels(signBook.getWorkflowSteps());
             List<Log> logs = logRepository.findBySignRequestId(signBook.getId());
             model.addAttribute("logs", logs);
             model.addAttribute("signBook", signBook);

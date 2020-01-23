@@ -34,10 +34,7 @@ public class WorkflowService {
     private WorkflowStepRepository workflowStepRepository;
 
     @Resource
-    private SignRequestRepository signRequestRepository;
-
-    @Resource
-    private DocumentRepository documentRepository;
+    private RecipientRepository recipientRepository;
 
     @Resource
     private UserRepository userRepository;
@@ -50,9 +47,6 @@ public class WorkflowService {
 
     @Resource
     private SignBookService signBookService;
-
-    @Resource
-    private DocumentService documentService;
 
     @Resource
     private UserService userService;
@@ -198,7 +192,9 @@ public class WorkflowService {
             } else {
                 recipientUser = userRepository.findByEmail(recipientEmail).get(0);
             }
-            workflowStep.getRecipients().add(recipientService.createRecipient(workflowStep.getId(), recipientUser));
+            if(workflowStep.getId() == null || recipientRepository.findByParentIdAndUser(workflowStep.getId(), recipientUser).size() == 0) {
+                workflowStep.getRecipients().add(recipientService.createRecipient(workflowStep.getId(), recipientUser));
+            }
         }
     }
 
@@ -236,16 +232,6 @@ public class WorkflowService {
         }
         workflowStepRepository.save(workflowStep);
         return workflowStep;
-    }
-
-    public void setWorkflowsLabels(List<WorkflowStep> workflowSteps) {
-        for(WorkflowStep workflowStep : workflowSteps) {
-            Map<String, Boolean> signBookNames = new HashMap<>();
-            for (Recipient recipient : workflowStep.getRecipients()) {
-                signBookNames.put(recipient.getUser().getFirstname() + " " + recipient.getUser().getName(), recipient.getSigned());
-            }
-            workflowStep.setRecipientsNames(signBookNames);
-        }
     }
 
     public boolean isWorkflowStepFullSigned(WorkflowStep workflowStep) {

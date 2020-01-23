@@ -16,7 +16,9 @@
             <p>Liste des signataires</p>
             <ul>
             <th:block th:each="workflowStep : ${signBook.workflowSteps}">
-                 <li th:text="${workflowStep.recipientsNames.keySet()}"></li>
+                <th:block th:each="recipient : ${workflowStep.recipients}">
+                    <li th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></li>
+                </th:block>
             </th:block>
             </ul>
             <p th:if="${signBook.exportedDocumentURI != null}">

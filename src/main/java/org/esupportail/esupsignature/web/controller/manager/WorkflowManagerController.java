@@ -69,7 +69,6 @@ public class WorkflowManagerController {
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
 		Workflow workflow = workflowRepository.findById(id).get();
-		workflowService.setWorkflowsLabels(workflow.getWorkflowSteps());
 		uiModel.addAttribute("workflow", workflow);
 		uiModel.addAttribute("signTypes", SignType.values());
 		uiModel.addAttribute("itemId", id);
@@ -94,12 +93,7 @@ public class WorkflowManagerController {
     	if(sortFieldName == null) {
     		sortFieldName = "workflowType";
     	}
-
     	List<Workflow> workflows = ImmutableList.copyOf(workflowRepository.findAll());
-
-		for (Workflow workflow : workflows) {
-			workflowService.setWorkflowsLabels(workflow.getWorkflowSteps());
-		}
 		uiModel.addAttribute("workflows", workflows);
 		return "manager/workflows/list";
 	}

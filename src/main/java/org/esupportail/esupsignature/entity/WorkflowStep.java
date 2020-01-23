@@ -22,8 +22,6 @@ public class WorkflowStep {
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Recipient> recipients = new ArrayList<>();
 
-    transient Map<String, Boolean> recipientsNames;
-
     private Boolean allSignToComplete = false;
 
     @Enumerated(EnumType.STRING)
@@ -75,14 +73,6 @@ public class WorkflowStep {
 
     public void setSignType(SignType signType) {
         this.signType = signType;
-    }
-
-    public Map<String, Boolean> getRecipientsNames() {
-        return recipientsNames;
-    }
-
-    public void setRecipientsNames(Map<String, Boolean> recipientsNames) {
-        this.recipientsNames = recipientsNames;
     }
 
 }

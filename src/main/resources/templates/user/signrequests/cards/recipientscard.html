@@ -24,9 +24,9 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <th:block th:each="recipient : ${@signRequestService.getCurrentRecipientsNames(signRequest)}">
+                    <th:block th:each="recipient : ${signRequest.recipients}">
                         <tr>
-                            <td><span th:text="${recipient.key}"></span></td>
+                            <td><span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span></td>
                         </tr>
                     </th:block>
                     </tbody>
@@ -45,31 +45,30 @@
                 </div>
                 <form th:action="'/user/signrequests/add-recipients/' + ${signRequest.id}" method="post">
                     <div class="modal-body">
+                        <label for="recipientsEmail">Choisir les participants</label>
+                        <select name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple" required="required">
+                            <th:block th:each="recipient : ${signRequest.recipients}">
+                                <option selected="selected" th:value="${recipient.user.email}" th:text="${recipient.user.email}"></option>
+                            </th:block>
+                        </select>
+                        <br/>
+                        <label>
+                            Tous les participants doivent-ils signer ?
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" name="allSignToComplete" th:checked="${signRequest.allSignToComplete}"/>
+                            <span class="slider round"></span>
+                        </label>
+                        <br/>
                         <label>Type de signature :</label>
                         <select name="signType" class="form-control">
                             <th:block th:each="signType : ${signTypes}">
                                 <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signRequest.signType == signType}"></option>
                             </th:block>
                         </select>
-                        <br>
-                        <label>
-                            Tous les participants doivent-ils signer ?
-                        </label>
-                        <label class="switch">
-                            <input type="checkbox" name="allSignToComplete"
-                                   th:checked="${signRequest.allSignToComplete}"/>
-                            <span class="slider round"></span>
-                        </label>
-                        <br/>
-                        <label for="recipientsEmail">Choisir les participants</label>
-                        <select name="recipientsEmail" id="recipientsEmail" size="5" multiple="multiple" required="required">
-                            <th:block th:each="recipient : ${@signRequestService.getCurrentRecipientsEmails(signRequest)}">
-                                <option selected="selected" th:value="${recipient.key}" th:text="${recipient.key}"></option>
-                            </th:block>
-                        </select>
                         <script language="JavaScript">
                             new SlimSelect({
-                                select: "#recipientsEmail",
+                                select: "#recipientsEmails",
                                 placeholder: 'Choisir un ou plusieurs parapheur(s)',
                                 searchText: 'Aucun résultat',
                                 searchPlaceholder: 'Rechercher',

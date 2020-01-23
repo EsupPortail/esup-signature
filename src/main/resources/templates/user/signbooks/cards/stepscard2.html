@@ -69,15 +69,15 @@
                                     <div class="card-body border-1 bg-light">
                                         <h5><span th:text="'Etape ' + ${iterator.index + 1}"></span> : <span th:text="${workflowStep.name}"></span></h5>
                                         <table>
-                                        <th:block th:each="recipient : ${workflowStep.recipientsNames}">
+                                        <th:block th:each="recipient : ${workflowStep.recipients}">
                                             <tr>
                                                 <form th:action="'/user/signBooks/remove-step-recipent/' + ${id} + '/' + ${workflowStep.id}" th:method="'delete'">
-                                                    <input type="hidden" name="recipientName" th:value="${recipient.key}"/>
+                                                    <input type="hidden" name="recipientName" th:value="${recipient.user.firstname + ' ' + recipient.user.name}"/>
                                                     <td>
-                                                        <span th:text="${recipient.key}"></span>
+                                                        <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                                     </td>
                                                     <td>
-                                                        <div th:switch="${recipient.value}">
+                                                        <div th:switch="${recipient.signed}">
                                                             <span th:case="true" class="text-success"><i class="fas fa-check-circle" title="Signature effectuée"></i> Signature effectuée</span>
                                                             <span th:case="false" class="text-danger"><i class="fas fa-exclamation-circle text-danger" title=""></i> En attente de signature</span>
                                                         </div>
@@ -86,7 +86,7 @@
                                             </tr>
                                         </th:block>
                                         </table>
-                                        <span th:if="${workflowStep.recipientsNames.size() == 0}">Aucun participant affecté</span>
+                                        <span th:if="${workflowStep.recipients.size() == 0}">Aucun participant affecté</span>
                                         <div th:id="'stepDetail_' + ${iterator.index}">
                                             <hr/>
                                             <form th:action="'/user/signbooks/update-step/' + ${id} + '/'  + ${iterator.index}">
@@ -187,15 +187,15 @@
                                                         </th>
                                                     </th:block>
                                                 </tr>
-                                                <th:block th:each="recipient : ${workflowStep.recipientsNames}">
+                                                <th:block th:each="recipient : ${workflowStep.recipients}">
                                                     <tr>
                                                         <form th:action="'/user/signBooks/remove-step-recipent/' + ${id} + '/' + ${workflowStep.id}" th:method="'delete'">
-                                                            <input type="hidden" name="recipientName" th:value="${recipient.key}"/>
+                                                            <input type="hidden" name="recipientName" th:value="${recipient.user.firstname + ' ' + recipient.user.name}"/>
                                                             <td>
-                                                                <span th:text="${recipient.key}"></span>
+                                                                <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                                             </td>
                                                             <td>
-                                                                <div th:switch="${recipient.value}">
+                                                                <div th:switch="${recipient.signed}">
                                                                     <span th:case="true" class="text-success"><i class="fas fa-check-circle" title="Signature effectuée"></i> Signature effectuée</span>
                                                                     <span th:case="false" class="text-danger"><i class="fas fa-exclamation-circle text-danger" title=""></i> En attente de signature</span>
                                                                 </div>

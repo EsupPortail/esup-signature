@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav id="sidebar">
+            <div class="m-1">
+                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+                </button>
+            </div>
+        </nav>
+        <div class="content">
+            <div class="alert alert-info">
+                <p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
+                <p>Statut des demandes de signatures :</p>
+                <p>
+                <span class="alert alert-primary">
+                <i class="fas fa-clock"></i> <span th:text="#{'signbook.status.pending'}"></span>
+                </span> La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures
+                </p>
+                <p>
+                <span class="alert alert-success">
+                <i class="fas fa-file-signature"></i> <span th:text="#{'signbook.status.signed'}"></span>
+                </span> Tous les critères de signatures sont remplis
+                </p>
+                <p>
+                <span class="alert alert-success">
+                <i class="far fa-check-circle"></i> <span th:text="#{'signbook.status.checked'}"></span>
+                </span> Le document à été validé par tous les participants
+                </p>
+                <p>
+                <span class="alert alert-danger">
+                <i class="fas fa-ban"></i> <span th:text="#{'signbook.status.refused'}"></span>
+                </span> La demande à été refusée et retirée des parapheurs
+                </p>
+                <p>
+                <span class="alert alert-warning">
+                <i class="fas fa-flag-checkered"></i> <span th:text="#{'signbook.status.completed'}"></span>
+                </span> La demande la demande est terminée </p>
+                <p>
+				<span class="alert alert-warning">
+				<i class="fas fa-file-export"></i> <span th:text="#{'signbook.status.exported'}"></span>
+                </span> La demande la demande à été exportée vers un autre système de stockage et retirée des parapheurs
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

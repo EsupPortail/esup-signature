@@ -53,8 +53,11 @@
                     </div>
                 </div>
                 <div class="d-flex mb-1">
+                    <a class="btn btn-outline-dark mr-1 text-left" th:href="'/user/signrequests/' + ${id} + '?form'" title="Details">
+                        <i class="fas fa-info-circle"></i>
+                    </a>
                     <th:block th:if="${documentType == 'pdf'}">
-                    <div class="border border-dark rounded p-1 d-inline ml-1"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
+                    <div class="border border-dark rounded p-1 d-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
                     <button id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
                         <i class="fas fa-arrow-left"></i>
                     </button>
@@ -96,15 +99,12 @@
                             <i class="fas fa-shield-alt "></i>
                         </a>
                     </th:block>
-                    <a class="btn btn-outline-dark mr-1 text-left" th:href="'/user/signrequests/' + ${id} + '?form'" title="Details">
-                        <i class="fas fa-info-circle"></i>
-                    </a>
                 </div>
                 <nav class="nav nav-tabs" th:if="${signRequest.parentSignBook != null}">
                     <th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
                         <li class="nav-item" th:classappend="${signRequest.parentSignBook.signRequests.size() > 1} ? 'file-tab'">
                             <a th:classappend="${signRequest.id == signRequestTab.id} ? 'active'" class="nav-link" th:href="'/user/signrequests/' + ${signRequestTab.id}">
-                                <div class="d-flex" th:classappend="${signRequestTab.status.name() == 'signed' || signRequestTab.status.name() == 'completed' || signRequestTab.status.name() == 'exported'} ? 'text-success' : 'text-danger'"><i class="fas fa-file"></i>&nbsp;<span th:text="${signRequestTab.title}"></span></div>
+                                <div class="d-flex" th:classappend="${signRequestTab.status.name() == 'signed' || signRequestTab.status.name() == 'completed' || signRequestTab.status.name() == 'exported' || signRequestTab.status.name() == 'checked'} ? 'text-success' : 'text-danger'"><i class="fas fa-file"></i>&nbsp;<span th:text="${signRequestTab.title}"></span></div>
                             </a>
                         </li>
                     </th:block>

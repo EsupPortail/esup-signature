@@ -14,9 +14,11 @@
             <h4>Bonjour,</h4>
             <h5>La demande de signature "<b><span th:text="${signBook.name}"></span></b>" à été refusée par :</h5>
             <ul>
-            <th:block th:each="workflowStep : ${signBook.workflowSteps}">
-                 <li th:text="${workflowStep.recipientsNames.keySet()}"></li>
-            </th:block>
+                <th:block th:each="workflowStep : ${signBook.workflowSteps}">
+                    <th:block th:each="recipient : ${workflowStep.recipients}">
+                        <li th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></li>
+                    </th:block>
+                </th:block>
             </ul>
             <p>
                 <a th:href="@{|${rootUrl}/user/signBooks/${signBook.id}|}" class="btn btn-primary">Voir la demande concernée</a>

@@ -103,9 +103,6 @@ public class SignRequestController {
     private DocumentRepository documentRepository;
 
     @Resource
-    private DocumentService documentService;
-
-    @Resource
     private PdfService pdfService;
 
     @Resource
@@ -215,9 +212,6 @@ public class SignRequestController {
     public String show(@PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if(signRequest.getParentSignBook() != null) {
-            workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
-        }
         model.addAttribute("signRequest", signRequest);
         if ((signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest))) {
             if (signRequest.getStatus().equals(SignRequestStatus.pending)
@@ -228,7 +222,7 @@ public class SignRequestController {
                 model.addAttribute("nexuUrl", nexuUrl);
             }
             Document toDisplayDocument;
-            if (signRequestService.getToSignDocuments(signRequest).size() == 1) {
+            if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
                 toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
                 if (toDisplayDocument.getContentType().equals("application/pdf")) {
                     PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
@@ -518,13 +512,13 @@ public class SignRequestController {
 
     @PostMapping(value = "/add-recipients/{id}")
     public String addRecipients(@PathVariable("id") Long id,
-                          @RequestParam(value = "recipientsEmail", required = false) String[] recipientsEmail,
+                          @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
                           @RequestParam(name = "signType") SignType signType,
                           @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
-            signRequestService.addRecipients(signRequest, recipientsEmail);
+            signRequestService.addRecipients(signRequest, recipientsEmails);
             signRequest.setSignType(signType);
             if(allSignToComplete != null && allSignToComplete) {
                 signRequest.setAllSignToComplete(true);
