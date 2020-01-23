@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.repository.impl;
 
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.repository.SignBookRepositoryCustom;
 import org.springframework.stereotype.Repository;
 
