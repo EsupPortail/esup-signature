@@ -64,10 +64,10 @@ public class SignRequest {
 
     private Boolean allSignToComplete = false;
 
-    @OneToMany(cascade = CascadeType.REMOVE)
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.REMOVE)
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Recipient> recipients = new ArrayList<>();
 
    	public void setStatus(SignRequestStatus status) {

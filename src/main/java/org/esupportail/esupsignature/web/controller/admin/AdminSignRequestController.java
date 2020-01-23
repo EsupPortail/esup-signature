@@ -46,10 +46,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "*")
 @RequestMapping("/admin/signrequests")
 @Controller
-
 public class AdminSignRequestController {
 
 	private static final Logger logger = LoggerFactory.getLogger(AdminSignRequestController.class);
@@ -78,26 +76,20 @@ public class AdminSignRequestController {
 	@Resource
 	private UserService userService;
 
-	@Autowired
+	@Resource
 	private SignRequestRepository signRequestRepository;
 	
 	@Resource
 	private SignRequestService signRequestService;
 
-	@Autowired
+	@Resource
 	private SignBookRepository signBookRepository;
 	
 	@Resource
 	private SignBookService signBookService;
 
-	@Autowired
-	private LogRepository logRepository;
-
-	@Autowired
-	private DocumentRepository documentRepository;
-	
 	@Resource
-	private DocumentService documentService;
+	private LogRepository logRepository;
 
 	@Resource
 	private PdfService pdfService;
@@ -179,21 +171,6 @@ public class AdminSignRequestController {
 			model.addAttribute("nexuUrl", nexuUrl);
 
 			return "admin/signrequests/show";
-	}
-
-	@ResponseBody
-	@RequestMapping(value = "/remove-doc/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-	public Object removeDocument(@PathVariable("id") Long id, HttpServletRequest request) {
-		User user = userService.getUserFromAuthentication();
-		user.setIp(request.getRemoteAddr());
-		Document document = documentRepository.findById(id).get();
-		SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
-		if (signRequestService.checkUserSignRights(user, signRequest)) {
-			signRequest.getOriginalDocuments().remove(document);
-			documentService.deleteDocument(document);
-		}
-		String[] ok = {"ok"};
-		return ok;
 	}
 
 	@DeleteMapping(value = "/{id}", produces = "text/html")

@@ -272,7 +272,7 @@ public class WsController {
         user.setIp(httpServletRequest.getRemoteAddr());
         if (signRequestRepository.countByToken(token) > 0) {
             SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
-            signRequestRepository.delete(signRequest);
+            signRequestService.delete(signRequest);
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }

@@ -20,7 +20,7 @@ public class WorkflowStep {
 
     private String name;
 
-    @OneToMany(cascade = CascadeType.REMOVE)
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Recipient> recipients = new ArrayList<>();
 
     transient Map<String, Boolean> recipientsNames;

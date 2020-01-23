@@ -1,33 +1,29 @@
 package org.esupportail.esupsignature.web.controller.manager;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.repository.*;
-import org.esupportail.esupsignature.service.RecipientService;
-import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.repository.WorkflowRepository;
+import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.fs.FsFile;
-import org.esupportail.esupsignature.service.pdf.PdfParameters;
-import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.Arrays;
@@ -63,9 +59,6 @@ public class WorkflowManagerController {
 
 	@Resource
 	private SignRequestRepository signRequestRepository;
-
-	@Resource
-	private SignRequestParamsRepository signRequestParamsRepository; 
 
 	@ModelAttribute("user")
 	public User getUser() {
@@ -166,53 +159,17 @@ public class WorkflowManagerController {
 
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = "text/html")
-    public String delete(@PathVariable("id") Long id, @RequestParam(value = "page", required = false) Integer page, @RequestParam(value = "size", required = false) Integer size, Model uiModel, RedirectAttributes redirectAttrs) {
+    @DeleteMapping(value = "/{id}", produces = "text/html")
+    public String delete(@PathVariable("id") Long id, RedirectAttributes redirectAttrs) {
     	User user = userService.getUserFromAuthentication();
     	Workflow workflow = workflowRepository.findById(id).get();
-		populateEditForm(uiModel, workflow);
 		if (!workflowService.checkUserManageRights(user, workflow)) {
 			redirectAttrs.addFlashAttribute("messageCustom", "Non autorisé");
 			return "redirect:/manager/workflows/" + id;
 		}
-		workflowService.deleteWorkflow(workflow);
-        uiModel.asMap().clear();
-        uiModel.addAttribute("page", (page == null) ? "1" : page.toString());
-        uiModel.addAttribute("size", (size == null) ? "10" : size.toString());
+		workflowRepository.delete(workflow);
         return "redirect:/manager/workflows";
     }
-	
-	@RequestMapping(value = "/update-params/{id}", method = RequestMethod.POST)
-	public String updateParams(@PathVariable("id") Long id, @RequestParam(value = "xPos", required = true) int xPos,
-			@RequestParam(value = "yPos", required = true) int yPos,
-			@RequestParam(value = "signPageNumber", required = true) int signPageNumber,
-			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
-		User user = userService.getUserFromAuthentication();
-		Workflow workflow = workflowRepository.findById(id).get();
-
-		if (!workflow.getCreateBy().equals(user.getEppn())) {
-			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/manager/workflows/" + id;
-		}
-		workflow.setUpdateBy(user.getEppn());
-		workflow.setUpdateDate(new Date());
-
-		return "redirect:/manager/workflows/" + id;
-	}
-
-	@RequestMapping(value = "/delete-params/{id}", method = RequestMethod.POST)
-	public String deleteParams(@PathVariable("id") Long id,
-			@RequestParam(value = "workflowId", required = true) Long workflowId,
-			RedirectAttributes redirectAttrs, HttpServletResponse response, Model model) {
-		User user = userService.getUserFromAuthentication();
-		SignRequestParams signRequestParams = signRequestParamsRepository.findById(id).get(); 
-		Workflow workflow = workflowRepository.findById(workflowId).get();
-		if (!workflow.getCreateBy().equals(user.getEppn())) {
-			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/manager/workflows/" + id;
-		}
-		return "redirect:/manager/workflows/" + workflowId;
-	}
 
 	@PostMapping(value = "/add-step/{id}")
 	public String addStep(@PathVariable("id") Long id,

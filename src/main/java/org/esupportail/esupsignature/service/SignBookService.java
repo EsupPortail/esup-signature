@@ -261,25 +261,6 @@ public class SignBookService {
         }
     }
 
-    public void delete(SignBook signBook) {
-        List<WorkflowStep> workflowSteps = new ArrayList<>();
-        workflowSteps.addAll(signBook.getWorkflowSteps());
-        for(WorkflowStep workflowStep : workflowSteps) {
-            signBook.getWorkflowSteps().remove(workflowStep);
-            for(Recipient recipient : workflowStep.getRecipients()) {
-                recipientRepository.delete(recipient);
-            }
-            workflowStepRepository.delete(workflowStep);
-        }
-        List<SignRequest>  signRequests = new ArrayList<>();
-        signRequests.addAll(signBook.getSignRequests());
-        for(SignRequest signRequest : signRequests) {
-            signRequestService.delete(signRequest);
-        }
-        signBook.getSignRequests().clear();
-        signBookRepository.delete(signBook);
-    }
-
     public void refuse(SignBook signBook, String comment, User user) {
         mailService.sendRefusedMail(signBook);
         updateStatus(signBook, SignRequestStatus.refused, "Au moins un document a été refusé", user, "SUCCESS", comment);

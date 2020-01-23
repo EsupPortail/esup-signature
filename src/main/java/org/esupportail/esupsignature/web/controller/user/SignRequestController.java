@@ -291,7 +291,7 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
         if (signRequest.getCreateBy().equals(user.getEppn())) {
             signRequest.getOriginalDocuments().remove(document);
-            documentService.deleteDocument(document);
+            //documentService.deleteDocument(document);
         }
         String[] ok = {"ok"};
         return ok;

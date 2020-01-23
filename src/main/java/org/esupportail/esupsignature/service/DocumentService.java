@@ -40,9 +40,6 @@ public class DocumentService {
 	@Resource
 	private BigFileService bigFileService;
 
-	@Resource
-	private BigFileRepository bigFileRepository;
-
 	public Document createDocument(InputStream inputStream, String name, String contentType) throws IOException {
 		Document document = new Document();
 		document.setCreateDate(new Date());
@@ -55,16 +52,6 @@ public class DocumentService {
 		document.setSize(size);
 		documentRepository.save(document);
 		return document;
-	}
-	
-	public void deleteDocument(Document document) {
-		BigFile bigFile = document.getBigFile();
-		if(bigFile != null) {
-			document.setBigFile(null);
-			documentRepository.save(document);
-			bigFileRepository.delete(bigFile);
-		}
-		documentRepository.delete(document);
 	}
 
 	public String getFormatedName(String originalName, int order) {

@@ -115,18 +115,6 @@ public class WorkflowService {
         return workflows;
     }
 
-    public void deleteWorkflow(Workflow workflow) {
-        List<Workflow> workflows = new ArrayList<>();
-        workflowRepository.save(workflow);
-        for (Workflow workflowStep : workflows) {
-            if (workflowStep.isExternal()) {
-                deleteWorkflow(workflowStep);
-            }
-        }
-
-        workflowRepository.delete(workflow);
-    }
-
     public List<FsFile> importFilesFromSource(Workflow workflow, User user) {
         List<FsFile> fsFiles = new ArrayList<>();
         if (workflow.getSourceType() != null && !workflow.getSourceType().equals(DocumentIOType.none)) {

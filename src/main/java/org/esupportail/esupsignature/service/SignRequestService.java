@@ -454,15 +454,15 @@ public class SignRequestService {
 			List<Document> originalDocuments = new ArrayList<>();
 			originalDocuments.addAll(signRequest.getOriginalDocuments());
 			signRequest.getOriginalDocuments().clear();
-			for (Document document : originalDocuments) {
-				documentService.deleteDocument(document);
-			}
+//			for (Document document : originalDocuments) {
+//				documentService.deleteDocument(document);
+//			}
 			List<Document> signedDocuments = new ArrayList<>();
 			signedDocuments.addAll(signRequest.getSignedDocuments());
 			signRequest.getSignedDocuments().clear();
-			for (Document document : signedDocuments) {
-				documentService.deleteDocument(document);
-			}
+//			for (Document document : signedDocuments) {
+//				documentService.deleteDocument(document);
+//			}
 
 		}
 	}
@@ -582,27 +582,7 @@ public class SignRequestService {
 		for (Log log : logs) {
 			logRepository.delete(log);
 		}
-		for(SignRequestParams signRequestParams: signRequest.getSignRequestParams()) {
-			signRequestParamsRepository.delete(signRequestParams);
-		}
-		List<Document> documents = new ArrayList<>();
-		documents.addAll(signRequest.getOriginalDocuments());
-		for(Document document : documents) {
-			signRequest.getOriginalDocuments().remove(document);
-			documentService.deleteDocument(document);
-		}
-		if(signRequest.getParentSignBook() != null) {
-			signRequest.getParentSignBook().getSignRequests().remove(signRequest);
-			if(signRequest.getParentSignBook().getSignRequests().size() == 0) {
-				signBookRepository.delete(signRequest.getParentSignBook());
-			}
-			signRequest.setParentSignBook(null);
-		}
-		for(Recipient recipient : signRequest.getRecipients()) {
-			recipientRepository.delete(recipient);
-		}
 		signRequestRepository.delete(signRequest);
-
 	}
 
 	public String getStep() {
