@@ -31,9 +31,6 @@ public class SignBookService {
     private RecipientService recipientService;
 
     @Resource
-    private RecipientRepository recipientRepository;
-
-    @Resource
     private UserRepository userRepository;
 
     @Resource
@@ -61,19 +58,6 @@ public class SignBookService {
         List<SignBook> list = new ArrayList<>();
         signBookRepository.findAll().forEach(e -> list.add(e));
         return list;
-    }
-
-    public void addRecipient(SignBook signBook, List<String> recipientEmails) {
-        for (String recipientEmail : recipientEmails) {
-            if (userRepository.countByEmail(recipientEmail) == 0) {
-                userService.createUser(recipientEmail);
-            }
-            signBook.getRecipientEmails().add(recipientEmail);
-        }
-    }
-
-    public void removeRecipient(SignBook signBook, String recipientEmail) {
-        signBook.getRecipientEmails().remove(recipientEmail);
     }
 
     public SignBook createSignBook(String name, SignBookType signBookType, User user, boolean external) throws EsupSignatureException {

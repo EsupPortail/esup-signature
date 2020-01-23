@@ -132,7 +132,7 @@ public class SignRequestService {
 	public List<Document> getToSignDocuments(SignRequest signRequest) {
 		List<Document> documents = new ArrayList<>();
 		if(signRequest.getSignedDocuments() != null && signRequest.getSignedDocuments().size() > 0 ) {
-			documents.add(signRequest.getSignedDocuments().get(signRequest.getSignedDocuments().size() - 1));
+			documents.add(getLastSignedDocument(signRequest));
 		} else {
 			documents.addAll(signRequest.getOriginalDocuments());
 		}
@@ -473,7 +473,7 @@ public class SignRequestService {
 
 	public Document getLastSignedDocument(SignRequest signRequest) {
 		if(signRequest.getSignedDocuments().size() > 0) {
-			return signRequest.getSignedDocuments().get(0);
+			return signRequest.getSignedDocuments().get(signRequest.getSignedDocuments().size() - 1);
 		} else {
 			return getLastOriginalDocument(signRequest);
 		}
