@@ -102,7 +102,7 @@
                 </div>
                 <nav class="nav nav-tabs" th:if="${signRequest.parentSignBook != null}">
                     <th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
-                        <li class="nav-item file-tab">
+                        <li class="nav-item" th:classappend="${signRequest.parentSignBook.signRequests.size() > 1} ? 'file-tab'">
                             <a th:classappend="${signRequest.id == signRequestTab.id} ? 'active'" class="nav-link" th:href="'/user/signrequests/' + ${signRequestTab.id}">
                                 <div class="d-flex" th:classappend="${signRequestTab.status.name() == 'signed' || signRequestTab.status.name() == 'completed' || signRequestTab.status.name() == 'exported'} ? 'text-success' : 'text-danger'"><i class="fas fa-file"></i>&nbsp;<span th:text="${signRequestTab.title}"></span></div>
                             </a>

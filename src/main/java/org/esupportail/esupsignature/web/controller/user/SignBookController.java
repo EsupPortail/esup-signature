@@ -152,13 +152,13 @@ public class SignBookController {
 
     @PostMapping(value = "/add-step/{id}")
     public String addStep(@PathVariable("id") Long id,
-                          @RequestParam(value = "name", required = false) String name,
+                          @RequestParam("recipientsEmails") String[] recipientsEmails,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam("signType") String signType) {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
         if (signBookService.checkUserViewRights(user, signBook)) {
-            WorkflowStep workflowStep = workflowService.createWorkflowStep(null, name, allSignToComplete, SignType.valueOf(signType));
+            WorkflowStep workflowStep = workflowService.createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
             signBook.getWorkflowSteps().add(workflowStep);
         }
         return "redirect:/user/signbooks/" + id + "/?form";

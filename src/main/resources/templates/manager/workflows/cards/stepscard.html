@@ -11,7 +11,7 @@
                             <div class="step table-bordered" th:name="${workflowStep.id}" th:id="${workflowStep.id}">
                                 <div class="step-trigger col-12 text-left" role="tab" aria-selected="false">
                                     <span class="bs-stepper-circle bg-primary" th:text="${iterator.index + 1}"></span>
-                                    <div class="bs-stepper-label w-100">
+                                    <div class="bs-stepper-label">
                                         <hr/>
                                         Type de signature :
                                         <form th:action="'/manager/workflows/change-step-sign-type/' + ${id} + '/'  + ${iterator.index}">
@@ -41,7 +41,7 @@
                                                     <div class="modal fade" th:id="'reSendModal' + ${workflowStep.id}" tabindex="-1" role="dialog" th:aria-labelledby="'reSendModal' + ${workflowStep.id}" aria-hidden="true">
                                                         <div class="modal-dialog modal-lg" role="document">
                                                             <div class="modal-content">
-                                                                <form class="form-group" th:action="'/manager/workflows/send-to-signbook/' + ${id} + '/' + ${workflowStep.id}" method="get">
+                                                                <form class="form-group" th:action="'/manager/workflows/add-step-recipent/' + ${id} + '/' + ${workflowStep.id}" method="get">
                                                                     <div class="modal-header">
                                                                         <h5 class="modal-title">Ajout de destinataire(s)</h5>
                                                                     </div>
@@ -117,8 +117,13 @@
                                                 </tr>
                                             </th:block>
                                         </table>
-
-
+                                    </div>
+                                    <div class="bs-stepper-bottom">
+                                        <form th:id="'del_' + ${iterator.index}" th:action="'/manager/workflows/remove-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
+                                            <button type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="btn btn-sm float-right">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>

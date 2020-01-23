@@ -12,24 +12,24 @@
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
 
-                <button title="Modifier les paramètres" type="button" th:onclick="'location.href=\'/manager/workflows/' + ${workflow.id} + '?form\''" class="mb-1 col-12 btn btn-warning text-left">
+                <button title="Modifier les paramètres" type="button" th:onclick="'location.href=\'/manager/workflows/' + ${workflow.id} + '?form\''" class="mb-1 col-12 btn btn-light text-left">
                 <i class="far fa-edit"></i><span class="sidebar-label"> Modifier les paramètres</span>
             </button>
-            <form th:action="'/manager/workflows/' + ${workflow.id}" th:method="delete">
-                <button title="Supprimer" type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="mb-1 col-12 btn btn-danger text-left">
-                    <i class="fas fa-trash"></i><span class="sidebar-label"> Supprimer</span>
-                </button>
-            </form>
-            <button title="Ajouter une étape" type="button" class="mb-1 col-12 btn btn-primary text-left"
+            <button title="Ajouter une étape" type="button" class="mb-1 col-12 btn btn-light text-left"
                     data-toggle="modal" data-target="#addStep">
                 <i class="fa fa-shoe-prints"></i><span class="sidebar-label"> Ajouter une étape</span>
             </button>
             <a th:if="${workflow.sourceType.name() != 'none'}" class="mb-1 col-12 btn btn-primary text-left" th:href="'/manager/workflows/get-files-from-source/' + ${id}">
                 <i class="fas fa-file-import"></i> Importer manuellement
             </a>
+            <form th:action="'/manager/workflows/' + ${workflow.id}" th:method="delete">
+                <button title="Supprimer" type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="mb-1 col-12 btn btn-danger text-left">
+                    <i class="fas fa-trash"></i><span class="sidebar-label"> Supprimer</span>
+                </button>
+            </form>
             <button title="Retour" type="button" class="mb-1 col-12 btn btn-light text-left"
                     value="Retour" onclick="location.href='/manager/workflows'">
-                <i class="fas fa-door-open"></i><span class="sidebar-label"> Retour à la liste</span>
+                <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
             </button>
             </div>
         </nav>
@@ -98,7 +98,7 @@
                             </div>
                             <div class="modal-body">
                                 <div class="input-group">
-                                    <select onchange="checkNbRecipients();" name="recipientsEmail" id="recipientsEmails" size="5" multiple="multiple" required="required">
+                                    <select onchange="checkNbRecipients();" name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple" required="required">
                                         <th:block th:each="workflow : ${allSignBooks}">
                                             <option th:value="${workflow.name}" th:text="${workflow.name} + ' (' + ${workflow.signBookType} + ')'"></option>
                                         </th:block>
@@ -184,11 +184,11 @@
     </div>
 </main>
 <script language="JavaScript">
-    var testSignBookName = document.getElementById("recipientsEmail");
+    var testSignBookName = document.getElementById("recipientsEmails");
 
     if (testSignBookName != null) {
         new SlimSelect({
-            select: '#recipientsEmail',
+            select: '#recipientsEmails',
             placeholder: 'Choisir un ou plusieurs parapheur(s)',
             searchText: 'Aucun résultat',
             searchPlaceholder: 'Rechercher',

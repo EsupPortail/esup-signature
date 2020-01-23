@@ -174,11 +174,13 @@ public class SignRequestController {
         return signRequestsGrouped;
     }
 
-    @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
-    public String updateForm(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
+    @GetMapping(value = "/{id}", params = "form")
+    public String updateForm(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws Exception {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        signRequest.setSignedDocuments(signRequest.getSignedDocuments().stream().sorted(Comparator.comparing(Document::getCreateDate)).collect(Collectors.toList()));
+        if(signRequest.getSignedDocuments().size() > 0) {
+            signRequest.setSignedDocuments(signRequest.getSignedDocuments().stream().sorted(Comparator.comparing(Document::getCreateDate)).collect(Collectors.toList()));
+        }
         if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
             model.addAttribute("signBooks", signBookService.getAllSignBooks());
             Document toDisplayDocument = null;
@@ -214,7 +216,7 @@ public class SignRequestController {
         }
     }
 
-    @RequestMapping(value = "/{id}", produces = "text/html")
+    @GetMapping(value = "/{id}")
     public String show(@PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
