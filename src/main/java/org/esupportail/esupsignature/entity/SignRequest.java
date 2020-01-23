@@ -44,11 +44,11 @@ public class SignRequest {
     private String exportedDocumentURI;
 
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.REMOVE)
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Document> originalDocuments = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.REMOVE)
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Document> signedDocuments = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

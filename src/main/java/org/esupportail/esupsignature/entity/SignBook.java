@@ -65,7 +65,7 @@ public class SignBook {
     @ElementCollection(targetClass=String.class)
     private List<String> recipientEmails = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.REMOVE)
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
@@ -85,7 +85,7 @@ public class SignBook {
 		system, group, workflow;
 	}
 
-	@OneToMany
+	@OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<SignRequest> signRequests = new ArrayList<>();
 
