@@ -47,9 +47,6 @@
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
-                                        <button class="btn btn-sm float-right" data-toggle="collapse" th:href="'#stepDetail_' + ${iterator.index}" role="button" aria-expanded="false" th:aria-controls="'stepDetail_' + ${iterator.index}">
-                                            <i class="fas fa-pen"></i>
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -90,7 +87,7 @@
                                         </th:block>
                                         </table>
                                         <span th:if="${workflowStep.recipientsNames.size() == 0}">Aucun participant affecté</span>
-                                        <div class="collapse" th:id="'stepDetail_' + ${iterator.index}">
+                                        <div th:id="'stepDetail_' + ${iterator.index}">
                                             <hr/>
                                             <form th:action="'/user/signbooks/update-step/' + ${id} + '/'  + ${iterator.index}">
                                                 <label>Type de signature :</label>

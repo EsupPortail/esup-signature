@@ -36,6 +36,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.DocumentService;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +73,11 @@ public class PdfService {
     @Resource
     private FileService fileService;
 
+    @Resource
+    private SignRequestService signRequestService;
+
     public InputStream stampImage(Document toSignFile, SignRequest signRequest, SignType signType, SignRequestParams params, User user, boolean addDate) {
+        signRequestService.setStep("Apposition de la signature");
         PdfParameters pdfParameters;
         try {
             PDDocument pdDocument = PDDocument.load(toSignFile.getInputStream());
@@ -138,8 +143,11 @@ public class PdfService {
             ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
             pdDocument.close();
             try {
-                return convertGS(writeMetadatas(in, toSignFile.getFileName(), signRequest));
-                //return documentService.createDocument(file, toSignFile.getFileName(), toSignFile.getContentType());
+                if(signRequest.getCurrentStepNumber() == 1) {
+                    return convertGS(writeMetadatas(in, toSignFile.getFileName(), signRequest));
+                } else {
+                    return in;
+                }
             } catch (Exception e) {
                 logger.error("unable to convert to pdf A", e);
             }
@@ -215,6 +223,7 @@ public class PdfService {
     }
 
     public InputStream convertGS(InputStream inputStream) throws IOException, EsupSignatureException {
+        signRequestService.setStep("Conversion du document");
         File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
         if (!isPdfAComplient(file) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");

@@ -6,7 +6,7 @@
 <div class="alert alert-info">Paramétrage du circuit de visas</div>
 <br>
 <div class="col-lg-12 text-center">
-    <form th:action="'/user/signbooks/wizard/wiz4/' + ${signBook.id}" method="post">
+    <form class="d-none" th:action="'/user/signbooks/wizard/wiz4/' + ${signBook.id}" method="post">
         <input th:type="hidden" name="selfSign" th:value="true" >
         <button type="submit" class="btn btn-success">Je signe ce document <i class="fas fa-signature"></i>
         </button>

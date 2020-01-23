@@ -235,8 +235,18 @@ public class SignRequestService {
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
 		SignType signType = getCurrentSignType(signRequest);
 		if (signType.equals(SignType.visa)) {
-			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-				InputStream signedInputStream = pdfService.stampImage(toSignDocuments.get(0), signRequest, getCurrentSignType(signRequest), getCurrentSignRequestParams(signRequest), user, addDate);
+			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
+				InputStream signedInputStream;
+				if(visual) {
+					signedInputStream = pdfService.stampImage(toSignDocuments.get(0), signRequest, getCurrentSignType(signRequest), getCurrentSignRequestParams(signRequest), user, addDate);
+				} else {
+					step = "Convertion du document";
+					if(signRequest.getCurrentStepNumber() == 1) {
+						signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(toSignDocuments.get(0).getInputStream(), toSignDocuments.get(0).getFileName(), signRequest));
+					} else {
+						signedInputStream = toSignDocuments.get(0).getInputStream();
+					}
+				}
 				addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
 			}
 		} else if(signType.equals(SignType.pdfImageStamp)) {

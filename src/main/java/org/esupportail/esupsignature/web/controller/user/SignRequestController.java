@@ -46,12 +46,11 @@ import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
-//import org.esupportail.esupsignature.service.export.SedaExportService;
+import org.esupportail.esupsignature.service.export.SedaExportService;
 
 @RequestMapping("/user/signrequests")
 @Controller
 @Transactional
-
 public class SignRequestController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignRequestController.class);
@@ -130,8 +129,8 @@ public class SignRequestController {
     @Resource
     private SignService signService;
 
-//    @Resource
-//    private SedaExportService sedaExportService;
+    @Resource
+    private SedaExportService sedaExportService;
 
     @RequestMapping(produces = "text/html")
     public String list(

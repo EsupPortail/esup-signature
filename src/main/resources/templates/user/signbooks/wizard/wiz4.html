@@ -63,17 +63,14 @@
     <button type="submit" name="addNew" value="true" class="btn btn-primary" style="position: absolute;right: 10px;bottom: 10px;">
         <i class="fas fa-save"></i> Enregistrer l'étape
     </button>
+    <button formnovalidate name="end" value="true" th:if="${signBook.workflowSteps.size() > 0}" style="position: absolute;left: 10px;bottom: 10px;" type="submit" class="btn btn-success">
+        <i class="fas fa-flag-checkered"></i> Terminer
+    </button>
 </form>
 <form th:if="${signBook.workflowSteps.size() == 0}" id="wiz2Form" th:action="'/user/signbooks/wizard/wiz3'" method="post">
     <input type="hidden" name="name" th:value="${name}">
     <button type="submit" class="btn btn-success" style="position: absolute;left: 10px;bottom: 10px;">
         <i class="fas fa-angle-left"></i> Précédent
-    </button>
-</form>
-<form th:action="'/user/signbooks/wizard/wizX/' + ${signBook.id}" method="post">
-    <input type="hidden" name="end" value="true"/>
-    <button th:if="${signBook.workflowSteps.size() > 0}" style="position: absolute;left: 10px;bottom: 10px;" type="submit" class="btn btn-success">
-        <i class="fas fa-flag-checkered"></i> Terminer
     </button>
 </form>
 </body>
