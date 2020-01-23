@@ -155,7 +155,7 @@ public class WorkflowService {
                         SignRequest signRequest = signRequestService.createSignRequest(fsFile.getName(), user);
                         signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(fsFile.getInputStream(), fsFile.getName(), fsFile.getContentType()));
                         signRequest.setParentSignBook(signBook);
-                        signRequestRepository.save(signRequest);
+                        //signRequestRepository.save(signRequest);
                         signBook.getSignRequests().add(signRequest);
                         signBookService.importWorkflow(signBook, workflow);
                         signBookService.nextWorkFlowStep(signBook);

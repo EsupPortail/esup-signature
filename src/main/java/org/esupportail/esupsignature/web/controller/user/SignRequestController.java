@@ -429,7 +429,6 @@ public class SignRequestController {
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@PathVariable("id") Long id, Model model) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        signRequestRepository.save(signRequest);
         signRequestService.delete(signRequest);
         model.asMap().clear();
         return "redirect:/user/signrequests/";
@@ -511,7 +510,7 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if(signRequest.getCreateBy().equals(user.getEppn())) {
             signRequest.setSignType(signType);
-            signRequestRepository.save(signRequest);
+            //signRequestRepository.save(signRequest);
         }
         return "redirect:/user/signrequests/" + id + "/?form";
     }

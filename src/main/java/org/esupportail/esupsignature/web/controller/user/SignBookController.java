@@ -109,19 +109,6 @@ public class SignBookController {
     @Resource
     private SedaExportService sedaExportService;
 
-    @RequestMapping(produces = "text/html")
-    public String list(@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
-        User user = userService.getUserFromAuthentication();
-        workflowService.initCreatorWorkflow();
-        List<SignBook> signBooksToSign = signBookService.getTosignRequests(user);
-        model.addAttribute("signBooksToSign", signBooksToSign);
-        model.addAttribute("signBooksCreateByCurrentUser", signBookRepository.findByCreateBy(user.getEppn(), pageable));
-        model.addAttribute("statusFilter", this.statusFilter);
-        model.addAttribute("statuses", SignRequestStatus.values());
-        populateEditForm(model, new SignRequest());
-        return "user/signbooks/list";
-    }
-
     @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
     public String updateForm(@PathVariable("id") Long id, Model model) {
         User user = userService.getUserFromAuthentication();
@@ -139,53 +126,6 @@ public class SignBookController {
         }
 
     }
-
-//    @RequestMapping(value = "/{id}/{signRequestId}", produces = "text/html")
-//    public String show(@PathVariable("id") Long id, @PathVariable("signRequestId") Long signRequestId, Model model) throws Exception {
-//        User user = userService.getUserFromAuthentication();
-//        SignBook signBook = signBookRepository.findById(id).get();
-//        workflowService.setWorkflowsLabels(signBook.getWorkflowSteps());
-//        model.addAttribute("signBook", signBook);
-//        SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
-//        if (signBook.getSignRequests().contains(signRequest) && (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest))) {
-//            Document toDisplayDocument;
-//            if (signRequestService.getToSignDocuments(signRequest).size() == 1) {
-//                toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
-//                if (toDisplayDocument.getContentType().equals("application/pdf")) {
-//                    PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
-//                    model.addAttribute("pdfWidth", pdfParameters.getWidth());
-//                    model.addAttribute("pdfHeight", pdfParameters.getHeight());
-//                    model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-//                }
-//                model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
-//                model.addAttribute("documentId", toDisplayDocument.getId());
-//            }
-//            if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) && signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
-//                model.addAttribute("signable", "ok");
-//                if(!signRequestService.getCurrentSignType(signRequest).equals(SignType.visa)
-//                        && user.getSignImage() != null
-//                        && user.getSignImage().getSize() > 0) {
-//                    model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-//                    int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
-//                    model.addAttribute("signWidth", size[0]);
-//                    model.addAttribute("signHeight", size[1]);
-//                } else {
-//                    model.addAttribute("signWidth", 100);
-//                    model.addAttribute("signHeight", 75);
-//                }
-//            }
-//            if(signRequest.getSignRequestParams().size() < signRequest.getParentSignBook().getCurrentWorkflowStepNumber()) {
-//                signRequest.getSignRequestParams().add(signRequestService.getEmptySignRequestParams());
-//                signRequestRepository.save(signRequest);
-//            }
-//        }
-//        model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
-//        List<Log> logs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
-//        model.addAttribute("refusLogs", logs);
-//        model.addAttribute("signRequest", signRequest);
-//        model.addAttribute("signRequestId", signRequestId);
-//        return "user/signbooks/show";
-//    }
 
     @ResponseBody
     @RequestMapping(value = "/get-step")

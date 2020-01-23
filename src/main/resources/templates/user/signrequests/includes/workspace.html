@@ -85,7 +85,6 @@
                             renderTask.promise.then(function () {
                                 pageRendering = false;
                                 if (pageNumPending !== null) {
-                                    // New page rendering is pending
                                     renderPage(pageNumPending);
                                     pageNumPending = null;
                                 }
@@ -121,12 +120,13 @@
                     }
 
                     function prevPage() {
-                        console.error(pageNum);
                         if (pageNum <= 1) {
                             return;
                         }
                         pageNum--;
                         queueRenderPage(pageNum);
+                        window.scrollTo(0, 0);
+
                     }
 
                     document.getElementById('prev').addEventListener('click', prevPage);
@@ -137,6 +137,7 @@
                         }
                         pageNum++;
                         queueRenderPage(pageNum);
+                        window.scrollTo(0, 0);
                     }
 
                     document.getElementById('next').addEventListener('click', nextPage);
@@ -410,19 +411,6 @@
                         }
                     }
 
-                    $(window).bind('mousewheel DOMMouseScroll', function(event)
-                    {
-                        if(event.ctrlKey == true)
-                        {
-                            event.preventDefault();
-                            if(event.originalEvent.detail > 0) {
-                                zoomOut();
-                            }else {
-                                zoomIn();
-                            }
-                        }
-                    });
-
                     $(document).ready(function () {
                         if(localStorage.getItem('mode') != null && localStorage.getItem('mode') != "") {
                             mode = localStorage.getItem('mode');
@@ -438,7 +426,49 @@
                         } else {
                             enableReadMode();
                         }
+
+                        var topscroll = window.innerHeight + window.scrollY;
+                        var pdf = document.getElementById("pdf");
+                        window.addEventListener("wheel", function(event)
+                        {
+                            if(event.ctrlKey == true) {
+                                if (detectMouseWheelDirection(event) == 'down'){
+                                    zoomOut();
+                                } else {
+                                    zoomIn();
+                                }
+                            } else {
+                                if (detectMouseWheelDirection(event) == 'down' && $(window).scrollTop() + $(window).height() == $(document).height()) {
+                                    if(pageNum < pdfDoc.numPages) {
+                                        nextPage();
+                                    }
+                                } else if (detectMouseWheelDirection(event) == 'up' && window.scrollY == 0) {
+                                    if(pageNum > 1) {
+                                        prevPage();
+                                        window.scrollTo(0, document.body.scrollHeight);
+                                    }
+                                }
+                            }
+                        });
                     });
+
+                    function detectMouseWheelDirection( e )
+                    {
+                        var delta = null,
+                            direction = false;
+                        if ( !e ) {
+                            e = window.event;
+                        }
+                        if ( e.wheelDelta ) {
+                            delta = e.wheelDelta / 60;
+                        } else if ( e.detail ) {
+                            delta = -e.detail / 2;
+                        }
+                        if ( delta !== null ) {
+                            direction = delta > 0 ? 'up' : 'down';
+                        }
+                        return direction;
+                    }
 
                     /*]]>*/
                 </script>

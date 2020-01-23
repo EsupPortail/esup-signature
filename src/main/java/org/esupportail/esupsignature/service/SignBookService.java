@@ -123,7 +123,7 @@ public class SignBookService {
         signBook.getSignRequests().add(signRequest);
         signBookRepository.save(signBook);
         signRequest.setParentSignBook(signBook);
-        signRequestRepository.save(signRequest);
+        //signRequestRepository.save(signRequest);
     }
 
     public void deleteSignBook(SignBook signBook) {

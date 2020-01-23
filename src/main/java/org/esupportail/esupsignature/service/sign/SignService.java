@@ -332,7 +332,7 @@ public class SignService {
 			if(toSignFile.getContentType().equals("application/pdf") && visual) {
 				signatureForm = SignatureForm.PAdES;
 				inputStream = toSignFile.getInputStream();
-				if(signRequest.getCurrentStepNumber() == 1) {
+				if(signRequest.getCurrentStepNumber() < 2) {
 					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest));
 				}
 			} else {

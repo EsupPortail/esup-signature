@@ -143,7 +143,7 @@ public class PdfService {
             ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
             pdDocument.close();
             try {
-                if(signRequest.getCurrentStepNumber() == 1) {
+                if(signRequest.getCurrentStepNumber() < 2) {
                     return convertGS(writeMetadatas(in, toSignFile.getFileName(), signRequest));
                 } else {
                     return in;
