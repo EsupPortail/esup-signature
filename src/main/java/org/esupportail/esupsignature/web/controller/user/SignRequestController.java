@@ -198,7 +198,6 @@ public class SignRequestController {
                 model.addAttribute("signable", "ok");
             }
             model.addAttribute("signTypes", SignType.values());
-            model.addAttribute("allSignBooks", signBookRepository.findBySignBookType(SignBookType.group));
             model.addAttribute("workflows", workflowRepository.findAll());
             model.addAttribute("baseUrl", baseUrl);
             model.addAttribute("nexuVersion", nexuVersion);

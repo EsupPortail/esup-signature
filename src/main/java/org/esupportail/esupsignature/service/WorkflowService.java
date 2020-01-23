@@ -182,7 +182,7 @@ public class WorkflowService {
     }
 
     public Long toggleAllSignToCompleteForWorkflowStep(WorkflowStep workflowStep) {
-        if(workflowStep.isAllSignToComplete()) {
+        if(workflowStep.getAllSignToComplete()) {
             workflowStep.setAllSignToComplete(false);
         } else {
             workflowStep.setAllSignToComplete(true);

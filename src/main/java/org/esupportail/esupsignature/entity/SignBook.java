@@ -22,23 +22,7 @@ public class SignBook {
 
 	@Version
     private Integer version;
-    
-    public Long getId() {
-        return this.id;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public Integer getVersion() {
-        return this.version;
-    }
-    
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
-	
+
 	@Column(unique=true)
 	private String name;
 
@@ -62,9 +46,6 @@ public class SignBook {
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-    @ElementCollection(targetClass=String.class)
-    private List<String> recipientEmails = new ArrayList<>();
-
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
@@ -78,13 +59,6 @@ public class SignBook {
 
     private String exportedDocumentURI;
 
-	@Enumerated(EnumType.STRING)
-	private SignBookType signBookType;
-	
-	public enum SignBookType {
-		system, group, workflow;
-	}
-
 	@OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<SignRequest> signRequests = new ArrayList<>();
@@ -93,96 +67,84 @@ public class SignBook {
     @Transient
     transient String comment;
 
-    public void setStatus(SignRequestStatus status) {
-        this.status = status;
+    public Long getId() {
+        return id;
     }
 
-    public void setSignBookType(SignBookType signBookType) {
-        this.signBookType = signBookType;
+    public void setId(Long id) {
+        this.id = id;
     }
-        
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
     public String getName() {
-        return this.name;
+        return name;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public Date getCreateDate() {
-        return this.createDate;
+        return createDate;
     }
-    
+
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
-    
+
     public String getCreateBy() {
-        return this.createBy;
+        return createBy;
     }
-    
+
     public void setCreateBy(String createBy) {
         this.createBy = createBy;
     }
-    
+
     public Date getUpdateDate() {
-        return this.updateDate;
+        return updateDate;
     }
-    
+
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
     }
-    
+
     public String getUpdateBy() {
-        return this.updateBy;
+        return updateBy;
     }
-    
+
     public void setUpdateBy(String updateBy) {
         this.updateBy = updateBy;
-    }
-    
-    public String getDescription() {
-        return this.description;
-    }
-    
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public List<String> getRecipientEmails() {
-        return this.recipientEmails;
-    }
-
-    public SignBookType getSignBookType() {
-        return this.signBookType;
-    }
-
-    public String getExportedDocumentURI() {
-        return exportedDocumentURI;
-    }
-
-    public void setExportedDocumentURI(String exportedDocumentURI) {
-        this.exportedDocumentURI = exportedDocumentURI;
-    }
-
-    public Boolean isExternal() {
-		return external;
-	}
-
-	public void setExternal(Boolean external) {
-		this.external = external;
-	}
-
-    public List<SignRequest> getSignRequests() {
-        return signRequests;
-    }
-
-    public void setSignRequests(List<SignRequest> signRequests) {
-        this.signRequests = signRequests;
     }
 
     public Boolean getExternal() {
         return external;
+    }
+
+    public void setExternal(Boolean external) {
+        this.external = external;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public SignRequestStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(SignRequestStatus status) {
+        this.status = status;
     }
 
     public List<WorkflowStep> getWorkflowSteps() {
@@ -217,6 +179,22 @@ public class SignBook {
         this.documentsTargetUri = documentsTargetUri;
     }
 
+    public String getExportedDocumentURI() {
+        return exportedDocumentURI;
+    }
+
+    public void setExportedDocumentURI(String exportedDocumentURI) {
+        this.exportedDocumentURI = exportedDocumentURI;
+    }
+
+    public List<SignRequest> getSignRequests() {
+        return signRequests;
+    }
+
+    public void setSignRequests(List<SignRequest> signRequests) {
+        this.signRequests = signRequests;
+    }
+
     public String getComment() {
         return comment;
     }
@@ -225,11 +203,7 @@ public class SignBook {
         this.comment = comment;
     }
 
-    public SignRequestStatus getStatus() {
-        return status;
-    }
-
-    public void setRecipientEmails(List<String> recipientEmails) {
-        this.recipientEmails = recipientEmails;
+    public enum SignBookType {
+        system, group, workflow;
     }
 }

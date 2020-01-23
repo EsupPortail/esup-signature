@@ -38,16 +38,16 @@ public class WorkflowStep {
         return version;
     }
 
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public void setVersion(Integer version) {
-        this.version = version;
     }
 
     public List<Recipient> getRecipients() {
@@ -58,7 +58,7 @@ public class WorkflowStep {
         this.recipients = recipients;
     }
 
-    public Boolean isAllSignToComplete() {
+    public Boolean getAllSignToComplete() {
         return allSignToComplete;
     }
 
@@ -67,11 +67,10 @@ public class WorkflowStep {
     }
 
     public SignType getSignType() {
-        return this.signType;
+        return signType;
     }
 
     public void setSignType(SignType signType) {
         this.signType = signType;
     }
-
 }

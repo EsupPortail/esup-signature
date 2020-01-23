@@ -133,10 +133,7 @@
                                                                             </div>
                                                                             <div class="modal-body">
                                                                                 <div class="input-group">
-                                                                                    <select onchange="checkNbRecipients();" name="signBookNames" th:id="'signBookNames' + ${workflowStep.id}" multiple="multiple" required="required">
-                                                                                        <th:block th:each="signBook : ${allSignBooks}">
-                                                                                            <option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
-                                                                                        </th:block>
+                                                                                    <select name="signBookNames" th:id="'signBookNames' + ${workflowStep.id}" multiple="multiple" required="required">
                                                                                     </select>
                                                                                 </div>
                                                                                 <div class="input-group">

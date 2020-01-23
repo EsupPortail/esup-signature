@@ -159,7 +159,6 @@ public class AdminSignRequestController {
 			if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
 				model.addAttribute("signable", "ok");
 			}
-			model.addAttribute("allSignBooks", signBookRepository.findByNotCreateBy("System"));
 			model.addAttribute("baseUrl", baseUrl);
 			model.addAttribute("nexuVersion", nexuVersion);
 			model.addAttribute("nexuUrl", nexuUrl);

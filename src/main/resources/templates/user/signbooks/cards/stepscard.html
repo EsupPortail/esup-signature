@@ -20,7 +20,7 @@
                                         <i class="fa fa-check"></i>
                                     </span>
                                     <div class="bs-stepper-label">
-                                        <span  th:text="#{'signbook.signtype.' + ${workflowStep.getSignType()}}"></span> <span title="Tous les participants doivent signer" th:if="${workflowStep.isAllSignToComplete()}"><i class="fas fa-users"></i></span>
+                                        <span  th:text="#{'signbook.signtype.' + ${workflowStep.getSignType()}}"></span> <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}"><i class="fas fa-users"></i></span>
                                         <br/>
                                         <span th:if="${workflowStep.name != null}" th:text="${workflowStep.name}"></span>
                                         <ul>

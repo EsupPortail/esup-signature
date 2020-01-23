@@ -31,18 +31,6 @@ public class SignRequest {
 
     private String createBy;
 
-    @JsonIgnore
-    @Transient
-    transient String viewTitle;
-
-    @JsonIgnore
-    @Transient
-    transient String comment;
-
-    @JsonIgnore
-    @Transient
-    transient User creator;
-
     private String exportedDocumentURI;
 
     @JsonIgnore
@@ -74,109 +62,97 @@ public class SignRequest {
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Recipient> recipients = new ArrayList<>();
 
-   	public void setStatus(SignRequestStatus status) {
-        this.status = status;
-    }
+    @JsonIgnore
+    @Transient
+    transient String viewTitle;
+
+    @JsonIgnore
+    @Transient
+    transient String comment;
+
+    @JsonIgnore
+    @Transient
+    transient User creator;
 
     public Long getId() {
-        return this.id;
+        return id;
     }
 
-	public void setId(Long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-	public Integer getVersion() {
-        return this.version;
+    public Integer getVersion() {
+        return version;
     }
 
-	public void setVersion(Integer version) {
+    public void setVersion(Integer version) {
         this.version = version;
     }
 
-	public String getToken() {
-        return this.token;
+    public String getToken() {
+        return token;
     }
 
-	public void setToken(String token) {
+    public void setToken(String token) {
         this.token = token;
     }
 
-	public String getTitle() {
-        return this.title;
+    public String getTitle() {
+        return title;
     }
 
-	public void setTitle(String title) {
+    public void setTitle(String title) {
         this.title = title;
     }
 
-	public Date getCreateDate() {
-        return this.createDate;
+    public Date getCreateDate() {
+        return createDate;
     }
 
-	public void setCreateDate(Date createDate) {
+    public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
 
-	public String getCreateBy() {
-        return this.createBy;
+    public String getCreateBy() {
+        return createBy;
     }
 
-	public void setCreateBy(String createBy) {
+    public void setCreateBy(String createBy) {
         this.createBy = createBy;
     }
 
-	public String getComment() {
-        return this.comment;
+    public String getExportedDocumentURI() {
+        return exportedDocumentURI;
     }
 
-	public void setComment(String comment) {
-        this.comment = comment;
+    public void setExportedDocumentURI(String exportedDocumentURI) {
+        this.exportedDocumentURI = exportedDocumentURI;
     }
 
-    public User getCreator() {
-        return creator;
+    public List<Document> getOriginalDocuments() {
+        return originalDocuments;
     }
 
-    public String getViewTitle() {
-        return viewTitle;
+    public void setOriginalDocuments(List<Document> originalDocuments) {
+        this.originalDocuments = originalDocuments;
     }
 
-    public void setViewTitle(String viewTitle) {
-        this.viewTitle = viewTitle;
+    public List<Document> getSignedDocuments() {
+        return signedDocuments;
     }
 
-    public void setCreator(User creator) {
-        this.creator = creator;
+    public void setSignedDocuments(List<Document> signedDocuments) {
+        this.signedDocuments = signedDocuments;
     }
 
     public SignRequestStatus getStatus() {
         return status;
     }
 
-    public List<Document> getOriginalDocuments() {
-        return this.originalDocuments;
+    public void setStatus(SignRequestStatus status) {
+        this.status = status;
     }
-
-	public void setOriginalDocuments(List<Document> originalDocuments) {
-        this.originalDocuments = originalDocuments;
-    }
-
-	public List<Document> getSignedDocuments() {
-        return this.signedDocuments;
-    }
-
-	public void setSignedDocuments(List<Document> signedDocuments) {
-        this.signedDocuments = signedDocuments;
-    }
-
-	public String getExportedDocumentURI() {
-		return exportedDocumentURI;
-	}
-
-	public void setExportedDocumentURI(String exportedDocumentURI) {
-		this.exportedDocumentURI = exportedDocumentURI;
-	}
 
     public SignBook getParentSignBook() {
         return parentSignBook;
@@ -186,28 +162,12 @@ public class SignRequest {
         this.parentSignBook = parentSignBook;
     }
 
-    public List<SignRequestParams> getSignRequestParams() {
-        return signRequestParams;
-    }
-
-    public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
-        this.signRequestParams = signRequestParams;
-    }
-
     public Integer getCurrentStepNumber() {
         return currentStepNumber;
     }
 
     public void setCurrentStepNumber(Integer currentStepNumber) {
         this.currentStepNumber = currentStepNumber;
-    }
-
-    public List<Recipient> getRecipients() {
-        return recipients;
-    }
-
-    public void setRecipients(List<Recipient> recipients) {
-        this.recipients = recipients;
     }
 
     public SignType getSignType() {
@@ -224,5 +184,45 @@ public class SignRequest {
 
     public void setAllSignToComplete(Boolean allSignToComplete) {
         this.allSignToComplete = allSignToComplete;
+    }
+
+    public List<SignRequestParams> getSignRequestParams() {
+        return signRequestParams;
+    }
+
+    public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
+        this.signRequestParams = signRequestParams;
+    }
+
+    public List<Recipient> getRecipients() {
+        return recipients;
+    }
+
+    public void setRecipients(List<Recipient> recipients) {
+        this.recipients = recipients;
+    }
+
+    public String getViewTitle() {
+        return viewTitle;
+    }
+
+    public void setViewTitle(String viewTitle) {
+        this.viewTitle = viewTitle;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public User getCreator() {
+        return creator;
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
     }
 }

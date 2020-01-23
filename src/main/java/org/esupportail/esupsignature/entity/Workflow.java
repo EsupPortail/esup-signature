@@ -20,23 +20,7 @@ public class Workflow {
 
 	@Version
     private Integer version;
-    
-    public Long getId() {
-        return this.id;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public Integer getVersion() {
-        return this.version;
-    }
-    
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
-	
+
 	@Column(unique=true)
 	private String name;
 
@@ -72,80 +56,100 @@ public class Workflow {
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;
     
-    private String documentsTargetUri;    
+    private String documentsTargetUri;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+
+    public String getCreateBy() {
+        return createBy;
+    }
+
+    public void setCreateBy(String createBy) {
+        this.createBy = createBy;
+    }
+
+    public Date getUpdateDate() {
+        return updateDate;
+    }
+
+    public void setUpdateDate(Date updateDate) {
+        this.updateDate = updateDate;
+    }
+
+    public String getUpdateBy() {
+        return updateBy;
+    }
+
+    public void setUpdateBy(String updateBy) {
+        this.updateBy = updateBy;
+    }
+
+    public Boolean getExternal() {
+        return external;
+    }
+
+    public void setExternal(Boolean external) {
+        this.external = external;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public DocumentIOType getSourceType() {
+        return sourceType;
+    }
 
     public void setSourceType(DocumentIOType sourceType) {
         this.sourceType = sourceType;
     }
-    
-    public void setTargetType(DocumentIOType targetType) {
-        this.targetType = targetType;
-    }
-    
-    public String getName() {
-        return this.name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
-    }
-    
-    public Date getCreateDate() {
-        return this.createDate;
-    }
-    
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
-    
-    public String getCreateBy() {
-        return this.createBy;
-    }
-    
-    public void setCreateBy(String createBy) {
-        this.createBy = createBy;
-    }
-    
-    public Date getUpdateDate() {
-        return this.updateDate;
-    }
-    
-    public void setUpdateDate(Date updateDate) {
-        this.updateDate = updateDate;
-    }
-    
-    public String getUpdateBy() {
-        return this.updateBy;
-    }
-    
-    public void setUpdateBy(String updateBy) {
-        this.updateBy = updateBy;
-    }
-    
-    public String getDescription() {
-        return this.description;
-    }
-    
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    
-    public DocumentIOType getSourceType() {
-        return this.sourceType;
-    }
-    
+
     public String getDocumentsSourceUri() {
-        return this.documentsSourceUri;
+        return documentsSourceUri;
     }
-    
+
     public void setDocumentsSourceUri(String documentsSourceUri) {
         this.documentsSourceUri = documentsSourceUri;
     }
-    
+
     public List<String> getManagers() {
-        return this.managers;
+        return managers;
     }
-    
+
     public void setManagers(List<String> managers) {
         this.managers = managers;
     }
@@ -159,23 +163,18 @@ public class Workflow {
     }
 
     public DocumentIOType getTargetType() {
-        return this.targetType;
+        return targetType;
     }
-    
+
+    public void setTargetType(DocumentIOType targetType) {
+        this.targetType = targetType;
+    }
+
     public String getDocumentsTargetUri() {
-        return this.documentsTargetUri;
+        return documentsTargetUri;
     }
-    
+
     public void setDocumentsTargetUri(String documentsTargetUri) {
         this.documentsTargetUri = documentsTargetUri;
     }
-
-	public Boolean isExternal() {
-		return external;
-	}
-
-	public void setExternal(Boolean external) {
-		this.external = external;
-	}
-    
 }

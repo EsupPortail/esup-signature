@@ -7,10 +7,7 @@
 <form th:action="'/user/signbooks/wizard/wizX/' + ${signBook.id}" method="post">
     <div class="col-lg-12">
         <label for="recipientsEmail">Choisir les participants pour l'étape <span th:text="${signBook.workflowSteps.size() + 1}"></span></label>
-        <select onchange="checkNbRecipients();" name="recipientsEmail" id="recipientsEmail" size="5" multiple="multiple" required="required">
-            <th:block th:each="signBook : ${allSignBooks}">
-                <option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
-            </th:block>
+        <select name="recipientsEmail" id="recipientsEmail" size="5" multiple="multiple" required="required">
         </select>
         <script language="JavaScript">
             new SlimSelect({
