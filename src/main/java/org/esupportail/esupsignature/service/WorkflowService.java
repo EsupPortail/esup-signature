@@ -69,18 +69,18 @@ public class WorkflowService {
     public void initCreatorWorkflow() {
         if (userRepository.countByEppn("creator") == 0) {
             User creator = userService.createUser("creator", "Createur de la demande", "", "");
-            Workflow workflowWorkflow = new Workflow();
-            workflowWorkflow.setName("Ma signature");
-            workflowWorkflow.setCreateDate(new Date());
-            workflowWorkflow.setSourceType(DocumentIOType.none);
-            workflowWorkflow.setTargetType(DocumentIOType.none);
+            Workflow workflow = new Workflow();
+            workflow.setName("Ma signature");
+            workflow.setCreateDate(new Date());
+            workflow.setSourceType(DocumentIOType.none);
+            workflow.setTargetType(DocumentIOType.none);
             WorkflowStep workflowStep = new WorkflowStep();
             workflowStep.setName("Ma signature");
             workflowStep.setSignType(SignType.certSign);
-            workflowStepRepository.save(workflowStep);
             workflowStep.getRecipients().add(recipientService.createRecipient(workflowStep.getId(), creator));
-            workflowWorkflow.getWorkflowSteps().add(workflowStep);
-            workflowRepository.save(workflowWorkflow);
+            workflowStepRepository.save(workflowStep);
+            workflow.getWorkflowSteps().add(workflowStep);
+            workflowRepository.save(workflow);
         }
     }
 
@@ -155,7 +155,7 @@ public class WorkflowService {
                         SignRequest signRequest = signRequestService.createSignRequest(fsFile.getName(), user);
                         signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(fsFile.getInputStream(), fsFile.getName(), fsFile.getContentType()));
                         signRequest.setParentSignBook(signBook);
-                        //signRequestRepository.save(signRequest);
+
                         signBook.getSignRequests().add(signRequest);
                         signBookService.importWorkflow(signBook, workflow);
                         signBookService.nextWorkFlowStep(signBook);
@@ -187,12 +187,10 @@ public class WorkflowService {
             workflowStep.setName(name);
         }
         setSignTypeForWorkflowStep(signType, workflowStep);
-        workflowStepRepository.save(workflowStep);
     }
 
     public Long setSignTypeForWorkflowStep(SignType signType, WorkflowStep workflowStep) {
         workflowStep.setSignType(signType);
-        workflowStepRepository.save(workflowStep);
         return workflowStep.getId();
     }
 
@@ -207,12 +205,10 @@ public class WorkflowService {
         } else {
             workflowStep.setAllSignToComplete(true);
         }
-        workflowStepRepository.save(workflowStep);
         return workflowStep.getId();
     }
 
-
-    public void addRecipientsToWorkflowStep(List<String> recipientsEmail, WorkflowStep workflowStep, User user) {
+    public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) {
         for (String recipientEmail : recipientsEmail) {
             User recipientUser;
             if (userRepository.countByEmail(recipientEmail) == 0) {
@@ -222,10 +218,9 @@ public class WorkflowService {
             }
             workflowStep.getRecipients().add(recipientService.createRecipient(workflowStep.getId(), recipientUser));
         }
-        workflowStepRepository.save(workflowStep);
     }
 
-    public WorkflowStep createWorkflowStep(List<String> recipientEmails, String name, Boolean allSignToComplete, SignType signType) {
+    public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, String... recipientEmails) {
         WorkflowStep workflowStep = new WorkflowStep();
         if(name != null) {
             workflowStep.setName(name);
@@ -236,10 +231,28 @@ public class WorkflowService {
             workflowStep.setAllSignToComplete(allSignToComplete);
         }
         workflowStep.setSignType(signType);
-        workflowStepRepository.save(workflowStep);
         if(recipientEmails != null) {
-            addRecipientsToWorkflowStep(recipientEmails, workflowStep, userService.getSystemUser());
+            addRecipientsToWorkflowStep(workflowStep, recipientEmails);
         }
+        workflowStepRepository.save(workflowStep);
+        return workflowStep;
+    }
+
+    public WorkflowStep createWorkflowStep(List<Recipient> recipients, String name, Boolean allSignToComplete, SignType signType) {
+        WorkflowStep workflowStep = new WorkflowStep();
+        if(name != null) {
+            workflowStep.setName(name);
+        }
+        if(allSignToComplete ==null) {
+            workflowStep.setAllSignToComplete(false);
+        } else {
+            workflowStep.setAllSignToComplete(allSignToComplete);
+        }
+        workflowStep.setSignType(signType);
+        for(Recipient recipient : recipients) {
+            addRecipientsToWorkflowStep(workflowStep, recipient.getUser().getEmail());
+        }
+        workflowStepRepository.save(workflowStep);
         return workflowStep;
     }
 

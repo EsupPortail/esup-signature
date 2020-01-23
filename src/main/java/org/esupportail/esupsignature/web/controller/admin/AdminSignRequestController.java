@@ -203,17 +203,6 @@ public class AdminSignRequestController {
 		return "redirect:/admin/signrequests/";
 	}
 
-	@RequestMapping(value = "/get-last-file-by-token/{token}", method = RequestMethod.GET)
-	public void getLastFileByToken(@PathVariable("token") String token, HttpServletResponse response, Model model) {
-		User user = userService.getUserFromAuthentication();
-		SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
-		if(signRequestService.checkUserViewRights(user, signRequest)) {
-			getLastFile(signRequest.getId(), response, model);
-		} else {
-			logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
-		}
-	}
-
 	@RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
 	public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();

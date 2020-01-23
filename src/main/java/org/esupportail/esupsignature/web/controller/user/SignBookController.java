@@ -2,28 +2,15 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.*;
-import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.export.SedaExportService;
-import org.esupportail.esupsignature.service.file.FileService;
-import org.esupportail.esupsignature.service.pdf.PdfParameters;
-import org.esupportail.esupsignature.service.pdf.PdfService;
-import org.esupportail.esupsignature.service.sign.SignService;
+import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.SortDefault;
-import org.springframework.http.MediaType;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -35,29 +22,15 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-//import org.esupportail.esupsignature.service.export.SedaExportService;
 
 @RequestMapping("/user/signbooks")
 @Controller
 @Transactional
-
 public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
-
-    @Value("${baseUrl}")
-    private String baseUrl;
-
-    @Value("${nexuVersion}")
-    private String nexuVersion;
-
-    @Value("${nexuUrl}")
-    private String nexuUrl;
 
     @ModelAttribute("userMenu")
     public String getActiveMenu() {
@@ -68,10 +41,6 @@ public class SignBookController {
     public User getUser() {
         return userService.getUserFromAuthentication();
     }
-
-    private String progress = "0";
-
-    private SignRequestStatus statusFilter = null;
 
     @Resource
     private UserService userService;
@@ -103,12 +72,6 @@ public class SignBookController {
     @Resource
     private LogRepository logRepository;
 
-    @Resource
-    private SignService signService;
-
-    @Resource
-    private SedaExportService sedaExportService;
-
     @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
     public String updateForm(@PathVariable("id") Long id, Model model) {
         User user = userService.getUserFromAuthentication();
@@ -127,76 +90,12 @@ public class SignBookController {
 
     }
 
-    @ResponseBody
-    @RequestMapping(value = "/get-step")
-    public String getStep() {
-        logger.debug("getStep : " + signRequestService.getStep());
-        return signRequestService.getStep();
-    }
-
-    @ResponseBody
-    @RequestMapping(value = "/get-progress", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getProgress() {
-        logger.debug("getProgress : " + progress);
-        return progress;
-    }
-
-    @RequestMapping(value = "/refuse/{id}")
-    public String refuse(@PathVariable("id") Long id, @RequestParam(value = "comment", required = true) String comment, RedirectAttributes redirectAttrs, HttpServletResponse response,
-                         Model model, HttpServletRequest request) throws SQLException {
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (!signRequestService.checkUserSignRights(user, signRequest)) {
-            redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
-            return "redirect:/user/signbooks/" + id;
-        }
-        signRequest.setComment(comment);
-        signRequestService.refuse(signRequest, user);
-        return "redirect:/user/signbooks/";
-    }
-
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@PathVariable("id") Long id, Model model) {
+    public String delete(@PathVariable("id") Long id) {
         SignBook signBook = signBookRepository.findById(id).get();
         signBookService.delete(signBook);
-        model.asMap().clear();
         return "redirect:/user/signrequests/";
     }
-
-    @RequestMapping(value = "/get-last-file-by-token/{token}", method = RequestMethod.GET)
-    public void getLastFileByToken(@PathVariable("token") String token, HttpServletResponse response, Model model) {
-        User user = userService.getUserFromAuthentication();
-        SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
-            getLastFile(signRequest.getId(), response, model);
-        } else {
-            logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
-        }
-    }
-
-    @RequestMapping(value = "/get-last-file-seda/{id}", method = RequestMethod.GET)
-    public void getLastFileSeda(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        User user = userService.getUserFromAuthentication();
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
-            List<Document> documents = signRequestService.getToSignDocuments(signRequest);
-            try {
-                if (documents.size() > 1) {
-                    response.sendRedirect("/user/signbooks/" + id);
-                } else {
-                    response.setHeader("Content-Disposition", "inline;filename=test-seda.zip");
-                    response.setContentType("application/zip");
-                    IOUtils.copy(sedaExportService.generateSip(signRequest), response.getOutputStream());
-                }
-            } catch (Exception e) {
-                logger.error("get file error", e);
-            }
-        } else {
-            logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
-        }
-    }
-
 
     @RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
     public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
@@ -308,7 +207,7 @@ public class SignBookController {
     @RequestMapping(value = "/send-to-signbook/{id}/{workflowStepId}", method = RequestMethod.GET)
     public String sendToSignBook(@PathVariable("id") Long id,
                                  @PathVariable("workflowStepId") Long workflowStepId,
-                                 @RequestParam(value = "signBookNames", required = true) String[] signBookNames,
+                                 @RequestParam(value = "signBookNames") String[] signBookNames,
                                  RedirectAttributes redirectAttrs, HttpServletRequest request) {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
@@ -316,7 +215,7 @@ public class SignBookController {
         if (signBookService.checkUserViewRights(user, signBook)) {
             WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
             if (signBookNames != null && signBookNames.length > 0) {
-                workflowService.addRecipientsToWorkflowStep(Arrays.asList(signBookNames), workflowStep, user);
+                workflowService.addRecipientsToWorkflowStep(workflowStep, signBookNames);
             }
         } else {
             logger.warn(user.getEppn() + " try to move " + signBook.getId() + " without rights");
@@ -336,7 +235,6 @@ public class SignBookController {
         if (signRequestService.checkUserViewRights(user, signRequest)) {
             User userToRemove = userRepository.findByEmail(recipientEmail).get(0);
             workflowStep.getRecipients().remove(userToRemove.getId());
-            workflowStepRepository.save(workflowStep);
         } else {
             logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
         }

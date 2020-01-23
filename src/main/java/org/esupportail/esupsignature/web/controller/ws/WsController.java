@@ -162,9 +162,8 @@ public class WsController {
         JsonWorkflowStep jsonWorkflowStep = mapper.readValue(jsonWorkflowStepString, JsonWorkflowStep.class);
         int level = jsonWorkflowStep.getSignLevel();
         signType = signRequestService.getSignTypeByLevel(level);
-        WorkflowStep workflowStep = workflowService.createWorkflowStep(jsonWorkflowStep.getRecipientEmails(), "", jsonWorkflowStep.getAllSignToComplete(), signType);
+        WorkflowStep workflowStep = workflowService.createWorkflowStep("", jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientEmails().stream().toArray(String[]::new));
         signBook.getWorkflowSteps().add(workflowStep);
-        signBookRepository.save(signBook);
         return new ResponseEntity(HttpStatus.OK);
     }
 
@@ -309,7 +308,29 @@ public class WsController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @Transactional
+    @RequestMapping(value = "/get-last-file-by-token/{token}", method = RequestMethod.GET)
+    public void getLastFileByToken(@PathVariable("token") String token, HttpServletResponse response) {
+        User user = userService.getUserFromAuthentication();
+        SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
+        if (signRequestService.checkUserViewRights(user, signRequest)) {
+            List<Document> documents = signRequestService.getToSignDocuments(signRequest);
+            try {
+                if (documents.size() > 1) {
+                    response.sendRedirect("/user/signrequests/" + signRequest.getId());
+                } else {
+                    Document document = documents.get(0);
+                    response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+                    response.setContentType(document.getContentType());
+                    IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+                }
+            } catch (Exception e) {
+                logger.error("get file error", e);
+            }
+        } else {
+            logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
+        }
+    }
+
     @RequestMapping(value = "/get-last-file-from-signrequest", method = RequestMethod.GET)
     public ResponseEntity<Void> getLastFileFromSignRequest(@RequestParam String token, HttpServletResponse response) {
         try {

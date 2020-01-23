@@ -173,7 +173,7 @@ public class SignRequestService {
 				throw new EsupSignatureIOException("", e);
 			}
 		}
-		//signRequestRepository.save(signRequest);
+
 	}
 
 	public List<SignRequestParams> scanSignatureFields(InputStream inputStream) throws EsupSignatureIOException {
@@ -198,7 +198,7 @@ public class SignRequestService {
 			}
 			signRequest.getRecipients().add(recipientService.createRecipient(signRequest.getId(), recipientUser));
 		}
-		//signRequestRepository.save(signRequest);
+
 	}
 
 	public void addRecipients(SignRequest signRequest, List<Recipient> recipients) {
@@ -209,13 +209,13 @@ public class SignRequestService {
 		for(Recipient recipient : recipients) {
 			signRequest.getRecipients().add(recipientService.createRecipient(signRequest.getId(), recipient.getUser()));
 		}
-		//signRequestRepository.save(signRequest);
+
 	}
 
 	public void addRecipients(SignRequest signRequest, User user) {
 		Recipient recipient = recipientService.createRecipient(signRequest.getId(), user);
 		signRequest.getRecipients().add(recipient);
-		//signRequestRepository.save(signRequest);
+
 	}
 
 	public void pendingSignRequest(SignRequest signRequest, SignType signType, boolean allSignToComplete, User user) {
@@ -463,7 +463,7 @@ public class SignRequestService {
 			for (Document document : signedDocuments) {
 				documentService.deleteDocument(document);
 			}
-			//signRequestRepository.save(signRequest);
+
 		}
 	}
 
@@ -593,12 +593,10 @@ public class SignRequestService {
 		}
 		if(signRequest.getParentSignBook() != null) {
 			signRequest.getParentSignBook().getSignRequests().remove(signRequest);
-			signBookRepository.save(signRequest.getParentSignBook());
 			if(signRequest.getParentSignBook().getSignRequests().size() == 0) {
 				signBookRepository.delete(signRequest.getParentSignBook());
 			}
 			signRequest.setParentSignBook(null);
-			signRequestRepository.save(signRequest);
 		}
 		for(Recipient recipient : signRequest.getRecipients()) {
 			recipientRepository.delete(recipient);
@@ -675,7 +673,7 @@ public class SignRequestService {
 					SignRequestParams signRequestParams = getEmptySignRequestParams();
 					signRequestParamsRepository.save(signRequestParams);
 					signRequest.getSignRequestParams().add(signRequestParams);
-					//signRequestRepository.save(signRequest);
+
 					return signRequest.getSignRequestParams().get(signRequest.getCurrentStepNumber() - 1);
 				}
 			}

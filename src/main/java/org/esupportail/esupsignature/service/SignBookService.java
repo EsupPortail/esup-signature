@@ -6,15 +6,15 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.*;
-import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Service
 public class SignBookService {
@@ -23,9 +23,6 @@ public class SignBookService {
 
     @Resource
     private SignBookRepository signBookRepository;
-
-    @Resource
-    private SignRequestRepository signRequestRepository;
 
     @Resource
     private SignRequestService signRequestService;
@@ -61,24 +58,9 @@ public class SignBookService {
     private WorkflowService workflowStepService;
 
     public List<SignBook> getAllSignBooks() {
-        List<SignBook> list = new ArrayList<SignBook>();
+        List<SignBook> list = new ArrayList<>();
         signBookRepository.findAll().forEach(e -> list.add(e));
         return list;
-    }
-
-    public List<SignBook> getTosignRequests(User user) {
-        List<SignBook> signBooksToSign = new ArrayList<>();
-        List<Recipient> recipients = recipientRepository.findByUser(user);
-        List<WorkflowStep> workflowSteps = workflowStepRepository.findByRecipients(recipients);
-        for(WorkflowStep workflowStep : workflowSteps) {
-            if(!recipientService.findRecipientByUser(workflowStep.getRecipients(), user).getSigned() && signBookRepository.findByWorkflowStepsContains(workflowStep).size() > 0) {
-                SignBook signBook = signBookRepository.findByWorkflowStepsContains(workflowStep).get(0);
-                if (getCurrentWorkflowStep(signBook).equals(workflowStep) && signBook.getStatus().equals(SignRequestStatus.pending)) {
-                    signBooksToSign.add(signBook);
-                }
-            }
-        }
-        return signBooksToSign.stream().sorted(Comparator.comparing(SignBook::getCreateDate).reversed()).collect(Collectors.toList());
     }
 
     public void addRecipient(SignBook signBook, List<String> recipientEmails) {
@@ -121,9 +103,8 @@ public class SignBookService {
 
     public void addSignRequest(SignBook signBook, SignRequest signRequest) {
         signBook.getSignRequests().add(signRequest);
-        signBookRepository.save(signBook);
         signRequest.setParentSignBook(signBook);
-        //signRequestRepository.save(signRequest);
+
     }
 
     public void deleteSignBook(SignBook signBook) {
@@ -131,9 +112,7 @@ public class SignBookService {
     }
 
     public void removeSignRequestFromSignBook(SignBook signBook, SignRequest signRequest) {
-        signRequestRepository.save(signRequest);
         signBook.getSignRequests().remove(signRequest);
-        signBookRepository.save(signBook);
     }
 
     public boolean checkUserManageRights(User user, SignBook signBook) {
@@ -147,43 +126,19 @@ public class SignBookService {
     public void importWorkflow(SignBook signBook, Workflow workflow) {
         logger.info("import workflow steps in signBook " + signBook.getName() + " - " +signBook.getId());
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
-            WorkflowStep newWorkflowStep = new WorkflowStep();
-            newWorkflowStep.setSignType(workflowStep.getSignType());
-            newWorkflowStep.setAllSignToComplete(workflowStep.isAllSignToComplete());
-            workflowStepRepository.save(newWorkflowStep);
-            for(Recipient recipient : workflowStep.getRecipients()){
-                User recipientUser;
-                if(recipient.getUser().getEppn().equals("creator")) {
-                    recipientUser = userRepository.findByEmail(userService.getUserFromAuthentication().getEmail()).get(0);
-                    newWorkflowStep.getRecipients().add(recipientService.createRecipient(newWorkflowStep.getId(), recipientUser));
-                } else {
-                    newWorkflowStep.getRecipients().add(recipientService.createRecipient(newWorkflowStep.getId(), recipient.getUser()));
-                }
-
-            }
+            WorkflowStep newWorkflowStep = workflowService.createWorkflowStep(workflowStep.getRecipients(), "", workflowStep.isAllSignToComplete(), workflowStep.getSignType());
             signBook.getWorkflowSteps().add(newWorkflowStep);
         }
         signBook.setTargetType(workflow.getTargetType());
         signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
-        signBookRepository.save(signBook);
     }
 
     public void saveWorkflow(String name, User user, SignBook signBook) throws EsupSignatureException {
-        Workflow workflow;
-        workflow = workflowService.createWorkflow(name, user, false);
+        Workflow workflow = workflowService.createWorkflow(name, user, false);
         for(WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
-            WorkflowStep toSaveWorkflowStep = new WorkflowStep();
-            for(Recipient recipient : workflowStep.getRecipients()) {
-                toSaveWorkflowStep.getRecipients().add(recipientService.createRecipient(workflowStep.getId(), recipient.getUser()));
-            }
-            toSaveWorkflowStep.setSignType(workflowStep.getSignType());
-            toSaveWorkflowStep.setAllSignToComplete(workflowStep.isAllSignToComplete());
-            workflowStepRepository.save(toSaveWorkflowStep);
+            WorkflowStep toSaveWorkflowStep = workflowService.createWorkflowStep(workflowStep.getRecipients(), "", workflowStep.isAllSignToComplete(), workflowStep.getSignType());
             workflow.getWorkflowSteps().add(toSaveWorkflowStep);
         }
-        workflow.setCreateDate(new Date());
-        workflow.setCreateBy(user.getEppn());
-        workflowRepository.save(workflow);
     }
 
     public void completeSignBook(SignBook signBook, User user) throws EsupSignatureException {
@@ -201,7 +156,6 @@ public class SignBookService {
     public void removeStep(SignBook signBook, int step) {
         WorkflowStep workflowStep = signBook.getWorkflowSteps().get(step);
         signBook.getWorkflowSteps().remove(step);
-        signBookRepository.save(signBook);
         workflowStepRepository.delete(workflowStep);
     }
 
@@ -248,7 +202,6 @@ public class SignBookService {
 
     public boolean nextWorkFlowStep(SignBook signBook) {
         signBook.setCurrentWorkflowStepNumber(signBook.getCurrentWorkflowStepNumber() + 1);
-        signBookRepository.save(signBook);
         if(signBook.getWorkflowSteps().size() >= signBook.getCurrentWorkflowStepNumber()) {
             return true;
         } else {
@@ -330,7 +283,6 @@ public class SignBookService {
     public void refuse(SignBook signBook, String comment, User user) {
         mailService.sendRefusedMail(signBook);
         updateStatus(signBook, SignRequestStatus.refused, "Au moins un document a été refusé", user, "SUCCESS", comment);
-        signBookRepository.save(signBook);
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", user, "SUCCESS", signRequest.getComment());
         }

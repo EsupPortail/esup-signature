@@ -98,7 +98,7 @@
                             </div>
                             <div class="modal-body">
                                 <div class="input-group">
-                                    <select onchange="checkNbRecipients();" name="recipientsEmail" id="recipientsEmail" size="5" multiple="multiple" required="required">
+                                    <select onchange="checkNbRecipients();" name="recipientsEmail" id="recipientsEmails" size="5" multiple="multiple" required="required">
                                         <th:block th:each="workflow : ${allSignBooks}">
                                             <option th:value="${workflow.name}" th:text="${workflow.name} + ' (' + ${workflow.signBookType} + ')'"></option>
                                         </th:block>

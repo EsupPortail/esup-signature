@@ -37,7 +37,6 @@ import java.util.List;
 @RequestMapping("/manager/workflows")
 @Controller
 @Transactional
-
 public class WorkflowManagerController {
 
 	private static final Logger logger = LoggerFactory.getLogger(WorkflowManagerController.class);
@@ -49,9 +48,6 @@ public class WorkflowManagerController {
 
 	@Resource
 	private UserRepository userRepository;
-
-	@Resource
-	private RecipientService recipientService;
 
 	@Resource
 	private UserService userService;
@@ -67,15 +63,9 @@ public class WorkflowManagerController {
 
 	@Resource
 	private SignRequestRepository signRequestRepository;
-	
-	@Resource
-	private SignRequestService signRequestService;
-	
-	@Resource
-	private SignRequestParamsRepository signRequestParamsRepository; 
 
 	@Resource
-	private PdfService pdfService;
+	private SignRequestParamsRepository signRequestParamsRepository; 
 
 	@ModelAttribute("user")
 	public User getUser() {
@@ -221,14 +211,12 @@ public class WorkflowManagerController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/workflows/" + id;
 		}
-		//TODO with workflowsteps
-		
 		return "redirect:/manager/workflows/" + workflowId;
 	}
 
 	@PostMapping(value = "/add-step/{id}")
 	public String addStep(@PathVariable("id") Long id,
-						  @RequestParam("recipientsEmail") List<String> recipientsEmail,
+						  @RequestParam("recipientsEmails") String[] recipientsEmails,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
 						  @RequestParam("signType") String signType,
 						  RedirectAttributes redirectAttrs) {
@@ -238,20 +226,7 @@ public class WorkflowManagerController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/workflows/" + id;
 		}
-		WorkflowStep workflowStep = new WorkflowStep();
-		for(String recipientEmail : recipientsEmail) {
-			if(userRepository.countByEmail(recipientEmail) > 0) {
-				User recipientUserToAdd = userRepository.findByEmail(recipientEmail).get(0);
-				workflowStep.getRecipients().add(recipientService.createRecipient(workflowStep.getId(), recipientUserToAdd));
-			}
-		}
-		if(allSignToComplete ==null) {
-			workflowStep.setAllSignToComplete(false);
-		} else {
-			workflowStep.setAllSignToComplete(allSignToComplete);
-		}
-		workflowStep.setSignType(SignType.valueOf(signType));
-		workflowStepRepository.save(workflowStep);
+		WorkflowStep workflowStep = workflowService.createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
 		workflow.getWorkflowSteps().add(workflowStep);
 		return "redirect:/manager/workflows/" + id;
 	}
@@ -268,7 +243,6 @@ public class WorkflowManagerController {
 		if(user.getEppn().equals(workflow.getCreateBy())) {
 			User recipientUserToRemove = userRepository.findByEmail(recipientEmail).get(0);
 			workflowStep.getRecipients().remove(recipientUserToRemove.getId());
-			workflowStepRepository.save(workflowStep);
 		} else {
 			logger.warn(user.getEppn() + " try to move " + workflow.getId() + " without rights");
 		}

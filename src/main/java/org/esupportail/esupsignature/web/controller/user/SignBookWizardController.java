@@ -30,7 +30,6 @@ import java.util.List;
 @RequestMapping("/user/signbooks/wizard")
 @Controller
 @Transactional
-
 public class SignBookWizardController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookWizardController.class);
@@ -126,9 +125,8 @@ public class SignBookWizardController {
         if(signBook.getCreateBy().equals(user.getEppn())) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
                 logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
-                WorkflowStep workflowStep = workflowService.createWorkflowStep(Arrays.asList(recipientsEmail), "", allSignToComplete, signType);
+                WorkflowStep workflowStep = workflowService.createWorkflowStep("", allSignToComplete, signType, recipientsEmail);
                 signBook.getWorkflowSteps().add(workflowStep);
-                signBookRepository.save(signBook);
                 if (addNew != null) {
                     model.addAttribute("workflowStepForm", true);
                     model.addAttribute("signTypes", SignType.values());

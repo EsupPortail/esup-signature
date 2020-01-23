@@ -89,7 +89,7 @@
                         <a class="btn btn-outline-dark mr-1 text-left" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
                             <i class="fas fa-save"></i>
                         </a>
-                        <a title="Export SEDA" class="btn btn-outline-dark mr-1 text-left" th:href="'/user/signbooks/get-last-file-seda/' + ${id}">
+                        <a title="Export SEDA" class="btn btn-outline-dark mr-1 text-left" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
                             <i class="fa fa-file-export"></i>
                         </a>
                         <a class="btn btn-outline-dark mr-1 text-left" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
@@ -192,6 +192,13 @@
                     </div>
                 </div>
                 <input th:classappend="${@signRequestService.getCurrentSignType(signRequest).name() != 'certSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
+                <script>
+                    $("#password").on('keyup', function (e) {
+                        if (e.keyCode === 13) {
+                            launchSign([[${signRequest.getId()}]]);
+                        }
+                    });
+                </script>
             </div>
             <div class="modal-footer">
                 <button th:if="${@signRequestService.getCurrentSignType(signRequest).name() == 'certSign' || @signRequestService.getCurrentSignType(signRequest).name() == 'pdfImageStamp'}" class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.getId()} + ');'">
@@ -217,6 +224,13 @@
             <div class="modal-body">
                 <input autocomplete="new-password" th:classappend="${@signRequestService.getCurrentSignType(signRequest).name() != 'certSign' && @signRequestService.getCurrentSignType(signRequest).name() != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="passwordAll" name="passwordAll" value="" placeholder="Mot de passe du keystore"/>
             </div>
+            <script>
+                $("#passwordAll").on('keyup', function (e) {
+                    if (e.keyCode === 13) {
+                        // Do something
+                    }
+                });
+            </script>
             <div class="modal-footer">
                 <button th:if="${signRequest.parentSignBook != null && @signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:onclick="'launchSignAll(' + ${signRequest.parentSignBook.id} + ')'">
                     <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
