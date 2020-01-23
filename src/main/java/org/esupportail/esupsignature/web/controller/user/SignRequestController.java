@@ -178,12 +178,8 @@ public class SignRequestController {
     public String updateForm(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws Exception {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if(signRequest.getSignedDocuments().size() > 0) {
-            signRequest.setSignedDocuments(signRequest.getSignedDocuments().stream().sorted(Comparator.comparing(Document::getCreateDate)).collect(Collectors.toList()));
-        }
         if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
             model.addAttribute("signBooks", signBookService.getAllSignBooks());
-            Document toDisplayDocument = null;
             List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
             logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
             model.addAttribute("logs", logs);
@@ -196,7 +192,6 @@ public class SignRequestController {
             if (user.getKeystore() != null) {
                 model.addAttribute("keystore", user.getKeystore().getFileName());
             }
-            //workflowService.setWorkflowsLabels(signRequest.getParentSignBook().getWorkflowSteps());
             model.addAttribute("signRequest", signRequest);
 
             if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
@@ -257,7 +252,6 @@ public class SignRequestController {
                 model.addAttribute("documentType", fileService.getExtension(fsFile.getName()));
             }
         }
-        List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNull(id);
         List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
         model.addAttribute("refuseLogs", refuseLogs);
         model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
@@ -293,7 +287,6 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
         if (signRequest.getCreateBy().equals(user.getEppn())) {
             signRequest.getOriginalDocuments().remove(document);
-            //documentService.deleteDocument(document);
         }
         String[] ok = {"ok"};
         return ok;
@@ -500,7 +493,7 @@ public class SignRequestController {
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
-            //signRequestService.completeSignRequest(signRequest, user);
+            signRequestService.completeSignRequest(signRequest, user);
         } else {
             logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
         }
@@ -513,7 +506,6 @@ public class SignRequestController {
                           HttpServletRequest request) throws EsupSignatureIOException {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
-        //TODO controle signType
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
         if (signRequestService.checkUserViewRights(user, signRequest) && (signRequest.getStatus().equals(SignRequestStatus.draft) || signRequest.getStatus().equals(SignRequestStatus.completed))) {

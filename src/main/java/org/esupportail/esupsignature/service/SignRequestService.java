@@ -132,7 +132,6 @@ public class SignRequestService {
 	public List<Document> getToSignDocuments(SignRequest signRequest) {
 		List<Document> documents = new ArrayList<>();
 		if(signRequest.getSignedDocuments() != null && signRequest.getSignedDocuments().size() > 0 ) {
-			signRequest.setSignedDocuments(signRequest.getSignedDocuments().stream().sorted(Comparator.comparing(Document::getCreateDate).reversed()).collect(Collectors.toList()));
 			documents.add(signRequest.getSignedDocuments().get(0));
 		} else {
 			documents.addAll(signRequest.getOriginalDocuments());
@@ -454,16 +453,9 @@ public class SignRequestService {
 			List<Document> originalDocuments = new ArrayList<>();
 			originalDocuments.addAll(signRequest.getOriginalDocuments());
 			signRequest.getOriginalDocuments().clear();
-//			for (Document document : originalDocuments) {
-//				documentService.deleteDocument(document);
-//			}
 			List<Document> signedDocuments = new ArrayList<>();
 			signedDocuments.addAll(signRequest.getSignedDocuments());
 			signRequest.getSignedDocuments().clear();
-//			for (Document document : signedDocuments) {
-//				documentService.deleteDocument(document);
-//			}
-
 		}
 	}
 
@@ -481,7 +473,6 @@ public class SignRequestService {
 
 	public Document getLastSignedDocument(SignRequest signRequest) {
 		if(signRequest.getSignedDocuments().size() > 0) {
-			signRequest.setSignedDocuments(signRequest.getSignedDocuments().stream().sorted(Comparator.comparing(Document::getCreateDate).reversed()).collect(Collectors.toList()));
 			return signRequest.getSignedDocuments().get(0);
 		} else {
 			return getLastOriginalDocument(signRequest);

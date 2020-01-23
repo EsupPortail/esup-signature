@@ -41,13 +41,13 @@
                                                     <div class="modal fade" th:id="'reSendModal' + ${workflowStep.id}" tabindex="-1" role="dialog" th:aria-labelledby="'reSendModal' + ${workflowStep.id}" aria-hidden="true">
                                                         <div class="modal-dialog modal-lg" role="document">
                                                             <div class="modal-content">
-                                                                <form class="form-group" th:action="'/manager/workflows/add-step-recipent/' + ${id} + '/' + ${workflowStep.id}" method="get">
+                                                                <form class="form-group" th:action="'/manager/workflows/add-step-recipents/' + ${id} + '/' + ${workflowStep.id}" method="post">
                                                                     <div class="modal-header">
                                                                         <h5 class="modal-title">Ajout de destinataire(s)</h5>
                                                                     </div>
                                                                     <div class="modal-body">
                                                                         <div class="input-group">
-                                                                            <select onchange="checkNbRecipients();" name="signBookNames" th:id="'signBookNames' + ${workflowStep.id}" size="5" multiple="multiple" required="required">
+                                                                            <select onchange="checkNbRecipients();" name="recipientsEmails" th:id="'recipientsEmails' + ${workflowStep.id}" size="5" multiple="multiple" required="required">
                                                                                 <th:block th:each="signBook : ${allSignBooks}">
                                                                                     <option th:value="${signBook.name}" th:text="${signBook.name} + ' (' + ${signBook.signBookType} + ')'"></option>
                                                                                 </th:block>
@@ -59,15 +59,13 @@
                                                                     </div>
                                                                     <div class="modal-footer">
                                                                         <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
-                                                                        <button type="submit" class="btn btn-primary float-right">
-                                                                            Ajouter
-                                                                        </button>
+                                                                        <button type="submit" class="btn btn-success float-right">Ajouter</button>
                                                                     </div>
                                                                 </form>
                                                             </div>
                                                             <script language="JavaScript">
                                                                 new SlimSelect({
-                                                                    select: "#[['signBookNames' + ${workflowStep.id}]]",
+                                                                    select: "#[['recipientsEmails' + ${workflowStep.id}]]",
                                                                     placeholder: 'Choisir un ou plusieurs parapheur(s)',
                                                                     searchText: 'Aucun résultat',
                                                                     searchPlaceholder: 'Rechercher',

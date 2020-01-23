@@ -206,6 +206,24 @@ public class WorkflowManagerController {
 		return "redirect:/manager/workflows/" + id + "#" + workflowStep.getId();
 	}
 
+	@PostMapping(value = "/add-step-recipents/{id}/{workflowStepId}")
+	public String addStepRecipient(@PathVariable("id") Long id,
+									  @PathVariable("workflowStepId") Long workflowStepId,
+									  @RequestParam String recipientsEmails,
+									  RedirectAttributes redirectAttrs, HttpServletRequest request) {
+		User user = userService.getUserFromAuthentication();
+		user.setIp(request.getRemoteAddr());
+		Workflow workflow = workflowRepository.findById(id).get();
+		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
+		if(user.getEppn().equals(workflow.getCreateBy())) {
+			workflowService.addRecipientsToWorkflowStep(workflowStep, recipientsEmails);
+		} else {
+			logger.warn(user.getEppn() + " try to update " + workflow.getId() + " without rights");
+		}
+		return "redirect:/manager/workflows/" + id + "#" + workflowStep.getId();
+	}
+
+
 	@RequestMapping(value = "/toggle-need-all-sign/{id}/{step}", method = RequestMethod.GET)
 	public String toggleNeedAllSign(@PathVariable("id") Long id,@PathVariable("step") Integer step) {
 		User user = userService.getUserFromAuthentication();

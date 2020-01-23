@@ -164,9 +164,9 @@ public class SignRequest {
         return this.signedDocuments;
     }
 
-	public void setSignedDocuments(List<Document> signedDocuments) {
-        this.signedDocuments = signedDocuments;
-    }
+//	public void setSignedDocuments(List<Document> signedDocuments) {
+//        this.signedDocuments = signedDocuments;
+//    }
 
 	public String getExportedDocumentURI() {
 		return exportedDocumentURI;
