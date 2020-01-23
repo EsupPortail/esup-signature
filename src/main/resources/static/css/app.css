@@ -534,3 +534,13 @@ input:checked + .slider:before {
 .breadcrumb {
     margin-bottom: 5px !important;
 }
+
+.file-tab {
+    width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-tab:hover {
+    width: auto;
+}
