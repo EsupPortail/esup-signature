@@ -323,7 +323,12 @@ public class SignRequestService {
 			} else if(signatureForm.equals(SignatureForm.PAdES)) {
 				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, getCurrentSignRequestParams(signRequest), ((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign(), user, addDate);
 			}
-			step = "Signature du/des documents(s)";
+
+			if(signatureForm.equals(SignatureForm.PAdES)) {
+				step = "Signature du document";
+			} else {
+				step = "Signature des documents";
+			}
 
 			parameters.setSigningCertificate(certificateToken);
 			parameters.setCertificateChain(certificateTokenChain);

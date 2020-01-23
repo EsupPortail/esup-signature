@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
@@ -70,16 +71,7 @@ public class SignBookController {
 
     private String progress = "0";
 
-    private String password;
-
     private SignRequestStatus statusFilter = null;
-
-    long startTime;
-
-    public void setPassword(String password) {
-        startTime = System.currentTimeMillis();
-        this.password = password;
-    }
 
     @Resource
     private UserService userService;
@@ -112,19 +104,10 @@ public class SignBookController {
     private LogRepository logRepository;
 
     @Resource
-    private DocumentService documentService;
-
-    @Resource
-    private PdfService pdfService;
-
-    @Resource
-    private FileService fileService;
-
-    @Resource
     private SignService signService;
 
-//    @Resource
-//    private SedaExportService sedaExportService;
+    @Resource
+    private SedaExportService sedaExportService;
 
     @RequestMapping(produces = "text/html")
     public String list(@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
@@ -252,28 +235,27 @@ public class SignBookController {
         }
     }
 
-//    @RequestMapping(value = "/get-last-file-seda/{id}", method = RequestMethod.GET)
-//    public void getLastFileSeda(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
-//        SignRequest signRequest = signRequestRepository.findById(id).get();
-//        User user = userService.getUserFromAuthentication();
-//        if (signRequestService.checkUserViewRights(user, signRequest)) {
-//            List<Document> documents = signRequestService.getToSignDocuments(signRequest);
-//            try {
-//                if (documents.size() > 1) {
-//                    response.sendRedirect("/user/signbooks/" + id);
-//                } else {
-//                    Document document = documents.get(0);
-//                    response.setHeader("Content-Disposition", "inline;filename=test-seda.zip");
-//                    response.setContentType("application/zip");
-//                    IOUtils.copy(sedaExportService.generateSip(signRequest), response.getOutputStream());
-//                }
-//            } catch (Exception e) {
-//                logger.error("get file error", e);
-//            }
-//        } else {
-//            logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
-//        }
-//    }
+    @RequestMapping(value = "/get-last-file-seda/{id}", method = RequestMethod.GET)
+    public void getLastFileSeda(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        User user = userService.getUserFromAuthentication();
+        if (signRequestService.checkUserViewRights(user, signRequest)) {
+            List<Document> documents = signRequestService.getToSignDocuments(signRequest);
+            try {
+                if (documents.size() > 1) {
+                    response.sendRedirect("/user/signbooks/" + id);
+                } else {
+                    response.setHeader("Content-Disposition", "inline;filename=test-seda.zip");
+                    response.setContentType("application/zip");
+                    IOUtils.copy(sedaExportService.generateSip(signRequest), response.getOutputStream());
+                }
+            } catch (Exception e) {
+                logger.error("get file error", e);
+            }
+        } else {
+            logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
+        }
+    }
 
 
     @RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
@@ -510,14 +492,4 @@ public class SignBookController {
         model.addAttribute("signTypes", Arrays.asList(SignType.values()));
     }
 
-    @Scheduled(fixedDelay = 5000)
-    public void clearPassword() {
-        password = "";
-        if (startTime > 0) {
-            if (System.currentTimeMillis() - startTime > signService.getPasswordTimeout()) {
-                password = "";
-                startTime = 0;
-            }
-        }
-    }
 }

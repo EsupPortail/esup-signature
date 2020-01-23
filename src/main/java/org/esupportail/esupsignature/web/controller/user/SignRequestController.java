@@ -7,8 +7,6 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
-import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.file.FileService;
@@ -19,7 +17,6 @@ import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -28,7 +25,6 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -45,8 +41,6 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
-
-import org.esupportail.esupsignature.service.export.SedaExportService;
 
 @RequestMapping("/user/signrequests")
 @Controller
@@ -76,16 +70,7 @@ public class SignRequestController {
 
     private String progress = "0";
 
-    private String password;
-
     private SignRequestStatus statusFilter = null;
-
-    long startTime;
-
-    public void setPassword(String password) {
-        startTime = System.currentTimeMillis();
-        this.password = password;
-    }
 
     @Resource
     private UserService userService;
@@ -128,9 +113,6 @@ public class SignRequestController {
 
     @Resource
     private SignService signService;
-
-    @Resource
-    private SedaExportService sedaExportService;
 
     @RequestMapping(produces = "text/html")
     public String list(
@@ -401,12 +383,9 @@ public class SignRequestController {
                 signRequestParams.setYPos(yPos);
                 signRequestParamsRepository.save(signRequestParams);
             }
-            if (!"".equals(password)) {
-                setPassword(password);
-            }
             try {
                 signRequest.setComment(comment);
-                signRequestService.sign(signRequest, user, this.password, addDate, visual);
+                signRequestService.sign(signRequest, user, password, addDate, visual);
                 signRequestService.setStep("end");
             } catch (EsupSignatureException | IOException e) {
                 logger.error(e.getMessage(), e);
@@ -613,14 +592,4 @@ public class SignRequestController {
         model.addAttribute("signTypes", Arrays.asList(SignType.values()));
     }
 
-    @Scheduled(fixedDelay = 5000)
-    public void clearPassword() {
-        password = "";
-        if (startTime > 0) {
-            if (System.currentTimeMillis() - startTime > signService.getPasswordTimeout()) {
-                password = "";
-                startTime = 0;
-            }
-        }
-    }
 }
