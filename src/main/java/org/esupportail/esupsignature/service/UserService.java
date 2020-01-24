@@ -162,7 +162,7 @@ public class UserService {
 		List<PersonLdap> personLdaps = new ArrayList<>();
 		List<User> users = new ArrayList<>();
 		addAllUnique(users, userRepository.findByEppnStartingWith(searchString));
-		addAllUnique(users, userRepository.findByNameStartingWith(searchString));
+		addAllUnique(users, userRepository.findByNameStartingWithIgnoreCase(searchString));
 		addAllUnique(users, userRepository.findByEmailStartingWith(searchString));
 		for (User user : users) {
 			personLdaps.add(getPersonLdapFromUser(user));
