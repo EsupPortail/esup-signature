@@ -20,10 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class WorkflowService {
@@ -191,6 +188,7 @@ public class WorkflowService {
     }
 
     public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) {
+        recipientsEmail = Arrays.stream(recipientsEmail).distinct().toArray(String[]::new);
         for (String recipientEmail : recipientsEmail) {
             User recipientUser;
             if (userRepository.countByEmail(recipientEmail) == 0) {
@@ -198,9 +196,14 @@ public class WorkflowService {
             } else {
                 recipientUser = userRepository.findByEmail(recipientEmail).get(0);
             }
-            if(workflowStep.getId() == null || recipientRepository.findByParentIdAndUser(workflowStep.getId(), recipientUser).size() == 0) {
-                workflowStep.getRecipients().add(recipientService.createRecipient(workflowStep.getId(), recipientUser));
+            if(workflowStep.getId() != null) {
+                for (Recipient recipient : workflowStep.getRecipients()) {
+                    if (recipient.getUser().equals(recipientUser)) {
+                        return;
+                    }
+                }
             }
+            workflowStep.getRecipients().add(recipientService.createRecipient(workflowStep.getId(), recipientUser));
         }
     }
 

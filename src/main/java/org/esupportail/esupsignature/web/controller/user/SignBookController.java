@@ -46,6 +46,9 @@ public class SignBookController {
     private UserService userService;
 
     @Resource
+    private RecipientRepository recipientRepository;
+
+    @Resource
     private SignRequestRepository signRequestRepository;
 
     @Resource
@@ -225,17 +228,17 @@ public class SignBookController {
     @DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
     public String removeStepRecipient(@PathVariable("id") Long id,
                                  @PathVariable("workflowStepId") Long workflowStepId,
-                                 @RequestParam(value = "recipientName") String recipientEmail,
+                                 @RequestParam(value = "recipientId") Long recipientId,
                                  RedirectAttributes redirectAttrs, HttpServletRequest request) {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
-        SignRequest signRequest = signRequestRepository.findById(id).get();
+        SignBook signBook = signBookRepository.findById(id).get();
         WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
-            User userToRemove = userRepository.findByEmail(recipientEmail).get(0);
-            workflowStep.getRecipients().remove(userToRemove.getId());
+        if (signBookService.checkUserViewRights(user, signBook)) {
+            Recipient recipientToRemove = recipientRepository.findById(recipientId).get();
+            workflowStep.getRecipients().remove(recipientToRemove);
         } else {
-            logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
+            logger.warn(user.getEppn() + " try to move " + signBook.getId() + " without rights");
         }
         return "redirect:/user/signbooks/" + id + "/?form";
     }

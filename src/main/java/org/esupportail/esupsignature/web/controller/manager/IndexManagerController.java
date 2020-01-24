@@ -44,7 +44,7 @@ public class IndexManagerController {
 	
 	@RequestMapping
 	public String index() {
-		return "redirect:/manager/signbooks";
+		return "redirect:/manager/workflows";
 	}
 
 }

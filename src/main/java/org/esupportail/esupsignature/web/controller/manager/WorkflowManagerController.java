@@ -1,16 +1,14 @@
 package org.esupportail.esupsignature.web.controller.manager;
 
 import com.google.common.collect.ImmutableList;
+import org.esupportail.esupsignature.entity.Recipient;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.repository.WorkflowRepository;
-import org.esupportail.esupsignature.repository.WorkflowStepRepository;
+import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.fs.FsFile;
@@ -47,7 +45,10 @@ public class WorkflowManagerController {
 
 	@Resource
 	private UserService userService;
-	
+
+	@Resource
+	private RecipientRepository recipientRepository;
+
 	@Resource
 	private WorkflowRepository workflowRepository;
 
@@ -185,15 +186,14 @@ public class WorkflowManagerController {
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
 	public String removeStepRecipient(@PathVariable("id") Long id,
 									  @PathVariable("workflowStepId") Long workflowStepId,
-									  @RequestParam(value = "recipientEmail") String recipientEmail,
-									  RedirectAttributes redirectAttrs, HttpServletRequest request) {
+									  @RequestParam(value = "recipientId") Long recipientId, HttpServletRequest request) {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
 		if(user.getEppn().equals(workflow.getCreateBy())) {
-			User recipientUserToRemove = userRepository.findByEmail(recipientEmail).get(0);
-			workflowStep.getRecipients().remove(recipientUserToRemove.getId());
+			Recipient recipientToRemove = recipientRepository.findById(recipientId).get();
+			workflowStep.getRecipients().remove(recipientToRemove);
 		} else {
 			logger.warn(user.getEppn() + " try to move " + workflow.getId() + " without rights");
 		}
