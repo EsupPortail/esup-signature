@@ -431,43 +431,53 @@
                             enableReadMode();
                         }
 
+                        window.addEventListener("DOMMouseScroll", function(event)
+                        {
+                            computeWhellEvent(event);
+                        });
+
                         window.addEventListener("wheel", function(event)
                         {
-                            if(event.ctrlKey == true) {
-                                if (detectMouseWheelDirection(event) == 'down'){
-                                    zoomOut();
-                                } else {
-                                    zoomIn();
-                                }
-                            } else {
-                                if (detectMouseWheelDirection(event) == 'down' && $(window).scrollTop() + $(window).height() == $(document).height()) {
-                                    if(pageNum < pdfDoc.numPages) {
-                                        nextPage();
-                                    }
-                                } else if (detectMouseWheelDirection(event) == 'up' && window.scrollY == 0) {
-                                    if(pageNum > 1) {
-                                        prevPage();
-                                        window.scrollTo(0, document.body.scrollHeight);
-                                    }
-                                }
-                            }
+                            computeWhellEvent(event);
                         });
                     });
+
+                    function computeWhellEvent(event) {
+                        if(event.ctrlKey == true) {
+                            if (detectMouseWheelDirection(event) == 'down'){
+                                zoomOut();
+                            } else {
+                                zoomIn();
+                            }
+                        } else {
+                            if (detectMouseWheelDirection(event) == 'down' && $(window).scrollTop() + $(window).height() == $(document).height()) {
+                                if(pageNum < pdfDoc.numPages) {
+                                    nextPage();
+                                }
+                            } else if (detectMouseWheelDirection(event) == 'up' && window.scrollY == 0) {
+                                if(pageNum > 1) {
+                                    prevPage();
+                                    window.scrollTo(0, document.body.scrollHeight);
+                                }
+                            }
+                        }
+                    }
 
                     function detectMouseWheelDirection( e )
                     {
                         var delta = null,
                             direction = false;
-                        if ( !e ) {
-                            e = window.event;
-                        }
-                        if ( e.wheelDelta ) {
-                            delta = e.wheelDelta / 60;
+                        // if ( !e ) {
+                        //     e = window.event;
+                        // }
+                        var e_delta = (e.deltaY || -e.wheelDelta || e.detail);
+                        if ( e_delta ) {
+                            delta = e_delta  / 60;
                         } else if ( e.detail ) {
                             delta = -e.detail / 2;
                         }
                         if ( delta !== null ) {
-                            direction = delta > 0 ? 'up' : 'down';
+                            direction = delta > 0 ? 'down' : 'up';
                         }
                         return direction;
                     }
