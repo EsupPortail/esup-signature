@@ -98,8 +98,8 @@
                                             </tr>
                                             <th:block th:each="recipient : ${workflowStep.recipients}">
                                                 <tr>
-                                                    <form th:action="'/manager/signbooks/remove-step-recipent/' + ${id} + '/' + ${workflowStep.id}" th:method="'delete'">
-                                                        <input type="hidden" name="recipientName" th:value="${recipient.user.firstname + ' ' + recipient.user.name}" />
+                                                    <form th:action="'/manager/workflows/remove-step-recipent/' + ${id} + '/' + ${workflowStep.id}" th:method="'delete'">
+                                                        <input type="hidden" name="recipientId" th:value="${recipient.id}" />
                                                         <td>
                                                             <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                                         </td>
