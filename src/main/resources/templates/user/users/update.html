@@ -21,7 +21,7 @@
                 <button type="button" onclick="document.getElementById('fu_org_esupportail_esupsignature_domain_User').submit();" class="col-12 mb-1 btn btn-success text-left">
                     <i class="fas fa-save"></i> <span class="sidebar-label">Enregistrer les modifications</span>
                 </button>
-                <a th:if="${referer != null}" class="col-12 mb-1 btn btn-danger text-left" value="Retour" th:href="${referer}">
+                <a th:if="${referer != null}" class="col-12 mb-1 btn btn-light text-left" value="Retour" th:href="${referer}">
                     <i class="fas fa-times"></i> <span class="sidebar-label">Abandonner</span>
                 </a>
             </div>
@@ -35,7 +35,7 @@
             <form id="fu_org_esupportail_esupsignature_domain_User" th:object="${user}" th:action="'/user/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
                 <input type="hidden" name="referer" th:value="${referer}"/>
                 <input type="hidden" name="id" th:value="${user.id}"/>
-                <div class="card rounded-0">
+                <div class="card rounded-0 mb-3">
                     <div class="card-header" role="tab" id="headingOne">Identité</div>
                     <div class="card-body">
                         <div class="row">
@@ -62,7 +62,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card rounded-0">
+                <div class="card rounded-0 mb-3">
                     <div class="card-header" role="tab" id="headingTwo">
                         Paramètres de signature
                     </div>
@@ -94,13 +94,11 @@
                                     </label>
                                 </div>
                             </div>
-                            <div class="card rounded-0">
-                                <div class="card-body col-12 text-center">
+                            <div class="alert alert-light text-dark text-center">
                                     <button type="button" class="btn btn-dark vanilla-rotate" data-deg="90"><i class="fas fa-undo"></i></button>
-                                    Rotation
+                                    Rotation de l'image
                                     <button type="button" class="btn btn-dark vanilla-rotate" data-deg="-90"><i class="fas fa-redo"></i></button>
                                     <div id="vanilla-crop"></div>
-                                </div>
                             </div>
                         </div>
                         <input type="hidden" th:field="*{signImageBase64}"/>
@@ -128,7 +126,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card rounded-0">
+                <div class="card rounded-0 mb-3">
                     <div class="card-header" role="tab" id="headingThree">
                         Fréquence des alertes
                     </div>
@@ -200,6 +198,6 @@
     </div>
 </div>
 </body>
-<div th:replace="fragments/footer :: footer"></div>
+<footer th:replace="fragments/footer :: footer"></footer>
 <div th:replace="fragments/message :: message"></div>
 </html>

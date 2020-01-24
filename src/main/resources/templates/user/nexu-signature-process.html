@@ -32,11 +32,11 @@
 			</div>
 			<div id="error" style="display: none" class="text-center">
 			<div class="alert alert-danger" role="danger">
-				<strong id="errorText">Une erreur c'est produite lors de la signature</strong>
+				<strong id="errorText">Une erreur s'est produite lors de la signature</strong>
 				<br>
 				<small>Erreur : <span id="errorcontent"></span></small>
 				</div>
-<br>
+				<br>
 				<a onclick="location.reload();" class="btn btn-danger btnSeccion text-white" id="btnSeccion4">
 				<i class="fas fa-sync-alt fa-2x"></i><br> Relancer
 							</a>
@@ -45,8 +45,7 @@
 				id="success">
 				<strong>Signature effectuée</strong>
 				<br />
-				<a th:if="${referer != 'null'}" th:href="${referer}" class="btn btn-success btnSeccion" id="return1">Retour</a>
-				<a th:unless="${referer != 'null'}" th:href="'/user/signrequests/' + ${signRequestId}" class="btn btn-success btnSeccion" id="return2">Retour</a>
+				<a th:href="'/user/signrequests/' + ${signRequestId}" class="btn btn-success btnSeccion" id="return2">Retour</a>
 			</div>
 		</div>
 	</div>

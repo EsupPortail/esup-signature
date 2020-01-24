@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+
+<body>
+<div class="alert alert-info">Paramétrage du circuit de visas</div>
+<br>
+<div class="col-lg-12 text-center">
+    <form class="d-none" th:action="'/user/signbooks/wizard/wiz4/' + ${signBook.id}" method="post">
+        <input th:type="hidden" name="selfSign" th:value="true" >
+        <button type="submit" class="btn btn-success">Je signe ce document <i class="fas fa-signature"></i>
+        </button>
+    </form>
+    <form th:action="'/user/signbooks/wizard/wiz4/' + ${signBook.id}" method="post">
+        <div class="form-group">
+            <select id="workflowId" name="workflowId" class="form-control" required>
+                <option value="" disabled selected>Choisir un circuit de signatures existant</option>
+                <th:block th:each="workflow : ${workflows} ">
+                    <option th:value="${workflow.id}" th:text="${workflow.name}"></option>
+                </th:block>
+            </select>
+            <br>
+            <button type="submit" class="btn btn-success">
+                Appliquer les paramètres du circuit <i class="fas fa-file-import"></i>
+            </button>
+        </div>
+    </form>
+    <br>
+    <h5 class="hr">ou</h5>
+    <br>
+    <form th:action="'/user/signbooks/wizard/wiz4/' + ${signBook.id}" method="post">
+        <div class="form-group">
+            <button type="submit" class="btn btn-success">
+                Créer un nouveau circuit de signature <i class="fas fa-project-diagram"></i>
+            </button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

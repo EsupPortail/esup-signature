@@ -1,10 +1,14 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Entity
 public class SignRequest {
@@ -17,7 +21,7 @@ public class SignRequest {
     private Integer version;
 	
 	@Column(unique=true)
-	private String name;
+	private String token;
 	
 	private String title;
 	
@@ -27,6 +31,41 @@ public class SignRequest {
 
     private String createBy;
 
+    private String exportedDocumentURI;
+
+    @JsonIgnore
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OrderColumn
+    private List<Document> originalDocuments = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OrderColumn
+    private List<Document> signedDocuments = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    private SignRequestStatus status;
+
+    @ManyToOne
+    private SignBook parentSignBook;
+
+    private Integer currentStepNumber = 0;
+
+    @Enumerated(EnumType.STRING)
+    private SignType signType;
+
+    private Boolean allSignToComplete = false;
+
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<SignRequestParams> signRequestParams = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Recipient> recipients = new ArrayList<>();
+
+    @JsonIgnore
+    @Transient
+    transient String viewTitle;
+
     @JsonIgnore
     @Transient
     transient String comment;
@@ -35,108 +74,147 @@ public class SignRequest {
     @Transient
     transient User creator;
 
-    private String exportedDocumentURI;
-
-    @JsonIgnore
-    @OneToMany(cascade = CascadeType.REMOVE)
-    private List<Document> originalDocuments = new ArrayList<>();
-
-    @JsonIgnore
-    @OneToMany(cascade = CascadeType.REMOVE)
-    private List<Document> signedDocuments = new ArrayList<>();
-
-    @JsonIgnore
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.REMOVE})
-    private List<SignRequestParams> signRequestParamsList = new ArrayList<>();
-    
-    @Enumerated(EnumType.STRING)
-    private SignRequestStatus status;
-
-    @OneToMany
-    @OrderColumn
-    private List<WorkflowStep> workflowSteps = new ArrayList<>();
-
-    private Integer currentWorkflowStepNumber = 1;
-
-    private String workflowName;
-
-    @Enumerated(EnumType.STRING)
-    private SignBook.DocumentIOType targetType;
-
-    private String documentsTargetUri;
-
-    public enum SignRequestStatus {
-		draft, pending, canceled, checked, signed, refused, deleted, exported, completed;
-	}
-
-	public void setStatus(SignRequestStatus status) {
-        this.status = status;
-    }
-
-    public int countSignOk() {
-    	int nbSign = 0;
-		for(WorkflowStep workflowStep : workflowSteps) {
-			if(workflowStep.isCompleted()) {
-				nbSign++;
-			}
-		}
-		nbSign += signedDocuments.size();
-		return nbSign;
-    }
-
     public Long getId() {
-        return this.id;
+        return id;
     }
 
-	public void setId(Long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-	public Integer getVersion() {
-        return this.version;
+    public Integer getVersion() {
+        return version;
     }
 
-	public void setVersion(Integer version) {
+    public void setVersion(Integer version) {
         this.version = version;
     }
 
-	public String getName() {
-        return this.name;
+    public String getToken() {
+        return token;
     }
 
-	public void setName(String name) {
-        this.name = name;
+    public void setToken(String token) {
+        this.token = token;
     }
 
-	public String getTitle() {
-        return this.title;
+    public String getTitle() {
+        return title;
     }
 
-	public void setTitle(String title) {
+    public void setTitle(String title) {
         this.title = title;
     }
 
-	public Date getCreateDate() {
-        return this.createDate;
+    public Date getCreateDate() {
+        return createDate;
     }
 
-	public void setCreateDate(Date createDate) {
+    public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
 
-	public String getCreateBy() {
-        return this.createBy;
+    public String getCreateBy() {
+        return createBy;
     }
 
-	public void setCreateBy(String createBy) {
+    public void setCreateBy(String createBy) {
         this.createBy = createBy;
     }
 
-	public String getComment() {
-        return this.comment;
+    public String getExportedDocumentURI() {
+        return exportedDocumentURI;
     }
 
-	public void setComment(String comment) {
+    public void setExportedDocumentURI(String exportedDocumentURI) {
+        this.exportedDocumentURI = exportedDocumentURI;
+    }
+
+    public List<Document> getOriginalDocuments() {
+        return originalDocuments;
+    }
+
+    public void setOriginalDocuments(List<Document> originalDocuments) {
+        this.originalDocuments = originalDocuments;
+    }
+
+    public List<Document> getSignedDocuments() {
+        return signedDocuments;
+    }
+
+    public void setSignedDocuments(List<Document> signedDocuments) {
+        this.signedDocuments = signedDocuments;
+    }
+
+    public SignRequestStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(SignRequestStatus status) {
+        this.status = status;
+    }
+
+    public SignBook getParentSignBook() {
+        return parentSignBook;
+    }
+
+    public void setParentSignBook(SignBook parentSignBook) {
+        this.parentSignBook = parentSignBook;
+    }
+
+    public Integer getCurrentStepNumber() {
+        return currentStepNumber;
+    }
+
+    public void setCurrentStepNumber(Integer currentStepNumber) {
+        this.currentStepNumber = currentStepNumber;
+    }
+
+    public SignType getSignType() {
+        return signType;
+    }
+
+    public void setSignType(SignType signType) {
+        this.signType = signType;
+    }
+
+    public Boolean getAllSignToComplete() {
+        return allSignToComplete;
+    }
+
+    public void setAllSignToComplete(Boolean allSignToComplete) {
+        this.allSignToComplete = allSignToComplete;
+    }
+
+    public List<SignRequestParams> getSignRequestParams() {
+        return signRequestParams;
+    }
+
+    public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
+        this.signRequestParams = signRequestParams;
+    }
+
+    public List<Recipient> getRecipients() {
+        return recipients;
+    }
+
+    public void setRecipients(List<Recipient> recipients) {
+        this.recipients = recipients;
+    }
+
+    public String getViewTitle() {
+        return viewTitle;
+    }
+
+    public void setViewTitle(String viewTitle) {
+        this.viewTitle = viewTitle;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
         this.comment = comment;
     }
 
@@ -146,89 +224,5 @@ public class SignRequest {
 
     public void setCreator(User creator) {
         this.creator = creator;
-    }
-
-    public SignRequestStatus getStatus() {
-        return status;
-    }
-
-    public List<Document> getOriginalDocuments() {
-        return this.originalDocuments;
-    }
-
-	public void setOriginalDocuments(List<Document> originalDocuments) {
-        this.originalDocuments = originalDocuments;
-    }
-
-	public List<Document> getSignedDocuments() {
-        return this.signedDocuments;
-    }
-
-	public void setSignedDocuments(List<Document> signedDocuments) {
-        this.signedDocuments = signedDocuments;
-    }
-
-	public List<SignRequestParams> getSignRequestParamsList() {
-        return this.signRequestParamsList;
-    }
-
-	public void setSignRequestParamsList(List<SignRequestParams> signRequestParams) {
-        this.signRequestParamsList = signRequestParams;
-    }
-
-    public Integer getCurrentWorkflowStepNumber() {
-        return this.currentWorkflowStepNumber;
-    }
-
-    public void setCurrentWorkflowStepNumber(Integer signBooksWorkflowStep) {
-        this.currentWorkflowStepNumber = signBooksWorkflowStep;
-    }
-
-	public String getExportedDocumentURI() {
-		return exportedDocumentURI;
-	}
-
-	public void setExportedDocumentURI(String exportedDocumentURI) {
-		this.exportedDocumentURI = exportedDocumentURI;
-	}
-
-    public List<WorkflowStep> getWorkflowSteps() {
-        return workflowSteps;
-    }
-
-    public void setWorkflowSteps(List<WorkflowStep> workflowSteps) {
-        this.workflowSteps = workflowSteps;
-    }
-
-    public WorkflowStep getCurrentWorkflowStep() {
-        if(workflowSteps.size() >= currentWorkflowStepNumber) {
-            return workflowSteps.get(currentWorkflowStepNumber - 1);
-        } else {
-            return new WorkflowStep();
-        }
-    }
-
-    public String getWorkflowName() {
-        return workflowName;
-    }
-
-    public void setWorkflowName(String workflowName) {
-        this.workflowName = workflowName;
-    }
-
-    public SignBook.DocumentIOType getTargetType() {
-        return targetType;
-    }
-
-    public void setTargetType(SignBook.DocumentIOType targetType) {
-        this.targetType = targetType;
-    }
-
-    public String getDocumentsTargetUri() {
-        return documentsTargetUri;
-    }
-
-    public void setDocumentsTargetUri(String documentsTargetUri) {
-        this.documentsTargetUri = documentsTargetUri;
     }
 }

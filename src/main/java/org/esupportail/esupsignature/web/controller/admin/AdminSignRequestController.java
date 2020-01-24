@@ -1,35 +1,34 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.SignBook.SignBookType;
-import org.esupportail.esupsignature.entity.SignRequest.SignRequestStatus;
-import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
-import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.Log;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.repository.DocumentRepository;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
@@ -41,10 +40,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "*")
 @RequestMapping("/admin/signrequests")
 @Controller
-@Scope(value = "session")
 public class AdminSignRequestController {
 
 	private static final Logger logger = LoggerFactory.getLogger(AdminSignRequestController.class);
@@ -73,26 +70,20 @@ public class AdminSignRequestController {
 	@Resource
 	private UserService userService;
 
-	@Autowired
+	@Resource
 	private SignRequestRepository signRequestRepository;
 	
 	@Resource
 	private SignRequestService signRequestService;
 
-	@Autowired
+	@Resource
 	private SignBookRepository signBookRepository;
 	
 	@Resource
 	private SignBookService signBookService;
 
-	@Autowired
-	private LogRepository logRepository;
-
-	@Autowired
-	private DocumentRepository documentRepository;
-	
 	@Resource
-	private DocumentService documentService;
+	private LogRepository logRepository;
 
 	@Resource
 	private PdfService pdfService;
@@ -107,10 +98,6 @@ public class AdminSignRequestController {
 			@RequestParam(value = "messageError", required = false) String messageError,
 			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, RedirectAttributes redirectAttrs, Model model) {
 		User user = userService.getUserFromAuthentication();
-		if (user == null || !userService.isUserReady(user)) {
-			return "redirect:/user/users/?form";
-		}
-		
 		if(statusFilter != null) {
 			if(!statusFilter.equals("all")) {
 				this.statusFilter = SignRequestStatus.valueOf(statusFilter);
@@ -121,7 +108,6 @@ public class AdminSignRequestController {
 
 		Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByStatus(this.statusFilter,  pageable);
 
-		model.addAttribute("mydocs", "active");
 		model.addAttribute("signBookId", signBookId);
 		model.addAttribute("signRequests", signRequests);
 		model.addAttribute("statusFilter", this.statusFilter);
@@ -134,9 +120,6 @@ public class AdminSignRequestController {
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
 		User user = userService.getUserFromAuthentication();
-		if(!userService.isUserReady(user)) {
-			return "redirect:/user/users/?form";
-		}
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
 			Document toDisplayDocument = null;
@@ -171,18 +154,11 @@ public class AdminSignRequestController {
 			if(user.getKeystore() != null) {
 				model.addAttribute("keystore", user.getKeystore().getFileName());
 			}
-
-			//signRequest.setOriginalSignBooks(signBookService.getOriginalSignBook(signRequest));
-
-			signRequestService.setSignBooksLabels(signRequest.getWorkflowSteps());
-
 			model.addAttribute("signRequest", signRequest);
 			model.addAttribute("itemId", id);
 			if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
 				model.addAttribute("signable", "ok");
 			}
-			model.addAttribute("allSignBooks", signBookRepository.findByNotCreateBy("System"));
-			model.addAttribute("nbSignOk", signRequest.countSignOk());
 			model.addAttribute("baseUrl", baseUrl);
 			model.addAttribute("nexuVersion", nexuVersion);
 			model.addAttribute("nexuUrl", nexuUrl);
@@ -190,67 +166,11 @@ public class AdminSignRequestController {
 			return "admin/signrequests/show";
 	}
 
-	@ResponseBody
-	@RequestMapping(value = "/add-doc/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-	public Object addDocument(@PathVariable("id") Long id,
-			@RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest request) {
-		logger.info("start add documents");
-		User user = userService.getUserFromAuthentication();
-		user.setIp(request.getRemoteAddr());
-		SignRequest signRequest = signRequestRepository.findById(id).get();
-		if (signRequestService.checkUserViewRights(user, signRequest)) {
-			if(signRequest.getOriginalDocuments().size() > 0 &&
-			(signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.pdfImageStamp) || signRequest.getCurrentWorkflowStep().getSignRequestParams().getSignType().equals(SignType.visa))
-			) {
-				signRequest.getOriginalDocuments().remove(signRequest.getOriginalDocuments().get(0));
-			}
-			List<Document> documents =  documentService.createDocuments(multipartFiles);
-			signRequestService.addOriginalDocuments(signRequest, documents);
-			signRequestRepository.save(signRequest);
-		}
-		String[] ok = {"ok"};
-		return ok;
-	}
-
-	@ResponseBody
-	@RequestMapping(value = "/remove-doc/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-	public Object removeDocument(@PathVariable("id") Long id, HttpServletRequest request) {
-		User user = userService.getUserFromAuthentication();
-		user.setIp(request.getRemoteAddr());
-		Document document = documentRepository.findById(id).get();
-		SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
-		if (signRequestService.checkUserSignRights(user, signRequest)) {
-			signRequest.getOriginalDocuments().remove(document);
-			documentService.deleteDocument(document);
-		}
-		String[] ok = {"ok"};
-		return ok;
-	}
-
 	@DeleteMapping(value = "/{id}", produces = "text/html")
 	public String delete(@PathVariable("id") Long id, Model model) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		List<Log> logs = logRepository.findBySignRequestId(id);
-		for(Log log : logs) {
-			logRepository.delete(log);
-		}
-		signRequest.getSignRequestParamsList().clear();
-
-		signRequestRepository.save(signRequest);
-		signRequestRepository.delete(signRequest);
-		model.asMap().clear();
+		signRequestService.delete(signRequest);
 		return "redirect:/admin/signrequests/";
-	}
-
-	@RequestMapping(value = "/get-last-file-by-token/{token}", method = RequestMethod.GET)
-	public void getLastFileByToken(@PathVariable("token") String token, HttpServletResponse response, Model model) {
-		User user = userService.getUserFromAuthentication();
-		SignRequest signRequest = signRequestRepository.findByName(token).get(0);
-		if(signRequestService.checkUserViewRights(user, signRequest)) {
-			getLastFile(signRequest.getId(), response, model);
-		} else {
-			logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
-		}
 	}
 
 	@RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
@@ -276,41 +196,6 @@ public class AdminSignRequestController {
 		}
 	}
 
-	@RequestMapping(value = "/send-to-signbook/{id}", method = RequestMethod.GET)
-	public String sendToSignBook(@PathVariable("id") Long id,
-			@RequestParam(value = "signBookNames", required = true) String[] signBookNames,
-			@RequestParam(value = "comment", required = false) String comment,
-			HttpServletResponse response,
-			RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
-		User user = userService.getUserFromAuthentication();
-		user.setIp(request.getRemoteAddr());
-		SignRequest signRequest = signRequestRepository.findById(id).get();
-		if(signRequest.getCreateBy().equals(user.getEppn())) {
-			if(signBookNames != null && signBookNames.length > 0) {
-				for(String signBookName : signBookNames) {
-					SignBook signBook;
-					if(signBookRepository.countByName(signBookName) == 0 && signBookRepository.countByRecipientEmailsAndSignBookType(Arrays.asList(signBookName), SignBookType.user) == 0) {
-						User recipientUser = userService.createUser(signBookName);
-						signBook = signBookService.getUserSignBook(recipientUser);
-						//recipientEmails.add(signBookName);
-					} else {
-						if(signBookRepository.countByName(signBookName) > 0) {
-							signBook = signBookRepository.findByName(signBookName).get(0);
-						} else {
-							signBook = signBookService.getUserSignBookByRecipientEmail(signBookName);
-						}
-					}
-					//signBookService.importSignRequestInSignBook(signRequest, signBook, user);
-					signRequestService.updateStatus(signRequest, SignRequestStatus.draft, "Envoyé au parapheur " + signBook.getName(), user, "SUCCESS", comment);
-				}
-			}
-		} else {
-			logger.warn(user.getEppn() + " try to move " + signRequest.getId() + " without rights");
-		}
-		return "redirect:/admin/signrequests/" + id;
-	}
-
-
 	@RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
 	public String complete(@PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment,
@@ -319,7 +204,7 @@ public class AdminSignRequestController {
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
-			signRequestService.completeSignRequest(signRequest, user);
+			//signRequestService.completeSignRequest(signRequest, user);
 		} else {
 			logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
 		}
@@ -328,13 +213,13 @@ public class AdminSignRequestController {
 
 	@RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
 	public String pending(@PathVariable("id") Long id,
-			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) throws IOException {
+			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) throws IOException, EsupSignatureIOException {
 		User user = userService.getUserFromAuthentication();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		signRequest.setComment(comment);
 		if(signRequestService.checkUserViewRights(user, signRequest) && signRequest.getStatus().equals(SignRequestStatus.draft)) {
-			signRequestService.pendingSignRequest(signRequest, user);
+			signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
 		} else {
 			logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");
 		}
@@ -359,7 +244,6 @@ public class AdminSignRequestController {
 	void populateEditForm(Model model, SignRequest signRequest) {
 		model.addAttribute("signRequest", signRequest);
 		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
-		model.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
 	}
 
 }

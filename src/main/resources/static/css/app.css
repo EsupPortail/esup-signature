@@ -20,6 +20,9 @@ code {
     margin-top: 10px;
 }
 
+.nav-item {
+    margin-right: 5px;
+}
 
 .loader {
     border: 5px solid #f3f3f3;
@@ -46,6 +49,12 @@ code {
   100% { transform: rotate(360deg); }
 }
 
+.file-preview-frame {
+    width: 100%;
+}
+.file-details-cell {
+    width: 100%;
+}
 .custom-file-label {
     justify-content: left !important;
 }
@@ -58,7 +67,20 @@ code {
 }
 
 .anim-border {
-	border: 2px dotted green;
+    background-color: rgba(173, 255, 47, 0.5);
+    background-image: linear-gradient(90deg, green 50%, transparent 50%), linear-gradient(90deg, green 50%, transparent 50%), linear-gradient(0deg, green 50%, transparent 50%), linear-gradient(0deg, green 50%, transparent 50%);
+    background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+    background-size: 15px 2px, 15px 2px, 2px 15px, 2px 15px;
+    background-position: left top, right bottom, left bottom, right   top;
+    animation: border-dance 1s infinite linear;
+}
+@keyframes border-dance {
+    0% {
+        background-position: left top, right bottom, left bottom, right   top;
+    }
+    100% {
+        background-position: left 15px top, right 15px bottom , left bottom 15px , right   top 15px;
+    }
 }
 
 .alert {
@@ -202,12 +224,15 @@ input:checked + .slider:before {
 
 #navbar {
     min-height: 56px;
+    padding: 0;
+    padding-right: 5px;
+    padding-left: 5px;
 }
 
 #sidebar {
     top: 56px;
     position: fixed;
-    z-index: 1000;
+    z-index: 1;
     min-width: 250px;
     max-width: 250px;
     min-height: 100vh;
@@ -220,9 +245,29 @@ input:checked + .slider:before {
     max-width: 50px;
 }
 
+#tools {
+    top: 56px;
+    padding-top: 5px;
+    background-color: white;
+    width: 100%;
+    z-index: 1;
+    position: fixed;
+}
+
+#infos {
+    position: fixed;
+    right: 10px;
+    width: 500px;
+}
+
+#workspace {
+    margin-top: 140px;
+}
+
 .content {
     margin-left: 250px;
     padding: 5px;
+    background-color: white;
 }
 
 .content2 {
@@ -241,6 +286,9 @@ input:checked + .slider:before {
     margin-left: 160px;
 }
 @media (max-width: 768px) {
+    #tools {
+        position: relative;
+    }
     #sidebar {
         top : 0px;
         position: relative;
@@ -309,8 +357,30 @@ input:checked + .slider:before {
     word-break: break-all;
 }
 
+.bs-stepper {
+}
+
+.bs-stepper .step-trigger {
+    align-items: normal;
+    text-align: left;
+
+}
+.bs-stepper-bottom {
+    width: 100%;
+}
+
 .current-step {
     background-color: #CCCCCC !important;
+}
+
+.bs-stepper-label {
+    text-overflow: clip;
+    overflow-wrap: break-word !important;
+
+}
+
+.line {
+    border: 1px solid #555555;
 }
 
 .embedresize {
@@ -331,4 +401,144 @@ input:checked + .slider:before {
     left: 0;
     width: 100%;
     height: 100%;
+}
+
+.postit {
+    list-style:none;
+    padding:3px;
+    text-decoration:none;
+    color:#000;
+    background:#ffc;
+    height:200px;
+    width:150px;
+    float:left;
+    /* Firefox */
+    -moz-box-shadow:5px 5px 7px rgba(33,33,33,1);
+    /* Safari+Chrome */
+    -webkit-box-shadow: 5px 5px 7px rgba(33,33,33,.7);
+    /* Opera */
+    box-shadow: 5px 5px 7px rgba(33,33,33,.7);
+    position:relative;
+    top:-5px;
+}
+
+.drop-shadows {
+    -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);
+    /* Safari+Chrome */
+    -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);
+    /* Opera */
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.5), 0 2px 10px 0 rgba(0, 0, 0, 0.5);
+}
+
+.angle-3 {
+    -o-transform:rotate(3deg);
+    -webkit-transform:rotate(3deg);
+    -moz-transform:rotate(3deg);
+}
+
+:root {
+    --angle: 2deg;
+}
+
+.angle {
+    -o-transform:rotate(var(--angle));
+    -webkit-transform:rotate(var(--angle));
+    -moz-transform:rotate(var(--angle));
+}
+
+.postitarea
+{
+    width:100%;
+    min-height: 60%;
+    margin:5px 0;
+    padding:3px;
+}
+
+.hr {
+    /* centre verticalement les enfants entre eux */
+    align-items: center;
+
+    /* active flexbox */
+    display: flex;
+
+    /* garde le texte centré s’il passe sur plusieurs lignes ou si flexbox n’est pas supporté */
+    text-align: center;
+}
+
+.hr::before,
+.hr::after {
+    /* la couleur est volontairement absente ; ainsi elle sera celle du texte */
+    border-top: .0625em solid;
+
+    /* nécessaire pour afficher les pseudo-éléments */
+    content: "";
+
+    /* partage le reste de la largeur disponible */
+    flex: 1;
+
+    /* espace les traits du texte */
+    margin: 0 .5em;
+}
+
+.circle {
+    display: none;
+    position: absolute;
+    border: 2px solid red;
+    opacity:0.75;
+    cursor: pointer;
+    background:#ffc;
+}
+
+.kv-file-upload {
+    display: none;
+}
+
+
+.file-zoom-dialog .modal-dialog {
+    min-width: 90%;
+    height: auto;
+    min-height: 100vh;
+}
+
+.file-zoom-dialog .modal-content {
+    min-height: 80vh;
+}
+
+.file-zoom-dialog .modal-body {
+    overflow-y: auto;
+}
+
+.file-zoom-content {
+    height: 80vh;
+}
+
+.card {
+    -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);
+    /* Safari+Chrome */
+    -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);
+    /* Opera */
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);
+}
+
+.nav-tabs .nav-link {
+    border-color: #dee2e6 !important;
+    background-color: #dee2e6;
+}
+
+.nav-tabs .nav-link.active {
+    border-color: #dee2e6 #dee2e6 #fff !important;
+}
+
+.breadcrumb {
+    margin-bottom: 5px !important;
+}
+
+.file-tab {
+    width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-tab:hover {
+    width: auto;
 }

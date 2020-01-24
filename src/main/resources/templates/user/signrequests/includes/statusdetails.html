@@ -1,51 +1,74 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div th:fragment="statusdetails">
 	<div th:if="${user.eppn == signRequest.createBy}">
-		<div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
-			<div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
+		<div th:if="${(signRequest.status.name() == 'draft')}">
+			<div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.recipients.size() == 0}">
 				<div class="alert alert-secondary mb-1" th:if="${signRequest.status.name() == 'draft'}">
-					<h6 class="alert-heading">
-						Demande en cours de création
-					</h6>
+					<h5 class="alert-heading">
+						La demande en cours de création
+					</h5>
 				</div>
 			</div>
 		</div>
 	</div>
 	<div th:if="${user.eppn == signRequest.createBy}">
-		<div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
-			<div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.currentWorkflowStep.signBooks.size() == 0}">
-				<div class="alert alert-info mb-1">
-					<h6 class="alert-heading">
+		<div th:if="${(signRequest.status.name() == 'draft')}">
+			<div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.recipients.size() == 0}">
+				<div class="alert alert-dark mb-1">
+					<h5 class="alert-heading">
 						Demande prête pour la mise en signature
-					</h6>
+					</h5>
 				</div>
 			</div>
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'pending'}">
-		<div class="alert alert-primary mb-1">
-			<h6 class="alert-heading">
-				La demande est en cours de signature
-			</h6>
-			<div th:if="${signable == 'ok'}">
-				Vous devez signer cette demande
-			</div>
+		<div class="alert alert-dark mb-1">
+			<h5 class="alert-heading">
+				Le document est en cours de signature par :
+			</h5>
+			<table class="table table-sm table-bordered">
+			<th:block th:each="recipient : ${signRequest.recipients}">
+				<tr>
+					<td width="100%" th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>
+					<td align="center">
+						<div th:switch="${recipient.signed}">
+							<i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
+							<i title="n'a pas signé le document" th:case="false" class="fas fa-exclamation-circle text-danger"></i>
+						</div>
+					</td>
+				</tr>
+			</th:block>
+			</table>
 		</div>
 	</div>
-	<div th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked'}">
+	<div th:if="${signRequest.status.name() == 'signed'}">
 		<div class="alert alert-success mb-1">
-			<h6 class="alert-heading">Toutes les étapes de la demande sont effectuées</h6>
+			<h5 class="alert-heading">Le document est signé</h5>
+		</div>
+	</div>
+	<div th:if="${signRequest.status.name() == 'checked'}">
+		<div class="alert alert-success mb-1">
+			<h5 class="alert-heading">Le document est visé</h5>
+		</div>
+	</div>
+	<div th:if="${signRequest.status.name() == 'completed'}">
+		<div class="alert alert-dark mb-1">
+			<h5 class="alert-heading">Cette demande est terminée</h5>
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'refused'}">
 		<div class="alert alert-danger mb-1">
-			<h6 class="alert-heading">La demande à été refusée</h6>
+			<h5 class="alert-heading">La demande a été refusée</h5>
+			Motif :
+			<span th:text="${refuseLogs.get(0).comment}"></span>
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'exported'}">
-		<div class="alert alert-success mb-1">
-			<h6>Le document signé à été exporté vers son emplacement définitif :</h6>
+		<div class="alert alert-dark mb-1">
+			<h5>Le document signé a été exporté vers son emplacement définitif :</h5>
 			<span th:text="${signRequest.exportedDocumentURI}"></span>
 		</div>
 	</div>

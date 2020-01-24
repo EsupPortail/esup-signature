@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
+<div id="stepscard" th:fragment="stepscard" style="display: none;">
+    <div class="alert alert-light mb-1">
+        <h5>Etapes du circuit</h5>
+            <th:block th:if="${signRequest.parentSignBook.workflowSteps != null}">
+                <div id="stepper" class="bs-stepper vertical">
+                    <div class="bs-stepper-header" role="tablist">
+                        <th:block th:each="workflowStep,iterator : ${signRequest.parentSignBook.workflowSteps}">
+                            <div class="step" th:name="'step_' + ${iterator.index}" th:data-target="'#step_' + ${iterator.index}">
+                                <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab" aria-selected="false" style="border: 2px solid #555555;">
+                                    <span th:if="${iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle bg-primary">
+                                        <i class="fa fa-play"></i>
+                                    </span>
+                                    <span th:if="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle">
+                                        <i class="fa fa-pause"></i>
+                                    </span>
+                                    <span th:unless="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber || iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle bg-success">
+                                        <i class="fa fa-check"></i>
+                                    </span>
+                                    <div class="bs-stepper-label">
+                                        <span  th:text="#{'signbook.signtype.' + ${workflowStep.getSignType()}}"></span> <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}"><i class="fas fa-users"></i></span>
+                                        <br/>
+                                        <span th:if="${workflowStep.name != null}" th:text="${workflowStep.name}"></span>
+                                        <ul>
+                                        <th:block th:each="recipient : ${workflowStep.recipients}">
+                                            <li>
+                                                <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                                <th:block th:if="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber || iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" th:switch="${recipient.signed}">
+                                                    <i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
+                                                    <i title="n'a pas signé le document" th:case="false" class="fas fa-exclamation-circle text-danger"></i>
+                                                </th:block>
+
+                                            </li>
+                                        </th:block>
+                                        </ul>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:if="${signRequest.parentSignBook.workflowSteps.size() > iterator.index + 1}" class="line"></div>
+                        </th:block>
+                        <th:block th:if="${signRequest.parentSignBook.documentsTargetUri != null}">
+                            <div class="line"></div>
+                            <div class="step" name="target" data-target="#target">
+                                <div aria-controls="target" class="step-trigger bg-light" role="tab" aria-selected="false" style="overflow-wrap: break-word; border: 2px solid #555555">
+                                    <div th:classappend="${signRequest.parentSignBook.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></div>
+                                    <div class="bs-stepper-label" th:text="${signRequest.parentSignBook.documentsTargetUri}">
+                                    </div>
+                                </div>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+            </th:block>
+    </div>
+</div>
+</html>

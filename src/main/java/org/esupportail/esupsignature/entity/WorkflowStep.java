@@ -1,8 +1,10 @@
 package org.esupportail.esupsignature.entity;
 
+import org.esupportail.esupsignature.entity.enums.SignType;
+
 import javax.persistence.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class WorkflowStep {
@@ -16,15 +18,13 @@ public class WorkflowStep {
 
     private String name;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Map<Long, Boolean> signBooks = new HashMap<>();
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Recipient> recipients = new ArrayList<>();
 
     private Boolean allSignToComplete = false;
 
-    @OneToOne
-    private SignRequestParams signRequestParams;
-
-    transient Map<String, Boolean> signBooksLabels;
+    @Enumerated(EnumType.STRING)
+    private SignType signType;
 
     public Long getId() {
         return id;
@@ -38,6 +38,10 @@ public class WorkflowStep {
         return version;
     }
 
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
     public String getName() {
         return name;
     }
@@ -46,19 +50,15 @@ public class WorkflowStep {
         this.name = name;
     }
 
-    public void setVersion(Integer version) {
-        this.version = version;
+    public List<Recipient> getRecipients() {
+        return recipients;
     }
 
-    public Map<Long, Boolean> getSignBooks() {
-        return signBooks;
+    public void setRecipients(List<Recipient> recipients) {
+        this.recipients = recipients;
     }
 
-    public void setSignBooks(Map<Long, Boolean> signBooks) {
-        this.signBooks = signBooks;
-    }
-
-    public Boolean isAllSignToComplete() {
+    public Boolean getAllSignToComplete() {
         return allSignToComplete;
     }
 
@@ -66,37 +66,11 @@ public class WorkflowStep {
         this.allSignToComplete = allSignToComplete;
     }
 
-    public SignRequestParams getSignRequestParams() {
-        return signRequestParams;
+    public SignType getSignType() {
+        return signType;
     }
 
-    public void setSignRequestParams(SignRequestParams signRequestParams) {
-        this.signRequestParams = signRequestParams;
+    public void setSignType(SignType signType) {
+        this.signType = signType;
     }
-
-    public Boolean isCompleted() {
-        int nbSign = 0;
-        for (Map.Entry<Long, Boolean> signBookEntry : signBooks.entrySet()) {
-            if(!allSignToComplete && signBookEntry.getValue()) {
-                return true;
-            }
-            if(signBookEntry.getValue()) {
-                nbSign++;
-            }
-        }
-        if(nbSign == signBooks.size()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public Map<String, Boolean> getSignBooksLabels() {
-        return signBooksLabels;
-    }
-
-    public void setSignBooksLabels(Map<String, Boolean> signBooksLabels) {
-        this.signBooksLabels = signBooksLabels;
-    }
-
 }

@@ -10,16 +10,16 @@ import org.esupportail.esupsignature.dss.web.service.XSLTService;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ValidationService;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -42,9 +42,9 @@ public class ValidationController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ValidationController.class);
 
-	@ModelAttribute("active")
+	@ModelAttribute("userMenu")
 	public String getActiveMenu() {
-		return "user/validation";
+		return "active";
 	}
 
 	@Resource
@@ -100,7 +100,11 @@ public class ValidationController {
 			model.addAttribute("detailedReport", "<h2>Impossible de valider ce document</h2>");
 		}
 		if(multipartFile.getContentType().contains("pdf")) {
-			model.addAttribute("pdfaReport", pdfService.checkPDFA(multipartFile.getInputStream(), true));
+			try {
+				model.addAttribute("pdfaReport", pdfService.checkPDFA(multipartFile.getInputStream(), true));
+			} catch (EsupSignatureException e) {
+				e.printStackTrace();
+			}
 		} else {
 			model.addAttribute("pdfaReport", Arrays.asList("danger", "Impossible de valider ce document"));
 		}
@@ -129,7 +133,13 @@ public class ValidationController {
 		model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
 		model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
 		model.addAttribute("diagnosticTree", reports.getXmlDiagnosticData());
-		model.addAttribute("pdfaReport", pdfService.checkPDFA(toValideDocument.getInputStream(), true));
+		if(toValideDocument.getContentType().equals("application/pdf")) {
+			try {
+				model.addAttribute("pdfaReport", pdfService.checkPDFA(toValideDocument.getInputStream(), true));
+			} catch (EsupSignatureException e) {
+				logger.error("enable to check pdf");
+			}
+		}
 		return "user/validation-result";
 	}
 	

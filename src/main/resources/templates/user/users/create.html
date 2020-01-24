@@ -14,26 +14,7 @@
 	</div>
 	<main role="main" class="container">
 	<div id="collapseHelp" class="collapse show" aria-expanded="true" style="">
-		<div class="alert alert-info">
-			<p style="font-weight: bold;">Bienvenue sur l'application Esup-Signature. Merci de compléter vos informations pour pouvoir commencer à signer.</p>
-			<ul>
-				<li>Pour pouvoir faire une signature visuelle sur un PDF il faut au moins sélectionner un fichier image de votre signature. (dans l'idéal il faut que le fond de l'image soit transparent)</li>
-				<li>Pour faire de la signature électronique, il faut soit importer un keystore au format PKCS12, soit utilser la signature via NexU. <br /> Il est possible d'en générer un sur la plateforme <a href="https://www.digicert.com/sso">https://www.digicert.com/sso</a> (voir <a href="https://services.renater.fr/tcs/certcentral/orders/request-certificate">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a> pour plus de détails).
-				</li>
-				<li>Enfin vous pouvez choisir vos paramètres de signature par défaut ainsi que vos paramètres d'alerte.</li>
-			</ul>
-			<p>
-				Vous pouvez modifier / compléter vos paramètres à tous moments en utilisant l'onglet <span class="fa fa-cog"> <!-- -->
-				</span>
-			</p>
-			<p>
-				Dès que vous apercevez ce symbole
-				<button type="button" class="btn btn-sm btn-info">
-					<span class="fas fa-info-circle "></span>
-				</button>
-				, cliquez dessus pour obtenir de l'aide.
-			</p>
-		</div>
+
 	</div>
 	<form id="fc_org_esupportail_esupsignature_domain_User" th:object="${user}" enctype="multipart/form-data" action="user/users" method="post">
 		<input type="hidden" th:field="*{id}">
@@ -127,7 +108,7 @@
 								<div class="input-group">
 									<div class="custom-file">
 										<input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choisir un fichier" accept="image/*" aria-describedby="inputGroupFileAddon01" />
-										<label class="custom-file-label" id="inputGroupLabel01" for="upload">
+										<label class="custom-file-label" id="inputGroupLabel01" for="inputGroupFile01">
 											Choisir un fichier
 										</label>
 									</div>

@@ -29,10 +29,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
 import javax.sql.DataSource;
-import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -125,7 +121,7 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public TrustedListsCertificateSource trustedListSource() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
+	public TrustedListsCertificateSource trustedListSource() {
 		TSLRepository tslRepository = new TSLRepository();
 		TrustedListsCertificateSource certificateSource = new TrustedListsCertificateSource();
 		tslRepository.setTrustedListsCertificateSource(certificateSource);

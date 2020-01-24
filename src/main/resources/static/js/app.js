@@ -33,7 +33,7 @@ $(document).ready(function () {
 	}
 
 	$('#sidebarCollapse').on('click', function () {
-		sideBarStatus = sideBarStatus = localStorage.getItem('sideBarStatus');
+		sideBarStatus = localStorage.getItem('sideBarStatus');
 		toggleSideBar();
 		if(sideBarStatus == 'on') {
 			localStorage.setItem('sideBarStatus', 'off');
@@ -45,7 +45,6 @@ $(document).ready(function () {
 	function toggleSideBar() {
 		$('#sidebar').toggleClass('active');
 		$('.sidebar-label').toggleClass('d-none');
-		$('.fa-arrow-left').toggleClass('fa-arrow-right')
 		$('#logo').toggleClass('logooverflow');
 		$('#content').toggleClass('content content2');
 	}
@@ -54,7 +53,6 @@ $(document).ready(function () {
 
 document.addEventListener('DOMContentLoaded', function() {
 
-	console.log(window.location.hash);
 	if(window.location.hash) {
 		var element_to_scroll_to = document.getElementById(window.location.hash.substring(1));
 		element_to_scroll_to.scrollIntoView();
@@ -95,16 +93,40 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 });
 
-//sign wait
+//sign launch
 
-function submitSignRequest() {
+var percent = 0;
+
+function launchSign(id) {
+	percent = 0;
+	console.log('launch sign for : ' + id);
+	$('#signModal').modal('hide');
+	$('#wait').modal('show');
+	$('#wait').modal({backdrop: 'static', keyboard: false})
+	submitSignRequest(id);
+}
+
+function launchSignAll(id) {
+	$('#signAllModal').modal('hide');
+	$('#wait').modal('show');
+	$('#wait').modal({backdrop: 'static', keyboard: false})
+	var csrf = document.getElementsByName("_csrf")[0];
+	var signRequestParams = "password=" + document.getElementById("passwordAll").value +
+		"&" + csrf.name + "=" + csrf.value;
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open('POST', '/user/signbooks/sign/' + id, true);
+	xmlHttp.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+	xmlHttp.send(signRequestParams);
+}
+
+function submitSignRequest(id) {
 	var csrf = document.getElementsByName("_csrf")[0];
 	var signPageNumber = document.getElementById("signPageNumber");
 	var signRequestParams;
 	if(signPageNumber != null) {
 		signRequestParams = "password=" + document.getElementById("password").value +
-							"&addDate=" + document.getElementById("_addDate").checked +
-							"&visual=" + document.getElementById("_visual").checked +
+							"&addDate=" + dateActive +
+							"&visual=" + visualActive +
 							"&xPos=" + document.getElementById("xPos").value +
 							"&yPos=" + document.getElementById("yPos").value +
 							"&signPageNumber=" + document.getElementById("signPageNumber").value +
@@ -112,34 +134,30 @@ function submitSignRequest() {
 							;
 	} else {
 		signRequestParams = "password=" + document.getElementById("password").value +
-							"&" + csrf.name + "=" + csrf.value
-							;
+							"&" + csrf.name + "=" + csrf.value;
 	}
-	sendData(signRequestParams);
-
+	sendData(id, signRequestParams);
 }
 
-function sendData(signRequestParams) {
+function sendData(id, signRequestParams) {
 	document.getElementById("passwordError").style.display = "none";
 	document.getElementById("signError").style.display = "none";
 	document.getElementById("closeModal").style.display = "none";
 	document.getElementById("validModal").style.display = "none";
 	document.getElementById("bar").style.display = "none";
 	document.getElementById("bar").classList.add("progress-bar-animated");
-	getProgressTimer = setInterval(function() {
-		getStep();
-	}, 500);
+	getProgressTimer = setInterval(function() { getStep(id, signRequestParams); }, 500);
 	var xmlHttp = new XMLHttpRequest();
-	xmlHttp.open('POST', '/user/signrequests/sign/' + signId, true);
-	xmlHttp.setRequestHeader('Content-Type',
-			'application/x-www-form-urlencoded');
+	xmlHttp.open('POST', '/user/signrequests/sign/' + id, true);
+	xmlHttp.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
 	xmlHttp.send(signRequestParams);
 }
 
-function getStep() {
+function getStep(id, signRequestParams) {
+	percent = percent + 2;
 	console.log("getStep");
 	var xmlHttp = new XMLHttpRequest();
-	xmlHttp.open("GET", "/user/signrequests/get-step", false);
+	xmlHttp.open("GET", "/user/signrequests/get-step", true);
 	xmlHttp.onreadystatechange = function() {
 		var result = xmlHttp.responseText;
 		if (result == "security_bad_password") {
@@ -148,98 +166,35 @@ function getStep() {
 			document.getElementById("bar").classList.remove("progress-bar-animated");
 			clearInterval(getProgressTimer);
 		} else if(result == "sign_system_error") {
+			clearInterval(getProgressTimer);
 			document.getElementById("signError").style.display = "block";
 			document.getElementById("closeModal").style.display = "block";
 			document.getElementById("bar").classList.remove("progress-bar-animated");
+		} else if(result == "initNexu") {
 			clearInterval(getProgressTimer);
+			document.location.href="/user/nexu-sign/" + id;
 		} else if (result == "end") {
 			clearInterval(getProgressTimer);
 			document.getElementById("validModal").style.display = "block";
 			document.getElementById("bar").classList.remove("progress-bar-animated");
 			document.getElementById("bar-text").innerHTML = "Signature terminée";
-			clearInterval(getProgressTimer);
+			document.getElementById("bar").style.width = 100 + "%";
+			document.location.href="/user/signrequests/" + id;
 		} else {
 			document.getElementById("bar").style.display = "block";
-			document.getElementById("bar").style.width = 100 + "%";
-			document.getElementById("bar-text").innerHTML = result;				
+			document.getElementById("bar").style.width = percent + "%";
+			document.getElementById("bar-text").innerHTML = result;
 		}
 	}
 	xmlHttp.send(null);
 	return;
 }
 
-//signature position
-
+//drag signature position
 var pointerDiv;
 var startPosX;
 var startPosY;
-var pointItEnable = false;
 var pointItMove = false;
-
-document.addEventListener('DOMContentLoaded', function() {
-	pointerDiv = document.getElementById("pointer_div");
-	if(pointerDiv != null) {
-		startPosX = document.getElementById("xPos").value;
-		startPosY = document.getElementById("yPos").value;
-	}
-});
-
-function activeDate() {
-	
-	var addDate = document.getElementById("_addDate");
-	var cross = document.getElementById("cross");
-	var borders = document.getElementById("borders");
-	var textDate;
-
-	if(addDate.checked) {
-		cross.style.width = 200;
-		cross.style.height = cross.offsetHeight + 20;
-		borders.style.width = 200;
-		borders.style.height = borders.offsetHeight + 20;
-		borders.insertAdjacentHTML("beforeend", "<span id='textDate' class='align-top' style='font-size:" + 8 * zoom + "px;'>Le XX/XX/XXXX XX:XX</span>");
-
-	} else {
-		cross.style.width = 100;
-		cross.style.height = cross.offsetHeight - 20;
-		borders.style.width = 100;
-		borders.style.height = borders.offsetHeight - 20;
-		textDate = document.getElementById("textDate");
-		textDate.remove();
-	}
-}
-
-function pointIt(e) {
-	console.log('point')
-	if(pointItEnable) {
-		pointItMove = true;
-		console.log('point enable')
-		if(e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel'){
-			e.preventDefault();
-			var rect = pointerDiv.getBoundingClientRect();
-			var touch = e.touches[0] || e.changedTouches[0];
-			posX = touch.pageX - rect.left;
-			posY = touch.pageY - rect.top - window.scrollY;
-		} else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover'|| e.type=='mouseout' || e.type=='mouseenter' || e.type=='mouseleave') {
-			console.log("mouse");
-			posX = e.offsetX ? (e.offsetX)
-				: e.clientX - pointerDiv.offsetLeft;
-			posY = e.offsetY ? (e.offsetY)
-				: e.clientY - pointerDiv.offsetTop;
-		}
-
-		if (cross != null && posX > 0 && posY > 0 && pointItEnable) {
-			cross.style.backgroundColor= 'rgba(0, 255, 0, .5)';
-			cross.style.left = posX + "px";
-			cross.style.top = posY + "px";
-			document.getElementById("xPos").value = Math.round(posX / zoom);
-			document.getElementById("yPos").value = Math.round(posY / zoom);
-		}
-	}
-}
-
-function animBorder() {
-	document.getElementById("borders").classList.add("anim-border");
-}
 
 function resetPosition() {
 	console.log("out");
@@ -259,8 +214,8 @@ function resetPosition() {
 function savePosition() {
 	if(pointItEnable && pointItMove) {
 		console.log("save");
-		startPosX = Math.round(posX / zoom);
-		startPosY = Math.round(posY / zoom);
+		startPosX = Math.round(posX * scale);
+		startPosY = Math.round(posY * scale);
 	}
 	cross.style.backgroundColor= 'rgba(0, 255, 0, 0)';
 	cross.style.pointerEvents = "auto";
@@ -272,115 +227,12 @@ function savePosition() {
 function dragSignature() {
 	console.log("drag");
 	cross.style.pointerEvents = "none";
-	pointerDiv.style.pointerEvents = "auto";
+	pdf.style.pointerEvents = "auto";
 	document.body.style.cursor = "move";
 	pointItEnable = true;
 }
 
-//pdf navigation
-document.addEventListener('DOMContentLoaded', function() {
-	if(document.getElementById("next") != null) {
-
-		if (currentImagePage == nbImagePage - 1) {
-			document.getElementById("next").classList.add("disabled");
-			document.getElementById("next").disabled = true;
-		}
-		if (currentImagePage > 0) {
-			document.getElementById("previous").classList.remove("disabled");
-			document.getElementById("previous").disabled = false
-		}
-	}
-});
-
-function nextImage() {
-	currentImagePage++;
-	hideSigns(currentImagePage)
-	console.info("url('" + documentUrl + "" + currentImagePage + "')");
-	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
-	if (currentImagePage == nbImagePage - 1) {
-		document.getElementById("next").classList.add("disabled");
-		document.getElementById("next").disabled = true;
-	}
-	if (currentImagePage > 0) {
-		document.getElementById("previous").classList.remove("disabled");
-		document.getElementById("previous").disabled = false
-	}
-	document.getElementById("signPageNumber").value = currentImagePage + 1;
-}
-
-function previousImage() {
-	currentImagePage--;
-	hideSigns(currentImagePage)
-	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
-	if (currentImagePage == 0) {
-		document.getElementById("previous").classList.add("disabled");
-		document.getElementById("previous").disabled = true;
-	}
-	if (nbImagePage - 1 > currentImagePage) {
-		document.getElementById("next").classList.remove("disabled");
-		document.getElementById("next").disabled = false;
-	}
-	document.getElementById("signPageNumber").value = currentImagePage + 1;
-}
-
-function hideSigns(currentImagePage) {
-	var signImages = document.querySelectorAll('[id^="signParam_"]');
-	[].forEach.call(signImages, function(signImage) {
-		if(signImage.id.includes(currentImagePage + 1)) {
-			signImage.style.display = "block";
-		} else {
-			signImage.style.display = "none";
-		}
-	});
-}
-
-//toggle overloadsignparams
-var overloadSignParams;
-var signTypeSelector;
-var signTypeDiv;
-var newPageTypeSelector;
-var newPageTypeDiv;
-var overloadYes;
-var overloadNo;
-
-document.addEventListener('DOMContentLoaded', function() {
-	signTypeSelector = document.getElementById("_signType_id");
-	signTypeDiv = document.getElementById("_signType_div_id");
-	newPageTypeSelector = document.getElementById("_newPageType_id");
-	newPageTypeDiv = document.getElementById("_newPageType_div_id");
-});
-
-function toggleOverload() {
-	overloadSignParams = document.getElementById("_overloadSignParams");
-	if(!overloadSignParams.checked) {
-		signTypeDiv.classList.add("d-none");
-		newPageTypeDiv.classList.add("d-none");
-		signTypeSelector.disabled = true;
-		newPageTypeSelector.disabled = true;
-	} else {
-		signTypeDiv.classList.remove("d-none");
-		newPageTypeDiv.classList.remove("d-none");
-		signTypeSelector.disabled = false;
-		newPageTypeSelector.disabled = false;
-	}
-}
-
-function getSelectValues(select) {
-	  var result = [];
-	  var options = select && select.options;
-	  var opt;
-
-	  for (var i=0, iLen=options.length; i<iLen; i++) {
-	    opt = options[i];
-
-	    if (opt.selected) {
-	      result.push(opt.value || opt.text);
-	    }
-	  }
-	  return result;
-	}
-
-//Hack to convert panel to card (bootstrap 4)
+//Hack to convert dss signature panel to card (bootstrap 4)
 document.addEventListener('DOMContentLoaded', function() {
 	var divs = document.getElementsByTagName("div");
 	[].forEach.call(divs, function(div) {
@@ -621,4 +473,8 @@ $(window).resize(function() {
 	resizeHeader();
 }).resize();
 
-    
+// PDF.JS
+
+$(document).ready(function() {
+
+});

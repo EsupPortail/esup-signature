@@ -34,7 +34,13 @@ public class Log {
 	private String ip;
 	
 	private String comment;
-	
+
+    private Integer pageNumber;
+
+    private Integer posX;
+
+    private Integer posY;
+
 	private Long signRequestId;
 
 	public Date getLogDate() {
@@ -125,4 +131,27 @@ public class Log {
         this.version = version;
     }
 
+    public int getPageNumber() {
+        return pageNumber;
+    }
+
+    public void setPageNumber(Integer pageNumber) {
+        this.pageNumber = pageNumber;
+    }
+
+    public Integer getPosX() {
+        return posX;
+    }
+
+    public void setPosX(int posX) {
+        this.posX = posX;
+    }
+
+    public int getPosY() {
+        return posY;
+    }
+
+    public void setPosY(int posY) {
+        this.posY = posY;
+    }
 }

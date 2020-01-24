@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+    <h5>Création du parapheur terminée</h5>
+    <form th:action="'/user/signbooks/wizard/wiz5/' + ${signBook.id}" method="post">
+        <label>Choisir un nom pour sauvegarder le circuit en tant que modèle</label>
+        <input type="text" name="name" class="form-control" required>
+        <br>
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Enregistrer le circuit
+        </button>
+    </form>
+    <button style="position: absolute;right: 10px;bottom: 10px;" th:onclick="'parent.location.href=\'/user/signrequests/' + ${signBook.signRequests.get(0).id} + '\''" type="button" class="btn btn-secondary">
+        <i class="fas fa-door-open"></i> Fermer
+    </button>
+
+</body>
+</html>

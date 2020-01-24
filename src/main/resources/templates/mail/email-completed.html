@@ -6,29 +6,31 @@
 </head>
 <body class="bg-light">
 <div class="container">
-    <div class="card m-4  rounded-0">
+    <div class="card m-4 rounded-0">
         <div class="card-header bg-dark">
             <img class="mx-auto" th:src="@{|data:image/png;base64, ${logo}|}" />
         </div>
         <div class="card-body">
             <h4>Bonjour,</h4>
-            <h5>La demande de signature "<b><span th:text="${signRequest.title}"></span></b>" est terminée.</h5>
+            <h5>La demande de signature "<b><span th:text="${signBook.name}"></span></b>" est terminée.</h5>
             <p>Liste des signataires</p>
             <ul>
-            <th:block th:each="workflowStep : ${signRequest.workflowSteps}">
-                 <li th:text="${workflowStep.signBooksLabels.keySet()}"></li>
+            <th:block th:each="workflowStep : ${signBook.workflowSteps}">
+                <th:block th:each="recipient : ${workflowStep.recipients}">
+                    <li th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></li>
+                </th:block>
             </th:block>
             </ul>
-            <p th:if="${signRequest.exportedDocumentURI != null}">
-                Le document sera transmise à cette adresse : <span th:text="${signRequest.exportedDocumentURI}"></span>
+            <p th:if="${signBook.exportedDocumentURI != null}">
+                Le document sera transmise à cette adresse : <span th:text="${signBook.exportedDocumentURI}"></span>
             </p>
 
             <p>
-                <a th:href="@{|${rootUrl}/user/signrequests/get-last-file-by-token/${signRequest.name}|}" class="btn btn-primary">Télécharger le document</a>
+                <a th:href="@{|${rootUrl}/user/signBooks/${signBook.id}|}" class="btn btn-primary">Voir le parapheur</a>
             </p>
         </div>
         <div class="card-footer bg-secondary">
-            <span class="text-white">Université de Ville</span>
+            <span class="text-white">Université de Rouen</span>
         </div>
     </div>
 </div>

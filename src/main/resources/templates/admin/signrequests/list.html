@@ -2,62 +2,22 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.thymeleaf.org/spring-data">
 <head th:replace="fragments/head :: head"></head>
 <body>
-<div class="header-fixed fixed-top">
-    <nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-    <nav class="nav justify-content-between bg-white" aria-label="breadcrumb">
-        <ol class="breadcrumb col-11">
+<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+<main role="main" class="">
+    <div class="wrapper">
+        <nav id="sidebar">
+            <div class="m-1">
+                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+                </button>
+            </div>
+        </nav>
+        <div id="content" class="content">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
             <li class="breadcrumb-item active">Liste des demandes</li>
         </ol>
-        <div class="navbar-nav align-self-center">
-            <button data-target="#collapseHelp" data-toggle="collapse" type="button" class="btn btn-info">
-					<span class="fas fa-info-circle"> <!--  -->
-					</span>
-            </button>
-        </div>
     </nav>
-    <div id="collapseHelp" class="collapse" aria-expanded="true" style="">
-        <div class="alert alert-info">
-            <p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
-            <p>Statut des demandes de signatures :</p>
-            <p>
-					<span class="alert alert-primary">
-					<i class="fas fa-clock"></i> <span th:text="#{'signbook.status.pending'}"></span>
-					</span> La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures
-            </p>
-            <p>
-					<span class="alert alert-success">
-					<i class="fas fa-file-signature"></i> <span th:text="#{'signbook.status.signed'}"></span>
-					</span> Tous les critères de signatures sont remplis
-            </p>
-            <p>
-					<span class="alert alert-success">
-					<i class="far fa-check-circle"></i> <span th:text="#{'signbook.status.checked'}"></span>
-					</span> Le document à été validé par tous les participants
-            </p>
-            <p>
-					<span class="alert alert-danger">
-					<i class="fas fa-ban"></i> <span th:text="#{'signbook.status.refused'}"></span>
-					</span> La demande à été refusée et retirée des parapheurs
-            </p>
-            <p>
-					<span class="alert alert-warning">
-					<i class="fas fa-flag-checkered"></i> <span th:text="#{'signbook.status.completed'}"></span>
-					</span> La demande la demande est terminée </p>
-            <p>
-				<span class="alert alert-warning">
-				<i class="fas fa-file-export"></i> <span th:text="#{'signbook.status.exported'}"></span>
-					</span> La demande la demande à été exportée vers un autre système de stockage et retirée des parapheurs
-            </p>
-        </div>
-    </div>
-    <div id="ribbon" class="card">
-        <div class="card-body">
-
-        </div>
-    </div>
-</div>
-<main role="main" class="container-fluid">
-    <br/>
     <div class="card">
         <div class="card-header">
             Documents envoyés
@@ -106,14 +66,14 @@
                             <td class="none"><p class="truncate" th:title="${signRequest.title}" th:text="${signRequest.title}"></p></td>
                             <td class="none"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                             <td class="none"><span th:text="${signRequest.createBy}"></span></td>
-                            <td class="d-none d-lg-table-cell">
+                            <td class="none">
                                 <table class="table table-sm">
                                     <tbody>
-                                    <th:block th:each="signBooksLabel : ${signRequest.currentWorkflowStep.signBooksLabels}">
+                                    <th:block th:each="recipient : ${signRequest.recipients}">
                                         <tr>
-                                            <td width="100%" th:text="${signBooksLabel.key}"></td>
+                                            <td width="100%" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
                                             <td align="center">
-                                                <div th:switch="${signBooksLabel.value}">
+                                                <div th:switch="${recipient.signed}">
                                                     <i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
                                                     <i title="n'a pas signé le document" th:case="false" class="fas fa-exclamation-circle text-danger"></i>
                                                 </div>
@@ -145,6 +105,8 @@
         </div>
         <div c lass="card-footer">
             <nav th:replace="fragments/pagination :: pagination"></nav>
+        </div>
+    </div>
         </div>
     </div>
 </main>

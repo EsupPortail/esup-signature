@@ -1,5 +1,7 @@
 <!doctype html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.thymeleaf.org/spring-data">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
@@ -7,68 +9,33 @@
     <div class="wrapper">
         <nav id="sidebar">
             <div class="m-1">
-            <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
-                <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
-            </button>
-            <button title="Nouvelle demande de signature"  type="button" data-toggle="modal" data-target="#addSignRequestModal" class="mb-1 col-12 btn btn-primary text-left">
-                <i class="fas fa-plus"></i> <span class="sidebar-label">Nouvelle demande de signature</span>
-            </button>
-            <button title="Valider la signature d'un document" type="button" onclick="location.href='/user/validation'" class="mb-1 col-12 btn btn-warning text-left">
-                <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Valider la signature d'un document</span>
-            </button>
-            <button id="opendocs" class="mb-1 btn btn-outline-dark btn-light float-left" onclick="openCheckedDocs()" title="open docs" style="display: none;">
-                <i class="far fa-eye fa-2x"></i> Ouvrir les documents sélectionnés
-            </button>
-            <button id="signdocs" class="mb-1 btn btn-outline-dark btn-light float-left" type="button" data-toggle="modal" data-target="#signModal" style="display: none;">
-                <i class="fas fa-signature fa-2x"></i> Signer les documents sélectionnés
-            </button>
-            <button data-toggle="modal" data-target="#wait" id="complete" onclick="completeSignRequests()" title="Passer au statut terminé" class="d-none col-12 m-2 btn btn-outline-dark btn-light float-left">
-                <i class="fas fa-flag-checkered"></i> Passer au statut terminé
-            </button>
+                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+                </button>
+                <button title="Assistant de demande de signature"  type="button" data-toggle="modal" data-target="#wizardModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left">
+                    <i class="fas fa-magic"></i> <span class="sidebar-label">Assistant de creation de parapheur</span>
+                </button>
+                    <button title="Je signe un document"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left">
+                        <i class="fas fa-bolt"></i> <span class="sidebar-label">Signature rapide</span>
+                    </button>
+                <button title="Nouvelle demande de signature"  type="button" data-toggle="modal" data-target="#addSignRequestModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left d-none">
+                    <i class="fas fa-plus"></i> <span class="sidebar-label">Créer une demande de signature manuellement</span>
+                </button>
+                <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="d-none mb-1 col-12 btn btn-primary text-left">
+                    <i class="fas fa-plus"></i> <span class="sidebar-label">Signature rapide</span>
+                </button>
+                <a title="Valider la signature d'un document" href="/user/validation" class="btn btn-light btn-outline-dark col-12 mb-1 text-left">
+                    <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Contrôler la signature d'un document</span>
+                </a>
             </div>
         </nav>
         <div id="content" class="content">
-            <div id="collapseHelp" class="collapse" aria-expanded="true">
-                <div class="alert alert-info">
-                    <p>Liste des demandes de signatures concernant l'utilisateur courant (à signer ou envoyés pour signature)</p>
-                    <p>Statut des demandes de signatures :</p>
-                    <p>
-                <span class="alert alert-primary">
-                <i class="fas fa-clock"></i> <span th:text="#{'signbook.status.pending'}"></span>
-                </span> La demande se trouve dans un ou plusieurs parapheur, elle est en attente d'une ou plusieurs signatures
-                    </p>
-                    <p>
-                <span class="alert alert-success">
-                <i class="fas fa-file-signature"></i> <span th:text="#{'signbook.status.signed'}"></span>
-                </span> Tous les critères de signatures sont remplis
-                    </p>
-                    <p>
-                <span class="alert alert-success">
-                <i class="far fa-check-circle"></i> <span th:text="#{'signbook.status.checked'}"></span>
-                </span> Le document à été validé par tous les participants
-                    </p>
-                    <p>
-                <span class="alert alert-danger">
-                <i class="fas fa-ban"></i> <span th:text="#{'signbook.status.refused'}"></span>
-                </span> La demande à été refusée et retirée des parapheurs
-                    </p>
-                    <p>
-                <span class="alert alert-warning">
-                <i class="fas fa-flag-checkered"></i> <span th:text="#{'signbook.status.completed'}"></span>
-                </span> La demande la demande est terminée </p>
-                    <p>
-				<span class="alert alert-warning">
-				<i class="fas fa-file-export"></i> <span th:text="#{'signbook.status.exported'}"></span>
-                </span> La demande la demande à été exportée vers un autre système de stockage et retirée des parapheurs
-                    </p>
-                </div>
-            </div>
            <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item active">Liste des demandes</li>
+                    <li class="breadcrumb-item active">Liste des documents</li>
                 </ol>
             </nav>
-            <div class="card rounded-0">
+            <div class="card rounded-0 mb-3">
                 <div class="card-header">
                     Documents à signer
                 </div>
@@ -77,30 +44,24 @@
                         <table class="table table-sm table-bordered table-striped table-hover">
                             <thead>
                             <tr>
-                                <th data-type="html"><input id="selectall" type="checkbox"/></th>
-                                <th class="">Titre</th>
+                                <th class="">Parapheur</th>
+                                <th class="">Titre des documents</th>
                                 <th class="d-none d-md-table-cell">Date de création</th>
                                 <th class="d-none d-lg-table-cell">Créé par</th>
                                 <th>Voir</th>
-                                <th>Signer</th>
                             </tr>
                             </thead>
                             <tbody>
                             <th:block th:each="signRequest : ${signRequestsToSign}">
                                 <tr>
-                                    <td><input th:value="${signRequest.id}" name="check" type="checkbox" class="check"/></td>
-                                    <td class="text-break" th:text="${signRequest.title}"></td>
+                                    <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
+                                    <td class="text-break" th:unless="${signRequest.parentSignBook != null}"></td>
+                                    <td class="text-break"><span style="white-space: pre-line" th:text="${signRequest.viewTitle}"></span></td>
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                    <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy}"></span></td>
+                                    <td class="d-none d-lg-table-cell"><span th:text="${@userService.getUserByEppn(signRequest.createBy).firstname} + ' ' + ${@userService.getUserByEppn(signRequest.createBy).name}"></span></td>
                                     <td class="utilbox">
-                                        <a class="btn btn-info far fa-eye" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}">
-                                            <!--  -->
-                                        </a>
-                                    </td>
-                                    <td class="utilbox">
-                                        <a role="button" class="btn btn-success fas fa-signature" title="Signer" th:href="'/user/signrequests/sign-by-token/' + ${signRequest.name}">
-                                            <!--  -->
-                                        </a>
+                                        <a th:if="${signRequest.parentSignBook != null}" class="btn btn-info" title="ouvrir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="fas fa-book"></i> </a>
+                                        <a th:unless="${signRequest.parentSignBook != null}" class="btn btn-info" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="far fa-eye"></i> </a>
                                     </td>
                                 </tr>
                             </th:block>
@@ -112,12 +73,10 @@
 			</span>
                 </div>
             </div>
-            <br/>
-            <div class="card rounded-0">
+            <div class="card rounded-0 mb-3">
                 <div class="card-header">
                     Documents envoyés
                     <form class="" action="" method="get">
-                        <div class="card">
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <div class="input-group-text">Statut</div>
@@ -131,37 +90,53 @@
                                     </th:block>
                                 </select>
                             </div>
-                        </div>
                     </form>
-                    <div style="display: none;" id="alertsigndocs" class="alert alert-danger" role="alert">Impossible de signer en masse la selection actuelle</div>
                 </div>
                 <div class="card-body">
                         <table class="table table-sm table-bordered table-striped table-hover">
                             <thead>
                             <tr>
-                                <th class="none">Titre</th>
-                                <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
-                                <th class="d-none d-xl-table-cell">Créé par</th>
+                                <th class="">Parapheur</th>
+                                <th class="none">Titre des documents</th>
+<!--                                <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>-->
+                                <th class="d-none d-xl-table-cell">Date de création</th>
                                 <th class="d-none d-lg-table-cell">Participants</th>
                                 <th class="d-none d-md-table-cell">Statut</th>
                                 <th>Voir</th>
+                                <th>Modifier</th>
                                 <th>Supprimer</th>
                             </tr>
                             </thead>
                             <tbody>
                             <th:block th:each="signRequest : ${signRequests}">
                                 <tr>
-                                    <td class="text-break" th:title="${signRequest.title}" th:text="${signRequest.title}"></td>
+                                    <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
+                                    <td class="text-break" th:unless="${signRequest.parentSignBook != null}"></td>
+                                    <td class="text-break"><span style="white-space: pre-line" th:text="${signRequest.viewTitle}"></span></td>
                                     <td class="d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                    <td class="d-none d-xl-table-cell"><span th:text="${signRequest.createBy}"></span></td>
                                     <td class="d-none d-lg-table-cell">
-                                        <table class="table table-sm">
+                                        <table th:if="${signRequest.parentSignBook != null && @signBookService.getCurrentWorkflowStep(signRequest.parentSignBook) != null}" class="table table-sm">
                                             <tbody>
-                                            <th:block th:each="signBooksLabel : ${signRequest.currentWorkflowStep.signBooksLabels}">
+                                            <th:block th:each="recipient : ${@signBookService.getCurrentWorkflowStep(signRequest.parentSignBook).recipients}">
                                                 <tr>
-                                                    <td width="100%" th:text="${signBooksLabel.key}"></td>
+                                                    <td width="100%" th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>
                                                     <td align="center">
-                                                        <div th:switch="${signBooksLabel.value}">
+                                                        <div th:switch="${recipient.signed}">
+                                                            <i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
+                                                            <i title="n'a pas signé le document" th:case="false" class="fas fa-exclamation-circle text-danger"></i>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </th:block>
+                                            </tbody>
+                                        </table>
+                                        <table class="table table-sm" th:if="${signRequest.parentSignBook == null}">
+                                            <tbody>
+                                            <th:block th:each="recipient : ${signRequest.recipients}">
+                                                <tr>
+                                                    <td width="100%" th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>
+                                                    <td align="center">
+                                                        <div th:switch="${recipient.signed}">
                                                             <i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
                                                             <i title="n'a pas signé le document" th:case="false" class="fas fa-exclamation-circle text-danger"></i>
                                                         </div>
@@ -171,36 +146,120 @@
                                             </tbody>
                                         </table>
                                     </td>
-                                    <td class="d-none d-md-table-cell" style="width: 150px;">
+                                    <td th:if="${signRequest.parentSignBook != null}" class="d-none d-md-table-cell" style="width: 150px;">
+                                        <div th:replace="user/signbooks/includes/status :: status"></div>
+                                    </td>
+                                    <td th:unless="${signRequest.parentSignBook != null}" class="d-none d-md-table-cell" style="width: 150px;">
                                         <div th:replace="user/signrequests/includes/status :: status"></div>
                                     </td>
                                     <td class="utilbox">
-                                        <button class="btn btn-info far fa-eye" title="Sign Request" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '\''">
-                                            <!--  -->
-                                        </button>
+                                        <a th:if="${signRequest.parentSignBook != null}" class="btn btn-info" title="ouvrir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="fas fa-book"></i> </a>
+                                        <a th:unless="${signRequest.parentSignBook != null}" class="btn btn-info" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="far fa-eye"></i> </a>
                                     </td>
-                                    <td class="utilbox">
+                                    <td class="utilbox" th:if="${signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() == 'draft' || signRequest.parentSignBook.status.name() == 'pending')}">
+                                        <button class="btn btn-warning" title="Modifier" th:onclick="'location.href=\'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form\''"><i class="fas fa-pen"></i></button>
+                                    </td>
+                                    <td class="utilbox" th:if="${signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() != 'draft' && signRequest.parentSignBook.status.name() != 'pending')}">
+                                        <button class="btn btn-outline-secondary" title="Modifier" disabled><i class="fas fa-pen"></i></button>
+                                    </td>
+                                    <td class="utilbox" th:if="${signRequest.parentSignBook == null && (signRequest.status.name() == 'draft' || signRequest.status.name() == 'pending')}">
+                                        <button class="btn btn-warning" title="Modifier" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '?form\''"><i class="fas fa-pen"></i></button>
+                                    </td>
+                                    <td class="utilbox" th:if="${signRequest.parentSignBook == null && !(signRequest.status.name() == 'draft' || signRequest.status.name() == 'pending')}">
+                                        <button class="btn btn-outline-secondary" title="Modifier" disabled><i class="fas fa-pen"></i></button>
+                                    </td>
+                                    <td class="utilbox" th:if="${signRequest.parentSignBook != null}">
+                                        <form class="delete" th:action="'/user/signbooks/' + ${signRequest.parentSignBook.id}" method="post">
+                                            <input type="hidden" name="_method" value="DELETE"/>
+                                            <button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" value="Supprimer Sign Request" type="submit" title="Supprimer Sign Request"
+                                                    class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
+                                        </form>
+                                    </td>
+                                    <td class="utilbox" th:unless="${signRequest.parentSignBook != null}">
                                         <form class="delete" th:action="'/user/signrequests/' + ${signRequest.id}" method="post">
                                             <input type="hidden" name="_method" value="DELETE"/>
                                             <button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" value="Supprimer Sign Request" type="submit" title="Supprimer Sign Request"
-                                                    class="btn btn-danger far fa-trash-alt"></button>
+                                                    class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
                                         </form>
                                     </td>
+
                                 </tr>
                             </th:block>
                             </tbody>
                         </table>
                 </div>
-                <div c lass="card-footer">
-                    <nav th:replace="fragments/pagination :: pagination"></nav>
+                <div class="card-footer">
+<!--                    <nav th:replace="fragments/pagination :: pagination"></nav>-->
+                </div>
+            </div>
+            <div class="card rounded-0 mb-3">
+                <div class="card-header">
+                    <a data-toggle="collapse" href="#mySignedDocs" role="button" aria-expanded="false" aria-controls="mySignedDocs">
+                        Documents signés<i class="fa fa-arrow-down float-right"></i>
+                    </a>
+                </div>
+                <div id="mySignedDocs" class="card-body collapse">
+                    <div th:if="${#lists.size(signRequestsSignedByMe) > 0}" class="table-responsive">
+                        <table class="table table-sm table-bordered table-striped table-hover">
+                            <thead>
+                            <tr>
+                                <th class="">Parapheur</th>
+                                <th class="">Titre</th>
+                                <th class="d-none d-md-table-cell">Date de création</th>
+                                <th class="d-none d-lg-table-cell">Créé par</th>
+                                <th>Voir</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <th:block th:each="signRequest : ${signRequestsSignedByMe}">
+                                <tr>
+                                    <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
+                                    <td class="text-break" th:unless="${signRequest.parentSignBook != null}"></td>
+                                    <td class="text-break" th:text="${signRequest.title}"></td>
+                                    <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
+                                    <td class="d-none d-lg-table-cell"><span th:text="${@userService.getUserByEppn(signRequest.createBy).firstname} + ' ' + ${@userService.getUserByEppn(signRequest.createBy).name}"></span></td>
+                                    <td class="utilbox">
+                                        <a th:if="${signRequest.parentSignBook != null}" class="btn btn-info" title="ouvrir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="fas fa-book"></i> </a>
+                                        <a th:unless="${signRequest.parentSignBook != null}" class="btn btn-info" title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="far fa-eye"></i> </a>
+                                    </td>
+                                </tr>
+                            </th:block>
+                            </tbody>
+                        </table>
+                    </div>
+                    <span th:unless="${#lists.size(signRequestsSignedByMe) > 0}" class="table-responsive">
+				Aucun document signer pour le moment
+			</span>
                 </div>
             </div>
         </div>
     </div>
 </main>
 
+<div class="modal fade" id="wizardModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Création d'une demande</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <iframe id="wizIframe" frameborder="0" src="/user/signbooks/wizard/wiz1"  style="width: 100%; height: 500px;" ></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    localStorage.setItem('mode', 'sign');
+    $('#wizardModal').on('shown.bs.modal', function () {
+        $(this).modal({backdrop: 'none', keyboard: false})
+    });
+</script>
+
 <div class="modal fade" id="addSignRequestModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/signrequests'" method="post">
                 <div class="modal-header">
@@ -227,225 +286,45 @@
         </div>
     </div>
 </div>
-<div th:replace="fragments/footer :: footer"></div>
-<div th:replace="fragments/message :: message"></div>
-<div id="signModal" class="modal fade" tabindex="-1" role="dialog">
+
+<div class="modal fade" id="fastSignRequestModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                Signature en masse
-            </div>
-            <div class="modal-body text-center">
-                <div th:switch="${signType}">
-                    <div th:case="'certSign'">
-                        <div th:if="${keystore != null}">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">Mot de passe</span>
-                                </div>
-
-                                <input class="form-control" required="required" placeholder="Vous allez signer à l'aide d'un certificat, merci d'entrer le mot de passe" id="passwordField" name="password" type="password"/>
-                                <div class="input-group-append">
-                                    <input data-toggle="modal" data-target="#wait" onclick="submitSignRequests();" alt="${signLabel}" class="btn btn-success" title="Signe" type="button" value="Signer"/>
-                                </div>
+            <form th:action="'/user/signrequests/fast-sign-request?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="fastSignRequestLabel">Créer une nouvelle demande</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="col-lg-12">
+                        <div class="input-group">
+                            <div class="custom-file">
+                                <input required aria-describedby="inputGroupFileAddon01" class="custom-file-input" data-buttontext="Choisir fichier" id="inputGroupFile01" name="multipartFiles" type="file">
+                                <label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01">
+                                    Choisir un document
+                                </label>
                             </div>
                         </div>
-                        <div th:unless="${keystore != null}">
-                            <div class="card card-body bg-danger text-white">
-                                <a href="/user/users/" class="text-white">Pas de keystore</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div th:case="'nexuSign'">
-                        <button type="submit" class="btn btn-success  text-center" data-target="#signatureModal">Signer</button>
-                    </div>
-                    <div th:case="*">
-                        <div th:if="${signType == 'visa'}">
-                            <input alt="${visaLabel}" class="btn btn-success  text-center" onclick="submitSignRequests();" type="button" value="Viser"/>
-                        </div>
-                        <div th:unless="${signType == 'visa'}">
-                            <div th:if="${user.signImage != null}">
-                                <input alt="${signLabel}" class="btn btn-success  text-center" onclick="submitSignRequests();" type="button" value="Signer"/>
-                            </div>
-                        </div>
+                        <label for="signType">Choisir un type de signature</label>
+                        <select name="signType" id="signType" class="form-control">
+                            <th:block th:each="signType : ${signTypes}">
+                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                            </th:block>
+                        </select>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">Fermer</button>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" id="fast-form-submit" class="btn btn-success">
+                        Suivant <i class="fas fa-angle-right"></i>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-
-
-<div id="wait" class="modal fade" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-body text-center">
-                <h5>Signature en cours</h5>
-                <div class="progress">
-                    <div class="progress-bar progress-bar-striped active" style="width: 0%;" id="bar">
-							<span id="bar-text"> <!--  -->
-							</span>
-                    </div>
-                </div>
-                <div id="loader" class="loader">
-                    <!--  -->
-                </div>
-                <div style="display: none;" id="passwordError" class="alert alert-danger" role="alert">
-                    Mauvais mot de passe
-                </div>
-                <div style="display: none;" id="signError" class="alert alert-danger" role="alert">
-                    Erreur du système de signature
-                </div>
-                <button onclick="javascript:window.location.reload()" id="closeModal" type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-            </div>
-        </div>
-    </div>
-</div>
+<footer th:replace="fragments/footer :: footer"></footer>
 </body>
-<script type="text/javascript">
-    var selectAll = document.getElementById("selectall");
-    var checkBoxes = document.querySelectorAll(".check");
-    var openDocsButton = document.getElementById("opendocs");
-    var signDocsButton = document.getElementById("signdocs");
-    var alertSignDocsButton = document.getElementById("alertsigndocs");
-    var passwordField = document.getElementById("passwordField");
-
-    if (selectAll != null) {
-        openDocsButton.style.display = "none";
-        selectAll.onchange = function () {
-            [].forEach.call(checkBoxes, function (checkBox) {
-                if (selectAll.checked) {
-                    checkBox.checked = true;
-                } else {
-                    checkBox.checked = false;
-                }
-            });
-            checkOpenDocButtonEnable();
-            checkSignDocButtonEnable();
-        };
-    }
-
-    [].forEach.call(checkBoxes, function (checkBox) {
-        checkBox.addEventListener('click', function (event) {
-            checkOpenDocButtonEnable();
-            checkSignDocButtonEnable();
-        });
-    });
-
-    function checkOpenDocButtonEnable() {
-        for (i = 0; i < checkBoxes.length; i++) {
-            if (checkBoxes[i].checked) {
-                openDocsButton.style.display = "block";
-                break;
-            } else {
-                openDocsButton.style.display = "none";
-            }
-        }
-    }
-
-    function checkSignDocButtonEnable() {
-        signDocsButton.style.display = "none";
-        alertSignDocsButton.style.display = "none";
-        var oldSignBook = "";
-        var oldType = "";
-        for (i = 0; i < checkBoxes.length; i++) {
-            if (checkBoxes[i].checked) {
-                var status = document.getElementById("status_" + checkBoxes[i].value).title;
-                var signBook = document.getElementById("signbook_" + checkBoxes[i].value).title;
-                var type = document.getElementById("type_" + checkBoxes[i].value).title;
-                var signBookId = signBook.split(',');
-                if (status != "pending" || (oldType != "" && oldType != type)) {
-                    signDocsButton.style.display = "none";
-                    alertSignDocsButton.style.display = "block";
-                    break;
-                } else {
-                    oldSignBook = signBook;
-                    oldType = type;
-                    alertSignDocsButton.style.display = "none";
-                    signDocsButton.style.display = "block";
-                }
-            }
-
-        }
-    }
-
-    var checkBoxes = document.querySelectorAll(".check");
-    var getProgressTimer = null;
-
-    function openCheckedDocs() {
-        [].forEach.call(checkBoxes, function (checkBox) {
-            if (checkBox.checked) {
-                window.open('/user/signrequests/get-last-file/'
-                    + checkBox.value, '_blank');
-            }
-        });
-    }
-
-    function submitSignRequests() {
-        var toSignResquest = new Array();
-        [].forEach.call(checkBoxes, function (checkBox) {
-            if (checkBox.checked) {
-                toSignResquest.push(checkBox.value);
-            }
-        });
-
-        var signRequestParams = "ids=" + toSignResquest + "&password=" + passwordField.value;
-        sendData(signRequestParams);
-
-    }
-
-    function sendData(signRequestParams) {
-        document.getElementById("passwordError").style.display = "none";
-        document.getElementById("signError").style.display = "none";
-        document.getElementById("closeModal").style.display = "none";
-        document.getElementById("bar").style.display = "none";
-        document.getElementById("loader").style.display = "block";
-        getProgressTimer = setInterval(function () {
-            getProgress();
-        }, 1000);
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open('POST', '/user/signrequests/sign-multiple', true);
-        xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        console.info(signRequestParams);
-        xmlHttp.send(signRequestParams);
-    }
-
-    function getProgress() {
-        console.log("getProgress");
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("GET", "/user/signrequests/get-progress", false);
-        xmlHttp.onreadystatechange = function () {
-            var result = xmlHttp.responseText;
-            if (result == "security_bad_password") {
-                document.getElementById("passwordError").style.display = "block";
-                document.getElementById("closeModal").style.display = "block";
-                document.getElementById("loader").style.display = "none";
-                clearInterval(getProgressTimer);
-            } else if (result == "sign_system_error") {
-                document.getElementById("signError").style.display = "block";
-                document.getElementById("closeModal").style.display = "block";
-                document.getElementById("bar").classList.remove("progress-bar-animated");
-                clearInterval(getProgressTimer);
-            } else if (result == "100") {
-                document.getElementById("closeModal").style.display = "block";
-                document.getElementById("bar").style.display = "block";
-                document.getElementById("bar").style.width = result + "%";
-                document.getElementById("bar-text").innerHTML = result + "%";
-                document.getElementById("loader").style.display = "none";
-                clearInterval(getProgressTimer);
-                window.location.reload()
-            } else {
-                document.getElementById("bar").style.display = "block";
-                document.getElementById("bar").style.width = result + "%";
-                document.getElementById("bar-text").innerHTML = result
-                    + "%";
-            }
-        }
-        xmlHttp.send(null);
-        return;
-    }
-</script>
 </html>

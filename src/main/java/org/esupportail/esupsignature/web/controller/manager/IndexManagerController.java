@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
 @RequestMapping("/manager")
 @Controller
@@ -44,12 +43,7 @@ public class IndexManagerController {
 	private UserService userService;
 	
 	@RequestMapping
-	public String index(HttpServletRequest request) {
-		User user = userService.getUserFromAuthentication();
-    	if(!userService.isUserReady(user)) {
-			return "redirect:/user/users/?form";
-		}    	
-
+	public String index() {
 		return "redirect:/manager/signbooks";
 	}
 

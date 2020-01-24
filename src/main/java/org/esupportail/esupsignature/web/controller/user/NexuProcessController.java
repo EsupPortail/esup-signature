@@ -3,14 +3,12 @@ package org.esupportail.esupsignature.web.controller.user;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.SignatureForm;
 import eu.europa.esig.dss.ToBeSigned;
-import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.esupportail.esupsignature.dss.web.model.*;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
-import org.esupportail.esupsignature.exception.EsupSignatureSignException;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
@@ -71,7 +69,7 @@ public class NexuProcessController {
 	@RequestMapping(value = "/{id}", produces = "text/html")
 	public String showSignatureParameters(@PathVariable("id") Long id, Model model,
 										  @RequestParam(value = "referer", required = false) String referer,
-										  HttpServletRequest request, RedirectAttributes redirectAttrs) throws InvalidPasswordException, IOException {
+										  HttpServletRequest request, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureException {
     	User user = userService.getUserFromAuthentication();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
@@ -112,7 +110,7 @@ public class NexuProcessController {
 			} else {
 				if(signatureDocumentForm.getSignatureForm().equals(SignatureForm.PAdES)) {
 					SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
-					parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentWorkflowStep().getSignRequestParams(), documentForm.getDocumentToSign(), user, false);
+					parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber()), documentForm.getDocumentToSign(), user, false);
 				} else {
 					parameters = signService.fillParameters((SignatureDocumentForm) signatureDocumentForm);
 				}
@@ -136,20 +134,25 @@ public class NexuProcessController {
 
 	@RequestMapping(value = "/sign-document", method = RequestMethod.POST)
 	@ResponseBody
-	public SignDocumentResponse signDocument(Model model, @RequestBody @Valid SignatureValueAsString signatureValue,
+	public SignDocumentResponse signDocument(@RequestBody @Valid SignatureValueAsString signatureValue,
 			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm, 
-			@ModelAttribute("signRequestId") Long signRequestId, BindingResult result) throws EsupSignatureKeystoreException {
+			@ModelAttribute("signRequestId") Long signRequestId) throws EsupSignatureException {
 		User user = userService.getUserFromAuthentication();
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
+			Document signedFile = null;
 			SignDocumentResponse signedDocumentResponse;
 			signatureDocumentForm.setBase64SignatureValue(signatureValue.getSignatureValue());
-	        try {
-	        	signRequestService.nexuSign(signRequest, user, signatureDocumentForm, parameters);
-			} catch (EsupSignatureIOException | EsupSignatureSignException e) {
-				logger.error(e.getMessage(), e);
+			try {
+				signedFile = signRequestService.nexuSign(signRequest, user, signatureDocumentForm, parameters);
+				if(signedFile != null) {
+					signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
+
+					signRequestService.applyEndOfStepRules(signRequest, user);
+				}
+			} catch (IOException e) {
+				throw new EsupSignatureException("unable to sign" , e);
 			}
-	        signRequestRepository.save(signRequest);
 	        signedDocumentResponse = new SignDocumentResponse();
 	        signedDocumentResponse.setUrlToDownload("download");
 	        return signedDocumentResponse;

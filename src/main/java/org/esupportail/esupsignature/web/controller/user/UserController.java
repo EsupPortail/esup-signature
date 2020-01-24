@@ -2,25 +2,24 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignBook.SignBookType;
-import org.esupportail.esupsignature.entity.SignRequestParams.NewPageType;
-import org.esupportail.esupsignature.entity.SignRequestParams.SignType;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.repository.BigFileRepository;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.DocumentService;
+import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.UserKeystoreService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,11 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.DayOfWeek;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RequestMapping("user/users")
@@ -107,23 +103,16 @@ public class UserController {
 		User user = userService.getUserFromAuthentication();
 		if(user != null) {
 	        model.addAttribute("user", user);
-        	model.addAttribute("signBook", signBookService.getUserSignBook(user));
         	model.addAttribute("signTypes", Arrays.asList(SignType.values()));
-        	model.addAttribute("newPageTypes", Arrays.asList(NewPageType.values()));
         	model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
         	model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
         	if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
 				model.addAttribute("referer", request.getHeader("referer"));
 			}
-
-        	if(userService.isUserReady(user)) {
-        		if(user.getSignImage() != null) {
-        			model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-        		}
-	        	return "user/users/update";
-	        } else {
-				return "user/users/create";
-	        }
+			if(user.getSignImage() != null) {
+				model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+			}
+			return "user/users/update";
 		} else {
 			user = new User();
 			model.addAttribute("user", user);
@@ -148,20 +137,18 @@ public class UserController {
             	bigFileRepository.delete(userToUpdate.getKeystore().getBigFile());
             	documentRepository.delete(userToUpdate.getKeystore());
             }
-            userToUpdate.setKeystore(documentService.createDocument(multipartKeystore, multipartKeystore.getOriginalFilename()));
+            userToUpdate.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), userToUpdate.getEppn() + "_cert.p12", multipartKeystore.getContentType()));
         }
         Document oldSignImage = userToUpdate.getSignImage();
         if(signImageBase64 != null && !signImageBase64.isEmpty()) {
+
         	userToUpdate.setSignImage(documentService.createDocument(fileService.base64Transparence(signImageBase64), userToUpdate.getEppn() + "_sign.png", "image/png"));
             if(oldSignImage != null) {
-            	oldSignImage.getBigFile().getBinaryFile().free();
+            	oldSignImage.getBigFile().getBinaryFile().getBinaryStream();
             	bigFileRepository.delete(oldSignImage.getBigFile());
             	documentRepository.delete(oldSignImage);
         	}
         }
-    	if(signBookService.getUserSignBook(user) == null) {
-    		signBookService.createUserSignBook(user);
-    	}
     	userToUpdate.setEmailAlertFrequency(emailAlertFrequency);
     	userToUpdate.setEmailAlertHour(emailAlertHour);
     	userToUpdate.setEmailAlertDay(emailAlertDay);
@@ -203,37 +190,12 @@ public class UserController {
 		}
 	}
 
-	//TODO refactor with WsController
-	@RequestMapping(value="/searchLdap")
+	@RequestMapping(value="/searchUser")
 	@ResponseBody
 	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString, @RequestParam(required=false) String ldapTemplateName) {
-
-		logger.info("ldap search for : " + searchString);
-		HttpHeaders headers = new HttpHeaders();
-		headers.add("Content-Type", "application/json; charset=utf-8");
-		List<PersonLdap> ldapList = new ArrayList<PersonLdap>();
-		List<SignBook> signBooks = signBookRepository.findBySignBookType(SignBookType.group);
-		for(SignBook signBook : signBooks) {
-			PersonLdap personLdap = new PersonLdap();
-			personLdap.setUid("parapheur");
-			personLdap.setMail(signBook.getName());
-			personLdap.setDisplayName(signBook.getName());
-			ldapList.add(personLdap);
-		}
-		if(ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
-			List<PersonLdap> ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
-			ldapList.addAll(ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList()));
-
-		}
-
-
-		return ldapList;
+		logger.debug("ldap search for : " + searchString);
+		return userService.getPersonLdaps(searchString, ldapTemplateName);
    }
-	
-    void populateEditForm(Model uiModel, User user) {
-        uiModel.addAttribute("user", user);
-        uiModel.addAttribute("files", documentRepository.findAll());
-    }
 
 	@Scheduled(fixedDelay = 5000)
 	public void clearPassword () {

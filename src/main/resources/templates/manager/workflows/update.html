@@ -10,11 +10,11 @@
                 <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
-                <button title="Abandonner" type="button" class="btn btn-danger col-12 mb-1 text-left" value="Retour" onclick="window.history.back()">
-                    <i class="fas fa-times"></i><span class="sidebar-label"> Abandonner</span>
-                </button>
                 <button type="submit" class="btn btn-success col-12 mb-1 text-left" onclick="document.getElementById('updateSignBook').submit();">
                     <i class="fas fa-save"></i> <span class="sidebar-label">Enregistrer</span>
+                </button>
+                <button title="Abandonner" type="button" class="btn btn-light btn-outline-dark col-12 mb-1 text-left" value="Retour" onclick="window.history.back()">
+                    <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
                 </button>
             </div>
         </nav>
@@ -22,21 +22,19 @@
             <nav aria-label="breadcrumb" class="nav justify-content-between">
                 <div class="navbar-nav col-12">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/manager">Liste des
-                            parapheurs</a></li>
-                        <li aria-current="page" class="breadcrumb-item active">Parapheur
-                            : <span th:text="${signBook.name}"></span>
+                        <li class="breadcrumb-item"><a href="/manager">Liste des parapheurs</a></li>
+                        <li aria-current="page" class="breadcrumb-item active">Parapheur : <span th:text="${workflow.name}"></span>
                         </li>
                     </ol>
                 </div>
             </nav>
-    <form th:object="${signBook}" th:action="'/manager/signbooks/update/' + ${signBook.id}" method="post" id="updateSignBook">
+    <form th:object="${workflow}" th:action="'/manager/workflows/update/' + ${workflow.id}" method="post" id="updateSignBook">
         <input type="hidden" th:field="*{id}">
         <div class="card card-body bg-light">
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_moderatoremails">
-                        <label for="moderatoremailsSelect"><strong>Gestionnaire(s) du parapheur</strong>
+                    <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_managers">
+                        <label for="managersSelect"><strong>Gestionnaire(s) du parapheur</strong>
                             <button class="btn btn-sm btn-light" data-target="#collapseHelp1" data-toggle="collapse" type="button">
                                 <span class="fas fa-info-circle text-info"></span>
                             </button>
@@ -46,44 +44,11 @@
                                 </div>
                             </div>
                         </label>
-                        <select id="moderatoremailsSelect" multiple="multiple" name="moderatorEmails">
-                            <th:block th:each="moderatorEmail : ${signBook.moderatorEmails}">
-                                <option selected="selected" th:value="${moderatorEmail}" th:text="${moderatorEmail}"></option>
+                        <select id="managersSelect" multiple="multiple" name="managers">
+                            <th:block th:each="manager : ${workflow.managers}">
+                                <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
                             </th:block>
                         </select>
-                        <script type="text/javascript">
-                            new SlimSelect({
-                                select: '#moderatoremailsSelect',
-                                placeholder: 'Choisir un ou plusieurs utilisateurs',
-                                searchText: 'Aucun résultat',
-                                searchPlaceholder: 'Rechercher',
-                                searchHighlight: true,
-                                searchFilter: (option, search) => {
-                                    return true;
-                                },
-                                ajax: function (search, callback) {
-                                    if (search.length < 3) {
-                                        callback('Merci de saisir au moins 3 caractères')
-                                        return
-                                    }
-                                    fetch('/ws/searchLdap?searchString=' + search)
-                                        .then(function (response) {
-                                            return response.json()
-                                        })
-                                        .then(function (json) {
-                                            let data = []
-                                            for (let i = 0; i < json.length; i++) {
-                                                data.push({text: json[i].displayName + ' (' + json[i].uid + ')', value: json[i].mail});
-                                            }
-                                            callback(data)
-                                        })
-                                        .catch(function (error) {
-                                            callback(false)
-                                        })
-                                }
-
-                            });
-                        </script>
                     </div>
                     <div class="form-group">
                         <label for="_sourceType_id">
@@ -91,7 +56,7 @@
                         </label>
                         <select class="form-control" id="_sourceType_id" th:field="*{sourceType}" size="1">
                             <th:block th:each="sourceType : ${sourceTypes}">
-                                <option th:selected="${signBook.sourceType == sourceType}" th:value="${sourceType}" th:text="#{'signbook.documentiotype.' + ${sourceType}}"></option>
+                                <option th:selected="${workflow.sourceType == sourceType}" th:value="${sourceType}" th:text="#{'signbook.documentiotype.' + ${sourceType}}"></option>
                             </th:block>
                         </select>
                     </div>
@@ -105,7 +70,7 @@
                         </label>
                         <select class="form-control" id="_targetType_id" th:field="*{targetType}" size="1">
                             <th:block th:each="targetType : ${targetTypes}">
-                                <option th:selected="${signBook.targetType == targetType}" th:value="${targetType}" th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
+                                <option th:selected="${workflow.targetType == targetType}" th:value="${targetType}" th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
                             </th:block>
                         </select>
                     </div>
@@ -151,10 +116,10 @@
             targetUri.style.display = "none";
         }
     };
-
-
+</script>
+<script type="text/javascript">
     new SlimSelect({
-        select: '#moderatoremailsSelect',
+        select: '#managersSelect',
         placeholder: 'Choisir un ou plusieurs utilisateurs',
         searchText: 'Aucun résultat',
         searchPlaceholder: 'Rechercher',
@@ -164,28 +129,29 @@
         },
         ajax: function (search, callback) {
             if (search.length < 3) {
-                callback('Merci de saisir au moins 3 caractères')
-                return
+                callback('Merci de saisir au moins 3 caractères');
+                return;
+            } else {
+                fetch('/ws/searchUser?searchString=' + search)
+                    .then(function (response) {
+                        return response.json();
+                    })
+                    .then(function (json) {
+                        let data = [];
+                        for (let i = 0; i < json.length; i++) {
+                            data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: json[i].mail});
+                        }
+                        callback(data);
+                    })
+                    .catch(function (error) {
+                        callback(false);
+                    })
             }
-            fetch('/user/users/searchLdap?searchString=' + search)
-                .then(function (response) {
-                    return response.json()
-                })
-                .then(function (json) {
-                    let data = []
-                    for (let i = 0; i < json.length; i++) {
-                        data.push({text: json[i].displayName, value: json[i].mail});
-                    }
-                    callback(data)
-                })
-                .catch(function (error) {
-                    callback(false)
-                })
         }
 
     });
 </script>
-<div th:replace="fragments/footer :: footer"></div>
+<footer th:replace="fragments/footer :: footer"></footer>
 <div th:replace="fragments/message :: message"></div>
 </body>
 </html>

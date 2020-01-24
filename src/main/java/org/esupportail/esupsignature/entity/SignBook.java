@@ -1,6 +1,9 @@
 package org.esupportail.esupsignature.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -19,23 +22,7 @@ public class SignBook {
 
 	@Version
     private Integer version;
-    
-    public Long getId() {
-        return this.id;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public Integer getVersion() {
-        return this.version;
-    }
-    
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
-	
+
 	@Column(unique=true)
 	private String name;
 
@@ -55,127 +42,109 @@ public class SignBook {
     
     @Size(max = 500)
     private String description;
-    
+
     @Enumerated(EnumType.STRING)
-    private DocumentIOType sourceType;
-    
-    private String documentsSourceUri;
-    
-    @ElementCollection(targetClass=String.class)
-    private List<String> moderatorEmails = new ArrayList<>();
+    private SignRequestStatus status;
 
-    @ElementCollection(targetClass=String.class)
-    private List<String> recipientEmails = new ArrayList<>();
-
-    @OneToMany
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
+    private Integer currentWorkflowStepNumber = 0;
+
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;
-    
-    private String documentsTargetUri;    
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL }, orphanRemoval = true)
-    private Document modelFile = new Document();
+    private String documentsTargetUri;
 
-	@Enumerated(EnumType.STRING)
-	private SignBookType signBookType;
-	
-	public enum SignBookType {
-		system, user, group, workflow;
-	}
-	
-    public enum DocumentIOType {
-		none, smb, vfs, cmis, mail;
-	}
+    private String exportedDocumentURI;
 
-    public void setSourceType(DocumentIOType sourceType) {
-        this.sourceType = sourceType;
+	@OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OrderColumn
+    private List<SignRequest> signRequests = new ArrayList<>();
+
+    @JsonIgnore
+    @Transient
+    transient String comment;
+
+    public Long getId() {
+        return id;
     }
-    
-    public void setTargetType(DocumentIOType targetType) {
-        this.targetType = targetType;
+
+    public void setId(Long id) {
+        this.id = id;
     }
-    
-    public void setSignBookType(SignBookType signBookType) {
-        this.signBookType = signBookType;
+
+    public Integer getVersion() {
+        return version;
     }
-        
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
     public String getName() {
-        return this.name;
+        return name;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public Date getCreateDate() {
-        return this.createDate;
+        return createDate;
     }
-    
+
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
-    
+
     public String getCreateBy() {
-        return this.createBy;
+        return createBy;
     }
-    
+
     public void setCreateBy(String createBy) {
         this.createBy = createBy;
     }
-    
+
     public Date getUpdateDate() {
-        return this.updateDate;
+        return updateDate;
     }
-    
+
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
     }
-    
+
     public String getUpdateBy() {
-        return this.updateBy;
+        return updateBy;
     }
-    
+
     public void setUpdateBy(String updateBy) {
         this.updateBy = updateBy;
     }
-    
-    public String getDescription() {
-        return this.description;
+
+    public Boolean getExternal() {
+        return external;
     }
-    
+
+    public void setExternal(Boolean external) {
+        this.external = external;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
     public void setDescription(String description) {
         this.description = description;
     }
-    
-    public DocumentIOType getSourceType() {
-        return this.sourceType;
+
+    public SignRequestStatus getStatus() {
+        return status;
     }
-    
-    public String getDocumentsSourceUri() {
-        return this.documentsSourceUri;
-    }
-    
-    public void setDocumentsSourceUri(String documentsSourceUri) {
-        this.documentsSourceUri = documentsSourceUri;
-    }
-    
-    public List<String> getModeratorEmails() {
-        return this.moderatorEmails;
-    }
-    
-    public void setModeratorEmails(List<String> moderatorEmails) {
-        this.moderatorEmails = moderatorEmails;
-    }
-    
-    public List<String> getRecipientEmails() {
-        return this.recipientEmails;
-    }
-    
-    public void setRecipientEmails(List<String> recipientEmails) {
-        this.recipientEmails = recipientEmails;
+
+    public void setStatus(SignRequestStatus status) {
+        this.status = status;
     }
 
     public List<WorkflowStep> getWorkflowSteps() {
@@ -186,46 +155,55 @@ public class SignBook {
         this.workflowSteps = workflowSteps;
     }
 
+    public Integer getCurrentWorkflowStepNumber() {
+        return currentWorkflowStepNumber;
+    }
+
+    public void setCurrentWorkflowStepNumber(Integer currentWorkflowStepNumber) {
+        this.currentWorkflowStepNumber = currentWorkflowStepNumber;
+    }
+
     public DocumentIOType getTargetType() {
-        return this.targetType;
+        return targetType;
     }
-    
+
+    public void setTargetType(DocumentIOType targetType) {
+        this.targetType = targetType;
+    }
+
     public String getDocumentsTargetUri() {
-        return this.documentsTargetUri;
+        return documentsTargetUri;
     }
-    
+
     public void setDocumentsTargetUri(String documentsTargetUri) {
         this.documentsTargetUri = documentsTargetUri;
     }
-    
-    public Document getModelFile() {
-        return this.modelFile;
-    }
-    
-    public void setModelFile(Document modelFile) {
-        this.modelFile = modelFile;
+
+    public String getExportedDocumentURI() {
+        return exportedDocumentURI;
     }
 
-    /*
-    public SignRequestParams getSignRequestParams() {
-        return this.signRequestParams;
-    }
-    
-    public void setSignRequestParams(SignRequestParams signRequestParams) {
-        this.signRequestParams = signRequestParams;
-    }
-    */
-
-    public SignBookType getSignBookType() {
-        return this.signBookType;
+    public void setExportedDocumentURI(String exportedDocumentURI) {
+        this.exportedDocumentURI = exportedDocumentURI;
     }
 
-	public Boolean isExternal() {
-		return external;
-	}
+    public List<SignRequest> getSignRequests() {
+        return signRequests;
+    }
 
-	public void setExternal(Boolean external) {
-		this.external = external;
-	}
-    
+    public void setSignRequests(List<SignRequest> signRequests) {
+        this.signRequests = signRequests;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public enum SignBookType {
+        system, group, workflow;
+    }
 }

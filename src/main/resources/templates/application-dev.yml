@@ -7,7 +7,8 @@ spring:
   # Static resources reloading during development
   resources:
     static-locations: file:src/main/resources/static/
-    cache-period: 0
+    cache:
+      period:
 
   profiles:
     active: dev

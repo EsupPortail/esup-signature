@@ -64,5 +64,4 @@ public class FsFile {
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
 	}
-	
 }

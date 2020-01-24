@@ -24,7 +24,8 @@ public class User {
 	
     @Column(unique=true)
     private String eppn;
-    
+
+    @Column(unique=true)
     private String email;
     
     @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)

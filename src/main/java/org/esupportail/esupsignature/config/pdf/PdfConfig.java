@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.config.pdf;
 
-import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 

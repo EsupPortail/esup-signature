@@ -6,44 +6,14 @@
 <main role="main">
     <div class="wrapper">
         <nav id="sidebar">
-            <div class="row">
-                <div class="col-lg-2">
-                    <button type="button" id="sidebarCollapse" class="mt-3 m-1 btn text-white">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
-                <div id="logo" class="col-lg-9">
-                    <a href="/">
-                        <img src="/images/logo.png"/>
-                    </a>
-                </div>
-            </div>
-			<button type="button" class="mb-1 col-12 btn btn-outline-dark btn-light float-left" value="Retour" onclick="window.history.back();">
-				<i class="fas fa-door-open"></i> Retour
+            <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+            </button>
+			<button type="button" class="mb-1 col-12 btn btn-outline-dark btn-light text-left" value="Retour" onclick="window.history.back();">
+				<i class="fas fa-arrow-left"></i> Retour
 			</button>
         </nav>
         <div id="content" class="content">
-            <div id="collapseHelp" class="collapse" aria-expanded="true" style="">
-                <div class="alert alert-info">
-                    Le service de validation est fourni par l'outil DSS.
-                    <br/>
-                    Légende :
-                    <ul>
-                        <li>
-                            <button class="btn btn-success"></button>
-                            : Succès
-                        </li>
-                        <li>
-                            <button class="btn btn-warning"></button>
-                            : Alerte
-                        </li>
-                        <li>
-                            <button class="btn btn-danger"></button>
-                            : Erreur
-                        </li>
-                    </ul>
-                </div>
-            </div>
             <nav aria-label="breadcrumb">
                 <div class="navbar-nav">
                     <ol class="breadcrumb">
@@ -53,6 +23,21 @@
                     </ol>
                 </div>
             </nav>
+            <div class="alert alert-dark">
+                <h5>Le service de validation est fourni par l'outil DSS Signature</h5>
+                Légende :
+                <ul>
+                    <li>
+                        <button class="btn btn-success"></button> : Succès
+                    </li>
+                    <li>
+                        <button class="btn btn-warning"></button> : Alerte
+                    </li>
+                    <li>
+                        <button class="btn btn-danger"></button> : Erreur
+                    </li>
+                </ul>
+            </div>
             <div class="card">
                 <div class="card-body">
                     <div class="row">
@@ -64,7 +49,7 @@
                                 <li class="nav-item">
                                     <a class="nav-link" id="detailed-tab" data-toggle="tab" href="#detailed" role="tab" aria-controls="detailed" aria-selected="false">Detailed report</a>
                                 </li>
-                                <li class="nav-item">
+                                <li class="nav-item" th:if="${pdfaReport != null}">
                                     <a class="nav-link" id="pdfa-tab" data-toggle="tab" href="#pdfa" role="tab" aria-controls="pdfa" aria-selected="false">PDF/A report</a>
                                 </li>
                                 <li>
@@ -75,7 +60,7 @@
                             <div class="tab-content" id="myTabContent">
                                 <div class="tab-pane fade show active" id="simple" role="tabpanel" aria-labelledby="home-tab" th:utext="${simpleReport}"></div>
                                 <div class="tab-pane fade" id="detailed" role="tabpanel" aria-labelledby="profile-tab" th:utext="${detailedReport}"></div>
-                                <div class="tab-pane fade" id="pdfa" role="tabpanel" aria-labelledby="profile-tab">
+                                <div th:if="${pdfaReport != null}" class="tab-pane fade" id="pdfa" role="tabpanel" aria-labelledby="profile-tab">
                                     <div th:class="'alert alert-' + ${pdfaReport[0]}">
                                         <h2>PDF/A report</h2>
                                         <ul>

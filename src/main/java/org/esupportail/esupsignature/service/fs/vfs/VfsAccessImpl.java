@@ -22,7 +22,9 @@ import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.file.FileService;
-import org.esupportail.esupsignature.service.fs.*;
+import org.esupportail.esupsignature.service.fs.FsAccessService;
+import org.esupportail.esupsignature.service.fs.FsFile;
+import org.esupportail.esupsignature.service.fs.UploadActionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -46,8 +48,6 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 
 	protected FileObject root;
 
-	protected ResourceUtils resourceUtils;
-
 	protected boolean sftpSetUserDirIsRoot = false;
 
     protected boolean strictHostKeyChecking = true;
@@ -56,10 +56,6 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
     
     // we setup ftpPassiveMode to true by default ...
     protected boolean ftpPassiveMode = true;
-
-	public void setResourceUtils(ResourceUtils resourceUtils) {
-		this.resourceUtils = resourceUtils;
-	}
 
 	public void setSftpSetUserDirIsRoot(boolean sftpSetUserDirIsRoot) {
 		this.sftpSetUserDirIsRoot = sftpSetUserDirIsRoot;
@@ -74,7 +70,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	protected void open() {
+	public void open() {
 		super.open();
 		try {
 			if(!isOpened()) {
@@ -246,11 +242,11 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
-	public FsFile getFile(String dir) throws Exception {
+	public FsFile getFile(String dir) {
 		try {
 			FileObject fileObject = cd(dir);
 			return toFsFile(fileObject);
-		} catch (FileSystemException e) {
+		} catch (IOException e) {
 			logger.warn("can't download file : " + e.getMessage(), e);
 		}
 		return null;
@@ -316,17 +312,9 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		return success;
 	}
 
-	/**
-	 * @param ftpControlEncoding the ftpControlEncoding to set
-	 */
-	public void setFtpControlEncoding(String ftpControlEncoding) {
-		this.ftpControlEncoding = ftpControlEncoding;
-	}
-
 	@Override
-	public FsFile getFileFromURI(String uri) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+	public FsFile getFileFromURI(String uri) {
+		return getFile(uri);
 	}
 
 }

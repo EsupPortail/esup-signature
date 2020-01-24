@@ -52,14 +52,13 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 		        .clientId(clientId)
 		        .clientSecret(clientSecret)
 		        .scope("profile", "email")
-		        .redirectUriTemplate("https://esup-signature.univ-ville.fr/login/oauth2/code/google")
+		        .redirectUriTemplate("http://localhost:8080:8080/login/oauth2/code/google")
 		        .build();
 
         return new InMemoryClientRegistrationRepository(Arrays.asList(registration));
     }
     */
 
-	@Bean
 	public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
 		HttpSessionOAuth2AuthorizationRequestRepository repository = new HttpSessionOAuth2AuthorizationRequestRepository();
 		return repository; 
@@ -79,7 +78,6 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 		
 	}
 
-    @Bean
     public OAuth2AuthorizedClientService authorizedClientService(
             ClientRegistrationRepository clientRegistrationRepository) {
         return new InMemoryOAuth2AuthorizedClientService(clientRegistrationRepository);
@@ -96,7 +94,6 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 		return new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/google");
 	}
 	
-	@Bean
 	public AuthenticationManager oAuthAuthenticationManager() {
 		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<AuthenticationProvider>();
 		authenticatedAuthenticationProviders.add(auth2LoginAuthenticationProvider());
@@ -104,7 +101,6 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 		return authenticationManager;
 	}
 	
-	@Bean
 	public OAuth2LoginAuthenticationProvider auth2LoginAuthenticationProvider() {
 		OAuth2LoginAuthenticationProvider auth2LoginAuthenticationProvider = new OAuth2LoginAuthenticationProvider(new DefaultAuthorizationCodeTokenResponseClient(), new DefaultOAuth2UserService());
 		return auth2LoginAuthenticationProvider ;

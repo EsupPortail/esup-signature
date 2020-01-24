@@ -17,7 +17,6 @@ import java.awt.font.TextAttribute;
 import java.awt.image.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 import java.util.Base64;
 import java.util.Hashtable;
 import java.util.Map;
@@ -26,6 +25,15 @@ import java.util.Map;
 public class FileService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
+
+	public File inputStreamToTempFile(InputStream inputStream, String name) throws IOException {
+		File file = getTempFile(name);
+		OutputStream outputStream = new FileOutputStream(file);
+		IOUtils.copy(inputStream, outputStream);
+		outputStream.close();
+		inputStream.close();
+		return file;
+	}
 
 	public MultipartFile toMultipartFile(InputStream file, String name, String mimeType) {
 		try {
@@ -140,9 +148,10 @@ public class FileService {
 	    }
 	}
 	
-	public String base64Transparence(String base64Image) {
+	public InputStream base64Transparence(String base64Image) {
 		BufferedImage image = makeColorTransparent(base64StringToImg(base64Image));
-		return imgToBase64String(image, "png");
+		String base64ImageTransparent = imgToBase64String(image, "png");
+		return fromBase64Image(base64ImageTransparent);
 	}
 	
 	
@@ -212,5 +221,39 @@ public class FileService {
 	        throw new UncheckedIOException(ioe);
 	    }
 	}
+
+	public File addTextToImage(InputStream imageStream, String text) throws IOException {
+		final BufferedImage signImage = ImageIO.read(imageStream);
+		BufferedImage  image = new BufferedImage(300, 150, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
+		graphics2D.setColor(new Color(255,255,255,0 ));
+		graphics2D.fillRect(0, 0, 300, 150);
+		graphics2D.drawImage(signImage, 0, 0, null);
+		Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
+		int fontSize = 18;
+		map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+		Font font = new Font("Helvetica", Font.PLAIN, fontSize);
+		font = font.deriveFont(map);
+		graphics2D.setFont(font);
+		graphics2D.setRenderingHint(
+				RenderingHints.KEY_TEXT_ANTIALIASING,
+				RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+		graphics2D.setColor(Color.black);
+		int x = 0;
+		int y = fontSize;
+		for (String line : text.split("\n")) {
+			graphics2D.drawString(line, x, y += graphics2D.getFontMetrics().getHeight());
+		}
+		File fileImage = getTempFile("sign.png");
+		ImageIO.write(image, "png", fileImage);
+		graphics2D.dispose();
+		return fileImage;
+	}
+
+		public InputStream svgToPng(InputStream svgInputStream) throws IOException {
+			File file = getTempFile("sceau.png");
+			ImageIO.write(ImageIO.read(svgInputStream), "PNG", file);
+			return new FileInputStream(file);
+		}
 
 }

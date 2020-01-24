@@ -62,13 +62,12 @@ public class ShibSecurityServiceImpl implements SecurityService {
 
 	public ShibAuthenticatedUserDetailsService shibAuthenticatedUserDetailsService() {
 		ShibAuthenticatedUserDetailsService shibAuthenticatedUserDetailsService = new ShibAuthenticatedUserDetailsService();
-		Map<String, String> mappingGroupesRoles = new HashMap<String, String>();
+		Map<String, String> mappingGroupesRoles = new HashMap<>();
 		mappingGroupesRoles.put(shibProperties.getGroupMappingRoleAdmin(), "ROLE_ADMIN");
 		mappingGroupesRoles.put(shibProperties.getGroupMappingRoleManager(), "ROLE_MANAGER");
 
-		//TODO : tous admin...
 		SpelGroupService groupService = new SpelGroupService();
-		Map<String, String> groups4eppnSpel = new HashMap<String, String>();
+		Map<String, String> groups4eppnSpel = new HashMap<>();
 		groups4eppnSpel.put(shibProperties.getGroupMappingRoleAdmin(), "true");
 		groups4eppnSpel.put(shibProperties.getGroupMappingRoleManager(), "true");
 		groupService.setGroups4eppnSpel(groups4eppnSpel);

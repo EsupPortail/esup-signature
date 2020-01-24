@@ -2,41 +2,28 @@ package org.esupportail.esupsignature.service.export;
 
 import eu.europa.esig.dss.jaxb.simplereport.SimpleReport;
 import eu.europa.esig.dss.jaxb.simplereport.XmlSignature;
-import eu.europa.esig.dss.validation.reports.DetailedReport;
 import eu.europa.esig.dss.validation.reports.Reports;
-import fr.gouv.vitam.tools.sedalib.core.*;
+import fr.gouv.vitam.tools.sedalib.core.ArchiveUnit;
+import fr.gouv.vitam.tools.sedalib.core.BinaryDataObject;
+import fr.gouv.vitam.tools.sedalib.core.DataObjectPackage;
 import fr.gouv.vitam.tools.sedalib.inout.SIPBuilder;
-import fr.gouv.vitam.tools.sedalib.metadata.ManagementMetadata;
-import fr.gouv.vitam.tools.sedalib.metadata.SEDAMetadata;
 import fr.gouv.vitam.tools.sedalib.metadata.content.*;
-import fr.gouv.vitam.tools.sedalib.metadata.data.Metadata;
-import fr.gouv.vitam.tools.sedalib.metadata.management.LogBook;
-import fr.gouv.vitam.tools.sedalib.metadata.management.Management;
-import fr.gouv.vitam.tools.sedalib.metadata.namedtype.DigestType;
 import fr.gouv.vitam.tools.sedalib.utils.SEDALibProgressLogger;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.LogRepository;
-import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.ValidationService;
 import org.esupportail.esupsignature.service.file.FileService;
-import org.esupportail.esupsignature.service.sign.SignService;
-import org.esupportail.esupsignature.web.controller.user.SignRequestController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.*;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -48,16 +35,10 @@ public class SedaExportService {
     private static final Logger logger = LoggerFactory.getLogger(SedaExportService.class);
 
     @Resource
-    SignService signService;
-
-    @Resource
     SignRequestService signRequestService;
 
     @Resource
     LogRepository logRepository;
-
-    @Resource
-    UserRepository userRepository;
 
     @Resource
     FileService fileService;

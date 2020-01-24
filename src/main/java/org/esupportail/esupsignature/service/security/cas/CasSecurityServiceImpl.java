@@ -44,7 +44,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 	
 
 	public String getName() {
-		return "Compte Université de Ville (CAS)";
+		return "Compte Université de Rouen Normandie (CAS)";
 	}
 	
 	public String getLoginUrl() {
