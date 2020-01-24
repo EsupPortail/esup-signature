@@ -9,7 +9,7 @@ public interface UserRepository extends CrudRepository<User, Long>  {
     List<User> findByEmail(String email);
     List<User> findByEppn(String eppn);
     List<User> findByEppnStartingWith(String eppn);
-    List<User> findByNameStartingWith(String name);
+    List<User> findByNameStartingWithIgnoreCase(String name);
     List<User> findByEmailStartingWith(String email);
     Long countByEppn(String eppn);
     Long countByEmail(String email);

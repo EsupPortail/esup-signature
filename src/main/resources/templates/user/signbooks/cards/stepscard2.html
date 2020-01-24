@@ -68,24 +68,6 @@
                                 <div class="card">
                                     <div class="card-body border-1 bg-light">
                                         <h5><span th:text="'Etape ' + ${iterator.index + 1}"></span> : <span th:text="${workflowStep.name}"></span></h5>
-                                        <table>
-                                        <th:block th:each="recipient : ${workflowStep.recipients}">
-                                            <tr>
-                                                <form th:action="'/user/signbooks/remove-step-recipent/' + ${id} + '/' + ${workflowStep.id}" th:method="'delete'">
-                                                    <input type="hidden" name="recipientId" th:value="${recipient.id}"/>
-                                                    <td>
-                                                        <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
-                                                    </td>
-                                                    <td>
-                                                        <div th:switch="${recipient.signed}">
-                                                            <span th:case="true" class="text-success"><i class="fas fa-check-circle" title="Signature effectuée"></i> Signature effectuée</span>
-                                                            <span th:case="false" class="text-danger"><i class="fas fa-exclamation-circle text-danger" title=""></i> En attente de signature</span>
-                                                        </div>
-                                                    </td>
-                                                </form>
-                                            </tr>
-                                        </th:block>
-                                        </table>
                                         <span th:if="${workflowStep.recipients.size() == 0}">Aucun participant affecté</span>
                                         <div th:id="'stepDetail_' + ${iterator.index}">
                                             <hr/>
