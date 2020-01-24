@@ -7,7 +7,7 @@
             <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post" th:if="${documentType == 'pdf'}">
                 <canvas th:if="${signable != 'ok'}" id="pdf" style="border : 1px solid black;" class="drop-shadows ">
                 </canvas>
-                <canvas th:if="${signable == 'ok'}" title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" onmouseup="action();" ontouchend="action();" ontouchmove="point(event);" onmousemove="point(event);" class="drop-shadows ">
+                <canvas th:if="${signable == 'ok'}" title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" onmouseup="action();" onmousemove="point(event);" class="drop-shadows ">
                 </canvas>
                 <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && @signRequestService.getCurrentSignType(signRequest).name() != 'visa'}">
                     <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();"
@@ -31,8 +31,7 @@
                     </div>
                 </th:block>
                 <script>
-                    var url = '/ws/get-last-file-from-signrequest/?token=[[${signRequest.token}]]';
-
+                    var url = '/user/signrequests/get-last-file/[[${signRequest.id}]]';
                 </script>
                 <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">
                     <span onclick="hideComment()" class="float-right" style="cursor: pointer;">X</span>
@@ -143,7 +142,7 @@
                     document.getElementById('next').addEventListener('click', nextPage);
 
                     function zoomIn() {
-                        if (scale >= 1.75) {
+                        if (scale >= 2.5) {
                             return;
                         }
                         $(".circle").each(function( index ) {
@@ -221,33 +220,38 @@
 
                     }
 
+                    var pdf = document.getElementById("pdf");
+
+                    window.addEventListener("touchmove", function (e) {
+                        if(pointItEnable) {
+                            e.preventDefault();
+                            pointItMove = true;
+                            console.log("touch");
+                            var rect = pdf.getBoundingClientRect();
+                            var touch = e.touches[0] || e.changedTouches[0];
+                            posX = touch.pageX;
+                            posY = touch.pageY - (rect.top  + window.scrollY);
+                            updateCrossPosition();
+                        }
+
+                    }, { passive: false });
+
                     function pointIt(e) {
                         if(pointItEnable) {
                             pointItMove = true;
-                            console.log('point enable')
-                            if(e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel'){
-                                console.log("touch");
-                                e.preventDefault();
-                                var rect = pointerDiv.getBoundingClientRect();
-                                var touch = e.touches[0] || e.changedTouches[0];
-                                posX = touch.pageX - rect.left;
-                                posY = touch.pageY - rect.top - window.scrollY;
-                            } else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover'|| e.type=='mouseout' || e.type=='mouseenter' || e.type=='mouseleave') {
-                                console.log("mouse");
-                                posX = e.offsetX ? (e.offsetX)
-                                    : e.clientX - pointerDiv.offsetLeft;
-                                posY = e.offsetY ? (e.offsetY)
-                                    : e.clientY - pointerDiv.offsetTop;
-                            }
-                            if (cross != null && posX > 0 && posY > 0 && pointItEnable) {
-                                console.log("change pos");
-                                cross.style.backgroundColor= 'rgba(0, 255, 0, .5)';
-                                cross.style.left = posX + "px";
-                                cross.style.top = posY + "px";
-                                document.getElementById("xPos").value = Math.round(posX / scale);
-                                document.getElementById("yPos").value = Math.round(posY / scale);
-                            }
+                            posX = e.offsetX ? (e.offsetX) : e.clientX;
+                            posY = e.offsetY ? (e.offsetY) : e.clientY;
+                            updateCrossPosition();
                         }
+                    }
+
+                    function updateCrossPosition() {
+                            console.log("change pos");
+                            cross.style.backgroundColor = 'rgba(0, 255, 0, .5)';
+                            cross.style.left = posX + "px";
+                            cross.style.top = posY + "px";
+                            document.getElementById("xPos").value = Math.round(posX / scale);
+                            document.getElementById("yPos").value = Math.round(posY / scale);
                     }
 
                     function pointIt2(e) {
@@ -427,8 +431,6 @@
                             enableReadMode();
                         }
 
-                        var topscroll = window.innerHeight + window.scrollY;
-                        var pdf = document.getElementById("pdf");
                         window.addEventListener("wheel", function(event)
                         {
                             if(event.ctrlKey == true) {
@@ -577,7 +579,7 @@
             </div>
             <script th:replace="user/signrequests/includes/scriptshow :: scriptshow"></script>
         </div>
-        <div id="infos">
+        <div id="infos" class="d-none d-lg-block">
             <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
             <th:block th:if="${signRequest.parentSignBook != null}">
             <div th:replace="user/signbooks/cards/stepscard :: stepscard"></div>

@@ -104,19 +104,6 @@ function launchSign(id) {
 	$('#wait').modal('show');
 	$('#wait').modal({backdrop: 'static', keyboard: false})
 	submitSignRequest(id);
-
-	/*
-    var wait = $.ajax({
-        url: "/user/signrequests/wait-for-sign/" + token, success: function (result) {
-            location.reload();
-        }
-    });
-    $('#wait').on('hidden.bs.modal', function () {
-        console.log('abort ajax');
-        wait.abort();
-    })
-
-     */
 }
 
 function launchSignAll(id) {
@@ -203,24 +190,11 @@ function getStep(id, signRequestParams) {
 	return;
 }
 
-//signature position
-
+//drag signature position
 var pointerDiv;
 var startPosX;
 var startPosY;
 var pointItMove = false;
-
-document.addEventListener('DOMContentLoaded', function() {
-	pointerDiv = document.getElementById("pointer_div");
-	if(pointerDiv != null) {
-		startPosX = document.getElementById("xPos").value;
-		startPosY = document.getElementById("yPos").value;
-	}
-});
-
-function animBorder() {
-	document.getElementById("borders").classList.add("anim-border");
-}
 
 function resetPosition() {
 	console.log("out");
@@ -258,115 +232,7 @@ function dragSignature() {
 	pointItEnable = true;
 }
 
-function startPointIt() {
-	console.log("start point it");
-	pointItEnable = true;
-}
-
-//pdf navigation
-// document.addEventListener('DOMContentLoaded', function() {
-// 	if(document.getElementById("next") != null) {
-//
-// 		if (currentImagePage == nbImagePage - 1) {
-// 			document.getElementById("next").classList.add("disabled");
-// 			document.getElementById("next").disabled = true;
-// 		}
-// 		if (currentImagePage > 0) {
-// 			document.getElementById("previous").classList.remove("disabled");
-// 			document.getElementById("previous").disabled = false
-// 		}
-// 	}
-// });
-//
-// function nextImage() {
-// 	currentImagePage++;
-// 	hideSigns(currentImagePage)
-// 	console.info("url('" + documentUrl + "" + currentImagePage + "')");
-// 	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
-// 	if (currentImagePage == nbImagePage - 1) {
-// 		document.getElementById("next").classList.add("disabled");
-// 		document.getElementById("next").disabled = true;
-// 	}
-// 	if (currentImagePage > 0) {
-// 		document.getElementById("previous").classList.remove("disabled");
-// 		document.getElementById("previous").disabled = false
-// 	}
-// 	document.getElementById("signPageNumber").value = currentImagePage;
-// }
-//
-// function previousImage() {
-// 	currentImagePage--;
-// 	hideSigns(currentImagePage)
-// 	document.getElementById("pointer_div").style.backgroundImage = "url('" + documentUrl + "" + currentImagePage + "')";
-// 	if (currentImagePage == 0) {
-// 		document.getElementById("previous").classList.add("disabled");
-// 		document.getElementById("previous").disabled = true;
-// 	}
-// 	if (nbImagePage - 1 > currentImagePage) {
-// 		document.getElementById("next").classList.remove("disabled");
-// 		document.getElementById("next").disabled = false;
-// 	}
-// 	document.getElementById("signPageNumber").value = currentImagePage;
-// }
-//
-// function hideSigns(currentImagePage) {
-// 	var signImages = document.querySelectorAll('[id^="signParam_"]');
-// 	[].forEach.call(signImages, function(signImage) {
-// 		if(signImage.id.includes(currentImagePage + 1)) {
-// 			signImage.style.display = "block";
-// 		} else {
-// 			signImage.style.display = "none";
-// 		}
-// 	});
-// }
-//
-// //toggle overloadsignparams
-// var overloadSignParams;
-// var signTypeSelector;
-// var signTypeDiv;
-// var newPageTypeSelector;
-// var newPageTypeDiv;
-// var overloadYes;
-// var overloadNo;
-//
-// document.addEventListener('DOMContentLoaded', function() {
-// 	signTypeSelector = document.getElementById("_signType_id");
-// 	signTypeDiv = document.getElementById("_signType_div_id");
-// 	newPageTypeSelector = document.getElementById("_newPageType_id");
-// 	newPageTypeDiv = document.getElementById("_newPageType_div_id");
-// });
-//
-// function toggleOverload() {
-// 	overloadSignParams = document.getElementById("_overloadSignParams");
-// 	if(!overloadSignParams.checked) {
-// 		signTypeDiv.classList.add("d-none");
-// 		newPageTypeDiv.classList.add("d-none");
-// 		signTypeSelector.disabled = true;
-// 		newPageTypeSelector.disabled = true;
-// 	} else {
-// 		signTypeDiv.classList.remove("d-none");
-// 		newPageTypeDiv.classList.remove("d-none");
-// 		signTypeSelector.disabled = false;
-// 		newPageTypeSelector.disabled = false;
-// 	}
-// }
-//
-// function getSelectValues(select) {
-// 	  var result = [];
-// 	  var options = select && select.options;
-// 	  var opt;
-//
-// 	  for (var i=0, iLen=options.length; i<iLen; i++) {
-// 	    opt = options[i];
-//
-// 	    if (opt.selected) {
-// 	      result.push(opt.value || opt.text);
-// 	    }
-// 	  }
-// 	  return result;
-// 	}
-
-//Hack to convert panel to card (bootstrap 4)
+//Hack to convert dss signature panel to card (bootstrap 4)
 document.addEventListener('DOMContentLoaded', function() {
 	var divs = document.getElementsByTagName("div");
 	[].forEach.call(divs, function(div) {

@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -32,7 +31,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -42,7 +40,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
 @RequestMapping("/user/signrequests")
@@ -288,30 +285,6 @@ public class SignRequestController {
         return ok;
     }
 
-    @ResponseBody
-    @GetMapping("/wait-for-sign/{token}")
-    public DeferredResult<String> waitForSign(@PathVariable("token") String token) {
-        DeferredResult<String> output = new DeferredResult<>();
-        User user = userService.getUserFromAuthentication();
-        ForkJoinPool.commonPool().submit(() -> {
-            try {
-                int tryNumber = 0;
-                while (true) {
-                    logger.info(user.getEppn() + " is waiting for sign " + token);
-                    tryNumber++;
-                    if(signRequestRepository.findByToken(token).get(0).getStatus().equals(SignRequestStatus.completed) || tryNumber > 30){
-                        break;
-                    }
-                    Thread.sleep(2000);
-                }
-            } catch (InterruptedException e) {
-                logger.info(e.getMessage());
-            }
-            output.setResult("ok");
-        });
-        return output;
-    }
-
     @GetMapping("/sign-by-token/{token}")
     public String signByToken(@PathVariable("token") String token) {
         User user = userService.getUserFromAuthentication();
@@ -476,15 +449,12 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if(signRequest.getCreateBy().equals(user.getEppn())) {
             signRequest.setSignType(signType);
-
         }
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
     @RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
-    public String complete(@PathVariable("id") Long id,
-                           @RequestParam(value = "comment", required = false) String comment,
-                           HttpServletResponse response, RedirectAttributes redirectAttrs, HttpServletRequest request) throws EsupSignatureException {
+    public String complete(@PathVariable("id") Long id, HttpServletRequest request) throws EsupSignatureException {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();

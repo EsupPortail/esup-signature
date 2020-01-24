@@ -9,33 +9,24 @@
     <div class="wrapper">
         <nav id="sidebar">
             <div class="m-1">
-            <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
-                <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
-            </button>
-            <button title="Assistant de demande de signature"  type="button" data-toggle="modal" data-target="#wizardModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left">
-                <i class="fas fa-magic"></i> <span class="sidebar-label">Assistant de creation de parapheur</span>
-            </button>
-                <button title="Je signe un document"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left">
-                    <i class="fas fa-bolt"></i> <span class="sidebar-label">Signature rapide</span>
+                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
-            <button title="Nouvelle demande de signature"  type="button" data-toggle="modal" data-target="#addSignRequestModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left d-none">
-                <i class="fas fa-plus"></i> <span class="sidebar-label">Créer une demande de signature manuellement</span>
-            </button>
-            <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="d-none mb-1 col-12 btn btn-primary text-left">
-                <i class="fas fa-plus"></i> <span class="sidebar-label">Signature rapide</span>
-            </button>
-            <a title="Valider la signature d'un document" type="button" href="/user/validation" class="btn btn-light btn-outline-dark text-left">
-                <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Contrôler la signature d'un document</span>
-            </a>
-            <button id="opendocs" class="mb-1 btn btn-outline-dark btn-light float-left" onclick="openCheckedDocs()" title="open docs" style="display: none;">
-                <i class="far fa-eye fa-2x"></i> Ouvrir les documents sélectionnés
-            </button>
-            <button id="signdocs" class="mb-1 btn btn-outline-dark btn-light float-left" type="button" data-toggle="modal" data-target="#signModal" style="display: none;">
-                <i class="fas fa-signature fa-2x"></i> Signer les documents sélectionnés
-            </button>
-            <button data-toggle="modal" data-target="#wait" id="complete" onclick="completeSignRequests()" title="Passer au statut terminé" class="d-none col-12 m-2 btn btn-outline-dark btn-light float-left">
-                <i class="fas fa-flag-checkered"></i> Passer au statut terminé
-            </button>
+                <button title="Assistant de demande de signature"  type="button" data-toggle="modal" data-target="#wizardModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left">
+                    <i class="fas fa-magic"></i> <span class="sidebar-label">Assistant de creation de parapheur</span>
+                </button>
+                    <button title="Je signe un document"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left">
+                        <i class="fas fa-bolt"></i> <span class="sidebar-label">Signature rapide</span>
+                    </button>
+                <button title="Nouvelle demande de signature"  type="button" data-toggle="modal" data-target="#addSignRequestModal" class="mb-1 col-12 btn btn-light btn-outline-dark text-left d-none">
+                    <i class="fas fa-plus"></i> <span class="sidebar-label">Créer une demande de signature manuellement</span>
+                </button>
+                <button title="Signature rapide"  type="button" data-toggle="modal" data-target="#fastSignRequestModal" class="d-none mb-1 col-12 btn btn-primary text-left">
+                    <i class="fas fa-plus"></i> <span class="sidebar-label">Signature rapide</span>
+                </button>
+                <a title="Valider la signature d'un document" type="button" href="/user/validation" class="btn btn-light col-12 mb-1 text-left">
+                    <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Contrôler la signature d'un document</span>
+                </a>
             </div>
         </nav>
         <div id="content" class="content">
@@ -334,7 +325,6 @@
         </div>
     </div>
 </div>
-<div th:replace="fragments/footer :: footer"></div>
-<div th:replace="fragments/message :: message"></div>
+<footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>
