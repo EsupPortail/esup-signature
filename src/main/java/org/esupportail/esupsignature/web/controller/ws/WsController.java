@@ -331,7 +331,6 @@ public class WsController {
     @RequestMapping(value = "/get-last-file-from-signrequest", method = RequestMethod.GET)
     public ResponseEntity<Void> getLastFileFromSignRequest(@RequestParam String token, HttpServletResponse response) {
         try {
-            //TODO add user to check right
             if (signRequestRepository.countByToken(token) > 0) {
                 SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
                     FsFile file = signRequestService.getLastSignedFsFile(signRequest);
@@ -355,7 +354,6 @@ public class WsController {
     @RequestMapping(value = "/get-last-file-from-signbook", method = RequestMethod.GET)
     public ResponseEntity<Void> getLastFileFromSignBook(@RequestParam String name, HttpServletResponse response) {
         try {
-            //TODO add user to check right
             SignBook signBook = signBookRepository.findByName(name).get(0);
             if (signBook != null) {
                 try {
@@ -388,7 +386,6 @@ public class WsController {
     @RequestMapping(value = "/get-last-file", method = RequestMethod.GET)
     public ResponseEntity<Void> getLastFile(@RequestParam String token, HttpServletResponse response) {
         try {
-            //TODO add user to check right
             SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
             if (signRequest != null) {
                 try {

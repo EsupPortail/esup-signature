@@ -104,7 +104,7 @@ public class PdfService {
                     logger.error(e.getMessage(), e);
                 }
             } else {
-                //TODO add nom prenom ?
+//                TODO add nom prenom ?
 //                if(addName) {
 //
 //                }
