@@ -24,7 +24,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
-import org.esupportail.esupsignature.service.fs.ResourceUtils;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,8 +48,6 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 
 	protected FileObject root;
 
-	protected ResourceUtils resourceUtils;
-
 	protected boolean sftpSetUserDirIsRoot = false;
 
     protected boolean strictHostKeyChecking = true;
@@ -59,10 +56,6 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
     
     // we setup ftpPassiveMode to true by default ...
     protected boolean ftpPassiveMode = true;
-
-	public void setResourceUtils(ResourceUtils resourceUtils) {
-		this.resourceUtils = resourceUtils;
-	}
 
 	public void setSftpSetUserDirIsRoot(boolean sftpSetUserDirIsRoot) {
 		this.sftpSetUserDirIsRoot = sftpSetUserDirIsRoot;

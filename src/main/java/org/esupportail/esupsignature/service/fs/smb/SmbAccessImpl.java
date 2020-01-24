@@ -30,7 +30,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
-import org.esupportail.esupsignature.service.fs.ResourceUtils;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +51,6 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 
 	@Autowired
 	FileService fileService;
-	
-	protected ResourceUtils resourceUtils;
 
 	private NtlmPasswordAuthentication userAuthenticator;
 
@@ -357,26 +354,6 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 
 	public void destroy() {
 		this.close();
-	}
-	
-	/**
-	 * Getter of attribute resourceUtils
-	 * @return <code>ResourceUtils</code> the attribute resourceUtils
-	 */
-	public ResourceUtils getResourceUtils() {
-		return resourceUtils;
-	}
-
-	/**
-	 * Setter of attribute resourceUtils
-	 * @param resourceUtils <code>ResourceUtils</code> the attribute resourceUtils to set
-	 */
-	public void setResourceUtils(final ResourceUtils resourceUtils) {
-		this.resourceUtils = resourceUtils;
-	}
-
-	public void setJcifsSynchronizeRootListing(boolean jcifsSynchronizeRootListing) {
-		this.jcifsSynchronizeRootListing = jcifsSynchronizeRootListing;
 	}
 
 	public void setLogin(String login) {
