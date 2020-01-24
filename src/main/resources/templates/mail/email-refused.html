@@ -6,13 +6,13 @@
 </head>
 <body class="bg-light">
 <div class="container">
-    <div class="card m-4  rounded-0">
+    <div class="card m-4 rounded-0">
         <div class="card-header bg-dark">
             <img class="mx-auto" th:src="@{|data:image/png;base64, ${logo}|}" />
         </div>
         <div class="card-body">
             <h4>Bonjour,</h4>
-            <h5>La demande de signature "<b><span th:text="${signBook.name}"></span></b>" à été refusée par :</h5>
+            <h5>La demande de signature "<b><span th:text="${signBook.name}"></span></b>" a été refusée par :</h5>
             <ul>
                 <th:block th:each="workflowStep : ${signBook.workflowSteps}">
                     <th:block th:each="recipient : ${workflowStep.recipients}">

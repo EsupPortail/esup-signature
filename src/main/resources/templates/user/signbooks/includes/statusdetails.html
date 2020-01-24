@@ -50,12 +50,12 @@
 	</div>
 	<div th:if="${signRequest.status.name() == 'refused'}">
 		<div class="alert alert-danger mb-1">
-			<h6 class="alert-heading">La demande à été refusée</h6>
+			<h6 class="alert-heading">La demande a été refusée</h6>
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'exported'}">
 		<div class="alert alert-success mb-1">
-			<h6>Le document signé à été exporté vers son emplacement définitif :</h6>
+			<h6>Le document signé a été exporté vers son emplacement définitif :</h6>
 			<span th:text="${signRequest.exportedDocumentURI}"></span>
 		</div>
 	</div>

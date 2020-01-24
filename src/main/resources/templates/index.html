@@ -5,23 +5,21 @@
 	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
 	<main role="main" class="container">
 		<div class="alert alert-dark">
-			<p style="font-weight: bold;">Bienvenue sur l'application Esup-Signature. Merci de compléter vos informations pour pouvoir commencer à signer.</p>
+			<h5>Bienvenue sur l'application Esup-Signature.</h5>
 			<ul>
-				<li>Pour pouvoir faire une signature calligraphique sur un PDF il faut au moins sélectionner un fichier image de votre signature. (dans l'idéal il faut que le fond de l'image soit transparent)</li>
-				<li>Pour faire de la signature électronique, il faut soit importer un keystore au format PKCS12, soit utilser la signature via NexU. <br /> Il est possible d'en générer un sur la plateforme <a href="https://www.digicert.com/sso">https://www.digicert.com/sso</a> (voir <a href="https://services.renater.fr/tcs/certcentral/orders/request-certificate">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a> pour plus de détails).
+				<li>
+					Pour effectuer des signatures calligraphiques sur un PDF il faut déposer un fichier image de votre signature dans vos paramètres.
+				<li>
+					Pour utiliser la signature électronique, il est possible d'importer un keystore au format PKCS12 dans votre profil.
+					<br />
+					Vous pouvez générer des certificats sur la plateforme <a target="_blank" href="https://www.digicert.com/sso">https://www.digicert.com/sso</a> (voir <a target="_blank" href="https://services.renater.fr/tcs/certcentral/orders/request-certificate">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a> pour plus de détails).
 				</li>
-				<li>Enfin vous pouvez choisir vos paramètres de signature par défaut ainsi que vos paramètres d'alerte.</li>
+				<li>
+					Enfin il est possible d'utiliser une clé matérielle. Pour cela vous devez installer l'application NexU disponible ici : <a target="_blank" href="https://github.com/nowina-solutions/nexu/releases/download/nexu-1.22/nexu-bundle-1.22.zip">NexU</a>
+				</li>
 			</ul>
 			<p>
-				Vous pouvez modifier / compléter vos paramètres à tous moments en utilisant l'onglet <span class="fa fa-cog"> <!-- -->
-				</span>
-			</p>
-			<p>
-				Dès que vous apercevez ce symbole
-				<button type="button" class="btn btn-sm btn-info">
-					<span class="fas fa-info-circle "></span>
-				</button>
-				, cliquez dessus pour obtenir de l'aide.
+				Vous pouvez modifier / compléter vos paramètres à tous moments en utilisant le bouton paramètres en haut à droite.
 			</p>
 		</div>
 	<div class="card">

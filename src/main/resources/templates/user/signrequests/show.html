@@ -89,7 +89,7 @@
                     </div>
                     </th:block>
                     <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed')}">
-                        <a class="btn btn-light  btn-outline-dark mr-1 text-left" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
+                        <a class="btn btn-light btn-outline-dark mr-1 text-left" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
                             <i class="fas fa-save"></i>
                         </a>
                         <a title="Export SEDA" class="btn btn-light btn-outline-dark mr-1 text-left" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
@@ -174,8 +174,8 @@
                         <div class="alert alert-warning float-left">
                             L'application NexU n'a pas été détectée
                             <br>
-                            <small>Merci de lancer l'application sur votre poste.
-                                <a href="https://github.com/nowina-solutions/nexu/releases/">Téléchargement</a>
+                            <small>
+                                Merci de lancer l'application sur votre poste. L'application NexU disponible ici : <a target="_blank" href="https://github.com/nowina-solutions/nexu/releases/download/nexu-1.22/nexu-bundle-1.22.zip">NexU</a>
                             </small>
                         </div>
                     </div>

@@ -25,6 +25,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -52,8 +53,8 @@ public class IndexController {
 		return userService.getUserFromAuthentication();
 	}
 	
-	@RequestMapping
-	public String index(HttpServletRequest request, Model model) {
+	@GetMapping
+	public String index(Model model) {
 		User user = userService.getUserFromAuthentication();
 		model.addAttribute("user", user);
 		if(user != null && !user.getEppn().equals("System")) {
@@ -61,12 +62,8 @@ public class IndexController {
 		} else {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			if("anonymousUser".equals(auth.getName())) {
-				if(securityConfigs.size() > 1) {
-					model.addAttribute("securityConfigs", securityConfigs);
-					return "index";
-				} else {
-					return "redirect:" + securityConfigs.get(0).getLoginUrl();
-				}
+				model.addAttribute("securityConfigs", securityConfigs);
+				return "index";
 			} else {
 				userService.createUser(SecurityContextHolder.getContext().getAuthentication());
 				return "index";			
