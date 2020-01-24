@@ -169,12 +169,14 @@ public class UserService {
 		}
 		if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
 			List<PersonLdap> ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
-			List<PersonLdap> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
-			for(PersonLdap personLdapList : ldapList) {
-				if(personLdaps.stream().filter(personLdap -> personLdap.getMail().equals(personLdapList.getMail())).count() > 0) {
-					continue;
-				} else {
-					personLdaps.add(personLdapList);
+			if(ldapSearchList.size() > 0) {
+				List<PersonLdap> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
+				for (PersonLdap personLdapList : ldapList) {
+					if (personLdaps.stream().filter(personLdap -> personLdap.getMail().equals(personLdapList.getMail())).count() > 0) {
+						continue;
+					} else {
+						personLdaps.add(personLdapList);
+					}
 				}
 			}
 		}

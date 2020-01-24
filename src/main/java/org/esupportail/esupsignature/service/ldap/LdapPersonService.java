@@ -44,22 +44,21 @@ public class LdapPersonService {
 		LdapTemplate ldapTemplateSelected = ldapTemplate;
 		if(ldapTemplateName != null && !ldapTemplateName.isEmpty() && ldapTemplates.containsKey(ldapTemplateName)) {
 			ldapTemplateSelected = ldapTemplates.get(ldapTemplateName);
-		}
-		if(ldapTemplateSelected != null) {
-	        AndFilter filter = new AndFilter();
-	        filter.and(new EqualsFilter("objectclass", "person"));
-	        OrFilter orFilter = new OrFilter();
-	        orFilter.or(new LikeFilter("displayName", "*" + searchString + "*"));
-	        orFilter.or(new LikeFilter("cn", "*" + searchString + "*"));
-	        orFilter.or(new LikeFilter("uid", "*" + searchString + "*"));
-	        filter.and(orFilter);
-	        
-	        List<PersonLdap> results = ldapTemplateSelected.search(LdapUtils.emptyLdapName(), filter.encode(), new PersonAttributMapper());       
-	        return results;
+			if(ldapTemplateSelected != null) {
+				AndFilter filter = new AndFilter();
+				filter.and(new EqualsFilter("objectclass", "person"));
+				OrFilter orFilter = new OrFilter();
+				orFilter.or(new LikeFilter("displayName", "*" + searchString + "*"));
+				orFilter.or(new LikeFilter("cn", "*" + searchString + "*"));
+				orFilter.or(new LikeFilter("uid", "*" + searchString + "*"));
+				filter.and(orFilter);
+				List<PersonLdap> results = ldapTemplateSelected.search(LdapUtils.emptyLdapName(), filter.encode(), new PersonAttributMapper());
+				return results;
+			}
 		} else {
-			log.warn("No ldapTemplate found -> LdapPersonService.searchByCommonName result is empty");
-			return new ArrayList<PersonLdap>();
+			log.debug("No ldapTemplate found -> LdapPersonService.searchByCommonName result is empty");
 		}
+		return new ArrayList<>();
 	}
 	
 }
