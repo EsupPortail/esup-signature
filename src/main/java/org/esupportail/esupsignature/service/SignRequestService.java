@@ -231,23 +231,16 @@ public class SignRequestService {
 	}
 
 	public void sign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException, IOException {
-		step = "Demarrage de la signature";
+		step = "Démarrage de la signature";
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
 		SignType signType = getCurrentSignType(signRequest);
 		if (signType.equals(SignType.visa)) {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-				InputStream signedInputStream;
 				if(visual) {
-					signedInputStream = pdfService.stampImage(toSignDocuments.get(0), signRequest, getCurrentSignType(signRequest), getCurrentSignRequestParams(signRequest), user, addDate);
-				} else {
-					step = "Convertion du document";
-					if(signRequest.getSignedDocuments().size() == 0) {
-						signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(toSignDocuments.get(0).getInputStream(), toSignDocuments.get(0).getFileName(), signRequest));
-					} else {
-						signedInputStream = toSignDocuments.get(0).getInputStream();
-					}
+					step = "Conversion du document";
+					InputStream signedInputStream = pdfService.stampImage(toSignDocuments.get(0), signRequest, getCurrentSignType(signRequest), getCurrentSignRequestParams(signRequest), user, addDate);
+					addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
 				}
-				addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
 			}
 		} else if(signType.equals(SignType.pdfImageStamp)) {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
@@ -584,14 +577,6 @@ public class SignRequestService {
 		this.step = step;
 	}
 
-	public List<Recipient> getCurrentRecipients(SignRequest signRequest) {
-		if(signRequest.getParentSignBook() != null) {
-			return signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook()).getRecipients();
-		} else {
-			return signRequest.getRecipients();
-		}
-	}
-
 	public SignType getCurrentSignType(SignRequest signRequest) {
 		if(signRequest.getParentSignBook() != null) {
 			WorkflowStep currentWorkflowStep = signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook());
@@ -606,22 +591,11 @@ public class SignRequestService {
 	}
 
 	public SignRequestParams getCurrentSignRequestParams(SignRequest signRequest) {
-		if(signRequest.getCurrentStepNumber() > 0) {
-			if (signRequest.getCurrentStepNumber() > 0 && signRequest.getParentSignBook() != null && signRequest.getSignRequestParams().size() > signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1) {
-				return signRequest.getSignRequestParams().get(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() - 1);
-			} else {
-				if (signRequest.getCurrentStepNumber() > 0 && signRequest.getSignRequestParams().size() > signRequest.getCurrentStepNumber() - 1) {
-					return signRequest.getSignRequestParams().get(signRequest.getCurrentStepNumber() - 1);
-				} else {
-					SignRequestParams signRequestParams = getEmptySignRequestParams();
-					signRequestParamsRepository.save(signRequestParams);
-					signRequest.getSignRequestParams().add(signRequestParams);
-
-					return signRequest.getSignRequestParams().get(signRequest.getCurrentStepNumber() - 1);
-				}
-			}
+		if(signRequest.getSignRequestParams().size() > signRequest.getSignedDocuments().size()) {
+			return signRequest.getSignRequestParams().get(signRequest.getSignedDocuments().size());
+		} else {
+			return getEmptySignRequestParams();
 		}
-		return getEmptySignRequestParams();
 	}
 
 	public SignType getSignTypeByLevel(int level) {

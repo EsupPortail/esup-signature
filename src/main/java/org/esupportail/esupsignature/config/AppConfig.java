@@ -42,6 +42,8 @@ public class AppConfig implements WebMvcConfigurer {
                         "classpath:/static/images/",
                         "classpath:/static/css/",
                         "classpath:/static/js/");
+		registry.addResourceHandler("swagger-ui.html")
+				.addResourceLocations("classpath:/META-INF/resources/");
     }
 	
     @Bean
