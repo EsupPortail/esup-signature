@@ -52,7 +52,7 @@
                     var visualActive = true;
                     var pointItEnable = true;
                     var pdfDoc = null,
-                        pageNum = 1,
+                        pageNum = [[${@signRequestService.getCurrentSignRequestParams(signRequest).signPageNumber}]],
                         pageRendering = false,
                         pageNumPending = null,
                         scale = 0.75,
@@ -334,7 +334,7 @@
                         }
                         rotation = 0;
                         scale = 0.75;
-                        queueRenderPage(pageNum);
+                        queueRenderPage([[${@signRequestService.getCurrentSignRequestParams(signRequest).signPageNumber}]]);
 
                     }
 
