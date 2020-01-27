@@ -1,8 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignBook.SignBookType;
-import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

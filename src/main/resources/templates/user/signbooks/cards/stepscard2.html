@@ -92,15 +92,15 @@
                                                         <span class="slider round"></span>
                                                     </label>
                                                 </div>
-                                                <button type="submit" class="btn btn-sm btn-success float-right">Valider</button>
+                                                <button type="submit" class="btn btn-success">Enregistrer les paramètres</button>
                                             </form>
                                             <hr/>
-                                            <span th:if="${workflowStep.allSignToComplete}">Tous les participants suivants :</span>
-                                            <span th:unless="${workflowStep.allSignToComplete}">Un des participants suivants :</span>
+                                            <span th:if="${workflowStep.allSignToComplete}">Les participants suivants doivent tous signer :</span>
+                                            <span th:unless="${workflowStep.allSignToComplete}">Un des participants suivants doit signer :</span>
                                             <table class="table table-sm table-bordered">
                                                 <tr>
                                                     <th>Participants</th>
-                                                    <th>Etat de la signature</th>
+                                                    <th>Etat actuel de la signature</th>
                                                     <th:block th:if="${user.eppn == signBook.createBy && (iterator.index + 1 > signBook.currentWorkflowStepNumber || iterator.index + 1 == signBook.currentWorkflowStepNumber)}">
                                                         <th>Actions
                                                             <button type="button" title="Ajouter un participant" class="btn btn-sm btn-primary float-right" data-toggle="modal" th:data-target="'#reSendModal' + ${workflowStep.id}">
@@ -168,7 +168,7 @@
                                                 </tr>
                                                 <th:block th:each="recipient : ${workflowStep.recipients}">
                                                     <tr>
-                                                        <form th:action="'/user/signbooks/remove-step-recipent/' + ${id} + '/' + ${workflowStep.id}" th:method="'delete'">
+                                                        <form th:action="'/user/signbooks/remove-step-recipent/' + ${id} + '/' + ${iterator.index}" th:method="'delete'">
                                                             <input type="hidden" name="recipientId" th:value="${recipient.id}"/>
                                                             <td>
                                                                 <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>

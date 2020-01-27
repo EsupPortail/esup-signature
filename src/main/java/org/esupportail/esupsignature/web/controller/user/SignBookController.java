@@ -127,7 +127,7 @@ public class SignBookController {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
         if(user.getEppn().equals(signBook.getCreateBy()) && signBook.getCurrentWorkflowStepNumber() <= step + 1) {
-            signBookService.changeSignType(signBook, step, null, signType);
+            signBookService.changeSignType(signBook, step, signType);
             return "redirect:/user/signbooks/" + id + "/?form";
         }
         return "redirect:/user/signbooks/";
@@ -145,7 +145,7 @@ public class SignBookController {
             if(allSignToComplete == null) {
                 allSignToComplete = false;
             }
-            signBookService.changeSignType(signBook, step, name, signType);
+            signBookService.changeSignType(signBook, step, signType);
             signBookService.toggleNeedAllSign(signBook, step, allSignToComplete);
             return "redirect:/user/signbooks/" + id + "/?form";
         }
@@ -225,18 +225,15 @@ public class SignBookController {
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
-    @DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
+    @DeleteMapping(value = "/remove-step-recipent/{id}/{step}")
     public String removeStepRecipient(@PathVariable("id") Long id,
-                                 @PathVariable("workflowStepId") Long workflowStepId,
-                                 @RequestParam(value = "recipientId") Long recipientId,
-                                 RedirectAttributes redirectAttrs, HttpServletRequest request) {
+                                 @PathVariable("step") Integer step,
+                                 @RequestParam(value = "recipientId") Long recipientId, HttpServletRequest request) {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignBook signBook = signBookRepository.findById(id).get();
-        WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
         if (signBookService.checkUserViewRights(user, signBook)) {
-            Recipient recipientToRemove = recipientRepository.findById(recipientId).get();
-            workflowStep.getRecipients().remove(recipientToRemove);
+            signBookService.removeStepRecipient(signBook, step, recipientId);
         } else {
             logger.warn(user.getEppn() + " try to move " + signBook.getId() + " without rights");
         }

@@ -96,14 +96,14 @@ public class FileService {
         return out;
 	}
 
-	public InputStream bufferedImageToInputStream(BufferedImage image, String type) throws IOException {
+	public static InputStream bufferedImageToInputStream(BufferedImage image, String type) throws IOException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		ImageIO.write(image, type, os);
 		return new ByteArrayInputStream(os.toByteArray());
 	}
 
 	public InputStream notFoundImageToInputStream(String type) throws IOException {
-		return stringToImageFile("PAGE NOT\n FOUND", type);
+		return stringToImageFile("TEST", type);
 	}
 	
 	public InputStream stringToImageFile(String text, String type) throws IOException {

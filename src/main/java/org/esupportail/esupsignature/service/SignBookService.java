@@ -54,6 +54,9 @@ public class SignBookService {
     @Resource
     private WorkflowService workflowStepService;
 
+    @Resource
+    private RecipientRepository recipientRepository;
+
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<>();
         signBookRepository.findAll().forEach(e -> list.add(e));
@@ -141,6 +144,21 @@ public class SignBookService {
         workflowStepRepository.delete(workflowStep);
     }
 
+    public void removeStepRecipient(SignBook signBook, int step, Long recipientId) {
+        Recipient recipientToRemove = recipientRepository.findById(recipientId).get();
+        WorkflowStep workflowStep = signBook.getWorkflowSteps().get(step);
+        workflowStep.getRecipients().remove(recipientToRemove);
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            if(signRequest.getCurrentStepNumber() == step + 1) {
+                for(Recipient recipient : signRequest.getRecipients()) {
+                    if(recipient.getUser().equals(recipientToRemove.getUser())) {
+                        signRequest.getRecipients().remove(recipient);
+                    }
+                }
+            }
+        }
+    }
+
     public void toggleNeedAllSign(SignBook signBook, int step, Boolean allSignToComplete) {
         WorkflowStep workflowStep = signBook.getWorkflowSteps().get(step);
         if(allSignToComplete != null && !allSignToComplete.equals(workflowStep.getAllSignToComplete())) {
@@ -148,11 +166,8 @@ public class SignBookService {
         }
     }
 
-    public void changeSignType(SignBook signBook, int step, String name, SignType signType) {
+    public void changeSignType(SignBook signBook, int step, SignType signType) {
         WorkflowStep workflowStep = signBook.getWorkflowSteps().get(step);
-        if(name != null) {
-            workflowStep.setName(name);
-        }
         workflowService.setSignTypeForWorkflowStep(signType, workflowStep);
     }
 
