@@ -70,43 +70,43 @@
 
                     function renderPage(num) {
                         if(pdfDoc != null) {
-                        document.getElementById('signPageNumber').value = num;
-                        pageRendering = true;
-                        pdfDoc.getPage(num).then(function (page) {
-                            var viewport = page.getViewport({scale, rotation});
-                            canvas.height = viewport.height;
-                            canvas.width = viewport.width;
-                            var renderContext = {
-                                canvasContext: ctx,
-                                viewport: viewport
-                            };
-                            var renderTask = page.render(renderContext);
-                            renderTask.promise.then(function () {
-                                pageRendering = false;
-                                if (pageNumPending !== null) {
-                                    renderPage(pageNumPending);
-                                    pageNumPending = null;
-                                }
+                            document.getElementById('signPageNumber').value = num;
+                            pageRendering = true;
+                            pdfDoc.getPage(num).then(function (page) {
+                                var viewport = page.getViewport({scale, rotation});
+                                canvas.height = viewport.height;
+                                canvas.width = viewport.width;
+                                var renderContext = {
+                                    canvasContext: ctx,
+                                    viewport: viewport
+                                };
+                                var renderTask = page.render(renderContext);
+                                renderTask.promise.then(function () {
+                                    pageRendering = false;
+                                    if (pageNumPending !== null) {
+                                        renderPage(pageNumPending);
+                                        pageNumPending = null;
+                                    }
+                                });
                             });
-                        });
-                        pageNum = num;
-                        document.getElementById('page_num').textContent = num;
-                        document.getElementById('zoom').textContent = 100 * scale;
-                        refreshSign();
-                        if(pdfDoc.numPages == 1) {
-                            $('#prev').prop('disabled', true);
-                            $('#next').prop('disabled', true);
-                        }
-
-                        [# th:each="postit : ${postits}"]
-                            if([[${postit.pageNumber}]] == num && mode == 'comment') {
-                                $("#[[${postit.id}]]").show();
-                                $("#postit[[${postit.id}]]").css("background-color", "#FFC");
-                            } else {
-                                $("#[[${postit.id}]]").hide();
-                                $("#postit[[${postit.id}]]").css("background-color", "#EEE");
+                            pageNum = num;
+                            document.getElementById('page_num').textContent = num;
+                            document.getElementById('zoom').textContent = 100 * scale;
+                            refreshSign();
+                            if(pdfDoc.numPages == 1) {
+                                $('#prev').prop('disabled', true);
+                                $('#next').prop('disabled', true);
                             }
-                        [/]
+
+                            [# th:each="postit : ${postits}"]
+                                if([[${postit.pageNumber}]] == num && mode == 'comment') {
+                                    $("#[[${postit.id}]]").show();
+                                    $("#postit[[${postit.id}]]").css("background-color", "#FFC");
+                                } else {
+                                    $("#[[${postit.id}]]").hide();
+                                    $("#postit[[${postit.id}]]").css("background-color", "#EEE");
+                                }
+                            [/]
                         }
                     }
 
@@ -484,11 +484,11 @@
 
                     /*]]>*/
                 </script>
-                <script th:if="${signable == 'ok' && @signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
+                <script th:inline="javascript" th:if="${signable == 'ok' && @signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
                     $(document).ready(function () {
                         if(mode == 'sign') {
                             toggleVisual();
-                            queueRenderPage(1);
+                            pageNum = 1;
                         }
                     });
                 </script>
