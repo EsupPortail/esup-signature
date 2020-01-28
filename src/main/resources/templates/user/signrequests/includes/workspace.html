@@ -296,7 +296,8 @@
                         $('#readButton').toggleClass('btn-light btn-secondary');
                         $('#rotateleft').prop('disabled', false);
                         $('#rotateright').prop('disabled', false);
-                        queueRenderPage(pageNum);
+
+                        queueRenderPage(1);
                     }
 
                     function enableCommentMode() {
@@ -310,7 +311,7 @@
                         $('#commentButton').toggleClass('btn-light btn-warning');
                         $('#commentsTools').show();
                         $('#infos').show();
-                        queueRenderPage(pageNum);
+                        queueRenderPage(1);
                     }
 
                     function enableSignMode() {
