@@ -41,9 +41,10 @@ public class AppConfig implements WebMvcConfigurer {
                         "classpath:/META-INF/resources/webjars/",
                         "classpath:/static/images/",
                         "classpath:/static/css/",
-                        "classpath:/static/js/");
+                        "classpath:/static/js/").setCachePeriod(3600*24);
 		registry.addResourceHandler("swagger-ui.html")
 				.addResourceLocations("classpath:/META-INF/resources/");
+
     }
 	
     @Bean
