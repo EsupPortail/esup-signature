@@ -130,9 +130,9 @@
 		<!-- https://mvnrepository.com/artifact/org.webjars/bootstrap -->
 
 		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>pdf-js</artifactId>
-			<version>2.3.200</version>
+			<groupId>org.webjars.bowergithub.mozilla</groupId>
+			<artifactId>pdfjs-dist</artifactId>
+			<version>2.2.2</version>
 		</dependency>
 
 		<dependency>
