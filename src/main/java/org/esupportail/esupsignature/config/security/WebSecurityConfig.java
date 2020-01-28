@@ -47,7 +47,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.csrf().ignoringAntMatchers("/ws/**");
 		http.csrf().ignoringAntMatchers("/user/nexu-sign/**");
 		http.headers().frameOptions().sameOrigin();
-		http.headers().cacheControl();
+		//http.headers().cacheControl();
 	}
 	
 	@Bean
