@@ -40,7 +40,6 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 @RequestMapping("user/users")
 @Controller
-@Scope(value="session")
 @Transactional
 public class UserController {
 
@@ -77,26 +76,6 @@ public class UserController {
 
 	@Resource
 	private SignService signService;
-
-	@Resource
-	private SignBookRepository signBookRepository;
-	
-	@Resource
-	private SignBookService signBookService;
-
-	private String password;
-
-	@ModelAttribute("password")
-	public String getPassword() {
-		return password;
-	}
-
-	long startTime;
-	
-	public void setPassword(String password) {
-		startTime = System.currentTimeMillis();
-		this.password = password;
-	}
 
     @GetMapping
     public String createForm(Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) throws IOException, SQLException {
@@ -162,16 +141,11 @@ public class UserController {
     @RequestMapping(value = "/view-cert", method = RequestMethod.GET, produces = "text/html")
     public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttrs) throws Exception {
 		User user = userService.getUserFromAuthentication();
-		if (password != null && !"".equals(password)) {
-        	setPassword(password);
-        }
 		try {
 			logger.info(user.getKeystore().getInputStream().read() + "");
-        	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getInputStream(), this.password));
+        	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getInputStream(), password));
         } catch (Exception e) {
         	logger.error("open keystore fail", e);
-        	this.password = "";
-			startTime = 0;
         	redirectAttrs.addFlashAttribute("messageError", "Mauvais mot de passe");
 		}
         return "redirect:/user/users/?form";
@@ -197,14 +171,4 @@ public class UserController {
 		return userService.getPersonLdaps(searchString, ldapTemplateName);
    }
 
-	@Scheduled(fixedDelay = 5000)
-	public void clearPassword () {
-		if(startTime > 0) {
-			if(System.currentTimeMillis() - startTime > signService.getPasswordTimeout()) {
-				password = "";
-				startTime = 0;
-			}
-		}
-	}
-	
 }

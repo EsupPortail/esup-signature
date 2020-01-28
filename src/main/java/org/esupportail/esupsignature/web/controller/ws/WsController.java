@@ -108,7 +108,6 @@ public class WsController {
         ObjectMapper mapper = new ObjectMapper();
         SignRequest signRequest = signRequestService.createSignRequest(title, user);
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
-        String[] recipientsEmailList = mapper.readValue(recipientsEmail, String[].class);
         signRequestService.addRecipients(signRequest, recipientsEmail);
         signRequestService.pendingSignRequest(signRequest, signRequestService.getSignTypeByLevel(signLevel), false, user);
         logger.info("new signRequest created by " + user.getEppn());
