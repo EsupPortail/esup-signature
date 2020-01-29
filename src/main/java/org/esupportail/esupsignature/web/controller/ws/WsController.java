@@ -202,11 +202,11 @@ public class WsController {
     @PostMapping(value = "/pending-sign-request", produces = MediaType.APPLICATION_JSON_VALUE)
     public void pendingSignRequest(@RequestParam String token,
                                    @RequestParam("recipientsEmail") String recipientsEmail,
-                                   @RequestParam("signLevel") int signLevel) {
+                                   @RequestParam("signLevel") int signLevel) throws IOException {
         if (signRequestRepository.countByToken(token) > 0) {
             SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
             ObjectMapper mapper = new ObjectMapper();
-            signRequestService.addRecipients(signRequest, recipientsEmail);
+            signRequestService.addRecipients(signRequest, mapper.readValue(recipientsEmail, String[].class));
             signRequestService.pendingSignRequest(signRequest, signRequestService.getSignTypeByLevel(signLevel), false, userService.getSystemUser());
         }
     }

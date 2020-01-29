@@ -202,13 +202,14 @@ public class SignRequestController {
             return "user/signrequests/update";
         } else {
             logger.warn(user.getEppn() + " attempted to access signRequest " + id + " without write access");
-            redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
+            redirectAttrs.addFlashAttribute("messageCustom", "not authorized");
             return "redirect:/user/signrequests/";
         }
     }
 
     @GetMapping(value = "/{id}")
     public String show(@PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
+        logger.info("frameMode = " + frameMode);
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         model.addAttribute("signRequest", signRequest);
@@ -290,7 +291,7 @@ public class SignRequestController {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
         if(signRequestService.checkUserSignRights(user, signRequest)) {
-            return "redirect:/user/signrequests/" + signRequest.getId();
+            return "redirect:/user/signrequests/" + signRequest.getId() + "/?frameMode=true";
         } else {
             return "redirect:/";
         }
