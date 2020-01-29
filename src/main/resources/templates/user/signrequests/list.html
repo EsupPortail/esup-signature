@@ -252,7 +252,7 @@
     </div>
 </div>
 <script>
-    localStorage.setItem('mode', 'sign');
+    localStorage.removeItem('mode');
     $('#wizardModal').on('shown.bs.modal', function () {
         $(this).modal({backdrop: 'none', keyboard: false})
     });
