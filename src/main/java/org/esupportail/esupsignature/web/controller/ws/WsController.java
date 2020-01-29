@@ -104,11 +104,10 @@ public class WsController {
                                     @RequestParam("signLevel") int signLevel, HttpServletRequest httpServletRequest) throws EsupSignatureIOException, IOException, EsupSignatureException {
         User user = userRepository.findByEppn(createBy).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
-        logger.info("new signRequest created by " + user.getEppn());
         ObjectMapper mapper = new ObjectMapper();
         SignRequest signRequest = signRequestService.createSignRequest(title, user);
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
-        signRequestService.addRecipients(signRequest, recipientsEmail);
+        signRequestService.addRecipients(signRequest, mapper.readValue(recipientsEmail, String[].class));
         signRequestService.pendingSignRequest(signRequest, signRequestService.getSignTypeByLevel(signLevel), false, user);
         logger.info("new signRequest created by " + user.getEppn());
         return signRequest.getToken();
