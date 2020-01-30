@@ -58,8 +58,7 @@
                         scale = 0.75,
                         rotation = 0;
                     pdfjsLib.disableWorker = true;
-                    //var pdfjsLib = window['pdfjs-dist/build/pdf'];
-                    //pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.js';
                     pdfjsLib.getDocument(url).promise.then(function (pdf) {
                         pdfDoc = pdf;
                         document.getElementById('page_count').textContent = pdfDoc.numPages;
