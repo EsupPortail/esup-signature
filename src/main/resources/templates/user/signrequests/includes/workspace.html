@@ -52,7 +52,7 @@
                     var visualActive = true;
                     var pointItEnable = true;
                     var pdfDoc = null,
-                        pageNum = [[${@signRequestService.getCurrentSignRequestParams(signRequest).signPageNumber}]],
+                        pageNum = 1,
                         pageRendering = false,
                         pageNumPending = null,
                         scale = 0.75,
@@ -425,6 +425,7 @@
                             [/]
                         }
                         if(mode == 'sign') {
+                            pageNum = [[${@signRequestService.getCurrentSignRequestParams(signRequest).signPageNumber}]];
                             enableSignMode();
                         } else if(mode == 'comment') {
                             enableCommentMode();

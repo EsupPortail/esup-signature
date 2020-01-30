@@ -341,7 +341,7 @@ public class SignRequestController {
                 signRequestService.setStep("initNexu");
                 return new ResponseEntity(HttpStatus.OK);
             }
-            if (signPageNumber != null && xPos != null && yPos != null) {
+            if (signPageNumber != null && xPos != null && yPos != null && visual) {
                 SignRequestParams signRequestParams = signRequestService.getCurrentSignRequestParams(signRequest);
                 signRequestParams.setSignPageNumber(signPageNumber);
                 signRequestParams.setXPos(xPos);
@@ -409,7 +409,7 @@ public class SignRequestController {
                 if (documents.size() > 1) {
                     response.sendRedirect("/user/signsignrequests/" + id);
                 } else {
-                    response.setHeader("Content-Disposition", "inline;filename=test-seda.zip");
+                    response.setHeader("Content-Disposition", "attachment;filename=test-seda.zip");
                     response.setContentType("application/zip");
                     IOUtils.copy(sedaExportService.generateSip(signRequest), response.getOutputStream());
                 }
@@ -432,7 +432,7 @@ public class SignRequestController {
                     response.sendRedirect("/user/signrequests/" + signRequest.getId());
                 } else {
                     Document document = documents.get(0);
-                    response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+                    response.setHeader("Content-Disposition", "attachment;filename=\"" + document.getFileName() + "\"");
                     response.setContentType(document.getContentType());
                     IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
                 }
