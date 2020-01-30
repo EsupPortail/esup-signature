@@ -176,7 +176,7 @@ public class SignBookWizardController {
             model.addAttribute("signBook", signBook);
             return "user/signbooks/wizard/wizend";
         } else {
-            throw new EsupSignatureException("not autorized");
+            throw new EsupSignatureException("not authorized");
         }
     }
 

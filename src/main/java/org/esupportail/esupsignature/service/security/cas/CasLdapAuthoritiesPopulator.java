@@ -30,7 +30,7 @@ public class CasLdapAuthoritiesPopulator extends DefaultLdapAuthoritiesPopulator
 
 		Set<GrantedAuthority> roles = getGroupMembershipRoles(userDn, username.toLowerCase());
 
-		Set<GrantedAuthority> extraRoles = new HashSet<GrantedAuthority>();
+		Set<GrantedAuthority> extraRoles = new HashSet<>();
 
 		for(GrantedAuthority role: roles) {
 			if(mappingGroupesRoles != null && mappingGroupesRoles.containsKey(role.getAuthority())) 

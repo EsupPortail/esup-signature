@@ -165,7 +165,7 @@ function getStep(id, signRequestParams) {
 			document.getElementById("closeModal").style.display = "block";
 			document.getElementById("bar").classList.remove("progress-bar-animated");
 			clearInterval(getProgressTimer);
-		} else if(result == "sign_system_error") {
+		} else if(result == "sign_system_error" || result == "not_authorized") {
 			clearInterval(getProgressTimer);
 			document.getElementById("signError").style.display = "block";
 			document.getElementById("closeModal").style.display = "block";

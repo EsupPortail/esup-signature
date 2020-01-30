@@ -75,24 +75,26 @@
             </div>
             <div class="card rounded-0 mb-3">
                 <div class="card-header">
-                    Documents envoyés
-                    <form class="" action="" method="get">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <div class="input-group-text">Statut</div>
-                                </div>
-                                <select class="form-control" name="statusFilter" id="statusFilter" onchange="submit();">
-                                    <option value="" disabled="disabled" selected="selected">Choisir un statut</option>
-                                    <option value="all">Tous</option>
-                                    <th:block th:each="status : ${statuses}">
-                                        <option th:if="${status == statusFilter}" th:value="${status}" selected="selected" th:text="#{'signbook.status.' + ${status}}"></option>
-                                        <option th:unless="${status == statusFilter}" th:value="${status}" th:text="#{'signbook.status.' + ${status}}"></option>
-                                    </th:block>
-                                </select>
-                            </div>
-                    </form>
+                    <a data-toggle="collapse" href="#myDocs" role="button" aria-expanded="false" aria-controls="mySignedDocs">
+                        Documents envoyés<i class="fa fa-arrow-down float-right"></i>
+                    </a>
                 </div>
-                <div class="card-body">
+                <div id="myDocs" class="collapse card-body">
+                    <form class="" action="" method="get">
+                        <div class="input-group mb-2">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">Statut</div>
+                            </div>
+                            <select class="form-control" name="statusFilter" id="statusFilter" onchange="submit();">
+                                <option value="" disabled="disabled" selected="selected">Choisir un statut</option>
+                                <option value="all">Tous</option>
+                                <th:block th:each="status : ${statuses}">
+                                    <option th:if="${status == statusFilter}" th:value="${status}" selected="selected" th:text="#{'signbook.status.' + ${status}}"></option>
+                                    <option th:unless="${status == statusFilter}" th:value="${status}" th:text="#{'signbook.status.' + ${status}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </form>
                         <table class="table table-sm table-bordered table-striped table-hover">
                             <thead>
                             <tr>
@@ -188,9 +190,9 @@
                             </tbody>
                         </table>
                 </div>
-                <div class="card-footer">
+<!--                <div class="card-footer">-->
 <!--                    <nav th:replace="fragments/pagination :: pagination"></nav>-->
-                </div>
+<!--                </div>-->
             </div>
             <div class="card rounded-0 mb-3">
                 <div class="card-header">
@@ -252,7 +254,7 @@
     </div>
 </div>
 <script>
-    localStorage.setItem('mode', 'sign');
+    localStorage.removeItem('mode');
     $('#wizardModal').on('shown.bs.modal', function () {
         $(this).modal({backdrop: 'none', keyboard: false})
     });

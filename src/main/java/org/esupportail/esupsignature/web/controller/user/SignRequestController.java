@@ -202,13 +202,14 @@ public class SignRequestController {
             return "user/signrequests/update";
         } else {
             logger.warn(user.getEppn() + " attempted to access signRequest " + id + " without write access");
-            redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
+            redirectAttrs.addFlashAttribute("messageCustom", "not authorized");
             return "redirect:/user/signrequests/";
         }
     }
 
     @GetMapping(value = "/{id}")
     public String show(@PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
+        logger.info("frameMode = " + frameMode);
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         model.addAttribute("signRequest", signRequest);
@@ -290,7 +291,7 @@ public class SignRequestController {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
         if(signRequestService.checkUserSignRights(user, signRequest)) {
-            return "redirect:/user/signrequests/" + signRequest.getId();
+            return "redirect:/user/signrequests/" + signRequest.getId() + "/?frameMode=true";
         } else {
             return "redirect:/";
         }
@@ -340,7 +341,7 @@ public class SignRequestController {
                 signRequestService.setStep("initNexu");
                 return new ResponseEntity(HttpStatus.OK);
             }
-            if (signPageNumber != null && xPos != null && yPos != null) {
+            if (signPageNumber != null && xPos != null && yPos != null && visual) {
                 SignRequestParams signRequestParams = signRequestService.getCurrentSignRequestParams(signRequest);
                 signRequestParams.setSignPageNumber(signPageNumber);
                 signRequestParams.setXPos(xPos);
@@ -355,7 +356,7 @@ public class SignRequestController {
                 logger.error(e.getMessage(), e);
             }
         } else {
-            signRequestService.setStep("not_autorized");
+            signRequestService.setStep("not_authorized");
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
         }
         return new ResponseEntity(HttpStatus.OK);
@@ -382,7 +383,7 @@ public class SignRequestController {
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (!signRequestService.checkUserSignRights(user, signRequest)) {
-            redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
+            redirectAttrs.addFlashAttribute("messageCustom", "not authorized");
             return "redirect:/";
         }
         signRequest.setComment(comment);
@@ -408,7 +409,7 @@ public class SignRequestController {
                 if (documents.size() > 1) {
                     response.sendRedirect("/user/signsignrequests/" + id);
                 } else {
-                    response.setHeader("Content-Disposition", "inline;filename=test-seda.zip");
+                    response.setHeader("Content-Disposition", "attachment;filename=test-seda.zip");
                     response.setContentType("application/zip");
                     IOUtils.copy(sedaExportService.generateSip(signRequest), response.getOutputStream());
                 }
@@ -431,7 +432,7 @@ public class SignRequestController {
                     response.sendRedirect("/user/signrequests/" + signRequest.getId());
                 } else {
                     Document document = documents.get(0);
-                    response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+                    response.setHeader("Content-Disposition", "attachment;filename=\"" + document.getFileName() + "\"");
                     response.setContentType(document.getContentType());
                     IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
                 }

@@ -47,19 +47,18 @@
                 <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="addDate" id="addDate"/>
                 <script th:inline="javascript" >
                     /*<![CDATA[*/
-                    var mode = 'sign';
+                    var mode = 'read';
                     var dateActive = false;
                     var visualActive = true;
                     var pointItEnable = true;
                     var pdfDoc = null,
-                        pageNum = [[${@signRequestService.getCurrentSignRequestParams(signRequest).signPageNumber}]],
+                        pageNum = 1,
                         pageRendering = false,
                         pageNumPending = null,
                         scale = 0.75,
                         rotation = 0;
                     pdfjsLib.disableWorker = true;
-                    //var pdfjsLib = window['pdfjs-dist/build/pdf'];
-                    //pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.js';
                     pdfjsLib.getDocument(url).promise.then(function (pdf) {
                         pdfDoc = pdf;
                         document.getElementById('page_count').textContent = pdfDoc.numPages;
@@ -296,7 +295,8 @@
                         $('#readButton').toggleClass('btn-light btn-secondary');
                         $('#rotateleft').prop('disabled', false);
                         $('#rotateright').prop('disabled', false);
-                        queueRenderPage(pageNum);
+
+                        queueRenderPage(1);
                     }
 
                     function enableCommentMode() {
@@ -310,7 +310,7 @@
                         $('#commentButton').toggleClass('btn-light btn-warning');
                         $('#commentsTools').show();
                         $('#infos').show();
-                        queueRenderPage(pageNum);
+                        queueRenderPage(1);
                     }
 
                     function enableSignMode() {
@@ -419,9 +419,13 @@
                         if(localStorage.getItem('mode') != null && localStorage.getItem('mode') != "") {
                             mode = localStorage.getItem('mode');
                         } else {
-                            localStorage.setItem('mode', 'sign');
+                            [# th:if="${signable == 'ok'}"]
+                                localStorage.setItem('mode', 'sign');
+                                mode = 'sign';
+                            [/]
                         }
                         if(mode == 'sign') {
+                            pageNum = [[${@signRequestService.getCurrentSignRequestParams(signRequest).signPageNumber}]];
                             enableSignMode();
                         } else if(mode == 'comment') {
                             enableCommentMode();
@@ -599,7 +603,6 @@
                 <div class="alert alert-light">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
                 <div th:if="${postits.size() > 0}" class="alert alert-warning">
                     <ul class="list-group">
-
                     <th:block th:each="postit : ${postits}">
                         <li th:id="'postit' + ${postit.id}" class="list-group-item" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
                              th:onclick="'queueRenderPage(' + ${postit.pageNumber} + ');$(\'html,body\').animate({scrollTop: $(\'#' + ${postit.id} + '\').css(\'top\').replace(\'px\', \'\')}, \'slow\');'">
@@ -607,12 +610,6 @@
                             <span th:text="${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></span>
                             <p class="postitarea" th:text="${postit.comment}"></p>
                         </li>
-                        <script>
-                            /*<![CDATA[*/
-                            var c = document.getElementById("postit[[${postit.id}]]");
-                            c.style.setProperty("--angle", Math.round(Math.random()) * 6 - 3 + "deg");
-                            /*]]>*/
-                        </script>
                     </th:block>
                     </ul>
                 </div>
