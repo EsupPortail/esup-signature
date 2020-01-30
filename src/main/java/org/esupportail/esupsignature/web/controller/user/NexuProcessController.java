@@ -87,7 +87,7 @@ public class NexuProcessController {
 			model.addAttribute("referer", referer);
 			return "user/nexu-signature-process";
 		} else {
-			redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
+			redirectAttrs.addFlashAttribute("messageCustom", "not authorized");
 			return "redirect:/user/signrequests/";
 		}
 	}

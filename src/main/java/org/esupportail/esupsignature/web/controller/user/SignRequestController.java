@@ -356,7 +356,7 @@ public class SignRequestController {
                 logger.error(e.getMessage(), e);
             }
         } else {
-            signRequestService.setStep("not_autorized");
+            signRequestService.setStep("not_authorized");
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
         }
         return new ResponseEntity(HttpStatus.OK);
@@ -383,7 +383,7 @@ public class SignRequestController {
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (!signRequestService.checkUserSignRights(user, signRequest)) {
-            redirectAttrs.addFlashAttribute("messageCustom", "not autorized");
+            redirectAttrs.addFlashAttribute("messageCustom", "not authorized");
             return "redirect:/";
         }
         signRequest.setComment(comment);
