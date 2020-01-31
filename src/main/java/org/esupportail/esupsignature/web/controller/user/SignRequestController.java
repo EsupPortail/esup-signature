@@ -196,9 +196,6 @@ public class SignRequestController {
             }
             model.addAttribute("signTypes", SignType.values());
             model.addAttribute("workflows", workflowRepository.findAll());
-            model.addAttribute("baseUrl", baseUrl);
-            model.addAttribute("nexuVersion", nexuVersion);
-            model.addAttribute("nexuUrl", nexuUrl);
             return "user/signrequests/update";
         } else {
             logger.warn(user.getEppn() + " attempted to access signRequest " + id + " without write access");
@@ -220,6 +217,7 @@ public class SignRequestController {
             ) {
                 model.addAttribute("signable", "ok");
                 model.addAttribute("nexuUrl", nexuUrl);
+                model.addAttribute("baseUrl", baseUrl);
             }
             Document toDisplayDocument;
             if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {

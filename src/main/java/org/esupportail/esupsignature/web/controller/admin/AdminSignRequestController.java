@@ -46,15 +46,6 @@ public class AdminSignRequestController {
 
 	private static final Logger logger = LoggerFactory.getLogger(AdminSignRequestController.class);
 
-	@Value("${baseUrl}")
-	private String baseUrl;
-
-	@Value("${nexuVersion}")
-	private String nexuVersion;
-
-	@Value("${nexuUrl}")
-	private String nexuUrl;
-	
 	@ModelAttribute("adminMenu")
 	public String getActiveMenu() {
 		return "active";
@@ -159,10 +150,6 @@ public class AdminSignRequestController {
 			if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
 				model.addAttribute("signable", "ok");
 			}
-			model.addAttribute("baseUrl", baseUrl);
-			model.addAttribute("nexuVersion", nexuVersion);
-			model.addAttribute("nexuUrl", nexuUrl);
-
 			return "admin/signrequests/show";
 	}
 
