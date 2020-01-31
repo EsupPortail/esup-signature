@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.SignatureForm;
 import eu.europa.esig.dss.ToBeSigned;
@@ -93,9 +94,9 @@ public class NexuProcessController {
 		}
 	}
 
-	@PostMapping(value = "/get-data-to-sign", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/get-data-to-sign", produces = "application/javascript")
 	@ResponseBody
-	public GetDataToSignResponse getDataToSign(Model model, @RequestBody @Valid DataToSignParams params,
+	public String getDataToSign(Model model, @RequestBody @Valid DataToSignParams params,
 			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm, 
 			@ModelAttribute("signRequestId") Long signRequestId) throws IOException {
 		logger.info("get data to sign for : " + signRequestId);
@@ -127,9 +128,11 @@ public class NexuProcessController {
 			model.addAttribute("signRequestId", signRequest.getId());
 			GetDataToSignResponse responseJson = new GetDataToSignResponse();
 			responseJson.setDataToSign(DatatypeConverter.printBase64Binary(dataToSign.getBytes()));
-			return responseJson;
+			ObjectMapper objectMapper = new ObjectMapper();
+			return "callback(" + objectMapper.writeValueAsString(responseJson) + ");";
 		} else {
-			return new GetDataToSignResponse();
+			return "callback(" + new GetDataToSignResponse() + ");";
+
 		}
 	}
 

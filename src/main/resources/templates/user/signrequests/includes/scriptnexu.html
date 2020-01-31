@@ -22,7 +22,6 @@ $.get("[[${nexuUrl}]]/nexu-info", function(data) {
 		console.log("Loading script...");
 		loadScript();
 	    $("#nexu_ready_alert").show();
-	    console.log("???");
 	    $("#submit-button").prop('disabled', false);
 	} else {
 		// need update
@@ -38,7 +37,7 @@ $.get("[[${nexuUrl}]]/nexu-info", function(data) {
 
 function loadScript() {
 	var xhrObj = new XMLHttpRequest();
-	xhrObj.open('GET', "[[${nexuUrl}]]/nexu.js", false);
+	xhrObj.open('GET', "[[${nexuUrl}]]/nexu.js");
 	xhrObj.send(null);
 	var se = document.createElement('script');
 	se.type = "text/javascript";
