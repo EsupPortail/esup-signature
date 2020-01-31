@@ -94,7 +94,7 @@ public class NexuProcessController {
 		}
 	}
 
-	@PostMapping(value = "/get-data-to-sign", produces = "application/javascript")
+	@PostMapping(value = "/get-data-to-sign", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public GetDataToSignResponse getDataToSign(Model model, @RequestBody @Valid DataToSignParams params,
 			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm,
