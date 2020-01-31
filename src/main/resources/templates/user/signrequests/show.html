@@ -22,7 +22,7 @@
                 <button id="signButton" onclick="enableSignMode()" class="btn btn-light btn-outline-dark col-12 mb-1 text-left" th:if="${signable == 'ok'}">
                     <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                 </button>
-                <button th:if="${documentType == 'pdf' && signable == 'ok'}" id="commentButton" onclick="enableCommentMode();" class="btn btn-light btn-outline-dark col-12 mb-1 text-left">
+                <button th:if="${documentType == 'pdf'}" id="commentButton" onclick="enableCommentMode();" class="btn btn-light btn-outline-dark col-12 mb-1 text-left">
                     <i class="far fa-comment-alt"></i> <span class="sidebar-label">Commenter</span>
                 </button>
                 <button id="refuseButton" onclick="enableRefuseMode();" class="btn btn-light btn-outline-dark col-12 mb-1 text-left" th:classappend="${signable != 'ok'} ? 'd-none'">

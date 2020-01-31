@@ -5,9 +5,7 @@
     <div class="row">
         <div class="col-lg-9">
             <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post" th:if="${documentType == 'pdf'}">
-                <canvas th:if="${signable != 'ok'}" id="pdf" style="border : 1px solid black;" class="drop-shadows ">
-                </canvas>
-                <canvas th:if="${signable == 'ok'}" title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" onmouseup="action();" onmousemove="point(event);" class="drop-shadows ">
+                <canvas title="Cliquez pour ajouter une annotation" id="pdf" style="border : 1px solid black;" onmouseup="action();" onmousemove="point(event);" class="drop-shadows ">
                 </canvas>
                 <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && @signRequestService.getCurrentSignType(signRequest).name() != 'visa'}">
                     <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();"
