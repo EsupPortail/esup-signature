@@ -47,3 +47,6 @@ Configuration :
 path ojService
 
 launch nexu: java -Djdk.gtk.version=2.2 -jar nexu.jar
+
+jdk11 + openjfx
+java --module-path /opt/tools/javafx-sdk-11.0.2/lib --add-modules javafx.controls,javafx.fxml,javafx.base,javafx.media,javafx.graphics,javafx.swing,javafx.web -Djdk.gtk.version=2.2 -jar nexu-bundle-1.23-SNAPSHOT/nexu.jar

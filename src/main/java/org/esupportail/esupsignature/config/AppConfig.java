@@ -32,12 +32,14 @@ public class AppConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
     	registry.addResourceHandler(
     			"/favicon.ico",
+				"/downloads/**",
                 "/webjars/**",
                 "/images/**",
                 "/css/**",
                 "/js/**")
                 .addResourceLocations(
 						"classpath:/static/images/favicon.ico",
+						"classpath:/static/downloads/",
                         "classpath:/META-INF/resources/webjars/",
                         "classpath:/static/images/",
                         "classpath:/static/css/",
