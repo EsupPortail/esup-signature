@@ -63,15 +63,24 @@
 
 	function getCertificates() {
 		updateProgressBar("Chargement des certificats", "25%");
-		nexu_get_certificates(getDataToSign, error);
+		try {
+			nexu_get_certificates(getDataToSign, error);
+		}
+		catch(e) {
+			console.error(e);
+			const merror = {
+				errorMessage: "Problème avec l'application NexU"
+			};
+			error(Object.create(merror));
+		}
 	}
 
 	function getDataToSign(certificateData) {
 		if(certificateData.response == null) {
-			$('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
-			$('#bar-text').html("Error");
-			document.getElementById("errorcontent").innerHTML = "error while reading the Smart Card";
-			$("#error").show();
+			const merror = {
+				errorMessage: "Erreur au moment de lire le certificat"
+			};
+			error(Object.create(merror));
 		} else {
 			updateProgressBar("Préparation de la signature", "35%");
 			var signingCertificate = certificateData.response.certificate;
@@ -87,10 +96,10 @@
 
 	function sign(dataToSignResponse) {
 		if (dataToSignResponse == null) {
-			$('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
-			$('#bar-text').html("Error");
-			$("#errorcontent").text("unable to compute the data to sign (see server logs)");
-			$("#error").show();
+			const merror = {
+				errorMessage: "Erreur lors de la vérification du certificat"
+			};
+			error(Object.create(merror));
 		} else {
 			updateProgressBar("Signature du/des documents(s)", "50%");
 			var digestAlgo = "SHA256";
@@ -100,9 +109,16 @@
 
 	function signDocument(signatureData) {
 		updateProgressBar("Enregistrement du/des documents(s)", "75%");
-		var signatureValue = signatureData.response.signatureValue;
-		var toSend = {signatureValue:signatureValue};
-		callUrl("[[${rootUrl}]]/user/nexu-sign/sign-document", "POST", JSON.stringify(toSend), downloadSignedDocument, error);
+		if(signatureData.response != null) {
+			var signatureValue = signatureData.response.signatureValue;
+			var toSend = {signatureValue: signatureValue};
+			callUrl("[[${rootUrl}]]/user/nexu-sign/sign-document", "POST", JSON.stringify(toSend), downloadSignedDocument, error);
+		} else {
+			const merror = {
+				errorMessage: "Erreur au moment de la signature du document"
+			};
+			error(Object.create(merror));
+		}
 	}
 
 	function downloadSignedDocument(signDocumentResponse) {
@@ -115,13 +131,12 @@
 	function error(error) {
 		console.log(error);
 		$('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
-		if (error!= null && error.responseJSON !=null) {
-			var jsonResp = error.responseJSON;
-			if (jsonResp.errorMessage != null){
-				$("#errorcontent").html(jsonResp.errorMessage);
+		if (error!= null && error.errorMessage !=null) {
+			if (error.errorMessage !=null){
+				$("#errorcontent").html(error.errorMessage);
 			}
-			else if (jsonResp.error != null){
-				$("#errorcontent").html(jsonResp.error);
+			else {
+				$("#errorcontent").html(error.error);
 			}
 		}
 		$("#error").show();

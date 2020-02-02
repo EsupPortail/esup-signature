@@ -13,23 +13,28 @@ if (!String.prototype.startsWith) {
 
 console.log("Start checking NexU");
 
-$.get("[[${nexuUrl}]]/nexu-info", function(data) {
-	// something responded
+$.ajax({
+    type: "GET",
+    url: "[[${nexuUrl}]]/nexu-info",
+    crossDomain: true,
+    dataType: "jsonp",
+    context : this,
+    success: function (data) {
+        if(data.version.startsWith(nexuVersion)) {
+            // valid version
+            // load nexu script
+            console.log("Loading script...");
+            loadScript();
+            $("#nexu_ready_alert").show();
+            $("#submit-button").prop('disabled', false);
+        } else {
+            // need update
+            $("#nexu_version_alert").show();
+            console.log("Bad NexU version " + data.version + " instead of " + nexuVersion);
 
-	if(data.version.startsWith(nexuVersion)) {
-		// valid version
-		// load nexu script 
-		console.log("Loading script...");
-		loadScript();
-	    $("#nexu_ready_alert").show();
-	    $("#submit-button").prop('disabled', false);
-	} else {
-		// need update
-		$("#nexu_version_alert").show();
-		console.log("Bad NexU version " + data.version + " instead of " + nexuVersion);
-		
-	}
-}).fail(function() {
+        }
+    }
+}).fail(function (error) {
     console.log("NexU not detected or not started ! ");
     $("#warning-text").html("NexU not detected or not started ! ");
     $("#nexu_missing_alert").show();
