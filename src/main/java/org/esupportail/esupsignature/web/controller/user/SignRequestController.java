@@ -334,17 +334,17 @@ public class SignRequestController {
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserSignRights(user, signRequest)) {
-            if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
-                signRequestService.setStep("Démarrage de l'application NexU");
-                signRequestService.setStep("initNexu");
-                return new ResponseEntity(HttpStatus.OK);
-            }
             if (signPageNumber != null && xPos != null && yPos != null && visual) {
                 SignRequestParams signRequestParams = signRequestService.getCurrentSignRequestParams(signRequest);
                 signRequestParams.setSignPageNumber(signPageNumber);
                 signRequestParams.setXPos(xPos);
                 signRequestParams.setYPos(yPos);
                 signRequestParamsRepository.save(signRequestParams);
+            }
+            if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
+                signRequestService.setStep("Démarrage de l'application NexU");
+                signRequestService.setStep("initNexu");
+                return new ResponseEntity(HttpStatus.OK);
             }
             try {
                 signRequest.setComment(comment);
