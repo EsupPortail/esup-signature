@@ -84,27 +84,31 @@
                                 </div>
                             </label>
                             <div class="alert alert-secondary row">
-                                <div class="col-6">
+                                <div class="col-lg-6">
                                 Image actuelle
                                 <img th:if="${signFile != null}" alt="signature" th:src="'data:image/png;base64,' + ${signFile}"/>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-lg-6">
                                     <label>Dessiner une signature</label>
                                         <br/>
-                                <canvas onmousedown="clearSignaturePad();" id="canvas" width="200" height="150" style="border: 1px solid black;"></canvas>
+                                <canvas onmousedown="firstClearSignaturePad();" id="canvas" width="200" height="150" style="border: 1px solid black;"></canvas>
                                 <button type="button" class="btn btn-light btn-outline-dark" onclick="saveSignaturePad();">Valider la signature</button>
+                                <button type="button" class="btn btn-light btn-outline-dark" onclick="clearSignaturePad();">Effacer</button>
                                 <button type="button" class="btn btn-light btn-outline-dark" onclick="resetSignaturePad();">Réinitialiser</button>
                                 <script language="JavaScript">
                                     /*<![CDATA[*/
                                     var lastSign = "data:image/png;base64,[[${signFile}]]";
                                     var canvas = document.querySelector("canvas");
-                                    var signaturePad = new SignaturePad(canvas,{
-                                        minWidth: 1,
-                                        maxWidth: 3,
-                                        penColor: "rgb(0, 0, 0)"
-                                    });
+                                    var signaturePad = new SignaturePad(canvas);
+                                    var firstClear = false;
                                     signaturePad.fromDataURL(lastSign);
 
+                                    function firstClearSignaturePad() {
+                                        if(!firstClear) {
+                                            clearSignaturePad();
+                                            firstClear = true;
+                                        }
+                                    }
                                     function saveSignaturePad() {
                                         console.log(signaturePad.toDataURL("image/png"));
                                         $('#signImageBase64').val(signaturePad.toDataURL("image/png"));
