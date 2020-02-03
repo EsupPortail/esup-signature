@@ -63,7 +63,7 @@
                                     </th:block>
                                 </td>
                                 <td class="utilbox">
-                                    <button class="btn btn-info far fa-eye" title="Voir" th:onclick="'location.href=\'/manager/workflows/' + ${workflow.id} + '\';'" type="button"></button>
+                                    <button aria-label="Voir" class="btn btn-info" title="Voir" th:onclick="'location.href=\'/manager/workflows/' + ${workflow.id} + '\';'"><i aria-hidden="true" class="far fa-eye"></i></button>
                                 </td>
                             </tr>
                         </th:block>
@@ -74,12 +74,12 @@
         </div>
     </div>
 </main>
-<div class="modal fade" id="newSignBook" tabindex="-1" role="dialog" aria-labelledby="newSignBookLabel" aria-hidden="true">
+<div class="modal fade" id="newSignBook" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <form th:action="'/manager/workflows'" method="post">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ajouter un circuit</h5>
+                    <span class="modal-title" id="exampleModalLabel">Ajouter un circuit</span>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>

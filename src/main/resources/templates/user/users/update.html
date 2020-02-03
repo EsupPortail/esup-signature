@@ -83,9 +83,50 @@
                                     </div>
                                 </div>
                             </label>
-                            <div class="alert alert-secondary text-center">
+                            <div class="alert alert-secondary row">
+                                <div class="col-6">
+                                Image actuelle
                                 <img th:if="${signFile != null}" alt="signature" th:src="'data:image/png;base64,' + ${signFile}"/>
-                            </div>
+                                </div>
+                                <div class="col-6">
+                                    <label>Dessiner une signature</label>
+                                        <br/>
+                                <canvas onmousedown="clearSignaturePad();" id="canvas" width="200" height="150" style="border: 1px solid black;"></canvas>
+                                <button type="button" class="btn btn-light btn-outline-dark" onclick="saveSignaturePad();">Valider la signature</button>
+                                <button type="button" class="btn btn-light btn-outline-dark" onclick="resetSignaturePad();">Réinitialiser</button>
+                                <script language="JavaScript">
+                                    /*<![CDATA[*/
+                                    var lastSign = "data:image/png;base64,[[${signFile}]]";
+                                    var canvas = document.querySelector("canvas");
+                                    var signaturePad = new SignaturePad(canvas,{
+                                        minWidth: 1,
+                                        maxWidth: 3,
+                                        penColor: "rgb(0, 0, 0)"
+                                    });
+                                    signaturePad.fromDataURL(lastSign);
+
+                                    function saveSignaturePad() {
+                                        console.log(signaturePad.toDataURL("image/png"));
+                                        $('#signImageBase64').val(signaturePad.toDataURL("image/png"));
+                                        $('#canvas').css("backgroundColor", "rgba(0, 255, 0, .5)");
+                                    }
+                                    function clearSignaturePad() {
+                                        $('#canvas').css("backgroundColor", "rgba(255, 255, 255, 1)");
+                                        signaturePad.clear();
+                                        $('#signImageBase64').val(lastSign);
+                                    }
+                                    function resetSignaturePad() {
+                                        $('#canvas').css("backgroundColor", "rgba(255, 255, 255, 1)");
+                                        signaturePad.clear();
+                                        signaturePad.fromDataURL(lastSign);
+                                        $('#signImageBase64').val(lastSign);
+                                    }
+
+                                    //signaturePad.fromDataURL("data:image/png;base64,[[${signFile}]]");
+                                    /*]]>*/
+                                </script>
+                                    <h5 class="hr">ou</h5>
+                                    <label>Choisissez un fichier image</label>
                             <div class="input-group">
                                 <div class="custom-file">
                                     <input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
@@ -100,8 +141,10 @@
                                     <button type="button" class="btn btn-dark vanilla-rotate" data-deg="-90"><i class="fas fa-redo"></i></button>
                                     <div id="vanilla-crop"></div>
                             </div>
+                                </div>
                         </div>
                         <input type="hidden" th:field="*{signImageBase64}"/>
+                        </div>
                         <div id="keyForm" class="form-group">
                             <label class="col-form-label" for="inputGroupFile02"><strong>Keystore</strong>
                                 <button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
@@ -115,13 +158,15 @@
                                     </div>
                                 </div>
                             </label>
-                            <div th:if="${user.keystore != null}" class="alert alert-secondary col-6" th:text="${user.keystore.fileName}"></div>
+                            <div th:if="${user.keystore != null}" class="alert alert-secondary">
+                                Keystore actuel : <a th:href="'/user/documents/getfile/' + ${user.keystore.id}"><span th:text="${user.keystore.fileName}"></span></a>
                             <div class="input-group">
                                 <div class="custom-file">
                                     <input type="file" accept="application/x-pkcs12" class="custom-file-input" name="multipartKeystore" id="inputGroupFile02" value="Choose a file" aria-describedby="inputGroupFileAddon02"/> <label
                                         class="custom-file-label" id="inputGroupLabel02" for="inputGroupFile02"> Choisir un keystore
                                 </label>
                                 </div>
+                            </div>
                             </div>
                         </div>
                     </div>
