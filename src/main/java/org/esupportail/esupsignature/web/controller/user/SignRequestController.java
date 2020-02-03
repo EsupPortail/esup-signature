@@ -224,7 +224,6 @@ public class SignRequestController {
 
     @GetMapping(value = "/{id}")
     public String show(@PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
-        logger.info("frameMode = " + frameMode);
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         model.addAttribute("signRequest", signRequest);
@@ -408,11 +407,15 @@ public class SignRequestController {
     }
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@PathVariable("id") Long id, Model model) {
+    public String delete(@PathVariable("id") Long id, HttpServletRequest request) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequestService.delete(signRequest);
-        model.asMap().clear();
-        return "redirect:/user/signrequests/";
+        if(signRequest.getParentSignBook() != null) {
+            return "redirect:" + request.getHeader("referer");
+        } else {
+            return "redirect:/user/signrequests/";
+        }
+
     }
 
     @RequestMapping(value = "/get-last-file-seda/{id}", method = RequestMethod.GET)
