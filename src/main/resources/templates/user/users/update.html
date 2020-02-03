@@ -101,7 +101,13 @@
                                     var canvas = document.querySelector("canvas");
                                     var signaturePad = new SignaturePad(canvas);
                                     var firstClear = false;
-                                    signaturePad.fromDataURL(lastSign);
+
+                                    var ratio =  Math.max(window.devicePixelRatio || 1, 1);
+                                    if(ratio == 1) {
+                                        signaturePad.fromDataURL(lastSign);
+                                    } else {
+                                        firstClearSignaturePad();
+                                    }
 
                                     function firstClearSignaturePad() {
                                         if(!firstClear) {
