@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -116,7 +117,7 @@ public class SignRequestController {
             @RequestParam(value = "statusFilter", required = false) String statusFilter,
             @RequestParam(value = "signBookId", required = false) Long signBookId,
             @RequestParam(value = "messageError", required = false) String messageError,
-            @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
+            @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 3) Pageable pageable, Model model) {
         User user = userService.getUserFromAuthentication();
         workflowService.initCreatorWorkflow();
 
@@ -131,13 +132,13 @@ public class SignRequestController {
         List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
         model.addAttribute("signRequestsToSign", getSignRequestsGrouped(signRequestsToSign));
 
-        Page<SignRequest> signRequests;
+        List<SignRequest> signRequests;
         if(this.statusFilter != null) {
-            signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), this.statusFilter, pageable);
+            signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), this.statusFilter);
         } else {
-            signRequests = signRequestRepository.findByCreateBy(user.getEppn(), pageable);
+            signRequests = signRequestRepository.findByCreateBy(user.getEppn());
         }
-        model.addAttribute("signRequests", getSignRequestsGrouped(signRequests.getContent()));
+        model.addAttribute("signRequests", getSignRequestsPageGrouped(signRequests, pageable));
 
         if (user.getKeystore() != null) {
             model.addAttribute("keystore", user.getKeystore().getFileName());
@@ -150,6 +151,24 @@ public class SignRequestController {
         model.addAttribute("messageError", messageError);
         populateEditForm(model, new SignRequest());
         return "user/signrequests/list";
+    }
+
+    public Page<SignRequest> getSignRequestsPageGrouped(List<SignRequest> signRequests, Pageable pageable) {
+        List<SignRequest> signRequestsGrouped = new ArrayList<>();
+        Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() != null).collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
+        for(Map.Entry<SignBook, List<SignRequest>> signBookListEntry : signBookSignRequestMap.entrySet()) {
+            int last = signBookListEntry.getValue().size() - 1;
+            signBookListEntry.getValue().get(last).setViewTitle("");
+            for(SignRequest signRequest : signBookListEntry.getValue()) {
+                signBookListEntry.getValue().get(last).setViewTitle(signBookListEntry.getValue().get(last).getViewTitle() + signRequest.getTitle() + "\n\r");
+            }
+            signRequestsGrouped.add(signBookListEntry.getValue().get(last));
+        }
+        for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
+            signRequest.setViewTitle(signRequest.getTitle());
+            signRequestsGrouped.add(signRequest);
+        }
+        return new PageImpl<>(signRequestsGrouped.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequestsGrouped.size());
     }
 
     public List<SignRequest> getSignRequestsGrouped(List<SignRequest> signRequests) {
@@ -167,8 +186,7 @@ public class SignRequestController {
             signRequest.setViewTitle(signRequest.getTitle());
             signRequestsGrouped.add(signRequest);
         }
-        signRequestsGrouped = signRequestsGrouped.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
-        return signRequestsGrouped;
+        return signRequestsGrouped.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
     }
 
     @GetMapping(value = "/{id}", params = "form")

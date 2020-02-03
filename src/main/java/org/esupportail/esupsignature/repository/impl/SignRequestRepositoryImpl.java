@@ -48,7 +48,7 @@ public class SignRequestRepositoryImpl implements SignRequestRepositoryCustom {
         count.select(criteriaBuilder.count(countRoot));
         count.where(criteriaBuilder.and(predicatesCount.toArray(new Predicate[predicatesCount.size()])));
         long nbSignRequest = entityManager.createQuery(count).getSingleResult();
-        Page<SignRequest> page = new PageImpl<SignRequest>(entityManager.createQuery(query).setFirstResult((int) pageable.getOffset()).setMaxResults(pageable.getPageSize()).getResultList(), pageable, nbSignRequest);
+        Page<SignRequest> page = new PageImpl<>(entityManager.createQuery(query).setFirstResult((int) pageable.getOffset()).setMaxResults(pageable.getPageSize()).getResultList(), pageable, nbSignRequest);
         return page;
     }
 }

@@ -19,13 +19,9 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     Long countByToken(String token);
     @Query("select s from SignRequest s join s.recipients r where r.user = :recipientUser and r.signed is false")
     List<SignRequest> findByRecipientUser(@Param("recipientUser") User recipientUser);
-    List<SignRequest> findByRecipientsContains(Recipient recipients);
-    Page<SignRequest> findByCreateBy(String createBy, Pageable pageable);
-    Page<SignRequest> findByCreateByAndStatus(String createBy, SignRequestStatus status, Pageable pageable);
-    Page<SignRequest> findByCreateByAndStatusNot(String createBy, SignRequestStatus statusNot, Pageable pageable);
-    Page<SignRequest> findByCreateByAndStatusAndStatusNot(String createBy, SignRequestStatus status, SignRequestStatus statusNot, Pageable pageable);
+    List<SignRequest> findByCreateBy(String createBy);
+    List<SignRequest> findByCreateByAndStatus(String createBy, SignRequestStatus status);
     Page<SignRequest> findById(Long id, Pageable pageable);
     Page<SignRequest> findAll(Pageable pageable);
-    List<SignRequest> findByCreateByAndStatus(String createBy, SignRequestStatus status);
 
 }
