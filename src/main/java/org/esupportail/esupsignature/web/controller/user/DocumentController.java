@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @RequestMapping("/user/documents")
 @Controller
@@ -43,20 +44,21 @@ public class DocumentController {
 	private SignRequestService signRequestService;
 
     @GetMapping(value = "/getfile/{id}")
-	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response) {
-		Document document = documentRepository.findById(id).get();
-		SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
+	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response) throws IOException {
 		User user = userService.getUserFromAuthentication();
+		Document document = documentRepository.findById(id).get();
+		if(document.equals(user.getKeystore())) {
+			response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+			response.setContentType(document.getContentType());
+			IOUtils.copy(document.getInputStream(), response.getOutputStream());
+			return new ResponseEntity<>(HttpStatus.OK);
+		}
+		SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
-			try {
-				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
-				response.setContentType(document.getContentType());
-				IOUtils.copy(document.getInputStream(), response.getOutputStream());
-				return new ResponseEntity<>(HttpStatus.OK);
-			} catch (Exception e) {
-				logger.error("get file error", e);
-				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-			}
+			response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+			response.setContentType(document.getContentType());
+			IOUtils.copy(document.getInputStream(), response.getOutputStream());
+			return new ResponseEntity<>(HttpStatus.OK);
 		} else {
 			logger.warn(user.getEppn() + " try to access " + id + " without view rights");
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);

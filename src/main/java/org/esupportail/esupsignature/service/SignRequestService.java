@@ -566,6 +566,9 @@ public class SignRequestService {
 		for (Log log : logs) {
 			logRepository.delete(log);
 		}
+		if(signRequest.getParentSignBook() != null) {
+			signRequest.getParentSignBook().getSignRequests().remove(signRequest);
+		}
 		signRequestRepository.delete(signRequest);
 	}
 

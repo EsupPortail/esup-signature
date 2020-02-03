@@ -313,7 +313,7 @@
         pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
     	initialPreview: [
     		[# th:each="originalDocument : ${signRequest.originalDocuments}"]
-    		[# th:text=${originalDocument.url}][/],
+    		[# th:text="'/admin/documents/getfile/' + ${originalDocument.id}"][/],
     		[/]
     		],
    	    initialPreviewConfig: [
@@ -326,13 +326,13 @@
       	    	  	{type: "pdf", size: [[${originalDocument.size}]], downloadUrl: "/admin/documents/getfile/[[${originalDocument.id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: "/admin/signrequests/remove-doc/[[${originalDocument.id}]]", key: [[${originalDocument.id}]]},
       	    	[/]
     			[# th:case="'doc'"]
-    				{type: "office", size: [[${originalDocument.size}]], downloadUrl: [[${originalDocument.url}]],caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/admin/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},
+    				{type: "office", size: [[${originalDocument.size}]], downloadUrl: "/admin/documents/getfile/[[${originalDocument.id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/admin/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},
     			[/]
     			[# th:case="'avi'"]
-    				{type: "video", size: [[${originalDocument.size}]], downloadUrl: [[${originalDocument.url}]],caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/admin/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},
+    				{type: "video", size: [[${originalDocument.size}]], downloadUrl: "/admin/documents/getfile/[[${originalDocument.id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/admin/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},
     			[/]
 	    		[# th:case="*"]
-		    		{type: "other", size: [[${originalDocument.size}]], downloadUrl: [[${originalDocument.url}]],caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/admin/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},
+		    		{type: "other", size: [[${originalDocument.size}]], downloadUrl: "/admin/documents/getfile/[[${originalDocument.id}]]",caption: [[${originalDocument.fileName}]], filename: [[${originalDocument.fileName}]], url: [['/admin/signrequests/remove-doc/' + ${originalDocument.id}]], key: [[${originalDocument.id}]]},
 	    		[/]
     		[/]
     		[/]
@@ -410,7 +410,7 @@
         pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
     	initialPreview: [
     		[# th:each="signedDocument : ${signRequest.signedDocuments}"]
-    		[[${signedDocument.url}]],
+		[# th:text="'/admin/documents/getfile/' + ${signedDocument.id}"][/],,
     		[/]
     		],
    	    initialPreviewConfig: [

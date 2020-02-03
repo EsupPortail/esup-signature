@@ -56,6 +56,8 @@
                     <a class="btn btn-outline-dark mr-1 text-left d-none d-lg-block" th:href="'/user/signrequests/' + ${id} + '?form'" title="Details">
                         <i class="fas fa-info-circle"></i>
                     </a>
+                    <a th:if="${signRequest.createBy == user.eppn && signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() == 'draft' || signRequest.parentSignBook.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pen"></i></a>
+                    <a th:if="${signRequest.createBy == user.eppn && signRequest.parentSignBook == null && (signRequest.status.name() == 'draft' || signRequest.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1" title="Modifier" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'"><i class="fas fa-pen"></i></a>
                     <th:block th:if="${documentType == 'pdf'}">
                     <div class="border border-dark rounded p-1 d-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
                     <button id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
@@ -103,8 +105,8 @@
                 <nav class="nav nav-tabs" th:if="${signRequest.parentSignBook != null}">
                     <th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
                         <li class="nav-item" th:classappend="${signRequest.parentSignBook.signRequests.size() > 1} ? 'file-tab'">
-                            <a th:classappend="${signRequest.id == signRequestTab.id} ? 'active'" class="nav-link" th:href="'/user/signrequests/' + ${signRequestTab.id}">
-                                <div class="d-flex" th:classappend="${signRequestTab.status.name() == 'signed' || signRequestTab.status.name() == 'completed' || signRequestTab.status.name() == 'exported' || signRequestTab.status.name() == 'checked'} ? 'text-success' : 'text-danger'"><i class="fas fa-file"></i>&nbsp;<span th:text="${signRequestTab.title}"></span></div>
+                            <a class="nav-link" th:classappend="${signRequest.id == signRequestTab.id} ? 'active'" th:href="'/user/signrequests/' + ${signRequestTab.id}">
+                                <div class="truncate" th:classappend="${signRequestTab.status.name() == 'signed' || signRequestTab.status.name() == 'completed' || signRequestTab.status.name() == 'exported' || signRequestTab.status.name() == 'checked'} ? 'text-success' : 'text-danger'"><i class="fas fa-file"></i>&nbsp;<span th:text="${signRequestTab.title}"></span></div>
                             </a>
                         </li>
                     </th:block>
