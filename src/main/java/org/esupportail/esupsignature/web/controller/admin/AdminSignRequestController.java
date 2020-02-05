@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
@@ -26,6 +27,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -68,8 +71,8 @@ public class AdminSignRequestController {
 	private SignRequestService signRequestService;
 
 	@Resource
-	private SignBookRepository signBookRepository;
-	
+	private DocumentRepository documentRepository;
+
 	@Resource
 	private SignBookService signBookService;
 
@@ -151,6 +154,15 @@ public class AdminSignRequestController {
 				model.addAttribute("signable", "ok");
 			}
 			return "admin/signrequests/show";
+	}
+
+	@GetMapping(value = "/getfile/{id}")
+	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response) throws IOException {
+		Document document = documentRepository.findById(id).get();
+		response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+		response.setContentType(document.getContentType());
+		IOUtils.copy(document.getInputStream(), response.getOutputStream());
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@DeleteMapping(value = "/{id}", produces = "text/html")
