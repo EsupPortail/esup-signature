@@ -74,9 +74,6 @@ public class UserController {
 	@Resource
 	private UserService userService;
 
-	@Resource
-	private SignService signService;
-
     @GetMapping
     public String createForm(Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) throws IOException, SQLException {
 		User user = userService.getUserFromAuthentication();
@@ -101,7 +98,7 @@ public class UserController {
     }
     
     @PostMapping
-    public String create(Long id,
+    public String create(
 		    @RequestParam(value = "referer", required=false) String referer,
     		@RequestParam(value = "signImageBase64", required=false) String signImageBase64, 
     		@RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,

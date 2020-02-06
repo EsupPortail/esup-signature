@@ -141,6 +141,7 @@ public class PdfService {
             pdDocument.save(out);
             ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
             pdDocument.close();
+            signImage.delete();
             try {
                 if(signRequest.getSignedDocuments().size() == 0) {
                     return convertGS(writeMetadatas(in, toSignFile.getFileName(), signRequest));
@@ -375,33 +376,6 @@ public class PdfService {
         return getSignSize(bimg);
     }
 
-    public int[] getSignFieldCoord(PDDocument pdDocument, long signNumber) {
-        try {
-            PDPage pdPage = pdDocument.getPage(0);
-            List<PDSignatureField> pdSignatureFields = pdDocument.getSignatureFields();
-            //pdSignatureFields = pdSignatureFields.stream().sorted(Comparator.comparing(PDSignatureField::getPartialName)).collect(Collectors.toList());
-            if (pdSignatureFields.size() < signNumber + 1) {
-                return null;
-            }
-            PDSignatureField pdSignatureField = pdSignatureFields.get((int) signNumber);
-            if (pdSignatureField.getValue() == null) {
-                int[] pos = new int[2];
-                pos[0] = (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX();
-                pos[1] = (int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight();
-                return pos;
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        } finally {
-            try {
-                pdDocument.close();
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-        return null;
-    }
-
     private Map<COSDictionary, Integer> getPageNrByAnnotDict(PDDocumentCatalog docCatalog) throws IOException {
         Iterator<PDPage> pages = docCatalog.getPages().iterator();
         Map<COSDictionary, Integer> pageNrByAnnotDict = new HashMap<>();
@@ -505,13 +479,6 @@ public class PdfService {
             }
         }
         return bufferedImage;
-    }
-
-    public InputStream pageAsInputStream(InputStream pdfFile, int page) throws Exception {
-        BufferedImage bufferedImage = pageAsBufferedImage(pdfFile, page);
-        InputStream inputStream = bufferedImageToInputStream(bufferedImage, "png");
-        bufferedImage.flush();
-        return inputStream;
     }
 
     public InputStream bufferedImageToInputStream(BufferedImage image, String type) throws IOException {

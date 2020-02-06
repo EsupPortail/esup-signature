@@ -39,6 +39,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -288,7 +289,7 @@ public class SignRequestController {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/remove-doc/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/remove-doc/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Object removeDocument(@PathVariable("id") Long id, HttpServletRequest request) {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
@@ -312,7 +313,7 @@ public class SignRequestController {
         }
     }
 
-    @RequestMapping(value = "/fast-sign-request", method = RequestMethod.POST)
+    @PostMapping(value = "/fast-sign-request")
     public String createSignRequest(@RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                     @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
         logger.info("création rapide demande de signature");
@@ -330,7 +331,7 @@ public class SignRequestController {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/sign/{id}", method = RequestMethod.POST)
+    @PostMapping(value = "/sign/{id}")
     public ResponseEntity sign(@PathVariable("id") Long id,
                        @RequestParam(value = "xPos", required = false) Integer xPos,
                        @RequestParam(value = "yPos", required = false) Integer yPos,
@@ -378,22 +379,21 @@ public class SignRequestController {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/get-step")
+    @GetMapping(value = "/get-step")
     public String getStep() {
         logger.debug("getStep : " + signRequestService.getStep());
         return signRequestService.getStep();
     }
 
     @ResponseBody
-    @RequestMapping(value = "/get-progress", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/get-progress", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getProgress() {
         logger.debug("getProgress : " + progress);
         return progress;
     }
 
-    @RequestMapping(value = "/refuse/{id}")
-    public String refuse(@PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttrs, HttpServletResponse response,
-                         Model model, HttpServletRequest request) throws SQLException {
+    @GetMapping(value = "/refuse/{id}")
+    public String refuse(@PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttrs, HttpServletRequest request) {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -441,20 +441,32 @@ public class SignRequestController {
     }
 
     @RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
-    public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response) {
+    public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         User user = userService.getUserFromAuthentication();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
-            List<Document> documents = signRequestService.getToSignDocuments(signRequest);
-            try {
+            InputStream inputStream = null;
+            String contentType = "";
+            String fileName = "";
+            if(!signRequest.getStatus().equals(SignRequestStatus.exported)) {
+                List<Document> documents = signRequestService.getToSignDocuments(signRequest);
                 if (documents.size() > 1) {
                     response.sendRedirect("/user/signrequests/" + signRequest.getId());
                 } else {
-                    Document document = documents.get(0);
-                    response.setHeader("Content-Disposition", "attachment;filename=\"" + document.getFileName() + "\"");
-                    response.setContentType(document.getContentType());
-                    IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
+                    inputStream = documents.get(0).getBigFile().getBinaryFile().getBinaryStream();
+                    fileName = documents.get(0).getFileName();
+                    contentType = documents.get(0).getContentType();
                 }
+            } else {
+                FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
+                inputStream = fsFile.getInputStream();
+                fileName = fsFile.getName();
+                contentType = fsFile.getContentType();
+            }
+            try {
+                response.setHeader("Content-Disposition", "attachment;filename=\"" + fileName + "\"");
+                response.setContentType(contentType);
+                IOUtils.copy(inputStream, response.getOutputStream());
             } catch (Exception e) {
                 logger.error("get file error", e);
             }

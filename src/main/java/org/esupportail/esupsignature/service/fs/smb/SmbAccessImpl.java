@@ -314,13 +314,9 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 				}
 			}
 			newFile.createNewFile();
-
 			OutputStream outstr = newFile.getOutputStream();
-
 			FileCopyUtils.copy(inputStream, outstr);
-
 			success = true;
-
 		} catch (SmbException e) {
 			logger.info("can't upload file : " + e.getMessage(), e);
 		} catch (IOException e) {
@@ -375,6 +371,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		FsFile fsFile = new FsFile(new FileInputStream(tempFile), smbFile.getName(), URLConnection.guessContentTypeFromName(smbFile.getName()));
 		fsFile.setPath(path);
 		fsFile.setCreateDate(new Date(smbFile.getDate()));
+		tempFile.delete();
 		return fsFile;
 	}
 

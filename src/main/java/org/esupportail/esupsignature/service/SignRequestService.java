@@ -169,6 +169,7 @@ public class SignRequestService {
 				signRequest.getOriginalDocuments().add(document);
 				document.setParentId(signRequest.getId());
 				documentRepository.save(document);
+				file.delete();
 			} catch (IOException e) {
 				throw new EsupSignatureIOException("", e);
 			}
@@ -437,8 +438,8 @@ public class SignRequestService {
 					if(fsAccessService.putFile(targetUrl, signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE)){
 						documentUri = targetUrl + "/" + signedFile.getFileName();
 						if(fsAccessService.getFileFromURI(documentUri) != null) {
-							clearAllDocuments(signRequest);
 							signRequest.setExportedDocumentURI(documentUri);
+							clearAllDocuments(signRequest);
 							updateStatus(signRequest, SignRequestStatus.exported, "Exporté", userService.getSystemUser(), "SUCCESS", signRequest.getComment());
 						}
 					}
@@ -453,12 +454,17 @@ public class SignRequestService {
 	public void clearAllDocuments(SignRequest signRequest) {
 		if(signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().isEmpty()) {
 			logger.info("clear all documents from " + signRequest.getToken());
-			List<Document> originalDocuments = new ArrayList<>();
-			originalDocuments.addAll(signRequest.getOriginalDocuments());
+			List<Document> documents = new ArrayList<>();
+			documents.addAll(signRequest.getOriginalDocuments());
+			documents.addAll(signRequest.getSignedDocuments());
 			signRequest.getOriginalDocuments().clear();
-			List<Document> signedDocuments = new ArrayList<>();
-			signedDocuments.addAll(signRequest.getSignedDocuments());
 			signRequest.getSignedDocuments().clear();
+			for(Document document : documents) {
+				documentRepository.delete(document);
+			}
+			signRequestRepository.save(signRequest);
+
+
 		}
 	}
 
@@ -466,7 +472,7 @@ public class SignRequestService {
 		if(signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			if (signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().startsWith("mail")) {
 				FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signRequest.getParentSignBook().getTargetType());
-				return fsAccessService.getFile(signRequest.getExportedDocumentURI());
+				return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI());
 			}
 		}
 		Document lastSignedDocument = getToSignDocuments(signRequest).get(0);
