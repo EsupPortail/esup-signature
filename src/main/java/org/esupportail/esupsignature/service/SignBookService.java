@@ -134,7 +134,8 @@ public class SignBookService {
     public void exportFilesToTarget(SignBook signBook) throws EsupSignatureException {
         logger.trace("export signRequest to : " + signBook.getTargetType() + "://" + signBook.getDocumentsTargetUri());
         if (signBook.getStatus().equals(SignRequestStatus.completed)) {
-           signRequestService.sendSignRequestsToTarget(signBook.getName(), signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri());
+            signRequestService.sendSignRequestsToTarget(signBook.getName(), signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri());
+            signBook.setStatus(SignRequestStatus.exported);
         }
     }
 

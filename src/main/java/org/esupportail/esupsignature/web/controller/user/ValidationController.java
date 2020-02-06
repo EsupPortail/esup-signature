@@ -47,18 +47,18 @@ public class ValidationController {
 		return "active";
 	}
 
-	@Resource
-	private UserService userService;
-	
 	@ModelAttribute("user")
 	public User getUser() {
 		return userService.getUserFromAuthentication();
 	}
-	
-	@Autowired
+
+	@Resource
+	private UserService userService;
+
+	@Resource
 	private XSLTService xsltService;
 
-	@Autowired
+	@Resource
 	private FOPService fopService;
 		
 	@Resource
@@ -69,27 +69,23 @@ public class ValidationController {
 
 	@Resource
 	private PdfService pdfService;
-	
-	@Autowired
+
+	@Resource
 	private SignRequestRepository signRequestRepository;
 	
 	@Resource
 	private SignRequestService signRequestService;
 	
 	@RequestMapping(method = RequestMethod.GET)
-	public String showValidationForm(Model model, HttpServletRequest request) {
-		ValidationForm validationForm = new ValidationForm();
-		validationForm.setValidationLevel(ValidationLevel.ARCHIVAL_DATA);
-		validationForm.setDefaultPolicy(true);
-		model.addAttribute("validationForm", validationForm);
-		return "user/validation";
+	public String showValidationForm() {
+		return "user/validation/form";
 	}
 
 	@PostMapping
 	public String validate(@ModelAttribute("multipartFile") @Valid MultipartFile multipartFile, Model model) throws IOException {
 		Reports reports = validationService.validate(multipartFile.getInputStream());
 		if(reports != null) {
-		String xmlSimpleReport = reports.getXmlSimpleReport();
+			String xmlSimpleReport = reports.getXmlSimpleReport();
 			model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));
 			String xmlDetailedReport = reports.getXmlDetailedReport();
 			model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
@@ -109,7 +105,7 @@ public class ValidationController {
 			model.addAttribute("pdfaReport", Arrays.asList("danger", "Impossible de valider ce document"));
 		}
 		
-		return "user/validation-result";
+		return "user/validation/result";
 	}
 	
 	@Transactional
@@ -140,7 +136,7 @@ public class ValidationController {
 				logger.error("enable to check pdf");
 			}
 		}
-		return "user/validation-result";
+		return "user/validation/result";
 	}
 	
 	@RequestMapping(value = "/download-simple-report")

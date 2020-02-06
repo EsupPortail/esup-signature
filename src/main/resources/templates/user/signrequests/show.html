@@ -34,7 +34,7 @@
             </div>
         </nav>
         <div id="content" class="content">
-            <div id="tools">
+            <div class="tools">
                 <nav aria-label="breadcrumb" class="d-none d-lg-block">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="/user/signrequests">Mes documents</a></li>
@@ -90,7 +90,7 @@
                         </button>
                     </div>
                     </th:block>
-                    <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed')}">
+                    <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported')}">
                         <a class="btn btn-light btn-outline-dark mr-1 text-left" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
                             <i class="fas fa-save"></i>
                         </a>
@@ -112,7 +112,7 @@
                     </th:block>
                 </nav>
             </div>
-            <div id="workspace" class="alert alert-secondary fadein" style="transition: all 0.3s;">
+            <div class="workspace alert alert-secondary fadein" style="transition: all 0.3s;">
                 <div th:replace="user/signrequests/includes/workspace :: workspace"></div>
             </div>
         </div>

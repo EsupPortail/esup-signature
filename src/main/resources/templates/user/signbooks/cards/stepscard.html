@@ -8,9 +8,9 @@
                 <div id="stepper" class="bs-stepper vertical">
                     <div class="bs-stepper-header" role="tablist">
                         <th:block th:each="workflowStep,iterator : ${signRequest.parentSignBook.workflowSteps}">
-                            <div class="step" th:name="'step_' + ${iterator.index}" th:data-target="'#step_' + ${iterator.index}">
-                                <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab" aria-selected="false" style="border: 2px solid #555555;">
-                                    <span th:if="${iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle bg-primary">
+                            <div class="step" th:name="'step_' + ${iterator.index}">
+                                <div class="step-trigger">
+                                    <span title="Étape en cours" th:if="${iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle bg-primary">
                                         <i class="fa fa-play"></i>
                                     </span>
                                     <span th:if="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle">
@@ -43,11 +43,10 @@
                         </th:block>
                         <th:block th:if="${signRequest.parentSignBook.documentsTargetUri != null}">
                             <div class="line"></div>
-                            <div class="step" name="target" data-target="#target">
-                                <div aria-controls="target" class="step-trigger bg-light" role="tab" aria-selected="false" style="overflow-wrap: break-word; border: 2px solid #555555">
-                                    <div th:classappend="${signRequest.parentSignBook.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></div>
-                                    <div class="bs-stepper-label" th:text="${signRequest.parentSignBook.documentsTargetUri}">
-                                    </div>
+                            <div class="step">
+                                <div class="step-trigger">
+                                    <div th:classappend="${signRequest.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></div>
+                                    <div class="bs-stepper-label text-break" th:text="${signRequest.parentSignBook.documentsTargetUri}"></div>
                                 </div>
                             </div>
                         </th:block>

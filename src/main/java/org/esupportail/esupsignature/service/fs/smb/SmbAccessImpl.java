@@ -39,6 +39,8 @@ import org.springframework.util.FileCopyUtils;
 
 import java.io.*;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
@@ -77,7 +79,6 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		super.open();
 
 		if(!this.isOpened()) {
-			// we set the jcifs properties given in the bean for the drive
 			if (this.jcifsConfigProperties != null && !this.jcifsConfigProperties.isEmpty()) {
 				try {
 					cifsContext = new BaseContext(new PropertyConfiguration(jcifsConfigProperties));
@@ -129,8 +130,11 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			if (path == null || path.length() == 0) {
 				return root;
 			}
-			return new SmbFile(this.getUri() + path, cifsContext);
-		} catch (MalformedURLException e) {
+			SmbFile smbFile = new SmbFile(this.getUri() + path, cifsContext);
+			if(smbFile.exists()) {
+				return smbFile;
+			}
+		} catch (SmbException | MalformedURLException e) {
 			logger.error("unable to open" + e.getMessage());
 		}
 		return null;
@@ -150,14 +154,33 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
+	public void createURITree(String uri ) {
+		if(getFileFromURI(uri) == null) {
+			String parent = uri.substring(0, uri.lastIndexOf("/"));
+			if(getFileFromURI(parent) == null){
+				createURITree(parent);
+			}
+			createFile(parent, uri.substring(uri.lastIndexOf("/"), uri.length()), "folder");
+		} else {
+			logger.info(uri + " already exist");
+		}
+	}
+
+	@Override
 	public String createFile(String parentPath, String title, String type) {
 		try {
 			String ppath = parentPath;
-			if (!ppath.isEmpty() && !ppath.endsWith("/")) {
-				ppath = ppath + "/";
+			URI uri = new URI(parentPath);
+			SmbFile newFile;
+			if(uri.getScheme().equals("smb")) {
+				newFile = new SmbFile(parentPath + "/" + title, this.cifsContext);
+			} else {
+				if (!ppath.isEmpty() && !ppath.endsWith("/")) {
+					ppath = ppath + "/";
+				}
+				newFile = new SmbFile(root.getPath() + ppath + title, this.cifsContext);
 			}
 			open();
-			SmbFile newFile = new SmbFile(root.getPath() + ppath + title, this.cifsContext);
 			logger.info("newFile : " + newFile.toString());
 			if ("folder".equals(type)) {
 				newFile.mkdir();
@@ -173,6 +196,8 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			logger.info("can't create file because of SmbException : " + e.getMessage());
 		} catch (MalformedURLException e) {
 			logger.error("problem in creation file that must not occur. " +  e.getMessage(), e);
+		} catch (URISyntaxException e) {
+			logger.info("bad uri : " + e.getMessage());
 		}
 		return null;
 	}
@@ -228,7 +253,9 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	public FsFile getFile(String dir) {
 		try {
 			SmbFile smbFile = cd(dir);
-			return toFsFile(smbFile, dir);
+			if(smbFile != null) {
+				return toFsFile(smbFile, dir);
+			}
 		} catch (SmbException e) {
 			logger.warn("can't download file : " + e.getMessage(), e);
 		} catch (IOException e) {
@@ -242,7 +269,13 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		try {
 			open();
 			SmbFile smbFile = new SmbFile(uri, cifsContext);
-			return toFsFile(smbFile, uri);
+			if(smbFile.exists()) {
+				if(smbFile.isFile()) {
+					return toFsFile(smbFile, uri);
+				} else {
+					return new FsFile(uri);
+				}
+			}
 		} catch (SmbException e) {
 			logger.warn("can't download file : " + e.getMessage(), e);
 		} catch (IOException e) {
@@ -250,25 +283,20 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		}
 		return null;
 	}
-	
 
-	
-	/**
-	 * @param dir
-	 * @param filename
-	 * @param inputStream
-	 * @return
-	 * @throws Exception 
-	 */
 	@Override
 	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) {
-
 		boolean success = false;
 		SmbFile newFile = null;
-		
 		try {
-			SmbFile folder = cd(dir);
-			newFile = new SmbFile(folder.getCanonicalPath() + filename, this.cifsContext);
+			URI uri = new URI(dir);
+			if(uri.getScheme().equals("smb")) {
+				newFile = new SmbFile(dir + "/" + filename, this.cifsContext);
+			}
+			else {
+				SmbFile folder = cd(dir);
+				newFile = new SmbFile(folder.getCanonicalPath() + filename, this.cifsContext);
+			}
 			if (newFile.exists()) {
 				switch (uploadOption) {
 				case ERROR :
@@ -278,7 +306,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 					break;
 				case RENAME_NEW :
 					newFile.close();
-					newFile = new SmbFile(folder.getCanonicalPath() + this.getUniqueFilename(filename, "-new-"), this.cifsContext);
+					newFile = new SmbFile(newFile.getParent() + this.getUniqueFilename(filename, "-new-"), this.cifsContext);
 					break;
 				case RENAME_OLD :
 					newFile.renameTo(new SmbFile(newFile.getParent() + this.getUniqueFilename(filename, "-old-"), this.cifsContext));
@@ -302,8 +330,6 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		}
 		
 		if(!success && newFile != null) {	
-			// problem when uploading the file -> the file uploaded is corrupted
-			// best is to delete it
 			try {
 				newFile.delete();
 				logger.debug("delete corrupted file after bad upload ok ...");

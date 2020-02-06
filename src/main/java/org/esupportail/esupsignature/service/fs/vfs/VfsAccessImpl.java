@@ -201,6 +201,11 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@Override
+	public void createURITree(String uri) {
+
+	}
+
+	@Override
 	public boolean renameFile(String path, String title) throws EsupSignatureFsException {
 		try {
 			FileObject file = cd(path);

@@ -230,7 +230,12 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 			return null;
 		}
 	}
-	
+
+	@Override
+	public void createURITree(String uri) {
+
+	}
+
 	@Override
 	public boolean moveCopyFilesIntoDirectory(String path, List<String> filesToCopy, boolean copy) throws EsupSignatureFsException {
 		try {
