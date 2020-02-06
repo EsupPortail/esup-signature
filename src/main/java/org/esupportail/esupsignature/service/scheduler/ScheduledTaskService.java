@@ -40,12 +40,6 @@ public class ScheduledTaskService {
 	private WorkflowRepository workflowRepository;
 
 	@Resource
-	private SignRequestService signRequestService;
-
-	@Resource
-	private SignRequestRepository signRequestRepository;
-
-	@Resource
 	private UserService userService;
 	
 	@Resource
@@ -60,7 +54,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	//@Scheduled(fixedRate = 10000)
+	@Scheduled(fixedRate = 10000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.trace("scan all signRequest to export");

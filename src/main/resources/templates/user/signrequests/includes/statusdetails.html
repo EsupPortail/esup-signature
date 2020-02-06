@@ -69,8 +69,21 @@
 	<div th:if="${signRequest.status.name() == 'exported'}">
 		<div class="alert alert-dark mb-1">
 			<h5>Le document signé a été exporté vers son emplacement définitif :</h5>
-			<span th:text="${signRequest.exportedDocumentURI}"></span>
+			<span id="exportUrl" class="text-break" th:text="${signRequest.exportedDocumentURI}"></span>
+			<button title="Copier le lien" class="btn btn-light btn-sm" onclick="copy();"><i class="fa fa-copy"></i> </button>
 		</div>
+		<script>
+			function copy() {
+				var copyText = document.getElementById("exportUrl");
+				var textArea = document.createElement("textarea");
+				textArea.value = copyText.textContent;
+				document.body.appendChild(textArea);
+				textArea.select();
+				document.execCommand("Copy");
+				textArea.remove();
+			}
+			document.querySelector("#exportUrl").addEventListener("click", copy);
+		</script>
 	</div>
 </div>
 </html>

@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.*;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.mail.MessagingException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -401,39 +403,46 @@ public class SignRequestService {
 
 	public String completeSignRequests(List<SignRequest> signRequests, DocumentIOType documentIOType, String targetUri, User user) throws EsupSignatureException {
 		String result = "";
-		if(documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
-			result = sendSignRequestsToTarget("Demande terminée", signRequests, documentIOType, targetUri);
-		} else {
+//		if(documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
+//			result = sendSignRequestsToTarget("Demande terminée", signRequests, documentIOType, targetUri);
+//		} else {
 			for(SignRequest signRequest : signRequests) {
 				updateStatus(signRequest, SignRequestStatus.completed, "Terminé", user, "SUCCESS", signRequest.getComment());
 			}
-		}
+//		}
 		return result;
 	}
 
 	public String sendSignRequestsToTarget(String title, List<SignRequest> signRequests, DocumentIOType documentIOType, String targetUrl) throws EsupSignatureException {
 		if (documentIOType.equals(DocumentIOType.mail)) {
 			logger.info("send by email to " + targetUrl);
-			mailService.sendFile(title, signRequests, targetUrl);
-			return "mail://" + targetUrl;
+			try {
+				mailService.sendFile(title, signRequests, targetUrl);
+				return "mail://" + targetUrl;
+			} catch (MessagingException | IOException e) {
+				throw new EsupSignatureException("unable to send mail", e);
+			}
 		} else {
 			String documentUri = null;
 			for(SignRequest signRequest : signRequests) {
 				Document signedFile = getLastSignedDocument(signRequest);
+				if(signRequest.getParentSignBook() != null) {
+					targetUrl += "/" + signRequest.getParentSignBook().getName();
+				}
 				try {
-					logger.info("send to " + documentIOType.name() + " in /" + targetUrl);
+					logger.info("send to " + documentIOType.name() + " in " + targetUrl);
 					FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(documentIOType);
+					fsAccessService.createURITree(targetUrl);
 					InputStream inputStream = signedFile.getInputStream();
-					if(fsAccessService.cd("/" + targetUrl) == null) {
-						fsAccessService.createFile("/", targetUrl, "folder");
+					if(fsAccessService.putFile(targetUrl, signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE)){
+						documentUri = targetUrl + "/" + signedFile.getFileName();
+						if(fsAccessService.getFileFromURI(documentUri) != null) {
+							clearAllDocuments(signRequest);
+							signRequest.setExportedDocumentURI(documentUri);
+							updateStatus(signRequest, SignRequestStatus.exported, "Exporté", userService.getSystemUser(), "SUCCESS", signRequest.getComment());
+						}
 					}
-					if(fsAccessService.putFile("/" + targetUrl, signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE)){
-						documentUri = "/" + targetUrl + "/" + signedFile.getFileName();
-						updateStatus(signRequest, SignRequestStatus.exported, "Exporté", userService.getSystemUser(), "SUCCESS", signRequest.getComment());
-						signRequest.setExportedDocumentURI(documentUri);
-						clearAllDocuments(signRequest);
-					}
-				} catch (Exception e) {
+				} catch (EsupSignatureFsException e) {
 					throw new EsupSignatureException("write fsaccess error : ", e);
 				}
 			}

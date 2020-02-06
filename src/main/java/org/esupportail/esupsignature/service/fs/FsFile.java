@@ -16,6 +16,10 @@ public class FsFile {
 	public FsFile() {
 	}
 
+	public FsFile(String path) {
+		this.path = path;
+	}
+
 	public FsFile(InputStream inputStream, String name, String contentType) {
 		this.inputStream = inputStream;
 		this.name = name;

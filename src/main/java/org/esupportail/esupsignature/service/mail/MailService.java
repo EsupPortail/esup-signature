@@ -185,7 +185,7 @@ public class MailService {
 //        }
 //    }
 
-    public void sendFile(String title, List<SignRequest> signRequests, String targetUri) {
+    public void sendFile(String title, List<SignRequest> signRequests, String targetUri) throws MessagingException, IOException {
         if (!checkMailSender()) {
             return;
         }
@@ -197,21 +197,18 @@ public class MailService {
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;
-        try {
-            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            message.setSubject("Esup-Signature : nouveau document  " + title);
-            message.setFrom(mailConfig.getMailFrom());
-            message.setTo(targetUri);
-            for(SignRequest signRequest : signRequests) {
-                Document toSendDocument = signRequestService.getLastSignedDocument(signRequest);
-                message.addAttachment(toSendDocument.getFileName(), new ByteArrayResource(IOUtils.toByteArray(toSendDocument.getInputStream())));
-            }
-            String htmlContent = templateEngine.process("mail/email-file.html", ctx);
-            message.setText(htmlContent, true); // true = isHtml
-            mailSender.send(mimeMessage);
-        } catch (MessagingException | IOException e) {
-            logger.error("unable to sens email", e);
+        message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        message.setSubject("Esup-Signature : nouveau document  " + title);
+        message.setFrom(mailConfig.getMailFrom());
+        message.setTo(targetUri);
+        for(SignRequest signRequest : signRequests) {
+            Document toSendDocument = signRequestService.getLastSignedDocument(signRequest);
+            message.addAttachment(toSendDocument.getFileName(), new ByteArrayResource(IOUtils.toByteArray(toSendDocument.getInputStream())));
         }
+        String htmlContent = templateEngine.process("mail/email-file.html", ctx);
+        message.setText(htmlContent, true); // true = isHtml
+        mailSender.send(mimeMessage);
+
     }
 
     private void setTemplate(Context ctx) {

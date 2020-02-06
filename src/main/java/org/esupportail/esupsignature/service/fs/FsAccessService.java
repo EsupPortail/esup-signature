@@ -97,6 +97,8 @@ public abstract class FsAccessService {
 
 	public abstract String createFile(String parentPath, String title, String type);
 
+	public abstract void createURITree(String uri );
+
 	public abstract boolean renameFile(String path, String title) throws EsupSignatureFsException;
 
 	public abstract boolean moveCopyFilesIntoDirectory(String dir, List<String> filesToCopy, boolean copy) throws EsupSignatureFsException, IOException;

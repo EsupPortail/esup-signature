@@ -246,7 +246,7 @@ input:checked + .slider:before {
     max-width: 50px;
 }
 
-#tools {
+.tools {
     top: 56px;
     padding-top: 5px;
     background-color: white;
@@ -261,7 +261,7 @@ input:checked + .slider:before {
     width: 500px;
 }
 
-#workspace {
+.workspace {
     margin-top: 140px;
 }
 
@@ -362,9 +362,9 @@ input:checked + .slider:before {
 }
 
 .bs-stepper .step-trigger {
-    align-items: normal;
-    text-align: left;
-
+    display: flex;
+    white-space: normal;
+    border: 2px solid #555555;
 }
 .bs-stepper-bottom {
     width: 100%;

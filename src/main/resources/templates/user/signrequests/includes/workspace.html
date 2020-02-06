@@ -28,9 +28,6 @@
                         </div>
                     </div>
                 </th:block>
-                <script>
-                    var url = '/user/signrequests/get-last-file/[[${signRequest.id}]]';
-                </script>
                 <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">
                     <span onclick="hideComment()" class="float-right" style="cursor: pointer;">X</span>
                     <textarea id="comment" name="comment" class="postitarea" placeholder="Saisir une annotation"></textarea>
@@ -45,6 +42,7 @@
                 <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="addDate" id="addDate"/>
                 <script th:inline="javascript" >
                     /*<![CDATA[*/
+                    var url = '/user/signrequests/get-last-file/[[${signRequest.id}]]';
                     var mode = 'read';
                     var dateActive = false;
                     var visualActive = true;
