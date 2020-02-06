@@ -109,28 +109,27 @@ public class UserController {
     		@RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
     		@RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, Model model) throws Exception {
         model.asMap().clear();
-        User user = userRepository.findById(id).get();
-		User userToUpdate = userService.getUserFromAuthentication();
-        if(!multipartKeystore.isEmpty()) {
-            if(userToUpdate.getKeystore() != null) {
-            	bigFileRepository.delete(userToUpdate.getKeystore().getBigFile());
-            	documentRepository.delete(userToUpdate.getKeystore());
+		User user = userService.getUserFromAuthentication();
+        if(multipartKeystore != null && !multipartKeystore.isEmpty()) {
+            if(user.getKeystore() != null) {
+            	bigFileRepository.delete(user.getKeystore().getBigFile());
+            	documentRepository.delete(user.getKeystore());
             }
-            userToUpdate.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), userToUpdate.getEppn() + "_cert.p12", multipartKeystore.getContentType()));
+            user.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), user.getEppn() + "_cert.p12", multipartKeystore.getContentType()));
         }
-        Document oldSignImage = userToUpdate.getSignImage();
+        Document oldSignImage = user.getSignImage();
         if(signImageBase64 != null && !signImageBase64.isEmpty()) {
 
-        	userToUpdate.setSignImage(documentService.createDocument(fileService.base64Transparence(signImageBase64), userToUpdate.getEppn() + "_sign.png", "image/png"));
+        	user.setSignImage(documentService.createDocument(fileService.base64Transparence(signImageBase64), user.getEppn() + "_sign.png", "image/png"));
             if(oldSignImage != null) {
             	oldSignImage.getBigFile().getBinaryFile().getBinaryStream();
             	bigFileRepository.delete(oldSignImage.getBigFile());
             	documentRepository.delete(oldSignImage);
         	}
         }
-    	userToUpdate.setEmailAlertFrequency(emailAlertFrequency);
-    	userToUpdate.setEmailAlertHour(emailAlertHour);
-    	userToUpdate.setEmailAlertDay(emailAlertDay);
+    	user.setEmailAlertFrequency(emailAlertFrequency);
+    	user.setEmailAlertHour(emailAlertHour);
+    	user.setEmailAlertDay(emailAlertDay);
     	if(referer != null && !"".equals(referer)) {
 			return "redirect:" + referer;
 		} else {
