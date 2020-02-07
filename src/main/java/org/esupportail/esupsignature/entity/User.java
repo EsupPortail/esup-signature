@@ -5,7 +5,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import javax.persistence.*;
 import java.time.DayOfWeek;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "UserAccount")
@@ -58,6 +60,9 @@ public class User {
     public void setEmailAlertFrequency(EmailAlertFrequency emailAlertFrequency) {
         this.emailAlertFrequency = emailAlertFrequency;
     }
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<String> roles = new ArrayList<>();
 
 	public Long getId() {
         return this.id;
@@ -169,5 +174,13 @@ public class User {
 
 	public void setLastSendAlertDate(Date lastSendAlertDate) {
         this.lastSendAlertDate = lastSendAlertDate;
+    }
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
     }
 }

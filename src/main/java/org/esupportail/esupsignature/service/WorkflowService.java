@@ -28,6 +28,9 @@ public class WorkflowService {
     private static final Logger logger = LoggerFactory.getLogger(WorkflowService.class);
 
     @Resource
+    private List<Workflow> workflows;
+
+    @Resource
     private WorkflowRepository workflowRepository;
 
     @Resource
@@ -250,6 +253,37 @@ public class WorkflowService {
             }
         }
         return true;
+    }
+
+    public List<String> getWorkflowNames() {
+        List<String> woStrings = new ArrayList<String>();
+
+        for(Workflow workflow : workflows ) {
+            woStrings.add(workflow.getName());
+        }
+        return woStrings;
+    }
+
+    public List<Workflow> getWorkflows() {
+        return workflows;
+    }
+
+    public Workflow getWorkflowByName(String name) {
+        for(Workflow workflow : workflows ) {
+            if(workflow.getName().equals(name)) {
+                return workflow;
+            }
+        }
+        return null;
+    }
+
+    public Workflow getWorkflowByClassName(String className) {
+        for(Workflow workflow : workflows ) {
+            if(workflow.getClass().getSimpleName().equals(className)) {
+                return workflow;
+            }
+        }
+        return null;
     }
 
 }

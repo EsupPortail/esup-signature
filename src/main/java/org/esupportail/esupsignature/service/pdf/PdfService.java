@@ -10,12 +10,11 @@ import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDField;
-import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
+import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
@@ -424,6 +423,59 @@ public class PdfService {
 			logger.error(e.getMessage(), e);
 		}
 		return signRequestParamsList.stream().sorted(Comparator.comparingInt(value -> value.getXPos())).sorted(Comparator.comparingInt(value -> value.getYPos())).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
+    }
+
+    public InputStream fill(InputStream pdfFile, Map<String, String> datas) {
+        try {
+            PDDocument pdDocument = PDDocument.load(pdfFile);
+            PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+            PDFont font = PDType1Font.HELVETICA;
+            PDResources resources = new PDResources();
+            resources.put(COSName.getPDFName("Helv"), font);
+            resources.put(COSName.getPDFName("Helvetica"), font);
+            pdAcroForm.setDefaultResources(resources);
+            if(pdAcroForm != null) {
+                List<PDField> fields = pdAcroForm.getFields();
+                for(PDField pdField : fields) {
+                    if (pdField instanceof PDTextField) {
+                        //pdField.getAcroForm().setNeedAppearances(true);
+                        pdField.setValue(datas.get(pdField.getPartialName()));
+                    } else if (pdField instanceof PDCheckBox) {
+                        if(datas.get(pdField.getPartialName()) != null && datas.get(pdField.getPartialName()).equals("on")) {
+                            ((PDCheckBox) pdField).check();
+                        }
+                    } else if (pdField instanceof PDRadioButton) {
+                        PDRadioButton pdRadioButton = (PDRadioButton) pdField;
+                        try {
+                            pdRadioButton.setValue(datas.get(pdField.getPartialName()));
+                        } catch (NullPointerException e) {
+                            logger.debug("radio buton is null");
+                        }
+                    }
+                    pdField.setReadOnly(true);
+                }
+            }
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            pdDocument.setAllSecurityToBeRemoved(true);
+            pdDocument.save(out);
+            pdDocument.close();
+            return new ByteArrayInputStream(out.toByteArray());
+        } catch (IOException e) {
+            logger.error("file read error", e);
+        }
+        return null;
+    }
+
+    public PDFieldTree getFields(PDDocument pdDocument) {
+        try {
+            PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+            PDFieldTree fields = new PDFieldTree(pdAcroForm);
+            pdDocument.close();
+            return fields;
+        } catch (IOException e) {
+            logger.error("file read error", e);
+        }
+        return null;
     }
 
     public List<SignRequestParams> scanSignatureFields(InputStream inputStream) throws EsupSignatureIOException {

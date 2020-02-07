@@ -177,4 +177,8 @@ public class Workflow {
     public void setDocumentsTargetUri(String documentsTargetUri) {
         this.documentsTargetUri = documentsTargetUri;
     }
+
+    public List<WorkflowStep> getWorkflowSteps(Data data, List<String> recipentEmails) {
+        return null;
+    }
 }

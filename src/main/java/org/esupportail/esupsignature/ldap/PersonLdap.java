@@ -24,7 +24,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PersonLdap {
 	
@@ -123,6 +125,21 @@ public class PersonLdap {
 	public static Collection<PersonLdap> fromJsonArrayToPersonLdaps(String json) {
         return new JSONDeserializer<List<PersonLdap>>()
         .use("values", PersonLdap.class).deserialize(json);
+    }
+
+    public Map<String, String> getAllValues() {
+        Field[] fields = this.getClass().getDeclaredFields();
+        Map<String, String> values = new HashMap<String, String>();
+        for(Field field : fields) {
+            try {
+                if(field.get(this) != null) {
+                    values.put(field.getName(), field.get(this).toString());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return values;
     }
 
 	public String toString() {

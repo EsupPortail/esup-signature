@@ -18,8 +18,14 @@ public class WorkflowStep {
 
     private String name;
 
+    private String description;
+
+    private Integer stepNumber;
+
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Recipient> recipients = new ArrayList<>();
+
+    private Boolean changeable = false;
 
     private Boolean allSignToComplete = false;
 
@@ -72,5 +78,29 @@ public class WorkflowStep {
 
     public void setSignType(SignType signType) {
         this.signType = signType;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Integer getStepNumber() {
+        return stepNumber;
+    }
+
+    public void setStepNumber(Integer stepNumber) {
+        this.stepNumber = stepNumber;
+    }
+
+    public Boolean getChangeable() {
+        return changeable;
+    }
+
+    public void setChangeable(Boolean changeable) {
+        this.changeable = changeable;
     }
 }
