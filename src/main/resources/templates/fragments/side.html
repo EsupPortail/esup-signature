@@ -1,0 +1,22 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<nav th:fragment="side" id="sidebar">
+    <div class="nav flex-column nav-pills m-1" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+        <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+            <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+        </button>
+    <a class="nav-link btn-transparent" th:classappend="${activeForm == 'signRequest'}? 'active' : ''" th:href="'/user/' + ${user.eppn} + '/signrequests'">
+        <i class="fas fa-file-signature"></i> Signer un document
+    </a>
+    <a class="nav-link btn-transparent" th:classappend="${activeForm == 'sendSignRequest'}? 'active' : ''" th:href="'/user/' + ${user.eppn} + '/send-signrequests'">
+        <i class="fas fa-paper-plane"></i> Envoyer à la signature
+    </a>
+    <hr/>
+    <tr th:each="form : ${forms}">
+        <a class="nav-link btn-transparent" th:classappend="${activeForm == form.name}? 'active' : ''" th:href="'/user/' + ${user.eppn} + '/form/' + ${form.id} + '/list'">
+            <i class="fas fa-file"></i> <span th:text="${form.name}"></span>
+        </a>
+    </tr>
+    </div>
+</nav>
+</html>

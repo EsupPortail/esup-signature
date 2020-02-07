@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+	<head th:replace="fragments/head :: head"></head>
+	<body>
+	<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+		<div class="header-fixed fixed-top">
+		<div id="ribbon" class="card">
+			<div class="card-body">
+				<a type="button"
+					th:href="'/manager/' + ${user.eppn} + '/form/update/' + ${id} + '?form'"
+					class="btn btn-outline-dark btn-light  float-left">
+					<i class="far fa-edit fa-2x"></i><br /> Modifier les paramètres du formulaire
+				</a>
+				<button type="button" class="btn  btn-danger float-right" value="Retour" onclick="window.history.back();">
+				<i class="fas fa-times fa-1x"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+		<main role="main" class="container">
+		<h2 th:text="'Aperçu : ' + ${form.name}"></h2>
+			<div th:if="${document != null}">
+			<div id="pointer_div" th:style="'position: relative; background-size: 1190px;background-image:url(\'/manager/document/' + ${document.id} + '/getimagepdfpage/0\');height:1684px;border:1px solid #CCC;'">
+		 	<th:block th:each="field : ${form.fields}">
+	 			<div th:switch="${#strings.toString(field.type)}">
+		            <input disabled="disabled" th:case="'text'" type="text" class="form-control" th:name="${field.name}" th:placeholder="${field.label}" th:style="'position: absolute; width : ' + ${field.width * 2} + 'px; height : ' + ${field.height * 2} + 'px; left : ' + ${field.leftPos * 2} + 'px; top : ' + ${1684 - field.topPos * 2} + 'px;'" />
+					<input disabled="disabled" th:case="'date'" type="text" class="form-control" th:name="${field.name}" th:placeholder="${field.label}" th:style="'position: absolute; width : ' + ${field.width * 2} + 'px; height : ' + ${field.height * 2} + 'px; left : ' + ${field.leftPos * 2} + 'px; top : ' + ${1684 - field.topPos * 2} + 'px;'" />
+		            <input disabled="disabled" th:case="'checkbox'" type="checkbox" th:name="${field.name}" th:placeholder="${field.name}" th:style="'position: absolute; width : ' + ${field.width * 2} + 'px; height : ' + ${field.height * 2} + 'px; left : ' + ${field.leftPos * 2} + 'px; top : ' + ${1684 - field.topPos * 2} + 'px;'" />
+					<input disabled="disabled" th:case="'radio'" type="radio" th:name="${field.name}" th:placeholder="${field.name}" th:style="'position: absolute; width : ' + ${field.width * 2} + 'px; height : ' + ${field.height * 2} + 'px; left : ' + ${field.leftPos * 2} + 'px; top : ' + ${1684 - field.topPos * 2} + 'px;'" />
+	            </div>
+            </th:block>
+            </div>
+            </div>
+            <div th:if="${document == null}">
+			 	<th:block th:each="field : ${form.fields}">
+	 				<div class="form-group">
+			    		<div th:switch="${#strings.toString(field.type)}">
+				            <input th:case="checkbox" type="checkbox" class="form-check-input" th:name="${field.name}" th:placeholder="${field.name}" />
+				    		<label th:for="${field.name}" th:text="${field.name}"></label>
+				            <input th:case="'text'" type="text" class="form-control" th:name="${field.name}" th:placeholder="${field.label}" />
+			            </div>
+		            </div>
+				</th:block>
+            </div>
+		</main>
+		<footer th:replace="fragments/footer :: footer"></footer>
+	</body>
+</html>

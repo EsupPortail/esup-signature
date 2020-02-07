@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav id="sidebar">
+            <a class="mr-2 btn btn-outline-dark btn-light float-left"
+               th:href="'/manager/' + ${user.eppn} + '/documents/form'">
+                <i class="fa fa-plus fa-2x"></i> <br/> Ajouter un modèle
+            </a>
+        </nav>
+        <div class="content">
+			<nav aria-label="breadcrumb">
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item active">Liste des modèles</li>
+				</ol>
+			</nav>
+			<div class="card rounded-0 mb-3">
+            <div class="card-header">
+                <h2>Modèles</h2>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-bordered">
+                        <thead>
+                        <tr>
+                            <th scope="col">Nom</th>
+                            <th scope="col">Type</th>
+                            <th class="show text-center" scope="col">Voir</th>
+                            <th class="delete text-center" scope="col">Supprimer</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="document : ${documents}">
+                            <td th:text="${document.fileName}"></td>
+                            <td th:text="${document.contentType}"></td>
+                            <td class="show text-center"><a type="button"
+                                                            th:href="'/manager/' + ${user.eppn} + '/document/' + ${document.id}"
+                                                            class="btn btn-primary"><i class="fas fa-eye"></i></a></td>
+                            <td class="delete text-center">
+                                <button type="button" data-toggle="modal" data-target="#modal-warning"
+                                        th:attr="data-target='#modal-warning'+${document.id }" class="btn btn-danger"><i
+                                        class="fas fa-trash"></i></button>
+                                <div class="modal modal-warning fade in" th:id="modal-warning+${document.id}">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form id="command"
+                                                  th:action="'/manager/' + ${user.eppn} + '/document/' + ${document.id}"
+                                                  th:method="delete">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                            aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="alert alert-danger text-center">Confirmez-vous la
+                                                        suppression ?
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline pull-left"
+                                                            data-dismiss="modal">Non
+                                                    </button>
+                                                    <button type="submit" class="btn btn-outline pull-left btn-danger">
+                                                        Oui
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>

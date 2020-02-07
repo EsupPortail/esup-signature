@@ -533,11 +533,17 @@ public class PdfService {
         return bufferedImage;
     }
 
-    public InputStream bufferedImageToInputStream(BufferedImage image, String type) throws IOException {
+    private InputStream bufferedImageToInputStream(BufferedImage image, String type) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ImageIO.write(image, type, os);
         return new ByteArrayInputStream(os.toByteArray());
     }
 
+    public InputStream pageAsInputStream(InputStream pdfFile, int page) throws Exception {
+        BufferedImage bufferedImage = pageAsBufferedImage(pdfFile, page);
+        InputStream inputStream = bufferedImageToInputStream(bufferedImage, "png");
+        bufferedImage.flush();
+        return inputStream;
+    }
 
 }

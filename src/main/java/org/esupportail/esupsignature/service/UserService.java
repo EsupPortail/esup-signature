@@ -3,9 +3,11 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapDao;
 import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.scheduler.ScheduledTaskService;
@@ -38,6 +40,10 @@ public class UserService {
 
 	@Resource
 	private SignRequestService signRequestService;
+
+
+	@Resource
+	private UserShareRepository userShareRepository;
 
 	@Resource
 	private MailService mailService;
@@ -156,6 +162,26 @@ public class UserService {
 		User user = new User();
 		user.setEppn("System");
 		return user;
+	}
+
+	public User getUserFromSu(String suEppn) {
+		if(userRepository.findByEppn(suEppn).size() > 0) {
+			User suUser = userRepository.findByEppn(suEppn).get(0);
+			List<User> suUsers = getSuUsers();
+			if (suUsers.contains(suUser)) {
+				return suUser;
+			}
+		}
+		return getUserFromAuthentication();
+	}
+
+	public List<User> getSuUsers() {
+		User user = getUserFromAuthentication();
+		List<User> suEppns = new ArrayList<>();
+		for (UserShare userShare : userShareRepository.findByToUsers(Arrays.asList(user))) {
+			suEppns.add(userShare.getUser());
+		}
+		return suEppns;
 	}
 
 	public List<PersonLdap> getPersonLdaps(@RequestParam("searchString") String searchString, @RequestParam(required = false) String ldapTemplateName) {

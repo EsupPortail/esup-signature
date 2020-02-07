@@ -49,10 +49,10 @@ public class OrdreMissionPreFill implements PreFill {
 					}
 				}
 			}
-			if(field.getName().equals("persUniv") && field.getLabel().equals("oui") && ldapValues.get("eduPersonAffiliation").contains("staff")) {
+			if(field.getName().equals("persUniv") && field.getLabel().equals("oui") && ldapValues.get("eduPersonAffiliation") != null && ldapValues.get("eduPersonAffiliation").contains("staff")) {
 				field.setDefaultValue("oui");
 			}
-			if(field.getName().equals("persUniv") && field.getLabel().equals("non") && !ldapValues.get("eduPersonAffiliation").contains("staff")) {
+			if(field.getName().equals("persUniv") && field.getLabel().equals("non") && ldapValues.get("eduPersonAffiliation") != null && !ldapValues.get("eduPersonAffiliation").contains("staff")) {
 				field.setDefaultValue("non");
 			}
 			filledFields.add(field);

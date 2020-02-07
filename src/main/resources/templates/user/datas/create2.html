@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+<header th:replace="fragments/menu :: menu(activeMenu)">
+<main role="main">
+    <div class="wrapper">
+        <div th:replace="fragments/side :: side"></div>
+        <div class="content" id="v-pills-tabContent">
+            <div class="tools">
+                <nav th:replace="fragments/breadcrumb :: breadcrumb"></nav>
+                <div class="d-flex mb-1">
+                    <div class="border border-dark rounded p-1 d-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
+                    <button id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <button id="next" class="btn btn-light btn-outline-dark ml-1" aria-label="Prochain">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <button id="zoomout" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-minus"></i></button>
+                    <button id="zoomin" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-plus"></i></button>
+                    <div class="border border-dark rounded p-1 ml-1 d-none d-lg-inline"><span id="zoom"></span> %</div>
+                    <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
+                    <button id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
+                    <button th:if="${data.step == 0}" type="button" onclick="document.getElementById('newDataSubmit').click();"
+                            class="btn btn-light btn-outline-dark ml-1">
+                        <i class="far fa-save"></i><br/>
+                    </button>
+                    <div th:if="${data.status != null}" th:switch="${data.status.name()}">
+                        <th:block th:case="'draft'">
+                            <a target="_blank" title="Exporter" th:if="${data.status.name() == 'draft'}"
+                               th:href="'/user/' + ${user.eppn} + '/data/' + ${data.id} + '/export-pdf'"
+                               class="btn btn btn-outline-dark btn-light ml-1">
+                                <i class="far fa-file-pdf"></i>
+                            </a>
+                            <button type="button" data-toggle="modal"
+                                    data-target="#sendModal"
+                                    th:classappend="${esupStatus == 'down'} ? 'btn-secondary' : 'btn-success'"
+                                    th:disabled="${esupStatus == 'down'}"
+                                    th:title="${esupStatus == 'down'} ? 'Esup-Signature indisponible'"
+                                    class="ml-1 btn float-left">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                            <button th:if="${data.step > 1 && esupStatus != 'down'}" type="button" data-toggle="modal"
+                                    data-target="#nextStepModal"
+                                    class="ml-1 btn btn-success float-left">
+                                <i class="fas fa-check"></i><br/>Etape suivante
+                            </button>
+                        </th:block>
+                    </div>
+                    <div th:if="${data.step == 1}" class="badge badge-warning ml-1">
+                        Vous devez signer ce document
+                    </div>
+                    <button th:if="${data.step == 1}"  title="Assistant de demande de signature"  type="button" data-toggle="modal" data-target="#signModal" class="ml-1 btn btn-success">
+                        <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
+                    </button>
+                </div>
+            </div>
+            <div class="workspace">
+                <form id="newData" th:action="'/user/' + ${user.eppn} + '/data/form/' + ${form.id}" method="post">
+                    <input id="newDataSubmit" type="submit" style="display: none;"/>
+                    <input id="dataId" type="hidden" name="dataId" th:value="${data.id}"/>
+                    <div class="input-group mb-2">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Nom du document</span>
+                        </div>
+                        <input id="name" class="form-control" type="text" name="name" th:placeholder="${form.name}" th:value="${data.name}" required/>
+                    </div>
+                    <div id="pdf" class="drop-shadows"></div>
+                    <div id="inputs"></div>
+                    <script th:inline="javascript">
+                    /*<![CDATA[*/
+                        var url = '/user/[[${user.eppn}]]/documents/getfile/[[${document.id}]]';
+                        var pdfDoc = null,
+                            pageNum = 1,
+                            scale = 1,
+                            rotation = 0;
+                        pdfjsLib.disableWorker = true;
+                        pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.js';
+                        pdfjsLib.getDocument(url).promise.then(function (pdf) {
+                            pdfDoc = pdf;
+                            document.getElementById('page_count').textContent = pdfDoc.numPages;
+                            renderPage(pageNum);
+                        });
+                        var pdfPageView = null;
+                        var canvas = document.getElementById('pdf');
+                        var dataFields = [[${fields}]];
+                        var currentStep = [[${data.step}]];
+                        function renderPage(num) {
+                            var signFieldNumber = 0;
+                            for (var i = 0; i < dataFields.length; i++) {
+                                if(dataFields[i] != null) {
+                                    var inputField = $('input[name=' + dataFields[i].name + ']');
+                                    if (inputField.val() != null) {
+                                        dataFields[i].defaultValue = inputField.val();
+                                        if(inputField.is(':checkbox')) {
+                                            if(!inputField.attr("checked")) {
+                                                dataFields[i].defaultValue = 'off';
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (pdfDoc != null) {
+                                pageRendering = true;
+                                pdfDoc.getPage(num).then(function (page) {
+                                    var viewport = page.getViewport({scale, rotation});
+                                    if(pdfPageView == null) {
+                                        pdfPageView = new pdfjsViewer.PDFPageView({
+                                            container: canvas,
+                                            id: pageNum,
+                                            scale: 1,
+                                            defaultViewport: viewport,
+                                            annotationLayerFactory: new pdfjsViewer.DefaultAnnotationLayerFactory(),
+                                            renderInteractiveForms: true,
+                                        });
+                                    }
+                                    pdfPageView.scale = scale;
+                                    pdfPageView.rotation = rotation;
+                                    pdfPageView.setPdfPage(page);
+                                    pdfPageView.draw();
+                                    pageRendering = false;
+                                    page.getAnnotations().then(function(items)
+                                    {
+                                        for ( var i = 0; i < items.length; i++)
+                                        {
+                                            var dataField = dataFields.filter(obj => {
+                                                return obj.name === items[i].fieldName
+                                            })[0];
+                                            if(items[i].fieldType === undefined && items[i].title.startsWith('sign')) {
+                                                signFieldNumber = signFieldNumber + 1;
+                                                if(currentStep == signFieldNumber) {
+                                                    $('.popupWrapper').remove();
+                                                    var signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+                                                    signField.append('Signature requise');
+                                                    signField.css('text-align', 'center');
+                                                    signField.css('background-color', '#DEF0D8');
+                                                    signField.click(function(){
+                                                        $('#signModal').modal('show');
+                                                    });
+
+                                                } else {
+                                                    $('section[data-annotation-id=' + items[i].id + ']').remove();
+                                                }
+                                            }
+                                            var inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
+                                            inputField.attr('name', items[i].fieldName);
+                                            if(dataField != null) {
+                                                inputField.val(dataField.defaultValue);
+                                                if (dataField.required) {
+                                                    inputField.prop('required', true);
+                                                    inputField.addClass('required-field');
+                                                }
+                                                if (dataField.type == "radio") {
+                                                    inputField.val(items[i].buttonValue);
+                                                    if(dataField.defaultValue == items[i].buttonValue) {
+                                                        inputField.prop("checked", true);
+                                                    }
+                                                }
+                                                if (dataField.type == 'checkbox') {
+                                                    inputField.val('on');
+                                                    if(dataField.defaultValue == 'on') {
+                                                        inputField.attr("checked", "checked");
+                                                        inputField.prop("checked", true);
+                                                    }
+                                                }
+                                                if (dataField.type == "date") {
+                                                    inputField.datetimepicker({
+                                                        format: 'DD/MM/YYYY',
+                                                        locale: 'fr',
+                                                        icons: {
+                                                            time: 'fa fa-time',
+                                                            date: 'fa fa-calendar',
+                                                            up: 'fa fa-chevron-up',
+                                                            down: 'fa fa-chevron-down',
+                                                            previous: 'fa fa-chevron-left',
+                                                            next: 'fa fa-chevron-right',
+                                                            today: 'fa fa-screenshot',
+                                                            clear: 'fa fa-trash',
+                                                            close: 'fa fa-check'
+                                                        },
+                                                        toolbarPlacement: 'bottom',
+                                                        showClear: true,
+                                                        showClose: true,
+                                                        keepOpen: true,
+                                                        widgetPositioning: {
+                                                            horizontal: 'right',
+                                                            vertical: 'top'
+                                                        },
+                                                    });
+                                                }
+                                                if (dataField.type == "time") {
+                                                    inputField.datetimepicker({
+                                                        format: 'LT',
+                                                        locale: 'fr',
+                                                        stepping: 5,
+                                                        icons: {
+                                                            time: 'fa fa-time',
+                                                            date: 'fa fa-calendar',
+                                                            up: 'fa fa-chevron-up',
+                                                            down: 'fa fa-chevron-down',
+                                                            previous: 'fa fa-chevron-left',
+                                                            next: 'fa fa-chevron-right',
+                                                            today: 'fa fa-screenshot',
+                                                            clear: 'fa fa-trash',
+                                                            close: 'fa fa-check'
+                                                        },
+                                                        toolbarPlacement: 'bottom',
+                                                        showClear: true,
+                                                        showClose: true,
+                                                        keepOpen: true,
+                                                        widgetPositioning: {
+                                                            horizontal: 'right',
+                                                            vertical: 'top'
+                                                        },
+                                                    });
+                                                }
+                                                if(currentStep > 0) {
+                                                    inputField.attr("disabled", "disabled");
+                                                    inputField.removeClass('required-field');
+                                                }
+                                            }
+                                        }
+                                    });
+                                });
+                                pageNum = num;
+                                document.getElementById('page_num').textContent = num;
+                                document.getElementById('zoom').textContent = 100 * scale;
+                                if (pdfDoc.numPages == 1) {
+                                    $('#prev').prop('disabled', true);
+                                    $('#next').prop('disabled', true);
+                                }
+                            }
+                        }
+
+                        function queueRenderPage(num) {
+                            if (pageRendering) {
+                                pageNumPending = num;
+                            } else {
+                                renderPage(num);
+                            }
+                        }
+                    function rotateLeft() {
+                        if (rotation < -90) {
+                            return;
+                        }
+                        rotation = rotation - 90;
+                        queueRenderPage(pageNum);
+                    }
+
+                    document.getElementById('rotateleft').addEventListener('click', rotateLeft);
+
+                    function rotateRight() {
+                        if (rotation > 90) {
+                            return;
+                        }
+                        rotation = rotation + 90;
+                        queueRenderPage(pageNum);
+                    }
+
+                    document.getElementById('rotateright').addEventListener('click', rotateRight);
+
+                    function prevPage() {
+                        if (pageNum <= 1) {
+                            return;
+                        }
+                        pageNum--;
+                        queueRenderPage(pageNum);
+                        window.scrollTo(0, 0);
+
+                    }
+
+                    document.getElementById('prev').addEventListener('click', prevPage);
+
+                    function nextPage() {
+                        if (pageNum >= pdfDoc.numPages) {
+                            return;
+                        }
+                        pageNum++;
+                        queueRenderPage(pageNum);
+                        window.scrollTo(0, 0);
+                    }
+
+                    document.getElementById('next').addEventListener('click', nextPage);
+
+                    function zoomIn() {
+                        if (scale >= 2) {
+                            return;
+                        }
+                        scale = scale + 0.25;
+                        queueRenderPage(pageNum);
+                    }
+
+                    document.getElementById('zoomin').addEventListener('click', zoomIn);
+
+                    function zoomOut() {
+                        if (scale <= 1) {
+                            return;
+                        }
+                        scale = scale - 0.25;
+                        queueRenderPage(pageNum);
+                    }
+                    document.getElementById('zoomout').addEventListener('click', zoomOut);
+                    /*]]>*/
+                    </script>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<div th:if="${data.status != null && data.status.name() == 'draft'}" class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Envoi pour
+                    signature</h5>
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="form-inline" th:action="'/user/' + ${user.eppn} + '/data/' + ${data.id} + '/send'" method="post" id="send">
+                    <div class="alert alert-info">
+                        <p>
+                            <span th:text="'La procedure ' + ${form.name} + ' comporte ' + ${#lists.size(steps)} + ' étapes.'"></span>
+                        <p>
+                            Les signataires sont pré-séléctionnés en fonction de vos précédentes saisis. Si aucun signataire n'est présent ou si la selection de convient pas, vous pouvez modifier les valeurs.
+                        </p>
+                        <th:block th:each="step,iterator : ${steps}">
+                            <div th:if="${step.changeable == true}" class="form-group">
+                                <label th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></label>
+                                <select th:id="'recipientEmailsSelect_' + ${step.stepNumber}" multiple="multiple" name="recipientEmails" required>
+                                    <th:block th:each="recipientEmail : ${step.recipientEmails}">
+                                        <option selected="selected" th:text="${recipientEmail}" th:value="${step.stepNumber} + '*' + ${recipientEmail}"></option>
+                                    </th:block>
+                                </select>
+                                <script language="JavaScript">
+                                    /*<![CDATA[*/
+                                    new SlimSelect({
+                                        select: '#recipientEmailsSelect_[[${step.stepNumber}]]',
+                                        placeholder: 'Choisir un ou plusieurs utilisateurs',
+                                        searchText: 'Aucun résultat',
+                                        searchPlaceholder: 'Rechercher',
+                                        searchHighlight: true,
+                                        searchFilter: (option, search) => {
+                                            return true;
+                                        },
+                                        ajax: function (search, callback) {
+                                            if (search.length < 3) {
+                                                callback('Merci de saisir au moins 3 caractères')
+                                                return
+                                            }
+                                            fetch('/ws/searchLdap?searchString=' + search)
+                                                .then(function (response) {
+                                                    return response.json()
+                                                })
+                                                .then(function (json) {
+                                                    let data = []
+                                                    for (let i = 0; i < json.length; i++) {
+                                                        data.push({text: json[i].displayName, value: '[[${step.stepNumber}]]*' + json[i].mail});
+                                                    }
+                                                    callback(data)
+                                                })
+                                                .catch(function (error) {
+                                                    callback(false)
+                                                })
+                                        }
+
+                                    });
+                                    recipientEmailsSelect_[[${step.stepNumber}]] = document.getElementById('recipientEmailsSelect_[[${step.stepNumber}]]');
+                                    recipientEmailsSelect_[[${step.stepNumber}]].style.display = 'block';
+                                    recipientEmailsSelect_[[${step.stepNumber}]].classList.add('hide-select')
+
+                                    /*]]>*/
+                                </script>
+                            </div>
+                            <div th:unless="${step.changeable == true}" class="form-group">
+                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description} + ' ('"></span>
+                                <div th:if="${step.recipientEmails.size() > 0}">
+                                    <th:block th:each="recipientName,iterator : ${step.recipientEmails}">
+                                        <span th:if="${iterator.index > 0}"> ou </span>
+                                        <span th:text="${recipientName}"></span>
+                                    </th:block>
+                                </div>
+                                <span>)</span>
+                            </div>
+                        </th:block>
+                        <div th:if="${form.targetType.name() == 'mail'}" class="form-group">
+                            <label>Etape finale : Envoi par mail à </label>
+                            <select id="targetEmailsSelect" multiple="multiple" name="targetEmails" required>
+                                <th:block th:each="targetEmail : ${targetEmails}">
+                                    <option selected="selected" th:text="${targetEmail}" th:value="${targetEmail}"></option>
+                                </th:block>
+                            </select>
+                            <script language="JavaScript">
+                                /*<![CDATA[*/
+                                new SlimSelect({
+                                    select: '#targetEmailsSelect',
+                                    placeholder: 'Choisir un ou plusieurs utilisateurs',
+                                    searchText: 'Aucun résultat',
+                                    searchPlaceholder: 'Rechercher',
+                                    searchHighlight: true,
+                                    searchFilter: (option, search) => {
+                                        return true;
+                                    },
+                                    ajax: function (search, callback) {
+                                        if (search.length < 3) {
+                                            callback('Merci de saisir au moins 3 caractères')
+                                            return
+                                        }
+                                        fetch('/ws/searchLdap?searchString=' + search)
+                                            .then(function (response) {
+                                                return response.json()
+                                            })
+                                            .then(function (json) {
+                                                let data = []
+                                                for (let i = 0; i < json.length; i++) {
+                                                    data.push({text: json[i].displayName, value: json[i].mail});
+                                                }
+                                                callback(data)
+                                            })
+                                            .catch(function (error) {
+                                                callback(false)
+                                            })
+                                    }
+
+                                });
+                                var targetEmailsSelect = document.getElementById('targetEmailsSelect');
+                                targetEmailsSelect.style.display = 'block';
+                                targetEmailsSelect.classList.add('hide-select')
+
+                                /*]]>*/
+                            </script>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Abandonner</button>
+                <input type="button" onclick="document.getElementById('send').submit();" class="btn btn-success" value="Envoyer">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Signature</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <iframe id="wizsignIframe" frameborder="0" th:src="${data.signUrl}"  style="width: 100%; height: 500px;" ></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>

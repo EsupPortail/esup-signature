@@ -459,7 +459,6 @@ public class WsController {
     @PostMapping(value = "/check-user-status", produces = MediaType.APPLICATION_JSON_VALUE)
     public String checkUserStatus(@RequestParam String eppn) throws JsonProcessingException {
         if (userRepository.countByEppn(eppn) > 0) {
-            User user = userRepository.findByEppn(eppn).get(0);
             return new ObjectMapper().writeValueAsString(true);
         } else {
             return new ObjectMapper().writeValueAsString(false);

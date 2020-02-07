@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body>
+<nav th:replace="fragments/nav :: nav(activeNav)"></nav>
+<main role="main">
+    <div class="wrapper">
+        <div th:replace="fragments/side :: side"></div>
+        <div class="content" id="v-pills-tabContent">
+            <nav th:replace="fragments/breadcrumb :: breadcrumb"></nav>
+			<div id="ribbon" class="card">
+				<div class="card-header">
+					<button type="button"
+							onclick="document.getElementById('newDataSubmit').click();"
+							class="btn btn-success  float-right">
+						<i class="far fa-save fa-2x"></i><br/> Enregistrer
+					</button>
+					<button type="button" class="btn mr-2 btn-danger float-left" value="Retour" onclick="window.history.back();">
+						<i class="fas fa-times fa-2x"></i><br/>Abandonner
+					</button>
+				</div>
+			</div>
+            <div class="card-body container">
+                <form id="newData" th:action="'/user/' + ${user.eppn} + '/data/form/' + ${form.id}" method="post">
+                    <input id="newDataSubmit" type="submit" style="display: none;"/>
+                    <div class="form-group ">
+                        <label for="name">Nom du document</label>
+                        <input id="name" class="form-control" type="text" name="name" th:placeholder="${form.name}" required/>
+                    </div>
+                    <div th:if="${document != null}">
+                        <div id="pointer_div"
+                             th:style="${form.pdfDisplay} ? 'position: relative;background-repeat: no-repeat; background-size: ' + ${pdfParameters.width * 2} + 'px; background-image:url(\'/user/document/' + ${document.id} + '/getimagepdfpage/'+ ${page -1} +'\');width: ' + ${pdfParameters.width * 2} + 'px;height: 1684px;border:1px solid #CCC;'">
+                            <th:block th:each="field : ${fields}">
+                                <div th:switch="${#strings.toString(field.type)}">
+                                    <div class="form-group" th:case="'text'">
+                                        <label th:if="${!form.pdfDisplay}" th:for="${field.name}" th:text="${field.label}"></label>
+                                        <input th:required="${field.required}" th:value="${field.defaultValue}" type="text"
+                                               class="form-control" th:name="${field.name}"
+                                               th:placeholder="${form.pdfDisplay} ? ${field.label}"
+                                               th:style="${form.pdfDisplay} ? 'position: absolute; width : ' + ${field.width * 2} + 'px; height : ' + ${field.height * 2} + 'px; left : ' + ${field.leftPos * 2} + 'px; top : ' + ${1684 - field.topPos * 2} + 'px;'"/>
+                                    </div>
+                                    <div class="form-group" th:case="'date'">
+                                        <label th:if="${!form.pdfDisplay}" th:for="${field.name}" th:text="${field.label}"></label>
+                                        <input th:required="${field.required}" autocomplete="off" th:value="${field.defaultValue}" type="text"
+                                               class="form-control datepicker" th:name="${field.name}"
+                                               th:placeholder="${form.pdfDisplay} ? ${field.label}"
+                                               th:style="${form.pdfDisplay} ? 'position: absolute; width : ' + ${field.width * 2} + 'px; height : ' + ${field.height * 2} + 'px; left : ' + ${field.leftPos * 2 + 3} + 'px; top : ' + ${1685 - field.topPos * 2} + 'px;'"/>
+                                    </div>
+                                    <div class="form-group" th:case="'time'">
+                                        <label th:if="${!form.pdfDisplay}" th:for="${field.name}" th:text="${field.label}"></label>
+                                        <input th:required="${field.required}" autocomplete="off" th:value="${field.defaultValue}" type="text"
+                                               class="form-control timepicker" th:name="${field.name}"
+                                               th:placeholder="${form.pdfDisplay} ? ${field.label}"
+                                               th:style="${form.pdfDisplay} ? 'position: absolute; width : ' + ${field.width * 2} + 'px; height : ' + ${field.height * 2} + 'px; left : ' + ${field.leftPos * 2 + 3} + 'px; top : ' + ${1685 - field.topPos * 2} + 'px;'"/>
+                                    </div>
+                                    <div class="form-group" th:case="'checkbox'">
+                                        <input th:required="${field.required}"
+                                               th:if="${field.defaultValue == 'on'}" type="checkbox" th:name="${field.name}"
+                                               th:placeholder="${field.name}"
+                                               th:style="${form.pdfDisplay} ? 'position: absolute; width : ' + ${field.width * 2} + 'px; height : ' + ${field.height * 2} + 'px; left : ' + ${field.leftPos * 2 + 3} + 'px; top : ' + ${1685 - field.topPos * 2} + 'px;'"
+                                               checked/>
+                                        <input th:unless="${field.defaultValue == 'on'}" type="checkbox" th:name="${field.name}"
+                                               th:placeholder="${field.name}"
+                                               th:style="${form.pdfDisplay} ? 'position: absolute; width : ' + ${field.width * 2} + 'px; height : ' + ${field.height * 2} + 'px; left : ' + ${field.leftPos * 2 + 3} + 'px; top : ' + ${1685 - field.topPos * 2} + 'px;'"/>
+                                        <label th:if="${!form.pdfDisplay}" class="form-check-label" th:for="${field.name}" th:text="${field.label}"></label>
+                                    </div>
+                                    <div class="form-group" th:case="'radio'">
+                                        <input th:required="${field.required}"
+                                               th:value="${field.label}"
+                                               th:if="${field.defaultValue == 'on'}" type="radio" th:name="${field.name}"
+                                               th:placeholder="${field.name}"
+                                               th:style="${form.pdfDisplay} ? 'position: absolute; width : ' + ${field.width * 2} + 'px; height : ' + ${field.height * 2} + 'px; left : ' + ${field.leftPos * 2 + 3} + 'px; top : ' + ${1685 - field.topPos * 2} + 'px;'"
+                                               checked/>
+                                        <input th:unless="${field.defaultValue == 'on'}" type="radio" th:name="${field.name}"
+                                               th:value="${field.label}"
+                                               th:placeholder="${field.name}"
+                                               th:style="${form.pdfDisplay} ? 'position: absolute; width : ' + ${field.width * 2} + 'px; height : ' + ${field.height * 2} + 'px; left : ' + ${field.leftPos * 2 + 3} + 'px; top : ' + ${1685 - field.topPos * 2} + 'px;'"/>
+                                        <label th:if="${!form.pdfDisplay}" class="form-check-label" th:for="${field.name}" th:text="${field.label}"></label>
+                                    </div>
+                                </div>
+                            </th:block>
+                        </div>
+                    </div>
+                    <div th:unless="${document != null}">
+                        <th:block th:each="field : ${fields}">
+                            <div class="form-group">
+                                <div th:switch="${#strings.toString(field.type)}">
+                                    <input th:case="checkbox" type="checkbox" class="form-check-input"
+                                           th:name="${field.name}" th:placeholder="${field.name}"/> <label
+                                        th:for="${field.name}" th:text="${field.name}"></label> <input
+                                        th:case="'text'" type="text" class="form-control"
+                                        th:name="${field.name}" th:value="${field.defaultValue}"
+                                        th:placeholder="${field.label}"/>
+                                </div>
+                            </div>
+                        </th:block>
+                    </div>
+                </form>
+            </div>
+			<div id="ribbon2" class="card">
+				<div class="card-header">
+					<button type="button"
+							onclick="document.getElementById('newDataSubmit').click();"
+							class="btn btn-success  float-right">
+						<i class="far fa-save fa-2x"></i><br/> Enregistrer
+					</button>
+					<button type="button" class="btn mr-2 btn-danger float-left" value="Retour" onclick="window.history.back();">
+						<i class="fas fa-times fa-2x"></i><br/>Abandonner
+					</button>
+				</div>
+			</div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>

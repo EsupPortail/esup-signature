@@ -12,7 +12,9 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class DocumentService {
@@ -27,6 +29,12 @@ public class DocumentService {
 
 	@Resource
 	private BigFileService bigFileService;
+
+	public List<Document> getAllDocuments(){
+		List<Document> list = new ArrayList<Document>();
+		documentRepository.findAll().forEach(e -> list.add(e));
+		return list;
+	}
 
 	public Document createDocument(InputStream inputStream, String name, String contentType) throws IOException {
 		Document document = new Document();
