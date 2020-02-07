@@ -1,14 +1,21 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="recipient" type="org.esupportail.esupsignature.entity.Recipient"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
-<header th:replace="fragments/menu :: menu(activeMenu)">
+<header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
         <div th:replace="fragments/side :: side"></div>
         <div class="content" id="v-pills-tabContent">
             <div class="tools">
-                <nav th:replace="fragments/breadcrumb :: breadcrumb"></nav>
+                <nav aria-label="breadcrumb" class="d-none d-lg-block">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/user/signrequests">Mes documents</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Formulaire : <span th:text="${form.name}"></span>
+                        </li>
+                    </ol>
+                </nav>
                 <div class="d-flex mb-1">
                     <div class="border border-dark rounded p-1 d-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
                     <button id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
@@ -29,7 +36,7 @@
                     <div th:if="${data.status != null}" th:switch="${data.status.name()}">
                         <th:block th:case="'draft'">
                             <a target="_blank" title="Exporter" th:if="${data.status.name() == 'draft'}"
-                               th:href="'/user/' + ${user.eppn} + '/data/' + ${data.id} + '/export-pdf'"
+                               th:href="'/user/datas/' + ${data.id} + '/export-pdf'"
                                class="btn btn btn-outline-dark btn-light ml-1">
                                 <i class="far fa-file-pdf"></i>
                             </a>
@@ -57,7 +64,7 @@
                 </div>
             </div>
             <div class="workspace">
-                <form id="newData" th:action="'/user/' + ${user.eppn} + '/data/form/' + ${form.id}" method="post">
+                <form id="newData" th:action="'/user/datas/form/' + ${form.id}" method="post">
                     <input id="newDataSubmit" type="submit" style="display: none;"/>
                     <input id="dataId" type="hidden" name="dataId" th:value="${data.id}"/>
                     <div class="input-group mb-2">
@@ -67,10 +74,9 @@
                         <input id="name" class="form-control" type="text" name="name" th:placeholder="${form.name}" th:value="${data.name}" required/>
                     </div>
                     <div id="pdf" class="drop-shadows"></div>
-                    <div id="inputs"></div>
                     <script th:inline="javascript">
                     /*<![CDATA[*/
-                        var url = '/user/[[${user.eppn}]]/documents/getfile/[[${document.id}]]';
+                        var url = '/user/documents/getfile/[[${form.document.id}]]';
                         var pdfDoc = null,
                             pageNum = 1,
                             scale = 1,
@@ -305,7 +311,6 @@
                     </script>
                 </form>
             </div>
-
         </div>
     </div>
 </main>
@@ -333,8 +338,8 @@
                             <div th:if="${step.changeable == true}" class="form-group">
                                 <label th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></label>
                                 <select th:id="'recipientEmailsSelect_' + ${step.stepNumber}" multiple="multiple" name="recipientEmails" required>
-                                    <th:block th:each="recipientEmail : ${step.recipientEmails}">
-                                        <option selected="selected" th:text="${recipientEmail}" th:value="${step.stepNumber} + '*' + ${recipientEmail}"></option>
+                                    <th:block th:each="recipient : ${step.recipients}">
+                                        <option selected="selected" th:text="${recipient.user.email}" th:value="${step.stepNumber} + '*' + ${recipient.user.email}"></option>
                                     </th:block>
                                 </select>
                                 <script language="JavaScript">
@@ -379,10 +384,10 @@
                             </div>
                             <div th:unless="${step.changeable == true}" class="form-group">
                                 <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description} + ' ('"></span>
-                                <div th:if="${step.recipientEmails.size() > 0}">
-                                    <th:block th:each="recipientName,iterator : ${step.recipientEmails}">
+                                <div th:if="${step.recipients.size() > 0}">
+                                    <th:block th:each="recipient,iterator : ${step.recipients}">
                                         <span th:if="${iterator.index > 0}"> ou </span>
-                                        <span th:text="${recipientName}"></span>
+                                        <span th:text="${recipient.user.firstname} + ' ' + ${recipient.user.name}"></span>
                                     </th:block>
                                 </div>
                                 <span>)</span>
@@ -446,23 +451,6 @@
         </div>
     </div>
 </div>
-
-<div class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Signature</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <iframe id="wizsignIframe" frameborder="0" th:src="${data.signUrl}"  style="width: 100%; height: 500px;" ></iframe>
-            </div>
-        </div>
-    </div>
-</div>
-
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

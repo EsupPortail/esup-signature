@@ -18,14 +18,26 @@
 package org.esupportail.esupsignature.ldap;
 
 import org.springframework.ldap.core.AttributesMapper;
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.filter.AndFilter;
+import org.springframework.ldap.filter.EqualsFilter;
+import org.springframework.ldap.filter.LikeFilter;
 
+import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PersonAttributMapper implements AttributesMapper<PersonLdap> {
-	
+
+	private LdapTemplate ldapTemplate;
+
+	public PersonAttributMapper(LdapTemplate ldapTemplate) {
+		super();
+		this.ldapTemplate = ldapTemplate;
+	}
+
 	public PersonLdap mapFromAttributes(Attributes attrs)
 			throws javax.naming.NamingException {
 		PersonLdap p = new PersonLdap();
@@ -40,6 +52,8 @@ public class PersonAttributMapper implements AttributesMapper<PersonLdap> {
 		}
 		if (null!=attrs.get("mail"))
 			p.setMail(attrs.get("mail").get().toString());
+		if (null!=attrs.get("postalAddress"))
+			p.setPostalAddress(attrs.get("postalAddress").get().toString());
 		if (null!=attrs.get("telephoneNumber"))
 			p.setTelephoneNumber(attrs.get("telephoneNumber").get().toString());
 		if (null!=attrs.get("supannAutreMail"))
@@ -68,8 +82,16 @@ public class PersonAttributMapper implements AttributesMapper<PersonLdap> {
 			p.setEduPersonPrincipalName(attrs.get("eduPersonPrincipalName").get().toString());
 		if (null!=attrs.get("supannEntiteAffectation"))
 			p.setSupannEntiteAffectation(attrs.get("supannEntiteAffectation").get().toString());
-		if (null!=attrs.get("supannEntiteAffectationPrincipale"))
+		if (null!=attrs.get("supannEntiteAffectationPrincipale")) {
 			p.setSupannEntiteAffectationPrincipale(attrs.get("supannEntiteAffectationPrincipale").get().toString());
+			AndFilter filter = new AndFilter();
+			filter.and(new EqualsFilter("objectclass", "organizationalUnit"));
+			filter.and(new LikeFilter("supannCodeEntite", attrs.get("supannEntiteAffectationPrincipale").get().toString()));
+			List<String> postalAddresses = ldapTemplate.search("", filter.encode(), new OUMapper());
+			if(postalAddresses.size() > 0) {
+				p.setPostalAddress(postalAddresses.get(0));
+			}
+		}
 		if (null!=attrs.get("supannCivilite"))
 			p.setSupannCivilite(attrs.get("supannCivilite").get().toString());
 		if (null!=attrs.get("schacDateOfBirth"))
@@ -84,6 +106,13 @@ public class PersonAttributMapper implements AttributesMapper<PersonLdap> {
 		}
 		return p;
 	}
-	
-	
+
+	public class OUMapper implements AttributesMapper<String> {
+
+		@Override
+		public String mapFromAttributes(Attributes attributes) throws NamingException {
+			return attributes.get("postalAddress").get().toString();
+		}
+
+	}
 }

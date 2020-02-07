@@ -52,7 +52,7 @@ public class LdapPersonService {
 				orFilter.or(new LikeFilter("cn", "*" + searchString + "*"));
 				orFilter.or(new LikeFilter("uid", "*" + searchString + "*"));
 				filter.and(orFilter);
-				List<PersonLdap> results = ldapTemplateSelected.search(LdapUtils.emptyLdapName(), filter.encode(), new PersonAttributMapper());
+				List<PersonLdap> results = ldapTemplateSelected.search(LdapUtils.emptyLdapName(), filter.encode(), new PersonAttributMapper(ldapTemplate));
 				return results;
 			}
 		} else {

@@ -226,4 +226,14 @@ public class UserService {
 		return personLdap;
 	}
 
+	public PersonLdap getPersonLdap(User user) {
+		if (personDao != null) {
+			List<PersonLdap> persons = personDao.getPersonNamesByEppn(user.getEppn());
+			if (persons.size() > 0) {
+				return persons.get(0);
+			}
+		}
+		return null;
+	}
+
 }

@@ -28,7 +28,7 @@ import java.util.Date;
 import java.util.List;
 
 @Controller
-@RequestMapping("/user/{eppn}")
+@RequestMapping("/user")
 public class FormUserController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FormUserController.class);
@@ -56,10 +56,7 @@ public class FormUserController {
 		return userService.getUserFromSu(eppn);
 	}
 
-	@ModelAttribute("currentUser")
-	public User getCurrentUser() {
-		return userService.getUserFromAuthentication();
-	}
+
 
 	@ModelAttribute("forms")
 	public List<Form> getForms(@PathVariable String eppn) {

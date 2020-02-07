@@ -140,7 +140,13 @@
 		    <artifactId>jquery</artifactId>
 		    <version>3.4.1</version>
 		</dependency>
-				
+
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>momentjs</artifactId>
+			<version>2.24.0</version>
+		</dependency>
+
 		<dependency>
 		   <groupId>org.webjars</groupId>
 		   <artifactId>bootstrap</artifactId>
@@ -169,6 +175,12 @@
 		    <groupId>org.webjars</groupId>
 		    <artifactId>webjars-locator</artifactId>
 		    <version>0.30</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>Eonasdan-bootstrap-datetimepicker</artifactId>
+			<version>4.17.47</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.imgscalr/imgscalr-lib -->

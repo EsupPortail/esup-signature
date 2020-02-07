@@ -18,12 +18,14 @@ import java.util.List;
 @Component
 public class DefaultPreFill implements PreFill {
 
+	private String name = "default";
+
 	@Resource
 	private ExtValueService extValueService;
 
 	@Override
 	public String getName() {
-		return "default";
+		return name;
 	}
 	
 	@Override

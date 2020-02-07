@@ -40,7 +40,7 @@ public class PersonLdapDao {
 		AndFilter filter = new AndFilter();
 		filter.and(new EqualsFilter("objectclass", "person"));
 		filter.and(new LikeFilter("uid", uid));
-		return ldapTemplate.search("", filter.encode(), new PersonAttributMapper());
+		return ldapTemplate.search("", filter.encode(), new PersonAttributMapper(ldapTemplate));
 	}
 	
 	public List<PersonLdap> getPersonNamesByEppn(String eppn) {
@@ -48,7 +48,7 @@ public class PersonLdapDao {
 		filter.and(new EqualsFilter("objectclass", "person"));
 		filter.and(new LikeFilter("eduPersonPrincipalName", eppn));
 		return ldapTemplate.search("", filter.encode(),
-				new PersonAttributMapper());
+				new PersonAttributMapper(ldapTemplate));
 	}
 	
 	public List<PersonLdap> getPersonNamesByEppn(String eppn, String moreFilter) {
@@ -57,7 +57,7 @@ public class PersonLdapDao {
 		filter.and(new LikeFilter("eduPersonPrincipalName", eppn));
 		filter.and(query().filter(moreFilter).filter());
 		return ldapTemplate.search("", filter.encode(),
-				new PersonAttributMapper());
+				new PersonAttributMapper(ldapTemplate));
 	}
 	
 	public List<PersonLdap> getPersonLdaps(String attribut, String value) {
@@ -65,7 +65,7 @@ public class PersonLdapDao {
 		filter.and(new EqualsFilter("objectclass", "person"));
 		filter.and(new LikeFilter(attribut, value));
 		log.info(filter.encode() + ", " + filter.toString());
-		return ldapTemplate.search("", filter.encode(), new PersonAttributMapper());
+		return ldapTemplate.search("", filter.encode(), new PersonAttributMapper(ldapTemplate));
 	} 
 
 	public List<PersonLdap> getPersonLdaps(String attribut, String value, String moreFilter) {
@@ -74,7 +74,7 @@ public class PersonLdapDao {
 		filter.and(new LikeFilter(attribut, value));
 		log.info(filter.encode() + ", " + filter.toString());
 		return ldapTemplate.search("", filter.encode(),
-				new PersonAttributMapper());
+				new PersonAttributMapper(ldapTemplate));
 	} 
 	
 }

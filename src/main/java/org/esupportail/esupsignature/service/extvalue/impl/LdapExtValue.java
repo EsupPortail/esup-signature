@@ -28,7 +28,7 @@ public class LdapExtValue implements ExtValue {
 
 	@Override
 	public Map<String, String> getAllValuesByUser(User user) {
-		PersonLdap personLdap = userService.getPersonLdapFromUser(user);
+		PersonLdap personLdap = userService.getPersonLdap(user);
 		return personLdap.getAllValues();
 	}
 	

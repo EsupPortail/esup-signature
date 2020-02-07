@@ -8,6 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface FormRepository extends CrudRepository<Form, Long>, FormRepositoryCustom {
+	Long countById(Long id);
 	List<Form> findByDocument(Document document);
 	List<Form> findFormByActiveVersion(Boolean activeVersion);
 	List<Form> findFormByNameAndActiveVersion(String name, Boolean activeVersion);

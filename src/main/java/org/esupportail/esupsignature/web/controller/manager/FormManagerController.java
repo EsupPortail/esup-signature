@@ -19,7 +19,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Controller
-@RequestMapping("manager/{eppn}")
+@RequestMapping("manager")
 @Transactional
 public class FormManagerController {
 	
@@ -39,10 +39,7 @@ public class FormManagerController {
 		return userService.getUserFromAuthentication();
 	}
 
-	@ModelAttribute("currentUser")
-	public User getCurrentUser() {
-		return userService.getUserFromAuthentication();
-	}
+
 
 	@ModelAttribute("suUsers")
 	public List<User> getSuUsers() {

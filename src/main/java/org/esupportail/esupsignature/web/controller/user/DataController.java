@@ -8,10 +8,7 @@ import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.UserPropertieRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
-import org.esupportail.esupsignature.service.sign.SignService;
-import org.esupportail.esupsignature.web.JsonSignInfoMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -38,7 +35,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/user/{eppn}")
+@RequestMapping("/user")
 public class DataController {
 
 	private static final Logger logger = LoggerFactory.getLogger(DataController.class);
@@ -74,12 +71,7 @@ public class DataController {
 	private SignRequestRepository signRequestRepository;
 
 	@ModelAttribute("user")
-	public User getUser(@PathVariable String eppn) {
-		return userService.getUserFromSu(eppn);
-	}
-
-	@ModelAttribute("currentUser")
-	public User getCurrentUser() {
+	public User getUser() {
 		return userService.getUserFromAuthentication();
 	}
 
@@ -94,13 +86,13 @@ public class DataController {
 	}
 
 	@ModelAttribute("forms")
-	public List<Form> getForms(@PathVariable String eppn) {
-		return 	formService.getFormsByUser(userService.getUserFromSu(eppn), true);
+	public List<Form> getForms() {
+		return 	formService.getFormsByUser(userService.getUserFromAuthentication(), true);
 	}
 
 	@GetMapping("datas/{id}")
-	public String show(@PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, @PathVariable String eppn) {
-		User user = userService.getUserFromSu(eppn);
+	public String show(@PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model) {
+		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
 		if(page == null) {
 			page = 1;
@@ -129,8 +121,8 @@ public class DataController {
 	}
 
 	@GetMapping("datas/form/{id}")
-	public String createData(@PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, @PathVariable String eppn) throws IOException {
-		User user = userService.getUserFromSu(eppn);
+	public String createData(@PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model) {
+		User user = userService.getUserFromAuthentication();
 		Form form = formService.getFormById(id);
 		if(page == null) {
 			page = 1;
@@ -143,19 +135,21 @@ public class DataController {
 		} else {
 			model.addAttribute("fields", form.getFields());
 		}
-		if(form.isPdfDisplay()) {
-			model.addAttribute("document", form.getDocument());
-		}
+
 		model.addAttribute("data", new Data());
 		model.addAttribute("activeForm", form.getName());
 		model.addAttribute("page", page);
-		return "user/datas/create2";
+		if(form.isPdfDisplay()) {
+			return "user/datas/create2";
+		} else {
+			return "user/datas/create";
+		}
 	}
 
 
 	@GetMapping("datas/{id}/update")
-	public String updateData(@PathVariable("id") Long id, Model model, @PathVariable String eppn) throws IOException {
-		User user = userService.getUserFromSu(eppn);
+	public String updateData(@PathVariable("id") Long id, Model model) {
+		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
 		Form form = data.getForm();
 		if(!data.getStatus().equals(SignRequestStatus.draft) && user.getEmail().equals(data.getCreateBy())) {
@@ -176,8 +170,8 @@ public class DataController {
 	}
 
 	@PostMapping("datas/form/{id}")
-	public String addData(@PathVariable("id") Long id, @RequestParam Long dataId, @RequestParam String name, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes, @PathVariable String eppn) {
-		User user = userService.getUserFromSu(eppn);
+	public String addData(@PathVariable("id") Long id, @RequestParam Long dataId, @RequestParam String name, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
+		User user = userService.getUserFromAuthentication();
 		Form form = formService.getFormById(id);
 		Data data;
 		if(dataId != null) {
@@ -195,13 +189,13 @@ public class DataController {
 		data.setOwner(user.getEppn());
 		data.setCreateDate(new Date());
 		dataService.updateData(data);
-		return "redirect:/user/" + user.getEppn() + "/data/" + data.getId() + "/update";
+		return "redirect:/user/datas/" + data.getId() + "/update";
 	}
 	
 
 	@PutMapping("datas/{id}")
-	public String updateData(@PathVariable("id") Long id, @RequestParam String name, @RequestParam(required = false) String navPage, @RequestParam(required = false) Integer page, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes, @PathVariable String eppn) {
-		User user = userService.getUserFromSu(eppn);
+	public String updateData(@PathVariable("id") Long id, @RequestParam String name, @RequestParam(required = false) String navPage, @RequestParam(required = false) Integer page, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
+		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
 		if(page == null) {
 			page = 1;
@@ -230,8 +224,8 @@ public class DataController {
 
 	@PostMapping("datas/{id}/send")
 	public String sendDataById(@PathVariable("id") Long id,
-                               @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, @PathVariable String eppn) {
-		User user = userService.getUserFromSu(eppn);
+                               @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails) {
+		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
 //		todo create signrequest
 //		dataService.sendForSign(data, recipientEmails, targetEmails, user);
@@ -261,8 +255,8 @@ public class DataController {
 	}
 
 	@DeleteMapping("datas/{id}")
-	public String deleteData(@PathVariable("id") Long id, RedirectAttributes redirectAttributes, @PathVariable String eppn) {
-		User user = userService.getUserFromSu(eppn);
+	public String deleteData(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+		User user = userService.getUserFromAuthentication();
 		Data data = dataRepository.findById(id).get();
 		if(user.getEppn().equals(data.getCreateBy())) {
 			SignRequest signRequest = signRequestRepository.findByToken(data.getSignRequestToken()).get(0);
@@ -275,7 +269,7 @@ public class DataController {
 	}
 
 	@GetMapping("/data/{id}/export-pdf")
-	public ResponseEntity exportToPdf(@PathVariable("id") Long id, HttpServletResponse response, @PathVariable String eppn) throws IOException {
+	public ResponseEntity exportToPdf(@PathVariable("id") Long id, HttpServletResponse response) {
 		try {
 			Data data = dataService.getDataById(id);
 			InputStream exportPdf = dataService.generateFile(data);
@@ -290,8 +284,8 @@ public class DataController {
 	}
 
 	@GetMapping("datas/{id}/reset")
-	public String resetData(@PathVariable("id") Long id, @PathVariable String eppn) {
-		User user = userService.getUserFromSu(eppn);
+	public String resetData(@PathVariable("id") Long id) {
+		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
 		if(user.getEmail().equals(data.getCreateBy())) {
 			SignRequest signRequest = signRequestRepository.findByToken(data.getSignRequestToken()).get(0);
@@ -305,8 +299,8 @@ public class DataController {
 	}
 
 	@GetMapping("datas/{id}/clone")
-	public String cloneData(@PathVariable("id") Long id, @PathVariable String eppn) {
-		User user = userService.getUserFromSu(eppn);
+	public String cloneData(@PathVariable("id") Long id) {
+		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
 		long nbDatas = dataRepository.countByNameStartsWith(data.getName());
 		if(user.getEmail().equals(data.getCreateBy())) {

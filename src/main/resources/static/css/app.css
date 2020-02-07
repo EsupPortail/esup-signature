@@ -223,6 +223,10 @@ input:checked + .slider:before {
 	background-color: #CCC !important
 }
 
+.page {
+    position: relative;
+}
+
 #navbar {
     min-height: 56px;
     padding: 0;
@@ -262,7 +266,13 @@ input:checked + .slider:before {
 }
 
 .workspace {
+    display: flex;
     margin-top: 140px;
+}
+
+.wrapper {
+    width: 100%;
+    align-items: stretch;
 }
 
 .content {
@@ -275,7 +285,6 @@ input:checked + .slider:before {
     min-width: 100vh;
     margin-left: 50px;
     padding: 5px;
-
 }
 
 .sign-menu {
@@ -542,4 +551,13 @@ input:checked + .slider:before {
 
 .file-tab:hover {
     width: auto;
+}
+
+.bootstrap-datetimepicker-widget {
+    list-style: none !important;
+    background-color: #fff !important;
+}
+
+.required-field {
+    background-color: #FDF8E4 !important;
 }

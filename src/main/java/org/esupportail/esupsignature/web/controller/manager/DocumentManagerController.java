@@ -29,7 +29,7 @@ import java.io.InputStream;
 import java.util.List;
 
 @Controller
-@RequestMapping("manager/{eppn}")
+@RequestMapping("manager")
 @Transactional
 public class DocumentManagerController {
 	
@@ -58,10 +58,7 @@ public class DocumentManagerController {
 		return userService.getUserFromSu(eppn);
 	}
 
-	@ModelAttribute("currentUser")
-	public User getCurrentUser() {
-		return userService.getUserFromAuthentication();
-	}
+
 
 	@ModelAttribute("suUsers")
 	public List<User> getSuUsers() {

@@ -19,22 +19,23 @@ import java.util.Map;
 
 @Component
 public class OrdreMissionPreFill implements PreFill {
-	
+
+	private String name = "ordre_mission";
+
 	@Resource
 	private UserService userService;
 	
 	@Resource
 	private ExtValueService extValueService;
 
-
 	@Override
 	public String getName() {
-		return "ordre_mission";
+		return name;
 	}
 	
 	@Override
 	public List<Field> preFillFields(List<Field> fields, User user) {
-		List<Field> filledFields = new ArrayList<Field>();
+		List<Field> filledFields = new ArrayList<>();
 		PDFont font = PDType1Font.HELVETICA;
 		PDResources resources = new PDResources();
 		resources.put(COSName.getPDFName("Helvetica"), font);
