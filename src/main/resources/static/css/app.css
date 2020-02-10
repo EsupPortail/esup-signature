@@ -561,3 +561,13 @@ input:checked + .slider:before {
 .required-field {
     background-color: #FDF8E4 !important;
 }
+
+.crop {
+    height:125px;
+    overflow:hidden;
+    margin:0;
+}
+
+.fa-4x {
+    line-height: inherit !important;
+}

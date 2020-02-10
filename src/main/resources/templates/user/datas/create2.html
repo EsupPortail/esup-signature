@@ -6,12 +6,21 @@
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
-        <div th:replace="fragments/side :: side"></div>
+        <nav id="sidebar">
+            <div class="m-1">
+                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+                </button>
+                <button title="Retour" class="btn btn-light btn-outline-dark col-12 mb-1 text-left" onclick="window.history.back();">
+                    <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
+                </button>
+            </div>
+        </nav>
         <div class="content" id="v-pills-tabContent">
             <div class="tools">
                 <nav aria-label="breadcrumb" class="d-none d-lg-block">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/user/signrequests">Mes documents</a></li>
+                        <li class="breadcrumb-item"><a href="/user/datas">Mes documents</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Formulaire : <span th:text="${form.name}"></span>
                         </li>
                     </ol>

@@ -54,11 +54,9 @@ public class DocumentManagerController {
 	private PdfService pdfService;
 
 	@ModelAttribute("user")
-	public User getUser(@PathVariable String eppn) {
-		return userService.getUserFromSu(eppn);
+	public User getUser() {
+		return userService.getUserFromAuthentication();
 	}
-
-
 
 	@ModelAttribute("suUsers")
 	public List<User> getSuUsers() {

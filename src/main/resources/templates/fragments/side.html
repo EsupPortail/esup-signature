@@ -1,22 +1,25 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
 <nav th:fragment="side" id="sidebar">
-    <div class="nav flex-column nav-pills m-1" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+    <div class="m-1">
         <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
             <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
         </button>
-    <a class="nav-link btn-transparent" th:classappend="${activeForm == 'signRequest'}? 'active' : ''" th:href="'/user/' + ${user.eppn} + '/signrequests'">
-        <i class="fas fa-file-signature"></i> Signer un document
-    </a>
-    <a class="nav-link btn-transparent" th:classappend="${activeForm == 'sendSignRequest'}? 'active' : ''" th:href="'/user/' + ${user.eppn} + '/send-signrequests'">
-        <i class="fas fa-paper-plane"></i> Envoyer à la signature
-    </a>
-    <hr/>
-    <tr th:each="form : ${forms}">
-        <a class="nav-link btn-transparent" th:classappend="${activeForm == form.name}? 'active' : ''" th:href="'/user/' + ${user.eppn} + '/form/' + ${form.id} + '/list'">
-            <i class="fas fa-file"></i> <span th:text="${form.name}"></span>
+        <a th:classappend="${activeMenu == 'tosign'} ? 'bg-secondary'"  title="Documents à signer" href="/user/signrequests/to-sign" class="btn btn-transparent col-12 mb-1 text-left">
+            <i class="fas fa-file-signature"></i> <span class="sidebar-label">A signer</span>
         </a>
-    </tr>
+        <a th:classappend="${activeMenu == 'new'} ? 'bg-secondary'" title="Nouveau" href="/user/new" class="btn btn-transparent col-12 mb-1 text-left">
+            <i class="fas fa-file-medical"></i> <span class="sidebar-label">Nouveau</span>
+        </a>
+        <a th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes documents" href="/user/datas" class="btn btn-transparent col-12 mb-1 text-left">
+            <i class="fas fa-file-alt"></i> <span class="sidebar-label">Mes documents</span>
+        </a>
+        <a th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Recents" href="/user/signrequests" class="btn btn-transparent col-12 mb-1 text-left">
+            <i class="fas fa-copy"></i> <span class="sidebar-label">Mes demandes</span>
+        </a>
+        <a th:classappend="${activeMenu == 'validation'} ? 'bg-secondary'" title="Valider la signature d'un document" href="/user/validation" class="btn btn-transparent col-12 mb-1 text-left">
+            <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Contrôler la signature d'un document</span>
+        </a>
     </div>
 </nav>
 </html>

@@ -61,8 +61,13 @@ public class SignRequestController {
     private String nexuUrl;
 
     @ModelAttribute("userMenu")
-    public String getActiveMenu() {
+    public String getActiveRole() {
         return "active";
+    }
+
+    @ModelAttribute("activeMenu")
+    public String getActiveMenu() {
+        return "signrequests";
     }
 
     @ModelAttribute("user")
@@ -130,9 +135,6 @@ public class SignRequestController {
             }
         }
 
-        List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
-        model.addAttribute("signRequestsToSign", getSignRequestsGrouped(signRequestsToSign));
-
         List<SignRequest> signRequests;
         if(this.statusFilter != null) {
             signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), this.statusFilter);
@@ -154,6 +156,32 @@ public class SignRequestController {
         return "user/signrequests/list";
     }
 
+    @GetMapping("/to-sign")
+    public String listToSign(
+            @RequestParam(value = "statusFilter", required = false) String statusFilter,
+            @RequestParam(value = "signBookId", required = false) Long signBookId,
+            @RequestParam(value = "messageError", required = false) String messageError,
+            @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 3) Pageable pageable, Model model) {
+        User user = userService.getUserFromAuthentication();
+        workflowService.initCreatorWorkflow();
+
+        if (statusFilter != null) {
+            if (!statusFilter.equals("all")) {
+                this.statusFilter = SignRequestStatus.valueOf(statusFilter);
+            } else {
+                this.statusFilter = null;
+            }
+        }
+        List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
+        model.addAttribute("signRequests", getSignRequestsPageGrouped(signRequestsToSign, pageable));
+        model.addAttribute("statusFilter", this.statusFilter);
+        model.addAttribute("statuses", SignRequestStatus.values());
+        model.addAttribute("messageError", messageError);
+        model.addAttribute("activeMenu", "tosign");
+        populateEditForm(model, new SignRequest());
+        return "user/signrequests/list-to-sign";
+    }
+
     public Page<SignRequest> getSignRequestsPageGrouped(List<SignRequest> signRequests, Pageable pageable) {
         List<SignRequest> signRequestsGrouped = new ArrayList<>();
         Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() != null).collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
@@ -170,24 +198,6 @@ public class SignRequestController {
             signRequestsGrouped.add(signRequest);
         }
         return new PageImpl<>(signRequestsGrouped.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequestsGrouped.size());
-    }
-
-    public List<SignRequest> getSignRequestsGrouped(List<SignRequest> signRequests) {
-        List<SignRequest> signRequestsGrouped = new ArrayList<>();
-        Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() != null).collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
-        for(Map.Entry<SignBook, List<SignRequest>> signBookListEntry : signBookSignRequestMap.entrySet()) {
-            int last = signBookListEntry.getValue().size() - 1;
-            signBookListEntry.getValue().get(last).setViewTitle("");
-            for(SignRequest signRequest : signBookListEntry.getValue()) {
-                signBookListEntry.getValue().get(last).setViewTitle(signBookListEntry.getValue().get(last).getViewTitle() + signRequest.getTitle() + "\n\r");
-            }
-            signRequestsGrouped.add(signBookListEntry.getValue().get(last));
-        }
-        for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
-            signRequest.setViewTitle(signRequest.getTitle());
-            signRequestsGrouped.add(signRequest);
-        }
-        return signRequestsGrouped.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
     }
 
     @GetMapping(value = "/{id}", params = "form")

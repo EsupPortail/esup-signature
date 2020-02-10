@@ -28,7 +28,7 @@
                 <button id="refuseButton" onclick="enableRefuseMode();" class="btn btn-light btn-outline-dark col-12 mb-1 text-left" th:classappend="${signable != 'ok'} ? 'd-none'">
                     <i class="fas fa-ban"></i><span class="sidebar-label"> Refuser</span>
                 </button>
-                <button th:unless="${referer != null}" title="Abandonner" class="btn btn-light btn-outline-dark col-12 mb-1 text-left" value="Retour" onclick="window.history.back();">
+                <button title="Retour" class="btn btn-light btn-outline-dark col-12 mb-1 text-left" onclick="window.history.back();">
                     <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
                 </button>
             </div>

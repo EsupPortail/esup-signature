@@ -80,14 +80,27 @@ public class DataController {
 		return userService.getSuUsers();
 	}
 
+	@ModelAttribute("userMenu")
+	public String getActiveRole() {
+		return "active";
+	}
+
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
-		return "apps";
+		return "datas";
 	}
 
 	@ModelAttribute("forms")
 	public List<Form> getForms() {
 		return 	formService.getFormsByUser(userService.getUserFromAuthentication(), true);
+	}
+
+	@GetMapping("datas")
+	public String list(@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 3) Pageable pageable, Model model) {
+		User user = userService.getUserFromAuthentication();
+		Page<Data> datas =  dataRepository.findByCreateBy(user.getEppn(), pageable);
+		model.addAttribute("datas", datas);
+		return "user/datas/list";
 	}
 
 	@GetMapping("datas/{id}")
@@ -240,18 +253,6 @@ public class DataController {
 		Data data = dataService.getDataById(id);
 		dataService.nextStep(data, recipientEmails, user);
 		return "redirect:/user/" + user.getEppn() + "/data/" + id;
-	}
-
-	@GetMapping("datas")
-	public String getAllDatas(Model model,
-                              @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, @PathVariable String eppn) {
-		User user = userService.getUserFromSu(eppn);
-		if (userRepository.countByEppn(eppn) == 0) {
-			return "redirect:/";
-		}
-		Page<Data> datas = dataRepository.findByOwner(user.getEmail(), pageable);
-		model.addAttribute("datas", datas);
-		return "user/datas/list";
 	}
 
 	@DeleteMapping("datas/{id}")
