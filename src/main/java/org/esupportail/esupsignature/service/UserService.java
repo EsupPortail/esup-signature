@@ -4,18 +4,20 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.UserShare;
+import org.esupportail.esupsignature.ldap.OrganizationalUnitLdap;
+import org.esupportail.esupsignature.ldap.OrganizationalUnitLdapRepository;
 import org.esupportail.esupsignature.ldap.PersonLdap;
-import org.esupportail.esupsignature.ldap.PersonLdapDao;
+import org.esupportail.esupsignature.ldap.PersonLdapRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.scheduler.ScheduledTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -25,22 +27,20 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
-	private PersonLdapDao personDao;
-
-	@Autowired(required = false)
-	public void setPersonDao(PersonLdapDao personDao) {
-		this.personDao = personDao;
-	}
-
 	@Resource
 	private UserRepository userRepository;
 
-	@Autowired(required = false)
+	@Resource
 	private LdapPersonService ldapPersonService;
 
 	@Resource
 	private SignRequestService signRequestService;
 
+	@Resource
+	private PersonLdapRepository personLdapRepository;
+
+	@Resource
+	private OrganizationalUnitLdapRepository organizationalUnitLdapRepository;
 
 	@Resource
 	private UserShareRepository userShareRepository;
@@ -73,12 +73,12 @@ public class UserService {
 		return null;
 	}
 
-	public User createUser(String email) {
-		List<PersonLdap> persons =  personDao.getPersonLdaps("mail", email);
-		String eppn = persons.get(0).getEduPersonPrincipalName();
-        String name = persons.get(0).getSn();
-        String firstName = persons.get(0).getGivenName();
-        return createUser(eppn, name, firstName, email);
+	public User createUser(String mail) {
+		List<PersonLdap> personLdap =  personLdapRepository.findByMail(mail);
+		String eppn = personLdap.get(0).getEduPersonPrincipalName();
+        String name = personLdap.get(0).getSn();
+        String firstName = personLdap.get(0).getGivenName();
+        return createUser(eppn, name, firstName, mail);
 	}
 	
 	public void createUser(Authentication authentication) {
@@ -88,12 +88,12 @@ public class UserService {
 		} else {
 			uid = authentication.getName();
 		}
-		List<PersonLdap> persons =  personDao.getPersonNamesByUid(uid);
-		String eppn = persons.get(0).getEduPersonPrincipalName();
-        String email = persons.get(0).getMail();
-        String name = persons.get(0).getSn();
-        String firstName = persons.get(0).getGivenName();
-        createUser(eppn, name, firstName, email);
+		List<PersonLdap> personLdaps =  personLdapRepository.findByUid(uid);
+		String eppn = personLdaps.get(0).getEduPersonPrincipalName();
+        String mail = personLdaps.get(0).getMail();
+        String name = personLdaps.get(0).getSn();
+        String firstName = personLdaps.get(0).getGivenName();
+        createUser(eppn, name, firstName, mail);
 	}
 	
 	public User createUser(String eppn, String name, String firstName, String email) {
@@ -144,10 +144,10 @@ public class UserService {
     public User getUserFromAuthentication() {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     	String eppn = auth.getName();
-    	if(personDao != null) {
-    		List<PersonLdap> persons =  personDao.getPersonNamesByUid(auth.getName());
-    		if(persons.size() > 0) {
-    			eppn = persons.get(0).getEduPersonPrincipalName();
+    	if(ldapPersonService != null) {
+			//List<PersonLdap> personLdaps=  personLdapRepository.findByUidLike(auth.getName());
+    		if(personLdapRepository.findByUid(auth.getName()).size() > 0) {
+    			eppn = personLdapRepository.findByUid(auth.getName()).get(0).getEduPersonPrincipalName();
     		}
     	}
 		if (userRepository.countByEppn(eppn) > 0) {
@@ -184,7 +184,7 @@ public class UserService {
 		return suEppns;
 	}
 
-	public List<PersonLdap> getPersonLdaps(@RequestParam("searchString") String searchString, @RequestParam(required = false) String ldapTemplateName) {
+	public List<PersonLdap> getPersonLdaps(String searchString, String ldapTemplateName) {
 		List<PersonLdap> personLdaps = new ArrayList<>();
 		List<User> users = new ArrayList<>();
 		addAllUnique(users, userRepository.findByEppnStartingWith(searchString));
@@ -227,11 +227,17 @@ public class UserService {
 	}
 
 	public PersonLdap getPersonLdap(User user) {
-		if (personDao != null) {
-			List<PersonLdap> persons = personDao.getPersonNamesByEppn(user.getEppn());
-			if (persons.size() > 0) {
-				return persons.get(0);
-			}
+		if (ldapPersonService != null) {
+			List<PersonLdap> personLdaps = personLdapRepository.findByEduPersonPrincipalName(user.getEppn());
+			return personLdaps.get(0);
+		}
+		return null;
+	}
+
+	public OrganizationalUnitLdap getOrganizationalUnitLdap(String supannCodeEntite) {
+		if (ldapPersonService != null) {
+			List<OrganizationalUnitLdap> organizationalUnitLdap = organizationalUnitLdapRepository.findBySupannCodeEntite(supannCodeEntite);
+			return organizationalUnitLdap.get(0);
 		}
 		return null;
 	}

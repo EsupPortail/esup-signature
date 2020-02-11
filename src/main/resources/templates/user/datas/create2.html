@@ -6,16 +6,7 @@
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
-        <nav id="sidebar">
-            <div class="m-1">
-                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
-                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
-                </button>
-                <button title="Retour" class="btn btn-light btn-outline-dark col-12 mb-1 text-left" onclick="window.history.back();">
-                    <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
-                </button>
-            </div>
-        </nav>
+        <nav th:replace="fragments/side :: side"></nav>
         <div class="content" id="v-pills-tabContent">
             <div class="tools">
                 <nav aria-label="breadcrumb" class="d-none d-lg-block">
@@ -54,12 +45,12 @@
                                     th:classappend="${esupStatus == 'down'} ? 'btn-secondary' : 'btn-success'"
                                     th:disabled="${esupStatus == 'down'}"
                                     th:title="${esupStatus == 'down'} ? 'Esup-Signature indisponible'"
-                                    class="ml-1 btn float-left">
+                                    class="ml-1 btn">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                             <button th:if="${data.step > 1 && esupStatus != 'down'}" type="button" data-toggle="modal"
                                     data-target="#nextStepModal"
-                                    class="ml-1 btn btn-success float-left">
+                                    class="ml-1 btn btn-success">
                                 <i class="fas fa-check"></i><br/>Etape suivante
                             </button>
                         </th:block>
@@ -336,7 +327,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form class="form-inline" th:action="'/user/' + ${user.eppn} + '/data/' + ${data.id} + '/send'" method="post" id="send">
+                <form class="form-inline" th:action="'/user/datas/' + ${data.id} + '/send'" method="post" id="send">
                     <div class="alert alert-info">
                         <p>
                             <span th:text="'La procedure ' + ${form.name} + ' comporte ' + ${#lists.size(steps)} + ' étapes.'"></span>
@@ -367,7 +358,7 @@
                                                 callback('Merci de saisir au moins 3 caractères')
                                                 return
                                             }
-                                            fetch('/ws/searchLdap?searchString=' + search)
+                                            fetch('/ws/searchUser?searchString=' + search)
                                                 .then(function (response) {
                                                     return response.json()
                                                 })
@@ -425,7 +416,7 @@
                                             callback('Merci de saisir au moins 3 caractères')
                                             return
                                         }
-                                        fetch('/ws/searchLdap?searchString=' + search)
+                                        fetch('/ws/searchUser?searchString=' + search)
                                             .then(function (response) {
                                                 return response.json()
                                             })

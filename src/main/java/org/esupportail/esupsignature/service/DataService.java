@@ -39,6 +39,9 @@ public class DataService {
 	private SignRequestService signRequestService;
 
 	@Resource
+	private SignBookService signBookService;
+
+	@Resource
 	private SignRequestRepository signRequestRepository;
 
 	@Resource
@@ -99,22 +102,20 @@ public class DataService {
 		}
 		String name = data.getName().replaceAll("[\\\\/:*?\"<>|]", "-");
 		List<WorkflowStep> workflowSteps = getWorkflowSteps(data, recipientEmails, user);
+		Workflow workflow = new Workflow();
+		workflow.setName(form.getName());
+		workflow.getWorkflowSteps().addAll(workflowSteps);
 		data.setStep(1);
+		SignBook signBook = signBookService.createSignBook(name, user, false);
 		SignRequest signRequest = signRequestService.createSignRequest(name, user);
 		signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(generateFile(data), name, "application/pdf"));
+		signBookService.importWorkflow(signBook, workflow);
+		signBookService.addSignRequest(signBook, signRequest);
 		String token = signRequest.getToken();
 		logger.info(token);
 		data.setSignRequestToken(token);
 		data.setStatus(SignRequestStatus.pending);
 		dataRepository.save(data);
-
-//		TODO if no workflow send to target (no esup-signature)
-//			if(form.getTargetType().equals(Form.DocumentIOType.mail)) {
-//				emailService.sendFile(data, String.join(",", targetEmails), generateFile(data), fileName);
-//			} else {
-//				//TODO implements other target types
-//			}
-
 	}
 
 	public List<WorkflowStep> getWorkflowSteps(Data data, List<String> recipientEmails, User user) {

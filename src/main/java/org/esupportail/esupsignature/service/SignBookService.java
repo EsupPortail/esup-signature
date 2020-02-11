@@ -63,7 +63,7 @@ public class SignBookService {
         return list;
     }
 
-    public SignBook createSignBook(String name, SignBookType signBookType, User user, boolean external) throws EsupSignatureException {
+    public SignBook createSignBook(String name, User user, boolean external) throws EsupSignatureException {
         if (signBookRepository.countByName(name) == 0) {
             SignBook signBook = new SignBook();
             signBook.setStatus(SignRequestStatus.draft);
@@ -81,7 +81,7 @@ public class SignBookService {
     public SignBook getSignBook(String name, User user) throws EsupSignatureException {
         if (signBookRepository.countByName(name) == 0) {
             logger.info("create new signBook : " + name);
-            return createSignBook(name, SignBookType.workflow, user, false);
+            return createSignBook(name, user, false);
         } else {
             return signBookRepository.findByName(name).get(0);
         }

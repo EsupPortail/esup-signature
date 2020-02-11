@@ -8,5 +8,5 @@ public interface ExtValue {
 
 	public String getName();
 	public String getValueByNameAndUser(String name, User user);
-	public Map<String, String> getAllValuesByUser(User user);
+	public Map<String, Object> getAllValuesByUser(User user);
 }

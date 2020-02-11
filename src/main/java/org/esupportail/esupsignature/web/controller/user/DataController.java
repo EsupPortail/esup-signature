@@ -3,6 +3,8 @@ package org.esupportail.esupsignature.web.controller.user;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.UserPropertieRepository;
@@ -237,12 +239,11 @@ public class DataController {
 
 	@PostMapping("datas/{id}/send")
 	public String sendDataById(@PathVariable("id") Long id,
-                               @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails) {
+                               @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails) throws EsupSignatureIOException, EsupSignatureException {
 		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
 //		todo create signrequest
-//		dataService.sendForSign(data, recipientEmails, targetEmails, user);
-//		dataService.checkSignStatus(data);
+		dataService.sendForSign(data, recipientEmails, targetEmails, user);
 		return "redirect:/user/" + user.getEppn() + "/data/" + id + "/update";
 	}
 
@@ -260,16 +261,19 @@ public class DataController {
 		User user = userService.getUserFromAuthentication();
 		Data data = dataRepository.findById(id).get();
 		if(user.getEppn().equals(data.getCreateBy())) {
-			SignRequest signRequest = signRequestRepository.findByToken(data.getSignRequestToken()).get(0);
-			signRequestService.delete(signRequest);
+			if(signRequestRepository.countByToken(data.getSignRequestToken()) > 0) {
+				SignRequest signRequest = signRequestRepository.findByToken(data.getSignRequestToken()).get(0);
+				signRequestService.delete(signRequest);
+			}
 			dataService.deleteData(id);
+			redirectAttributes.addFlashAttribute("messageInfo", "Suppression effectuée");
 		} else {
 			redirectAttributes.addFlashAttribute("messageError", "Suppression impossible");
 		}
-		return "redirect:/user/" + user.getEppn() + "/form/" + data.getForm().getId() + "/list";
+		return "redirect:/user/datas/";
 	}
 
-	@GetMapping("/data/{id}/export-pdf")
+	@GetMapping("/datas/{id}/export-pdf")
 	public ResponseEntity exportToPdf(@PathVariable("id") Long id, HttpServletResponse response) {
 		try {
 			Data data = dataService.getDataById(id);

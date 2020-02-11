@@ -5,6 +5,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.ldap.repository.config.EnableLdapRepositories;
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -83,4 +86,5 @@ public class AppConfig implements WebMvcConfigurer {
 	    source.registerCorsConfiguration("/**", config);
 	    return new CorsFilter(source);
 	}
+
 }

@@ -40,20 +40,20 @@ public class OrdreMissionPreFill implements PreFill {
 		PDResources resources = new PDResources();
 		resources.put(COSName.getPDFName("Helvetica"), font);
 		ExtValue extLdapValue = extValueService.getExtValueServiceByName("ldap");
-		Map<String, String> ldapValues = extLdapValue.getAllValuesByUser(user);
+		Map<String, Object> ldapValues = extLdapValue.getAllValuesByUser(user);
 		for(Field field : fields) {
 			if(field.getName().split("_")[0].equals("extvalue")) {
 				if(field.getName().split("_")[1].equals("ldap")) {	
 					String extValueName = field.getName().split("_")[2];
 					if(ldapValues.containsKey(extValueName)) {
-						field.setDefaultValue(ldapValues.get(extValueName));
+						field.setDefaultValue((String) ldapValues.get(extValueName));
 					}
 				}
 			}
-			if(field.getName().equals("persUniv") && field.getLabel().equals("oui") && ldapValues.get("eduPersonAffiliation") != null && ldapValues.get("eduPersonAffiliation").contains("staff")) {
+			if(field.getName().equals("persUniv") && field.getLabel().equals("oui") && ldapValues.get("eduPersonAffiliation") != null && ldapValues.get("eduPersonAffiliation").toString().contains("staff")) {
 				field.setDefaultValue("oui");
 			}
-			if(field.getName().equals("persUniv") && field.getLabel().equals("non") && ldapValues.get("eduPersonAffiliation") != null && !ldapValues.get("eduPersonAffiliation").contains("staff")) {
+			if(field.getName().equals("persUniv") && field.getLabel().equals("non") && ldapValues.get("eduPersonAffiliation") != null && !ldapValues.get("eduPersonAffiliation").toString().contains("staff")) {
 				field.setDefaultValue("non");
 			}
 			filledFields.add(field);
