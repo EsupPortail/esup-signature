@@ -100,7 +100,7 @@
                                     if (inputField.val() != null) {
                                         dataFields[i].defaultValue = inputField.val();
                                         if(inputField.is(':checkbox')) {
-                                            if(!inputField.attr("checked")) {
+                                            if(!inputField[0].checked) {
                                                 dataFields[i].defaultValue = 'off';
                                             }
                                         }
