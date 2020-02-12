@@ -47,6 +47,18 @@
                     <div class="card-footer"><a th:href="'/user/datas/form/' + ${form.id}" class="stretched-link"><i class="fa fa-plus"></i></a></div>
                 </div>
                 </th:block>
+                <th:block th:each="workflow : ${workflows}">
+                    <div class="card text-center mr-2" style="width: 200px;">
+                        <div class="crop">
+                            <i class="fas fa-project-diagram fa-4x card-img-top mt-3"></i>
+                        </div>
+                        <div class="card-body text-left">
+                            <h5 class="card-title" th:text="${workflow.name}"></h5>
+                            <p class="card-text" th:text="${workflow.name}"></p>
+                        </div>
+                        <div class="card-footer"><a href="#" data-toggle="modal" data-target="#newRequest" class="stretched-link"><i class="fa fa-plus"></i></a></div>
+                    </div>
+                </th:block>
             </div>
         </div>
     </div>

@@ -152,7 +152,6 @@ public class SignRequestController {
         model.addAttribute("statusFilter", this.statusFilter);
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("messageError", messageError);
-        populateEditForm(model, new SignRequest());
         return "user/signrequests/list";
     }
 
@@ -178,7 +177,6 @@ public class SignRequestController {
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("messageError", messageError);
         model.addAttribute("activeMenu", "tosign");
-        populateEditForm(model, new SignRequest());
         return "user/signrequests/list-to-sign";
     }
 
@@ -561,11 +559,6 @@ public class SignRequestController {
             logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
         }
         return "redirect:/user/signrequests/" + signRequest.getId();
-    }
-
-    void populateEditForm(Model model, SignRequest signRequest) {
-        model.addAttribute("signRequest", signRequest);
-        model.addAttribute("signTypes", Arrays.asList(SignType.values()));
     }
 
 }
