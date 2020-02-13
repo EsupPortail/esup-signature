@@ -18,9 +18,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 @RequestMapping("/user/signbooks/wizard")
@@ -56,28 +58,43 @@ public class SignBookWizardController {
     private SignBookService signBookService;
 
     @GetMapping(value = "/wiz1")
-    public String wiz1() {
+    public String wiz1(@RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
+        if (workflowId != null) {
+            Workflow workflow = workflowRepository.findById(workflowId).get();
+            model.addAttribute("workflow", workflow);
+        }
         return "user/signbooks/wizard/wiz1";
     }
 
     @PostMapping(value = "/wiz2", produces = "text/html")
-    public String wiz2(@RequestParam("name") String name, Model model, RedirectAttributes redirectAttributes) {
+    public String wiz2(@RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model, RedirectAttributes redirectAttributes) {
         if(signBookRepository.countByName(name) > 0) {
             redirectAttributes.addFlashAttribute("messageError", "Un parapheur portant ce nom existe déjà");
             return "redirect:/user/signbooks/wizard/wiz1";
         }
         logger.info("init new signBook : " + name);
         model.addAttribute("name", name);
+        if (workflowId != null) {
+            Workflow workflow = workflowRepository.findById(workflowId).get();
+            model.addAttribute("workflow", workflow);
+        }
         return "user/signbooks/wizard/wiz2";
     }
 
     @PostMapping(value = "/wiz3", produces = "text/html")
-    public String wiz3(@RequestParam("name") String name, Model model) throws EsupSignatureException, IOException, EsupSignatureIOException {
+    public ModelAndView wiz3(@RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, HttpServletRequest request, Model model) throws EsupSignatureException, IOException, EsupSignatureIOException {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookService.getSignBook(name, user);
         model.addAttribute("signBook", signBook);
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
-        return "user/signbooks/wizard/wiz3";
+        if (workflowId != null) {
+            Workflow workflow = workflowRepository.findById(workflowId).get();
+            ModelAndView modelAndView = new ModelAndView("redirect:/user/signbooks/wizard/wiz4/" + signBook.getId());
+            modelAndView.addObject("name", name);
+            modelAndView.addObject("workflowId", workflow.getId());
+            return modelAndView;
+        }
+        return new ModelAndView("user/signbooks/wizard/wiz3");
     }
 
     @RequestMapping(value = "/wiz4/{id}", produces = "text/html")

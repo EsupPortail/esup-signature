@@ -17,7 +17,10 @@
                     </ol>
                 </nav>
                 <div class="d-flex mb-1">
-                    <div class="border border-dark rounded p-1 d-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
+                    <button title="Annuler" class="btn btn-light btn-outline-danger ml-1" aria-label="Précédent" onclick="window.history.back();">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="border border-dark rounded ml-1 p-1 d-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
                     <button id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
                         <i class="fas fa-arrow-left"></i>
                     </button>
@@ -30,7 +33,7 @@
                     <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
                     <button id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
                     <button th:if="${data.step == 0}" type="button" onclick="document.getElementById('newDataSubmit').click();"
-                            class="btn btn-light btn-outline-dark ml-1">
+                            class="btn btn-light btn-outline-success ml-1">
                         <i class="far fa-save"></i><br/>
                     </button>
                     <div th:if="${data.status != null}" th:switch="${data.status.name()}">
@@ -63,7 +66,7 @@
                     </button>
                 </div>
             </div>
-            <div class="workspace">
+            <div class="workspace alert alert-secondary fadein" style="transition: all 0.3s; margin-top: 98px;">
                 <form id="newData" th:action="'/user/datas/form/' + ${form.id}" method="post">
                     <input id="newDataSubmit" type="submit" style="display: none;"/>
                     <input id="dataId" type="hidden" name="dataId" th:value="${data.id}"/>
@@ -79,7 +82,7 @@
                         var url = '/user/documents/getfile/[[${form.document.id}]]';
                         var pdfDoc = null,
                             pageNum = 1,
-                            scale = 1,
+                            scale = 1.5,
                             rotation = 0;
                         pdfjsLib.disableWorker = true;
                         pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.js';

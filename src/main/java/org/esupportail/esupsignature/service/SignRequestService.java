@@ -76,9 +76,6 @@ public class SignRequestService {
 	private SignRequestParamsRepository signRequestParamsRepository;
 
 	@Resource
-	private SignBookRepository signBookRepository;
-
-	@Resource
 	private FsAccessFactory fsAccessFactory;
 
 	@Resource
@@ -95,9 +92,6 @@ public class SignRequestService {
 
 	@Resource
 	private UserService userService;
-
-	@Resource
-	private WorkflowService workflowStepService;
 
 	@Resource
 	private MailService mailService;

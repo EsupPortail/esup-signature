@@ -12,13 +12,7 @@ import java.util.List;
 
 public interface DataRepository extends CrudRepository<Data, Long>, PagingAndSortingRepository<Data, Long> {
 	Long countByNameStartsWith(String name);
-	Long countByFormAndCreateByAndStatus(Form form, String createBy, SignRequestStatus status);
 	Page<Data> findByCreateBy(String createBy, Pageable pageable);
-	Page<Data> findByOwner(String owner, Pageable pageable);
-	Page<Data> findByCreateByAndStatus(String createBy, SignRequestStatus status, Pageable pageable);
-	List<Data> findByStatus(SignRequestStatus status);
-	Page<Data> findByForm(Form form, Pageable pageable);
-	Page<Data> findByFormAndCreateBy(Form form, String createBy, Pageable pageable);
-	Page<Data> findByFormNameAndCreateBy(String form, String createBy, Pageable pageable);
 	Page<Data> findByFormNameAndOwner(String form, String owner, Pageable pageable);
+	List<Data> findByCreateByAndStatus(String createBy, SignRequestStatus status);
 }

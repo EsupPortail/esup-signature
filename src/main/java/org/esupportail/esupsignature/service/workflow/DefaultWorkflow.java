@@ -21,9 +21,6 @@ public class DefaultWorkflow extends Workflow {
     @Resource
     private RecipientService recipientService;
 
-    @Resource
-    private UserRepository userRepository;
-
     @Override
     public String getName() {
         return "DefaultWorkflow";
