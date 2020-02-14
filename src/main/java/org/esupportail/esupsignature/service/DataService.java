@@ -126,7 +126,7 @@ public class DataService {
 			workflowSteps = workflowSteps.stream().sorted(Comparator.comparingInt(WorkflowStep::getStepNumber)).collect(Collectors.toList());
 			int step = 1;
 			for(WorkflowStep workflowStep: workflowSteps) {
-				userPropertieService.createRecipientPropertie(user, step, workflowStep, data.getForm());
+				//userPropertieService.createRecipientPropertie(user, step, workflowStep, data.getForm());
 				//signService.addWorkflowStep(name, workflowStep);
 				step++;
 			}

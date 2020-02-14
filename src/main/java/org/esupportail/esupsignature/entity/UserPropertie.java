@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.entity;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -24,7 +25,7 @@ public class UserPropertie {
     private Integer step;
 
     @ManyToMany
-    private List<Recipient> recipients;
+    private List<Recipient> recipients = new ArrayList<>();
 
     private String targetEmail;
 

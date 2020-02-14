@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.repository.RecipientRepository;
 import org.esupportail.esupsignature.repository.UserPropertieRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,13 +17,22 @@ public class UserPropertieService {
     @Resource
     private UserPropertieRepository userPropertieRepository;
 
+    @Resource
+    private RecipientRepository recipientRepository;
+
     public void createRecipientPropertie(User user, int step, WorkflowStep workflowStep, Form form) {
         List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndRecipientsAndForm(user, step, workflowStep.getRecipients(), form);
         if (userProperties.size() == 0) {
             UserPropertie userPropertie = new UserPropertie();
             userPropertie.setStep(step);
             userPropertie.setForm(form);
-            userPropertie.setRecipients(workflowStep.getRecipients());
+            for(Recipient recipient : workflowStep.getRecipients()) {
+                Recipient newRecipient = new Recipient();
+                newRecipient.setUser(user);
+                newRecipient.setParentId(recipient.getParentId());
+                recipientRepository.save(newRecipient);
+                userPropertie.getRecipients().add(newRecipient);
+            }
             userPropertie.setUser(user);
             userPropertieRepository.save(userPropertie);
         } else {

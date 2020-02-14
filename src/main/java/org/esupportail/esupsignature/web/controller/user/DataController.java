@@ -21,6 +21,7 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
+@Transactional
 @RequestMapping("/user")
 public class DataController {
 
@@ -242,7 +244,6 @@ public class DataController {
                                @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails) throws EsupSignatureIOException, EsupSignatureException {
 		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
-//		todo create signrequest
 		dataService.sendForSign(data, recipientEmails, targetEmails, user);
 		return "redirect:/user/" + user.getEppn() + "/data/" + id + "/update";
 	}

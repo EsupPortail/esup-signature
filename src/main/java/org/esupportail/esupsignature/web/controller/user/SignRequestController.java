@@ -123,7 +123,7 @@ public class SignRequestController {
             @RequestParam(value = "statusFilter", required = false) String statusFilter,
             @RequestParam(value = "signBookId", required = false) Long signBookId,
             @RequestParam(value = "messageError", required = false) String messageError,
-            @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 3) Pageable pageable, Model model) {
+            @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
         User user = userService.getUserFromAuthentication();
         workflowService.initCreatorWorkflow();
 
@@ -160,7 +160,7 @@ public class SignRequestController {
             @RequestParam(value = "statusFilter", required = false) String statusFilter,
             @RequestParam(value = "signBookId", required = false) Long signBookId,
             @RequestParam(value = "messageError", required = false) String messageError,
-            @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 3) Pageable pageable, Model model) {
+            @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
         User user = userService.getUserFromAuthentication();
         workflowService.initCreatorWorkflow();
 
