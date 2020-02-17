@@ -31,10 +31,7 @@ public class SignBookService {
     private RecipientService recipientService;
 
     @Resource
-    private UserRepository userRepository;
-
-    @Resource
-    private WorkflowRepository workflowRepository;
+    private DataRepository dataRepository;
 
     @Resource
     private WorkflowStepRepository workflowStepRepository;
@@ -96,6 +93,11 @@ public class SignBookService {
         List<SignRequest> signRequests = new ArrayList<>(signBook.getSignRequests());
         for(SignRequest signRequest : signRequests) {
             signRequestService.delete(signRequest);
+        }
+        List<Data> datas = dataRepository.findBySignBook(signBook);
+        for (Data data : datas) {
+            data.setSignBook(null);
+            dataRepository.save(data);
         }
         signBookRepository.delete(signBook);
     }

@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.springframework.stereotype.Component;
+import org.springframework.test.annotation.NotTransactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class CreatorAndManagerWorkflow extends DefaultWorkflow {
         //STEP 1
         WorkflowStep workflowStep1 = new WorkflowStep();
         workflowStep1.setStepNumber(1);
-        workflowStep1.getRecipients().add(recipientService.createRecipient(data.getId(), user));
+        workflowStep1.getRecipients().add(recipientService.createRecipient(null, user));
         workflowStep1.setDescription("Votre signature");
         workflowStep1.setSignType(SignType.pdfImageStamp);
         workflowSteps.add(workflowStep1);

@@ -18,6 +18,7 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.test.annotation.NotTransactional;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -75,6 +76,9 @@ public class DataController {
 
 	@Resource
 	private RecipientRepository recipientRepository;
+
+	@Resource
+	private RecipientService recipientService;
 
 	@ModelAttribute("user")
 	public User getUser() {
@@ -184,6 +188,9 @@ public class DataController {
 		model.addAttribute("form", form);
 		model.addAttribute("activeForm", form.getName());
 		model.addAttribute("document", form.getDocument());
+		if(data.getSignBook() != null && recipientService.needSign(data.getSignBook().getSignRequests().get(0).getRecipients(), user)) {
+			model.addAttribute("toSign", true);
+		}
 		return "user/datas/create2";
 	}
 
@@ -206,7 +213,7 @@ public class DataController {
 		data.setCreateBy(userService.getUserFromAuthentication().getEppn());
 		data.setOwner(user.getEppn());
 		data.setCreateDate(new Date());
-		dataService.updateData(data);
+		dataRepository.save(data);
 		return "redirect:/user/datas/" + data.getId() + "/update";
 	}
 	
@@ -229,9 +236,9 @@ public class DataController {
 		}
 		//data.setDatas(formData.toSingleValueMap());
 		data.setUpdateDate(new Date());
-		if(user.getEppn().equals(data.getCreateBy())) {
-			dataService.updateData(data);
-		}
+//		if(user.getEppn().equals(data.getCreateBy())) {
+//			dataService.updateData(data);
+//		}
 		redirectAttributes.addAttribute("page", page);
 		if(navPage != null && !navPage.isEmpty()) {
 			return "redirect:/user/" + user.getEppn() + "/data/" + data.getId() + "/update?page=" + page;
@@ -246,20 +253,10 @@ public class DataController {
 		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
 		SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user);
-		if(recipientRepository.findByParentIdAndUser(signBook.getId(), user).size() > 0 &&
-				(signBookService.getCurrentWorkflowStep(signBook).getRecipients().size() == 1 || !signBookService.getCurrentWorkflowStep(signBook).getAllSignToComplete())) {
+		if(recipientService.needSign(data.getSignBook().getSignRequests().get(0).getRecipients(), user)) {
 			return "redirect:/user/signrequests/sign/" + signBook.getSignRequests().get(0).getId();
 		}
 		return "redirect:/user/datas/" + id + "/update";
-	}
-
-	@PostMapping("datas/{id}/next-step")
-	public String nextStep(@PathVariable("id") Long id,
-                           @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, @PathVariable String eppn) {
-		User user = userService.getUserFromSu(eppn);
-		Data data = dataService.getDataById(id);
-		dataService.nextStep(data, recipientEmails, user);
-		return "redirect:/user/" + user.getEppn() + "/data/" + id;
 	}
 
 	@DeleteMapping("datas/{id}")
@@ -267,10 +264,7 @@ public class DataController {
 		User user = userService.getUserFromAuthentication();
 		Data data = dataRepository.findById(id).get();
 		if(user.getEppn().equals(data.getCreateBy())) {
-			if(data.getSignRequest() != null) {
-				signRequestService.delete(data.getSignRequest());
-			}
-			dataService.deleteData(id);
+			dataService.delete(data);
 			redirectAttributes.addFlashAttribute("messageInfo", "Suppression effectuée");
 		} else {
 			redirectAttributes.addFlashAttribute("messageError", "Suppression impossible");
@@ -298,7 +292,7 @@ public class DataController {
 		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
 		if(user.getEmail().equals(data.getCreateBy())) {
-			signRequestService.delete(data.getSignRequest());
+			signBookService.delete(data.getSignBook());
 			dataService.reset(data);
 			return "redirect:/user/" + user.getEppn() + "/data/" + id;
 		} else {
@@ -321,7 +315,6 @@ public class DataController {
 			cloneData.setOwner(data.getOwner());
 			cloneData.getDatas().putAll(data.getDatas());
 			cloneData.setForm(data.getForm());
-			dataService.updateData(cloneData);
 			return "redirect:/user/" + user.getEppn() + "/data/" + cloneData.getId();
 		} else {
 			return "";

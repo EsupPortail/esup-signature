@@ -44,22 +44,17 @@
                                     class="btn btn btn-outline-dark btn-light float-left mr-2">
                                 <i class="far fa-file-pdf fa-2x"></i><br/>Exporter en PDF
                             </a>
-                            <button th:if="${data.step == 1 && esupStatus != 'down'}" type="button" data-toggle="modal"
+                            <button th:if="${data.signRequest == null}" type="button" data-toggle="modal"
                                     data-target="#sendModal"
                                     class="mr-2 btn btn-success float-left">
                                 <i class="fas fa-check fa-2x"></i><br/>Demarrer le processus de signature
                             </button>
-                            <button th:if="${data.step > 1 && esupStatus != 'down'}" type="button" data-toggle="modal"
-                                    data-target="#nextStepModal"
-                                    class="mr-2 btn btn-success float-left">
-                                <i class="fas fa-check fa-2x"></i><br/>Etape suivante
-                            </button>
                         </th:block>
                     </div>
-                    <a th:if="${data.signUrl != null && data.step == 1}" class="mr-2 btn btn-success float-left" th:href="${data.signUrl} + '?referer=true'">
-                        <i class="fas fa-signature fa-2x"></i>
-                        <br/>Vous devez signer ce document
-                    </a>
+<!--                    <a th:if="${data.signUrl != null && data.signRequest == null}" class="mr-2 btn btn-success float-left" th:href="${data.signUrl} + '?referer=true'">-->
+<!--                        <i class="fas fa-signature fa-2x"></i>-->
+<!--                        <br/>Vous devez signer ce document-->
+<!--                    </a>-->
                     <button title="Assistant de demande de signature"  type="button" data-toggle="modal" data-target="#signModal" class="mr-2 btn btn-success float-left">
                         <i class="fas fa-signature"></i> <span class="sidebar-label">Signature</span>
                     </button>

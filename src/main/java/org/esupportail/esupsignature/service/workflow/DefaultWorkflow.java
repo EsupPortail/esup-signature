@@ -53,12 +53,8 @@ public class DefaultWorkflow extends Workflow {
             List<String> favoritesEmail = userPropertieService.getFavoritesEmails(user, step, form);
             for(String email : favoritesEmail) {
                 User recipientUser = userService.getUser(email);
-                recipients.add(recipientService.createRecipient(form.getId(), recipientUser));
+                recipients.add(recipientService.createRecipient(null, recipientUser));
             }
-        }
-
-        for(Recipient recipient : recipients) {
-            recipientRepository.save(recipient);
         }
         return recipients;
     }

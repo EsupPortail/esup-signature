@@ -187,7 +187,7 @@
                             <br/>
                             <small>Vous pouvez utiliser une clé materielle ou un keystore</small>
                         </div>
-                        <button class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.getId()} + ');'">
+                        <button class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.id} + ');'">
                             <i class="fas fa-signature"></i> Signer
                         </button>
                     </div>
@@ -196,16 +196,16 @@
                 <script>
                     $("#password").on('keyup', function (e) {
                         if (e.keyCode === 13) {
-                            launchSign([[${signRequest.getId()}]]);
+                            launchSign([[${signRequest.id}]]);
                         }
                     });
                 </script>
             </div>
             <div class="modal-footer">
-                <button th:if="${@signRequestService.getCurrentSignType(signRequest).name() == 'certSign' || @signRequestService.getCurrentSignType(signRequest).name() == 'pdfImageStamp'}" class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.getId()} + ');'">
+                <button th:if="${@signRequestService.getCurrentSignType(signRequest).name() == 'certSign' || @signRequestService.getCurrentSignType(signRequest).name() == 'pdfImageStamp'}" class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.id} + ');'">
                     <i class="fas fa-signature"></i> Signer
                 </button>
-                <button th:if="${@signRequestService.getCurrentSignType(signRequest).name() == 'visa'}" class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.getId()} + ');'">
+                <button th:if="${@signRequestService.getCurrentSignType(signRequest).name() == 'visa'}" class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.id} + ');'">
                     <i class="fas fa-check"></i> Viser
                 </button>
             </div>

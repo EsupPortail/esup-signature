@@ -61,9 +61,6 @@ public class SignRequestService {
 	private RecipientRepository recipientRepository;
 
 	@Resource
-	private DataRepository dataRepository;
-
-	@Resource
 	private UserKeystoreService userKeystoreService;
 
 	@Resource
@@ -576,11 +573,6 @@ public class SignRequestService {
 		}
 		if(signRequest.getParentSignBook() != null) {
 			signRequest.getParentSignBook().getSignRequests().remove(signRequest);
-		}
-		List<Data> datas = dataRepository.findBySignRequest(signRequest);
-		for (Data data : datas) {
-			data.setSignRequest(null);
-			dataRepository.save(data);
 		}
 		signRequestRepository.delete(signRequest);
 	}

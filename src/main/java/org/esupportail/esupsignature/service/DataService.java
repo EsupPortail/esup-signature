@@ -66,26 +66,17 @@ public class DataService {
 		return list;
 	}
 
-	public void updateData(Data data) {
-		dataRepository.save(data);
-	}
-	
-	public void deleteData(Long dataId) {
-		dataRepository.delete(getDataById(dataId));
+	public void delete(Data data) {
+		if(data.getSignBook() != null) {
+			signBookService.delete(data.getSignBook());
+		}
+		dataRepository.delete(data);
 	}
 
 	public void reset(Data data) {
 		data.setStatus(SignRequestStatus.draft);
-		data.setSignRequest(null);
+		data.setSignBook(null);
 		data.setSignBookName(null);
-		dataRepository.save(data);
-	}
-
-	public void nextStep(Data data, List<String> recipientEmails, User user) {
-		List<WorkflowStep> workflowSteps = getWorkflowSteps(data, recipientEmails, user);
-		WorkflowStep workflowStep = workflowSteps.get(data.getStep() - 1);
-		signRequestService.pendingSignRequest(data.getSignRequest(), workflowStep.getSignType(), workflowStep.getAllSignToComplete(), user);
-		data.setStatus(SignRequestStatus.pending);
 		dataRepository.save(data);
 	}
 
@@ -99,24 +90,27 @@ public class DataService {
 			userPropertieService.createTargetPropertie(user, targetUrl, form);
 		}
 		String name = data.getName().replaceAll("[\\\\/:*?\"<>|]", "-");
-		List<WorkflowStep> workflowSteps = getWorkflowSteps(data, recipientEmails, user);
-		Workflow workflow = new Workflow();
-		workflow.setName(form.getName());
-		workflow.getWorkflowSteps().addAll(workflowSteps);
 		SignBook signBook = signBookService.createSignBook(name, user, false);
 		SignRequest signRequest = signRequestService.createSignRequest(name, user);
 		signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(generateFile(data), name + ".pdf", "application/pdf"));
+		signRequestRepository.save(signRequest);
 		signBookService.addSignRequest(signBook, signRequest);
+		List<WorkflowStep> workflowSteps = getWorkflowSteps(data, recipientEmails, user);
+		for(WorkflowStep workflowStep: workflowSteps)  {
+			for(Recipient recipient : workflowStep.getRecipients()) {
+				recipient.setParentId(signRequest.getId());
+				recipientRepository.save(recipient);
+			}
+		}
+		Workflow workflow = new Workflow();
+		workflow.setName(form.getName());
+		workflow.getWorkflowSteps().addAll(workflowSteps);
 		signBookService.importWorkflow(signBook, workflow);
 		signBookService.nextWorkFlowStep(signBook);
-		signRequestRepository.save(signRequest);
 		signBookRepository.save(signBook);
 		signBookService.pendingSignBook(signBook, user);
-		String token = signRequest.getToken();
-		logger.info(token);
-		data.setSignRequest(signRequest);
+		data.setSignBook(signBook);
 		data.setStatus(SignRequestStatus.pending);
-		data.setStep(1);
 		return signBook;
 	}
 

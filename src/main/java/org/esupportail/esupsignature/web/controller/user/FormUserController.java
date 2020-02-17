@@ -115,7 +115,6 @@ public class FormUserController {
 		data.setCreateBy(userService.getUserFromAuthentication().getEppn());
 		data.setCreateDate(new Date());
 		data.setOwner(user.getEppn());
-		dataService.updateData(data);
 		return "redirect:/user/data/" + data.getId();
 	}
 	

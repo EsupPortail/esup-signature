@@ -33,40 +33,32 @@
                     <div class="border border-dark rounded p-1 ml-1 d-none d-lg-inline"><span id="zoom"></span> %</div>
                     <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
                     <button id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
-                    <button th:if="${data.step == 0}" type="button" onclick="document.getElementById('newDataSubmit').click();"
-                            class="btn btn-light btn-outline-success ml-1">
+                    <button th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" onclick="document.getElementById('newDataSubmit').click();" class="btn btn-light btn-outline-success ml-1">
                         <i class="far fa-save"></i><br/>
                     </button>
                     <div th:if="${data.status != null}" th:switch="${data.status.name()}">
                         <th:block th:case="'draft'">
-                            <a target="_blank" title="Exporter" th:if="${data.status.name() == 'draft'}"
+                            <a target="_blank" title="Exporter en PDF" th:if="${data.status.name() == 'draft'}"
                                th:href="'/user/datas/' + ${data.id} + '/export-pdf'"
                                class="btn btn btn-outline-dark btn-light ml-1">
                                 <i class="far fa-file-pdf"></i>
                             </a>
-                            <button type="button" data-toggle="modal"
-                                    data-target="#sendModal"
-                                    th:classappend="${esupStatus == 'down'} ? 'btn-secondary' : 'btn-success'"
-                                    th:disabled="${esupStatus == 'down'}"
-                                    th:title="${esupStatus == 'down'} ? 'Esup-Signature indisponible'"
-                                    class="ml-1 btn">
+                            <button th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn btn-success ml-1 ">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
-                            <button th:if="${data.step > 1 && esupStatus != 'down'}" type="button" data-toggle="modal"
-                                    data-target="#nextStepModal"
-                                    class="ml-1 btn btn-success">
-                                <i class="fas fa-check"></i><br/>Etape suivante
-                            </button>
+<!--                            <button th:if="${data.signBook != null && data.signBook.signRequests.size() > 0}" type="button" data-toggle="modal"-->
+<!--                                    data-target="#nextStepModal"-->
+<!--                                    class="ml-1 btn btn-success">-->
+<!--                                <i class="fas fa-check"></i><br/>Etape suivante-->
+<!--                            </button>-->
                         </th:block>
                     </div>
-                    <div th:if="${data.step == 1}" class="alert alert-success ml-1" style="max-height: 40px;">
-                        Vous devez signer ce document
-                    </div>
-                    <form th:if="${data.signRequest != null}" th:action="'/user/signrequests/sign/' + ${data.signRequest.id}" th:method="'post'">
-                    <button th:if="${data.step == 1}" type="submit" title="Signer le document" class="ml-1 btn btn-success">
+<!--                    <div th:if="${data.signBook != null && data.signBook.signRequests.size() > 0} class="alert alert-success ml-1" style="max-height: 40px;">-->
+<!--                        Vous devez signer ce document-->
+<!--                    </div>-->
+                    <button th:if="${toSign}" type="submit" title="Signer le document" class="ml-1 btn btn-success" th:onclick="'launchSign(' + ${data.signBook.signRequests.get(0).id} + ');'">
                         <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                     </button>
-                    </form>
                 </div>
             </div>
             <div class="workspace alert alert-secondary fadein" style="transition: all 0.3s; margin-top: 98px;">
@@ -97,7 +89,12 @@
                         var pdfPageView = null;
                         var canvas = document.getElementById('pdf');
                         var dataFields = [[${fields}]];
-                        var currentStep = [[${data.step}]];
+                        [# th:if="${data.signBook != null && data.signBook.signRequests.size() > 0}"]
+                        var currentStep = [[${data.signBook.signRequests.get(0).currentStepNumber}]];
+                        [/]
+                        [# th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}"]
+                            var currentStep = 0;
+                        [/]
                         function renderPage(num) {
                             var signFieldNumber = 0;
                             for (var i = 0; i < dataFields.length; i++) {
@@ -150,7 +147,15 @@
                                                     signField.click(function(){
                                                         $('#signModal').modal('show');
                                                     });
-
+                                                } else if(currentStep > signFieldNumber) {
+                                                    $('.popupWrapper').remove();
+                                                    var signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+                                                    signField.append('Signature effectuée');
+                                                    signField.css('text-align', 'center');
+                                                    signField.css('background-color', 'green');
+                                                    signField.click(function(){
+                                                        $('#signModal').modal('show');
+                                                    });
                                                 } else {
                                                     $('section[data-annotation-id=' + items[i].id + ']').remove();
                                                 }
@@ -457,6 +462,34 @@
         </div>
     </div>
 </div>
+
+<div id="wait" class="modal fade" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <h5>Signature en cours</h5>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated active" style="width: 100%;" id="bar">
+                    </div>
+                </div>
+                <span id="bar-text"></span>
+                <div style="display: none;" id="passwordError" class="alert alert-danger" role="alert">
+                    Mauvais mot de passe
+                </div>
+                <div style="display: none;" id="signError" class="alert alert-danger" role="alert">
+                    Erreur du système de signature
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">
+                    Fermer
+                </button>
+                <button id="validModal" onclick="location.reload();" class="btn btn-success">Terminer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

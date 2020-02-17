@@ -42,10 +42,8 @@ public class Data {
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-	private Integer step = 0;
-
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-	private SignRequest signRequest;
+	private SignBook signBook = null;
     
     private String signBookName;
 
@@ -129,14 +127,6 @@ public class Data {
 		this.createDate = createDate;
 	}
 
-	public Integer getStep() {
-		return step;
-	}
-
-	public void setStep(Integer step) {
-		this.step = step;
-	}
-
 	public String getSignBookName() {
 		return signBookName;
 	}
@@ -161,11 +151,11 @@ public class Data {
 		this.updateDate = updateDate;
 	}
 
-	public SignRequest getSignRequest() {
-		return signRequest;
+	public SignBook getSignBook() {
+		return signBook;
 	}
 
-	public void setSignRequest(SignRequest signRequest) {
-		this.signRequest = signRequest;
+	public void setSignBook(SignBook signBook) {
+		this.signBook = signBook;
 	}
 }

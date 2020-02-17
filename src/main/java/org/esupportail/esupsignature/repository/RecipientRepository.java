@@ -9,4 +9,5 @@ import java.util.List;
 public interface RecipientRepository extends CrudRepository<Recipient, Long> {
     List<Recipient> findByUser(User user);
     List<Recipient> findByParentIdAndUser(long parentId, User user);
+    Long countByParentIdAndUser(long parentId, User user);
 }

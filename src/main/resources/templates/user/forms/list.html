@@ -22,7 +22,6 @@
                             <thead>
                             <tr>
                                 <th scope="col" style="width: 400px;">Nom du document</th>
-                                <th class="d-none d-lg-table-cell" scope="col" style="width: 100px;">Etape</th>
                                 <th scope="col" style="width: 300px;"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
                                 <th class="d-none d-md-table-cell"  scope="col" style="width: 150px;">Statut</th>
                                 <th class="show text-center" style="width: 320px;" scope="col">Actions</th>
@@ -31,7 +30,6 @@
                             <tbody>
                             <tr th:each="data : ${datas}">
                                 <td th:text="${data.name}"></td>
-                                <td class="d-none d-lg-table-cell" th:text="${data.step}"></td>
                                 <td th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>
                                 <td class="d-none d-md-table-cell" th:text="#{'data.status.' + ${data.status}}"></td>
                                 <td class="show text-center" style="width: 320px;">

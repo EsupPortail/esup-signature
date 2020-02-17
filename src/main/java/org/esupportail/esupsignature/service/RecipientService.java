@@ -17,9 +17,6 @@ public class RecipientService {
     private RecipientRepository recipientRepository;
 
     @Resource
-    private UserRepository userRepository;
-
-    @Resource
     private UserService userService;
 
     public Recipient createRecipient(Long parentId, User user) {
@@ -34,7 +31,11 @@ public class RecipientService {
     }
 
     public boolean needSign(List<Recipient> recipients, User user) {
-        return !recipients.stream().filter(recipient -> recipient.getUser().equals(user)).collect(Collectors.toList()).get(0).getSigned();
+        List<Recipient> recipients1 = recipients.stream().filter(recipient -> recipient.getUser().equals(user)).collect(Collectors.toList());
+        if(recipients1.size() > 0 && !recipients.get(0).getSigned()) {
+            return true;
+        }
+        return false;
     }
 
     public void validateRecipient(List<Recipient> recipients, User user) {
