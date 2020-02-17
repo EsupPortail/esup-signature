@@ -5,9 +5,7 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.repository.DataRepository;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.repository.WorkflowStepRepository;
+import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
@@ -40,10 +38,13 @@ public class DataService {
 	private SignRequestRepository signRequestRepository;
 
 	@Resource
+	private SignBookRepository signBookRepository;
+
+	@Resource
 	private WorkflowStepRepository workflowStepRepository;
 
 	@Resource
-	private RecipientService recipientService;
+	private RecipientRepository recipientRepository;
 
 	@Resource
 	private FileService fileService;
@@ -75,7 +76,7 @@ public class DataService {
 
 	public void reset(Data data) {
 		data.setStatus(SignRequestStatus.draft);
-		data.setSignRequestToken(null);
+		data.setSignRequest(null);
 		data.setSignBookName(null);
 		dataRepository.save(data);
 	}
@@ -83,8 +84,7 @@ public class DataService {
 	public void nextStep(Data data, List<String> recipientEmails, User user) {
 		List<WorkflowStep> workflowSteps = getWorkflowSteps(data, recipientEmails, user);
 		WorkflowStep workflowStep = workflowSteps.get(data.getStep() - 1);
-		SignRequest signRequest = signRequestRepository.findByToken(data.getSignRequestToken()).get(0);
-		signRequestService.pendingSignRequest(signRequest, workflowStep.getSignType(), workflowStep.getAllSignToComplete(), user);
+		signRequestService.pendingSignRequest(data.getSignRequest(), workflowStep.getSignType(), workflowStep.getAllSignToComplete(), user);
 		data.setStatus(SignRequestStatus.pending);
 		dataRepository.save(data);
 	}
@@ -109,10 +109,12 @@ public class DataService {
 		signBookService.addSignRequest(signBook, signRequest);
 		signBookService.importWorkflow(signBook, workflow);
 		signBookService.nextWorkFlowStep(signBook);
+		signRequestRepository.save(signRequest);
+		signBookRepository.save(signBook);
 		signBookService.pendingSignBook(signBook, user);
 		String token = signRequest.getToken();
 		logger.info(token);
-		data.setSignRequestToken(token);
+		data.setSignRequest(signRequest);
 		data.setStatus(SignRequestStatus.pending);
 		data.setStep(1);
 		return signBook;
@@ -120,12 +122,14 @@ public class DataService {
 
 	public List<WorkflowStep> getWorkflowSteps(Data data, List<String> recipientEmails, User user) {
 		Workflow workflow = workflowService.getWorkflowByClassName(data.getForm().getWorkflowType());
-		List<WorkflowStep> workflowSteps = new ArrayList<>();
+		List<WorkflowStep> workflowSteps = workflow.getWorkflowSteps(data, recipientEmails);
 		int step = 1;
-		for(WorkflowStep workflowStep: workflow.getWorkflowSteps(data, recipientEmails)) {
+		for(WorkflowStep workflowStep: workflowSteps)  {
+			for(Recipient recipient : workflowStep.getRecipients()) {
+				recipientRepository.save(recipient);
+			}
 			workflowStepRepository.save(workflowStep);
 			userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
-			workflowSteps.add(workflowStep);
 			step++;
 		}
 		return workflowSteps;

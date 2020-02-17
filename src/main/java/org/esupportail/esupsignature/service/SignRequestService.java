@@ -61,6 +61,9 @@ public class SignRequestService {
 	private RecipientRepository recipientRepository;
 
 	@Resource
+	private DataRepository dataRepository;
+
+	@Resource
 	private UserKeystoreService userKeystoreService;
 
 	@Resource
@@ -100,8 +103,7 @@ public class SignRequestService {
 
 	public List<SignRequest> getToSignRequests(User user) {
 		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientUser(user);
-		signRequestsToSign = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
-		signRequestsToSign = signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
+		signRequestsToSign = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 		return  signRequestsToSign;
 	}
 
@@ -199,12 +201,9 @@ public class SignRequestService {
 	}
 
 	public void addRecipients(SignRequest signRequest, List<Recipient> recipients) {
-		for(Recipient recipient : signRequest.getRecipients()) {
-			recipientRepository.delete(recipient);
-		}
 		signRequest.getRecipients().clear();
 		for(Recipient recipient : recipients) {
-			signRequest.getRecipients().add(recipientService.createRecipient(signRequest.getId(), recipient.getUser()));
+			signRequest.getRecipients().add(recipient);
 		}
 
 	}
@@ -577,6 +576,11 @@ public class SignRequestService {
 		}
 		if(signRequest.getParentSignBook() != null) {
 			signRequest.getParentSignBook().getSignRequests().remove(signRequest);
+		}
+		List<Data> datas = dataRepository.findBySignRequest(signRequest);
+		for (Data data : datas) {
+			data.setSignRequest(null);
+			dataRepository.save(data);
 		}
 		signRequestRepository.delete(signRequest);
 	}

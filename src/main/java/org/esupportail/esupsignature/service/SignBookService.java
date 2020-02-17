@@ -92,7 +92,11 @@ public class SignBookService {
         signRequest.setParentSignBook(signBook);
     }
 
-    public void deleteSignBook(SignBook signBook) {
+    public void delete(SignBook signBook) {
+        List<SignRequest> signRequests = new ArrayList<>(signBook.getSignRequests());
+        for(SignRequest signRequest : signRequests) {
+            signRequestService.delete(signRequest);
+        }
         signBookRepository.delete(signBook);
     }
 

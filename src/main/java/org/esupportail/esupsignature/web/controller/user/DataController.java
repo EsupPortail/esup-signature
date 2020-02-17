@@ -18,6 +18,7 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import javax.persistence.Transient;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
@@ -163,7 +165,6 @@ public class DataController {
 		}
 	}
 
-
 	@GetMapping("datas/{id}/update")
 	public String updateData(@PathVariable("id") Long id, Model model) {
 		User user = userService.getUserFromAuthentication();
@@ -266,9 +267,8 @@ public class DataController {
 		User user = userService.getUserFromAuthentication();
 		Data data = dataRepository.findById(id).get();
 		if(user.getEppn().equals(data.getCreateBy())) {
-			if(signRequestRepository.countByToken(data.getSignRequestToken()) > 0) {
-				SignRequest signRequest = signRequestRepository.findByToken(data.getSignRequestToken()).get(0);
-				signRequestService.delete(signRequest);
+			if(data.getSignRequest() != null) {
+				signRequestService.delete(data.getSignRequest());
 			}
 			dataService.deleteData(id);
 			redirectAttributes.addFlashAttribute("messageInfo", "Suppression effectuée");
@@ -298,8 +298,7 @@ public class DataController {
 		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
 		if(user.getEmail().equals(data.getCreateBy())) {
-			SignRequest signRequest = signRequestRepository.findByToken(data.getSignRequestToken()).get(0);
-			signRequestService.delete(signRequest);
+			signRequestService.delete(data.getSignRequest());
 			dataService.reset(data);
 			return "redirect:/user/" + user.getEppn() + "/data/" + id;
 		} else {

@@ -26,7 +26,6 @@ public class RecipientService {
         Recipient recipient = new Recipient();
         recipient.setParentId(parentId);
         recipient.setUser(user);
-        recipientRepository.save(recipient);
         return recipient;
     }
 

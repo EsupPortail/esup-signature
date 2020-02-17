@@ -9,17 +9,6 @@
         <div th:replace="fragments/side :: side"></div>
         <div class="content" id="v-pills-tabContent">
             <nav th:replace="fragments/breadcrumb :: breadcrumb"></nav>
-            <div th:if="${jsonSignInfoMessage != null}">
-                <div class="alert alert-info d-none"
-                     th:text="'Token de signature : ' + ${data.signRequestToken} + ', Statut : ' + ${data.status}"></div>
-                <div th:if="${jsonSignInfoMessage.status == 'pending' && jsonSignInfoMessage.nextRecipientNames.size() > 0}" class="alert alert-info">
-                    Statut : en attente de signature par :
-                    <th:block th:each="recipientName,iterator : ${recipientNames}">
-                        <span th:if="${iterator.index > 0}"> ou </span>
-                        <span th:text="${recipientName}"></span>
-                    </th:block>
-                </div>
-            </div>
             <div class="card">
                 <div class="card-header">
                     <a target="_blank" th:if="${data.status.name() == 'completed'}"

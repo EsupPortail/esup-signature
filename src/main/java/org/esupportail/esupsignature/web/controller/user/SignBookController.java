@@ -95,7 +95,7 @@ public class SignBookController {
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@PathVariable("id") Long id) {
         SignBook signBook = signBookRepository.findById(id).get();
-        signBookRepository.delete(signBook);
+        signBookService.delete(signBook);
         return "redirect:/user/signrequests/";
     }
 

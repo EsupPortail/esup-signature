@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="recipient" type="org.esupportail.esupsignature.entity.Recipient"*/-->
+<!--/*@thymesVar id="data" type="org.esupportail.esupsignature.entity.Data"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
@@ -61,9 +62,11 @@
                     <div th:if="${data.step == 1}" class="alert alert-success ml-1" style="max-height: 40px;">
                         Vous devez signer ce document
                     </div>
-                    <a th:if="${data.step == 1}"  title="Signer le document" th:href="'/user/signrequests/sign-by-token/' + ${data.signRequestToken}" class="ml-1 btn btn-success">
+                    <form th:if="${data.signRequest != null}" th:action="'/user/signrequests/sign/' + ${data.signRequest.id}" th:method="'post'">
+                    <button th:if="${data.step == 1}" type="submit" title="Signer le document" class="ml-1 btn btn-success">
                         <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
-                    </a>
+                    </button>
+                    </form>
                 </div>
             </div>
             <div class="workspace alert alert-secondary fadein" style="transition: all 0.3s; margin-top: 98px;">

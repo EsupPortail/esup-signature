@@ -71,7 +71,9 @@ public class WorkflowService {
             WorkflowStep workflowStep = new WorkflowStep();
             workflowStep.setName("Ma signature");
             workflowStep.setSignType(SignType.certSign);
-            workflowStep.getRecipients().add(recipientService.createRecipient(workflowStep.getId(), creator));
+            Recipient recipient = recipientService.createRecipient(workflowStep.getId(), creator);
+            recipientRepository.save(recipient);
+            workflowStep.getRecipients().add(recipient);
             workflowStepRepository.save(workflowStep);
             workflow.getWorkflowSteps().add(workflowStep);
             workflowRepository.save(workflow);

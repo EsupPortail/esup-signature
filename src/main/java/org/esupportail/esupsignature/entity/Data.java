@@ -44,12 +44,10 @@ public class Data {
 
 	private Integer step = 0;
 
-    private String signRequestToken;
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	private SignRequest signRequest;
     
     private String signBookName;
-
-    @Transient
-	private boolean signServiceSync;
 
 	public Long getId() {
 		return id;
@@ -139,14 +137,6 @@ public class Data {
 		this.step = step;
 	}
 
-	public String getSignRequestToken() {
-		return signRequestToken;
-	}
-
-	public void setSignRequestToken(String signRequestToken) {
-		this.signRequestToken = signRequestToken;
-	}
-
 	public String getSignBookName() {
 		return signBookName;
 	}
@@ -171,11 +161,11 @@ public class Data {
 		this.updateDate = updateDate;
 	}
 
-	public boolean isSignServiceSync() {
-		return signServiceSync;
+	public SignRequest getSignRequest() {
+		return signRequest;
 	}
 
-	public void setSignServiceSync(boolean signServiceSync) {
-		this.signServiceSync = signServiceSync;
+	public void setSignRequest(SignRequest signRequest) {
+		this.signRequest = signRequest;
 	}
 }
