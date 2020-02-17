@@ -213,6 +213,7 @@ public class FormService {
 		}
 		form.setFields(fields);
 		updateForm(form);
+		document.setParentId(form.getId());
 		return form;
 	}
 }

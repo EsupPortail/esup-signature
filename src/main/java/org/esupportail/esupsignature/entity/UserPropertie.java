@@ -24,8 +24,8 @@ public class UserPropertie {
 
     private Integer step;
 
-    @ManyToMany
-    private List<Recipient> recipients = new ArrayList<>();
+    @ElementCollection
+    private List<String> recipients = new ArrayList<>();
 
     private String targetEmail;
 
@@ -69,11 +69,11 @@ public class UserPropertie {
         this.step = step;
     }
 
-    public List<Recipient> getRecipients() {
+    public List<String> getRecipients() {
         return recipients;
     }
 
-    public void setRecipients(List<Recipient> recipients) {
+    public void setRecipients(List<String> recipients) {
         this.recipients = recipients;
     }
 

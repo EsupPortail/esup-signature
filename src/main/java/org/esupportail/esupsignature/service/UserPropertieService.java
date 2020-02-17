@@ -20,18 +20,16 @@ public class UserPropertieService {
     @Resource
     private RecipientRepository recipientRepository;
 
-    public void createRecipientPropertie(User user, int step, WorkflowStep workflowStep, Form form) {
-        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndRecipientsAndForm(user, step, workflowStep.getRecipients(), form);
+    public void createUserPropertie(User user, int step, WorkflowStep workflowStep, Form form) {
+        List<User> recipientsUser = workflowStep.getRecipients().stream().map(Recipient::getUser).collect(Collectors.toList());
+        List<String> recipientsEmail = recipientsUser.stream().map(User::getEmail).collect(Collectors.toList());
+        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndRecipientsAndForm(user, step, recipientsEmail, form);
         if (userProperties.size() == 0) {
             UserPropertie userPropertie = new UserPropertie();
             userPropertie.setStep(step);
             userPropertie.setForm(form);
             for(Recipient recipient : workflowStep.getRecipients()) {
-                Recipient newRecipient = new Recipient();
-                newRecipient.setUser(user);
-                newRecipient.setParentId(recipient.getParentId());
-                recipientRepository.save(newRecipient);
-                userPropertie.getRecipients().add(newRecipient);
+                userPropertie.getRecipients().add(recipient.getUser().getEmail());
             }
             userPropertie.setUser(user);
             userPropertieRepository.save(userPropertie);
@@ -63,9 +61,9 @@ public class UserPropertieService {
         }
     }
 
-    public List<Recipient> getFavoritesEmails(User user, int step, Form form) {
+    public List<String> getFavoritesEmails(User user, int step, Form form) {
         List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndForm(user, step, form);
-        List<Recipient> favoriteRecipients = new ArrayList<>();
+        List<String> favoriteRecipients = new ArrayList<>();
         for (UserPropertie userPropertie : userProperties) {
             favoriteRecipients.addAll(userPropertie.getRecipients());
         }

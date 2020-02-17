@@ -58,12 +58,12 @@
                             </button>
                         </th:block>
                     </div>
-                    <div th:if="${data.step == 1}" class="badge badge-warning ml-1">
+                    <div th:if="${data.step == 1}" class="alert alert-success ml-1" style="max-height: 40px;">
                         Vous devez signer ce document
                     </div>
-                    <button th:if="${data.step == 1}"  title="Assistant de demande de signature"  type="button" data-toggle="modal" data-target="#signModal" class="ml-1 btn btn-success">
+                    <a th:if="${data.step == 1}"  title="Signer le document" th:href="'/user/signrequests/sign-by-token/' + ${data.signRequestToken}" class="ml-1 btn btn-success">
                         <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
-                    </button>
+                    </a>
                 </div>
             </div>
             <div class="workspace alert alert-secondary fadein" style="transition: all 0.3s; margin-top: 98px;">

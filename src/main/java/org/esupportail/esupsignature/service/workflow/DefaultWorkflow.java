@@ -19,7 +19,13 @@ public class DefaultWorkflow extends Workflow {
     private UserPropertieService userPropertieService;
 
     @Resource
+    private UserService userService;
+
+    @Resource
     private RecipientService recipientService;
+
+    @Resource
+    private RecipientRepository recipientRepository;
 
     @Override
     public String getName() {
@@ -44,7 +50,15 @@ public class DefaultWorkflow extends Workflow {
                 recipients.add(recipientService.getRecipientByEmail(form.getId(), recipientEmail.substring(recipientEmail.indexOf("*") + 1)));
             }
         } else {
-            recipients.addAll(userPropertieService.getFavoritesEmails(user, step, form));
+            List<String> favoritesEmail = userPropertieService.getFavoritesEmails(user, step, form);
+            for(String email : favoritesEmail) {
+                User recipientUser = userService.getUser(email);
+                recipients.add(recipientService.createRecipient(form.getId(), recipientUser));
+            }
+        }
+
+        for(Recipient recipient : recipients) {
+            recipientRepository.save(recipient);
         }
         return recipients;
     }

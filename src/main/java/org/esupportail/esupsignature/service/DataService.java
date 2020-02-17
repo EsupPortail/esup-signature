@@ -7,22 +7,17 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.esupportail.esupsignature.service.file.FileService;
-import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
-import org.esupportail.esupsignature.service.sign.SignService;
-import org.esupportail.esupsignature.web.JsonSignInfoMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class DataService {
@@ -43,6 +38,9 @@ public class DataService {
 
 	@Resource
 	private SignRequestRepository signRequestRepository;
+
+	@Resource
+	private WorkflowStepRepository workflowStepRepository;
 
 	@Resource
 	private RecipientService recipientService;
@@ -91,7 +89,7 @@ public class DataService {
 		dataRepository.save(data);
 	}
 
-	public void sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user) throws EsupSignatureException, EsupSignatureIOException {
+	public SignBook sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user) throws EsupSignatureException, EsupSignatureIOException {
 		Form form = data.getForm();
 		if(form.getTargetType().equals(DocumentIOType.mail)) {
 			if(targetEmails == null || targetEmails.size() == 0) {
@@ -105,37 +103,30 @@ public class DataService {
 		Workflow workflow = new Workflow();
 		workflow.setName(form.getName());
 		workflow.getWorkflowSteps().addAll(workflowSteps);
-		data.setStep(1);
 		SignBook signBook = signBookService.createSignBook(name, user, false);
 		SignRequest signRequest = signRequestService.createSignRequest(name, user);
-		signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(generateFile(data), name, "application/pdf"));
-		signBookService.importWorkflow(signBook, workflow);
+		signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(generateFile(data), name + ".pdf", "application/pdf"));
 		signBookService.addSignRequest(signBook, signRequest);
+		signBookService.importWorkflow(signBook, workflow);
+		signBookService.nextWorkFlowStep(signBook);
+		signBookService.pendingSignBook(signBook, user);
 		String token = signRequest.getToken();
 		logger.info(token);
 		data.setSignRequestToken(token);
 		data.setStatus(SignRequestStatus.pending);
-		dataRepository.save(data);
+		data.setStep(1);
+		return signBook;
 	}
 
 	public List<WorkflowStep> getWorkflowSteps(Data data, List<String> recipientEmails, User user) {
 		Workflow workflow = workflowService.getWorkflowByClassName(data.getForm().getWorkflowType());
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
-		if(workflow.getWorkflowSteps(data, recipientEmails).size() > 0 ) {
-			workflowSteps = workflow.getWorkflowSteps(data, recipientEmails);
-			workflowSteps = workflowSteps.stream().sorted(Comparator.comparingInt(WorkflowStep::getStepNumber)).collect(Collectors.toList());
-			int step = 1;
-			for(WorkflowStep workflowStep: workflowSteps) {
-				//userPropertieService.createRecipientPropertie(user, step, workflowStep, data.getForm());
-				//signService.addWorkflowStep(name, workflowStep);
-				step++;
-			}
-		} else {
-			WorkflowStep workflowStep = new WorkflowStep();
-			workflowStep.getRecipients().add(recipientService.createRecipient(data.getId(), user));
+		int step = 1;
+		for(WorkflowStep workflowStep: workflow.getWorkflowSteps(data, recipientEmails)) {
+			workflowStepRepository.save(workflowStep);
+			userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
 			workflowSteps.add(workflowStep);
-			//signService.addWorkflowStep(name, workflowStep);
-
+			step++;
 		}
 		return workflowSteps;
 	}

@@ -19,6 +19,9 @@ public class RecipientService {
     @Resource
     private UserRepository userRepository;
 
+    @Resource
+    private UserService userService;
+
     public Recipient createRecipient(Long parentId, User user) {
         Recipient recipient = new Recipient();
         recipient.setParentId(parentId);
@@ -50,7 +53,7 @@ public class RecipientService {
     }
 
     public Recipient getRecipientByEmail(Long parentId, String email) {
-        User user = userRepository.findByEmail(email).get(0);
+        User user = userService.getUser(email);
         Recipient recipient = new Recipient();
         recipient.setParentId(parentId);
         recipient.setUser(user);

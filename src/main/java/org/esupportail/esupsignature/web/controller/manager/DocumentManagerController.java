@@ -88,7 +88,7 @@ public class DocumentManagerController {
 		if(formService.getFormByDocument(document) == null) {
 			formService.createForm(document, name, workflowType, code, targetType, targetUri);
 		}
-		return "redirect:/manager/" + userService.getUserFromAuthentication().getEppn() +  "/documents/" + id;
+		return "redirect:/manager/documents/" + id;
 	}
 	
 	@GetMapping("documents")
@@ -102,7 +102,7 @@ public class DocumentManagerController {
 	public String addDocument(@RequestParam("multipartFile") MultipartFile multipartFile, RedirectAttributes redirectAttributes) throws IOException {
 		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
 		redirectAttributes.addFlashAttribute("info", "Document ajouté");
-		return "redirect:/manager/" + userService.getUserFromAuthentication().getEppn() +  "/documents/" + document.getId();
+		return "redirect:/manager/documents/" + document.getId();
 	}
 	
 	@DeleteMapping("documents/{id}")
@@ -147,4 +147,4 @@ public class DocumentManagerController {
 				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 	}
-} 
+}

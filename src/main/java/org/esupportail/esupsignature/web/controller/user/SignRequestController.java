@@ -315,7 +315,7 @@ public class SignRequestController {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
         if(signRequestService.checkUserSignRights(user, signRequest)) {
-            return "redirect:/user/signrequests/" + signRequest.getId() + "/?frameMode=true";
+            return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             return "redirect:/";
         }

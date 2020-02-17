@@ -5,10 +5,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.repository.DataRepository;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.repository.UserPropertieRepository;
-import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.slf4j.Logger;
@@ -69,10 +66,13 @@ public class DataController {
 	private PreFillService preFillService;
 
 	@Resource
-	private UserRepository userRepository;
+	private SignBookService signBookService;
 
 	@Resource
 	private SignRequestRepository signRequestRepository;
+
+	@Resource
+	private RecipientRepository recipientRepository;
 
 	@ModelAttribute("user")
 	public User getUser() {
@@ -244,8 +244,12 @@ public class DataController {
                                @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails) throws EsupSignatureIOException, EsupSignatureException {
 		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
-		dataService.sendForSign(data, recipientEmails, targetEmails, user);
-		return "redirect:/user/" + user.getEppn() + "/data/" + id + "/update";
+		SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user);
+		if(recipientRepository.findByParentIdAndUser(signBook.getId(), user).size() > 0 &&
+				(signBookService.getCurrentWorkflowStep(signBook).getRecipients().size() == 1 || !signBookService.getCurrentWorkflowStep(signBook).getAllSignToComplete())) {
+			return "redirect:/user/signrequests/sign/" + signBook.getSignRequests().get(0).getId();
+		}
+		return "redirect:/user/datas/" + id + "/update";
 	}
 
 	@PostMapping("datas/{id}/next-step")

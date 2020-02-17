@@ -34,10 +34,7 @@ public class Form {
 	private Integer nbPages = 1;
 
 	private Boolean activeVersion = false;
-	
-    @ElementCollection(fetch = FetchType.EAGER)
-	private Map<Long, Boolean> workflowSteps = new HashMap<Long, Boolean>();
-	
+
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;
 
@@ -121,14 +118,6 @@ public class Form {
 
 	public void setWorkflowType(String workflowType) {
 		this.workflowType = workflowType;
-	}
-
-	public Map<Long, Boolean> getWorkflowSteps() {
-		return workflowSteps;
-	}
-
-	public void setWorkflowSteps(Map<Long, Boolean> workflowSteps) {
-		this.workflowSteps = workflowSteps;
 	}
 
 	public List<Data> getDatas() {

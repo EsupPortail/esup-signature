@@ -12,10 +12,10 @@
             <i class="fas fa-times fa-1x"></i>
         </button>
 		<div th:if="${form != null}">
-			<a class="btn btn-light btn-outline-dark" th:href="'/manager/' + ${user.eppn} + '/forms/' + ${form.id}">
+			<a class="btn btn-light btn-outline-dark" th:href="'/manager/forms/' + ${form.id}">
 				<i class="fa fa-eye fa-2x"></i> <br/> Aperçu du formulaire
 			</a>
-			<a class="btn btn-light btn-outline-dark" th:href="'/manager/' + ${user.eppn} + '/forms/update/' + ${form.id}">
+			<a class="btn btn-light btn-outline-dark" th:href="'/manager/forms/update/' + ${form.id}">
 				<i class="fa fa-cogs fa-2x"></i> <br/> Paramètres du formulaire
 			</a>
 		</div>
@@ -62,7 +62,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form th:if="${form == null}" th:action="'/manager/' + ${user.eppn} + '/documents/' + ${document.id} + '/generate'">
+            <form th:if="${form == null}" th:action="'/manager/documents/' + ${document.id} + '/generate'">
                 <div class="modal-body">
 
                     <div class="form-group">

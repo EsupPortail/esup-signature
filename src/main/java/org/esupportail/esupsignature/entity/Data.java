@@ -44,9 +44,6 @@ public class Data {
 
 	private Integer step = 0;
 
-    @ElementCollection
-    private List<String> recipients;
-
     private String signRequestToken;
     
     private String signBookName;

@@ -38,12 +38,13 @@ public class CreatorAndManagerWorkflow extends DefaultWorkflow {
     @Override
     public List<WorkflowStep> getWorkflowSteps(Data data, List<String> recipentEmailsStep) {
         User user = userRepository.findByEppn(data.getOwner()).get(0);
-        List<WorkflowStep> workflowSteps = new ArrayList<WorkflowStep>();
+        List<WorkflowStep> workflowSteps = new ArrayList<>();
         //STEP 1
         WorkflowStep workflowStep1 = new WorkflowStep();
         workflowStep1.setStepNumber(1);
         workflowStep1.getRecipients().add(recipientService.createRecipient(data.getId(), user));
         workflowStep1.setDescription("Votre signature");
+        workflowStep1.setSignType(SignType.pdfImageStamp);
         workflowSteps.add(workflowStep1);
         //STEP 2
         WorkflowStep workflowStep2 = new WorkflowStep();

@@ -6,9 +6,8 @@
 <main role="main">
     <div class="wrapper">
         <nav id="sidebar">
-            <a class="mr-2 btn btn-outline-dark btn-light float-left"
-               th:href="'/manager/' + ${user.eppn} + '/documents/form'">
-                <i class="fa fa-plus fa-2x"></i> <br/> Ajouter un modèle
+            <a class="mr-2 btn btn-outline-dark btn-light float-left col-12" href="/manager/documents/form">
+                <i class="fa fa-plus"></i> Ajouter un modèle
             </a>
         </nav>
         <div class="content">
@@ -37,7 +36,7 @@
                             <td th:text="${document.fileName}"></td>
                             <td th:text="${document.contentType}"></td>
                             <td class="show text-center"><a type="button"
-                                                            th:href="'/manager/' + ${user.eppn} + '/document/' + ${document.id}"
+                                                            th:href="'/manager/documents/' + ${document.id}"
                                                             class="btn btn-primary"><i class="fas fa-eye"></i></a></td>
                             <td class="delete text-center">
                                 <button type="button" data-toggle="modal" data-target="#modal-warning"
@@ -47,7 +46,7 @@
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <form id="command"
-                                                  th:action="'/manager/' + ${user.eppn} + '/document/' + ${document.id}"
+                                                  th:action="'/manager/documents/' + ${document.id}"
                                                   th:method="delete">
                                                 <div class="modal-header">
                                                     <button type="button" class="close" data-dismiss="modal"
