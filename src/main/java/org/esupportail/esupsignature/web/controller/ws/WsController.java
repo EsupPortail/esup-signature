@@ -16,8 +16,9 @@ import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsFile;
-import org.esupportail.esupsignature.web.JsonSignInfoMessage;
-import org.esupportail.esupsignature.web.JsonWorkflowStep;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonDocuments;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonSignRequestStatus;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -171,13 +172,13 @@ public class WsController {
 
     @ResponseBody
     @GetMapping(value = "/list-sign-requests", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Doc> listSignedFiles(@RequestParam("recipientEmail") String recipientEmail, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureException {
-        List<Doc> signedFiles = new ArrayList<>();
+    public List<JsonDocuments> listSignedFiles(@RequestParam("recipientEmail") String recipientEmail, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureException {
+        List<JsonDocuments> signedFiles = new ArrayList<>();
         User user = userService.getUser(recipientEmail);
         List<SignRequest> signRequests = signRequestService.getSignRequestsSignedByUser(user);
 
         for (SignRequest signRequest : signRequests) {
-            signedFiles.add(new Doc(signRequest.getTitle(), signRequest.getSignedDocuments().get(0).getContentType(), signRequest.getToken(), signRequest.getStatus().name(), signRequest.getCreateDate()));
+            signedFiles.add(new JsonDocuments(signRequest.getTitle(), signRequest.getSignedDocuments().get(0).getContentType(), signRequest.getToken(), signRequest.getStatus().name(), signRequest.getCreateDate()));
 
         }
         return signedFiles;
@@ -207,12 +208,12 @@ public class WsController {
 
     @ResponseBody
     @GetMapping(value = "/list-to-sign-requests", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Doc> listToSignedFiles(@RequestParam("recipientEmail") String recipientEmail, HttpServletRequest httpServletRequest) {
-        List<Doc> signedFiles = new ArrayList<>();
+    public List<JsonDocuments> listToSignFiles(@RequestParam("recipientEmail") String recipientEmail, HttpServletRequest httpServletRequest) {
+        List<JsonDocuments> signedFiles = new ArrayList<>();
         User user = userRepository.findByEmail(recipientEmail).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
         for (SignRequest signRequest : signRequestService.getToSignRequests(user)) {
-            signedFiles.add(new Doc(signRequest.getTitle(), signRequestService.getToSignDocuments(signRequest).get(0).getContentType(), signRequest.getToken(), signRequest.getStatus().name(), signRequest.getCreateDate()));
+            signedFiles.add(new JsonDocuments(signRequest.getTitle(), signRequestService.getToSignDocuments(signRequest).get(0).getContentType(), signRequest.getToken(), signRequest.getStatus().name(), signRequest.getCreateDate()));
         }
         return signedFiles;
     }
@@ -407,18 +408,18 @@ public class WsController {
 
     @ResponseBody
     @GetMapping(value = "/check-sign-request", produces = MediaType.APPLICATION_JSON_VALUE)
-    public JsonSignInfoMessage checkSignRequest(@RequestParam String fileToken) {
+    public JsonSignRequestStatus checkSignRequest(@RequestParam String fileToken) {
         try {
             if (signRequestRepository.countByToken(fileToken) > 0) {
                 SignRequest signRequest = signRequestRepository.findByToken(fileToken).get(0);
-                JsonSignInfoMessage jsonSignInfoMessage = new JsonSignInfoMessage();
-                jsonSignInfoMessage.setStatus(signRequest.getStatus().toString());
+                JsonSignRequestStatus jsonSignRequestStatus = new JsonSignRequestStatus();
+                jsonSignRequestStatus.setStatus(signRequest.getStatus().toString());
                 for (Recipient recipient : signRequest.getRecipients()) {
                     User user = recipient.getUser();
-                    jsonSignInfoMessage.getNextRecipientNames().add(user.getName());
-                    jsonSignInfoMessage.getNextRecipientEppns().add(user.getEppn());
+                    jsonSignRequestStatus.getNextRecipientNames().add(user.getName());
+                    jsonSignRequestStatus.getNextRecipientEppns().add(user.getEppn());
                 }
-                return jsonSignInfoMessage;
+                return jsonSignRequestStatus;
             }
         } catch (NoResultException e) {
             logger.error(e.getMessage(), e);
@@ -428,20 +429,20 @@ public class WsController {
 
     @ResponseBody
     @RequestMapping(value = "/check-sign-book", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public JsonSignInfoMessage checkSignBook(@RequestParam String fileToken) {
+    public JsonSignRequestStatus checkSignBook(@RequestParam String fileToken) {
         try {
             if (signRequestRepository.countByToken(fileToken) > 0) {
                 SignRequest signRequest = signRequestRepository.findByToken(fileToken).get(0);
-                JsonSignInfoMessage jsonSignInfoMessage = new JsonSignInfoMessage();
-                jsonSignInfoMessage.setStatus(signRequest.getStatus().toString());
+                JsonSignRequestStatus jsonSignRequestStatus = new JsonSignRequestStatus();
+                jsonSignRequestStatus.setStatus(signRequest.getStatus().toString());
                 if(signRequest.getParentSignBook().getWorkflowSteps().size() > 0 ) {
                     for (Recipient recipient : signRequest.getRecipients()) {
                         User user = recipient.getUser();
-                        jsonSignInfoMessage.getNextRecipientNames().add(user.getName());
-                        jsonSignInfoMessage.getNextRecipientEppns().add(user.getEppn());
+                        jsonSignRequestStatus.getNextRecipientNames().add(user.getName());
+                        jsonSignRequestStatus.getNextRecipientEppns().add(user.getEppn());
                     }
                 }
-                return jsonSignInfoMessage;
+                return jsonSignRequestStatus;
             }
         } catch (NoResultException e) {
             logger.error(e.getMessage(), e);

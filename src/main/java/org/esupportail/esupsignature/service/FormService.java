@@ -212,7 +212,7 @@ public class FormService {
 			fieldService.updateField(field);
 		}
 		form.setFields(fields);
-		updateForm(form);
+		formRepository.save(form);
 		document.setParentId(form.getId());
 		return form;
 	}

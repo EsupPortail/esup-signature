@@ -1,9 +1,9 @@
-package org.esupportail.esupsignature.web;
+package org.esupportail.esupsignature.web.controller.ws.json;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class JsonSignInfoMessage {
+public class JsonSignRequestStatus {
 
 	String status;
 	List<String> nextRecipientEmails = new ArrayList<>();

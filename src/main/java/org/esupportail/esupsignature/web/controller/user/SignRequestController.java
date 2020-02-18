@@ -147,7 +147,6 @@ public class SignRequestController {
             model.addAttribute("keystore", user.getKeystore().getFileName());
         }
         model.addAttribute("mydocs", "active");
-        model.addAttribute("signRequestsSignedByMe", signRequestService.getSignRequestsSignedByUser(user));
         model.addAttribute("signBookId", signBookId);
         model.addAttribute("statusFilter", this.statusFilter);
         model.addAttribute("statuses", SignRequestStatus.values());
@@ -173,6 +172,7 @@ public class SignRequestController {
         }
         List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
         model.addAttribute("signRequests", getSignRequestsPageGrouped(signRequestsToSign, pageable));
+        model.addAttribute("signRequestsSignedByMe", signRequestService.getSignRequestsSignedByUser(user));
         model.addAttribute("statusFilter", this.statusFilter);
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("messageError", messageError);

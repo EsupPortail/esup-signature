@@ -36,8 +36,13 @@ public class WorkflowManagerController {
 	private static final Logger logger = LoggerFactory.getLogger(WorkflowManagerController.class);
 	
 	@ModelAttribute("managerMenu")
-	public String getActiveMenu() {
+	public String getManagerMenu() {
 		return "active";
+	}
+
+	@ModelAttribute("activeMenu")
+	public String getActiveMenu() {
+		return "workflows";
 	}
 
 	@Resource

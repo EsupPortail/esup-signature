@@ -1,10 +1,12 @@
 package org.esupportail.esupsignature.web.controller.manager;
 
+import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
+import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
@@ -14,8 +16,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.List;
 
 @Controller
@@ -24,7 +28,20 @@ import java.util.List;
 public class FormManagerController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FormManagerController.class);
-	
+
+	@ModelAttribute("managerMenu")
+	public String getManagerMenu() {
+		return "active";
+	}
+
+	@ModelAttribute("activeMenu")
+	public String getActiveMenu() {
+		return "forms";
+	}
+
+	@Resource
+	private DocumentService documentService;
+
 	@Resource
 	private FormService formService;
 
@@ -44,13 +61,6 @@ public class FormManagerController {
 		return userService.getSuUsers();
 	}
 
-	@GetMapping("forms")
-	public String creatForm(Model model) {
-		model.addAttribute("form", new Form());
-		model.addAttribute("targetTypes", DocumentIOType.values());
-		return "manager/forms/create";
-	}
-	
 	@PostMapping("forms")
 	public String postForm(@RequestParam("name") String name, @RequestParam("targetType") String targetType, @RequestParam("targetUri") String targetUri, @RequestParam("fieldNames[]") String[] fieldNames, @RequestParam("fieldTypes[]") String[] fieldTypes, Model model) {
 		Form form = new Form();
@@ -66,7 +76,7 @@ public class FormManagerController {
 			form.getFields().add(field);
 		}
 		formService.updateForm(form);
-		return "redirect:/manager/" + userService.getUserFromAuthentication().getEppn() + "/form?";
+		return "redirect:/manager/" + userService.getUserFromAuthentication().getEppn() + "/forms?";
 	}
 	
 	@GetMapping("forms/{id}")
@@ -75,6 +85,13 @@ public class FormManagerController {
 		model.addAttribute("form", form);
 		model.addAttribute("document", form.getDocument());
 		return "manager/forms/show";
+	}
+
+	@PostMapping("forms/generate")
+	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String workflowType, String code, DocumentIOType targetType, String targetUri, Model model) throws IOException {
+		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
+		Form form = formService.createForm(document, name, workflowType, code, targetType, targetUri);
+		return "redirect:/manager/forms/" + form.getId();
 	}
 
 	@GetMapping("forms/update/{id}")
@@ -89,10 +106,12 @@ public class FormManagerController {
 		return "manager/forms/update";
 	}
 	
-	@GetMapping("formss")
-	public String getAllForms(Model model) {
+	@GetMapping("forms")
+	public String list(Model model) {
 		List<Form> forms = formService.getAllForms();
 		model.addAttribute("forms", forms);
+		model.addAttribute("targetTypes", DocumentIOType.values());
+		model.addAttribute("workflowTypes", workflowService.getWorkflows());
 		return "manager/forms/list";
 	}
 	
@@ -107,7 +126,7 @@ public class FormManagerController {
 		form.setTargetUri(updateForm.getTargetUri());
 		form.setTargetType(updateForm.getTargetType());
 		formService.updateForm(form);
-		return "redirect:/manager/" + userService.getUserFromAuthentication().getEppn() + "/form/" + form.getId();
+		return "redirect:/manager/" + userService.getUserFromAuthentication().getEppn() + "/forms/" + form.getId();
 	}
 	
 	@DeleteMapping("forms/{id}")

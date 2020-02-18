@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web;
+package org.esupportail.esupsignature.web.controller.ws.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.entity;
+package org.esupportail.esupsignature.web.controller.ws.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
 
 @JsonIgnoreProperties
-public class Doc {
+public class JsonDocuments {
 
     String title;
     String type;
@@ -14,7 +14,7 @@ public class Doc {
     String status;
     Date date;
 
-    public Doc(@JsonProperty("title") String title, @JsonProperty("type") String type, @JsonProperty("token") String token, @JsonProperty("status") String status, @JsonProperty("date") Date date) {
+    public JsonDocuments(@JsonProperty("title") String title, @JsonProperty("type") String type, @JsonProperty("token") String token, @JsonProperty("status") String status, @JsonProperty("date") Date date) {
         this.title = title;
         this.type = type;
         this.token = token;

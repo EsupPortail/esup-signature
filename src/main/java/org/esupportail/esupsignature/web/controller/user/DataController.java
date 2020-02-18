@@ -254,7 +254,7 @@ public class DataController {
 		Data data = dataService.getDataById(id);
 		SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user);
 		if(recipientService.needSign(data.getSignBook().getSignRequests().get(0).getRecipients(), user)) {
-			return "redirect:/user/signrequests/sign/" + signBook.getSignRequests().get(0).getId();
+			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 		}
 		return "redirect:/user/datas/" + id + "/update";
 	}

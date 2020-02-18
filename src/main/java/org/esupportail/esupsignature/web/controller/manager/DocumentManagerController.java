@@ -82,8 +82,8 @@ public class DocumentManagerController {
 		return "manager/documents/show";
 	}
 
-	@GetMapping("documents/{id}/generate")
-	public String generateForm(@PathVariable("id") Long id, String name, String workflowType, String code, DocumentIOType targetType, String targetUri, Model model) throws IOException {
+	@PostMapping("documents/{id}/generate")
+	public String generateForm(@PathVariable("id") Long id, @RequestParam("multipartFile") MultipartFile multipartFile, String name, String workflowType, String code, DocumentIOType targetType, String targetUri, Model model) throws IOException {
 		Document document = documentRepository.findById(id).get();
 		if(formService.getFormByDocument(document) == null) {
 			formService.createForm(document, name, workflowType, code, targetType, targetUri);

@@ -58,15 +58,15 @@ public class IndexController {
 		User user = userService.getUserFromAuthentication();
 		model.addAttribute("user", user);
 		if(user != null && !user.getEppn().equals("System")) {
-			return "redirect:/user/signrequests/to-sign";
+			return "index";
 		} else {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			if("anonymousUser".equals(auth.getName())) {
 				model.addAttribute("securityConfigs", securityConfigs);
-				return "index";
+				return "signin";
 			} else {
 				userService.createUser(SecurityContextHolder.getContext().getAuthentication());
-				return "index";			
+				return "signin";
 			}
 		}
 
