@@ -16,24 +16,6 @@
             </nav>
             <div class="card rounded-0 mb-3">
                 <div id="myDocs" class="card-body">
-                    <form class="" action="" method="get">
-                        <div class="input-group mb-2">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text" id="status-label">Statut</div>
-                            </div>
-                            <select aria-labelledby="status-label" class="form-control" name="statusFilter"
-                                    id="statusFilter" onchange="submit();">
-                                <option value="" disabled="disabled" selected="selected">Choisir un statut</option>
-                                <option value="all">Tous</option>
-                                <th:block th:each="status : ${statuses}">
-                                    <option th:if="${status == statusFilter}" th:value="${status}" selected="selected"
-                                            th:text="#{'signbook.status.' + ${status}}"></option>
-                                    <option th:unless="${status == statusFilter}" th:value="${status}"
-                                            th:text="#{'signbook.status.' + ${status}}"></option>
-                                </th:block>
-                            </select>
-                        </div>
-                    </form>
                     <table class="table table-sm table-bordered table-striped table-hover">
                         <thead>
                         <tr>
@@ -44,7 +26,6 @@
                             <th class="d-none d-lg-table-cell">Participants</th>
                             <th class="d-none d-md-table-cell">Statut</th>
                             <th>Voir</th>
-                            <th>Modifier</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -108,47 +89,13 @@
                                 </td>
                                 <td class="utilbox">
                                     <a aria-label="Accéder à la demande" th:if="${signRequest.parentSignBook != null}"
-                                       class="btn btn-info" title="ouvrir"
+                                       class="btn btn-primary" title="ouvrir"
                                        th:href="'/user/signrequests/' + ${signRequest.id}"><i class="fas fa-book"></i>
                                     </a>
                                     <a aria-label="Accéder à la demande"
-                                       th:unless="${signRequest.parentSignBook != null}" class="btn btn-info"
+                                       th:unless="${signRequest.parentSignBook != null}" class="btn btn-primary"
                                        title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i
                                             class="far fa-eye"></i> </a>
-                                </td>
-                                <td class="utilbox"
-                                    th:if="${signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() == 'draft' || signRequest.parentSignBook.status.name() == 'pending')}">
-                                    <button aria-label="Modifier" class="btn btn-warning" title="Modifier"
-                                            th:onclick="'location.href=\'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form\''">
-                                        <i class="fas fa-pen"></i></button>
-                                </td>
-                                <td class="utilbox"
-                                    th:if="${signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() != 'draft' && signRequest.parentSignBook.status.name() != 'pending')}">
-                                    <button aria-label="Modifier" class="btn btn-outline-secondary" title="Modifier"
-                                            disabled><i class="fas fa-pen"></i></button>
-                                </td>
-                                <td class="utilbox"
-                                    th:if="${signRequest.parentSignBook == null && (signRequest.status.name() == 'draft' || signRequest.status.name() == 'pending')}">
-                                    <button aria-label="Modifier" class="btn btn-warning" title="Modifier"
-                                            th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '?form\''">
-                                        <i class="fas fa-pen"></i></button>
-                                </td>
-                                <td class="utilbox"
-                                    th:if="${signRequest.parentSignBook == null && !(signRequest.status.name() == 'draft' || signRequest.status.name() == 'pending')}">
-                                    <button aria-label="Modifier" class="btn btn-outline-secondary" title="Modifier"
-                                            disabled><i class="fas fa-pen"></i></button>
-                                </td>
-                                <td class="utilbox" th:if="${signRequest.parentSignBook != null}">
-                                    <form class="delete"
-                                          th:action="'/user/signbooks/' + ${signRequest.parentSignBook.id}"
-                                          method="post">
-                                        <input type="hidden" name="_method" value="DELETE"/>
-                                        <button aria-label="Supprimer"
-                                                onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');"
-                                                value="Supprimer Sign Request" type="submit"
-                                                title="Supprimer Sign Request"
-                                                class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
-                                    </form>
                                 </td>
                             </tr>
                         </th:block>

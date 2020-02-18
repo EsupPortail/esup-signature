@@ -29,6 +29,9 @@ import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -604,6 +607,24 @@ public class SignRequestService {
 		} else {
 			return getEmptySignRequestParams();
 		}
+	}
+
+	public Page<SignRequest> getSignRequestsPageGrouped(List<SignRequest> signRequests, Pageable pageable) {
+		List<SignRequest> signRequestsGrouped = new ArrayList<>();
+		Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() != null).collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
+		for(Map.Entry<SignBook, List<SignRequest>> signBookListEntry : signBookSignRequestMap.entrySet()) {
+			int last = signBookListEntry.getValue().size() - 1;
+			signBookListEntry.getValue().get(last).setViewTitle("");
+			for(SignRequest signRequest : signBookListEntry.getValue()) {
+				signBookListEntry.getValue().get(last).setViewTitle(signBookListEntry.getValue().get(last).getViewTitle() + signRequest.getTitle() + "\n\r");
+			}
+			signRequestsGrouped.add(signBookListEntry.getValue().get(last));
+		}
+		for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
+			signRequest.setViewTitle(signRequest.getTitle());
+			signRequestsGrouped.add(signRequest);
+		}
+		return new PageImpl<>(signRequestsGrouped.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequestsGrouped.size());
 	}
 
 	public SignType getSignTypeByLevel(int level) {

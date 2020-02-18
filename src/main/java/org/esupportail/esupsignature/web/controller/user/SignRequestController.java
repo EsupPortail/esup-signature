@@ -141,7 +141,7 @@ public class SignRequestController {
         } else {
             signRequests = signRequestRepository.findByCreateBy(user.getEppn());
         }
-        model.addAttribute("signRequests", getSignRequestsPageGrouped(signRequests, pageable));
+        model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequests, pageable));
 
         if (user.getKeystore() != null) {
             model.addAttribute("keystore", user.getKeystore().getFileName());
@@ -171,31 +171,13 @@ public class SignRequestController {
             }
         }
         List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
-        model.addAttribute("signRequests", getSignRequestsPageGrouped(signRequestsToSign, pageable));
+        model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequestsToSign, pageable));
         model.addAttribute("signRequestsSignedByMe", signRequestService.getSignRequestsSignedByUser(user));
         model.addAttribute("statusFilter", this.statusFilter);
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("messageError", messageError);
         model.addAttribute("activeMenu", "tosign");
         return "user/signrequests/list-to-sign";
-    }
-
-    public Page<SignRequest> getSignRequestsPageGrouped(List<SignRequest> signRequests, Pageable pageable) {
-        List<SignRequest> signRequestsGrouped = new ArrayList<>();
-        Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() != null).collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
-        for(Map.Entry<SignBook, List<SignRequest>> signBookListEntry : signBookSignRequestMap.entrySet()) {
-            int last = signBookListEntry.getValue().size() - 1;
-            signBookListEntry.getValue().get(last).setViewTitle("");
-            for(SignRequest signRequest : signBookListEntry.getValue()) {
-                signBookListEntry.getValue().get(last).setViewTitle(signBookListEntry.getValue().get(last).getViewTitle() + signRequest.getTitle() + "\n\r");
-            }
-            signRequestsGrouped.add(signBookListEntry.getValue().get(last));
-        }
-        for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
-            signRequest.setViewTitle(signRequest.getTitle());
-            signRequestsGrouped.add(signRequest);
-        }
-        return new PageImpl<>(signRequestsGrouped.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequestsGrouped.size());
     }
 
     @GetMapping(value = "/{id}", params = "form")

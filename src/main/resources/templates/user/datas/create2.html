@@ -56,9 +56,9 @@
 <!--                    <div th:if="${data.signBook != null && data.signBook.signRequests.size() > 0} class="alert alert-success ml-1" style="max-height: 40px;">-->
 <!--                        Vous devez signer ce document-->
 <!--                    </div>-->
-                    <button th:if="${toSign}" type="submit" title="Signer le document" class="ml-1 btn btn-success" th:onclick="'launchSign(' + ${data.signBook.signRequests.get(0).id} + ');'">
+                    <a th:if="${toSign}" type="submit" title="Signer le document" class="ml-1 btn btn-success" th:href="'/user/signrequests/' + ${data.signBook.signRequests.get(0).id}">
                         <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
-                    </button>
+                    </a>
                 </div>
             </div>
             <div class="workspace alert alert-secondary fadein" style="transition: all 0.3s; margin-top: 98px;">

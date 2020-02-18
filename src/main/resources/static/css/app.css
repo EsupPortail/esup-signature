@@ -17,6 +17,10 @@ code {
   font-size: 80%;
 }
 
+.row {
+    margin: 0;
+}
+
 .entry:not(:first-of-type) {
     margin-top: 10px;
 }
