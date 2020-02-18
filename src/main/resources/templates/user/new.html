@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
+<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
@@ -15,36 +16,33 @@
             </nav>
             <p class="hr">Nouvelle demande de signature</p>
             <div class="row ml-2">
-                <div class="card text-center mr-2 mb-2" style="width: 200px;">
+                <div class="card text-center mr-2 mb-2" style="width: 200px;" title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant">
                     <div class="crop">
                         <i class="fas fa-magic fa-4x card-img-top mt-3"></i>
                     </div>
                     <div class="card-body text-left">
                         <h5 class="card-title">Circuit personnalisé</h5>
-                        <p class="card-text">Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant</p>
                     </div>
                     <div class="card-footer"><a href="#" data-toggle="modal" data-target="#wizardModal" class="stretched-link"><i class="fa fa-plus"></i></a></div>
                 </div>
 
-                <div class="card text-center mr-2 mb-2" style="width: 200px;">
+                <div class="card text-center mr-2 mb-2" style="width: 200px;" title="Vous devez signer un document présent sur votre poste">
                     <div class="crop">
                     <i class="fas fa-bolt fa-4x card-img-top mt-3"></i>
                     </div>
                     <div class="card-body text-left">
                         <h5 class="card-title">Signature rapide</h5>
-                        <p class="card-text">Vous devez signer un document présent sur votre poste</p>
                     </div>
                     <div class="card-footer"><a href="#" data-toggle="modal" data-target="#fastSignRequestModal" class="stretched-link"><i class="fa fa-plus"></i></a></div>
                 </div>
 
                 <th:block th:each="workflow : ${workflows}">
-                    <div class="card text-center mr-2 mb-2" style="width: 200px;">
+                    <div class="card text-center mr-2 mb-2" style="width: 200px;" th:title="${workflow.description}">
                         <div class="crop">
                             <i class="fas fa-project-diagram fa-4x card-img-top mt-3"></i>
                         </div>
                         <div class="card-body text-left">
                             <h5 class="card-title" th:text="${workflow.name}"></h5>
-                            <p class="card-text" th:text="${workflow.name}"></p>
                         </div>
                         <div class="card-footer"><a href="#" data-toggle="modal" th:data-target="'#newRequest' + ${workflow.id}" class="stretched-link"><i class="fa fa-plus"></i></a></div>
                     </div>
@@ -53,13 +51,12 @@
             <p class="hr">Nouveau document</p>
             <div class="row ml-2">
                 <th:block th:each="form : ${forms}">
-                <div class="card text-center mr-2" style="width: 200px;">
+                <div class="card text-center mr-2" style="width: 200px;" th:title="${form.description}">
                     <div class="crop">
                         <img th:src="'/manager/documents/' + ${form.document.id} + '/getimagepdfpage/0'" width="200px" style="clip: rect(0px,200px,200px,200px);"/>
                     </div>
                     <div class="card-body text-left">
                         <h5 class="card-title" th:text="${form.name}"></h5>
-                        <p class="card-text" th:text="${form.name}"></p>
                     </div>
                     <div class="card-footer"><a th:href="'/user/datas/form/' + ${form.id}" class="stretched-link"><i class="fa fa-plus"></i></a></div>
                 </div>

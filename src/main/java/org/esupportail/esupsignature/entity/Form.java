@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.entity;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +18,7 @@ public class Form {
 
 	private String name;
 
+	@Size(max = 500)
 	private String description;
 
 	private Integer version;

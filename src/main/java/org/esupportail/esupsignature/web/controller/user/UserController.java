@@ -4,12 +4,13 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.UserPropertie;
+import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.ldap.PersonLdap;
-import org.esupportail.esupsignature.repository.BigFileRepository;
-import org.esupportail.esupsignature.repository.DocumentRepository;
-import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.DocumentService;
+import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.file.FileService;
@@ -28,6 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.util.Arrays;
 import java.util.List;
@@ -47,9 +50,6 @@ public class UserController {
 
 	@Resource
 	private UserRepository userRepository;
-	
-	@Resource
-	private LdapPersonService ldapPersonService;
 
 	@Resource
 	private DocumentRepository documentRepository;
@@ -64,10 +64,22 @@ public class UserController {
 	private FileService fileService;
 
 	@Resource
+	private FormService formService;
+
+	@Resource
 	private UserKeystoreService userKeystoreService;
 	
 	@Resource
 	private UserService userService;
+
+	@Resource
+	private FormRepository formRepository;
+
+	@Resource
+	private UserShareRepository userShareRepository;
+
+	@Resource
+	private UserPropertieRepository userPropertieRepository;
 
     @GetMapping
     public String createForm(Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) throws IOException, SQLException {
@@ -130,7 +142,7 @@ public class UserController {
     }
     
     @RequestMapping(value = "/view-cert", method = RequestMethod.GET, produces = "text/html")
-    public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttrs) throws Exception {
+    public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
 		try {
 			logger.info(user.getKeystore().getInputStream().read() + "");
@@ -161,5 +173,52 @@ public class UserController {
 		logger.debug("ldap search for : " + searchString);
 		return userService.getPersonLdaps(searchString, ldapTemplateName);
    }
+
+
+	@GetMapping("/params")
+	public String params(Model model) {
+		User user = userService.getUserFromAuthentication();
+		List<UserShare> userShares = userShareRepository.findByUser(user);
+		model.addAttribute("userShares", userShares);
+		List<UserPropertie> userProperties = userPropertieRepository.findByUser(user);
+		model.addAttribute("userProperties", userProperties);
+		model.addAttribute("forms", formService.getFormsByUser(user, true));
+		model.addAttribute("users", userRepository.findAll());
+		model.addAttribute("activeMenu", "params");
+		return "user/params";
+	}
+
+	@PostMapping("/add-share")
+	public String addShare(@RequestParam("formId") long formId,
+						   @RequestParam("userIds") long[] userIds,
+						   @RequestParam("beginDate") String beginDate,
+						   @RequestParam("endDate") String endDate,
+						   @PathVariable String eppn) {
+		User user = userService.getUserFromSu(eppn);
+		UserShare userShare = new UserShare();
+		userShare.setUser(user);
+		userShare.setForm(formRepository.findById(formId).get());
+		for (long toUserId : userIds) {
+			userShare.getToUsers().add(userRepository.findById(toUserId).get());
+		}
+		try {
+			userShare.setBeginDate(new SimpleDateFormat("dd/MM/yyyy").parse(beginDate));
+			userShare.setEndDate(new SimpleDateFormat("dd/MM/yyyy").parse(endDate));
+		} catch (ParseException e) {
+			logger.error("error on parsing dates", e);
+		}
+		userShareRepository.save(userShare);
+		return "redirect:/user/params";
+	}
+
+	@DeleteMapping("/del-share/{id}")
+	public String addShare(@PathVariable long id, @PathVariable String eppn) {
+		User user = userService.getUserFromSu(eppn);
+		UserShare userShare = userShareRepository.findById(id).get();
+		if (userShare.getUser().equals(user)) {
+			userShareRepository.delete(userShare);
+		}
+		return "redirect:/user/params";
+	}
 
 }

@@ -14,113 +14,117 @@
                     <li class="breadcrumb-item active">Accueil</li>
                 </ol>
             </nav>
-			<div class="row">
-				<div class="flex-row col-6">
-					<div class="card rounded-0 mb-2">
-						<div id="myDocs" class="card-body">
-							<h2>Demandes à signer</h2>
-							<table class="table table-sm">
-								<tbody>
-								<th:block th:each="signRequest : ${signRequests}">
-									<tr>
-										<td class="text-break w-50" th:if="${signRequest.parentSignBook != null}"
-											th:text="${signRequest.parentSignBook.name}"></td>
-										<td class="text-break w-50" th:unless="${signRequest.parentSignBook != null}"></td>
-										<td class="text-break w-40"><span
-												th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
-										</td>
-										<td class="text-center w-10">
-											<a aria-label="Accéder à la demande"
-											   th:if="${signRequest.parentSignBook != null}"
-											   class="btn btn-primary" title="ouvrir"
-											   th:href="'/user/signrequests/' + ${signRequest.id}"><i
-													class="fas fa-book"></i>
-											</a>
-											<a aria-label="Accéder à la demande"
-											   th:unless="${signRequest.parentSignBook != null}" class="btn btn-primary"
-											   title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i
-													class="far fa-eye"></i> </a>
-										</td>
-									</tr>
-								</th:block>
-								</tbody>
-							</table>
-						</div>
-					</div>
-					<div class="card rounded-0 mb-2">
-						<div id="myDocs" class="card-body">
-							<h2>Documents en cours de modification</h2>
-							<table class="table table-sm">
-								<tbody>
-								<th:block th:each="data : ${datas}">
-									<tr>
-										<td class="text-break w-50" th:text="${data.name}"></td>
-										<td class="text-break w-40"
-											th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>
-										<td class="text-center w-10">
-											<a title="Voir" th:href="'/user/datas/' + ${data.id} + '/update'"
-											   class="btn btn-warning">
-												<i class="fas fa-pen"></i>
-											</a>
-										</td>
-									</tr>
-								</th:block>
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
-				<div class="card rounded-0 mb-2 col-5">
-				<div id="myDocs" class="card-body">
-					<h2>Vos informations</h2>
-					<table class="table table-sm">
-						<tbody>
-						<tr>
-							<td class="text-break w-50">Nom</td>
-							<td class="text-break w-50" th:text="${user.name}"></td>
-						</tr>
-						<tr>
-							<td class="text-break w-50">Prénom</td>
-							<td class="text-break w-50" th:text="${user.firstname}"></td>
-						</tr>
-						<tr>
-							<td class="text-break w-50">Email</td>
-							<td class="text-break w-50" th:text="${user.email}"></td>
-						</tr>
-						<tr>
-							<td class="text-break w-50">Identifiant</td>
-							<td class="text-break w-50" th:text="${user.eppn}"></td>
-						</tr>
-						<tr>
-							<td class="text-break w-50">Image de la signature</td>
-							<td class="text-break w-50">
-								<img th:if="${signFile != null}" alt="signature" th:src="'data:image/png;base64,' + ${signFile}"/>
-								<div th:if="${signFile == null}">
-									Pas de signature
-								</div>
-							</td>
-						</tr>
-						<tr>
-							<td class="text-break w-50">Keystore</td>
-							<td class="text-break w-50">
-								<div th:if="${user.keystore != null}" class="alert alert-secondary">
-									Keystore actuel : <a th:href="'/user/documents/getfile/' + ${user.keystore.id}"><span th:text="${user.keystore.fileName}"></span></a>
-								</div>
-								<div th:if="${user.keystore == null}" class="alert alert-secondary">
-									Pas de keystore
-								</div>
-							</td>
-						</tr>
-						</tbody>
-					</table>
-					<a class="btn btn-transparent float-right" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/?form">
-						<button aria-label="Paramètres utilisateur" class="btn btn-secondary">
-							<i class="fa fa-cog"></i> Modifier mes paramètres
-						</button>
-					</a>
-				</div>
-			</div>
-			</div>
+            <div class="row">
+                <div class="flex-row mr-2">
+                    <div class="card rounded-0 mb-2">
+                        <div id="myDocs" class="card-body">
+                            <h2>Demandes à signer</h2>
+                            <table class="table table-sm">
+                                <tbody>
+                                <th:block th:each="signRequest : ${signRequests}">
+                                    <tr>
+                                        <td class="text-break w-50" th:if="${signRequest.parentSignBook != null}"
+                                            th:text="${signRequest.parentSignBook.name}"></td>
+                                        <td class="text-break w-50"
+                                            th:unless="${signRequest.parentSignBook != null}"></td>
+                                        <td class="text-break w-40"><span
+                                                th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                        </td>
+                                        <td class="text-center w-10">
+                                            <a aria-label="Accéder à la demande"
+                                               th:if="${signRequest.parentSignBook != null}"
+                                               class="btn btn-primary" title="ouvrir"
+                                               th:href="'/user/signrequests/' + ${signRequest.id}"><i
+                                                    class="fas fa-book"></i>
+                                            </a>
+                                            <a aria-label="Accéder à la demande"
+                                               th:unless="${signRequest.parentSignBook != null}" class="btn btn-primary"
+                                               title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i
+                                                    class="far fa-eye"></i> </a>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card rounded-0 mb-2">
+                        <div id="myDocs" class="card-body">
+                            <h2>Documents en cours de modification</h2>
+                            <table class="table table-sm">
+                                <tbody>
+                                <th:block th:each="data : ${datas}">
+                                    <tr>
+                                        <td class="text-break w-50" th:text="${data.name}"></td>
+                                        <td class="text-break w-40"
+                                            th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                        <td class="text-center w-10">
+                                            <a title="Voir" th:href="'/user/datas/' + ${data.id} + '/update'"
+                                               class="btn btn-warning">
+                                                <i class="fas fa-pen"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="card rounded-0 col-xl-5">
+                    <div id="myDocs" class="card-body">
+                        <h2>Vos informations</h2>
+                        <table class="table table-sm">
+                            <tbody>
+                            <tr>
+                                <td class="text-break w-50">Nom</td>
+                                <td class="text-break w-50" th:text="${user.name}"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-break w-50">Prénom</td>
+                                <td class="text-break w-50" th:text="${user.firstname}"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-break w-50">Email</td>
+                                <td class="text-break w-50" th:text="${user.email}"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-break w-50">Identifiant</td>
+                                <td class="text-break w-50" th:text="${user.eppn}"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-break w-50">Image de la signature</td>
+                                <td class="text-break w-50">
+                                    <img th:if="${signFile != null}" alt="signature"
+                                         th:src="'data:image/png;base64,' + ${signFile}"/>
+                                    <div th:if="${signFile == null}">
+                                        Pas de signature
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-break w-50">Keystore</td>
+                                <td class="text-break w-50">
+                                    <div th:if="${user.keystore != null}" class="alert alert-secondary">
+                                        Keystore actuel : <a th:href="'/user/documents/getfile/' + ${user.keystore.id}"><span
+                                            th:text="${user.keystore.fileName}"></span></a>
+                                    </div>
+                                    <div th:if="${user.keystore == null}" class="alert alert-secondary">
+                                        Pas de keystore
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <a class="btn btn-transparent float-right" aria-label="Paramètres utilisateur "
+                           title="Paramètres" href="/user/users/?form">
+                            <button aria-label="Paramètres utilisateur" class="btn btn-secondary">
+                                <i class="fa fa-cog"></i> Modifier mes paramètres
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
 </main>
 <footer th:replace="fragments/footer :: footer"></footer>

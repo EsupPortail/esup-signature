@@ -208,7 +208,9 @@ public class WorkflowService {
                     }
                 }
             }
-            workflowStep.getRecipients().add(recipientService.createRecipient(workflowStep.getId(), recipientUser));
+            Recipient recipient = recipientService.createRecipient(workflowStep.getId(), recipientUser);
+            recipientRepository.save(recipient);
+            workflowStep.getRecipients().add(recipient);
         }
     }
 
