@@ -2,7 +2,35 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
-<div class="alert alert-info">Déposez les documents à ajouter à la demande.<br><small>D'autres documents pourrons être déposés par la suite</small></div>
+<div id="stepper1" class="bs-stepper linear">
+    <div class="bs-stepper-header" role="tablist">
+        <div class="step" data-target="#test-l-1">
+            <span class="bs-stepper-circle bg-success"><i class="fa fa-magic"></i></span>
+            <span class="bs-stepper-label">Nom</span>
+        </div>
+        <div class="bs-stepper-line"></div>
+        <div class="step active" data-target="#test-l-2">
+            <span class="bs-stepper-circle"><i class="fa fa-copy"></i></span>
+            <span class="bs-stepper-label">Copie des fichiers</span>
+        </div>
+        <div class="bs-stepper-line"></div>
+        <div class="step" data-target="#test-l-3">
+            <span class="bs-stepper-circle"><i class="fa fa-project-diagram"></i></span>
+            <span class="bs-stepper-label">Création du circuit</span>
+        </div>
+        <div class="bs-stepper-line"></div>
+        <div class="step" data-target="#test-l-3">
+            <span class="bs-stepper-circle"><i class="fa fa-save"></i></span>
+            <span class="bs-stepper-label">Sauvegarde</span>
+        </div>
+        <div class="bs-stepper-line"></div>
+        <div class="step" data-target="#test-l-3">
+            <span class="bs-stepper-circle"><i class="fa fa-flag-checkered"></i></span>
+            <span class="bs-stepper-label">Fin</span>
+        </div>
+    </div>
+</div>
+<h4 class="d-flex justify-content-center mt-4">Dépot des fichiers</h4>
 <form id="wiz2Form" th:action="'/user/signbooks/wizard/wiz3'" method="post">
     <input type="hidden" name="name" th:value="${name}">
     <input th:if="${workflow != null}" type="hidden" name="workflowId" th:value="${workflow.id}">

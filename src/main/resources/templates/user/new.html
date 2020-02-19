@@ -9,7 +9,7 @@
     <div class="wrapper">
         <nav th:replace="fragments/side :: side"></nav>
         <div id="content" class="content">
-            <nav aria-label="breadcrumb">
+            <nav aria-label="breadcrumb" class="text-uppercase">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item active">Nouveau</li>
                 </ol>
@@ -69,10 +69,10 @@
 </body>
 
 <div class="modal fade" id="wizardModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <span class="modal-title">Assistant de création de demande</span>
+                <h3 class="modal-title">Assistant de création de demande</h3>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -89,7 +89,7 @@
         <div class="modal-content">
             <form th:action="'/user/signrequests/fast-sign-request?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-header">
-                    <span class="modal-title" id="fastSignRequestLabel">Créer une nouvelle demande</span>
+                    <h3 class="modal-title" id="fastSignRequestLabel">Signature rapide</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -176,7 +176,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Choix d'un fichier</h5>
+                <h3 class="modal-title">Choix d'un fichier</h3>
                 <button type="button" class="close" data-dismiss="modal"
                         aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -208,7 +208,7 @@
         <div class="modal-content">
             <form th:action="'/user/signrequests'" method="post">
                 <div class="modal-header">
-                    <span class="modal-title" id="addSignRequestLabel">Créer une nouvelle demande</span>
+                    <h3 class="modal-title" id="addSignRequestLabel">Créer une nouvelle demande</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -237,7 +237,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <span class="modal-title" th:text="'Création d\'une nouvelle demande : ' + ${workflow.name}"></span>
+                    <h3 class="modal-title" th:text="'Création d\'une nouvelle demande : ' + ${workflow.name}"></h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>

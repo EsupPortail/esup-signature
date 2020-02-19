@@ -9,13 +9,29 @@
     <div class="wrapper">
         <nav th:replace="fragments/side :: side"></nav>
         <div id="content" class="content">
-            <nav aria-label="breadcrumb">
+            <nav aria-label="breadcrumb" class="text-uppercase">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item active">Accueil</li>
                 </ol>
             </nav>
             <div class="row">
                 <div class="flex-row col-xl-6">
+                    <div class="row mb-2">
+                        <div class="card card-hover mr-2">
+                            <div class="card-body text-center">
+                                <i class="fa fa-plus fa-2x text-dark"></i>
+                                <br/>
+                                <a href="/user/new" class="text-dark stretched-link" style="text-decoration: none">Nouveau</a>
+                            </div>
+                        </div>
+                        <div class="card card-hover">
+                            <div class="card-body text-center">
+                                <i class="fas fa-shield-alt fa-2x text-dark"></i>
+                                <br/>
+                                <a href="/user/validation" class="text-dark stretched-link" style="text-decoration: none">Contrôler un document</a>
+                            </div>
+                        </div>
+                    </div>
                     <div class="card mb-2">
                         <div id="myDocs" class="card-body">
                             <h2>Demandes à signer</h2>
@@ -85,23 +101,23 @@
                         <table class="table table-sm table-borderless">
                             <tbody>
                             <tr>
-                                <td class="text-break w-50">Nom</td>
+                                <th class="text-break w-50">Nom</th>
                                 <td class="text-break w-50" th:text="${user.name}"></td>
                             </tr>
                             <tr>
-                                <td class="text-break w-50">Prénom</td>
+                                <th class="text-break w-50">Prénom</th>
                                 <td class="text-break w-50" th:text="${user.firstname}"></td>
                             </tr>
                             <tr>
-                                <td class="text-break w-50">Email</td>
+                                <th class="text-break w-50">Email</th>
                                 <td class="text-break w-50" th:text="${user.email}"></td>
                             </tr>
                             <tr>
-                                <td class="text-break w-50">Identifiant</td>
+                                <th class="text-break w-50">Identifiant</th>
                                 <td class="text-break w-50" th:text="${user.eppn}"></td>
                             </tr>
                             <tr>
-                                <td class="text-break w-50">Image de la signature</td>
+                                <th class="text-break w-50">Image de la signature</th>
                                 <td class="text-break w-50">
                                     <img th:if="${signFile != null}" alt="signature"
                                          th:src="'data:image/png;base64,' + ${signFile}"/>
@@ -111,7 +127,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td class="text-break w-50">Keystore</td>
+                                <th class="text-break w-50">Keystore</th>
                                 <td class="text-break w-50">
                                     <div th:if="${user.keystore != null}" class="alert alert-secondary">
                                         Keystore actuel : <a th:href="'/user/documents/getfile/' + ${user.keystore.id}"><span

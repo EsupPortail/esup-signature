@@ -9,7 +9,7 @@
     <div class="wrapper">
         <nav th:replace="fragments/side :: side"></nav>
         <div id="content" class="content">
-            <nav aria-label="breadcrumb">
+            <nav aria-label="breadcrumb" class="text-uppercase">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item active">Mes demandes</li>
                 </ol>
@@ -154,7 +154,7 @@
                                                 onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');"
                                                 value="Supprimer Sign Request" type="submit"
                                                 title="Supprimer Sign Request"
-                                                class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
+                                                class="btn btn-danger"><i class="fa fa-trash"></i></button>
                                     </form>
                                 </td>
                                 <td class="utilbox" th:unless="${signRequest.parentSignBook != null}">
@@ -164,7 +164,7 @@
                                         <button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');"
                                                 value="Supprimer Sign Request" type="submit"
                                                 title="Supprimer Sign Request"
-                                                class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
+                                                class="btn btn-danger"><i class="fa fa-trash"></i></button>
                                     </form>
                                 </td>
 

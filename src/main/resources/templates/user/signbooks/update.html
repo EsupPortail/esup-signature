@@ -37,7 +37,7 @@
             </div>
         </nav>
         <div id="content" class="content">
-            <nav aria-label="breadcrumb">
+            <nav aria-label="breadcrumb" class="text-uppercase">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="/user/signbooks">Liste des demandes</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Edition de la demande : <span th:text="${signBook.name}"></span>
@@ -226,7 +226,7 @@
         <div class="modal-content">
             <form th:action="'/user/signbooks/pending/' + ${id}">
                 <div class="modal-header">
-                    <h5 class="modal-title">Envoi pour signature</h5>
+                    <h3 class="modal-title">Envoi pour signature</h3>
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-danger">
@@ -250,7 +250,7 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Envoi pour signature</h5>
+                    <h3 class="modal-title">Envoi pour signature</h3>
                 </div>
                 <div class="modal-body">
                     <form th:action="'/user/signbooks/wizard/wiz4/' + ${signBook.id}" method="post">

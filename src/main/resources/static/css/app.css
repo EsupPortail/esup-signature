@@ -12,6 +12,10 @@ body {
     font-weight: 200;
 }
 
+th {
+    font-weight: normal !important;
+}
+
 .footer {
   width: 100%;
   height: 50px;
@@ -255,6 +259,17 @@ input:checked + .slider:before {
     color: #fff;
 }
 
+#sidebar2 {
+    bottom: 50px;
+    padding-right: 10px;
+    position: fixed;
+    z-index: 2;
+    min-width: 260px;
+    max-width: 260px;
+    background: #555555;
+    color: #fff;
+}
+
 #sidebar.active {
     min-width: 60px;
     max-width: 60px;
@@ -377,7 +392,8 @@ input:checked + .slider:before {
     word-break: break-all;
 }
 
-.bs-stepper {
+.step {
+    display: flex;
 }
 
 .bs-stepper .step-trigger {
@@ -385,6 +401,7 @@ input:checked + .slider:before {
     white-space: normal;
     border: 2px solid #555555;
 }
+
 .bs-stepper-bottom {
     width: 100%;
 }
@@ -531,7 +548,6 @@ input:checked + .slider:before {
 }
 
 .breadcrumb {
-    font-weight: normal;
     margin-bottom: 5px !important;
 }
 

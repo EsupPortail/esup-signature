@@ -126,7 +126,7 @@ public class FormManagerController {
 		form.setTargetUri(updateForm.getTargetUri());
 		form.setTargetType(updateForm.getTargetType());
 		formService.updateForm(form);
-		return "redirect:/manager/" + userService.getUserFromAuthentication().getEppn() + "/forms/" + form.getId();
+		return "redirect:/manager/forms/update/" + form.getId();
 	}
 	
 	@DeleteMapping("forms/{id}")

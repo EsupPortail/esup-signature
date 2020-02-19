@@ -55,7 +55,7 @@
                     </ul>
                 </div>
             </div>
-            <nav aria-label="breadcrumb">
+            <nav aria-label="breadcrumb" class="text-uppercase">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="/user/signrequests">Liste des demandes</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.title}"></span>
@@ -103,7 +103,7 @@
         <div class="modal-content">
             <form th:action="'/user/signrequests/pending/' + ${id}">
                 <div class="modal-header">
-                    <h5 class="modal-title">Envoi pour signature</h5>
+                    <h3 class="modal-title">Envoi pour signature</h3>
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-danger">

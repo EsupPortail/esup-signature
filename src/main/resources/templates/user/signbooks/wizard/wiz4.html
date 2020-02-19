@@ -1,12 +1,39 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
-
 <body>
-<h5>Paramètres du circuit de signature</h5>
+<div id="stepper1" class="bs-stepper linear">
+    <div class="bs-stepper-header" role="tablist">
+        <div class="step" data-target="#test-l-1">
+            <span class="bs-stepper-circle bg-success"><i class="fa fa-magic"></i></span>
+            <span class="bs-stepper-label">Nom</span>
+        </div>
+        <div class="bs-stepper-line"></div>
+        <div class="step" data-target="#test-l-2">
+            <span class="bs-stepper-circle bg-success"><i class="fa fa-copy"></i></span>
+            <span class="bs-stepper-label">Copie des fichiers</span>
+        </div>
+        <div class="bs-stepper-line"></div>
+        <div class="step active" data-target="#test-l-3">
+            <span class="bs-stepper-circle"><i class="fa fa-project-diagram"></i></span>
+            <span class="bs-stepper-label">Création du circuit</span>
+        </div>
+        <div class="bs-stepper-line"></div>
+        <div class="step" data-target="#test-l-3">
+            <span class="bs-stepper-circle"><i class="fa fa-save"></i></span>
+            <span class="bs-stepper-label">Sauvegarde</span>
+        </div>
+        <div class="bs-stepper-line"></div>
+        <div class="step" data-target="#test-l-3">
+            <span class="bs-stepper-circle"><i class="fa fa-flag-checkered"></i></span>
+            <span class="bs-stepper-label">Fin</span>
+        </div>
+    </div>
+</div>
+<h4 class="d-flex justify-content-center mt-4">Paramètres de l'étape <span th:text="${signBook.workflowSteps.size() + 1}"></span></h4>
 <form th:action="'/user/signbooks/wizard/wizX/' + ${signBook.id}" method="post">
     <div class="col-lg-12">
-        <label for="recipientsEmail">Choisir les participants pour l'étape <span th:text="${signBook.workflowSteps.size() + 1}"></span></label>
+        <label for="recipientsEmail">Choisir les participants</label>
         <select name="recipientsEmail" id="recipientsEmail" size="5" multiple="multiple" required="required">
         </select>
         <script language="JavaScript">
@@ -41,7 +68,7 @@
                 }
             });
         </script>
-        <br>
+        <br/><br/>
         <label>
             Tous les participants doivent-ils signer ?
         </label>

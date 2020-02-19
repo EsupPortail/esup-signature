@@ -2,17 +2,51 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head :: head"></head>
 <body>
-    <h5>Création du parapheur terminée</h5>
-    <form th:action="'/user/signbooks/wizard/wiz5/' + ${signBook.id}" method="post">
-        <label>Choisir un nom pour sauvegarder le circuit en tant que modèle</label>
-        <input type="text" name="name" class="form-control" required>
-        <br>
-        <button type="submit" class="btn btn-success float-left">
-            <i class="fas fa-save"></i> Enregistrer le circuit
-        </button>
-        <button style="position: absolute;right: 10px;bottom: 10px;" th:onclick="'parent.location.href=\'/user/signrequests/' + ${signBook.signRequests.get(0).id} + '\''" type="button" class="btn btn-secondary float-right">
-            <i class="fas fa-door-open"></i> Fermer sans enregister
-        </button>
-    </form>
+<div class="bs-stepper-header" role="tablist">
+    <div class="step" data-target="#test-l-1">
+        <span class="bs-stepper-circle bg-success"><i class="fa fa-magic"></i></span>
+        <span class="bs-stepper-label">Nom</span>
+    </div>
+    <div class="bs-stepper-line"></div>
+    <div class="step" data-target="#test-l-2">
+        <span class="bs-stepper-circle bg-success"><i class="fa fa-copy"></i></span>
+        <span class="bs-stepper-label">Copie des fichiers</span>
+    </div>
+    <div class="bs-stepper-line"></div>
+    <div class="step" data-target="#test-l-3">
+        <span class="bs-stepper-circle bg-success"><i class="fa fa-project-diagram"></i></span>
+        <span class="bs-stepper-label">Création du circuit</span>
+    </div>
+    <div class="bs-stepper-line"></div>
+    <div class="step active" data-target="#test-l-3">
+        <span class="bs-stepper-circle"><i class="fa fa-save"></i></span>
+        <span class="bs-stepper-label">Sauvegarde</span>
+    </div>
+    <div class="bs-stepper-line"></div>
+    <div class="step" data-target="#test-l-3">
+        <span class="bs-stepper-circle"><i class="fa fa-flag-checkered"></i></span>
+        <span class="bs-stepper-label">Fin</span>
+    </div>
+</div>
+<h4 class="d-flex justify-content-center mt-4">Création du parapheur terminée</h4>
+<form th:action="'/user/signbooks/wizard/wiz5/' + ${signBook.id}" method="post">
+    <div class="row">
+        <div class="col-lg-6">
+            <label>Choisir un nom pour sauvegarder le circuit en tant que modèle</label>
+            <input type="text" name="name" class="form-control" required>
+            <br>
+            <button type="submit" class="btn btn-success float-left">
+                <i class="fas fa-save"></i> Enregistrer le circuit
+            </button>
+        </div>
+        <div class="col-lg-6">
+            <button style="position: absolute;right: 10px;bottom: 10px;"
+                    th:onclick="'parent.location.href=\'/user/signrequests/' + ${signBook.signRequests.get(0).id} + '\''"
+                    type="button" class="btn btn-secondary float-right">
+                <i class="fas fa-door-open"></i> Fermer sans enregister
+            </button>
+        </div>
+    </div>
+</form>
 </body>
 </html>
