@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div th:fragment="recipientscard" th:if="${signRequest.parentSignBook == null}">
-    <div class="card rounded-0 mb-1">
+    <div class="card mb-1">
         <div class="card-header">
             Paramètres de signature
             <button type="button" class="btn btn-sm btn-primary float-right" data-toggle="modal" data-target="#signRequestParams">

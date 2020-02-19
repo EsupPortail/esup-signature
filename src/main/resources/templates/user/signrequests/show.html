@@ -59,7 +59,7 @@
                     <a th:if="${signRequest.createBy == user.eppn && signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() == 'draft' || signRequest.parentSignBook.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pen"></i></a>
                     <a th:if="${signRequest.createBy == user.eppn && signRequest.parentSignBook == null && (signRequest.status.name() == 'draft' || signRequest.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1" title="Modifier" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'"><i class="fas fa-pen"></i></a>
                     <th:block th:if="${documentType == 'pdf'}">
-                    <div class="border border-dark rounded p-1 d-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
+                    <div class="bg-light ml-1 p-1 pt-2 d-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
                     <button id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
                         <i class="fas fa-arrow-left"></i>
                     </button>
@@ -69,7 +69,7 @@
                     <div class="border ml-3 mr-3 d-none d-lg-block"></div>
                     <button id="zoomout" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-minus"></i></button>
                     <button id="zoomin" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-plus"></i></button>
-                    <div class="border border-dark rounded p-1 ml-1 d-none d-lg-inline"><span id="zoom"></span> %</div>
+                    <div class="bg-light ml-1 p-1 pt-2 d-inline d-none"><span id="zoom"></span> %</div>
                     <div class="border ml-3 mr-3 d-none d-lg-block"></div>
                     <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
                     <button id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>

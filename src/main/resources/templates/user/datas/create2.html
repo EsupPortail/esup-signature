@@ -21,7 +21,7 @@
                     <button title="Annuler" class="btn btn-light btn-outline-danger ml-1" aria-label="Précédent" onclick="window.history.back();">
                         <i class="fas fa-times"></i>
                     </button>
-                    <div class="border border-dark rounded ml-1 p-1 d-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
+                    <div class="bg-light ml-1 p-1 pt-2 d-inlinebirder"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
                     <button id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
                         <i class="fas fa-arrow-left"></i>
                     </button>
@@ -30,7 +30,7 @@
                     </button>
                     <button id="zoomout" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-minus"></i></button>
                     <button id="zoomin" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-plus"></i></button>
-                    <div class="border border-dark rounded p-1 ml-1 d-none d-lg-inline"><span id="zoom"></span> %</div>
+                    <div class="bg-light ml-1 p-1 pt-2 d-inline d-none"><span id="zoom"></span> %</div>
                     <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
                     <button id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
                     <button th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" onclick="document.getElementById('newDataSubmit').click();" class="btn btn-light btn-outline-success ml-1">

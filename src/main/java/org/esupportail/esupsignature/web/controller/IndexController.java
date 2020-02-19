@@ -44,6 +44,11 @@ import java.util.List;
 @Controller
 public class IndexController {
 
+	@ModelAttribute("userMenu")
+	public String getActiveRole() {
+		return "active";
+	}
+
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
 		return "home";

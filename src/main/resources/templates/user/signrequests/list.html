@@ -14,7 +14,7 @@
                     <li class="breadcrumb-item active">Mes demandes</li>
                 </ol>
             </nav>
-            <div class="card rounded-0 mb-3">
+            <div class="card mb-3">
                 <div class="card-header" onclick="$('#myDocs').toggle();" style="cursor: pointer;">
                     <a data-toggle="collapse" href="#myDocs" role="button" aria-expanded="false"
                        aria-controls="mySignedDocs">
@@ -115,11 +115,11 @@
                                 </td>
                                 <td class="utilbox">
                                     <a aria-label="Accéder à la demande" th:if="${signRequest.parentSignBook != null}"
-                                       class="btn btn-info" title="ouvrir"
+                                       class="btn btn-primary" title="ouvrir"
                                        th:href="'/user/signrequests/' + ${signRequest.id}"><i class="fas fa-book"></i>
                                     </a>
                                     <a aria-label="Accéder à la demande"
-                                       th:unless="${signRequest.parentSignBook != null}" class="btn btn-info"
+                                       th:unless="${signRequest.parentSignBook != null}" class="btn btn-primary"
                                        title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i
                                             class="far fa-eye"></i> </a>
                                 </td>

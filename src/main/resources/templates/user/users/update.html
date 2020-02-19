@@ -35,7 +35,7 @@
             <form id="fu_org_esupportail_esupsignature_domain_User" th:object="${user}" th:action="'/user/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
                 <input type="hidden" name="referer" th:value="${referer}"/>
                 <input type="hidden" name="id" th:value="${user.id}"/>
-                <div class="card rounded-0 mb-3">
+                <div class="card mb-3">
                     <div class="card-header" role="tab" id="headingOne">Identité</div>
                     <div class="card-body">
                         <div class="row">
@@ -62,7 +62,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card rounded-0 mb-3">
+                <div class="card mb-3">
                     <div class="card-header" role="tab" id="headingTwo">
                         Paramètres de signature
                     </div>
@@ -181,7 +181,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card rounded-0 mb-3">
+                <div class="card mb-3">
                     <div class="card-header" role="tab" id="headingThree">
                         Fréquence des alertes
                     </div>

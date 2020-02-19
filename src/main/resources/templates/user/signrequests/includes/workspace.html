@@ -566,7 +566,7 @@
                 </script>
             </form>
             <div th:if="${documentType != 'pdf' && signRequest.originalDocuments.size() > 0}" class="col-6">
-            <div class="card rounded-0 mb-1">
+            <div class="card mb-1">
                 <div class="card-header">
                     Liste des documents originaux
                 </div>
@@ -577,7 +577,7 @@
                 </div>
             </div>
 
-            <div class="card rounded-0 mb-1" th:if="${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported'}">
+            <div class="card mb-1" th:if="${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported'}">
                 <div class="card-header">
                     Liste des documents signés
                 </div>
