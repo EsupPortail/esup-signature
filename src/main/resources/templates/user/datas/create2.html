@@ -61,7 +61,7 @@
                     </a>
                 </div>
             </div>
-            <div class="workspace alert alert-secondary fadein" style="transition: all 0.3s; margin-top: 98px;">
+            <div id="workspace" class="workspace alert alert-secondary fadein">
                 <form id="newData" th:action="'/user/datas/form/' + ${form.id}" method="post">
                     <input id="newDataSubmit" type="submit" style="display: none;"/>
                     <input id="dataId" type="hidden" name="dataId" th:value="${data.id}"/>

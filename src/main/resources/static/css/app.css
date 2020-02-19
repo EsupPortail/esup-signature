@@ -514,13 +514,13 @@ input:checked + .slider:before {
     height: 80vh;
 }
 
-.card {
-    -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);
-    /* Safari+Chrome */
-    -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);
-    /* Opera */
-    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);
-}
+/*.card {*/
+/*    -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);*/
+/*    !* Safari+Chrome *!*/
+/*    -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);*/
+/*    !* Opera *!*/
+/*    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3), 0 2px 10px 0 rgba(0, 0, 0, 0.3);*/
+/*}*/
 
 .nav-tabs .nav-link {
     border-color: #dee2e6 !important;

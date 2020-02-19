@@ -15,11 +15,11 @@
                 </ol>
             </nav>
             <div class="row">
-                <div class="flex-row mr-2">
+                <div class="flex-row col-xl-6">
                     <div class="card rounded-0 mb-2">
                         <div id="myDocs" class="card-body">
                             <h2>Demandes à signer</h2>
-                            <table class="table table-sm">
+                            <table class="table table-sm table-borderless">
                                 <tbody>
                                 <th:block th:each="signRequest : ${signRequests}">
                                     <tr>
@@ -50,8 +50,8 @@
                     </div>
                     <div class="card rounded-0 mb-2">
                         <div id="myDocs" class="card-body">
-                            <h2>Documents en cours de modification</h2>
-                            <table class="table table-sm">
+                            <h2>Documents en cours de création</h2>
+                            <table class="table table-sm table-borderless">
                                 <tbody>
                                 <th:block th:each="data : ${datas}">
                                     <tr>
@@ -71,10 +71,20 @@
                         </div>
                     </div>
                 </div>
-                <div class="card rounded-0 col-xl-5">
+                <div class="flex-row col-xl-5">
+                    <div class="card rounded-0">
                     <div id="myDocs" class="card-body">
-                        <h2>Vos informations</h2>
-                        <table class="table table-sm">
+                        <h2>
+                            Vos informations
+                            <a class="btn btn-transparent float-right" aria-label="Paramètres utilisateur "
+                               title="Paramètres" href="/user/users/?form">
+                                <button aria-label="Paramètres utilisateur" class="btn btn-secondary">
+                                    <i class="fa fa-cog"></i> Modifier mes paramètres
+                                </button>
+                            </a>
+                        </h2>
+                        <br/>
+                        <table class="table table-sm table-borderless">
                             <tbody>
                             <tr>
                                 <td class="text-break w-50">Nom</td>
@@ -116,13 +126,8 @@
                             </tr>
                             </tbody>
                         </table>
-                        <a class="btn btn-transparent float-right" aria-label="Paramètres utilisateur "
-                           title="Paramètres" href="/user/users/?form">
-                            <button aria-label="Paramètres utilisateur" class="btn btn-secondary">
-                                <i class="fa fa-cog"></i> Modifier mes paramètres
-                            </button>
-                        </a>
                     </div>
+                </div>
                 </div>
             </div>
         </div>
