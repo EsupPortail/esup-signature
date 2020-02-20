@@ -132,7 +132,7 @@
                 callback('Merci de saisir au moins 3 caractères');
                 return;
             } else {
-                fetch('/user/users/searchUser?searchString=' + search)
+                fetch('/user/users/search-user?searchString=' + search)
                     .then(function (response) {
                         return response.json();
                     })

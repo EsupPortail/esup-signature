@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Data;
+import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -9,6 +11,7 @@ import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.service.DataService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +20,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
@@ -24,6 +30,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
@@ -43,24 +52,14 @@ public class FormUserController {
 	private FormService formService;
 
 	@Resource
-	private DataService dataService;
-
-	@Resource
 	private DataRepository dataRepository;
 
 	@Resource
-	private SignService signService;
+	private PdfService pdfService;
 
 	@ModelAttribute("user")
-	public User getUser(@PathVariable String eppn) {
-		return userService.getUserFromSu(eppn);
-	}
-
-
-
-	@ModelAttribute("forms")
-	public List<Form> getForms(@PathVariable String eppn) {
-		return 	formService.getFormsByUser(userService.getUserFromSu(eppn), true);
+	public User getUser() {
+		return userService.getUserFromAuthentication();
 	}
 
 	@ModelAttribute("suUsers")
@@ -74,7 +73,7 @@ public class FormUserController {
 	}
 
 	@GetMapping("forms/{id}")
-	public String getFormById(@PathVariable("id") Long id, Model model, @PathVariable String eppn) {
+	public String getFormById(@PathVariable("id") Long id, Model model) {
 		Form form = formRepository.findById(id).get();
 		model.addAttribute("form", form);
 		model.addAttribute("activeForm", form.getName());
@@ -84,8 +83,8 @@ public class FormUserController {
 	}
 
 	@GetMapping("forms/{id}/list")
-	public String getFormByIdList(@PathVariable("id") Long id, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model, @PathVariable String eppn) throws RuntimeException {
-		User user = userService.getUserFromSu(eppn);
+	public String getFormByIdList(@PathVariable("id") Long id, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) throws RuntimeException {
+		User user = userService.getUserFromAuthentication();
 		Form form = formRepository.findById(id).get();
 		Form activeVersionForm = formRepository.findFormByNameAndActiveVersion(form.getName(), true).get(0);
 		model.addAttribute("form", form);
@@ -97,15 +96,15 @@ public class FormUserController {
 	}
 	
 	@GetMapping("forms")
-	public String getAllForms(Model model, @PathVariable String eppn) {
+	public String getAllForms(Model model) {
 		List<Form> forms = formRepository.findFormByActiveVersion(true);
 		model.addAttribute("forms", forms);
 		return "user/forms/list";
 	}
 
 	@PostMapping("forms/{id}")
-	public String addForm(@PathVariable("id") Long id, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes, @PathVariable String eppn) {
-		User user = userService.getUserFromSu(eppn);
+	public String addForm(@PathVariable("id") Long id, @RequestParam MultiValueMap<String, String> formData) {
+		User user = userService.getUserFromAuthentication();
 		Form form = formRepository.findById(id).get();
 		Data data = new Data();
 		data.setName(form.getName());
@@ -117,5 +116,15 @@ public class FormUserController {
 		data.setOwner(user.getEppn());
 		return "redirect:/user/data/" + data.getId();
 	}
-	
+
+	@GetMapping("forms/{id}/get-image")
+	public ResponseEntity<Void> getImagePdfAsByteArray(@PathVariable("id") Long id, HttpServletResponse response) throws Exception {
+		Form form = formRepository.findById(id).get();
+		InputStream in = pdfService.pageAsInputStream(form.getDocument().getInputStream(), 0);
+		response.setContentType(MediaType.IMAGE_PNG_VALUE);
+		IOUtils.copy(in, response.getOutputStream());
+		in.close();
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
 } 

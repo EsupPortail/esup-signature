@@ -50,8 +50,7 @@ public class NewController {
     @GetMapping
     public String list(Model model) {
         User user = userService.getUserFromAuthentication();
-        List<Form> forms = formService.getAllForms();
-        model.addAttribute("forms", forms);
+        model.addAttribute("forms", formService.getFormsByUser(user, true));
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
         model.addAttribute("signTypes", Arrays.asList(SignType.values()));
         return "user/new";

@@ -39,10 +39,13 @@ public class LdapExtValue implements ExtValue {
 	public Map<String, Object> getAllValuesByUser(User user) {
 		PersonLdap personLdap = userService.getPersonLdap(user);
 		OrganizationalUnitLdap organizationalUnitLdap = userService.getOrganizationalUnitLdap(personLdap.getSupannEntiteAffectationPrincipale());
+		if(organizationalUnitLdap != null) {
 		ObjectMapper oMapper = new ObjectMapper();
 		Map<String, Object> values = oMapper.convertValue(personLdap, Map.class);
-		values.put("postalAddress", organizationalUnitLdap.getPostalAddress());
-		return values;
+			values.put("postalAddress", organizationalUnitLdap.getPostalAddress());
+			return values;
+		}
+		return new HashMap<>();
 	}
 	
 }

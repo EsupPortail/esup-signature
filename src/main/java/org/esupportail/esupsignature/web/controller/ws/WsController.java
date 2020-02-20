@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -509,7 +510,7 @@ public class WsController {
     }
 
     @ResponseBody
-    @GetMapping(value = "/searchUser")
+    @GetMapping(value = "/search-user")
     public List<PersonLdap> searchUser(@RequestParam(value = "searchString") String searchString, @RequestParam(required = false) String ldapTemplateName) {
         logger.debug("ldap search for : " + searchString);
         return userService.getPersonLdaps(searchString, ldapTemplateName);

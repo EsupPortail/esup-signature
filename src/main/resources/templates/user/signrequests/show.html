@@ -153,7 +153,7 @@
             <div class="modal-body">
                 <div th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}" class="alert alert-success"></div>
                 <div th:if="${signType == 'nexuSign'}">
-                    <script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
+<!--                    <script type="text/javascript" src="/js/jsSignatureLevel.js"></script>-->
                     <script type="text/javascript" th:replace="user/signrequests/includes/scriptnexu :: scriptnexu"></script>
                     <div id="nexu_version_alert" style="display: none;">
                         <a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left">

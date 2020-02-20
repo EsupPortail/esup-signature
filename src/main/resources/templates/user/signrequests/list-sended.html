@@ -2,7 +2,6 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.thymeleaf.org/spring-data">
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<!--/*@thymesVar id="signRequests" type="org.springframework.data.domain.Page<org.esupportail.esupsignature.entity.SignRequest>"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
@@ -12,17 +11,12 @@
         <div id="content" class="content">
             <nav aria-label="breadcrumb" class="text-uppercase">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item active">À signer</li>
+                    <li class="breadcrumb-item active">Documents envoyés</li>
                 </ol>
             </nav>
             <div class="card mb-3">
-                <div class="card-header" onclick="$('#toSign').toggle();" style="cursor: pointer;">
-                    <a data-toggle="collapse" href="#" role="button" aria-expanded="false" aria-controls="toSign">
-                        Demandes à signer <i class="fa fa-arrow-down float-right"></i>
-                    </a>
-                </div>
-                <div id="toSign" class="card-body">
-                    <table th:if="${signRequests.getTotalElements() > 0}" class="table table-borderless table-hover">
+                <div id="myDocs" class="card-body">
+                    <table class="table table-borderless table-hover">
                         <thead class="thead-dark">
                         <tr>
                             <th class="">Parapheur</th>
@@ -32,6 +26,8 @@
                             <th class="d-none d-lg-table-cell">Participants</th>
                             <th class="d-none d-md-table-cell">Statut</th>
                             <th>Voir</th>
+                            <th>Modifier</th>
+                            <th>Supprimer</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -47,12 +43,12 @@
                                 </td>
                                 <td class="d-none d-lg-table-cell">
                                     <table th:if="${signRequest.parentSignBook != null && @signBookService.getCurrentWorkflowStep(signRequest.parentSignBook) != null}"
-                                           class="table table-sm table-bordered">
+                                           class="table table-sm">
                                         <tbody>
                                         <th:block
                                                 th:each="recipient : ${@signBookService.getCurrentWorkflowStep(signRequest.parentSignBook).recipients}">
                                             <tr>
-                                                <td
+                                                <td width="100%"
                                                     th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>
                                                 <td align="center">
                                                     <div th:switch="${recipient.signed}">
@@ -66,11 +62,11 @@
                                         </th:block>
                                         </tbody>
                                     </table>
-                                    <table class="table table-sm table-bordered" th:if="${signRequest.parentSignBook == null}">
+                                    <table class="table table-sm" th:if="${signRequest.parentSignBook == null}">
                                         <tbody>
                                         <th:block th:each="recipient : ${signRequest.recipients}">
                                             <tr>
-                                                <td
+                                                <td width="100%"
                                                     th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>
                                                 <td align="center">
                                                     <div th:switch="${recipient.signed}">
@@ -103,75 +99,74 @@
                                        title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i
                                             class="far fa-eye"></i> </a>
                                 </td>
+                                <td class="utilbox"
+                                    th:if="${signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() == 'draft' || signRequest.parentSignBook.status.name() == 'pending')}">
+                                    <button aria-label="Modifier" class="btn btn-warning" title="Modifier"
+                                            th:onclick="'location.href=\'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form\''">
+                                        <i class="fas fa-pen"></i></button>
+                                </td>
+                                <td class="utilbox"
+                                    th:if="${signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() != 'draft' && signRequest.parentSignBook.status.name() != 'pending')}">
+                                    <button aria-label="Modifier" class="btn btn-outline-secondary" title="Modifier"
+                                            disabled><i class="fas fa-pen"></i></button>
+                                </td>
+                                <td class="utilbox"
+                                    th:if="${signRequest.parentSignBook == null && (signRequest.status.name() == 'draft' || signRequest.status.name() == 'pending')}">
+                                    <button aria-label="Modifier" class="btn btn-warning" title="Modifier"
+                                            th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '?form\''">
+                                        <i class="fas fa-pen"></i></button>
+                                </td>
+                                <td class="utilbox"
+                                    th:if="${signRequest.parentSignBook == null && !(signRequest.status.name() == 'draft' || signRequest.status.name() == 'pending')}">
+                                    <button aria-label="Modifier" class="btn btn-outline-secondary" title="Modifier"
+                                            disabled><i class="fas fa-pen"></i></button>
+                                </td>
+                                <td class="utilbox" th:if="${signRequest.parentSignBook != null}">
+                                    <form class="delete"
+                                          th:action="'/user/signbooks/' + ${signRequest.parentSignBook.id}"
+                                          method="post">
+                                        <input type="hidden" name="_method" value="DELETE"/>
+                                        <button aria-label="Supprimer"
+                                                onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');"
+                                                value="Supprimer Sign Request" type="submit"
+                                                title="Supprimer Sign Request"
+                                                class="btn btn-danger"><i class="fa fa-trash"></i></button>
+                                    </form>
+                                </td>
+                                <td class="utilbox" th:unless="${signRequest.parentSignBook != null}">
+                                    <form class="delete" th:action="'/user/signrequests/' + ${signRequest.id}"
+                                          method="post">
+                                        <input type="hidden" name="_method" value="DELETE"/>
+                                        <button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');"
+                                                value="Supprimer Sign Request" type="submit"
+                                                title="Supprimer Sign Request"
+                                                class="btn btn-danger"><i class="fa fa-trash"></i></button>
+                                    </form>
+                                </td>
+
                             </tr>
                         </th:block>
                         </tbody>
                         <tfoot>
-                        <tr>
-                            <td colspan="100%">
-                                <nav th:replace="fragments/pagination :: pagination"></nav>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td colspan="100%">
+                                    <nav th:replace="fragments/pagination :: pagination"></nav>
+                                </td>
+                            </tr>
                         </tfoot>
                     </table>
-                    <div th:unless="${signRequests.getTotalElements() > 0}" class="alert alert-secondary">
-                        Aucun document à signer pour le moment
-                    </div>
                 </div>
             </div>
-            <div class="card mb-3">
-                <div class="card-header" onclick="$('#mySignedDocs').toggle();" style="cursor: pointer;">
-                    <a data-toggle="collapse" href="#mySignedDocs" role="button" aria-expanded="false"
-                       aria-controls="mySignedDocs">
-                        Historique des demandes signées ou visées <i class="fa fa-arrow-down float-right"></i>
-                    </a>
-                </div>
-                <div id="mySignedDocs" class="card-body collapse">
-                    <div th:if="${#lists.size(signRequestsSignedByMe) > 0}" class="table-responsive">
-                        <table class="table table-sm table-borderless table-hover">
-                            <thead class="thead-dark">
-                            <tr>
-                                <th class="">Parapheur</th>
-                                <th class="">Titre</th>
-                                <th class="d-none d-md-table-cell">Date de création</th>
-                                <th class="d-none d-lg-table-cell">Créé par</th>
-                                <th>Voir</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <th:block th:each="signRequest : ${signRequestsSignedByMe}">
-                                <tr>
-                                    <td class="text-break" th:if="${signRequest.parentSignBook != null}"
-                                        th:text="${signRequest.parentSignBook.name}"></td>
-                                    <td class="text-break" th:unless="${signRequest.parentSignBook != null}"></td>
-                                    <td class="text-break" th:text="${signRequest.title}"></td>
-                                    <td class="d-none d-md-table-cell"><span
-                                            th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                    </td>
-                                    <td class="d-none d-lg-table-cell"><span
-                                            th:text="${@userService.getUserByEppn(signRequest.createBy).firstname} + ' ' + ${@userService.getUserByEppn(signRequest.createBy).name}"></span>
-                                    </td>
-                                    <td class="utilbox">
-                                        <a th:if="${signRequest.parentSignBook != null}" class="btn btn-primary"
-                                           title="ouvrir" th:href="'/user/signrequests/' + ${signRequest.id}"><i
-                                                class="fas fa-book"></i> </a>
-                                        <a th:unless="${signRequest.parentSignBook != null}" class="btn btn-primary"
-                                           title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i
-                                                class="far fa-eye"></i> </a>
-                                    </td>
-                                </tr>
-                            </th:block>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div th:unless="${#lists.size(signRequestsSignedByMe) > 0}" class="alert alert-secondary">
-                        Aucun document signer pour le moment
-                    </div>
-                </div>
-            </div>
+
         </div>
     </div>
 </main>
+<script>
+    localStorage.removeItem('mode');
+    $('#wizardModal').on('shown.bs.modal', function () {
+        $(this).modal({backdrop: 'none', keyboard: false})
+    });
+</script>
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

@@ -141,6 +141,9 @@ public class SignRequestController {
         } else {
             signRequests = signRequestRepository.findByCreateBy(user.getEppn());
         }
+
+        signRequests.addAll(signRequestService.getToSignRequests(user));
+
         model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequests, pageable));
 
         if (user.getKeystore() != null) {
@@ -154,27 +157,28 @@ public class SignRequestController {
         return "user/signrequests/list";
     }
 
-    @GetMapping("/to-sign")
-    public String listToSign(
-            @RequestParam(value = "statusFilter", required = false) String statusFilter,
-            @RequestParam(value = "signBookId", required = false) Long signBookId,
-            @RequestParam(value = "messageError", required = false) String messageError,
-            @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
+    @GetMapping("/sended")
+    public String listSended(@RequestParam(value = "messageError", required = false) String messageError,
+                             @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
         User user = userService.getUserFromAuthentication();
-        workflowService.initCreatorWorkflow();
+        List<SignRequest> signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.pending);
+        model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequests, pageable));
 
-        if (statusFilter != null) {
-            if (!statusFilter.equals("all")) {
-                this.statusFilter = SignRequestStatus.valueOf(statusFilter);
-            } else {
-                this.statusFilter = null;
-            }
+        if (user.getKeystore() != null) {
+            model.addAttribute("keystore", user.getKeystore().getFileName());
         }
+        model.addAttribute("mydocs", "active");
+        model.addAttribute("messageError", messageError);
+        return "user/signrequests/list-sended";
+    }
+
+    @GetMapping("/to-sign")
+    public String listToSign(@RequestParam(value = "messageError", required = false) String messageError,
+            @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
+        User user = userService.getUserFromAuthentication();
         List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
         model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequestsToSign, pageable));
         model.addAttribute("signRequestsSignedByMe", signRequestService.getSignRequestsSignedByUser(user));
-        model.addAttribute("statusFilter", this.statusFilter);
-        model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("messageError", messageError);
         model.addAttribute("activeMenu", "tosign");
         return "user/signrequests/list-to-sign";

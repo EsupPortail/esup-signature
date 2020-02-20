@@ -203,9 +203,10 @@ public class SignRequestService {
 	public void addRecipients(SignRequest signRequest, List<Recipient> recipients) {
 		signRequest.getRecipients().clear();
 		for(Recipient recipient : recipients) {
+			recipientRepository.save(recipient);
 			signRequest.getRecipients().add(recipient);
 		}
-
+		signRequestRepository.save(signRequest);
 	}
 
 	public void addRecipients(SignRequest signRequest, User user) {

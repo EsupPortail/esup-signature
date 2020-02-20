@@ -23,9 +23,6 @@ public class OrdreMissionPreFill implements PreFill {
 	private String name = "ordre_mission";
 
 	@Resource
-	private UserService userService;
-	
-	@Resource
 	private ExtValueService extValueService;
 
 	@Override

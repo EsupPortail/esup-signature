@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 
 public class ShibRequestHeaderAuthenticationFilter extends RequestHeaderAuthenticationFilter {
 	
-	private final Logger log = LoggerFactory.getLogger(getClass());
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private String credentialsRequestHeader4thisClass;
 

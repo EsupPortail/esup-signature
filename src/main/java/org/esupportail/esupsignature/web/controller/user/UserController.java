@@ -167,7 +167,7 @@ public class UserController {
 		}
 	}
 
-	@RequestMapping(value="/searchUser")
+	@RequestMapping(value="/search-user")
 	@ResponseBody
 	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString, @RequestParam(required=false) String ldapTemplateName) {
 		logger.debug("ldap search for : " + searchString);

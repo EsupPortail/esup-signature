@@ -242,12 +242,17 @@ public class DataController {
 
 	@PostMapping("datas/{id}/send")
 	public String sendDataById(@PathVariable("id") Long id,
-                               @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails) throws EsupSignatureIOException, EsupSignatureException {
+                               @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
 		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
-		SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user);
-		if(recipientService.needSign(data.getSignBook().getSignRequests().get(0).getRecipients(), user)) {
-			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+		try {
+			SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user);
+			if (recipientService.needSign(data.getSignBook().getSignRequests().get(0).getRecipients(), user)) {
+				return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+			}
+		} catch (EsupSignatureException e) {
+			logger.error(e.getMessage(), e);
+			redirectAttributes.addFlashAttribute("messageError", e.getMessage());
 		}
 		return "redirect:/user/datas/" + id + "/update";
 	}

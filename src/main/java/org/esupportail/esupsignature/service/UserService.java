@@ -16,6 +16,7 @@ import org.esupportail.esupsignature.service.scheduler.ScheduledTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -121,6 +122,15 @@ public class UserService {
 		user.setEmail(email);
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
+		user.getRoles().clear();
+		Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+		if (authorities.size() > 0) {
+			for (GrantedAuthority authority : authorities) {
+				if (authority.getAuthority().startsWith("ROLE_FOR.ESUP-SIGNATURE.USER")) {
+					user.getRoles().add(authority.getAuthority().replace("ROLE_FOR.ESUP-SIGNATURE.USER.", ""));
+				}
+			}
+		}
 		userRepository.save(user);
 		return user;
 	}
@@ -154,13 +164,13 @@ public class UserService {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     	String eppn = auth.getName();
     	if(ldapPersonService != null) {
-			//List<PersonLdap> personLdaps=  personLdapRepository.findByUidLike(auth.getName());
     		if(personLdapRepository.findByUid(auth.getName()).size() > 0) {
     			eppn = personLdapRepository.findByUid(auth.getName()).get(0).getEduPersonPrincipalName();
     		}
     	}
 		if (userRepository.countByEppn(eppn) > 0) {
-			return userRepository.findByEppn(eppn).get(0);
+			User user = userRepository.findByEppn(eppn).get(0);
+			return user;
 		} else {
 			return getSystemUser();
 		}
@@ -254,7 +264,9 @@ public class UserService {
 	public OrganizationalUnitLdap getOrganizationalUnitLdap(String supannCodeEntite) {
 		if (ldapPersonService != null) {
 			List<OrganizationalUnitLdap> organizationalUnitLdap = organizationalUnitLdapRepository.findBySupannCodeEntite(supannCodeEntite);
-			return organizationalUnitLdap.get(0);
+			if(organizationalUnitLdap.size() > 0) {
+				return organizationalUnitLdap.get(0);
+			}
 		}
 		return null;
 	}

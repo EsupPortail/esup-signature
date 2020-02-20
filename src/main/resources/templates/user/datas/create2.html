@@ -367,7 +367,7 @@
                                                 callback('Merci de saisir au moins 3 caractères')
                                                 return
                                             }
-                                            fetch('/ws/searchUser?searchString=' + search)
+                                            fetch('/ws/search-user?searchString=' + search)
                                                 .then(function (response) {
                                                     return response.json()
                                                 })
@@ -425,7 +425,7 @@
                                             callback('Merci de saisir au moins 3 caractères')
                                             return
                                         }
-                                        fetch('/ws/searchUser?searchString=' + search)
+                                        fetch('/ws/search-user?searchString=' + search)
                                             .then(function (response) {
                                                 return response.json()
                                             })
