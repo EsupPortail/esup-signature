@@ -1,132 +1,30 @@
 <!doctype html>
 <html lang="fr" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="jsonSignInfoMessage" type="org.esupportail.esupformfiller.web.JsonSignInfoMessage"*/-->
+<!--/*@thymesVar id="data" type="org.esupportail.esupsignature.entity.Data"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
-<nav th:replace="fragments/nav :: nav(activeNav)"></nav>
 <main role="main">
     <div class="wrapper">
         <div th:replace="fragments/side :: side"></div>
         <div class="content" id="v-pills-tabContent">
-            <nav th:replace="fragments/breadcrumb :: breadcrumb"></nav>
+            <nav aria-label="breadcrumb" class="text-uppercase">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/user/datas">Mes documents</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Formulaire : <span th:text="${data.name}"></span>
+                    </li>
+                </ol>
+            </nav>
             <div class="card">
-                <div class="card-header">
-                    <a target="_blank" th:if="${data.status.name() == 'completed'}"
-                            th:href="'/user/' + ${user.eppn} + '/data/' + ${data.id} + '/lastfile'"
-                            class="mr-2 btn btn-warning float-left">
-                        <i class="fas fa-download fa-2x"></i><br/> Enregistrer sous
-                    </a>
-                    <button type="button" th:if="${data.status.name() == 'sended'}"
-                            onclick="confirmCancel()"
-                            class="mr-2 btn btn-outline-dark btn-light float-left">
-                        <i class="fas fa-eraser fa-2x"></i><br/> Annuler cette demande
-                        <script>
-                            function confirmCancel() {
-                                var x = confirm("Voulez-vous annuler cette demande ?");
-                                if (x)
-                                    location.href = '/user/[[${user.eppn}]]/data/[[${data.id}]]/reset';
-                                else
-                                    return false;
-                            }
-                        </script>
-                    </button>
-                    <div th:switch="${data.status.name()}">
-                        <th:block th:case="'draft'">
-                            <a title="Modifier"
-                                    th:if="${data.status.name() == 'draft'}"
-                                    th:href="'user/' + ${user.eppn} + '/data/' + ${data.id} + '/update'"
-                                    class="btn btn btn-outline-dark btn-light float-left mr-2">
-                                <i class="fas fa-pen fa-2x"></i><br/>Modifier
-                            </a>
-                            <a title="Modifier"
-                                    th:if="${data.status.name() == 'draft'}"
-                                    th:href="'/user/' + ${user.eppn} + '/data/' + ${data.id} + '/export-pdf'"
-                                    class="btn btn btn-outline-dark btn-light float-left mr-2">
-                                <i class="far fa-file-pdf fa-2x"></i><br/>Exporter en PDF
-                            </a>
-                            <button th:if="${data.signRequest == null}" type="button" data-toggle="modal"
-                                    data-target="#sendModal"
-                                    class="mr-2 btn btn-success float-left">
-                                <i class="fas fa-check fa-2x"></i><br/>Demarrer le processus de signature
-                            </button>
-                        </th:block>
-                    </div>
-<!--                    <a th:if="${data.signUrl != null && data.signRequest == null}" class="mr-2 btn btn-success float-left" th:href="${data.signUrl} + '?referer=true'">-->
-<!--                        <i class="fas fa-signature fa-2x"></i>-->
-<!--                        <br/>Vous devez signer ce document-->
-<!--                    </a>-->
-                    <button title="Assistant de demande de signature"  type="button" data-toggle="modal" data-target="#signModal" class="mr-2 btn btn-success float-left">
-                        <i class="fas fa-signature"></i> <span class="sidebar-label">Signature</span>
-                    </button>
-                    <a class="btn btn-light btn-outline-dark float-right"
-                            value="Retour" th:href="'/user/' + ${user.eppn} + '/form/' + ${form.id} + '/list'">
-                        <i class="fas fa-times fa-2x"></i><br/>Retour
-                    </a>
+                <div class="card-header bg-danger text-white">
+                    Le modèle de ce document n'est plus disponible. Vos données seront affichées sans mise en forme.
                 </div>
                 <div class="card-body">
-                    <div th:if="${esupStatus == 'down'}" class="alert alert-danger">
-                        Esup-signature est indisponible
-                    </div>
-                    <div th:if="${data.status == 'draft' && data.step == 1}" class="row alert alert-secondary">
-                        <div class="col-lg-1">
-                            <a th:classappend="${page < 2} ? 'disabled'" class="btn btn-light btn-outline-dark" th:href="'/user/data/' + ${data.id} + '?page=' + ${page - 1}" >
-                                <i class="fas fa-arrow-left"></i>
-                            </a>
-                        </div>
-                        <div class="col-lg-10 text-center">
-                            <span th:text="'Page ' + ${page} + '/' + ${form.nbPages}"></span>
-                        </div>
-                        <div class="col-lg-1">
-                            <a th:classappend="${page >= form.nbPages} ? 'disabled'" class="btn btn-light btn-outline-dark float-right" id="next"  th:href="'/user/data/' + ${data.id} + '?page=' + ${page + 1}">
-                                <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                    <div th:if="${document != null && data.status.name() != 'draft' || data.step > 1 }">
-                        <embed th:src="'/user/' + ${user.eppn} + '/data/' + ${data.id} + '/lastfile#view=FitV'" style="width:100%;height:550px;" type="application/pdf"/>
-                    </div>
-                    <div th:unless="${document != null && data.status.name() != 'draft' ||  data.step > 1}" class="container">
-                        <div id="pointer_div" th:style="'position: relative; background-size:1190px;background-image:url(\'/user/document/' + ${document.id} + '/getimagepdfpage/' + ${page - 1} + '\');width:1190px;height:1684px;border:1px solid #CCC;'">
-                            <th:block th:each="field : ${fields}">
-                                <div th:switch="${#strings.toString(field.type)}" th:style="'position: absolute; width : ' + ${field.width * 2} + 'px; height : ' + ${field.height * 2} + 'px; left : ' + ${field.leftPos * 2} + 'px; top : ' + ${1685 - field.topPos * 2} + 'px;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;font-family: Helvetica; font-size: 18px;'">
-                                    <span th:case="'text'" th:text="${data.datas.get(field.name)}"></span>
-                                    <span th:case="'date'" th:text="${data.datas.get(field.name)}"></span>
-                                    <span th:case="'time'" th:text="${data.datas.get(field.name)}"></span>
-                                    <div th:case="'checkbox'">
-                                        <div>
-                                            <i th:if="${data.datas.get(field.name) == 'on'}" class="fa fa-check" style="position: relative; top: -2px; left: 4px;"></i>
-                                        </div>
-                                    </div>
-                                    <div th:case="'radio'">
-                                        <small><i th:if="${data.datas.get(field.name) == field.label}" class="fa fa-circle" aria-hidden="true" style="position: relative; top: -5px; left: 3px;"></i></small>
-                                    </div>
-                                </div>
-                            </th:block>
-                        </div>
-                    </div>
-                    <div th:if="${document == null}">
-                        <ul class="list-group">
-                            <th:block th:each="field : ${fields}">
-                                <li class="list-group-item"><b th:text="${field.name}"></b> : <span
-                                        th:text="${data.datas.get(field.name)}"></span></li>
-                            </th:block>
-                        </ul>
-                    </div>
-                    <div th:if="${data.status == 'draft'  &&  data.step == 1}"  class="row alert alert-secondary">
-                        <div class="col-lg-1">
-                            <a th:classappend="${page < 2} ? 'disabled'" class="btn btn-light btn-outline-dark" th:href="'/user/data/' + ${data.id} + '?page=' + ${page - 1}" >
-                                <i class="fas fa-arrow-left"></i>
-                            </a>
-                        </div>
-                        <div class="col-lg-10 text-center">
-                            <span th:text="'Page ' + ${page} + '/' + ${form.nbPages}"></span>
-                        </div>
-                        <div class="col-lg-1">
-                            <a th:classappend="${page >= form.nbPages} ? 'disabled'" class="btn btn-light btn-outline-dark float-right" id="next"  th:href="'/user/data/' + ${data.id} + '?page=' + ${page + 1}">
-                                <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
+                    <ul class="list-group">
+                        <th:block th:each="item : ${data.datas}">
+                            <li class="list-group-item"><b th:text="${item.key}"></b> : <span
+                                    th:text="${item.value}"></span></li>
+                        </th:block>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -134,23 +32,6 @@
 </main>
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
-
-
-<div class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Signature</h3>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <iframe id="wizsignIframe" frameborder="0" th:src="${data.signUrl}"  style="width: 100%; height: 500px;" ></iframe>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div class="modal modal-warning fade" id="modal-warning" aria-hidden="true">
     <div class="modal-dialog">
@@ -174,28 +55,5 @@
         </div>
     </div>
 </div>
-
-<div class="modal fade" id="nextStepModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content modal-lg">
-            <div class="modal-header">
-                <h5 class="modal-title" >Etape suivante</h5>
-                <button type="button" class="close" data-dismiss="modal"
-                        aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                Prochains signataires <span th:text="${steps.get(data.step - 1).getRecipientEmails()}"></span>
-                <form th:if="${data.status.name() == 'draft'  &&  data.step > 1}" class="form-inline" th:action="'/user/' + ${user.eppn} + '/data/' + ${data.id} + '/next-step'" method="post" id="send">
-                    <button type="submit" class="btn btn-success">Valider</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
 </div>
 </html>

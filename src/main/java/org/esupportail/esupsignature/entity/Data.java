@@ -15,7 +15,7 @@ public class Data {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     private Form form;
 
 	private String formName;

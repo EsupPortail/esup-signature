@@ -14,17 +14,14 @@
                 <button data-toggle="modal" data-target="#signAllModal" class="btn btn-light col-3 col-md-12 mb-1 text-left d-none" th:classappend="${signable != 'ok' || signRequest.parentSignBook == null || signRequest.parentSignBook .signRequests.size() < 2} ? 'd-none' ">
                     <i class="fas fa-bolt"></i> <span class="sidebar-label">Tout signer</span>
                 </button>
-                <button th:if="${documentType == 'pdf'}" id="readButton" onclick="enableReadMode()" class="btn btn-light col-12 mb-1 text-left">
-                    <i class="fas fa-eye"></i> <span class="sidebar-label">Consulter</span>
+                <button th:if="${documentType == 'pdf'}" id="readButton" onclick="enableReadMode()" class="d-none btn btn-light col-12 mb-1 text-left">
+                    <i class="fas fa-eye"></i> <span class="sidebar-label">Mode consultation</span>
                 </button>
                 <button id="signButton" onclick="enableSignMode()" class="btn btn-light col-12 mb-1 text-left" th:if="${signable == 'ok'}">
-                    <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
+                    <i class="fas fa-signature"></i> <span class="sidebar-label">Mode signature</span>
                 </button>
                 <button th:if="${documentType == 'pdf'}" id="commentButton" onclick="enableCommentMode();" class="btn btn-light col-12 mb-1 text-left">
-                    <i class="far fa-comment-alt"></i> <span class="sidebar-label">Commenter</span>
-                </button>
-                <button id="refuseButton" onclick="enableRefuseMode();" class="btn btn-light col-12 mb-1 text-left" th:classappend="${signable != 'ok'} ? 'd-none'">
-                    <i class="fas fa-ban"></i><span class="sidebar-label"> Refuser</span>
+                    <i class="far fa-comment-alt"></i> <span class="sidebar-label">Mode commentaires</span>
                 </button>
                 <button title="Retour" class="btn btn-light  col-12 mb-1 text-left" onclick="window.history.back();">
                     <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
@@ -81,10 +78,10 @@
                         <button th:unless="${@signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="btn btn-success" title="Viser" data-toggle="modal" data-target="#signModal">
                             <i class="fas fa-check"></i> Viser
                         </button>
-                    </div>
-                    <div id="refusetools" th:if="${signable == 'ok'}" style="display: none;">
+<!--                    </div>-->
+<!--                    <div id="refusetools" th:if="${signable == 'ok'}" style="display: none;">-->
                         <button class="btn btn-danger" title="Refuser" th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal">
-                            <i class="fas fa-ban"></i> Confirmer le refus
+                            <i class="fas fa-ban"></i> Refuser
                         </button>
                     </div>
                     </th:block>
@@ -110,7 +107,7 @@
                     </th:block>
                 </nav>
             </div>
-            <div class="workspace alert alert-secondary fadein" style="transition: all 0.3s;">
+            <div id="workspace" class="workspace alert alert-secondary fadein" style="transition: all 0.3s;">
                 <div th:replace="user/signrequests/includes/workspace :: workspace"></div>
             </div>
         </div>
@@ -144,7 +141,7 @@
     </div>
 </div>
 
-<div th:if="${signable == 'ok'}" class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
+<div th:if="${signable == 'ok'}" th:with="signType = ${@signRequestService.getCurrentSignType(signRequest).name()}" class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -154,7 +151,8 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div th:if="${@signRequestService.getCurrentSignType(signRequest).name() == 'nexuSign'}">
+                <div th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}" class="alert alert-success"></div>
+                <div th:if="${signType == 'nexuSign'}">
                     <script type="text/javascript" src="/js/jsSignatureLevel.js"></script>
                     <script type="text/javascript" th:replace="user/signrequests/includes/scriptnexu :: scriptnexu"></script>
                     <div id="nexu_version_alert" style="display: none;">
@@ -190,7 +188,7 @@
                         </button>
                     </div>
                 </div>
-                <input th:classappend="${@signRequestService.getCurrentSignType(signRequest).name() != 'certSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
+                <input th:classappend="${signType != 'certSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
                 <script>
                     $("#password").on('keyup', function (e) {
                         if (e.keyCode === 13) {
@@ -200,10 +198,11 @@
                 </script>
             </div>
             <div class="modal-footer">
-                <button th:if="${@signRequestService.getCurrentSignType(signRequest).name() == 'certSign' || @signRequestService.getCurrentSignType(signRequest).name() == 'pdfImageStamp'}" class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.id} + ');'">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                <button th:if="${signType == 'certSign' || signType == 'pdfImageStamp'}" class="btn btn-lg btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.id} + ');'">
                     <i class="fas fa-signature"></i> Signer
                 </button>
-                <button th:if="${@signRequestService.getCurrentSignType(signRequest).name() == 'visa'}" class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.id} + ');'">
+                <button th:if="${signType == 'visa'}" class="btn btn-lg btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.id} + ');'">
                     <i class="fas fa-check"></i> Viser
                 </button>
             </div>
@@ -231,6 +230,7 @@
                 });
             </script>
             <div class="modal-footer">
+                <button type="button" class="btn btn-secondary col-12" data-dismiss="modal">Annuler</button>
                 <button th:if="${signRequest.parentSignBook != null && @signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="mb-1 col-12 btn btn-lg btn-success" title="Signer" th:onclick="'launchSignAll(' + ${signRequest.parentSignBook.id} + ')'">
                     <i class="fas fa-signature"></i> Signer
                 </button>
@@ -253,11 +253,11 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" required></textarea>
+                    <textarea placeholder="Vous devez ajouter un commentaire" class="form-control" name="comment" required></textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-danger">Refuser</button>
+                    <button type="submit" class="btn btn-lg btn-danger">Refuser</button>
                 </div>
             </form>
         </div>

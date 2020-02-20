@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
+import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.UserService;
@@ -41,6 +42,9 @@ public class FormManagerController {
 
 	@Resource
 	private DocumentService documentService;
+
+	@Resource
+	private FormRepository formRepository;
 
 	@Resource
 	private FormService formService;
@@ -116,7 +120,7 @@ public class FormManagerController {
 	}
 	
 	@PutMapping("forms")
-	public String updateForm(@ModelAttribute Form updateForm, Model model) {
+	public String updateForm(@ModelAttribute Form updateForm) {
 		Form form = formService.getFormById(updateForm.getId());
 		form.setPdfDisplay(updateForm.isPdfDisplay());
 		form.setName(updateForm.getName());
@@ -125,8 +129,9 @@ public class FormManagerController {
 		form.setWorkflowType(updateForm.getWorkflowType());
 		form.setTargetUri(updateForm.getTargetUri());
 		form.setTargetType(updateForm.getTargetType());
-		formService.updateForm(form);
-		return "redirect:/manager/forms/update/" + form.getId();
+		form.setDescription(updateForm.getDescription());
+		formRepository.save(updateForm);
+		return "redirect:/manager/forms/update/" + updateForm.getId();
 	}
 	
 	@DeleteMapping("forms/{id}")

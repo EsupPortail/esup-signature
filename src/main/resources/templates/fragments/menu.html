@@ -29,9 +29,9 @@
 			<li class="nav-item text-white">
 					<span th:text="${user.firstname} + ' ' + ${user.name}">
 					</span>
-					<button aria-label="Paramètres utilisateur" class="btn btn-secondary">
+					<a href="/user/users/?form" th:classappend="${paramMenu}" aria-label="Paramètres utilisateur" class="btn btn-secondary">
 						<i class="fa fa-cog"></i>
-					</button>
+					</a>
 			</li>
 		</ul>
 	</div>

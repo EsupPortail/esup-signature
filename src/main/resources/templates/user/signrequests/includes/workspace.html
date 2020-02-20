@@ -291,7 +291,7 @@
                         $('#readButton').toggleClass('btn-light btn-secondary');
                         $('#rotateleft').prop('disabled', false);
                         $('#rotateright').prop('disabled', false);
-
+                        $('#stepscard').show();
                         queueRenderPage(1);
                     }
 
@@ -493,7 +493,9 @@
                     });
                 </script>
                 <th:block th:each="postit : ${postits}">
-                    <div th:id="${postit.id}" class="circle">
+                    <div th:id="${postit.id}" class="circle"
+                    th:onmouseover="'$(\'#postit' + ${postit.id} + '\').addClass(\'circle-border\');'"
+                    th:onmouseout="'$(\'#postit' + ${postit.id} + '\').removeClass(\'circle-border\');'">
                         <i class="far fa-comment-alt fa-3x"></i>
                     </div>
                     <script th:inline="javascript" >
@@ -596,12 +598,15 @@
             <div th:replace="user/signbooks/cards/stepscard :: stepscard"></div>
             </th:block>
             <div id="commentsTools" th:if="${documentType == 'pdf'}" style="display:none; transition: all 0.3s;">
-                <div class="alert alert-light">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
+                <div th:unless="${postits.size() > 0}" class="alert alert-light">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
                 <div th:if="${postits.size() > 0}" class="alert alert-warning">
                     <ul class="list-group">
                     <th:block th:each="postit : ${postits}">
-                        <li th:id="'postit' + ${postit.id}" class="list-group-item" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
-                             th:onclick="'queueRenderPage(' + ${postit.pageNumber} + ');$(\'html,body\').animate({scrollTop: $(\'#' + ${postit.id} + '\').css(\'top\').replace(\'px\', \'\')}, \'slow\');'">
+                        <li th:id="'postit' + ${postit.id}" class="list-group-item"
+                            style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
+                            th:onclick="'queueRenderPage(' + ${postit.pageNumber} + ');$(\'html,body\').animate({scrollTop: $(\'#' + ${postit.id} + '\').css(\'top\').replace(\'px\', \'\')}, \'slow\');'"
+                            th:onmouseover="'$(\'#' + ${postit.id} + '\').addClass(\'circle-border\');'"
+                            th:onmouseout="'$(\'#' + ${postit.id} + '\').removeClass(\'circle-border\');'">
                             <b th:text="${@userService.getUserByEppn(postit.eppn).firstname + ' ' + @userService.getUserByEppn(postit.eppn).name}"></b>
                             <span th:text="${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></span>
                             <p class="postitarea" th:text="${postit.comment}"></p>

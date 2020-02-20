@@ -508,11 +508,15 @@ input:checked + .slider:before {
 .circle {
     display: none;
     position: absolute;
-    border: 2px solid red;
     opacity:0.75;
     cursor: pointer;
     background:#ffc;
 }
+
+.circle-border {
+    border: 2px solid red;
+}
+
 
 .kv-file-upload {
     display: none;

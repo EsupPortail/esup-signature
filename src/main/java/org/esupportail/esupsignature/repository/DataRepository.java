@@ -15,6 +15,8 @@ import java.util.List;
 public interface DataRepository extends CrudRepository<Data, Long>, PagingAndSortingRepository<Data, Long> {
     Long countByNameStartsWith(String name);
 
+    List<Data> findByForm(Form form);
+
     Page<Data> findByCreateBy(String createBy, Pageable pageable);
 
     Page<Data> findByFormNameAndOwner(String form, String owner, Pageable pageable);

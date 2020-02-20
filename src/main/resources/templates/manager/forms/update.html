@@ -22,6 +22,10 @@
                             <input id="name" class="form-control" type="text" th:field="*{name}"/>
                         </div>
                         <div class="form-group">
+                            <label for="description">Description</label>
+                            <input id="description" class="form-control" type="text" th:field="*{description}"/>
+                        </div>
+                        <div class="form-group">
                             <label for="workflowType">Type de workflow</label>
                             <select id="workflowType" class="form-control" th:field="*{workflowType}">
                                 <th:block th:each="workflowType : ${workflowTypes}">
@@ -84,7 +88,7 @@
                             </div>
                         </div>
                         <input class="btn btn-success float-right" type="submit"
-                               value="Valider"/>
+                               value="Enregistrer"/>
                     </form>
                 </div>
             </div>

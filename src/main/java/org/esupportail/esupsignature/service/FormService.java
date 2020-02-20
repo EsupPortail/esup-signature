@@ -15,6 +15,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
+import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserPropertieRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
@@ -46,6 +47,9 @@ public class FormService {
 
 	@Resource
 	private UserPropertieRepository userPropertiesRepository;
+
+	@Resource
+	private DataRepository dataRepository;
 
 	public Form getFormById(Long formId) {
 		Form obj = formRepository.findById(formId).get();
@@ -88,6 +92,11 @@ public class FormService {
 	
 	public void deleteForm(Long formId) {
 		Form form = formRepository.findById(formId).get();
+		List<Data> datas = dataRepository.findByForm(form);
+		for(Data data : datas) {
+			data.setForm(null);
+			dataRepository.save(data);
+		}
 		List<UserPropertie> userProperties = userPropertiesRepository.findByForm(form);
 		for(UserPropertie userPropertie : userProperties) {
 			userPropertiesRepository.delete(userPropertie);

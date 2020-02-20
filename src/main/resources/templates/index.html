@@ -35,7 +35,7 @@
                     <div class="card mb-2">
                         <div id="myDocs" class="card-body">
                             <h2>Demandes à signer</h2>
-                            <table class="table table-sm table-borderless">
+                            <table th:if="${signRequests.getNumberOfElements() > 0}" class="table table-sm table-borderless">
                                 <tbody>
                                 <th:block th:each="signRequest : ${signRequests}">
                                     <tr>
@@ -62,6 +62,9 @@
                                 </th:block>
                                 </tbody>
                             </table>
+                            <div th:unless="${signRequests.getNumberOfElements() > 0}" class="alert alert-secondary">
+                                Aucun document à signer pour le moment
+                            </div>
                         </div>
                     </div>
                     <div class="card mb-2"  th:if="${datas.size() > 0}">

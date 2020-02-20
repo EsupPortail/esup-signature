@@ -118,30 +118,17 @@ public class DataController {
 	public String show(@PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model) {
 		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
+		model.addAttribute("data", data);
 		if(page == null) {
 			page = 1;
 		}
 		if(user.getEppn().equals(data.getOwner())) {
-			Form form = data.getForm();
-			DefaultWorkflow workflow = workflowService.getWorkflowByClassName(form.getWorkflowType());
-			workflow.generateWorkflowSteps(user, data, null);
-			List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndForm(user, 0, form);
-			userProperties = userProperties.stream().sorted(Comparator.comparing(UserPropertie::getId).reversed()).collect(Collectors.toList());
-			if(userProperties.size() > 0 ) {
-				model.addAttribute("targetEmails", userProperties.get(0).getTargetEmail().split(","));
-			}
-			model.addAttribute("steps", workflow.getWorkflowSteps());
-			model.addAttribute("data", data);
-			model.addAttribute("form", form);
-			model.addAttribute("activeForm", form.getName());
-			Integer finalPage = page;
-			List<Field> fields = form.getFields().stream().filter(field -> field.getPage() == finalPage).collect(Collectors.toList());
-			model.addAttribute("page", page);
-			model.addAttribute("fields", fields);
-			model.addAttribute("document", form.getDocument());
+				Integer finalPage = page;
+				model.addAttribute("page", page);
+				model.addAttribute("fields", data.getDatas());
 			return "user/datas/show";
 		} else {
-			return "/";
+			return "redirect:/";
 		}
 	}
 
@@ -175,25 +162,29 @@ public class DataController {
 	public String updateData(@PathVariable("id") Long id, Model model) {
 		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
-		Form form = data.getForm();
-		if(!data.getStatus().equals(SignRequestStatus.draft) && user.getEmail().equals(data.getCreateBy())) {
-			return "redirect:/user/" + user.getEppn() + "/data/" + data.getId();
-		}
-		List<Field> fields = form.getFields();
-		for(Field field : fields) {
-			field.setDefaultValue(data.getDatas().get(field.getName()));
-		}
-		Workflow workflow = workflowService.getWorkflowByClassName(form.getWorkflowType());
-		model.addAttribute("steps", workflow.getWorkflowSteps());
-		model.addAttribute("fields", fields);
 		model.addAttribute("data", data);
-		model.addAttribute("form", form);
-		model.addAttribute("activeForm", form.getName());
-		model.addAttribute("document", form.getDocument());
-		if(data.getSignBook() != null && recipientService.needSign(data.getSignBook().getSignRequests().get(0).getRecipients(), user)) {
-			model.addAttribute("toSign", true);
+		if(data.getStatus().equals(SignRequestStatus.draft)) {
+			Form form = data.getForm();
+			if (!data.getStatus().equals(SignRequestStatus.draft) && user.getEmail().equals(data.getCreateBy())) {
+				return "redirect:/user/" + user.getEppn() + "/data/" + data.getId();
+			}
+			List<Field> fields = form.getFields();
+			for (Field field : fields) {
+				field.setDefaultValue(data.getDatas().get(field.getName()));
+			}
+			Workflow workflow = workflowService.getWorkflowByClassName(form.getWorkflowType());
+			model.addAttribute("steps", workflow.getWorkflowSteps());
+			model.addAttribute("fields", fields);
+			model.addAttribute("form", form);
+			model.addAttribute("activeForm", form.getName());
+			model.addAttribute("document", form.getDocument());
+			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getSignRequests().get(0).getRecipients(), user)) {
+				model.addAttribute("toSign", true);
+			}
+			return "user/datas/create2";
+		} else {
+			return "redirect:/user/datas/" + data.getId();
 		}
-		return "user/datas/create2";
 	}
 
 	@PostMapping("datas/form/{id}")

@@ -52,7 +52,7 @@
                     Demandes à signer
                 </div>
                 <div class="card-body">
-                    <div th:if="${#lists.size(signBook.signRequests.size()) > 0}" class="table-responsive">
+                    <div th:if="${#lists.size(signBook.signRequests) > 0}" class="table-responsive">
                         <table class="table table-sm table-bordered table-striped table-hover">
                             <thead>
                             <tr>
@@ -89,9 +89,9 @@
                             </tbody>
                         </table>
                     </div>
-                    <span th:unless="${#lists.size(signBook.signRequests) > 0}" class="table-responsive">
+                    <div th:unless="${#lists.size(signBook.signRequests) > 0}" class="alert alert-secondary">
                         Aucun document à signer pour le moment
-                    </span>
+                    </div>
                 </div>
             </div>
             <div th:replace="user/signbooks/cards/logscard :: logscard"></div>
