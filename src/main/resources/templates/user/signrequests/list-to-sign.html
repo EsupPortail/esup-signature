@@ -11,7 +11,7 @@
         <div id="content" class="content">
             <nav aria-label="breadcrumb" class="text-uppercase">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item active">Mes taches</li>
+                    <li class="breadcrumb-item active">À signer</li>
                 </ol>
             </nav>
             <div class="card mb-3">
@@ -21,8 +21,8 @@
                     </a>
                 </div>
                 <div id="toSign" class="card-body">
-                    <table class="table table-sm table-bordered table-striped table-hover">
-                        <thead>
+                    <table class="table table-borderless table-hover">
+                        <thead class="thead-dark">
                         <tr>
                             <th class="">Parapheur</th>
                             <th class="none">Titre des documents</th>
@@ -46,12 +46,12 @@
                                 </td>
                                 <td class="d-none d-lg-table-cell">
                                     <table th:if="${signRequest.parentSignBook != null && @signBookService.getCurrentWorkflowStep(signRequest.parentSignBook) != null}"
-                                           class="table table-sm">
+                                           class="table table-sm table-bordered">
                                         <tbody>
                                         <th:block
                                                 th:each="recipient : ${@signBookService.getCurrentWorkflowStep(signRequest.parentSignBook).recipients}">
                                             <tr>
-                                                <td width="100%"
+                                                <td
                                                     th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>
                                                 <td align="center">
                                                     <div th:switch="${recipient.signed}">
@@ -65,11 +65,11 @@
                                         </th:block>
                                         </tbody>
                                     </table>
-                                    <table class="table table-sm" th:if="${signRequest.parentSignBook == null}">
+                                    <table class="table table-sm table-bordered" th:if="${signRequest.parentSignBook == null}">
                                         <tbody>
                                         <th:block th:each="recipient : ${signRequest.recipients}">
                                             <tr>
-                                                <td width="100%"
+                                                <td
                                                     th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>
                                                 <td align="center">
                                                     <div th:switch="${recipient.signed}">

@@ -35,8 +35,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class ShibAuthenticatedUserDetailsService
-implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
+public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
 
 	private static final Logger logger = LoggerFactory.getLogger(ShibAuthenticatedUserDetailsService.class);
 
@@ -54,8 +53,10 @@ implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken>
 	}
 	
 	public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
-		List<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>();
+		List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+		logger.info("load user details from : " + token.getName());
 		String credentials = (String) token.getCredentials();
+		logger.info("credentials : " + credentials);
 		try {
 			for (String credential : StringUtils.split(credentials, ";")) {
 				if (mappingGroupesRoles != null && mappingGroupesRoles.containsKey(credential)) {
@@ -63,10 +64,15 @@ implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken>
 				}
 			}
 		} catch (Exception e) {
-			logger.warn("unable to find credentials");
+			logger.warn("unable to find credentials", e);
 		}
-		for(String roleFromLdap : group2UserRoleService.getRoles(token.getName())) {
-			authorities.add(new SimpleGrantedAuthority(roleFromLdap));
+		try {
+			for (String roleFromLdap : group2UserRoleService.getRoles(token.getName())) {
+				authorities.add(new SimpleGrantedAuthority(roleFromLdap));
+				logger.info("loading authorities : " + authorities.get(0).getAuthority());
+			}
+		} catch (Exception e) {
+			logger.warn("unable to find autorities", e);
 		}
 		return createUserDetails(token, authorities);
 	}

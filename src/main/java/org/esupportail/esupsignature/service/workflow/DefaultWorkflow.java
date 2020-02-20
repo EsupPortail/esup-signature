@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 
 public class DefaultWorkflow extends Workflow {
 
+    private List<WorkflowStep> workflowSteps = new ArrayList<>();
+
     @Resource
     private UserPropertieService userPropertieService;
 
@@ -23,9 +25,6 @@ public class DefaultWorkflow extends Workflow {
 
     @Resource
     private RecipientService recipientService;
-
-    @Resource
-    private RecipientRepository recipientRepository;
 
     @Override
     public String getName() {
@@ -38,8 +37,11 @@ public class DefaultWorkflow extends Workflow {
     }
 
     @Override
-    public List<WorkflowStep> getWorkflowSteps(Data data, List<String> recipentEmails) {
-        return new ArrayList<>();
+    public List<WorkflowStep> getWorkflowSteps() {
+        return this.workflowSteps;
+    }
+
+    public void generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
     }
 
     public List<Recipient> getFavoriteRecipientEmail(int step, Form form, List<String> recipientEmails, User user) {

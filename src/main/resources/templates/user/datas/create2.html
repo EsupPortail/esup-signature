@@ -19,21 +19,21 @@
                 </nav>
                 <div class="d-flex mb-1">
                     <button title="Annuler" class="btn btn-light btn-outline-danger ml-1" aria-label="Précédent" onclick="window.history.back();">
-                        <i class="fas fa-times"></i>
+                        <i class="fas fa-door-open"></i>
                     </button>
                     <div class="bg-light ml-1 p-1 pt-2 d-inlinebirder"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
-                    <button id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
+                    <button title="Page précédente" id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <button id="next" class="btn btn-light btn-outline-dark ml-1" aria-label="Prochain">
+                    <button title="Page suivante" id="next" class="btn btn-light btn-outline-dark ml-1" aria-label="Prochain">
                         <i class="fas fa-arrow-right"></i>
                     </button>
                     <button id="zoomout" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-minus"></i></button>
                     <button id="zoomin" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-plus"></i></button>
                     <div class="bg-light ml-1 p-1 pt-2 d-inline d-none"><span id="zoom"></span> %</div>
-                    <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
-                    <button id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
-                    <button th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" onclick="document.getElementById('newDataSubmit').click();" class="btn btn-light btn-outline-success ml-1">
+                    <button title="Rotation à droite" id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
+                    <button title="Rotation à gauche" id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
+                    <button title="Enregistrer les modifications" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" onclick="document.getElementById('newDataSubmit').click();" class="btn btn-light btn-outline-success ml-1">
                         <i class="far fa-save"></i><br/>
                     </button>
                     <div th:if="${data.status != null}" th:switch="${data.status.name()}">
@@ -43,7 +43,7 @@
                                class="btn btn btn-outline-dark btn-light ml-1">
                                 <i class="far fa-file-pdf"></i>
                             </a>
-                            <button th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn btn-success ml-1 ">
+                            <button title="Envoyer le document" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn btn-success ml-1 ">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
 <!--                            <button th:if="${data.signBook != null && data.signBook.signRequests.size() > 0}" type="button" data-toggle="modal"-->
@@ -65,11 +65,9 @@
                 <form id="newData" th:action="'/user/datas/form/' + ${form.id}" method="post">
                     <input id="newDataSubmit" type="submit" style="display: none;"/>
                     <input id="dataId" type="hidden" name="dataId" th:value="${data.id}"/>
-                    <div class="input-group mb-2">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">Nom du document</span>
-                        </div>
-                        <input id="name" class="form-control" type="text" name="name" th:placeholder="${form.name}" th:value="${data.name}" required/>
+                    <div class="form-group">
+                        <label for="name">Nom du document</label>
+                        <input id="name" class="form-control required-field" type="text" name="name" th:placeholder="${form.name}" th:value="${data.name}" required="true" />
                     </div>
                     <div id="pdf" class="drop-shadows"></div>
                     <script th:inline="javascript">
@@ -341,7 +339,7 @@
                 <form class="form-inline" th:action="'/user/datas/' + ${data.id} + '/send'" method="post" id="send">
                     <div class="alert alert-info">
                         <p>
-                            <span th:text="'La procedure ' + ${form.name} + ' comporte ' + ${#lists.size(steps)} + ' étapes.'"></span>
+                            <span th:text="'La procedure ' + ${form.name} + ' comporte ' + ${steps.size()} + ' étapes.'"></span>
                         <p>
                             Les signataires sont pré-séléctionnés en fonction de vos précédentes saisis. Si aucun signataire n'est présent ou si la selection de convient pas, vous pouvez modifier les valeurs.
                         </p>

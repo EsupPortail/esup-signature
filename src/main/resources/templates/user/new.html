@@ -14,7 +14,6 @@
                     <li class="breadcrumb-item active">Nouveau</li>
                 </ol>
             </nav>
-            <h2 class="hr">Nouvelle demande de signature</h2>
             <div class="row ml-2">
                 <div class="card card-hover text-center mr-2 mb-2" style="width: 200px;" title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant">
                     <div class="crop">
@@ -47,9 +46,6 @@
                         <div class="card-footer"><a href="#" data-toggle="modal" th:data-target="'#newRequest' + ${workflow.id}" class="stretched-link"><i class="fa fa-plus"></i></a></div>
                     </div>
                 </th:block>
-            </div>
-            <h2 class="hr">Nouveau document</h2>
-            <div class="row ml-2">
                 <th:block th:each="form : ${forms}">
                 <div class="card card-hover text-center mr-2" style="width: 200px;" th:title="${form.description}">
                     <div class="crop">

@@ -178,7 +178,4 @@ public class Workflow {
         this.documentsTargetUri = documentsTargetUri;
     }
 
-    public List<WorkflowStep> getWorkflowSteps(Data data, List<String> recipentEmails) {
-        return null;
-    }
 }

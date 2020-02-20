@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
+import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -108,7 +109,7 @@ public class DataController {
 	@GetMapping("datas")
 	public String list(@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 3) Pageable pageable, Model model) {
 		User user = userService.getUserFromAuthentication();
-		Page<Data> datas =  dataRepository.findByCreateBy(user.getEppn(), pageable);
+		Page<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft, pageable);
 		model.addAttribute("datas", datas);
 		return "user/datas/list";
 	}
@@ -122,13 +123,14 @@ public class DataController {
 		}
 		if(user.getEppn().equals(data.getOwner())) {
 			Form form = data.getForm();
-			Workflow workflow = workflowService.getWorkflowByClassName(form.getWorkflowType());
+			DefaultWorkflow workflow = workflowService.getWorkflowByClassName(form.getWorkflowType());
+			workflow.generateWorkflowSteps(user, data, null);
 			List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndForm(user, 0, form);
 			userProperties = userProperties.stream().sorted(Comparator.comparing(UserPropertie::getId).reversed()).collect(Collectors.toList());
 			if(userProperties.size() > 0 ) {
 				model.addAttribute("targetEmails", userProperties.get(0).getTargetEmail().split(","));
 			}
-			model.addAttribute("steps", workflow.getWorkflowSteps(data, new ArrayList<>()));
+			model.addAttribute("steps", workflow.getWorkflowSteps());
 			model.addAttribute("data", data);
 			model.addAttribute("form", form);
 			model.addAttribute("activeForm", form.getName());
@@ -182,7 +184,7 @@ public class DataController {
 			field.setDefaultValue(data.getDatas().get(field.getName()));
 		}
 		Workflow workflow = workflowService.getWorkflowByClassName(form.getWorkflowType());
-		model.addAttribute("steps", workflow.getWorkflowSteps(data, new ArrayList<>()));
+		model.addAttribute("steps", workflow.getWorkflowSteps());
 		model.addAttribute("fields", fields);
 		model.addAttribute("data", data);
 		model.addAttribute("form", form);

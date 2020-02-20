@@ -62,6 +62,15 @@ public class UserService {
 		}
 	}
 
+	public User getCreatorUser() {
+		if(userRepository.countByEppn("creator") > 0) {
+			return  userRepository.findByEppn("creator").get(0);
+		} else {
+			return createUser("creator", "Createur de la demande", "", "");
+		}
+	}
+
+
 	//For thymeleaf
 	public User getUserByEppn(String eppn) {
 		if(eppn.equals("Scheduler")) {
@@ -161,6 +170,14 @@ public class UserService {
 	public User getSystemUser() {
 		User user = new User();
 		user.setEppn("System");
+		return user;
+	}
+
+	public User getGenericUser(String name, String firstname) {
+		User user = new User();
+		user.setName(name);
+		user.setFirstname(firstname);
+		user.setEppn("Generic");
 		return user;
 	}
 

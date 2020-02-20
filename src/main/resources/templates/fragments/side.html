@@ -6,22 +6,21 @@
         <button th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
             <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
         </button>
-        <a th:classappend="${activeMenu == 'new'} ? 'bg-secondary'" title="Nouveau" href="/user/new" class="btn btn-transparent col-12 mb-1 text-left">
+        <a th:classappend="${activeMenu == 'new'} ? 'bg-secondary'" title="Nouveau" href="/user/new" class="d-none btn btn-transparent col-12 mb-1 text-left">
             <i class="fas fa-file-medical"></i> <span class="sidebar-label">Nouveau</span>
         </a>
         <a th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}" th:classappend="${activeMenu == 'tosign'} ? 'bg-secondary'"  title="Documents à signer" href="/user/signrequests/to-sign" class="btn btn-transparent col-12 mb-1 text-left">
-            <i class="fas fa-file-signature"></i> <span class="sidebar-label">Mes taches</span>
+            <i class="fas fa-file-signature"></i> <span class="sidebar-label">À signer</span>
             <span th:if="${nbToSign > 0}" class="float-right badge badge-danger mt-1" th:text="${nbToSign}"></span>
         </a>
         <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user.eppn, 'pending').size()}" th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Recents" href="/user/signrequests" class="btn btn-transparent col-12 mb-1 text-left">
-            <i class="fas fa-copy"></i> <span class="sidebar-label">Mes demandes</span>
-            <span th:title="${nbSignRequests} + ' document(s) en attente de signature'" th:if="${nbSignRequests > 0}" class="float-right badge badge-info mt-1" th:text="${nbSignRequests}"></span>
+            <i class="fas fa-file-export"></i> <span class="sidebar-label">Envoyés</span>
         </a>
         <a th:with="nbDatas=${@dataRepository.findByCreateByAndStatus(user.eppn, 'draft').size()}" th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes documents" href="/user/datas" class="btn btn-transparent col-12 mb-1 text-left">
-            <i class="fas fa-file-alt"></i> <span class="sidebar-label">Mes documents</span>
+            <i class="fas fa-edit"></i> <span class="sidebar-label">Brouillons</span>
             <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0}" class="float-right badge badge-info mt-1" th:text="${nbDatas}"></span>
         </a>
-        <a th:classappend="${activeMenu == 'validation'} ? 'bg-secondary'" title="Valider la signature d'un document" href="/user/validation" class="btn btn-transparent col-12 mb-1 text-left">
+        <a th:classappend="${activeMenu == 'validation'} ? 'bg-secondary'" title="Valider la signature d'un document" href="/user/validation" class="d-none btn btn-transparent col-12 mb-1 text-left">
             <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Contrôler la signature d'un document</span>
         </a>
     </div>

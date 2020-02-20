@@ -26,14 +26,12 @@
 			</th:block>
 		</ul>
 		<ul class="navbar-nav" th:if="${user.firstname != null}">
-			<li class="nav-item">
-				<a class="btn btn-transparent" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/?form" th:classappend="${paramMenu}">
+			<li class="nav-item text-white">
 					<span th:text="${user.firstname} + ' ' + ${user.name}">
 					</span>
 					<button aria-label="Paramètres utilisateur" class="btn btn-secondary">
 						<i class="fa fa-cog"></i>
 					</button>
-				</a>
 			</li>
 		</ul>
 	</div>

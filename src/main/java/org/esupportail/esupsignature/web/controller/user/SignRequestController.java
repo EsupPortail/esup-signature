@@ -312,6 +312,7 @@ public class SignRequestController {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(),  user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
             signRequestService.addRecipients(signRequest, user);
+
             signRequestService.pendingSignRequest(signRequest, signType, false, user);
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {

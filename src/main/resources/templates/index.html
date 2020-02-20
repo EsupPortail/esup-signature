@@ -41,8 +41,8 @@
                                     <tr>
                                         <td class="text-break w-50" th:if="${signRequest.parentSignBook != null}"
                                             th:text="${signRequest.parentSignBook.name}"></td>
-                                        <td class="text-break w-50"
-                                            th:unless="${signRequest.parentSignBook != null}"></td>
+                                        <td class="text-break w-50" th:unless="${signRequest.parentSignBook != null}"
+                                            th:text="${signRequest.title}"></td>
                                         <td class="text-break w-40"><span
                                                 th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                         </td>
@@ -64,9 +64,9 @@
                             </table>
                         </div>
                     </div>
-                    <div class="card mb-2">
+                    <div class="card mb-2"  th:if="${datas.size() > 0}">
                         <div id="myDocs" class="card-body">
-                            <h2>Documents en cours de création</h2>
+                            <h2>Bouillons</h2>
                             <table class="table table-sm table-borderless">
                                 <tbody>
                                 <th:block th:each="data : ${datas}">
@@ -121,7 +121,7 @@
                                 <td class="text-break w-50">
                                     <img th:if="${signFile != null}" alt="signature"
                                          th:src="'data:image/png;base64,' + ${signFile}"/>
-                                    <div th:if="${signFile == null}">
+                                    <div th:if="${signFile == null}" class="alert alert-danger">
                                         Pas de signature
                                     </div>
                                 </td>
@@ -133,7 +133,7 @@
                                         Keystore actuel : <a th:href="'/user/documents/getfile/' + ${user.keystore.id}"><span
                                             th:text="${user.keystore.fileName}"></span></a>
                                     </div>
-                                    <div th:if="${user.keystore == null}" class="alert alert-secondary">
+                                    <div th:if="${user.keystore == null}" class="alert alert-danger">
                                         Pas de keystore
                                     </div>
                                 </td>

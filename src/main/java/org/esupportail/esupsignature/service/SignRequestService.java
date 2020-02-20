@@ -210,6 +210,7 @@ public class SignRequestService {
 
 	public void addRecipients(SignRequest signRequest, User user) {
 		Recipient recipient = recipientService.createRecipient(signRequest.getId(), user);
+		recipientRepository.save(recipient);
 		signRequest.getRecipients().add(recipient);
 
 	}

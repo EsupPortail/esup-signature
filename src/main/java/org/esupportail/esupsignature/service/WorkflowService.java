@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
+import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class WorkflowService {
     private static final Logger logger = LoggerFactory.getLogger(WorkflowService.class);
 
     @Resource
-    private List<Workflow> workflows;
+    private List<DefaultWorkflow> workflows;
 
     @Resource
     private WorkflowRepository workflowRepository;
@@ -259,21 +260,12 @@ public class WorkflowService {
         return true;
     }
 
-    public List<String> getWorkflowNames() {
-        List<String> woStrings = new ArrayList<String>();
-
-        for(Workflow workflow : workflows ) {
-            woStrings.add(workflow.getName());
-        }
-        return woStrings;
-    }
-
-    public List<Workflow> getWorkflows() {
+    public List<DefaultWorkflow> getWorkflows() {
         return workflows;
     }
 
     public Workflow getWorkflowByName(String name) {
-        for(Workflow workflow : workflows ) {
+        for(DefaultWorkflow workflow : workflows ) {
             if(workflow.getName().equals(name)) {
                 return workflow;
             }
@@ -281,8 +273,8 @@ public class WorkflowService {
         return null;
     }
 
-    public Workflow getWorkflowByClassName(String className) {
-        for(Workflow workflow : workflows ) {
+    public DefaultWorkflow getWorkflowByClassName(String className) {
+        for(DefaultWorkflow workflow : workflows ) {
             if(workflow.getClass().getSimpleName().equals(className)) {
                 return workflow;
             }

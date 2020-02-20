@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.manager;
 
-import com.google.common.collect.ImmutableList;
 import org.esupportail.esupsignature.entity.Recipient;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
@@ -24,6 +23,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -72,8 +72,8 @@ public class WorkflowManagerController {
 	}
 
 
-	@RequestMapping(value = "/{id}", produces = "text/html")
-	public String show(@PathVariable("id") Long id, Model uiModel) throws IOException {
+	@GetMapping(value = "/{id}", produces = "text/html")
+	public String show(@PathVariable("id") Long id, Model uiModel) {
 		Workflow workflow = workflowRepository.findById(id).get();
 		uiModel.addAttribute("workflow", workflow);
 		uiModel.addAttribute("signTypes", SignType.values());
@@ -81,32 +81,18 @@ public class WorkflowManagerController {
 		return "manager/workflows/show";
 	}
 
-	void populateEditForm(Model uiModel, Workflow workflow) {
-		uiModel.addAttribute("workflow", workflow);
-		uiModel.addAttribute("users", userRepository.findAll());
-		uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
-		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
-		uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
-		uiModel.addAttribute("signrequests", signRequestRepository.findAll());
-	}
-
-	@RequestMapping(produces = "text/html")
-	public String list(@RequestParam(value = "page", required = false) Integer page,
-			@RequestParam(value = "size", required = false) Integer size,
-			@RequestParam(value = "sortFieldName", required = false) String sortFieldName,
-			@RequestParam(value = "sortOrder", required = false) String sortOrder, Model uiModel) {
+	@GetMapping(produces = "text/html")
+	public String list(Model model) {
 		User user = userService.getUserFromAuthentication();
-    	if(sortFieldName == null) {
-    		sortFieldName = "workflowType";
-    	}
-    	List<Workflow> workflows = ImmutableList.copyOf(workflowRepository.findAll());
-		uiModel.addAttribute("workflows", workflows);
+    	List<Workflow> workflows = new ArrayList<>();
+    	workflows.addAll(workflowService.getWorkflows());
+    	workflows.addAll(workflowRepository.findAll());
+		model.addAttribute("workflows", workflows);
 		return "manager/workflows/list";
 	}
 
 	@PostMapping(produces = "text/html")
-	public String create(@RequestParam(name = "name") String name,
-						 Model uiModel, RedirectAttributes redirectAttrs) {
+	public String create(@RequestParam(name = "name") String name, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
 		Workflow newWorkflow = new Workflow();
 		newWorkflow.setName(name);
@@ -128,7 +114,12 @@ public class WorkflowManagerController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/manager/workflows/" + id;
 		}
-		populateEditForm(uiModel, workflow);
+		uiModel.addAttribute("workflow", workflow);
+		uiModel.addAttribute("users", userRepository.findAll());
+		uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
+		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
+		uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
+		uiModel.addAttribute("signrequests", signRequestRepository.findAll());
         return "manager/workflows/update";
     }
 	

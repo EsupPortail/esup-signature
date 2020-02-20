@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.RecipientService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.springframework.stereotype.Component;
 
@@ -17,9 +18,10 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 
 	private String name = "CreatorAndTwoStepsWorkflow";
 	private String description = "Signature du créateur puis de deux signataires en série";
+	private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
 	@Resource
-	private UserRepository userRepository;
+	private UserService userService;
 
 	@Resource
 	private RecipientService recipientService;
@@ -35,27 +37,41 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 	}
 
 	@Override
-	public List<WorkflowStep> getWorkflowSteps(Data data, List<String> recipentEmailsStep) {
-		User user = userRepository.findByEppn(data.getOwner()).get(0);
-		List<WorkflowStep> workflowSteps = new ArrayList<WorkflowStep>();
+	public List<WorkflowStep> getWorkflowSteps() {
+		if(this.workflowSteps.size() == 0) {
+			generateWorkflowSteps(userService.getCreatorUser(), null, null);
+		}
+		return this.workflowSteps;
+	}
+
+	public void generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
+		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		//STEP 1
 		WorkflowStep workflowStep1 = new WorkflowStep();
 		workflowStep1.setStepNumber(1);
-		workflowStep1.getRecipients().add(recipientService.createRecipient(data.getId(), user));
+		workflowStep1.getRecipients().add(recipientService.createRecipient(null, user));
 		workflowSteps.add(workflowStep1);
 		//STEP 2
 		WorkflowStep workflowStep2 = new WorkflowStep();
 		workflowStep2.setStepNumber(2);
-		workflowStep2.setRecipients(getFavoriteRecipientEmail(2, data.getForm(), recipentEmailsStep, user));
+		if(data != null) {
+			workflowStep2.setRecipients(getFavoriteRecipientEmail(2, data.getForm(), recipentEmailsStep, user));
+		} else {
+			workflowStep2.getRecipients().add(recipientService.createRecipient(null, userService.getGenericUser("Utilisateur issue des favoris", "")));
+		}
 		workflowStep2.setChangeable(true);
 		workflowSteps.add(workflowStep2);
 		//STEP 3
 		WorkflowStep workflowStep3 = new WorkflowStep();
 		workflowStep3.setStepNumber(3);
-		workflowStep2.setRecipients(getFavoriteRecipientEmail(3, data.getForm(), recipentEmailsStep, user));
+		if(data != null) {
+			workflowStep3.setRecipients(getFavoriteRecipientEmail(3, data.getForm(), recipentEmailsStep, user));
+		} else {
+			workflowStep3.getRecipients().add(recipientService.createRecipient(null, userService.getGenericUser("Utilisateur issue des favoris", "")));
+		}
 		workflowStep3.setChangeable(true);
 		workflowSteps.add(workflowStep3);
-		return workflowSteps;
+		this.workflowSteps = workflowSteps;
 	}
 }
 

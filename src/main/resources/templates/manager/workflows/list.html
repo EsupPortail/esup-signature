@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="workflows" type="java.util.List<org.esupportail.esupsignature.entity.Workflow>"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
@@ -9,12 +8,13 @@
     <div class="wrapper">
         <nav th:replace="fragments/manager-side :: manager-side"></nav>
         <div id="content" class="content">
-			<nav class="nav justify-content-between" aria-label="breadcrumb">
-				<ol class="breadcrumb col-12">
-					<li class="breadcrumb-item active">Liste des circuits de visas</li>
-				</ol>
-			</nav>
-            <button title="Créer un nouveau circuit" data-toggle="modal" data-target="#newSignBook" type="button" class="mb-1 btn btn-light btn-outline-dark text-left">
+            <nav class="nav justify-content-between" aria-label="breadcrumb">
+                <ol class="breadcrumb col-12">
+                    <li class="breadcrumb-item active">Liste des circuits de visas</li>
+                </ol>
+            </nav>
+            <button title="Créer un nouveau circuit" data-toggle="modal" data-target="#newSignBook" type="button"
+                    class="mb-1 btn btn-light btn-outline-dark text-left">
                 <i class="fas fa-plus"></i><span class="sidebar-label"> Créer un nouveau circuit</span>
             </button>
             <div class="card">
@@ -35,19 +35,20 @@
                             <tr class="roocol">
                                 <td class="none" th:text="${workflow.name}"></td>
                                 <td class="none" th:text="${workflow.createBy}"></td>
-                                <td th:if="${#lists.size(workflow.workflowSteps) > 0}" class="none">
-                                    <div class="alert alert-secondary">
-                                        <th:block th:each="workflowStep : ${workflow.workflowSteps}">
+                                <td th:if="${workflow.workflowSteps.size() > 0}" class="none">
+                                    <th:block th:each="workflowStep,iterator : ${workflow.workflowSteps}">
+                                        <div class="alert alert-secondary">
+                                            <h2 th:text="${iterator.index + 1}" class="d-inline"></h2>
                                             <th:block th:each="recipient : ${workflowStep.recipients}">
                                                 <i class="fas fa-user"></i>
                                                 <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                                 <br/>
                                             </th:block>
-                                        </th:block>
-                                    </div>
+                                        </div>
+                                    </th:block>
                                 </td>
                                 <td th:unless="${#lists.size(workflow.workflowSteps) > 0}" class="none">
-                                    rien
+                                    Aucun
                                 </td>
                                 <td class="none">
                                     <th:block th:each="manager : ${workflow.managers}">
@@ -57,7 +58,9 @@
                                     </th:block>
                                 </td>
                                 <td class="utilbox">
-                                    <button aria-label="Voir" class="btn btn-primary" title="Voir" th:onclick="'location.href=\'/manager/workflows/' + ${workflow.id} + '\';'"><i aria-hidden="true" class="far fa-eye"></i></button>
+                                    <button aria-label="Voir" class="btn btn-primary" title="Voir"
+                                            th:onclick="'location.href=\'/manager/workflows/' + ${workflow.id} + '\';'">
+                                        <i aria-hidden="true" class="far fa-eye"></i></button>
                                 </td>
                             </tr>
                         </th:block>

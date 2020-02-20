@@ -11,16 +11,10 @@
         <div id="content" class="content">
             <nav aria-label="breadcrumb" class="text-uppercase">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item active">Mes demandes</li>
+                    <li class="breadcrumb-item active">Documents envoyés</li>
                 </ol>
             </nav>
             <div class="card mb-3">
-                <div class="card-header" onclick="$('#myDocs').toggle();" style="cursor: pointer;">
-                    <a data-toggle="collapse" href="#myDocs" role="button" aria-expanded="false"
-                       aria-controls="mySignedDocs">
-                        Demandes envoyées<i class="fa fa-arrow-down float-right"></i>
-                    </a>
-                </div>
                 <div id="myDocs" class="card-body">
                     <form class="" action="" method="get">
                         <div class="input-group mb-2">
@@ -40,8 +34,8 @@
                             </select>
                         </div>
                     </form>
-                    <table class="table table-sm table-bordered table-striped table-hover">
-                        <thead>
+                    <table class="table table-borderless table-hover">
+                        <thead class="thead-dark">
                         <tr>
                             <th class="">Parapheur</th>
                             <th class="none">Titre des documents</th>
@@ -171,10 +165,14 @@
                             </tr>
                         </th:block>
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="100%">
+                                    <nav th:replace="fragments/pagination :: pagination"></nav>
+                                </td>
+                            </tr>
+                        </tfoot>
                     </table>
-                </div>
-                <div class="card-footer">
-                    <nav th:replace="fragments/pagination :: pagination"></nav>
                 </div>
             </div>
 

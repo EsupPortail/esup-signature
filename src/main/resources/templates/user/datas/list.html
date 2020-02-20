@@ -10,23 +10,25 @@
         <div id="content" class="content">
             <nav aria-label="breadcrumb" class="text-uppercase">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item active">Mes documents</li>
+                    <li class="breadcrumb-item active">Brouillons</li>
                 </ol>
             </nav>
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover table-striped table-bordered">
+                        <table th:if="${datas.getContent().size() > 0}" class="table table-hover table-striped table-bordered">
                             <thead>
                             <tr>
-                                <th scope="col">Nom du document</th>
-                                <th scope="col"><a class="sorted" sd:pagination-sort="createDate">Date de création</th>
-                                <th scope="col">Statut</th>
+                                <th class="w-30">Type</th>
+                                <th class="w-30">Nom</th>
+                                <th class="w-10"><a class="sorted" sd:pagination-sort="createDate">Date de création</th>
+                                <th>Statut</th>
                                 <th class="show text-center" scope="col">Actions</th>
                             </tr>
                             </thead>
                             <tbody>
                             <tr th:each="data : ${datas}">
+                                <td th:text="${data.form.name}"></td>
                                 <td th:text="${data.name}"></td>
                                 <td th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>
                                 <td th:text="#{'signbook.status.' + ${data.status}}"></td>
@@ -80,14 +82,18 @@
                                 </td>
                             </tr>
                             </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="100%">
+                                        <nav th:replace="fragments/pagination :: pagination"></nav>
+                                    </td>
+                                </tr>
+                            </tfoot>
                         </table>
-                        <div th:if="${datas.getContent().size() == 0}" class="alert alert-secondary">
+                        <div th:unless="${datas.getContent().size() > 0}" class="alert alert-secondary">
                             Aucun document pour le moment
                         </div>
                     </div>
-                </div>
-                <div class="card-footer">
-                    <nav th:replace="fragments/pagination :: pagination"></nav>
                 </div>
             </div>
         </div>

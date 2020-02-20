@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.RecipientService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.springframework.stereotype.Component;
 import org.springframework.test.annotation.NotTransactional;
@@ -19,9 +20,10 @@ public class CreatorAndManagerWorkflow extends DefaultWorkflow {
 
     private String name = "CreatorAndManagerWorkflow";
     private String description = "Signature du créateur puis du responsable";
+    private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
     @Resource
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Resource
     private RecipientService recipientService;
@@ -37,8 +39,14 @@ public class CreatorAndManagerWorkflow extends DefaultWorkflow {
     }
 
     @Override
-    public List<WorkflowStep> getWorkflowSteps(Data data, List<String> recipentEmailsStep) {
-        User user = userRepository.findByEppn(data.getOwner()).get(0);
+    public List<WorkflowStep> getWorkflowSteps() {
+        if(this.workflowSteps.size() == 0) {
+            generateWorkflowSteps(userService.getCreatorUser(), null, null);
+        }
+        return this.workflowSteps;
+    }
+
+    public void generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         //STEP 1
         WorkflowStep workflowStep1 = new WorkflowStep();
@@ -52,11 +60,17 @@ public class CreatorAndManagerWorkflow extends DefaultWorkflow {
         workflowStep2.setSignType(SignType.pdfImageStamp);
         workflowStep2.setStepNumber(2);
         workflowStep2.setDescription("Signature de votre supérieur hiérarchique (présélectionné en fonction de vos précédentes saisies)");
-        workflowStep2.setRecipients(getFavoriteRecipientEmail(2, data.getForm(), recipentEmailsStep, user));
+        if(data != null) {
+            workflowStep2.setRecipients(getFavoriteRecipientEmail(2, data.getForm(), recipentEmailsStep, user));
+        } else {
+            workflowStep2.getRecipients().add(recipientService.createRecipient(null, userService.getGenericUser("Utilisateur issue des favoris", "")));
+        }
         workflowStep2.setChangeable(true);
         workflowSteps.add(workflowStep2);
-        return workflowSteps;
+        this.workflowSteps = workflowSteps;
     }
+
+
 
     public List<String> getManagerEmails() {
         //TODO get n+1

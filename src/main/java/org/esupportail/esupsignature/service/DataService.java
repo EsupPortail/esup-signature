@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -59,12 +60,6 @@ public class DataService {
 		Data obj = dataRepository.findById(dataId).get();
 		return obj;
 	}	
-	
-	public List<Data> getAllDatas(){
-		List<Data> list = new ArrayList<Data>();
-		dataRepository.findAll().forEach(e -> list.add(e));
-		return list;
-	}
 
 	public void delete(Data data) {
 		if(data.getSignBook() != null) {
@@ -95,16 +90,16 @@ public class DataService {
 		signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(generateFile(data), name + ".pdf", "application/pdf"));
 		signRequestRepository.save(signRequest);
 		signBookService.addSignRequest(signBook, signRequest);
-		List<WorkflowStep> workflowSteps = getWorkflowSteps(data, recipientEmails, user);
-		for(WorkflowStep workflowStep: workflowSteps)  {
-			for(Recipient recipient : workflowStep.getRecipients()) {
-				recipient.setParentId(signRequest.getId());
-				recipientRepository.save(recipient);
-			}
-		}
-		Workflow workflow = new Workflow();
-		workflow.setName(form.getName());
-		workflow.getWorkflowSteps().addAll(workflowSteps);
+//		List<WorkflowStep> workflowSteps = getWorkflowSteps(data, recipientEmails, user);
+//		for(WorkflowStep workflowStep: workflowSteps)  {
+//			for(Recipient recipient : workflowStep.getRecipients()) {
+//				recipient.setParentId(signRequest.getId());
+//				recipientRepository.save(recipient);
+//			}
+//		}
+		Workflow workflow = getWorkflowSteps(data, recipientEmails, user);
+		workflow.setName(workflow.getName() + "_" + form.getName());
+//		workflow.getWorkflowSteps().addAll(workflowSteps);
 		signBookService.importWorkflow(signBook, workflow);
 		signBookService.nextWorkFlowStep(signBook);
 		signBookRepository.save(signBook);
@@ -114,19 +109,19 @@ public class DataService {
 		return signBook;
 	}
 
-	public List<WorkflowStep> getWorkflowSteps(Data data, List<String> recipientEmails, User user) {
-		Workflow workflow = workflowService.getWorkflowByClassName(data.getForm().getWorkflowType());
-		List<WorkflowStep> workflowSteps = workflow.getWorkflowSteps(data, recipientEmails);
+	public Workflow getWorkflowSteps(Data data, List<String> recipientEmails, User user) {
+		DefaultWorkflow workflow = workflowService.getWorkflowByClassName(data.getForm().getWorkflowType());
+		workflow.generateWorkflowSteps(user, data, recipientEmails);
 		int step = 1;
-		for(WorkflowStep workflowStep: workflowSteps)  {
+		for(WorkflowStep workflowStep: workflow.getWorkflowSteps())  {
 			for(Recipient recipient : workflowStep.getRecipients()) {
 				recipientRepository.save(recipient);
 			}
 			workflowStepRepository.save(workflowStep);
-			userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
+			//userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
 			step++;
 		}
-		return workflowSteps;
+		return workflow;
 	}
 
 	public InputStream generateFile(Data data) {
