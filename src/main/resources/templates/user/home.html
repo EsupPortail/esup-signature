@@ -8,14 +8,14 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/side :: side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active">Accueil</li>
+            </ol>
+        </nav>
         <div id="content" class="content">
-            <nav aria-label="breadcrumb" class="text-uppercase">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item active">Accueil</li>
-                </ol>
-            </nav>
             <div class="row">
-                <div class="col-xl-6 p-0 pr-2">
+                <div class="col-xl-6 mb-2 p-0 pr-2">
                     <div class="card mb-2 h-100">
                         <div id="myDocs" class="card-body">
                             <h2>Nouveau</h2>
@@ -60,7 +60,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="flex-row col-xl-6 p-0">
+                <div class="flex-row col-xl-6 p-0 pr-2">
                     <div class="card mb-2">
                         <div id="myDocs" class="card-body">
                             <h2>

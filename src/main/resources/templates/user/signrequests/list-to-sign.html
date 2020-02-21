@@ -9,12 +9,12 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/side :: side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active">À signer</li>
+            </ol>
+        </nav>
         <div id="content" class="content">
-            <nav aria-label="breadcrumb" class="text-uppercase">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item active">À signer</li>
-                </ol>
-            </nav>
             <div class="card mb-3">
                 <div class="card-header" onclick="$('#toSign').toggle();" style="cursor: pointer;">
                     <a data-toggle="collapse" href="#" role="button" aria-expanded="false" aria-controls="toSign">

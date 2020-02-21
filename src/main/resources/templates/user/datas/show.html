@@ -7,7 +7,7 @@
     <div class="wrapper">
         <div th:replace="fragments/side :: side"></div>
         <div class="content" id="v-pills-tabContent">
-            <nav aria-label="breadcrumb" class="text-uppercase">
+            <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="/user/datas">Mes documents</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Formulaire : <span th:text="${data.name}"></span>

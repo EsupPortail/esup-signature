@@ -7,16 +7,17 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/manager-side :: manager-side"></nav>
-        <div id="content" class="content">
-            <nav class="nav justify-content-between" aria-label="breadcrumb">
-                <ol class="breadcrumb col-12">
-                    <li class="breadcrumb-item active">Liste des circuits de visas</li>
-                </ol>
-            </nav>
-            <button title="Créer un nouveau circuit" data-toggle="modal" data-target="#newSignBook" type="button"
-                    class="mb-1 btn btn-light btn-outline-dark text-left">
-                <i class="fas fa-plus"></i><span class="sidebar-label"> Créer un nouveau circuit</span>
-            </button>
+        <nav id="breadcrumb" class="text-uppercase" aria-label="breadcrumb">
+            <ol class="breadcrumb col-12">
+                <li class="breadcrumb-item active">Liste des circuits de visas</li>
+            </ol>
+        </nav>
+        <div id="content" class="content d-flex">
+            <div class="fixed-action-btn" style="bottom: 100px; right: 50px;">
+                <a title="Créer un nouveau circuit" data-toggle="modal" data-target="#newSignBook" type="button" class="btn-floating btn-lg bg-success">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
             <div class="card">
                 <div class="card-body">
 
@@ -89,7 +90,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Creer</button>
+                    <button type="submit" class="btn btn-success">Creer</button>
                 </div>
             </form>
         </div>

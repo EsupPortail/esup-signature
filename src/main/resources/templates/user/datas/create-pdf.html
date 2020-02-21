@@ -8,14 +8,14 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/side :: side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/user/datas">Mes documents</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Formulaire : <span th:text="${form.name}"></span>
+                </li>
+            </ol>
+        </nav>
         <div class="content" id="v-pills-tabContent">
-            <nav aria-label="breadcrumb" class="text-uppercase">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/user/datas">Mes documents</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Formulaire : <span th:text="${form.name}"></span>
-                    </li>
-                </ol>
-            </nav>
             <div class="tools">
                 <div class="d-flex mb-1">
                     <button title="Annuler" class="btn btn-light btn-outline-danger ml-1" aria-label="Précédent" onclick="window.history.back();">

@@ -6,14 +6,14 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/side :: side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
+            <div class="navbar-nav">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item active">Outil de validation</li>
+                </ol>
+            </div>
+        </nav>
         <div id="content" class="content">
-            <nav aria-label="breadcrumb" class="text-uppercase">
-                <div class="navbar-nav">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item active">Outil de validation</li>
-                    </ol>
-                </div>
-            </nav>
             <div id="collapseHelp" aria-expanded="true" style="">
                 <div class="alert alert-dark">
                     Vous pouvez contrôler la signature électronique d'un document ainsi que la compatibilité PDF/A pour les fichiers pdf.

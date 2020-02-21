@@ -8,12 +8,12 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/side :: side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active">Documents envoyés</li>
+            </ol>
+        </nav>
         <div id="content" class="content">
-            <nav aria-label="breadcrumb" class="text-uppercase">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item active">Documents envoyés</li>
-                </ol>
-            </nav>
             <div class="card mb-3">
                 <div id="myDocs" class="card-body">
                     <table class="table table-borderless table-hover">
