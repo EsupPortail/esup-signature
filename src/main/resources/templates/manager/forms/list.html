@@ -6,23 +6,22 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/manager-side :: manager-side"></nav>
-        <div id="content" class="content">
-            <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item active">Liste des formulaires</li>
-                </ol>
-            </nav>
-            <button class="mr-2 btn btn-outline-dark btn-light" onclick="location.href='/manager/form?'">
-                <i class="fa fa-plus"></i> Créer un formulaire manuellement
-            </button>
-            <button title="Créer un nouveau formulaire" data-toggle="modal" data-target="#newForm" type="button"
-                    class="mb-1 btn btn-light btn-outline-dark text-left">
-                <i class="fas fa-plus"></i> Créer un nouveau formulaire
-            </button>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active">Liste des formulaires</li>
+            </ol>
+        </nav>
+        <div id="content" class="content col-8">
+            <div id="addButton" class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+                <a class="btn-floating btn-lg bg-success waves-effect waves-light">
+                    <i class="fas fa-plus"></i>
+                </a>
+                <ul id="collapseExample" class="list-unstyled">
+                    <li><a title="Créer un formulaire manuellement" role="button" class="btn-floating bg-success waves-effect waves-light" onclick="location.href='/manager/forms/create'"><i class="fas fa-hand-paper"></i></a></li>
+                    <li><a title="Créer un formulaire depuis un formulaire PDF" data-toggle="modal" data-target="#newForm" class="btn-floating text-dark bg-success waves-effect waves-light"><i class="fas fa-file-pdf"></i></a></li>
+                </ul>
+            </div>
             <div class="card">
-                <div class="card-header">
-                    <h2>Formulaires</h2>
-                </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover table-striped table-bordered">
@@ -56,7 +55,7 @@
                                 </td>
                                 <td class="delete text-center">
                                     <button type="button" data-toggle="modal" data-target="#modal-warning" th:attr="data-target='#modal-warning'+${form.id }" class="btn btn-danger">
-                                        <i class="fas fa-trash"></i>
+                                        <i class="fas fa-trash-alt"></i>
                                     </button>
                                     <div class="modal modal-warning fade in" th:id="modal-warning+${form.id}">
                                         <div class="modal-dialog">

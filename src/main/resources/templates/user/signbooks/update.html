@@ -253,7 +253,7 @@
                     <h3 class="modal-title">Envoi pour signature</h3>
                 </div>
                 <div class="modal-body">
-                    <form th:action="'/user/signbooks/wizard/wiz4/' + ${signBook.id}" method="post">
+                    <form th:action="'/user/wizard/wiz4/' + ${signBook.id}" method="post">
                         <div class="form-group">
                             <select id="workflowId" name="workflowId" class="form-control" required>
                                 <option value="" disabled selected>Choisir un circuit de signatures existant</option>

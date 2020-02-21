@@ -25,12 +25,12 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
-@RequestMapping("/user/signbooks/wizard")
+@RequestMapping("/user/wizard")
 @Controller
 @Transactional
-public class SignBookWizardController {
+public class WizardController {
 
-    private static final Logger logger = LoggerFactory.getLogger(SignBookWizardController.class);
+    private static final Logger logger = LoggerFactory.getLogger(WizardController.class);
 
     @ModelAttribute("userMenu")
     public String getActiveMenu() {
@@ -63,14 +63,14 @@ public class SignBookWizardController {
             Workflow workflow = workflowRepository.findById(workflowId).get();
             model.addAttribute("workflow", workflow);
         }
-        return "user/signbooks/wizard/wiz1";
+        return "user/wizard/wiz1";
     }
 
     @PostMapping(value = "/wiz2", produces = "text/html")
     public String wiz2(@RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model, RedirectAttributes redirectAttributes) {
         if(signBookRepository.countByName(name) > 0) {
             redirectAttributes.addFlashAttribute("messageError", "Un parapheur portant ce nom existe déjà");
-            return "redirect:/user/signbooks/wizard/wiz1";
+            return "redirect:/user/wizard/wiz1";
         }
         logger.info("init new signBook : " + name);
         model.addAttribute("name", name);
@@ -78,7 +78,7 @@ public class SignBookWizardController {
             Workflow workflow = workflowRepository.findById(workflowId).get();
             model.addAttribute("workflow", workflow);
         }
-        return "user/signbooks/wizard/wiz2";
+        return "user/wizard/wiz2";
     }
 
     @PostMapping(value = "/wiz3", produces = "text/html")
@@ -89,12 +89,12 @@ public class SignBookWizardController {
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
         if (workflowId != null) {
             Workflow workflow = workflowRepository.findById(workflowId).get();
-            ModelAndView modelAndView = new ModelAndView("redirect:/user/signbooks/wizard/wiz4/" + signBook.getId());
+            ModelAndView modelAndView = new ModelAndView("redirect:/user/wizard/wiz4/" + signBook.getId());
             modelAndView.addObject("name", name);
             modelAndView.addObject("workflowId", workflow.getId());
             return modelAndView;
         }
-        return new ModelAndView("user/signbooks/wizard/wiz3");
+        return new ModelAndView("user/wizard/wiz3");
     }
 
     @RequestMapping(value = "/wiz4/{id}", produces = "text/html")
@@ -111,18 +111,18 @@ public class SignBookWizardController {
                 signBookService.importWorkflow(signBook, workflow);
                 signBookService.nextWorkFlowStep(signBook);
                 signBookService.pendingSignBook(signBook, user);
-                return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
+                return "redirect:/user/wizard/wizend/" + signBook.getId();
             } else if(selfSign != null) {
                 Workflow workflow = workflowRepository.findByName("Ma signature").get(0);
                 signBookService.importWorkflow(signBook, workflow);
                 signBookService.nextWorkFlowStep(signBook);
                 signBookService.pendingSignBook(signBook, user);
-                return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
+                return "redirect:/user/wizard/wizend/" + signBook.getId();
             }
             model.addAttribute("workflowStepForm", true);
             model.addAttribute("signTypes", SignType.values());
         }
-        return "user/signbooks/wizard/wiz4";
+        return "user/wizard/wiz4";
     }
 
     @PostMapping(value = "/wizX/{id}", produces = "text/html")
@@ -151,14 +151,14 @@ public class SignBookWizardController {
                 if(signBook.getWorkflowSteps().size() >  0) {
                     signBookService.nextWorkFlowStep(signBook);
                     signBookService.pendingSignBook(signBook, user);
-                    return "redirect:/user/signbooks/wizard/wiz5/" + signBook.getId();
+                    return "redirect:/user/wizard/wiz5/" + signBook.getId();
                 }else {
-                    return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
+                    return "redirect:/user/wizard/wizend/" + signBook.getId();
                 }
             }
             model.addAttribute("signBook", signBook);
         }
-        return "user/signbooks/wizard/wiz4";
+        return "user/wizard/wiz4";
     }
 
     @GetMapping(value = "/wiz5/{id}")
@@ -168,7 +168,7 @@ public class SignBookWizardController {
         if(signBook.getCreateBy().equals(user.getEppn())) {
             model.addAttribute("signBook", signBook);
         }
-        return "user/signbooks/wizard/wiz5";
+        return "user/wizard/wiz5";
     }
 
     @PostMapping(value = "/wiz5/{id}")
@@ -180,9 +180,9 @@ public class SignBookWizardController {
         } catch (EsupSignatureException e) {
             model.addAttribute("signBook", signBook);
             model.addAttribute("messageError", "Un circuit de signature porte déjà ce nom");
-            return "redirect:/user/signbooks/wizard/wiz5/" + signBook.getId();
+            return "redirect:/user/wizard/wiz5/" + signBook.getId();
         }
-        return "redirect:/user/signbooks/wizard/wizend/" + signBook.getId();
+        return "redirect:/user/wizard/wizend/" + signBook.getId();
     }
 
     @RequestMapping(value = "/wizend/{id}", produces = "text/html")
@@ -191,7 +191,7 @@ public class SignBookWizardController {
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user.getEppn())) {
             model.addAttribute("signBook", signBook);
-            return "user/signbooks/wizard/wizend";
+            return "user/wizard/wizend";
         } else {
             throw new EsupSignatureException("not authorized");
         }

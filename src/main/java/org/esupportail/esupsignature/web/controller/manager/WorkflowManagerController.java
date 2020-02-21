@@ -73,8 +73,18 @@ public class WorkflowManagerController {
 
 
 	@GetMapping(value = "/{id}", produces = "text/html")
-	public String show(@PathVariable("id") Long id, Model uiModel) {
-		Workflow workflow = workflowRepository.findById(id).get();
+	public String show(@PathVariable("id") String id, Model uiModel, RedirectAttributes redirectAttributes) {
+		Workflow workflow = null;
+		try {
+			workflow = workflowRepository.findById(Long.valueOf(id)).get();
+		} catch (NumberFormatException e) {
+			logger.debug(e.getMessage());
+			workflow = workflowService.getWorkflowByName(id);
+		}
+		if(workflow == null) {
+			redirectAttributes.addFlashAttribute("Workflow introuvable");
+			return "redirect:/manager/workflows";
+		}
 		uiModel.addAttribute("workflow", workflow);
 		uiModel.addAttribute("signTypes", SignType.values());
 		uiModel.addAttribute("itemId", id);

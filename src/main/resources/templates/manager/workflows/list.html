@@ -12,8 +12,8 @@
                 <li class="breadcrumb-item active">Liste des circuits de visas</li>
             </ol>
         </nav>
-        <div id="content" class="content d-flex">
-            <div class="fixed-action-btn" style="bottom: 100px; right: 50px;">
+        <div id="content" class="content col-8">
+                <div class="fixed-action-btn" style="bottom: 100px; right: 50px;">
                 <a title="Créer un nouveau circuit" data-toggle="modal" data-target="#newSignBook" type="button" class="btn-floating btn-lg bg-success">
                     <i class="fas fa-plus"></i>
                 </a>
@@ -59,9 +59,12 @@
                                     </th:block>
                                 </td>
                                 <td class="utilbox">
-                                    <button aria-label="Voir" class="btn btn-primary" title="Voir"
-                                            th:onclick="'location.href=\'/manager/workflows/' + ${workflow.id} + '\';'">
-                                        <i aria-hidden="true" class="far fa-eye"></i></button>
+                                    <a role="button" th:if="${workflow.id != null}" aria-label="Voir" class="btn btn-primary" title="Voir"
+                                            th:href="'/manager/workflows/' + ${workflow.id}">
+                                        <i aria-hidden="true" class="fas fa-eye"></i></a>
+                                    <a role="button" th:unless="${workflow.id != null}" aria-label="Voir" class="btn btn-primary" title="Voir"
+                                            th:href="'/manager/workflows/' + ${workflow.name}">
+                                        <i aria-hidden="true" class="fas fa-eye"></i></a>
                                 </td>
                             </tr>
                         </th:block>

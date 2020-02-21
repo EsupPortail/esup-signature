@@ -23,9 +23,6 @@
                 <button th:if="${documentType == 'pdf'}" id="commentButton" onclick="enableCommentMode();" class="btn btn-light col-12 mb-1 text-left">
                     <i class="far fa-comment-alt"></i> <span class="sidebar-label">Mode commentaires</span>
                 </button>
-                <button title="Retour" class="btn btn-light  col-12 mb-1 text-left" onclick="window.history.back();">
-                    <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
-                </button>
             </div>
         </nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
@@ -51,8 +48,8 @@
                     <a class="btn btn-outline-dark mr-1 text-left d-none d-lg-block" th:href="'/user/signrequests/' + ${id} + '?form'" title="Details">
                         <i class="fas fa-info-circle"></i>
                     </a>
-                    <a th:if="${signRequest.createBy == user.eppn && signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() == 'draft' || signRequest.parentSignBook.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pen"></i></a>
-                    <a th:if="${signRequest.createBy == user.eppn && signRequest.parentSignBook == null && (signRequest.status.name() == 'draft' || signRequest.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1" title="Modifier" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'"><i class="fas fa-pen"></i></a>
+                    <a th:if="${signRequest.createBy == user.eppn && signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() == 'draft' || signRequest.parentSignBook.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>
+                    <a th:if="${signRequest.createBy == user.eppn && signRequest.parentSignBook == null && (signRequest.status.name() == 'draft' || signRequest.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1" title="Modifier" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>
                     <th:block th:if="${documentType == 'pdf'}">
                     <div class="bg-light ml-1 p-1 pt-2 d-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
                     <button id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
@@ -69,6 +66,7 @@
                     <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
                     <button id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
                     <div class="border ml-3 mr-3 "></div>
+                    <button id="download" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-download"></i></button>
                     <div id="signtools" th:if="${signable == 'ok'}" style="display: none;">
                         <button id="pen" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer un visuel" class="btn btn-outline-success ml-1" onclick="toggleVisual()"><i class="fas fa-file-signature"></i></button>
                         <button id="clock" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer la date" class="btn btn-outline-secondary ml-1" onclick="toggleDate()"><i class="fas fa-clock"></i></button>

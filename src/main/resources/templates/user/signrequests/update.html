@@ -6,11 +6,9 @@
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
-        <nav id="sidebar">
+        <nav th:replace="fragments/side :: side"></nav>
+        <nav id="sidebar2" class="d-none d-lg-block">
             <div class="m-1">
-                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
-                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
-                </button>
                 <div th:if="${user.eppn == signRequest.createBy}">
                     <div th:if="${signRequest.status.name() == 'draft'}">
                         <div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.recipients.size() == 0}">
@@ -43,25 +41,14 @@
                 </button>
             </div>
         </nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/user/signrequests">Liste des demandes</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a th:href="'/user/signrequests/' + ${signRequest.id}">Demande de signature : <span th:text="${signRequest.title}"></span></a></li>
+                <li class="breadcrumb-item active">Details</a></li>
+            </ol>
+        </nav>
         <div id="content" class="content">
-            <div aria-expanded="true" class="collapse" id="collapseHelp">
-                <div class="alert alert-info">
-                    Cet écran permet d'effectuer plusieurs types d'actions sur votre demande :
-                    <ul>
-                        <li>Ajouter des documents à votre demande et l'envoyer</li>
-                        <li>Consulter les documents à signer</li>
-                        <li>Signer une demande</li>
-                        <li>Consulter / télécharger les documents signés</li>
-                    </ul>
-                </div>
-            </div>
-            <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/user/signrequests">Liste des demandes</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.title}"></span>
-                    </li>
-                </ol>
-            </nav>
             <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
             <div class="card mb-1" th:if="${signRequest.status.name() != 'exported' && signRequest.parentSignBook == null}">
                 <div class="card-header">

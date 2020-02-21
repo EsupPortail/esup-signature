@@ -37,11 +37,9 @@
                         <tbody>
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr>
-                                <td class="text-break" th:if="${signRequest.parentSignBook != null}"
-                                    th:text="${signRequest.parentSignBook.name}"></td>
+                                <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
                                 <td class="text-break" th:unless="${signRequest.parentSignBook != null}"></td>
-                                <td class="text-break"><span style="white-space: pre-line"
-                                                             th:text="${signRequest.viewTitle}"></span></td>
+                                <td class="text-break"><span th:text="${signRequest.viewTitle}"></span></td>
                                 <td class="d-none d-xl-table-cell"><span
                                         th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                 </td>
@@ -87,7 +85,7 @@
                                 </td>
                                 <td th:if="${signRequest.parentSignBook != null}" class="d-none d-md-table-cell"
                                     style="width: 150px;">
-                                    <div th:replace="user/signbooks/includes/status :: status"></div>
+                                    <div th:replace="user/signrequests/includes/status :: status"></div>
                                 </td>
                                 <td th:unless="${signRequest.parentSignBook != null}" class="d-none d-md-table-cell"
                                     style="width: 150px;">
@@ -96,12 +94,12 @@
                                 <td class="utilbox">
                                     <a aria-label="Accéder à la demande" th:if="${signRequest.parentSignBook != null}"
                                        class="btn btn-primary" title="ouvrir"
-                                       th:href="'/user/signrequests/' + ${signRequest.id}"><i class="fas fa-book"></i>
+                                       th:href="'/user/signrequests/' + ${signRequest.id}"><i class="fas fa-eye"></i>
                                     </a>
                                     <a aria-label="Accéder à la demande"
                                        th:unless="${signRequest.parentSignBook != null}" class="btn btn-primary"
                                        title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i
-                                            class="far fa-eye"></i> </a>
+                                            class="fas fa-eye"></i> </a>
                                 </td>
                             </tr>
                         </th:block>
@@ -152,12 +150,9 @@
                                             th:text="${@userService.getUserByEppn(signRequest.createBy).firstname} + ' ' + ${@userService.getUserByEppn(signRequest.createBy).name}"></span>
                                     </td>
                                     <td class="utilbox">
-                                        <a th:if="${signRequest.parentSignBook != null}" class="btn btn-primary"
-                                           title="ouvrir" th:href="'/user/signrequests/' + ${signRequest.id}"><i
-                                                class="fas fa-book"></i> </a>
-                                        <a th:unless="${signRequest.parentSignBook != null}" class="btn btn-primary"
+                                        <a class="btn btn-primary"
                                            title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i
-                                                class="far fa-eye"></i> </a>
+                                                class="fas fa-eye"></i> </a>
                                     </td>
                                 </tr>
                             </th:block>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="workflowStep" type="org.esupportail.esupsignature.entity.WorkflowStep"*/-->
@@ -26,7 +26,7 @@
                                             Tous les participants doivent-ils signer ?
                                         </label>
                                         <label class="switch">
-                                            <input th:onclick="'location.href=\'/manager/workflows/toggle-need-all-sign/' + ${id} + '/' + ${iterator.index} + '\''" type="checkbox" name="allSignToComplete" th:checked="${workflowStep.allSignToComplete}"/>
+                                            <input th:onclick="'location.href=\'/manager/workflows/toggle-need-all-sign/' + ${workflow.id} + '/' + ${iterator.index} + '\''" type="checkbox" name="allSignToComplete" th:checked="${workflowStep.allSignToComplete}"/>
                                             <span class="slider round"></span>
                                         </label>
 
@@ -116,7 +116,7 @@
                                     <div class="bs-stepper-bottom">
                                         <form th:id="'del_' + ${iterator.index}" th:action="'/manager/workflows/remove-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
                                             <button type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="btn btn-sm float-right">
-                                                <i class="fas fa-trash"></i>
+                                                <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </form>
                                     </div>

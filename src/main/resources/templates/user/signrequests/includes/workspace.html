@@ -210,7 +210,7 @@
                         if(mode == 'sign') {
                             pointIt(e);
                         } else if(mode == 'comment') {
-                            pointIt2(e)
+                            pointIt2(e);
                         }
 
                     }
@@ -251,12 +251,21 @@
 
                     function pointIt2(e) {
                         if (pointItEnable) {
-                            console.log("mouse");
+                            var pointerCanvas = document.createElement("canvas");
+                            pointerCanvas.width = 24;
+                            pointerCanvas.height = 24;
+                            var pointerCtx = pointerCanvas.getContext("2d");
+                            pointerCtx.fillStyle = "#000000";
+                            pointerCtx.font = "24px FontAwesome";
+                            pointerCtx.textAlign = "center";
+                            pointerCtx.textBaseline = "middle";
+                            pointerCtx.fillText("\uf075", 12, 12);
+                            var dataURL = pointerCanvas.toDataURL('image/png')
+                            $('#pdf').css('cursor', 'url('+dataURL+'), auto');
                             posX = e.offsetX ? (e.offsetX)
                                 : e.clientX - pointerDiv.offsetLeft;
                             posY = e.offsetY ? (e.offsetY)
                                 : e.clientY - pointerDiv.offsetTop;
-                            console.log('point' + posX + ' : ' + posY);
                             document.getElementById("xPos").value = Math.round(posX / scale);
                             document.getElementById("yPos").value = Math.round(posY / scale);
                         }
@@ -296,7 +305,7 @@
                     }
 
                     function enableCommentMode() {
-                        //$('#pdf').awesomeCursor('comment-alt');
+                        console.log("enable comments");
                         disableAllModes();
                         mode = 'comment';
                         localStorage.setItem('mode', 'comment');
@@ -361,6 +370,7 @@
                         $('#refusetools').hide();
                         $('#rotateleft').prop('disabled', true);
                         $('#rotateright').prop('disabled', true);
+                        $('#pdf').css('cursor', 'default');
                     }
 
                     function refreshSign() {
@@ -496,7 +506,7 @@
                     <div th:id="${postit.id}" class="circle"
                     th:onmouseover="'$(\'#postit' + ${postit.id} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#postit' + ${postit.id} + '\').removeClass(\'circle-border\');'">
-                        <i class="far fa-comment-alt fa-3x"></i>
+                        <i class="fas fa-comment fa-3x"></i>
                     </div>
                     <script th:inline="javascript" >
                         /*<![CDATA[*/

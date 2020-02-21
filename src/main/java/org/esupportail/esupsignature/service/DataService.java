@@ -84,8 +84,9 @@ public class DataService {
 			String targetUrl = String.join(",", targetEmails);
 			userPropertieService.createTargetPropertie(user, targetUrl, form);
 		}
-		String name = data.getName().replaceAll("[\\\\/:*?\"<>|]", "-");
-		SignBook signBook = signBookService.createSignBook(name, user, false);
+		String name = form.getName().replaceAll("[\\\\/:*?\"<>|]", "-") + "_" + data.getName().replaceAll("[\\\\/:*?\"<>|]", "-");
+		String signBookName = signBookService.generateName(name, user);
+		SignBook signBook = signBookService.createSignBook(signBookName, user, false);
 		SignRequest signRequest = signRequestService.createSignRequest(name, user);
 		signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(generateFile(data), name + ".pdf", "application/pdf"));
 		signRequestRepository.save(signRequest);
@@ -128,4 +129,5 @@ public class DataService {
 		Form form = data.getForm();
 		return pdfService.fill(form.getDocument().getInputStream(), data.getDatas());
 	}
+
 }

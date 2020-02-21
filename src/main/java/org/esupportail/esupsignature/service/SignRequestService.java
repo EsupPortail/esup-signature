@@ -579,6 +579,8 @@ public class SignRequestService {
 		if(signRequest.getParentSignBook() != null) {
 			signRequest.getParentSignBook().getSignRequests().remove(signRequest);
 		}
+		signRequest.getRecipients().clear();
+		signRequestRepository.save(signRequest);
 		signRequestRepository.delete(signRequest);
 	}
 

@@ -44,7 +44,7 @@
                                     <div class="bs-stepper-bottom">
                                         <form th:id="'del_' + ${iterator.index}" th:action="'/user/signbooks/remove-step/' + ${id} + '/' + ${iterator.index}" th:method="delete" onsubmit="confirmdel();">
                                             <button th:onclick="'confirmdel(\'del_' + ${iterator.index} + '\');'" class="btn btn-sm float-right">
-                                                <i class="fas fa-trash"></i>
+                                                <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </form>
                                     </div>

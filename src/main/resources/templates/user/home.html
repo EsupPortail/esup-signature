@@ -133,17 +133,10 @@
                                                 th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                         </td>
                                         <td class="text-center w-10">
-                                            <a aria-label="Accéder à la demande"
-                                               th:if="${signRequest.parentSignBook != null}"
-                                               class="btn btn-primary" title="ouvrir"
-                                               th:href="'/user/signrequests/' + ${signRequest.id}"><i
-                                                    class="fas fa-book"></i>
-                                            </a>
-                                            <a aria-label="Accéder à la demande"
-                                               th:unless="${signRequest.parentSignBook != null}"
+                                             <a aria-label="Accéder à la demande"
                                                class="btn btn-primary"
                                                title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i
-                                                    class="far fa-eye"></i> </a>
+                                                    class="fas fa-eye"></i> </a>
                                         </td>
                                     </tr>
                                 </th:block>
@@ -168,7 +161,7 @@
                                         <td class="text-center w-10">
                                             <a title="Voir" th:href="'/user/datas/' + ${data.id} + '/update'"
                                                class="btn btn-warning">
-                                                <i class="fas fa-pen"></i>
+                                                <i class="fas fa-pencil-alt"></i>
                                             </a>
                                         </td>
                                     </tr>
@@ -195,7 +188,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <iframe id="wizIframe" frameborder="0" src="/user/signbooks/wizard/wiz1"
+                <iframe id="wizIframe" frameborder="0" src="/user/wizard/wiz1"
                         style="width: 100%; height: 500px;"></iframe>
             </div>
         </div>
@@ -369,7 +362,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <iframe frameborder="0" th:src="'/user/signbooks/wizard/wiz1?workflowId=' + ${workflow.id}"
+                    <iframe frameborder="0" th:src="'/user/wizard/wiz1?workflowId=' + ${workflow.id}"
                             style="width: 100%; height: 500px;"></iframe>
                 </div>
             </div>

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -90,10 +91,6 @@ public class SignBookService {
     }
 
     public void delete(SignBook signBook) {
-        List<SignRequest> signRequests = new ArrayList<>(signBook.getSignRequests());
-        for(SignRequest signRequest : signRequests) {
-            signRequestService.delete(signRequest);
-        }
         List<Data> datas = dataRepository.findBySignBook(signBook);
         for (Data data : datas) {
             data.setSignBook(null);
@@ -117,8 +114,8 @@ public class SignBookService {
     public void importWorkflow(SignBook signBook, Workflow workflow) {
         logger.info("import workflow steps in signBook " + signBook.getName() + " - " +signBook.getId());
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
-            //WorkflowStep newWorkflowStep = workflowService.createWorkflowStep(workflowStep.getRecipients(), "", workflowStep.getAllSignToComplete(), workflowStep.getSignType());
-            signBook.getWorkflowSteps().add(workflowStep);
+            WorkflowStep newWorkflowStep = workflowService.createWorkflowStep(workflowStep.getRecipients(), "", workflowStep.getAllSignToComplete(), workflowStep.getSignType());
+            signBook.getWorkflowSteps().add(newWorkflowStep);
         }
         signBook.setTargetType(workflow.getTargetType());
         signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
@@ -271,5 +268,18 @@ public class SignBookService {
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", user, "SUCCESS", signRequest.getComment());
         }
+    }
+
+
+    public String generateName(String name, User user) {
+        String signBookName = "";
+        signBookName += user.getFirstname().substring(0, 1).toUpperCase();
+        signBookName += user.getName().substring(0, 1).toUpperCase();
+        signBookName += "_";
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        signBookName += format.format(new Date());
+        signBookName += "_";
+        signBookName += name.replaceAll("[\\\\/:*?\"<>|]", "-");
+        return signBookName;
     }
 }

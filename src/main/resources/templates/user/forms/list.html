@@ -35,10 +35,10 @@
                                 <td class="show text-center" style="width: 320px;">
                                     <a title="Modifier" th:href="'/user/' + ${user.eppn} +'/data/' + ${data.id} + '/update'"
                                             class="btn btn btn-outline-dark btn-light float-left mr-2">
-                                        <i class="fas fa-pen"></i>
+                                        <i class="fas fa-pencil-alt"></i>
                                     </a>
                                     <button type="button" title="Modifier" th:unless="${data.status.name() == 'draft'}" class="btn float-left mr-2 disabled" disabled>
-                                        <i class="fas fa-pen"></i>
+                                        <i class="fas fa-pencil-alt"></i>
                                     </button>
                                     <a th:unless="${data.status.name() == 'draft'}"  title="Dupliquer cette demande" th:href="'/user/' + ${user.eppn} +'/data/' + ${data.id} + '/clone'" class="mr-2 btn btn-outline-dark btn-light float-left">
                                         <i class="fas fa-copy"></i>
@@ -69,7 +69,7 @@
                                             data-target="#modal-warning"
                                             th:attr="data-target='#modal-warning'+${data.id }"
                                             class="btn btn-danger float-left">
-                                        <i class="fas fa-trash"></i>
+                                        <i class="fas fa-trash-alt"></i>
                                     </button>
                                     <div class="modal modal-warning fade in"
                                          th:id="modal-warning+${data.id}">

@@ -125,7 +125,7 @@
 
     $.fn.fileinputThemes.fas = {
         fileActionSettings: {
-            removeIcon: '<i class="fas fa-trash"></i>',
+            removeIcon: '<i class="fas fa-trash-alt"></i>',
             uploadIcon: '<i class="fas fa-upload"></i>',
             uploadRetryIcon: '<i class="fas fa-redo-alt"></i>',
             downloadIcon: '<i class="fas fa-download"></i>',
@@ -149,7 +149,7 @@
         },
         previewFileIcon: '<i class="fas fa-file"></i>',
         browseIcon: '<i class="fas fa-folder-open"></i>',
-        removeIcon: '<i class="fas fa-trash"></i>',
+        removeIcon: '<i class="fas fa-trash-alt"></i>',
         cancelIcon: '<i class="fas fa-ban"></i>',
         pauseIcon: '<i class="fas fa-pause"></i>',
         uploadIcon: '<i class="fas fa-upload"></i>',
