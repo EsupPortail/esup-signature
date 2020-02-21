@@ -43,6 +43,7 @@
                 <script th:inline="javascript" >
                     /*<![CDATA[*/
                     var url = '/user/signrequests/get-last-file/[[${signRequest.id}]]';
+                    var signable = [[${signable}]];
                     var mode = 'read';
                     var dateActive = false;
                     var visualActive = true;
@@ -425,10 +426,15 @@
                         if(localStorage.getItem('mode') != null && localStorage.getItem('mode') != "") {
                             mode = localStorage.getItem('mode');
                         } else {
-                            [# th:if="${signable == 'ok'}"]
+                            if(signable == 'ok') {
                                 localStorage.setItem('mode', 'sign');
                                 mode = 'sign';
-                            [/]
+                            } else {
+                                localStorage.setItem('mode', 'read');
+                                mode = 'read';
+
+                                $('#readButton').removeClass('d-none');
+                            }
                         }
                         if(mode == 'sign') {
                             pageNum = [[${@signRequestService.getCurrentSignRequestParams(signRequest).signPageNumber}]];

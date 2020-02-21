@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.workflow;
 
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.repository.RecipientRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.RecipientService;
@@ -29,6 +30,16 @@ public class DefaultWorkflow extends Workflow {
     @Override
     public String getName() {
         return "DefaultWorkflow";
+    }
+
+    @Override
+    public DocumentIOType getSourceType() {
+        return DocumentIOType.none;
+    }
+
+    @Override
+    public DocumentIOType getTargetType() {
+        return DocumentIOType.none;
     }
 
     @Override

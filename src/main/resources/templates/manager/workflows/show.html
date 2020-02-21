@@ -28,19 +28,16 @@
                 </button>
             </div>
         </nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="nav justify-content-between">
-            <div class="navbar-nav col-12">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/manager">Circuit de visas</a></li>
-                    <li aria-current="page" class="breadcrumb-item active">Circuit
-                        : <span th:text="${workflow.name}"></span>
-                    </li>
-                </ol>
-            </div>
+        <nav id="breadcrumb" class="text-uppercase" aria-label="breadcrumb">
+            <ol class="breadcrumb col-12">
+                <li class="breadcrumb-item active"><a href="/manager">Liste des circuits de visas</a></li>
+                <li aria-current="page" class="breadcrumb-item active">Circuit
+                    : <span th:text="${workflow.name}"></span>
+                </li>
+            </ol>
         </nav>
         <div id="content" class="content">
-            <div class="card bg-light">
-                <div class="card-header">Parapheur : <span th:text="${workflow.name}"></span></div>
+            <div class="card">
                 <div class="card-body">
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Description</dt>

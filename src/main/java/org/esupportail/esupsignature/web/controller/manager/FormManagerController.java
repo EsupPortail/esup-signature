@@ -142,7 +142,7 @@ public class FormManagerController {
 		form.setTargetUri(updateForm.getTargetUri());
 		form.setTargetType(updateForm.getTargetType());
 		form.setDescription(updateForm.getDescription());
-		formRepository.save(updateForm);
+		formRepository.save(form);
 		return "redirect:/manager/forms/update/" + updateForm.getId();
 	}
 	

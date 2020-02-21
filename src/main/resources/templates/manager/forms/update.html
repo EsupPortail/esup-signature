@@ -6,13 +6,13 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/manager-side :: manager-side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/manager/forms">Liste des formulaires</a></li>
+                <li class="breadcrumb-item active" th:text="'Modifier le formulaire : ' + ${form.name}"></li>
+            </ol>
+        </nav>
         <div id="content" class="content">
-            <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/manager/forms">Liste des formulaires</a></li>
-                    <li class="breadcrumb-item active" th:text="'Modifier le formulaire : ' + ${form.name}"></li>
-                </ol>
-            </nav>
             <div class="card">
                 <div class="card-body">
                     <form id="formUpdate" th:action="'/manager/forms'" th:object="${form}" th:method="put">

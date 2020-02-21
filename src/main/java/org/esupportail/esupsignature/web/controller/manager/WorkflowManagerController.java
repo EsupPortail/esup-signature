@@ -74,21 +74,22 @@ public class WorkflowManagerController {
 
 	@GetMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") String id, Model uiModel, RedirectAttributes redirectAttributes) {
-		Workflow workflow = null;
+		uiModel.addAttribute("signTypes", SignType.values());
+		Workflow workflow;
 		try {
 			workflow = workflowRepository.findById(Long.valueOf(id)).get();
+			uiModel.addAttribute("workflow", workflow);
+			return "manager/workflows/show";
 		} catch (NumberFormatException e) {
 			logger.debug(e.getMessage());
 			workflow = workflowService.getWorkflowByName(id);
+			if(workflow == null) {
+				redirectAttributes.addFlashAttribute("Workflow introuvable");
+				return "redirect:/manager/workflows";
+			}
+			uiModel.addAttribute("workflow", workflow);
+			return "manager/workflows/show-class";
 		}
-		if(workflow == null) {
-			redirectAttributes.addFlashAttribute("Workflow introuvable");
-			return "redirect:/manager/workflows";
-		}
-		uiModel.addAttribute("workflow", workflow);
-		uiModel.addAttribute("signTypes", SignType.values());
-		uiModel.addAttribute("itemId", id);
-		return "manager/workflows/show";
 	}
 
 	@GetMapping(produces = "text/html")

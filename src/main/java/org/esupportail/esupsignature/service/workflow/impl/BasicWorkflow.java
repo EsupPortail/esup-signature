@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service.workflow.impl;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WorkflowStep;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
@@ -47,6 +48,7 @@ public class BasicWorkflow extends DefaultWorkflow {
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		WorkflowStep workflowStep = new WorkflowStep();
 		workflowStep.setStepNumber(1);
+		workflowStep.setSignType(SignType.pdfImageStamp);
 		workflowStep.setDescription("Choix du signataire");
 		workflowStep.setChangeable(true);
 		if(data != null) {

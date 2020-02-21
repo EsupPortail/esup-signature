@@ -5,88 +5,102 @@
 <nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
 <main role="main">
     <div class="wrapper">
-        <nav id="sidebar">
+        <nav th:replace="fragments/manager-side :: manager-side"></nav>
+        <nav id="sidebar2">
             <div class="m-1">
-                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
-                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
-                </button>
-                <button type="submit" class="btn btn-success col-12 mb-1 text-left" onclick="document.getElementById('updateSignBook').submit();">
-                    <i class="fas fa-save"></i> <span class="sidebar-label">Enregistrer</span>
-                </button>
-                <button title="Abandonner" type="button" class="btn btn-light btn-outline-dark col-12 mb-1 text-left" value="Retour" onclick="window.history.back()">
+                <button title="Abandonner" type="button" class="btn btn-light btn-outline-dark col-12 mb-1 text-left"
+                        value="Retour" onclick="window.history.back()">
                     <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
                 </button>
             </div>
         </nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="nav justify-content-between">
+            <div class="navbar-nav col-12">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/manager">Liste des circuits</a></li>
+                    <li aria-current="page" class="breadcrumb-item active">Circuit : <span
+                            th:text="${workflow.name}"></span>
+                    </li>
+                </ol>
+            </div>
+        </nav>
         <div id="content" class="content">
-            <nav aria-label="breadcrumb" class="nav justify-content-between">
-                <div class="navbar-nav col-12">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/manager">Liste des parapheurs</a></li>
-                        <li aria-current="page" class="breadcrumb-item active">Parapheur : <span th:text="${workflow.name}"></span>
-                        </li>
-                    </ol>
-                </div>
-            </nav>
-    <form th:object="${workflow}" th:action="'/manager/workflows/update/' + ${workflow.id}" method="post" id="updateSignBook">
-        <input type="hidden" th:field="*{id}">
-        <div class="card card-body bg-light">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_managers">
-                        <label for="managersSelect"><strong>Gestionnaire(s) du parapheur</strong>
-                            <button class="btn btn-sm btn-light" data-target="#collapseHelp1" data-toggle="collapse" type="button">
-                                <span class="fas fa-info-circle text-info"></span>
-                            </button>
-                            <div class="collapse" id="collapseHelp1">
-                                <div class="alert alert-info">
-                                    <!--  -->
+            <div class="card">
+                <div class="card-body">
+                    <form th:object="${workflow}" th:action="'/manager/workflows/update/' + ${workflow.id}"
+                          method="post"
+                          id="updateSignBook">
+                        <input type="hidden" th:field="*{id}">
+                        <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_managers">
+                            <label for="managersSelect"><strong>Gestionnaire(s) du parapheur</strong>
+                                <button class="btn btn-sm btn-transparent" data-target="#collapseHelp1" data-toggle="collapse"
+                                        type="button">
+                                    <span class="fas fa-info-circle text-info"></span>
+                                </button>
+                                <div class="collapse" id="collapseHelp1">
+                                    <div class="alert alert-info">
+                                        Liste des personnes pouvant utiliser ce circuit
+                                    </div>
                                 </div>
-                            </div>
-                        </label>
-                        <select id="managersSelect" multiple="multiple" name="managers">
-                            <th:block th:each="manager : ${workflow.managers}">
-                                <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
-                            </th:block>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="_sourceType_id">
-                            <strong> Protocole pour la source des documents </strong>
-                        </label>
-                        <select class="form-control" id="_sourceType_id" th:field="*{sourceType}" size="1">
-                            <th:block th:each="sourceType : ${sourceTypes}">
-                                <option th:selected="${workflow.sourceType == sourceType}" th:value="${sourceType}" th:text="#{'signbook.documentiotype.' + ${sourceType}}"></option>
-                            </th:block>
-                        </select>
-                    </div>
-                    <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri">
-                        <label for="documentsSourceUri"> <strong>Lien pour la source des documents</strong></label>
-                        <input id="documentsSourceUri" th:field="*{documentsSourceUri}" placeholder="Si autre que la valeur par défaut" class="form-control" type="text" value="" autocomplete="on">
-                    </div>
-                    <div class="form-group" id="c_org_esupportail_esupsignature_domain_SignBook_targetType">
-                        <label for="_targetType_id">
-                            <strong> Protocole pour la destination des documents </strong>
-                        </label>
-                        <select class="form-control" id="_targetType_id" th:field="*{targetType}" size="1">
-                            <th:block th:each="targetType : ${targetTypes}">
-                                <option th:selected="${workflow.targetType == targetType}" th:value="${targetType}" th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
-                            </th:block>
-                        </select>
-                    </div>
-                    <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri">
-                        <label for="documentsTargetUri"><strong>Lien pour la destination des documents</strong></label>
-                        <input id="documentsTargetUri" th:field="*{documentsTargetUri}" placeholder="Si autre que la valeur par défaut" class="form-control" type="text" value="" autocomplete="on">
-                    </div>
-                    <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_description">
-                        <label for="_description_id"><strong>Description</strong></label>
-                        <textarea id="_description_id" name="description" class="form-control" rows="5" cols="50"></textarea>
-                    </div>
+                            </label>
+                            <select id="managersSelect" multiple="multiple" name="managers">
+                                <th:block th:each="manager : ${workflow.managers}">
+                                    <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="_sourceType_id">
+                                <strong> Protocole pour la source des documents </strong>
+                            </label>
+                            <select class="form-control" id="_sourceType_id" th:field="*{sourceType}" size="1">
+                                <th:block th:each="sourceType : ${sourceTypes}">
+                                    <option th:selected="${workflow.sourceType == sourceType}" th:value="${sourceType}"
+                                            th:text="#{'signbook.documentiotype.' + ${sourceType}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div class="form-group"
+                             id="_c_org_esupportail_esupsignature_domain_SignBook_documentsSourceUri">
+                            <label for="documentsSourceUri"> <strong>Lien pour la source des documents</strong></label>
+                            <input id="documentsSourceUri" th:field="*{documentsSourceUri}"
+                                   placeholder="Si autre que la valeur par défaut" class="form-control" type="text"
+                                   value=""
+                                   autocomplete="on">
+                        </div>
+                        <div class="form-group" id="c_org_esupportail_esupsignature_domain_SignBook_targetType">
+                            <label for="_targetType_id">
+                                <strong> Protocole pour la destination des documents </strong>
+                            </label>
+                            <select class="form-control" id="_targetType_id" th:field="*{targetType}" size="1">
+                                <th:block th:each="targetType : ${targetTypes}">
+                                    <option th:selected="${workflow.targetType == targetType}" th:value="${targetType}"
+                                            th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div class="form-group"
+                             id="_c_org_esupportail_esupsignature_domain_SignBook_documentsTargetUri">
+                            <label for="documentsTargetUri"><strong>Lien pour la destination des
+                                documents</strong></label>
+                            <input id="documentsTargetUri" th:field="*{documentsTargetUri}"
+                                   placeholder="Si autre que la valeur par défaut" class="form-control" type="text"
+                                   value=""
+                                   autocomplete="on">
+                        </div>
+                        <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignBook_description">
+                            <label for="_description_id"><strong>Description</strong></label>
+                            <textarea id="_description_id" name="description" class="form-control" rows="5"
+                                      cols="50"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success float-right"
+                                onclick="document.getElementById('updateSignBook').submit();">
+                            Enregistrer
+                        </button>
                 </div>
+                </form>
             </div>
         </div>
-    </form>
-    </div>
     </div>
 </main>
 <script type="text/javascript">

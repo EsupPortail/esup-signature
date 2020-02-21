@@ -1,47 +1,61 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="field" type="org.esupportail.esupsignature.entity.Field"*/-->
+<!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/manager-side :: manager-side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/manager/forms">Liste des formulaires</a></li>
+                <li class="breadcrumb-item active" th:text="'Liste des champs du formulaire : ' + ${form.name}"></li>
+            </ol>
+        </nav>
         <div id="content" class="content">
-            <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/manager/forms">Liste des formulaires</a></li>
-                    <li class="breadcrumb-item active" th:text="'Liste des champs du formulaire : ' + ${form.name}"></li>
-                </ol>
-            </nav>
-            <table class="table table-bordered table-striped">
-                <thead>
-                <tr>
-                    <th>Id</th>
-                    <th>Nom</th>
-                    <th>Type</th>
-                    <th>Aperçu</th>
-                </tr>
-                </thead>
-                <tbody>
-                <th:block th:each="field : ${form.fields}">
+            <div class="fixed-action-btn" style="bottom: 100px; right: 50px;">
+                <a title="Créer un nouveau circuit" type="button" th:href="'/manager/forms/update/' + ${form.id}"
+                   class="btn-floating btn-lg bg-warning">
+                    <i class="fas fa-pencil-alt"></i>
+                </a>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                <table class="table table-borderless table-hover">
+                    <thead class="thead-dark">
                     <tr>
-                        <td th:text="${field.name}"></td>
-                        <td th:text="${field.label}"></td>
-                        <td th:text="${field.type}"></td>
-                        <td>
-                            <div class="form-group">
-                                <div th:switch="${#strings.toString(field.type)}">
-									<input th:case="radio" type="radio" th:name="${field.name}" th:placeholder="${field.name}"/>
-                                    <input th:case="checkbox" type="checkbox" th:name="${field.name}" th:placeholder="${field.name}"/>
-                                    <input th:case="'text'" type="text" class="form-control" th:name="${field.name}" th:placeholder="${field.label}"/>
-                                </div>
-                            </div>
-                        </td>
+                        <th>Id</th>
+                        <th>Nom</th>
+                        <th>Type</th>
+                        <th>Aperçu</th>
                     </tr>
-                </th:block>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    <th:block th:each="field : ${form.fields}">
+                        <tr>
+                            <td th:text="${field.name}"></td>
+                            <td th:text="${field.label}"></td>
+                            <td th:text="${field.type}"></td>
+                            <td>
+                                <div class="form-group">
+                                    <div th:switch="${#strings.toString(field.type)}">
+                                        <input th:case="radio" type="radio" th:name="${field.name}"
+                                               th:placeholder="${field.name}"/>
+                                        <input th:case="checkbox" type="checkbox" th:name="${field.name}"
+                                               th:placeholder="${field.name}"/>
+                                        <input th:case="'text'" type="text" class="form-control" th:name="${field.name}"
+                                               th:placeholder="${field.label}"/>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </th:block>
+                    </tbody>
+                </table>
+                </div>
+            </div>
         </div>
     </div>
 </main>

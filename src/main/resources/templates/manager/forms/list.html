@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
@@ -23,9 +24,8 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover table-striped table-bordered">
-                            <thead>
+                    <table th:if="${forms.size() > 0}" class="table table-hover table-borderless">
+                            <thead class="thead-dark">
                             <tr>
                                 <th scope="col">Nom</th>
                                 <th scope="col">Version</th>
@@ -89,6 +89,8 @@
                             </tr>
                             </tbody>
                         </table>
+                    <div class="alert alert-secondary" th:unless="${forms.size() > 0}">
+                        Aucun modèle pour le moment
                     </div>
                 </div>
             </div>
