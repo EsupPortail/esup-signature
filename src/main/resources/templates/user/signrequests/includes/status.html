@@ -21,7 +21,7 @@
 				<span th:text="#{'signbook.status.' + ${status}}"></span>
 		</div>
 		<div th:case="'checked'" class="badge badge-warning text-center" style="padding: 10px;"  th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">
-			<i class="far fa-check-circle"></i>
+			<i class="fas fa-check-circle"></i>
 				<span th:text="#{'signbook.status.' + ${status}}"></span>
 		</div>
 		<div th:case="'exported'" class="badge badge-success text-center" style="padding: 10px;"  th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">

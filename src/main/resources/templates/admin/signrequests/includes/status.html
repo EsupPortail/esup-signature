@@ -28,7 +28,7 @@
 		</div>
 		<div th:case="'checked'" class="alert alert-success text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
 			<small>
-			<i class="far fa-check-circle"></i>
+			<i class="fas fa-check-circle"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
 			</small>
 		</div>

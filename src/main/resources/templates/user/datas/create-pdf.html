@@ -34,14 +34,14 @@
                     <button title="Rotation à droite" id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
                     <button title="Rotation à gauche" id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
                     <button title="Enregistrer les modifications" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" onclick="document.getElementById('newDataSubmit').click();" class="btn btn-light btn-outline-success ml-1">
-                        <i class="far fa-save"></i><br/>
+                        <i class="fas fa-save"></i><br/>
                     </button>
                     <div th:if="${data.status != null}" th:switch="${data.status.name()}">
                         <th:block th:case="'draft'">
                             <a target="_blank" title="Exporter en PDF" th:if="${data.status.name() == 'draft'}"
                                th:href="'/user/datas/' + ${data.id} + '/export-pdf'"
                                class="btn btn btn-outline-dark btn-light ml-1">
-                                <i class="far fa-file-pdf"></i>
+                                <i class="fas fa-file-pdf"></i>
                             </a>
                             <button title="Envoyer le document" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn btn-success ml-1 ">
                                 <i class="fas fa-paper-plane"></i>
