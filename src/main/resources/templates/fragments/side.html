@@ -6,9 +6,6 @@
         <button th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
             <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
         </button>
-        <a th:classappend="${activeMenu == 'new'} ? 'bg-secondary'" title="Nouveau" href="/user/new" class="btn btn-light col-12 mb-1 text-left">
-            <i class="fas fa-file-medical"></i> <span class="sidebar-label">Nouveau</span>
-        </a>
         <a th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}" th:classappend="${activeMenu == 'tosign'} ? 'bg-secondary'"  title="Documents à signer" href="/user/signrequests/to-sign" class="btn btn-transparent col-12 mb-1 text-left">
             <i class="fas fa-file-signature"></i> <span class="sidebar-label">À signer</span>
             <span th:if="${nbToSign > 0}" class="float-right badge badge-danger mt-1" th:text="${nbToSign}"></span>

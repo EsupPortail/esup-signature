@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
+<head th:replace="fragments/head :: head"></head>
+<body>
+<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav th:replace="fragments/side :: side"></nav>
+        <div id="content" class="content">
+            <nav aria-label="breadcrumb" class="text-uppercase">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item active">Accueil</li>
+                </ol>
+            </nav>
+            <div class="row">
+                <div class="col-xl-6 p-0 pr-2">
+                    <div class="card mb-2 h-100">
+                        <div id="myDocs" class="card-body">
+                            <h2>Nouveau</h2>
+                            <div class="row">
+                                <button class="btn btn-light text-center mr-2 mb-2" data-toggle="modal" data-target="#wizardModal" style="width: 200px;"
+                                     title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant">
+                                    <div class="crop">
+                                        <i class="fas fa-magic fa-4x card-img-top mt-3"></i>
+                                    </div>
+                                    <h5 class="card-title">Circuit personnalisé</h5>
+                                </button>
+
+                                <button class="btn btn-light text-center mr-2 mb-2" data-toggle="modal" data-target="#fastSignRequestModal" style="width: 200px;"
+                                     title="Vous devez signer un document présent sur votre poste">
+                                    <div class="crop">
+                                        <i class="fas fa-bolt fa-4x card-img-top mt-3"></i>
+                                    </div>
+                                    <h5 class="card-title">Signature rapide</h5>
+                                </button>
+
+                                <th:block th:each="workflow : ${workflows}">
+                                    <button class="btn btn-light text-center mr-2 mb-2" style="width: 200px;" data-toggle="modal"
+                                         th:data-target="'#newRequest' + ${workflow.id}"
+                                         th:title="${workflow.description}">
+                                        <div class="crop">
+                                            <i class="fas fa-project-diagram fa-4x card-img-top mt-3"></i>
+                                        </div>
+                                        <h5 class="card-title" th:text="${workflow.name}"></h5>
+                                    </button>
+                                </th:block>
+                                <th:block th:each="form : ${forms}">
+                                    <a class="btn btn-light text-center mr-2 mb-2" style="width: 200px;" th:href="'/user/datas/form/' + ${form.id}"
+                                         th:title="${form.description}">
+                                        <div class="crop">
+                                            <img th:src="'/user/forms/' + ${form.id} + '/get-image/'" width="200px"
+                                                 style="clip: rect(0px,200px,200px,200px);"/>
+                                        </div>
+                                        <h5 class="card-title" th:text="${form.name}"></h5>
+                                    </a>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-row col-xl-6 p-0">
+                    <div class="card mb-2">
+                        <div id="myDocs" class="card-body">
+                            <h2>
+                                Vos informations
+                                <a class="btn btn-secondary float-right" aria-label="Paramètres utilisateur "
+                                   title="Paramètres" href="/user/users/?form">
+                                    <i class="fa fa-cog"></i> Modifier mes paramètres
+                                </a>
+                            </h2>
+                            <br/>
+                            <table class="table table-sm table-borderless">
+                                <tbody>
+                                <tr>
+                                    <th class="text-break w-50">Nom</th>
+                                    <td class="text-break w-50" th:text="${user.name}"></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-break w-50">Prénom</th>
+                                    <td class="text-break w-50" th:text="${user.firstname}"></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-break w-50">Email</th>
+                                    <td class="text-break w-50" th:text="${user.email}"></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-break w-50">Identifiant</th>
+                                    <td class="text-break w-50" th:text="${user.eppn}"></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-break w-50">Image de la signature</th>
+                                    <td class="text-break w-50">
+                                        <img th:if="${signFile != null}" alt="signature"
+                                             th:src="'data:image/png;base64,' + ${signFile}"/>
+                                        <div th:if="${signFile == null}" class="alert alert-danger">
+                                            Pas de signature
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="text-break w-50">Keystore</th>
+                                    <td class="text-break w-50">
+                                        <div th:if="${user.keystore != null}" class="alert alert-secondary">
+                                            Keystore actuel : <a
+                                                th:href="'/user/documents/getfile/' + ${user.keystore.id}"><span
+                                                th:text="${user.keystore.fileName}"></span></a>
+                                        </div>
+                                        <div th:if="${user.keystore == null}" class="alert alert-danger">
+                                            Pas de keystore
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card mb-2">
+                        <div id="myDocs" class="card-body">
+                            <h2>Demandes à signer</h2>
+                            <table th:if="${signRequests.getNumberOfElements() > 0}"
+                                   class="table table-sm table-borderless">
+                                <tbody>
+                                <th:block th:each="signRequest : ${signRequests}">
+                                    <tr>
+                                        <td class="text-break w-50" th:if="${signRequest.parentSignBook != null}"
+                                            th:text="${signRequest.parentSignBook.name}"></td>
+                                        <td class="text-break w-50"
+                                            th:unless="${signRequest.parentSignBook != null}"
+                                            th:text="${signRequest.title}"></td>
+                                        <td class="text-break w-40"><span
+                                                th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                        </td>
+                                        <td class="text-center w-10">
+                                            <a aria-label="Accéder à la demande"
+                                               th:if="${signRequest.parentSignBook != null}"
+                                               class="btn btn-primary" title="ouvrir"
+                                               th:href="'/user/signrequests/' + ${signRequest.id}"><i
+                                                    class="fas fa-book"></i>
+                                            </a>
+                                            <a aria-label="Accéder à la demande"
+                                               th:unless="${signRequest.parentSignBook != null}"
+                                               class="btn btn-primary"
+                                               title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i
+                                                    class="far fa-eye"></i> </a>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                                </tbody>
+                            </table>
+                            <div th:unless="${signRequests.getNumberOfElements() > 0}"
+                                 class="alert alert-secondary">
+                                Aucun document à signer pour le moment
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card mb-2" th:if="${datas.size() > 0}">
+                        <div id="myDocs" class="card-body">
+                            <h2>Bouillons</h2>
+                            <table class="table table-sm table-borderless">
+                                <tbody>
+                                <th:block th:each="data : ${datas}">
+                                    <tr>
+                                        <td class="text-break w-50" th:text="${data.name}"></td>
+                                        <td class="text-break w-40"
+                                            th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                        <td class="text-center w-10">
+                                            <a title="Voir" th:href="'/user/datas/' + ${data.id} + '/update'"
+                                               class="btn btn-warning">
+                                                <i class="fas fa-pen"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer :: footer"></footer>
+
+<div class="modal fade" id="wizardModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Assistant de création de demande</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <iframe id="wizIframe" frameborder="0" src="/user/signbooks/wizard/wiz1"
+                        style="width: 100%; height: 500px;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="fastSignRequestModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/signrequests/fast-sign-request?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
+                  method="post" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="fastSignRequestLabel">Signature rapide</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="col-lg-12">
+                        <div class="input-group">
+                            <div class="custom-file">
+                                <input required aria-describedby="inputGroupLabel01" class="custom-file-input"
+                                       data-buttontext="Choisir fichier" id="inputGroupFile01" name="multipartFiles"
+                                       type="file">
+                                <label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01"
+                                       aria-label="Choisir un document">
+                                    Choisir un document
+                                </label>
+                            </div>
+                        </div>
+                        <label for="signType">Choisir un type de signature</label>
+                        <select name="signType" id="signType" class="form-control">
+                            <th:block th:each="signType : ${signTypes}">
+                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" id="fast-form-submit" class="btn btn-success">
+                        Suivant <i class="fas fa-angle-right"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newFomModal" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Choix du
+                    document</h5>
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-hover table-striped table-bordered">
+                    <tbody>
+                    <tr>
+                        <td>Signer un document existant</td>
+                        <td class="show text-center">
+                            <form action="/user/signrequest" method="post"
+                                  enctype="multipart/form-data">
+                                <div class="form-group">
+                                    <input type="file" name="multipartFile" class="form-control-file">
+                                    <input type="submit" class="btn btn-success" value="Valider">
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:each="form : ${forms}">
+                        <td th:text="${form.name}"></td>
+                        <td class="show text-center">
+                            <button type="button"
+                                    th:onclick="'window.location.href = \'' + @{/user/data/form/{id}(id=${form.id})} + '\''"
+                                    class="btn btn-primary">
+                                <i class="fas fa-plus"></i>
+                                Ajouter
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Annuler</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="signDocModal" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Choix d'un fichier</h3>
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="/user/signrequest" method="post"
+                      enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="eppn" class="col-form-label">Fichier</label> <input
+                            type="file" name="multipartFile" class="form-control-file">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mt-5">
+                            <input type="submit" class="btn btn-success" value="Valider">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Annuler</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addSignRequestModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/signrequests'" method="post">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="addSignRequestLabel">Créer une nouvelle demande</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_title">
+                            <label for="title"><strong>Titre de la demande</strong></label>
+                            <input id="title" name="title" class="form-control" required="required" type="text" value=""
+                                   autocomplete="on">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">
+                        Suivant <i class="fas fa-angle-right"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<th:block th:each="workflow : ${workflows}">
+    <div class="modal fade" th:id="'newRequest' + ${workflow.id}" tabindex="-1" role="dialog"
+         th:aria-labelledby="'#newRequest' + ${workflow.id} + 'label'" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" th:text="'Création d\'une nouvelle demande : ' + ${workflow.name}"></h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <iframe frameborder="0" th:src="'/user/signbooks/wizard/wiz1?workflowId=' + ${workflow.id}"
+                            style="width: 100%; height: 500px;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+</body>
+</html>

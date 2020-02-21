@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -66,12 +67,14 @@ public class FormManagerController {
 	}
 
 	@PostMapping("forms")
-	public String postForm(@RequestParam("name") String name, @RequestParam("targetType") String targetType, @RequestParam("targetUri") String targetUri, @RequestParam("fieldNames[]") String[] fieldNames, @RequestParam("fieldTypes[]") String[] fieldTypes, Model model) {
+	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames, @RequestParam("fieldTypes[]") String[] fieldTypes, Model model) {
 		Form form = new Form();
 		form.setDocument(null);
 		form.setName(name);
-		form.setTargetType(DocumentIOType.valueOf(targetType));
-		form.setTargetUri(targetUri);
+		if(targetType != null) {
+			form.setTargetType(DocumentIOType.valueOf(targetType));
+			form.setTargetUri(targetUri);
+		}
 		for(String fieldName : fieldNames) {
 			Field field = new Field();
 			field.setName(fieldName);
@@ -79,8 +82,11 @@ public class FormManagerController {
 			field.setType(FieldType.text);
 			form.getFields().add(field);
 		}
-		formService.updateForm(form);
-		return "redirect:/manager/" + userService.getUserFromAuthentication().getEppn() + "/forms?";
+		//TODO check other version
+		form.setVersion(1);
+		form.setActiveVersion(true);
+		formRepository.save(form);
+		return "redirect:/manager/forms/" + form.getId();
 	}
 	
 	@GetMapping("forms/{id}")
@@ -109,7 +115,13 @@ public class FormManagerController {
 		model.addAttribute("model", form.getDocument());
 		return "manager/forms/update";
 	}
-	
+
+	@GetMapping("forms/create")
+	public String createForm(Model model) {
+		model.addAttribute("form", new Form());
+		return "manager/forms/create";
+	}
+
 	@GetMapping("forms")
 	public String list(Model model) {
 		List<Form> forms = formService.getAllForms();
@@ -135,9 +147,10 @@ public class FormManagerController {
 	}
 	
 	@DeleteMapping("forms/{id}")
-	public String deleteForm(@PathVariable("id") Long id, Model model) {
+	public String deleteForm(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		formService.deleteForm(id);
-		return "redirect:/manager/" + userService.getUserFromAuthentication().getEppn() + "/forms";
+		redirectAttributes.addFlashAttribute("messageError", "Le formulaire à bien été supprimé");
+		return "redirect:/manager/forms";
 	}
 	
 } 

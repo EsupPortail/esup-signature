@@ -31,7 +31,7 @@ public class PreFillService {
 				return preFillValue.preFillFields(fields, user);
 			}
 		}
-		return null;
+		return fields;
 	}
 	
 	public List<Field> getPreFillByType(String className, List<Field> fields, User user) {

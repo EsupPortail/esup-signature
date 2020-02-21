@@ -140,7 +140,7 @@ public class DataController {
 			page = 1;
 		}
 		model.addAttribute("form", form);
-		if(form.getPreFillType() != null) {
+		if(form.getPreFillType() != null && !form.getPreFillType().isEmpty()) {
 			Integer finalPage = page;
 			List<Field> fields = form.getFields().stream().filter(field -> field.getPage() == finalPage).collect(Collectors.toList());
 			model.addAttribute("fields", preFillService.getPreFillServiceByName(form.getPreFillType(), fields, user));
@@ -152,7 +152,7 @@ public class DataController {
 		model.addAttribute("activeForm", form.getName());
 		model.addAttribute("page", page);
 		if(form.isPdfDisplay()) {
-			return "user/datas/create2";
+			return "user/datas/create-pdf";
 		} else {
 			return "user/datas/create";
 		}
@@ -181,7 +181,7 @@ public class DataController {
 			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getSignRequests().get(0).getRecipients(), user)) {
 				model.addAttribute("toSign", true);
 			}
-			return "user/datas/create2";
+			return "user/datas/create-pdf";
 		} else {
 			return "redirect:/user/datas/" + data.getId();
 		}

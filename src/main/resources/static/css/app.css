@@ -291,7 +291,6 @@ input:checked + .slider:before {
 
 .workspace {
     display: flex;
-    margin-top: 140px;
 }
 
 .wrapper {
@@ -624,4 +623,8 @@ input:checked + .slider:before {
 .form-group.required label:after {
     content:"*";
     color:red;
+}
+
+.card-title {
+    padding: 1em;
 }

@@ -21,9 +21,12 @@ import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.repository.DataRepository;
+import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @RequestMapping("/")
@@ -61,6 +65,12 @@ public class IndexController {
 	private UserService userService;
 
 	@Resource
+	private FormService formService;
+
+	@Resource
+	private WorkflowService workflowService;
+
+	@Resource
 	private SignRequestService signRequestService;
 
 	@Resource
@@ -75,18 +85,11 @@ public class IndexController {
 	}
 	
 	@GetMapping
-	public String index(Model model, Pageable pageable) throws IOException {
+	public String index(Model model) {
 		User user = userService.getUserFromAuthentication();
 		model.addAttribute("user", user);
 		if(user != null && !user.getEppn().equals("System")) {
-			List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
-			model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequestsToSign, pageable));
-			List<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft);
-			model.addAttribute("datas", datas);
-			if(user.getSignImage() != null) {
-				model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-			}
-			return "index";
+			return "redirect:/user/";
 		} else {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			if("anonymousUser".equals(auth.getName())) {
