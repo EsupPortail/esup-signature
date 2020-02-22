@@ -19,6 +19,10 @@ body {
     font-weight: 200;
 }
 
+dt {
+    font-weight: normal;
+}
+
 th {
     font-weight: normal !important;
 }
@@ -128,20 +132,6 @@ code {
 .btn-transparent:hover {
     color: white;
     background-color: rgba(255,255,255,0.2);
-}
-
-.carousel-control-prev, .carousel-control-next {
-    position: relative;
-    display: block;
-    -ms-flex-align: center;
-    align-items: center;
-    -ms-flex-pack: center;
-    justify-content: center;
-    width: 15%;
-    color: #fff;
-    text-align: center;
-    opacity: 1;
-    clear: both;
 }
 
 /* The switch - the box around the slider */
@@ -264,8 +254,8 @@ input:checked + .slider:before {
 }
 
 .workspace {
-    display: flex;
     margin-top: 50px;
+    display: flex;
 }
 
 .workspace-sign {
@@ -285,6 +275,7 @@ input:checked + .slider:before {
 }
 
 .content2 {
+    margin-top: 112px;
     min-width: 100vh;
     margin-left: 60px;
     padding: 5px;
@@ -334,13 +325,23 @@ input:checked + .slider:before {
     width: 500px;
 }
 
-#breadcrumb {
+.breadcrumb-nav {
     top:60px;
     padding: 4px;
     position: fixed;
     background-color: white;
     z-index: 2;
     margin-left: 260px;
+    width: 100%;
+}
+
+.breadcrumb-nav2 {
+    top:60px;
+    padding: 4px;
+    position: fixed;
+    background-color: white;
+    z-index: 2;
+    margin-left: 60px;
     width: 100%;
 }
 
@@ -591,6 +592,11 @@ input:checked + .slider:before {
     height: 80vh;
 }
 
+.clickable-row {
+    cursor: pointer;
+    border-radius: 50%;
+}
+
 .nav-tabs .nav-link {
     border-color: #dee2e6 !important;
     background-color: #dee2e6;
@@ -620,7 +626,7 @@ input:checked + .slider:before {
 }
 
 .crop {
-    height:125px;
+    height:150px;
     overflow:hidden;
     margin:0;
 }
@@ -676,7 +682,7 @@ input:checked + .slider:before {
     z-index: 1;
     display: inline-block;
     padding: 0;
-    margin: 10px;
+    margin: 0px;
     overflow: hidden;
     vertical-align: middle;
     cursor: pointer;
@@ -694,6 +700,11 @@ input:checked + .slider:before {
     box-shadow: 0 8px 17px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
 }
 
+.btn-floating.btn-small {
+    width: 35px;
+    height: 35px;
+}
+
 .btn-floating.btn-lg {
     width: 61.1px;
     height: 61.1px;
@@ -705,7 +716,7 @@ input:checked + .slider:before {
     color: #fff;
     text-align: center;
     font-size: 1rem;
-    line-height: 2.5rem;
+    line-height: 2.8rem;
 }
 
 .btn-sm, .btn-group-sm > .btn {
@@ -722,7 +733,7 @@ input:checked + .slider:before {
     z-index: 998;
     margin-bottom: 0;
     overflow: hidden;
-    height: 260px;
+    height: 500px;
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
@@ -738,7 +749,7 @@ input:checked + .slider:before {
 .fixed-action-btn ul {
     position: absolute;
     right: 0;
-    bottom: 64px;
+    bottom: 0px;
     left: 0;
     display: -webkit-box;
     display: -ms-flexbox;

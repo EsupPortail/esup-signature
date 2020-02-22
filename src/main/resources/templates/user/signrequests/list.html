@@ -8,7 +8,7 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/side :: side"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item active">Documents envoyés</li>
             </ol>
@@ -37,8 +37,8 @@
                     <table class="table table-borderless table-hover table-responsive">
                         <thead class="thead-dark">
                         <tr>
-                            <th class="w-50">Parapheur</th>
-                            <th class="w-50">Titre des documents</th>
+                            <th class="w-25">Parapheur</th>
+                            <th class="w-25">Titre des documents</th>
                             <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de
                                 création</a></th>
                             <th class="d-none d-lg-table-cell">Participants</th>

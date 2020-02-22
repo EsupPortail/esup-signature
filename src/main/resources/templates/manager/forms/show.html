@@ -8,13 +8,13 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/manager-side :: manager-side"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav text-uppercase">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/manager/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active" th:text="'Liste des champs du formulaire : ' + ${form.name}"></li>
             </ol>
         </nav>
-        <div id="content" class="content">
+        <div id="content" class="content col-8">
             <div class="fixed-action-btn" style="bottom: 100px; right: 50px;">
                 <a title="Créer un nouveau circuit" type="button" th:href="'/manager/forms/update/' + ${form.id}"
                    class="btn-floating btn-lg bg-warning">

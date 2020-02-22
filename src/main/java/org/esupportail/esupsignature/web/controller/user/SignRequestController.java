@@ -142,7 +142,11 @@ public class SignRequestController {
             signRequests = signRequestRepository.findByCreateBy(user.getEppn());
         }
 
-        signRequests.addAll(signRequestService.getToSignRequests(user));
+        for(SignRequest signRequest : signRequestService.getToSignRequests(user)) {
+            if(!signRequests.contains(signRequest)) {
+                signRequests.add(signRequest);
+            }
+        }
 
         model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequests, pageable));
 

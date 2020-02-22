@@ -8,7 +8,7 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/side :: side"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/datas">Mes documents</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Formulaire : <span th:text="${form.name}"></span>
@@ -67,7 +67,7 @@
                     <input id="dataId" type="hidden" name="dataId" th:value="${data.id}"/>
                     <div class="form-group">
                         <label for="name">Nom du document</label>
-                        <input id="name" class="form-control required-field" type="text" name="name" th:placeholder="${form.name}" th:value="${data.name}" required="true" />
+                        <input id="name" autocomplete="no" class="form-control" type="text" name="name" placeholder="Saisir un nom pour ce document" th:value="${data.name}" required="true" />
                     </div>
                     <div id="pdf" class="drop-shadows"></div>
                     <script th:inline="javascript">

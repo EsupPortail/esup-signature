@@ -8,131 +8,86 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/side :: side"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
-            <ol class="breadcrumb">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Accueil</li>
             </ol>
         </nav>
         <div id="content" class="content">
             <div class="row">
-                <div class="col-xl-6 mb-2 p-0 pr-2">
+                <div class="col-12 mb-2 p-0">
                     <div class="card mb-2 h-100">
                         <div id="myDocs" class="card-body">
-                            <h2>Nouveau</h2>
-                            <div class="row">
-                                <button class="btn btn-light text-center mr-2 mb-2" data-toggle="modal" data-target="#wizardModal" style="width: 200px;"
-                                     title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant">
+                            <h3>Nouveau</h3>
+                            <div id="new-scroll" class=" w-100 text-center " style="width: 350px;    overflow-x: auto;    white-space: nowrap;">
+                            <div class="d-inline">
+                                <a role="button" class="btn btn-light text-center mr-2 mb-2" data-toggle="modal"
+                                   data-target="#wizardModal" style="width: 150px; height: 200px;"
+                                   title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant">
                                     <div class="crop">
-                                        <i class="fas fa-magic fa-4x card-img-top mt-3"></i>
+                                        <i class="fas fa-magic fa-4x "></i>
                                     </div>
-                                    <h5 class="card-title">Circuit personnalisé</h5>
-                                </button>
+                                    <h6>Circuit personnalisé</h6>
+                                </a>
 
-                                <button class="btn btn-light text-center mr-2 mb-2" data-toggle="modal" data-target="#fastSignRequestModal" style="width: 200px;"
-                                     title="Vous devez signer un document présent sur votre poste">
+                                <a role="button" class="btn btn-light text-center mr-2 mb-2" data-toggle="modal"
+                                   data-target="#fastSignRequestModal" style="width: 150px; height: 200px;"
+                                   title="Vous devez signer un document présent sur votre poste">
                                     <div class="crop">
-                                        <i class="fas fa-bolt fa-4x card-img-top mt-3"></i>
+                                        <i class="fas fa-bolt fa-4x"></i>
                                     </div>
-                                    <h5 class="card-title">Signature rapide</h5>
-                                </button>
+                                    <h6>Signature rapide</h6>
+                                </a>
 
                                 <th:block th:each="workflow : ${workflows}">
-                                    <button class="btn btn-light text-center mr-2 mb-2" style="width: 200px;" data-toggle="modal"
-                                         th:data-target="'#newRequest' + ${workflow.id}"
-                                         th:title="${workflow.description}">
+                                    <a role="button" class="btn btn-light text-center mr-2 mb-2"
+                                       style="width: 150px; height: 200px;" data-toggle="modal"
+                                       th:data-target="'#newRequest' + ${workflow.id}"
+                                       th:title="${workflow.description}">
                                         <div class="crop">
-                                            <i class="fas fa-project-diagram fa-4x card-img-top mt-3"></i>
+                                            <i class="fas fa-project-diagram fa-4x"></i>
                                         </div>
-                                        <h5 class="card-title" th:text="${workflow.name}"></h5>
-                                    </button>
-                                </th:block>
-                                <th:block th:each="form : ${forms}">
-                                    <a class="btn btn-light text-center mr-2 mb-2" style="width: 200px;" th:href="'/user/datas/form/' + ${form.id}"
-                                         th:title="${form.description}">
-                                        <div class="crop">
-                                            <img th:src="'/user/forms/' + ${form.id} + '/get-image/'" width="200px"
-                                                 style="clip: rect(0px,200px,200px,200px);"/>
-                                        </div>
-                                        <h5 class="card-title" th:text="${form.name}"></h5>
+                                        <h6 th:text="${workflow.name}"></h6>
                                     </a>
                                 </th:block>
+                                <th:block th:each="form : ${forms}">
+                                    <a role="button" class="btn btn-light text-center mr-2 mb-2"
+                                       style="width: 150px; height: 200px;" th:href="'/user/datas/form/' + ${form.id}"
+                                       th:title="${form.description}">
+                                        <div class="crop">
+                                            <img th:src="'/user/forms/' + ${form.id} + '/get-image/'" height="150px"/>
+                                        </div>
+                                        <h6 th:text="${form.name}"></h6>
+                                    </a>
+                                </th:block>
+                            </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="flex-row col-xl-6 p-0 pr-2">
+                <div class="col-12 p-0">
                     <div class="card mb-2">
                         <div id="myDocs" class="card-body">
-                            <h2>
-                                Vos informations
-                                <a class="btn btn-secondary float-right" aria-label="Paramètres utilisateur "
-                                   title="Paramètres" href="/user/users/?form">
-                                    <i class="fa fa-cog"></i> Modifier mes paramètres
-                                </a>
-                            </h2>
-                            <br/>
-                            <table class="table table-sm table-borderless">
-                                <tbody>
-                                <tr>
-                                    <th class="text-break w-50">Nom</th>
-                                    <td class="text-break w-50" th:text="${user.name}"></td>
-                                </tr>
-                                <tr>
-                                    <th class="text-break w-50">Prénom</th>
-                                    <td class="text-break w-50" th:text="${user.firstname}"></td>
-                                </tr>
-                                <tr>
-                                    <th class="text-break w-50">Email</th>
-                                    <td class="text-break w-50" th:text="${user.email}"></td>
-                                </tr>
-                                <tr>
-                                    <th class="text-break w-50">Identifiant</th>
-                                    <td class="text-break w-50" th:text="${user.eppn}"></td>
-                                </tr>
-                                <tr>
-                                    <th class="text-break w-50">Image de la signature</th>
-                                    <td class="text-break w-50">
-                                        <img th:if="${signFile != null}" alt="signature"
-                                             th:src="'data:image/png;base64,' + ${signFile}"/>
-                                        <div th:if="${signFile == null}" class="alert alert-danger">
-                                            Pas de signature
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th class="text-break w-50">Keystore</th>
-                                    <td class="text-break w-50">
-                                        <div th:if="${user.keystore != null}" class="alert alert-secondary">
-                                            Keystore actuel : <a
-                                                th:href="'/user/documents/getfile/' + ${user.keystore.id}"><span
-                                                th:text="${user.keystore.fileName}"></span></a>
-                                        </div>
-                                        <div th:if="${user.keystore == null}" class="alert alert-danger">
-                                            Pas de keystore
-                                        </div>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="card mb-2">
-                        <div id="myDocs" class="card-body">
-                            <h2>Demandes à signer</h2>
+                            <h3>Demandes à signer</h3>
                             <table th:if="${signRequests.getNumberOfElements() > 0}"
-                                   class="table table-sm table-borderless">
+                                   class="table table-sm table-borderless table-hover">
                                 <tbody>
                                 <th:block th:each="signRequest : ${signRequests}">
-                                    <tr>
-                                        <td class="text-break w-50" th:if="${signRequest.parentSignBook != null}"
-                                            th:text="${signRequest.parentSignBook.name}"></td>
-                                        <td class="text-break w-50"
+                                    <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
+                                        <td class="text-break w-10"><i class="fas fa-book p-2"></i></td>
+                                        <td class="text-break w-15">
+                                            <span  th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></span>
+                                        </td>
+                                        <td class="text-break w-25"
                                             th:unless="${signRequest.parentSignBook != null}"
                                             th:text="${signRequest.title}"></td>
-                                        <td class="text-break w-40"><span
+                                        <td class="text-break w-10"><span
+                                                th:text="${signRequest.createBy}"></span>
+                                        </td>
+                                        <td class="text-break w-10"><span
                                                 th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                         </td>
-                                        <td class="text-center w-10">
+                                        <td class="text-center w-5">
                                              <a aria-label="Accéder à la demande"
                                                class="btn btn-primary"
                                                title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i
@@ -150,7 +105,7 @@
                     </div>
                     <div class="card mb-2" th:if="${datas.size() > 0}">
                         <div id="myDocs" class="card-body">
-                            <h2>Bouillons</h2>
+                            <h3>Bouillons</h3>
                             <table class="table table-sm table-borderless">
                                 <tbody>
                                 <th:block th:each="data : ${datas}">
@@ -170,6 +125,9 @@
                             </table>
                         </div>
                     </div>
+                </div>
+                <div class="col-xl-4 p-0 pr-2">
+
                 </div>
             </div>
         </div>
@@ -229,10 +187,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                    <button type="submit" id="fast-form-submit" class="btn btn-success">
-                        Suivant <i class="fas fa-angle-right"></i>
-                    </button>
+                    <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Annuler</button>
+                    <button type="submit" id="fast-form-submit" class="btn btn-success float-right">Suivant <i class="fas fa-angle-right"></i></button>
                 </div>
             </form>
         </div>

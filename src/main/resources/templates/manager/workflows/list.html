@@ -7,7 +7,7 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/manager-side :: manager-side"></nav>
-        <nav id="breadcrumb" class="text-uppercase" aria-label="breadcrumb">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol class="breadcrumb col-12">
                 <li class="breadcrumb-item active">Liste des circuits de visas</li>
             </ol>
@@ -21,7 +21,6 @@
             </div>
             <div class="card">
                 <div class="card-body">
-
                     <table class="table table-borderless table-hover table-striped">
                         <thead class="thead-dark">
                         <tr>
@@ -96,7 +95,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-lg btn-success">Creer</button>
+                    <button type="submit" class="btn btn-success">Creer</button>
                 </div>
             </form>
         </div>

@@ -27,12 +27,67 @@
 			<li class="nav-item text-white">
 					<span class="d-none d-md-inline" th:text="${user.firstname} + ' ' + ${user.name}">
 					</span>
-					<a href="/user/users/?form" th:classappend="${paramMenu}" aria-label="Paramètres utilisateur" class="btn btn-secondary">
-						<i class="fa fa-cog"></i>
+					<a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos" aria-label="Paramètres utilisateur" class=" btn-floating btn-secondary user-toggle"  aria-controls="user-infos" data-toggle="collapse">
+						<i class="fas fa-user"></i>
 					</a>
 			</li>
 		</ul>
 	</div>
 </nav>
+<div id="user-infos" class="card position-fixed user-infos collapse" style="right: 0;">
+		<div id="myDocs" class="card-body">
+			<h3>
+				Vos informations
+				<a class="btn btn-secondary float-right" aria-label="Paramètres utilisateur "
+				   title="Paramètres" href="/user/users/?form">
+					<i class="fa fa-cog"></i> Modifier mes paramètres
+				</a>
+			</h3>
+			<br/>
+			<table class="table table-sm table-borderless">
+				<tbody>
+				<tr>
+					<th class="text-break w-50">Nom</th>
+					<td class="text-break w-50" th:text="${user.name}"></td>
+				</tr>
+				<tr>
+					<th class="text-break w-50">Prénom</th>
+					<td class="text-break w-50" th:text="${user.firstname}"></td>
+				</tr>
+				<tr>
+					<th class="text-break w-50">Email</th>
+					<td class="text-break w-50" th:text="${user.email}"></td>
+				</tr>
+				<tr>
+					<th class="text-break w-50">Identifiant</th>
+					<td class="text-break w-50" th:text="${user.eppn}"></td>
+				</tr>
+				<tr>
+					<th class="text-break w-50">Image de la signature</th>
+					<td class="text-break w-50">
+						<img th:if="${signFile != null}" alt="signature"
+							 th:src="'data:image/png;base64,' + ${signFile}"/>
+						<div th:if="${signFile == null}" class="alert alert-danger">
+							Pas de signature
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<th class="text-break w-50">Keystore</th>
+					<td class="text-break w-50">
+						<div th:if="${user.keystore != null}" class="alert alert-secondary">
+							Keystore actuel : <a
+								th:href="'/user/documents/getfile/' + ${user.keystore.id}"><span
+								th:text="${user.keystore.fileName}"></span></a>
+						</div>
+						<div th:if="${user.keystore == null}" class="alert alert-danger">
+							Pas de keystore
+						</div>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+</div>
 </header>
 </html>
