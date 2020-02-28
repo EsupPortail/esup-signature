@@ -16,23 +16,22 @@
             <div class="card">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table th:if="${datas.getContent().size() > 0}" class="table table-hover table-striped table-bordered">
-                            <thead>
+                        <table th:if="${datas.getContent().size() > 0}" class="table table-hover table-bordered">
+                            <thead class="thead-dark">
                             <tr>
                                 <th class="w-30">Type</th>
                                 <th class="w-30">Nom</th>
-                                <th class="w-10"><a class="sorted" sd:pagination-sort="createDate">Date de création</th>
-                                <th>Statut</th>
-                                <th class="show text-center" scope="col">Actions</th>
+                                <th class="w-30"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
+                                <th class="w-10"></th>
                             </tr>
                             </thead>
                             <tbody>
-                            <tr th:each="data : ${datas}">
+                            <th:block th:each="data : ${datas}">
+                            <tr>
                                 <td th:text="${data.form.name}"></td>
                                 <td th:text="${data.name}"></td>
                                 <td th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>
-                                <td th:text="#{'signbook.status.' + ${data.status}}"></td>
-                                <td class="show text-center">
+                                <td>
                                     <a title="Voir" th:href="'/user/datas/' + ${data.id} + '/update'"
                                        class="btn btn-primary float-left mr-2">
                                         <i class="fas fa-eye"></i>
@@ -50,37 +49,38 @@
                                             class="btn btn-danger">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
-                                    <div class="modal modal-warning fade in"
-                                         th:id="modal-warning+${data.id}">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <form id="command" th:action="'/user/datas/'+ ${data.id}"
-                                                      th:method="delete">
-                                                    <div class="modal-header">
-                                                        <button type="button" class="close" data-dismiss="modal"
-                                                                aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
+                                </td>
+                                <div class="modal modal-warning fade in"
+                                     th:id="modal-warning+${data.id}">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form id="command" th:action="'/user/datas/'+ ${data.id}"
+                                                  th:method="delete">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                            aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="alert alert-danger text-center">Confirmez-vous
+                                                        la suppression ?
                                                     </div>
-                                                    <div class="modal-body">
-                                                        <div class="alert alert-danger text-center">Confirmez-vous
-                                                            la suppression ?
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-outline pull-left"
-                                                                data-dismiss="modal">Fermer
-                                                        </button>
-                                                        <button type="submit"
-                                                                class="btn btn-outline pull-left btn-danger">Valider
-                                                        </button>
-                                                    </div>
-                                                </form>
-                                            </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline pull-left"
+                                                            data-dismiss="modal">Fermer
+                                                    </button>
+                                                    <button type="submit"
+                                                            class="btn btn-outline pull-left btn-danger">Valider
+                                                    </button>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
-                                </td>
+                                </div>
                             </tr>
+                            </th:block>
                             </tbody>
                             <tfoot>
                                 <tr>

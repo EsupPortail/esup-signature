@@ -7,12 +7,12 @@
             <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
             <span th:if="${nbToSign > 0}" class="float-right badge badge-danger mt-1" th:text="${nbToSign}"></span>
         </button>
-        <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user.eppn, 'pending').size()}" th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Recents" href="/user/signrequests" class="btn btn-transparent col-12 mb-1 text-left">
-            <i class="fas fa-file-export"></i> <span class="sidebar-label">Mes envois</span>
-        </a>
         <a th:with="nbDatas=${@dataRepository.findByCreateByAndStatus(user.eppn, 'draft').size()}" th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes documents" href="/user/datas" class="btn btn-transparent col-12 mb-1 text-left">
             <i class="fas fa-edit"></i> <span class="sidebar-label">Mes brouillons</span>
             <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0}" class="float-right badge badge-info mt-1" th:text="${nbDatas}"></span>
+        </a>
+        <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user.eppn, 'pending').size()}" th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Recents" href="/user/signrequests" class="btn btn-transparent col-12 mb-1 text-left">
+            <i class="fas fa-file-export"></i> <span class="sidebar-label">Mes envois</span>
         </a>
         <a th:classappend="${activeMenu == 'validation'} ? 'bg-secondary'" title="Valider la signature d'un document" href="/user/validation" class="btn btn-transparent col-12 mb-1 text-left">
             <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Contrôler un document</span>

@@ -93,11 +93,14 @@
                         [# th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}"]
                             var currentStep = 0;
                         [/]
+
+                            //TODO : Gestion des champs pres remplis
+                            //TODO : Gestion de la sauvegarde
                         function renderPage(num) {
                             var signFieldNumber = 0;
                             for (var i = 0; i < dataFields.length; i++) {
                                 if(dataFields[i] != null) {
-                                    var inputField = $('input[name=' + dataFields[i].name + ']');
+                                    var inputField = $('input[name=\'' + dataFields[i].name + '\']');
                                     if (inputField.val() != null) {
                                         dataFields[i].defaultValue = inputField.val();
                                         if(inputField.is(':checkbox')) {
