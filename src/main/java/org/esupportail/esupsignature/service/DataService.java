@@ -65,6 +65,7 @@ public class DataService {
 		if(data.getSignBook() != null) {
 			signBookService.delete(data.getSignBook());
 		}
+		data.setForm(null);
 		dataRepository.delete(data);
 	}
 

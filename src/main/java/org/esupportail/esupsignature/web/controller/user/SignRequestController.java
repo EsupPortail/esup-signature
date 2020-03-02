@@ -406,9 +406,10 @@ public class SignRequestController {
     }
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@PathVariable("id") Long id, HttpServletRequest request) {
+    public String delete(@PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequestService.delete(signRequest);
+        redirectAttributes.addFlashAttribute("messageInfo", "Suppression effectuée");
         if(signRequest.getParentSignBook() != null) {
             return "redirect:" + request.getHeader("referer");
         } else {

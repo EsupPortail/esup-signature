@@ -43,6 +43,11 @@ public class SignRequest {
     @OrderColumn
     private List<Document> signedDocuments = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OrderColumn
+    private List<Document> attachments = new ArrayList<>();
+
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
@@ -144,6 +149,14 @@ public class SignRequest {
 
     public void setSignedDocuments(List<Document> signedDocuments) {
         this.signedDocuments = signedDocuments;
+    }
+
+    public List<Document> getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(List<Document> attachments) {
+        this.attachments = attachments;
     }
 
     public SignRequestStatus getStatus() {

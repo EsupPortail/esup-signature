@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.sprinfgramework.org/schema/security">
 <header th:fragment="menu(activeMenu)" class="header-fixed fixed-top">
 <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark bg-dark">
-	<button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse" class="btn text-white float-left">
+	<button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse" class="btn btn-lg text-white float-left">
 		<i class="fas fa-bars"></i>
 	</button>
 	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar_toggle" aria-controls="navbar_toggle" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,7 +27,7 @@
 			<li class="nav-item text-white">
 					<span class="d-none d-md-inline" th:text="${user.firstname} + ' ' + ${user.name}">
 					</span>
-					<a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos" aria-label="Paramètres utilisateur" class=" btn-floating btn-secondary user-toggle"  aria-controls="user-infos" data-toggle="collapse">
+					<a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos" aria-label="Paramètres utilisateur" class="btn-floating btn-small btn-secondary user-toggle"  aria-controls="user-infos" data-toggle="collapse">
 						<i class="fas fa-user"></i>
 					</a>
 			</li>
@@ -38,12 +38,11 @@
 		<div id="myDocs" class="card-body">
 			<h3>
 				Vos informations
-				<a class="btn btn-secondary float-right" aria-label="Paramètres utilisateur "
-				   title="Paramètres" href="/user/users/?form">
-					<i class="fa fa-cog"></i> Modifier mes paramètres
-				</a>
 			</h3>
-			<br/>
+			<a class="btn btn-sm btn-secondary" aria-label="Paramètres utilisateur "
+			   title="Paramètres" href="/user/users/?form">
+				<i class="fa fa-cog"></i> Modifier mes paramètres
+			</a>
 			<table class="table table-sm table-borderless">
 				<tbody>
 				<tr>
@@ -76,9 +75,11 @@
 					<th class="text-break w-50">Keystore</th>
 					<td class="text-break w-50">
 						<div th:if="${user.keystore != null}" class="alert alert-secondary">
-							Keystore actuel : <a
-								th:href="'/user/documents/getfile/' + ${user.keystore.id}"><span
-								th:text="${user.keystore.fileName}"></span></a>
+							Keystore actuel :
+							<br>
+							<a th:href="'/user/documents/getfile/' + ${user.keystore.id}">
+								<span th:text="${user.keystore.fileName}"></span>
+							</a>
 						</div>
 						<div th:if="${user.keystore == null}" class="alert alert-danger">
 							Pas de keystore

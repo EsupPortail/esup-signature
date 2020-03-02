@@ -28,8 +28,6 @@ $(document).ready(function () {
 	$(document).click(function (event) {
 		var clickover = $(event.target);
 		var _opened = $("#user-infos").hasClass("user-infos collapse show");
-		console.log(clickover);
-		console.log(_opened);
 		if (_opened === true && !clickover.hasClass("user-toggle")) {
 			$("#user-toggle").click();
 		}
@@ -517,9 +515,3 @@ $( document ).ready(function() {
 $(window).resize(function() {
 	resizeHeader();
 }).resize();
-
-// PDF.JS
-
-$(document).ready(function() {
-
-});

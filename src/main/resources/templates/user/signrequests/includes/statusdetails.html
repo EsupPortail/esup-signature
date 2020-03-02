@@ -25,7 +25,7 @@
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'pending'}">
-		<div class="alert alert-dark mb-1">
+		<div class="alert alert-danger mb-1">
 			<h5 class="alert-heading">
 				Le document est en cours de signature par :
 			</h5>
@@ -55,7 +55,7 @@
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'completed'}">
-		<div class="alert alert-dark mb-1">
+		<div class="alert alert-success mb-1">
 			<h5 class="alert-heading">Cette demande est terminée</h5>
 		</div>
 	</div>

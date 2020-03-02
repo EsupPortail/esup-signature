@@ -9,16 +9,18 @@
         <nav th:replace="fragments/side :: side"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item active">Brouillons</li>
+                <li class="breadcrumb-item active">Mes brouillons</li>
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="card">
+            <div class="card col-lg-8 mx-auto">
                 <div class="card-body">
+                    <h5 class="text-center"><b>Documents en cours de saisie</b></h5>
                     <div class="table-responsive">
-                        <table th:if="${datas.getContent().size() > 0}" class="table table-hover table-bordered">
-                            <thead class="thead-dark">
+                        <table th:if="${datas.getContent().size() > 0}" class="table table-sm table-hover">
+                            <thead class="d-none thead-dark">
                             <tr>
+                                <th></th>
                                 <th class="w-30">Type</th>
                                 <th class="w-30">Nom</th>
                                 <th class="w-30"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
@@ -28,34 +30,38 @@
                             <tbody>
                             <th:block th:each="data : ${datas}">
                             <tr>
-                                <td th:text="${data.form.name}"></td>
-                                <td th:text="${data.name}"></td>
+                                <td class="w-10 text-dark"><i class="fab fa-firstdraft"></i></td>
+                                <td th:text="${data.form.name} + ' : ' + ${data.name}"></td>
                                 <td th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>
                                 <td>
-                                    <a title="Voir" th:href="'/user/datas/' + ${data.id} + '/update'"
-                                       class="btn btn-primary float-left mr-2">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <button th:if="${data.status.name() == 'completed'}"
-                                            title="Télécharger" class="btn btn-warning float-left mr-2"
-                                            type="button"
-                                            th:onclick="'window.open(\'/user/data/' + ${data.id} + '/lastfile\')'">
-                                        <i class="fas fa-download"></i>
+                                    <button type="button" th:id="'menu-toggle-' + ${data.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${data.name}" th:data-target="'#menu-' + ${data.id}" th:aria-controls="'menu-' + ${data.id}" data-toggle="collapse">
+                                        <i class="fas fa-ellipsis-v"></i>
                                     </button>
-                                    <button type="button"
-                                            title="Supprimer" data-toggle="modal"
-                                            data-target="#modal-warning"
-                                            th:attr="data-target='#modal-warning'+${data.id }"
-                                            class="btn btn-danger">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
+                                    <div class="card card-body position-absolute collapse mini-menu" th:id="'menu-' + ${data.id}" style="width:200px; right: 100px;z-index: 1000;">
+                                        <a class="btn btn-transparent text-dark text-left" role="button" title="Modifier" th:href="'/user/datas/' + ${data.id} + '/update'">
+                                            <i class="fas fa-pencil-alt pr-2"></i>Modifier
+                                        </a>
+                                        <a class="btn btn-transparent text-dark text-left" title="Télécharger" role="button" th:href="'/user/data/' + ${data.id} + '/lastfile'" target="_blank">
+                                            <i class="fas fa-download pr-2"></i>Télécharger
+                                        </a>
+                                        <a class="btn btn-transparent text-dark text-left" th:href="'#modal-warning-' + ${data.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${data.id}">
+                                            <i class="fas fa-trash-alt pr-2"></i>Supprimer
+                                        </a>
+                                    </div>
+                                    <script>
+                                        $(document).click(function (event) {
+                                            var clickover = $(event.target);
+                                            var _opened = $("#menu-[[${data.id}]]").hasClass("collapse show");
+                                            if (_opened === true && !clickover.hasClass("toggle-mini-menu")) {
+                                                $("#menu-toggle-[[${data.id}]]").click();
+                                            }
+                                        });
+                                    </script>
                                 </td>
-                                <div class="modal modal-warning fade in"
-                                     th:id="modal-warning+${data.id}">
+                                <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${data.id}">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
-                                            <form id="command" th:action="'/user/datas/'+ ${data.id}"
-                                                  th:method="delete">
+                                            <form id="command" th:action="'/user/datas/'+ ${data.id}" th:method="delete">
                                                 <div class="modal-header">
                                                     <button type="button" class="close" data-dismiss="modal"
                                                             aria-label="Close">

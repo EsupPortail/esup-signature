@@ -52,16 +52,10 @@ public class DataController {
 	private DataRepository dataRepository;
 
 	@Resource
-	private UserPropertieRepository userPropertieRepository;
-
-	@Resource
 	private FormService formService;
 
 	@Resource
 	private UserService userService;
-
-	@Resource
-	private SignRequestService signRequestService;
 
 	@Resource
 	private WorkflowService workflowService;
@@ -71,12 +65,6 @@ public class DataController {
 
 	@Resource
 	private SignBookService signBookService;
-
-	@Resource
-	private SignRequestRepository signRequestRepository;
-
-	@Resource
-	private RecipientRepository recipientRepository;
 
 	@Resource
 	private RecipientService recipientService;
@@ -191,6 +179,7 @@ public class DataController {
 	public String addData(@PathVariable("id") Long id, @RequestParam Long dataId, @RequestParam String name, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
 		User user = userService.getUserFromAuthentication();
 		Form form = formService.getFormById(id);
+		formData.remove("_csrf");
 		Data data;
 		if(dataId != null) {
 			data = dataRepository.findById(dataId).get();

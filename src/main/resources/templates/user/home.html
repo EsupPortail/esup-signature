@@ -13,16 +13,15 @@
                 <li class="breadcrumb-item active">Accueil</li>
             </ol>
         </nav>
-
         <div id="content" class="content flex align-content-center">
             <div class="row">
                 <div class="col-12 mb-2 p-0">
                     <div class="card border-0 mb-2 h-100">
                         <div id="myDocs" class="card-body bg-light">
-                            <h5><b>Nouveau</b></h5>
+                            <h5 class="text-center"><b>Nouveau</b></h5>
                             <div id="new-scroll" class=" w-100 text-center " style="width: 350px;    overflow-x: auto;    white-space: nowrap;">
                             <div class="d-inline">
-                                <a role="button" class="btn btn-light text-center mr-2 mb-2" data-toggle="modal"
+                                <a role="button" class="btn btn-material btn-light text-center mr-2 mb-2" data-toggle="modal"
                                    data-target="#wizardModal" style="width: 150px; height: 200px;"
                                    title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant">
                                     <div class="crop">
@@ -31,7 +30,7 @@
                                     <h6>Circuit personnalisé</h6>
                                 </a>
 
-                                <a role="button" class="btn btn-light text-center mr-2 mb-2" data-toggle="modal"
+                                <a role="button" class="btn btn-material btn-light text-center mr-2 mb-2" data-toggle="modal"
                                    data-target="#fastSignRequestModal" style="width: 150px; height: 200px;"
                                    title="Vous devez signer un document présent sur votre poste">
                                     <div class="crop">
@@ -41,7 +40,7 @@
                                 </a>
 
                                 <th:block th:each="workflow : ${workflows}">
-                                    <a role="button" class="btn btn-light text-center mr-2 mb-2"
+                                    <a role="button" class="btn btn-material btn-light text-center mr-2 mb-2"
                                        style="width: 150px; height: 200px;" data-toggle="modal"
                                        th:data-target="'#newRequest' + ${workflow.id}"
                                        th:title="${workflow.description}">
@@ -52,7 +51,7 @@
                                     </a>
                                 </th:block>
                                 <th:block th:each="form : ${forms}">
-                                    <a role="button" class="btn btn-light text-center mr-2 mb-2"
+                                    <a role="button" class="btn btn-material btn-light text-center mr-2 mb-2"
                                        style="width: 150px; height: 200px;" th:href="'/user/datas/form/' + ${form.id}"
                                        th:title="${form.description}">
                                         <div class="crop">
@@ -66,10 +65,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="d-flex col-12 p-0 align-content-center">
-                    <div class="col-lg-7 card mb-2" style="margin: 0 auto;">
+                <div class="d-flex col-12">
+                    <div class="col-lg-8 card mb-2 mx-auto">
                         <div id="myDocs" class="card-body">
-                            <h5><b>Demandes à signer</b></h5>
+                            <h5 class="text-center"><b>Demandes à signer</b></h5>
                             <table th:if="${signRequests.getNumberOfElements() > 0}"
                                    class="table table-sm table-borderless table-hover">
                                 <tbody>

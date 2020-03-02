@@ -47,10 +47,10 @@ public class Form {
 
 	@OrderColumn
 	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
-	private List<Field> fields = new ArrayList<Field>();
+	private List<Field> fields = new ArrayList<>();
 
 	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
-	private List<Data> datas = new ArrayList<Data>();
+	private List<Data> datas = new ArrayList<>();
 
 	@Transient
 	private Long nbSended;
@@ -120,14 +120,6 @@ public class Form {
 
 	public void setWorkflowType(String workflowType) {
 		this.workflowType = workflowType;
-	}
-
-	public List<Data> getDatas() {
-		return datas;
-	}
-
-	public void setDatas(List<Data> datas) {
-		this.datas = datas;
 	}
 
 	public DocumentIOType getTargetType() {
