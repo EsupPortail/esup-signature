@@ -76,7 +76,7 @@
                         <a title="Export SEDA" class="btn btn-light btn-outline-dark ml-1 text-left" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
                             <i class="fa fa-file-export"></i>
                         </a>
-                        <a class="btn btn-light btn-outline-dark ml-1 text-left" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+                        <a th:if="${signRequest.status.name() != 'exported'}" class="btn btn-light btn-outline-dark ml-1 text-left" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
                             <i class="fas fa-shield-alt "></i>
                         </a>
                     </th:block>
