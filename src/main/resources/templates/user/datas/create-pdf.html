@@ -2,6 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="recipient" type="org.esupportail.esupsignature.entity.Recipient"*/-->
 <!--/*@thymesVar id="data" type="org.esupportail.esupsignature.entity.Data"*/-->
+<!--/*@thymesVar id="step" type="org.esupportail.esupsignature.entity.WorkflowStep"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
@@ -351,7 +352,7 @@
                                 <label th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></label>
                                 <select th:id="'recipientEmailsSelect_' + ${step.stepNumber}" multiple="multiple" name="recipientEmails" required>
                                     <th:block th:each="recipient : ${step.recipients}">
-                                        <option selected="selected" th:text="${recipient.user.email}" th:value="${step.stepNumber} + '*' + ${recipient.user.email}"></option>
+                                        <option th:if="${recipient.user.email != null}" selected="selected" th:text="${recipient.user.email}" th:value="${step.stepNumber} + '*' + ${recipient.user.email}"></option>
                                     </th:block>
                                 </select>
                                 <script language="JavaScript">

@@ -2,21 +2,20 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div id="stepscard" th:fragment="stepscard" style="display: none;">
-    <div class="alert alert-light mb-1">
+    <div class="card card-body mb-1">
         <h5 class="text-center text-dark"><b>Etapes du circuit</b></h5>
             <th:block th:if="${signRequest.parentSignBook.workflowSteps != null}">
                 <div id="stepper" class="bs-stepper vertical">
                     <div class="bs-stepper-header" role="tablist">
                         <th:block th:each="workflowStep,iterator : ${signRequest.parentSignBook.workflowSteps}">
                             <div class="step" th:name="'step_' + ${iterator.index}">
-                                <div class="step-trigger">
                                     <span title="Étape en cours" th:if="${iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle bg-primary">
                                         <i class="fa fa-play"></i>
                                     </span>
-                                    <span th:if="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle">
+                                    <span title="Étape à venir" th:if="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle">
                                         <i class="fa fa-pause"></i>
                                     </span>
-                                    <span th:unless="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber || iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle bg-success">
+                                    <span title="Étape effectuée" th:unless="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber || iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle bg-success">
                                         <i class="fa fa-check"></i>
                                     </span>
                                     <div class="bs-stepper-label">
@@ -37,17 +36,14 @@
                                         </ul>
                                         </table>
                                     </div>
-                                </div>
                             </div>
                             <div th:if="${signRequest.parentSignBook.workflowSteps.size() > iterator.index + 1}" class="line"></div>
                         </th:block>
                         <th:block th:if="${signRequest.parentSignBook.documentsTargetUri != null}">
                             <div class="line"></div>
                             <div class="step">
-                                <div class="step-trigger">
-                                    <div th:classappend="${signRequest.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></div>
-                                    <div class="bs-stepper-label text-break" th:text="${signRequest.parentSignBook.documentsTargetUri}"></div>
-                                </div>
+                                <div title="Export" th:classappend="${signRequest.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></div>
+                                <div class="bs-stepper-label text-break" th:text="${signRequest.parentSignBook.targetType}"></div>
                             </div>
                         </th:block>
                     </div>

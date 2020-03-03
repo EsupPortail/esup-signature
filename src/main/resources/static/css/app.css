@@ -5,12 +5,14 @@
 }
 
 html {
-  height: 100%;
+    height: 100%;
 }
 
 body {
-  font-family: "Roboto",sans-serif;
-  font-weight: lighter;
+    font-family: "Roboto",sans-serif;
+    font-weight: lighter;
+    height: 100%;
+    margin-bottom: 50px;
 }
 
 .h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
@@ -251,10 +253,6 @@ input:checked + .slider:before {
     padding-left: 5px;
 }
 
-#pdf {
-
-}
-
 #infos {
     position: absolute;
     right: 0;
@@ -265,14 +263,12 @@ input:checked + .slider:before {
 .workspace {
     margin-top: 50px;
     display: flex;
-    overflow: auto;
-    min-height: 100%;
 }
 
 .workspace-sign {
-    position: absolute;
-    display: flex;
-    margin-top: 95px;
+    display: block;
+    margin-top: 98px;
+    width: calc(100vw - 284px);
 }
 
 .wrapper {
@@ -313,13 +309,39 @@ input:checked + .slider:before {
     max-width: 260px;
     max-height: calc(100vh - 300px);
     min-height: calc(100vh - 300px);
-    color: #fff;
-    overflow: auto;
+    overflow-y: scroll;
+    overflow-x: fragments;
+
+}
+
+.scrollbar-primary::-webkit-scrollbar {
+    width: 5px;
+    background-color: transparent;
+}
+
+.scrollbar-primary::-webkit-scrollbar-thumb {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+    background-color: #ebebeb }
+
+.scrollbar-primary {
+    scrollbar-color: #4285F4 #F5F5F5;
 }
 
 #sidebar.active {
     min-width: 60px;
     max-width: 60px;
+}
+
+.scrollbar-primary::-webkit-scrollbar {
+    width: 5px;
+    background-color: transparent; }
+
+.scrollbar-primary::-webkit-scrollbar-thumb {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+    background-color: #ebebeb }
+
+.scrollbar-primary {
+    scrollbar-color: #4285F4 #F5F5F5;
 }
 
 .tools {
@@ -338,7 +360,7 @@ input:checked + .slider:before {
     background-color: white;
     z-index: 2;
     margin-left: 260px;
-    width: 100%;
+    width: calc(100vw - 274px);
 }
 
 .breadcrumb-nav2 {
@@ -440,37 +462,33 @@ input:checked + .slider:before {
     word-break: break-all;
 }
 
+#stepper {
+    max-width: 100%;
+}
+
 .step {
-    text-align: left;
+    border: 2px solid #555555 !important;
+
 }
 
-.bs-stepper .step-trigger {
-    display: flex;
-    white-space: normal;
-    border: 2px solid #555555;
-    justify-content: left;
+.bs-stepper-header {
+    max-width: 100%;
+}
+.bs-stepper-label {
+    max-width: 100%;
+}
+.step-trigger {
+    width: 100% !important;
+    border: 2px solid #555555 !important;
+    justify-content: left !important;
 }
 
-.bs-stepper-circle {
-float: left;
-}
-
-.bs-stepper-bottom {
-width: 100%;
+.line {
+    border: 1px solid #555555;
 }
 
 .current-step {
 background-color: #CCCCCC !important;
-}
-
-.bs-stepper-label {
-text-overflow: clip;
-overflow-wrap: break-word !important;
-
-}
-
-.line {
-border: 1px solid #555555;
 }
 
 .embedresize {

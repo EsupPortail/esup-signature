@@ -258,7 +258,7 @@ function resetPosition() {
 function savePosition() {
 	if(pointItEnable && pointItMove) {
 		console.log("save");
-		startPosX = Math.round(posX * scale);
+		startPosX = Math.round(posX * scale - 15);
 		startPosY = Math.round(posY * scale);
 	}
 	cross.style.backgroundColor= 'rgba(0, 255, 0, 0)';

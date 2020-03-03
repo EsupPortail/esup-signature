@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<div th:fragment="workspace" class="pdf">
+<div th:fragment="workspace">
+    <div class="row">
+        <div class="col-12">
     <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post" th:if="${documentType == 'pdf'}">
         <canvas title="Cliquez pour ajouter une annotation" id="pdf" onmouseup="action();" onmousemove="point(event);" class="drop-shadows ">
         </canvas>
@@ -242,7 +244,7 @@
             function updateCrossPosition() {
                     console.log("change pos");
                     cross.style.backgroundColor = 'rgba(0, 255, 0, .5)';
-                    cross.style.left = posX + "px";
+                    cross.style.left = (posX + 15) + "px";
                     cross.style.top = posY + "px";
                     document.getElementById("xPos").value = Math.round(posX / scale);
                     document.getElementById("yPos").value = Math.round(posY / scale);
@@ -442,7 +444,7 @@
                 } else if(mode == 'refuse') {
                     enableRefuseMode();
                 } else {
-                    enableReadMode();
+                    enableSignMode();
                 }
 
                 window.addEventListener("DOMMouseScroll", function(event)
@@ -581,6 +583,8 @@
             });
         </script>
     </form>
+        </div>
+    </div>
     <div th:if="${documentType != 'pdf' && signRequest.originalDocuments.size() > 0}" class="col-6">
     <div class="card mb-1">
         <div class="card-header">
