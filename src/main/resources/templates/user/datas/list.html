@@ -37,16 +37,18 @@
                                     <button type="button" th:id="'menu-toggle-' + ${data.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${data.name}" th:data-target="'#menu-' + ${data.id}" th:aria-controls="'menu-' + ${data.id}" data-toggle="collapse">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
-                                    <div class="card card-body position-absolute collapse mini-menu" th:id="'menu-' + ${data.id}" style="width:200px; right: 100px;z-index: 1000;">
-                                        <a class="btn btn-transparent text-dark text-left" role="button" title="Modifier" th:href="'/user/datas/' + ${data.id} + '/update'">
-                                            <i class="fas fa-pencil-alt pr-2"></i>Modifier
-                                        </a>
-                                        <a class="btn btn-transparent text-dark text-left" title="Télécharger" role="button" th:href="'/user/data/' + ${data.id} + '/lastfile'" target="_blank">
-                                            <i class="fas fa-download pr-2"></i>Télécharger
-                                        </a>
-                                        <a class="btn btn-transparent text-dark text-left" th:href="'#modal-warning-' + ${data.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${data.id}">
-                                            <i class="fas fa-trash-alt pr-2"></i>Supprimer
-                                        </a>
+                                    <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${data.id}" style="width:200px; right: 100px;z-index: 1000;">
+                                        <div class=" card-body">
+                                            <a class="btn btn-transparent text-dark text-left" role="button" title="Modifier" th:href="'/user/datas/' + ${data.id} + '/update'">
+                                                <i class="fas fa-pencil-alt pr-2"></i>Modifier
+                                            </a>
+                                            <a class="btn btn-transparent text-dark text-left" title="Télécharger" role="button" th:href="'/user/data/' + ${data.id} + '/lastfile'" target="_blank">
+                                                <i class="fas fa-download pr-2"></i>Télécharger
+                                            </a>
+                                            <a class="btn btn-transparent text-dark text-left" th:href="'#modal-warning-' + ${data.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${data.id}">
+                                                <i class="fas fa-trash-alt pr-2"></i>Supprimer
+                                            </a>
+                                        </div>
                                     </div>
                                     <script>
                                         $(document).click(function (event) {
@@ -63,23 +65,17 @@
                                         <div class="modal-content">
                                             <form id="command" th:action="'/user/datas/'+ ${data.id}" th:method="delete">
                                                 <div class="modal-header">
-                                                    <button type="button" class="close" data-dismiss="modal"
-                                                            aria-label="Close">
+                                                    <h2>Attention</h2>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                         <span aria-hidden="true">&times;</span>
                                                     </button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    <div class="alert alert-danger text-center">Confirmez-vous
-                                                        la suppression ?
-                                                    </div>
+                                                    <div class="alert alert-danger">Confirmez-vous la suppression de ce brouillon ?</div>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <button type="button" class="btn btn-outline pull-left"
-                                                            data-dismiss="modal">Fermer
-                                                    </button>
-                                                    <button type="submit"
-                                                            class="btn btn-outline pull-left btn-danger">Valider
-                                                    </button>
+                                                    <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Fermer</button>
+                                                    <button type="submit" class="btn btn-danger">Valider</button>
                                                 </div>
                                             </form>
                                         </div>

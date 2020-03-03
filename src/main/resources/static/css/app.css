@@ -5,13 +5,13 @@
 }
 
 html {
-    height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
     font-family: "Roboto",sans-serif;
     font-weight: lighter;
-    height: 100%;
     margin-bottom: 50px;
 }
 
@@ -465,10 +465,8 @@ input:checked + .slider:before {
 #stepper {
     max-width: 100%;
 }
-
-.step {
-    border: 2px solid #555555 !important;
-
+.bs-stepper-line {
+    background-color: #343a40 !important;
 }
 
 .bs-stepper-header {
@@ -479,12 +477,8 @@ input:checked + .slider:before {
 }
 .step-trigger {
     width: 100% !important;
-    border: 2px solid #555555 !important;
+    border: 1px solid #555555 !important;
     justify-content: left !important;
-}
-
-.line {
-    border: 1px solid #555555;
 }
 
 .current-step {

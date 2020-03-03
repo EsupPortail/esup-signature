@@ -8,7 +8,7 @@
                 <div id="stepper" class="bs-stepper vertical">
                     <div class="bs-stepper-header" role="tablist">
                         <th:block th:each="workflowStep,iterator : ${signRequest.parentSignBook.workflowSteps}">
-                            <div class="step" th:name="'step_' + ${iterator.index}">
+                            <div class="step border border-dark rounded" th:name="'step_' + ${iterator.index}">
                                     <span title="Étape en cours" th:if="${iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle bg-primary">
                                         <i class="fa fa-play"></i>
                                     </span>
@@ -37,12 +37,12 @@
                                         </table>
                                     </div>
                             </div>
-                            <div th:if="${signRequest.parentSignBook.workflowSteps.size() > iterator.index + 1}" class="line"></div>
+                            <div th:if="${signRequest.parentSignBook.workflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
                         </th:block>
                         <th:block th:if="${signRequest.parentSignBook.documentsTargetUri != null}">
-                            <div class="line"></div>
+                            <div class="bs-stepper-line"></div>
                             <div class="step">
-                                <div title="Export" th:classappend="${signRequest.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></div>
+                                <div title="Export" th:classappend="${signRequest.status.name() == 'exported'} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></div>
                                 <div class="bs-stepper-label text-break" th:text="${signRequest.parentSignBook.targetType}"></div>
                             </div>
                         </th:block>

@@ -58,6 +58,9 @@ public class DataController {
 	private UserService userService;
 
 	@Resource
+	private UserPropertieRepository userPropertieRepository;
+
+	@Resource
 	private WorkflowService workflowService;
 
 	@Resource
@@ -160,7 +163,12 @@ public class DataController {
 			for (Field field : fields) {
 				field.setDefaultValue(data.getDatas().get(field.getName()));
 			}
-			Workflow workflow = workflowService.getWorkflowByClassName(form.getWorkflowType());
+			List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndForm(user, 0, form);
+			userProperties = userProperties.stream().sorted(Comparator.comparing(UserPropertie::getId).reversed()).collect(Collectors.toList());
+			if(userProperties.size() > 0 ) {
+				model.addAttribute("targetEmails", userProperties.get(0).getTargetEmail().split(","));
+			}
+			Workflow workflow = dataService.getWorkflowSteps(data, null, user);
 			model.addAttribute("steps", workflow.getWorkflowSteps());
 			model.addAttribute("fields", fields);
 			model.addAttribute("form", form);

@@ -104,6 +104,10 @@ public class DataService {
 //		workflow.getWorkflowSteps().addAll(workflowSteps);
 		signBookService.importWorkflow(signBook, workflow);
 		signBookService.nextWorkFlowStep(signBook);
+		if(form.getTargetType() != null && !form.getTargetType().equals(DocumentIOType.none)) {
+			signBook.setTargetType(form.getTargetType());
+			signBook.setDocumentsTargetUri(targetEmails.get(0));
+		}
 		signBookRepository.save(signBook);
 		signBookService.pendingSignBook(signBook, user);
 		data.setSignBook(signBook);
@@ -120,7 +124,7 @@ public class DataService {
 				recipientRepository.save(recipient);
 			}
 			workflowStepRepository.save(workflowStep);
-			//userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
+			userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
 			step++;
 		}
 		return workflow;

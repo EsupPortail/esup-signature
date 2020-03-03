@@ -29,9 +29,14 @@ import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.support.MutableSortDefinition;
+import org.springframework.beans.support.PagedListHolder;
+import org.springframework.beans.support.PropertyComparator;
+import org.springframework.beans.support.SortDefinition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -203,10 +208,11 @@ public class SignRequestService {
 	public void addRecipients(SignRequest signRequest, List<Recipient> recipients) {
 		signRequest.getRecipients().clear();
 		for(Recipient recipient : recipients) {
-			recipientRepository.save(recipient);
-			signRequest.getRecipients().add(recipient);
+			Recipient newRecipient = recipientService.getRecipientByEmail(signRequest.getId(), recipient.getUser().getEmail());
+			recipientRepository.save(newRecipient);
+			signRequest.getRecipients().add(newRecipient);
 		}
-		signRequestRepository.save(signRequest);
+		//signRequestRepository.save(signRequest);
 	}
 
 	public void addRecipients(SignRequest signRequest, User user) {
@@ -222,7 +228,7 @@ public class SignRequestService {
 			signRequest.setAllSignToComplete(allSignToComplete);
 			signRequest.setCurrentStepNumber(signRequest.getCurrentStepNumber() + 1);
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
-			sendEmailAlerts(signRequest);
+			//sendEmailAlerts(signRequest);
 		} else {
 			logger.warn("already pending");
 		}
@@ -651,6 +657,11 @@ public class SignRequestService {
 		for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
 			signRequest.setViewTitle(signRequest.getTitle());
 			signRequestsGrouped.add(signRequest);
+		}
+		if(pageable.getSort().iterator().hasNext()) {
+			Sort.Order order = pageable.getSort().iterator().next();
+			SortDefinition sortDefinition = new MutableSortDefinition(order.getProperty(), true, order.getDirection().isAscending());
+			Collections.sort(signRequestsGrouped, new PropertyComparator(sortDefinition));
 		}
 		return new PageImpl<>(signRequestsGrouped.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequestsGrouped.size());
 	}
