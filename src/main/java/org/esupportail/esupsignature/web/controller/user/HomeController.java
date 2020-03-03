@@ -9,6 +9,8 @@ import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.file.FileService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,8 @@ import java.util.List;
 @Controller
 @Transactional
 public class HomeController {
+
+    private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
     @ModelAttribute("userMenu")
     public String getRoleMenu() {
@@ -57,19 +61,12 @@ public class HomeController {
     @Resource
     private DataRepository dataRepository;
 
-    @Resource
-    private FileService fileService;
-
     @GetMapping
-    public String list(Model model, Pageable pageable) throws IOException {
-        User user = userService.getUserFromAuthentication();
+    public String list(User user, Model model, Pageable pageable) {
         List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
         model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequestsToSign, pageable));
         List<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft);
         model.addAttribute("datas", datas);
-        if(user.getSignImage() != null) {
-            model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-        }
         model.addAttribute("forms", formService.getFormsByUser(user, true));
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
         model.addAttribute("signTypes", Arrays.asList(SignType.values()));

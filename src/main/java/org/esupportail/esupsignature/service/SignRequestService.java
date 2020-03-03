@@ -531,6 +531,30 @@ public class SignRequestService {
 		return recipientService.needSign(signRequest.getRecipients(), user);
 	}
 
+	public boolean preAuthorizeOwner(String name, Long id) {
+		User user = userService.getUserByEppn(name);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
+		return signRequest.getCreateBy().equals(user.getEppn());
+	}
+
+	public boolean preAuthorizeView(String name, Long id) {
+		User user = userService.getUserByEppn(name);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
+		if (checkUserViewRights(user, signRequest) || checkUserSignRights(user, signRequest)) {
+			return true;
+		}
+		return false;
+	}
+
+	public boolean preAuthorizeSign(String name, Long id) {
+		User user = userService.getUserByEppn(name);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
+		if (checkUserSignRights(user, signRequest)) {
+			return true;
+		}
+		return false;
+	}
+
 	public boolean checkUserSignRights(User user, SignRequest signRequest) {
 		if ((signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
 				&& recipientService.recipientsContainsUser(signRequest.getRecipients(), user) > 0) {

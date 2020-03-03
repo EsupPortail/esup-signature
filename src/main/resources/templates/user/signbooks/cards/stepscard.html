@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<div id="stepscard" th:fragment="stepscard" style="display: none; height: 400px; overflow: auto">
-    <div class="card card-body mb-1">
-        <h5 class="text-center"><b>Etapes du circuit</b></h5>
+<div id="stepscard" th:fragment="stepscard" style="display: none;">
+    <div class="alert alert-light mb-1">
+        <h5 class="text-center text-dark"><b>Etapes du circuit</b></h5>
             <th:block th:if="${signRequest.parentSignBook.workflowSteps != null}">
                 <div id="stepper" class="bs-stepper vertical">
                     <div class="bs-stepper-header" role="tablist">

@@ -28,6 +28,8 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -118,13 +120,12 @@ public class SignRequestController {
     @Resource
     private SedaExportService sedaExportService;
 
-    @RequestMapping(produces = "text/html")
-    public String list(
-            @RequestParam(value = "statusFilter", required = false) String statusFilter,
-            @RequestParam(value = "signBookId", required = false) Long signBookId,
-            @RequestParam(value = "messageError", required = false) String messageError,
-            @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
-        User user = userService.getUserFromAuthentication();
+    @GetMapping
+    public String list(User user,
+                       @RequestParam(value = "statusFilter", required = false) String statusFilter,
+                       @RequestParam(value = "signBookId", required = false) Long signBookId,
+                       @RequestParam(value = "messageError", required = false) String messageError,
+                       @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
         workflowService.initCreatorWorkflow();
 
         if (statusFilter != null) {
@@ -136,14 +137,14 @@ public class SignRequestController {
         }
 
         List<SignRequest> signRequests;
-        if(this.statusFilter != null) {
+        if (this.statusFilter != null) {
             signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), this.statusFilter);
         } else {
             signRequests = signRequestRepository.findByCreateBy(user.getEppn());
         }
 
-        for(SignRequest signRequest : signRequestService.getToSignRequests(user)) {
-            if(!signRequests.contains(signRequest)) {
+        for (SignRequest signRequest : signRequestService.getToSignRequests(user)) {
+            if (!signRequests.contains(signRequest)) {
                 signRequests.add(signRequest);
             }
         }
@@ -177,9 +178,8 @@ public class SignRequestController {
     }
 
     @GetMapping("/to-sign")
-    public String listToSign(@RequestParam(value = "messageError", required = false) String messageError,
-            @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
-        User user = userService.getUserFromAuthentication();
+    public String listToSign(User user, @RequestParam(value = "messageError", required = false) String messageError,
+                             @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
         List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
         model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequestsToSign, pageable));
         model.addAttribute("signRequestsSignedByMe", signRequestService.getSignRequestsSignedByUser(user));
@@ -188,100 +188,95 @@ public class SignRequestController {
         return "user/signrequests/list-to-sign";
     }
 
+    @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
     @GetMapping(value = "/{id}", params = "form")
-    public String updateForm(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws Exception {
-        User user = userService.getUserFromAuthentication();
+    public String updateForm(@PathVariable("id") Long id, Model model) throws Exception {
+        User currentUser = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest)) {
-            model.addAttribute("signBooks", signBookService.getAllSignBooks());
-            List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
-            logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
-            model.addAttribute("logs", logs);
-            model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
-            List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
-            model.addAttribute("refuseLogs", refuseLogs);
-            if (user.getSignImage() != null) {
-                model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-            }
-            if (user.getKeystore() != null) {
-                model.addAttribute("keystore", user.getKeystore().getFileName());
-            }
-            model.addAttribute("signRequest", signRequest);
-
-            if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
-                model.addAttribute("signable", "ok");
-            }
-            model.addAttribute("signTypes", SignType.values());
-            model.addAttribute("workflows", workflowRepository.findAll());
-            return "user/signrequests/update";
-        } else {
-            logger.warn(user.getEppn() + " attempted to access signRequest " + id + " without write access");
-            redirectAttrs.addFlashAttribute("messageCustom", "not authorized");
-            return "redirect:/user/signrequests/";
+        model.addAttribute("signBooks", signBookService.getAllSignBooks());
+        List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
+        logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
+        model.addAttribute("logs", logs);
+        model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
+        List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
+        model.addAttribute("refuseLogs", refuseLogs);
+        if (currentUser.getSignImage() != null) {
+            model.addAttribute("signFile", fileService.getBase64Image(currentUser.getSignImage()));
         }
+        if (currentUser.getKeystore() != null) {
+            model.addAttribute("keystore", currentUser.getKeystore().getFileName());
+        }
+        model.addAttribute("signRequest", signRequest);
+
+        if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(currentUser, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
+            model.addAttribute("signable", "ok");
+        }
+        model.addAttribute("signTypes", SignType.values());
+        model.addAttribute("workflows", workflowRepository.findAll());
+        return "user/signrequests/update";
+
     }
 
+    @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
     @GetMapping(value = "/{id}")
     public String show(@PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         model.addAttribute("signRequest", signRequest);
-        if ((signRequestService.checkUserViewRights(user, signRequest) || signRequestService.checkUserSignRights(user, signRequest))) {
-            if (signRequest.getStatus().equals(SignRequestStatus.pending)
-                    && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0
-                    && signRequestService.needToSign(signRequest, user)
-            ) {
-                model.addAttribute("signable", "ok");
-                model.addAttribute("nexuUrl", nexuUrl);
-                model.addAttribute("baseUrl", baseUrl);
-            }
-            Document toDisplayDocument;
-            if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
-                toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
-                if (toDisplayDocument.getContentType().equals("application/pdf")) {
-                    PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
-                    model.addAttribute("pdfWidth", pdfParameters.getWidth());
-                    model.addAttribute("pdfHeight", pdfParameters.getHeight());
-                    model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-                    if (user.getSignImage() != null && user.getSignImage().getSize() > 0) {
-                        model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-                        int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
-                        model.addAttribute("signWidth", size[0]);
-                        model.addAttribute("signHeight", size[1]);
-                    } else {
-                        model.addAttribute("signWidth", 100);
-                        model.addAttribute("signHeight", 75);
-                    }
 
+        if (signRequest.getStatus().equals(SignRequestStatus.pending)
+                && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0
+                && signRequestService.needToSign(signRequest, user)
+        ) {
+            model.addAttribute("signable", "ok");
+            model.addAttribute("nexuUrl", nexuUrl);
+            model.addAttribute("baseUrl", baseUrl);
+        }
+        Document toDisplayDocument;
+        if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
+            toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
+            if (toDisplayDocument.getContentType().equals("application/pdf")) {
+                PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
+                model.addAttribute("pdfWidth", pdfParameters.getWidth());
+                model.addAttribute("pdfHeight", pdfParameters.getHeight());
+                model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+                if (user.getSignImage() != null && user.getSignImage().getSize() > 0) {
+                    model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+                    int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
+                    model.addAttribute("signWidth", size[0]);
+                    model.addAttribute("signHeight", size[1]);
+                } else {
+                    model.addAttribute("signWidth", 100);
+                    model.addAttribute("signHeight", 75);
                 }
-                model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
-            } else if(signRequestService.getLastSignedFsFile(signRequest) != null) {
-                FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
-                model.addAttribute("documentType", fileService.getExtension(fsFile.getName()));
+
             }
+            model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
+        } else if (signRequestService.getLastSignedFsFile(signRequest) != null) {
+            FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
+            model.addAttribute("documentType", fileService.getExtension(fsFile.getName()));
         }
         List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
         model.addAttribute("refuseLogs", refuseLogs);
         model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
-        if(frameMode != null && frameMode) {
+        if (frameMode != null && frameMode) {
             return "user/signrequests/show-frame";
         } else {
             return "user/signrequests/show";
         }
     }
 
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
     @PostMapping(value = "/add-docs/{id}")
     public String addDocumentToNewSignRequest(@PathVariable("id") Long id,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
-        if (signBookService.checkUserViewRights(user, signBook)) {
-            for (MultipartFile multipartFile : multipartFiles) {
-                SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
-                signRequestService.addDocsToSignRequest(signRequest, multipartFile);
-                signBookService.addSignRequest(signBook, signRequest);
-            }
+        for (MultipartFile multipartFile : multipartFiles) {
+            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
+            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+            signBookService.addSignRequest(signBook, signRequest);
         }
         return "redirect:/user/signbooks/" + id + "/?form";
     }
@@ -304,7 +299,7 @@ public class SignRequestController {
     public String signByToken(@PathVariable("token") String token) {
         User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
-        if(signRequestService.checkUserSignRights(user, signRequest)) {
+        if (signRequestService.checkUserSignRights(user, signRequest)) {
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             return "redirect:/";
@@ -317,7 +312,7 @@ public class SignRequestController {
         logger.info("création rapide demande de signature");
         User user = userService.getUserFromAuthentication();
         if (multipartFiles != null) {
-            SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(),  user);
+            SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
             signRequestService.addRecipients(signRequest, user);
 
@@ -329,17 +324,18 @@ public class SignRequestController {
         return "redirect:/user/signrequests";
     }
 
+    @PreAuthorize("@signRequestService.preAuthorizeSign(authentication.name, #id)")
     @ResponseBody
     @PostMapping(value = "/sign/{id}")
     public ResponseEntity sign(@PathVariable("id") Long id,
-                       @RequestParam(value = "xPos", required = false) Integer xPos,
-                       @RequestParam(value = "yPos", required = false) Integer yPos,
-                       @RequestParam(value = "comment", required = false) String comment,
-                       @RequestParam(value = "addDate", required = false) Boolean addDate,
-                       @RequestParam(value = "visual", required = false) Boolean visual,
-                       @RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
-                       @RequestParam(value = "password", required = false) String password,
-                       HttpServletRequest request) {
+                               @RequestParam(value = "xPos", required = false) Integer xPos,
+                               @RequestParam(value = "yPos", required = false) Integer yPos,
+                               @RequestParam(value = "comment", required = false) String comment,
+                               @RequestParam(value = "addDate", required = false) Boolean addDate,
+                               @RequestParam(value = "visual", required = false) Boolean visual,
+                               @RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
+                               @RequestParam(value = "password", required = false) String password,
+                               HttpServletRequest request) {
         if (addDate == null) {
             addDate = false;
         }
@@ -350,29 +346,24 @@ public class SignRequestController {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signRequestService.checkUserSignRights(user, signRequest)) {
-            if (signPageNumber != null && xPos != null && yPos != null && visual) {
-                SignRequestParams signRequestParams = signRequestService.getCurrentSignRequestParams(signRequest);
-                signRequestParams.setSignPageNumber(signPageNumber);
-                signRequestParams.setXPos(xPos);
-                signRequestParams.setYPos(yPos);
-                signRequestParamsRepository.save(signRequestParams);
-            }
-            if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
-                signRequestService.setStep("Démarrage de l'application NexU");
-                signRequestService.setStep("initNexu");
-                return new ResponseEntity(HttpStatus.OK);
-            }
-            try {
-                signRequest.setComment(comment);
-                signRequestService.sign(signRequest, user, password, addDate, visual);
-                signRequestService.setStep("end");
-            } catch (EsupSignatureException | IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        } else {
-            signRequestService.setStep("not_authorized");
-            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        if (signPageNumber != null && xPos != null && yPos != null && visual) {
+            SignRequestParams signRequestParams = signRequestService.getCurrentSignRequestParams(signRequest);
+            signRequestParams.setSignPageNumber(signPageNumber);
+            signRequestParams.setXPos(xPos);
+            signRequestParams.setYPos(yPos);
+            signRequestParamsRepository.save(signRequestParams);
+        }
+        if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
+            signRequestService.setStep("Démarrage de l'application NexU");
+            signRequestService.setStep("initNexu");
+            return new ResponseEntity(HttpStatus.OK);
+        }
+        try {
+            signRequest.setComment(comment);
+            signRequestService.sign(signRequest, user, password, addDate, visual);
+            signRequestService.setStep("end");
+        } catch (EsupSignatureException | IOException e) {
+            logger.error(e.getMessage(), e);
         }
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -391,26 +382,24 @@ public class SignRequestController {
         return progress;
     }
 
+    @PreAuthorize("@signRequestService.preAuthorizeSign(authentication.name, #id)")
     @GetMapping(value = "/refuse/{id}")
     public String refuse(@PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttrs, HttpServletRequest request) {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (!signRequestService.checkUserSignRights(user, signRequest)) {
-            redirectAttrs.addFlashAttribute("messageCustom", "not authorized");
-            return "redirect:/";
-        }
         signRequest.setComment(comment);
         signRequestService.refuse(signRequest, user);
         return "redirect:/user/signrequests/" + signRequest.getId();
     }
 
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequestService.delete(signRequest);
         redirectAttributes.addFlashAttribute("messageInfo", "Suppression effectuée");
-        if(signRequest.getParentSignBook() != null) {
+        if (signRequest.getParentSignBook() != null) {
             return "redirect:" + request.getHeader("referer");
         } else {
             return "redirect:/user/signrequests/";
@@ -418,73 +407,64 @@ public class SignRequestController {
 
     }
 
+    @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
     @RequestMapping(value = "/get-last-file-seda/{id}", method = RequestMethod.GET)
     public void getLastFileSeda(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        User user = userService.getUserFromAuthentication();
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
-            List<Document> documents = signRequestService.getToSignDocuments(signRequest);
-            try {
-                if (documents.size() > 1) {
-                    response.sendRedirect("/user/signsignrequests/" + id);
-                } else {
-                    response.setHeader("Content-Disposition", "attachment;filename=test-seda.zip");
-                    response.setContentType("application/zip");
-                    IOUtils.copy(sedaExportService.generateSip(signRequest), response.getOutputStream());
-                }
-            } catch (Exception e) {
-                logger.error("get file error", e);
+        List<Document> documents = signRequestService.getToSignDocuments(signRequest);
+        try {
+            if (documents.size() > 1) {
+                response.sendRedirect("/user/signsignrequests/" + id);
+            } else {
+                response.setHeader("Content-Disposition", "attachment;filename=test-seda.zip");
+                response.setContentType("application/zip");
+                IOUtils.copy(sedaExportService.generateSip(signRequest), response.getOutputStream());
             }
-        } else {
-            logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
+        } catch (Exception e) {
+            logger.error("get file error", e);
         }
     }
 
+    @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
     @RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
     public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        User user = userService.getUserFromAuthentication();
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
-            InputStream inputStream = null;
-            String contentType = "";
-            String fileName = "";
-            if(!signRequest.getStatus().equals(SignRequestStatus.exported)) {
-                List<Document> documents = signRequestService.getToSignDocuments(signRequest);
-                if (documents.size() > 1) {
-                    response.sendRedirect("/user/signrequests/" + signRequest.getId());
-                } else {
-                    inputStream = documents.get(0).getBigFile().getBinaryFile().getBinaryStream();
-                    fileName = documents.get(0).getFileName();
-                    contentType = documents.get(0).getContentType();
-                }
+        InputStream inputStream = null;
+        String contentType = "";
+        String fileName = "";
+        if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
+            List<Document> documents = signRequestService.getToSignDocuments(signRequest);
+            if (documents.size() > 1) {
+                response.sendRedirect("/user/signrequests/" + signRequest.getId());
             } else {
-                FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
-                inputStream = fsFile.getInputStream();
-                fileName = fsFile.getName();
-                contentType = fsFile.getContentType();
-            }
-            try {
-                response.setHeader("Content-Disposition", "attachment;filename=\"" + fileName + "\"");
-                response.setContentType(contentType);
-                IOUtils.copy(inputStream, response.getOutputStream());
-            } catch (Exception e) {
-                logger.error("get file error", e);
+                inputStream = documents.get(0).getBigFile().getBinaryFile().getBinaryStream();
+                fileName = documents.get(0).getFileName();
+                contentType = documents.get(0).getContentType();
             }
         } else {
-            logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
+            FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
+            inputStream = fsFile.getInputStream();
+            fileName = fsFile.getName();
+            contentType = fsFile.getContentType();
+        }
+        try {
+            response.setHeader("Content-Disposition", "attachment;filename=\"" + fileName + "\"");
+            response.setContentType(contentType);
+            IOUtils.copy(inputStream, response.getOutputStream());
+        } catch (Exception e) {
+            logger.error("get file error", e);
         }
     }
 
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
     @RequestMapping(value = "/change-step-sign-type/{id}/{step}", method = RequestMethod.GET)
     public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name = "signType") SignType signType) {
-        User user = userService.getUserFromAuthentication();
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if(signRequest.getCreateBy().equals(user.getEppn())) {
-            signRequest.setSignType(signType);
-        }
+        signRequest.setSignType(signType);
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
     @RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
     public String complete(@PathVariable("id") Long id, HttpServletRequest request) throws EsupSignatureException {
         User user = userService.getUserFromAuthentication();
@@ -498,15 +478,16 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
     @RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
     public String pending(@PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
-                          HttpServletRequest request) throws EsupSignatureIOException {
+                          HttpServletRequest request) {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
-        if (signRequestService.checkUserViewRights(user, signRequest) && (signRequest.getStatus().equals(SignRequestStatus.draft) || signRequest.getStatus().equals(SignRequestStatus.completed))) {
+        if (signRequest.getStatus().equals(SignRequestStatus.draft) || signRequest.getStatus().equals(SignRequestStatus.completed)) {
             signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
         } else {
             logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");
@@ -514,42 +495,35 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
     @PostMapping(value = "/add-recipients/{id}")
     public String addRecipients(@PathVariable("id") Long id,
-                          @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
-                          @RequestParam(name = "signType") SignType signType,
-                          @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) {
-        User user = userService.getUserFromAuthentication();
+                                @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
+                                @RequestParam(name = "signType") SignType signType,
+                                @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
-            signRequestService.addRecipients(signRequest, recipientsEmails);
-            signRequest.setSignType(signType);
-            if(allSignToComplete != null && allSignToComplete) {
-                signRequest.setAllSignToComplete(true);
-            } else {
-                signRequest.setAllSignToComplete(false);
-            }
+        signRequestService.addRecipients(signRequest, recipientsEmails);
+        signRequest.setSignType(signType);
+        if (allSignToComplete != null && allSignToComplete) {
+            signRequest.setAllSignToComplete(true);
         } else {
-            logger.warn(user.getEppn() + " try to update signRiquets " + signRequest.getId() + " without rights");
+            signRequest.setAllSignToComplete(false);
         }
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
+    @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
     @PostMapping(value = "/comment/{id}")
     public String comment(@PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
                           @RequestParam(value = "pageNumber", required = false) Integer pageNumber,
                           @RequestParam(value = "posX", required = false) Integer posX,
                           @RequestParam(value = "posY", required = false) Integer posY,
-                          HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
+                          HttpServletRequest request) {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
-            signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", user, "SUCCESS", comment, pageNumber, posX, posY);
-        } else {
-            logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
-        }
+        signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", user, "SUCCESS", comment, pageNumber, posX, posY);
         return "redirect:/user/signrequests/" + signRequest.getId();
     }
 

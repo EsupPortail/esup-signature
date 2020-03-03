@@ -64,8 +64,9 @@ $(document).ready(function () {
 
 	function toggleSideBar() {
 		$('#sidebar').toggleClass('active');
+		$('#sidebar2').toggleClass('d-none');
 		$('.sidebar-label').toggleClass('d-none');
-		$('#logo').toggleClass('logooverflow');
+		//$('#logo').toggleClass('logooverflow');
 		$('#content').toggleClass('content content2');
 		$('#breadcrumb').toggleClass('breadcrumb-nav breadcrumb-nav2');
 	}

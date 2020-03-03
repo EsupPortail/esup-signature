@@ -1,94 +1,94 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.sprinfgramework.org/schema/security">
-<header th:fragment="menu(activeMenu)" class="header-fixed fixed-top">
-<nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark bg-dark">
-	<button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse" class="btn btn-lg text-white float-left">
-		<i class="fas fa-bars"></i>
-	</button>
-	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar_toggle" aria-controls="navbar_toggle" aria-expanded="false" aria-label="Toggle navigation">
-		<span class="navbar-toggler-icon"></span>
-	</button>
-	<h1 aria-label="Esup-Signature" title="Esup-Signature"><img alt="Logo Esup-Signature" src="/images/logo.svg" height="41"/></h1>
-	<div id="navbar_toggle" class="collapse navbar-collapse justify-content-between ml-3 bg-dark">
-		<ul class="navbar-nav">
-			<li class="nav-item">
-				<a th:class="'nav-link ' + ${userMenu}" title="Utilisateur" href="#" role="button">
-					Utilisateur
-				</a>
-			</li>
-			<th:block th:if="${#authorization != null}">
-				<li class="nav-item dropdown" sec:authorize="hasRole('ROLE_MANAGER')">
-					<a th:class="'nav-link ' + ${managerMenu}" href="/manager/workflows" class="dropdown-item">Gestionnaire</a>
-				</li>
-				<li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')"><a href="/admin/signrequests" th:class="'nav-link ' + ${adminMenu}">Admin</a></li>
-			</th:block>
-		</ul>
-		<ul class="navbar-nav" th:if="${user.firstname != null}">
-			<li class="nav-item text-white">
-					<span class="d-none d-md-inline" th:text="${user.firstname} + ' ' + ${user.name}">
-					</span>
-					<a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos" aria-label="Paramètres utilisateur" class="btn-floating btn-small btn-secondary user-toggle"  aria-controls="user-infos" data-toggle="collapse">
-						<i class="fas fa-user"></i>
+<header th:fragment="menu(activeMenu)" class="fixed-top">
+	<nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark bg-dark">
+		<button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse" class="btn btn-lg text-white float-left">
+			<i class="fas fa-bars"></i>
+		</button>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar_toggle" aria-controls="navbar_toggle" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<h1 aria-label="Esup-Signature" title="Esup-Signature"><img alt="Logo Esup-Signature" src="/images/logo.svg" height="41"/></h1>
+		<div id="navbar_toggle" class="collapse navbar-collapse justify-content-between ml-3 bg-dark">
+			<ul class="navbar-nav">
+				<li class="nav-item">
+					<a th:class="'nav-link ' + ${userMenu}" title="Utilisateur" href="#" role="button">
+						Utilisateur
 					</a>
-			</li>
-		</ul>
-	</div>
-</nav>
-<div id="user-infos" class="card position-fixed user-infos collapse" style="right: 0;">
-		<div id="myDocs" class="card-body">
-			<h3>
-				Vos informations
-			</h3>
-			<a class="btn btn-sm btn-secondary" aria-label="Paramètres utilisateur "
-			   title="Paramètres" href="/user/users/?form">
-				<i class="fa fa-cog"></i> Modifier mes paramètres
-			</a>
-			<table class="table table-sm table-borderless">
-				<tbody>
-				<tr>
-					<th class="text-break w-50">Nom</th>
-					<td class="text-break w-50" th:text="${user.name}"></td>
-				</tr>
-				<tr>
-					<th class="text-break w-50">Prénom</th>
-					<td class="text-break w-50" th:text="${user.firstname}"></td>
-				</tr>
-				<tr>
-					<th class="text-break w-50">Email</th>
-					<td class="text-break w-50" th:text="${user.email}"></td>
-				</tr>
-				<tr>
-					<th class="text-break w-50">Identifiant</th>
-					<td class="text-break w-50" th:text="${user.eppn}"></td>
-				</tr>
-				<tr>
-					<th class="text-break w-50">Image de la signature</th>
-					<td class="text-break w-50">
-						<img th:if="${signFile != null}" alt="signature"
-							 th:src="'data:image/png;base64,' + ${signFile}"/>
-						<div th:if="${signFile == null}" class="alert alert-danger">
-							Pas de signature
-						</div>
-					</td>
-				</tr>
-				<tr>
-					<th class="text-break w-50">Keystore</th>
-					<td class="text-break w-50">
-						<div th:if="${user.keystore != null}" class="alert alert-secondary">
-							Keystore actuel :
-							<br>
-							<a th:href="'/user/documents/getfile/' + ${user.keystore.id}">
-								<span th:text="${user.keystore.fileName}"></span>
-							</a>
-						</div>
-						<div th:if="${user.keystore == null}" class="alert alert-danger">
-							Pas de keystore
-						</div>
-					</td>
-				</tr>
-				</tbody>
-			</table>
+				</li>
+				<th:block th:if="${#authorization != null}">
+					<li class="nav-item dropdown" sec:authorize="hasRole('ROLE_MANAGER')">
+						<a th:class="'nav-link ' + ${managerMenu}" href="/manager/workflows" class="dropdown-item">Gestionnaire</a>
+					</li>
+					<li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')"><a href="/admin/signrequests" th:class="'nav-link ' + ${adminMenu}">Admin</a></li>
+				</th:block>
+			</ul>
+			<ul class="navbar-nav" th:if="${user.firstname != null}">
+				<li class="nav-item text-white">
+						<span class="d-none d-md-inline" th:text="${user.firstname} + ' ' + ${user.name}">
+						</span>
+						<a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos" aria-label="Paramètres utilisateur" class="btn-floating btn-small btn-secondary user-toggle"  aria-controls="user-infos" data-toggle="collapse">
+							<i class="fas fa-user"></i>
+						</a>
+				</li>
+			</ul>
 		</div>
-</div>
+	</nav>
+	<div id="user-infos" class="card position-fixed user-infos collapse" style="right: 0;">
+			<div id="myDocs" class="card-body">
+				<h3>
+					Vos informations
+				</h3>
+				<a class="btn btn-sm btn-secondary" aria-label="Paramètres utilisateur "
+				   title="Paramètres" href="/user/users/?form">
+					<i class="fa fa-cog"></i> Modifier mes paramètres
+				</a>
+				<table class="table table-sm table-borderless">
+					<tbody>
+					<tr>
+						<th class="text-break w-50">Nom</th>
+						<td class="text-break w-50" th:text="${user.name}"></td>
+					</tr>
+					<tr>
+						<th class="text-break w-50">Prénom</th>
+						<td class="text-break w-50" th:text="${user.firstname}"></td>
+					</tr>
+					<tr>
+						<th class="text-break w-50">Email</th>
+						<td class="text-break w-50" th:text="${user.email}"></td>
+					</tr>
+					<tr>
+						<th class="text-break w-50">Identifiant</th>
+						<td class="text-break w-50" th:text="${user.eppn}"></td>
+					</tr>
+					<tr>
+						<th class="text-break w-50">Image de la signature</th>
+						<td class="text-break w-50">
+							<img th:if="${user.signImage != null}" alt="signature"
+								 th:src="'data:image/png;base64,' + ${user.signImageBase64}"/>
+							<div th:unless="${user.signImage != null}" class="alert alert-danger">
+								Pas de signature
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<th class="text-break w-50">Keystore</th>
+						<td class="text-break w-50">
+							<div th:if="${user.keystore != null}" class="alert alert-secondary">
+								Keystore actuel :
+								<br>
+								<a th:href="'/user/documents/getfile/' + ${user.keystore.id}">
+									<span th:text="${user.keystore.fileName}"></span>
+								</a>
+							</div>
+							<div th:if="${user.keystore == null}" class="alert alert-danger">
+								Pas de keystore
+							</div>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+	</div>
 </header>
 </html>

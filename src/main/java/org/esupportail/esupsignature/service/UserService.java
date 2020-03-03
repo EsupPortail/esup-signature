@@ -10,9 +10,14 @@ import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.scheduler.ScheduledTaskService;
+import org.esupportail.esupsignature.web.controller.user.SignRequestController;
+import org.hibernate.internal.CoreLogging;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.security.core.Authentication;
@@ -21,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -28,11 +34,16 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
+	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
 	@Resource
 	private UserRepository userRepository;
 
 	@Resource
 	private LdapPersonService ldapPersonService;
+
+	@Resource
+	private FileService fileService;
 
 	@Resource
 	private SignRequestService signRequestService;
@@ -71,11 +82,14 @@ public class UserService {
 		}
 	}
 
-
-	//For thymeleaf
 	public User getUserByEppn(String eppn) {
 		if(eppn.equals("Scheduler")) {
 			return ScheduledTaskService.getSchedulerUser();
+		}
+		if(ldapPersonService != null) {
+			if(personLdapRepository.findByUid(eppn).size() > 0) {
+				eppn = personLdapRepository.findByUid(eppn).get(0).getEduPersonPrincipalName();
+			}
 		}
 		if(userRepository.countByEppn(eppn) > 0) {
 			return userRepository.findByEppn(eppn).get(0);
@@ -170,6 +184,14 @@ public class UserService {
     	}
 		if (userRepository.countByEppn(eppn) > 0) {
 			User user = userRepository.findByEppn(eppn).get(0);
+			if(user.getSignImage() != null) {
+				try {
+					user.setSignImageBase64(fileService.getBase64Image(user.getSignImage()));
+				} catch (IOException e) {
+					logger.error("sign image read error", e);
+				}
+			}
+			userRepository.save(user);
 			return user;
 		} else {
 			return getSystemUser();

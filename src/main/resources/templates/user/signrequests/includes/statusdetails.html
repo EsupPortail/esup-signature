@@ -26,9 +26,9 @@
 	</div>
 	<div th:if="${signRequest.status.name() == 'pending'}">
 		<div class="alert alert-danger mb-1">
-			<h5 class="alert-heading">
+			<p class="alert-heading">
 				Le document est en cours de signature par :
-			</h5>
+			</p>
 			<table class="table table-sm table-bordered">
 			<th:block th:each="recipient : ${signRequest.recipients}">
 				<tr>
@@ -68,9 +68,8 @@
 	</div>
 	<div th:if="${signRequest.status.name() == 'exported'}">
 		<div class="alert alert-dark mb-1">
-			<h5>Le document signé a été exporté vers son emplacement définitif :</h5>
-			<span id="exportUrl" class="text-break" th:text="${signRequest.exportedDocumentURI}"></span>
-			<button title="Copier le lien" class="btn btn-light btn-sm" onclick="copy();"><i class="fa fa-copy"></i> </button>
+			<p>Le document signé a été exporté vers son emplacement définitif :</p>
+			<button title="Copier le lien" class="btn btn-light btn-sm" onclick="copy();"><i class="fa fa-copy"></i> Copier le lien</button>
 		</div>
 		<script>
 			function copy() {
