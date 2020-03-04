@@ -14,6 +14,8 @@ public class Recipient {
 
     private Long parentId;
 
+    private String parentType;
+
     @ManyToOne
     private User user;
 
@@ -41,6 +43,14 @@ public class Recipient {
 
     public void setParentId(Long parentId) {
         this.parentId = parentId;
+    }
+
+    public String getParentType() {
+        return parentType;
+    }
+
+    public void setParentType(String parentType) {
+        this.parentType = parentType;
     }
 
     public User getUser() {

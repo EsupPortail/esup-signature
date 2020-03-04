@@ -24,7 +24,7 @@
                 <i class="fas fa-comment-alt"></i> Mode commentaires
             </button>
             <th:block th:if="${signRequest.parentSignBook != null}">
-                <div th:replace="user/signbooks/cards/stepscard :: stepscard"></div>
+                <div th:replace="user/signrequests/cards/stepscard :: stepscard"></div>
             </th:block>
             <div id="commentsTools" th:if="${documentType == 'pdf'}">
                 <div th:unless="${postits.size() > 0}" class="alert alert-warning">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
@@ -47,7 +47,7 @@
         </nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/user/signrequests">Mes documents</a></li>
+                <li class="breadcrumb-item"><a href="/user/signrequests">Documents envoyés</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Document : <span th:text="${signRequest.title}"></span>
                 </li>
             </ol>

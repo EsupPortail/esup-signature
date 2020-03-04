@@ -627,6 +627,7 @@ float:left;
 }
 
 .file-tab:hover {
+    min-width: 200px;
     width: auto;
 }
 
@@ -757,10 +758,7 @@ float:left;
     -webkit-box-align: end;
     -ms-flex-align: end;
     align-items: flex-end;
-    padding: 15px 15px 15px 15px;
-    padding-bottom: 15px;
-    padding-left: 15px;
-    padding-right: 15px;
+    padding: 20px 20px 20px 20px;
 }
 
 .fixed-action-btn ul {
@@ -786,7 +784,8 @@ float:left;
 }
 
 .fixed-action-btn.active ul {
-    height: 200px;
+    height: auto;
+    margin-bottom: 80px;
     opacity: 1;
 }
 

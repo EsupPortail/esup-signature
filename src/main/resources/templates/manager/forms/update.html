@@ -12,7 +12,7 @@
                 <li class="breadcrumb-item active" th:text="'Modifier le formulaire : ' + ${form.name}"></li>
             </ol>
         </nav>
-        <div id="content" class="content col-8">
+        <div id="content" class="content col-lg-8">
             <div class="card">
                 <div class="card-body">
                     <form id="formUpdate" th:action="'/manager/forms'" th:object="${form}" th:method="put">

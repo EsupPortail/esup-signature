@@ -127,7 +127,6 @@ public class SignRequestController {
                        @RequestParam(value = "messageError", required = false) String messageError,
                        @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
         workflowService.initCreatorWorkflow();
-
         if (statusFilter != null) {
             if (!statusFilter.equals("all")) {
                 this.statusFilter = SignRequestStatus.valueOf(statusFilter);

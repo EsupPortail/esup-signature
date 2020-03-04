@@ -210,6 +210,8 @@ public class WorkflowService {
                 }
             }
             Recipient recipient = recipientService.createRecipient(workflowStep.getId(), recipientUser);
+            recipient.setParentId(workflowStep.getId());
+            recipient.setParentType("workflow");
             recipientRepository.save(recipient);
             workflowStep.getRecipients().add(recipient);
         }
@@ -226,28 +228,10 @@ public class WorkflowService {
             workflowStep.setAllSignToComplete(allSignToComplete);
         }
         workflowStep.setSignType(signType);
+        workflowStepRepository.save(workflowStep);
         if(recipientEmails != null) {
             addRecipientsToWorkflowStep(workflowStep, recipientEmails);
         }
-        workflowStepRepository.save(workflowStep);
-        return workflowStep;
-    }
-
-    public WorkflowStep createWorkflowStep(List<Recipient> recipients, String name, Boolean allSignToComplete, SignType signType) {
-        WorkflowStep workflowStep = new WorkflowStep();
-        if(name != null) {
-            workflowStep.setName(name);
-        }
-        if(allSignToComplete ==null) {
-            workflowStep.setAllSignToComplete(false);
-        } else {
-            workflowStep.setAllSignToComplete(allSignToComplete);
-        }
-        workflowStep.setSignType(signType);
-        for(Recipient recipient : recipients) {
-            addRecipientsToWorkflowStep(workflowStep, recipient.getUser().getEmail());
-        }
-        workflowStepRepository.save(workflowStep);
         return workflowStep;
     }
 

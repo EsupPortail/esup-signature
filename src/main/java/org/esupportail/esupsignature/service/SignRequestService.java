@@ -209,6 +209,7 @@ public class SignRequestService {
 		signRequest.getRecipients().clear();
 		for(Recipient recipient : recipients) {
 			Recipient newRecipient = recipientService.getRecipientByEmail(signRequest.getId(), recipient.getUser().getEmail());
+			newRecipient.setParentType("signrequest");
 			recipientRepository.save(newRecipient);
 			signRequest.getRecipients().add(newRecipient);
 		}

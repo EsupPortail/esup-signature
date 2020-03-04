@@ -114,7 +114,7 @@ public class SignBookService {
     public void importWorkflow(SignBook signBook, Workflow workflow) {
         logger.info("import workflow steps in signBook " + signBook.getName() + " - " +signBook.getId());
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
-            WorkflowStep newWorkflowStep = workflowService.createWorkflowStep(workflowStep.getRecipients(), "", workflowStep.getAllSignToComplete(), workflowStep.getSignType());
+            WorkflowStep newWorkflowStep = workflowService.createWorkflowStep("", workflowStep.getAllSignToComplete(), workflowStep.getSignType(), workflowStep.getRecipients().toArray(String[]::new));
             signBook.getWorkflowSteps().add(newWorkflowStep);
         }
         signBook.setTargetType(workflow.getTargetType());
@@ -124,7 +124,7 @@ public class SignBookService {
     public void saveWorkflow(String name, User user, SignBook signBook) throws EsupSignatureException {
         Workflow workflow = workflowService.createWorkflow(name, user, false);
         for(WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
-            WorkflowStep toSaveWorkflowStep = workflowService.createWorkflowStep(workflowStep.getRecipients(), "", workflowStep.getAllSignToComplete(), workflowStep.getSignType());
+            WorkflowStep toSaveWorkflowStep = workflowService.createWorkflowStep("", workflowStep.getAllSignToComplete(), workflowStep.getSignType(), workflowStep.getRecipients().toArray(String[]::new));
             workflow.getWorkflowSteps().add(toSaveWorkflowStep);
         }
     }
