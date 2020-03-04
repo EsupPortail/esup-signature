@@ -10,7 +10,7 @@
     </th:block>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/side :: side"></nav>
+        <nav th:insert="fragments/side :: side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Paramètres : <span th:text="${user.firstname} + ' ' + ${user.name}"></span></li>

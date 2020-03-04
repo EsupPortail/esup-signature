@@ -7,7 +7,7 @@
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/side :: side"></nav>
+        <nav th:insert="fragments/side :: side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Accueil</li>
@@ -139,7 +139,7 @@
             <div class="modal-header">
                 <h3 class="modal-title">Assistant de création de demande</h3>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
@@ -159,7 +159,7 @@
                 <div class="modal-header">
                     <h3 class="modal-title" id="fastSignRequestLabel">Signature rapide</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div class="modal-body">
@@ -201,7 +201,7 @@
                     document</h5>
                 <button type="button" class="close" data-dismiss="modal"
                         aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
@@ -248,7 +248,7 @@
                 <h3 class="modal-title">Choix d'un fichier</h3>
                 <button type="button" class="close" data-dismiss="modal"
                         aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
@@ -280,7 +280,7 @@
                 <div class="modal-header">
                     <h3 class="modal-title" id="addSignRequestLabel">Créer une nouvelle demande</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div class="modal-body">
@@ -311,7 +311,7 @@
                 <div class="modal-header">
                     <h3 class="modal-title" th:text="'Création d\'une nouvelle demande : ' + ${workflow.name}"></h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div class="modal-body">

@@ -5,9 +5,7 @@
     <div class="card mb-1">
         <div class="card-header">
             Paramètres de signature
-            <button type="button" class="btn btn-sm btn-primary float-right" data-toggle="modal" data-target="#signRequestParams">
-                <i class="fa fa-plus"></i> Modifier les paramètres
-            </button>
+
         </div>
         <div id="collapseLogs" class="show" aria-labelledby="headingOne" data-parent="#accordion">
             <div class="card-body">
@@ -38,20 +36,21 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addRecipient">Paramètres de signature</h5>
+                    <h3 class="modal-title">Paramètres de signature</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <form th:action="'/user/signrequests/add-recipients/' + ${signRequest.id}" method="post">
                     <div class="modal-body">
-                        <label for="recipientsEmail">Choisir les participants</label>
+                        <div class="form-group" id="_signType_div_id">
+                        <label for="recipientsEmails">Choisir les participants</label>
                         <select name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple" required="required">
                             <th:block th:each="recipient : ${signRequest.recipients}">
                                 <option selected="selected" th:value="${recipient.user.email}" th:text="${recipient.user.email}"></option>
                             </th:block>
                         </select>
-                        <br/>
+                        <br/><br/>
                         <label>
                             Tous les participants doivent-ils signer ?
                         </label>
@@ -97,6 +96,7 @@
                                 }
                             });
                         </script>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>

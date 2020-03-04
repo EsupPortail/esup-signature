@@ -7,7 +7,7 @@
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/side :: side"></nav>
+        <nav th:insert="fragments/side :: side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
         <div id="content" class="content">
             <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
                 <ol class="breadcrumb">

@@ -292,7 +292,7 @@ input:checked + .slider:before {
     top: 60px;
     padding-right: 10px;
     position: fixed;
-    z-index: 0;
+    z-index: 3;
     min-width: 260px;
     max-width: 260px;
     min-height: 100vh;
@@ -358,9 +358,9 @@ input:checked + .slider:before {
     padding: 4px;
     position: fixed;
     background-color: white;
-    z-index: 2;
     margin-left: 260px;
     width: calc(100vw - 274px);
+    z-index: 2;
 }
 
 .breadcrumb-nav2 {
@@ -368,9 +368,9 @@ input:checked + .slider:before {
     padding: 4px;
     position: fixed;
     background-color: white;
-    z-index: 2;
     margin-left: 60px;
     width: 100%;
+    z-index: 2;
 }
 
 .breadcrumb {
@@ -810,4 +810,35 @@ float:left;
 }
 .toast {
     z-index: 10000;
+}
+
+.waves-effect {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+    transition: all ease-in-out .5s;
+}
+
+.waves-effect::after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 50%;
+    width: 50%;
+    background-color: #000;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    transition: all ease-in-out 0.5s;
+    transform: scale(5, 5);
+}
+
+.waves-effect:active::after {
+    padding: 0;
+    margin: 0;
+    opacity: .2;
+    transition: 0s;
+    transform: scale(0, 0);
 }

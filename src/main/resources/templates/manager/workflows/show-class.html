@@ -6,7 +6,7 @@
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/manager-side :: manager-side"></nav>
+        <nav th:insert="fragments/manager-side :: manager-side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
         <nav id="breadcrumb" class="text-uppercase" aria-label="breadcrumb">
             <ol class="breadcrumb col-12">
                 <li class="breadcrumb-item active"><a href="/manager">Liste des circuits de visas</a></li>

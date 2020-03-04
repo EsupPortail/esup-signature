@@ -6,7 +6,7 @@
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/manager-side :: manager-side"></nav>
+        <nav th:insert="fragments/manager-side :: manager-side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav text-uppercase">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item active">Liste des formulaires</li>
@@ -64,7 +64,7 @@
                                                     <div class="modal-header">
                                                         <button type="button" class="close" data-dismiss="modal"
                                                                 aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
+                                                            <i class="fas fa-times"></i>
                                                         </button>
                                                     </div>
                                                     <div class="modal-body">
@@ -90,7 +90,7 @@
                             </tbody>
                         </table>
                     <div class="alert alert-secondary" th:unless="${forms.size() > 0}">
-                        Aucun modèle pour le moment
+                        Aucun formulaire pour le moment
                     </div>
                 </div>
             </div>
@@ -102,7 +102,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Nouveau formulaire</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <form id="addModel"

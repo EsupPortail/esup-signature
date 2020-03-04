@@ -6,7 +6,7 @@
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/manager-side :: manager-side"></nav>
+        <nav th:insert="fragments/manager-side :: manager-side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
         <nav id="sidebar2">
             <div class="m-1">
                 <button title="Modifier les paramètres" type="button" th:onclick="'location.href=\'/manager/workflows/' + ${workflow.id} + '?form\''" class="mb-1 col-12 btn btn-light btn-outline-dark text-left">

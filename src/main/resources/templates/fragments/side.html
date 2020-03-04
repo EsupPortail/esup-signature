@@ -2,17 +2,19 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <nav th:fragment="side" id="sidebar">
-    <div class="ml-2 mt-2">
+    <div class="ml-1 mt-1">
         <button th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}" th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
-            <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
-            <span th:if="${nbToSign > 0}" class="float-right badge badge-danger mt-1" th:text="${nbToSign}"></span>
+            <i class="sidebar-label fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+            <span title="Demandes à signer" th:if="${nbToSign > 0}" class="badge badge-danger mt-1" th:text="${nbToSign}"></span>
+            <i th:unless="${nbToSign > 0}" class="fas fa-home"></i>
         </button>
         <a th:with="nbDatas=${@dataRepository.findByCreateByAndStatus(user.eppn, 'draft').size()}" th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes brouillons" href="/user/datas" class="btn btn-transparent col-12 mb-1 text-left">
-            <i class="fab fa-firstdraft"></i> <span class="sidebar-label">Mes brouillons</span>
-            <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0}" class="float-right badge badge-info mt-1" th:text="${nbDatas}"></span>
+            <i class="sidebar-label fab fa-firstdraft"></i> <span class="sidebar-label">Mes brouillons</span>
+            <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0}" class="badge badge-info mt-1" th:text="${nbDatas}"></span>
+            <i th:unless="${nbDatas > 0}" class="fab fa-firstdraft"></i>
         </a>
         <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user.eppn, 'pending').size()}" th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Suivre mes envois" href="/user/signrequests" class="btn btn-transparent col-12 mb-1 text-left">
-            <i class="fas fa-file-export"></i> <span class="sidebar-label">Suivre mes envois</span>
+            <i class="fas fa-list"></i> <span class="sidebar-label">Mes envois</span>
         </a>
         <a th:classappend="${activeMenu == 'validation'} ? 'bg-secondary'" title="Valider la signature d'un document" href="/user/validation" class="btn btn-transparent col-12 mb-1 text-left">
             <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Contrôler un document</span>

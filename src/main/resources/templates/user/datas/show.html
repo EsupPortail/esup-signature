@@ -3,20 +3,21 @@
 <!--/*@thymesVar id="data" type="org.esupportail.esupsignature.entity.Data"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
+<header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
-        <div th:replace="fragments/side :: side"></div>
-        <div class="content" id="v-pills-tabContent">
-            <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/user/datas">Mes documents</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Formulaire : <span th:text="${data.name}"></span>
-                    </li>
-                </ol>
-            </nav>
+        <nav th:insert="fragments/side :: side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
+            <ol  id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/user/datas">Mes documents</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Formulaire : <span th:text="${data.name}"></span>
+                </li>
+            </ol>
+        </nav>
+        <div class="content" id="content v-pills-tabContent">
             <div class="card">
                 <div class="card-header bg-danger text-white">
-                    Le modèle de ce document n'est plus disponible. Vos données seront affichées sans mise en forme.
+                    Vous consultez les données brutes du document <span th:text="${data.name}"></span>
                 </div>
                 <div class="card-body">
                     <ul class="list-group">

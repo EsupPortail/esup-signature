@@ -8,7 +8,7 @@
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/side :: side"></nav>
+        <nav th:insert="fragments/side :: side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/datas">Mes brouillons</a></li>
@@ -16,12 +16,9 @@
                 </li>
             </ol>
         </nav>
-        <div class="content" id="v-pills-tabContent">
+        <div id="content" class="content v-pills-tabContent">
             <div class="tools">
                 <div class="d-flex mb-1">
-                    <button title="Annuler" class="btn btn-light btn-outline-danger ml-1" aria-label="Précédent" onclick="window.history.back();">
-                        <i class="fas fa-door-open"></i>
-                    </button>
                     <div class="bg-light ml-1 p-1 pt-2 d-inlinebirder"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
                     <button title="Page précédente" id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
                         <i class="fas fa-arrow-left"></i>
@@ -335,7 +332,7 @@
                 <h3 class="modal-title">Envoi pour signature</h3>
                 <button type="button" class="close" data-dismiss="modal"
                         aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">

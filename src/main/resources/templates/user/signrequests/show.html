@@ -8,7 +8,7 @@
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/side :: side"></nav>
+        <nav th:insert="fragments/side :: side"></nav>
         <nav id="sidebar2" class="scrollbar-primary" onmouseover="document.body.style.overflow = 'hidden';" onmouseout="document.body.style.overflow = 'auto';">
             <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
             <button data-toggle="modal" data-target="#signAllModal" class="btn btn-light col-3 col-md-12 mb-1 text-left d-none" th:classappend="${signable != 'ok' || signRequest.parentSignBook == null || signRequest.parentSignBook .signRequests.size() < 2} ? 'd-none' ">
@@ -286,6 +286,11 @@
         </div>
     </div>
 </div>
+<script>
+    $(document).ready(function () {
+       showSideBar();
+    });
+</script>
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

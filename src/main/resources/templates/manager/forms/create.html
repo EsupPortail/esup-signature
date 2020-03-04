@@ -5,7 +5,7 @@
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/manager-side :: manager-side"></nav>
+        <nav th:insert="fragments/manager-side :: manager-side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/manager/forms">Liste des formulaires</a></li>

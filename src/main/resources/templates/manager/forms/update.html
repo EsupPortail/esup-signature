@@ -5,14 +5,20 @@
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="fragments/manager-side :: manager-side"></nav>
+        <nav th:insert="fragments/manager-side :: manager-side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav text-uppercase">
             <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/manager/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item"><a href="/manager/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active" th:text="'Modifier le formulaire : ' + ${form.name}"></li>
             </ol>
         </nav>
         <div id="content" class="content col-lg-8">
+            <div class="fixed-action-btn" style="bottom: 100px; right: 50px;">
+                <a title="Enregistrer" role="button" class="btn-floating btn-lg bg-success" onclick="$('#formUpdate').submit();">
+                    <i class="fas fa-save"></i>
+                </a>
+            </div>
             <div class="card">
                 <div class="card-body">
                     <form id="formUpdate" th:action="'/manager/forms'" th:object="${form}" th:method="put">
@@ -87,8 +93,6 @@
                                 </div>
                             </div>
                         </div>
-                        <input class="btn btn-success float-right" type="submit"
-                               value="Enregistrer"/>
                     </form>
                 </div>
             </div>
