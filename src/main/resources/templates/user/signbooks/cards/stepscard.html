@@ -173,7 +173,7 @@
                                                             <td>
                                                                 <div th:switch="${recipient.signed}">
                                                                     <span th:case="true" class="text-success"><i class="fas fa-check-circle" title="Signature effectuée"></i> Signature effectuée</span>
-                                                                    <span th:case="false" class="text-danger"><i class="fas fa-exclamation-circle text-danger" title=""></i> En attente de signature</span>
+                                                                    <span th:case="false" class="text-danger"><i class="fas fa-clock text-warning" title=""></i> En attente de signature</span>
                                                                 </div>
                                                             </td>
                                                             <th:block th:if="${user.eppn == signBook.createBy && (iterator.index + 1 > signBook.currentWorkflowStepNumber || iterator.index + 1 == signBook.currentWorkflowStepNumber)}">

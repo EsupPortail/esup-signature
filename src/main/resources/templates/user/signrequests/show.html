@@ -9,8 +9,8 @@
 <main role="main">
     <div class="wrapper">
         <nav th:insert="fragments/side :: side"></nav>
-        <nav id="sidebar2" class="scrollbar-primary" onmouseover="document.body.style.overflow = 'hidden';" onmouseout="document.body.style.overflow = 'auto';">
-            <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
+        <nav id="sidebar2" class="scrollbar-primary">
+
             <button data-toggle="modal" data-target="#signAllModal" class="btn btn-light col-3 col-md-12 mb-1 text-left d-none" th:classappend="${signable != 'ok' || signRequest.parentSignBook == null || signRequest.parentSignBook .signRequests.size() < 2} ? 'd-none' ">
                 <i class="fas fa-bolt"></i> Tout signer
             </button>
@@ -24,6 +24,7 @@
                 <i class="fas fa-comment-alt"></i> Mode commentaires
                 <span th:if="${postits.size() > 0}" class="float-right badge badge-warning mt-1" th:text="${postits.size()}"></span>
             </button>
+            <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
             <th:block th:if="${signRequest.parentSignBook != null}">
                 <div th:replace="user/signrequests/cards/stepscard :: stepscard"></div>
             </th:block>
@@ -90,29 +91,38 @@
                     <div id="signtools" th:if="${signable == 'ok'}" style="display: none;">
                         <button id="pen" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer un visuel" class="btn btn-outline-success ml-1" onclick="toggleVisual()"><i class="fas fa-file-signature"></i></button>
                         <button id="clock" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer la date" class="btn btn-outline-secondary ml-1" onclick="toggleDate()"><i class="fas fa-clock"></i></button>
-                        <button th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="btn btn-success ml-1" title="Signer" data-toggle="modal" data-target="#signModal">
-                            <i class="fas fa-signature"></i> Signer
-                        </button>
-                        <button th:unless="${@signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="btn btn-success ml-1" title="Viser" data-toggle="modal" data-target="#signModal">
-                            <i class="fas fa-check"></i> Viser
-                        </button>
-<!--                    </div>-->
-<!--                    <div id="refusetools" th:if="${signable == 'ok'}" style="display: none;">-->
-                        <button class="btn btn-danger" title="Refuser" th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal">
-                            <i class="fas fa-ban"></i> Refuser
-                        </button>
+                    </div>
+                    <div id="signButtons" th:if="${signable == 'ok'}" class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#signButtons').toggleClass('active');" onmouseout="$('#signButtons').toggleClass('active');">
+                        <a class="btn-floating btn-lg bg-success waves-effect">
+                            <i class="fas fa-signature"></i>
+                        </a>
+                        <ul id="signCollapse" class="list-unstyled">
+                            <li><a role="button" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="btn-floating bg-success waves-effect" title="Signer" data-toggle="modal" data-target="#signModal"><i class="fas fa-file-signature"></i></a></li>
+                            <li><a role="button" th:unless="${@signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="btn-floating bg-success waves-effect" title="Viser" data-toggle="modal" data-target="#signModal"><i class="fas fa-check"></i></a></li>
+                            <li><a role="button" class="btn-floating bg-danger waves-effect" title="Refuser" th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal"><i class="fas fa-file-excel"></i></a></li>
+                        </ul>
                     </div>
                     </th:block>
                     <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported')}">
-                        <a class="btn btn-light btn-outline-dark ml-1 text-left" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
-                            <i class="fas fa-save"></i>
-                        </a>
-                        <a title="Export SEDA" class="btn btn-light btn-outline-dark ml-1 text-left" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
-                            <i class="fa fa-file-export"></i>
-                        </a>
-                        <a th:if="${signRequest.status.name() != 'exported'}" class="btn btn-light btn-outline-dark ml-1 text-left" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
-                            <i class="fas fa-shield-alt "></i>
-                        </a>
+                        <div id="endButtons" class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#endButtons').toggleClass('active');" onmouseout="$('#endButtons').toggleClass('active');">
+                            <a class="btn-floating btn-lg bg-primary waves-effect">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </a>
+                            <ul id="endCollapse" class="list-unstyled">
+                                <li><a class="btn-floating bg-primary waves-effect" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
+                                    <i class="fas fa-save"></i>
+                                </a></li>
+                                <li><a title="Export SEDA" class="btn-floating bg-primary    waves-effect" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
+                                    <i class="fa fa-file-export"></i>
+                                </a></li>
+                                <li><a th:if="${signRequest.status.name() != 'exported'}" class="btn-floating bg-primary waves-effect" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+                                    <i class="fas fa-shield-alt "></i>
+                                </a></li>
+                            </ul>
+                        </div>
+
+
+
                     </th:block>
                 </div>
                 <nav class="nav nav-tabs" th:if="${signRequest.parentSignBook != null}">
@@ -168,7 +178,7 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="signModalLabel">Confirmer la signature du document</h5>
+                <h3 class="modal-title" id="signModalLabel">Confirmer la signature du document</h3>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <i class="fas fa-times"></i>
                 </button>
@@ -206,9 +216,7 @@
                             <br/>
                             <small>Vous pouvez utiliser une clé materielle ou un keystore</small>
                         </div>
-                        <button class="mb-1 col-12 btn btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.id} + ');'">
-                            <i class="fas fa-signature"></i> Signer
-                        </button>
+                        <button class="mb-1 col-12 btn btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.id} + ');'">Signer</button>
                     </div>
                 </div>
                 <input th:classappend="${signType != 'certSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
@@ -270,7 +278,7 @@
         <div class="modal-content">
             <form th:action="'/user/signrequests/refuse/' + ${signRequest.id}">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h5>
+                    <h3 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
                     </button>

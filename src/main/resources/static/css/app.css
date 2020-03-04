@@ -311,7 +311,7 @@ input:checked + .slider:before {
     min-height: calc(100vh - 300px);
     overflow-y: scroll;
     overflow-x: fragments;
-
+    z-index: 3;
 }
 
 .scrollbar-primary::-webkit-scrollbar {

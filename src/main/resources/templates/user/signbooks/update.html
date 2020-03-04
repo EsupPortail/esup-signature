@@ -32,13 +32,13 @@
         </nav>
         <div id="content" class="content col-lg-8">
             <div id="addButton" class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
-                <a class="btn-floating btn-lg bg-success waves-effect waves-light">
+                <a class="btn-floating btn-lg bg-success waves-effect">
                     <i class="fas fa-plus"></i>
                 </a>
                 <ul id="collapseExample" class="list-unstyled">
-                    <li><a th:if="${signBook.getStatus().name() == 'draft' && signBook.workflowSteps.size() == 0}" title="Charger un modèle de workflow" role="button" data-toggle="modal" data-target="#addWorkflow" class="btn-floating bg-success waves-effect waves-light"><i class="fas fa-project-diagram"></i></a></li>
-                    <li><a title="Ajouter une étape au circuit" role="button" data-toggle="modal" data-target="#addStep" class="btn-floating bg-success waves-effect waves-light"><i class="fas fa-shoe-prints"></i></a></li>
-                    <li><a title="Ajouter un document à signer" role="button" data-toggle="modal" data-target="#fastSignRequestModal"  class="btn-floating text-dark bg-success waves-effect waves-light"><i class="fas fa-file-medical"></i></a></li>
+                    <li><a th:if="${signBook.getStatus().name() == 'draft' && signBook.workflowSteps.size() == 0}" title="Charger un modèle de workflow" role="button" data-toggle="modal" data-target="#addWorkflow" class="btn-floating bg-success waves-effect"><i class="fas fa-project-diagram"></i></a></li>
+                    <li><a title="Ajouter une étape au circuit" role="button" data-toggle="modal" data-target="#addStep" class="btn-floating bg-success waves-effect"><i class="fas fa-shoe-prints"></i></a></li>
+                    <li><a title="Ajouter un document à signer" role="button" data-toggle="modal" data-target="#fastSignRequestModal"  class="btn-floating text-dark bg-success waves-effect"><i class="fas fa-file-medical"></i></a></li>
                 </ul>
             </div>
             <th:block th:if="${signBook.status.name() == 'draft' || signBook.status.name() == 'pending'}">

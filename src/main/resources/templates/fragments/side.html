@@ -6,12 +6,10 @@
         <button th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}" th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
             <i class="sidebar-label fas fa-home"></i> <span class="sidebar-label">Accueil</span>
             <span title="Demandes à signer" th:if="${nbToSign > 0}" class="badge badge-danger mt-1" th:text="${nbToSign}"></span>
-            <i th:unless="${nbToSign > 0}" class="fas fa-home"></i>
         </button>
         <a th:with="nbDatas=${@dataRepository.findByCreateByAndStatus(user.eppn, 'draft').size()}" th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes brouillons" href="/user/datas" class="btn btn-transparent col-12 mb-1 text-left">
             <i class="sidebar-label fab fa-firstdraft"></i> <span class="sidebar-label">Mes brouillons</span>
             <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0}" class="badge badge-info mt-1" th:text="${nbDatas}"></span>
-            <i th:unless="${nbDatas > 0}" class="fab fa-firstdraft"></i>
         </a>
         <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user.eppn, 'pending').size()}" th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Suivre mes envois" href="/user/signrequests" class="btn btn-transparent col-12 mb-1 text-left">
             <i class="fas fa-list"></i> <span class="sidebar-label">Mes envois</span>

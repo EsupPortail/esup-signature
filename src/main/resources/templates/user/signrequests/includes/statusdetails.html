@@ -36,7 +36,7 @@
 					<td align="center">
 						<div th:switch="${recipient.signed}">
 							<i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
-							<i title="n'a pas signé le document" th:case="false" class="fas fa-clock text-warning"></i>
+							<i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
 						</div>
 					</td>
 				</tr>

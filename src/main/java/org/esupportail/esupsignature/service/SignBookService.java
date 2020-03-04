@@ -114,7 +114,11 @@ public class SignBookService {
     public void importWorkflow(SignBook signBook, Workflow workflow) {
         logger.info("import workflow steps in signBook " + signBook.getName() + " - " +signBook.getId());
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
-            WorkflowStep newWorkflowStep = workflowService.createWorkflowStep("", workflowStep.getAllSignToComplete(), workflowStep.getSignType(), workflowStep.getRecipients().toArray(String[]::new));
+            List<String> recipientEmails = new ArrayList<>();
+            for(Recipient recipient : workflowStep.getRecipients()) {
+                recipientEmails.add(recipient.getUser().getEmail());
+            }
+            WorkflowStep newWorkflowStep = workflowService.createWorkflowStep("", workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails.toArray(String[]::new));
             signBook.getWorkflowSteps().add(newWorkflowStep);
         }
         signBook.setTargetType(workflow.getTargetType());

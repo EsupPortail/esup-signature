@@ -5,44 +5,25 @@
 <header th:replace="fragments/menu :: menu(activeMenu)"></header>
 <main role="main">
     <div class="wrapper">
-        <nav id="sidebar">
-            <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
-                <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
-            </button>
-			<button type="button" class="mb-1 col-12 btn btn-outline-dark btn-light text-left" value="Retour" onclick="window.history.back();">
-				<i class="fas fa-arrow-left"></i> Retour
-			</button>
+        <nav th:insert="fragments/side :: side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
+            <div class="navbar-nav">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item active"><a href="/user/validation">Outil de validation</a></li>
+                    <li class="breadcrumb-item active">Résultats de la validation</li>
+                </ol>
+            </div>
         </nav>
-        <div id="content" class="content">
-            <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
-                <div class="navbar-nav">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/">Liste des demandes</a></li>
-                        <li class="breadcrumb-item active"><a href="/user/validation">Outil de validation</a></li>
-                        <li class="breadcrumb-item active">Résultats de la validation</li>
-                    </ol>
-                </div>
-            </nav>
-            <div class="alert alert-dark">
-                <h5>Le service de validation est fourni par l'outil DSS Signature</h5>
-                Légende :
-                <ul>
-                    <li>
-                        <button class="btn btn-success"></button> : Succès
-                    </li>
-                    <li>
-                        <button class="btn btn-warning"></button> : Alerte
-                    </li>
-                    <li>
-                        <button class="btn btn-danger"></button> : Erreur
-                    </li>
-                </ul>
+        <div id="content" class="content col-lg-8">
+            <div class="fixed-action-btn" style="bottom: 100px; right: 50px;">
+                <a title="Download report" class="btn-floating btn-lg bg-primary" href="/user/validation/download-detailed-report" role="button">
+                    <i class="fa fa-download"></i></a>
             </div>
             <div class="card">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-lg-12">
-                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <ul class="nav nav-tabs mb-1" id="myTab" role="tablist">
                                 <li class="nav-item">
                                     <a class="nav-link active" id="simple-tab" data-toggle="tab" href="#simple" role="tab" aria-controls="simple" aria-selected="true">Simple report</a>
                                 </li>
@@ -51,10 +32,6 @@
                                 </li>
                                 <li class="nav-item" th:if="${pdfaReport != null}">
                                     <a class="nav-link" id="pdfa-tab" data-toggle="tab" href="#pdfa" role="tab" aria-controls="pdfa" aria-selected="false">PDF/A report</a>
-                                </li>
-                                <li>
-                                    <a href="/user/validation/download-detailed-report" role="button" class="btn btn-primary">
-                                        <i class="fa fa-download" aria-hidden="true"></i> Download report</a>
                                 </li>
                             </ul>
                             <div class="tab-content" id="myTabContent">
@@ -81,5 +58,10 @@
         </div>
     </div>
 </main>
+<script>
+    $('#collapsePolicy').show();
+    $('#collapseInfo').show();
+    $('#collapseETSI').show();
+</script>
 </body>
 </html>
