@@ -8,7 +8,7 @@
 			<i class="fab fa-firstdraft" th:title="#{'signbook.status.' + ${status}}"></i>
 				<span th:text="#{'signbook.status.' + ${status}}"></span>
 		</div>
-		<div th:case="'pending'" class="badge badge-primary text-center" style="padding: 10px;"  th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">
+		<div th:case="'pending'" class="badge badge-warning text-center" style="padding: 10px;"  th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">
 			<i class="fas fa-clock"></i>
 				<span th:text="#{'signbook.status.' + ${status}}"></span>
 		</div>
@@ -20,7 +20,7 @@
 			<i class="fas fa-ban"></i>
 				<span th:text="#{'signbook.status.' + ${status}}"></span>
 		</div>
-		<div th:case="'checked'" class="badge badge-warning text-center" style="padding: 10px;"  th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">
+		<div th:case="'checked'" class="badge badge-success text-center" style="padding: 10px;"  th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">
 			<i class="fas fa-check-circle"></i>
 				<span th:text="#{'signbook.status.' + ${status}}"></span>
 		</div>

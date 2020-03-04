@@ -9,7 +9,7 @@
 <main role="main">
     <div class="wrapper">
         <nav th:replace="fragments/side :: side"></nav>
-        <nav id="sidebar2" class="scrollbar-primary" onmouseover="document.body.style.position = 'fixed';" onmouseout="document.body.style.position = 'relative';">
+        <nav id="sidebar2" class="scrollbar-primary" onmouseover="document.body.style.overflow = 'hidden';" onmouseout="document.body.style.overflow = 'auto';">
             <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
             <button data-toggle="modal" data-target="#signAllModal" class="btn btn-light col-3 col-md-12 mb-1 text-left d-none" th:classappend="${signable != 'ok' || signRequest.parentSignBook == null || signRequest.parentSignBook .signRequests.size() < 2} ? 'd-none' ">
                 <i class="fas fa-bolt"></i> Tout signer
@@ -22,6 +22,7 @@
             </button>
             <button th:if="${documentType == 'pdf'}" id="commentButton" onclick="enableCommentMode();" class="btn btn-light col-12 mb-1 text-left">
                 <i class="fas fa-comment-alt"></i> Mode commentaires
+                <span th:if="${postits.size() > 0}" class="float-right badge badge-warning mt-1" th:text="${postits.size()}"></span>
             </button>
             <th:block th:if="${signRequest.parentSignBook != null}">
                 <div th:replace="user/signrequests/cards/stepscard :: stepscard"></div>

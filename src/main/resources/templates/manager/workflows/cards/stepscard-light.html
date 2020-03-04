@@ -28,7 +28,7 @@
                             <div th:if="${workflow.workflowSteps.size() > iterator.index + 1}" class="line"></div>
                         </th:block>
                         <th:block th:if="${workflow.documentsTargetUri != null}">
-                            <div class="line"></div>
+                            <div class="bs-stepper-line"></div>
                             <div class="step">
                                 <div class="step-trigger">
                                     <div th:classappend="${signRequest.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></div>

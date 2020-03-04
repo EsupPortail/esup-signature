@@ -229,7 +229,7 @@ public class SignRequestService {
 			signRequest.setAllSignToComplete(allSignToComplete);
 			signRequest.setCurrentStepNumber(signRequest.getCurrentStepNumber() + 1);
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
-			//sendEmailAlerts(signRequest);
+			sendEmailAlerts(signRequest);
 		} else {
 			logger.warn("already pending");
 		}

@@ -25,18 +25,18 @@
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'pending'}">
-		<div class="alert alert-dark mb-1">
-			<p class="alert-heading">
+		<div class="card card-body mb-1">
+			<span>
 				Le document est en cours de signature par :
-			</p>
-			<table class="table table-sm table-bordered">
+			</span>
+			<table class="table table-sm table-borderless table-striped table-hover">
 			<th:block th:each="recipient : ${signRequest.recipients}">
 				<tr>
 					<td width="100%" th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>
 					<td align="center">
 						<div th:switch="${recipient.signed}">
 							<i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
-							<i title="n'a pas signé le document" th:case="false" class="fas fa-exclamation-circle text-danger"></i>
+							<i title="n'a pas signé le document" th:case="false" class="fas fa-clock text-warning"></i>
 						</div>
 					</td>
 				</tr>
@@ -46,7 +46,7 @@
 	</div>
 	<div th:if="${signRequest.status.name() == 'signed'}">
 		<div class="alert alert-success mb-1">
-			<h5 class="alert-heading">Le document est signé</h5>
+			<p class="alert-heading">Le document est signé</p>
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'checked'}">
@@ -56,7 +56,7 @@
 	</div>
 	<div th:if="${signRequest.status.name() == 'completed'}">
 		<div class="alert alert-success mb-1">
-			<h5 class="alert-heading">Cette demande est terminée</h5>
+			<p class="alert-heading">Cette demande est terminée</p>
 		</div>
 	</div>
 	<div th:if="${signRequest.status.name() == 'refused'}">

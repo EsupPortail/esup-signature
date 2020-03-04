@@ -127,26 +127,27 @@ public class SignRequestController {
                        @RequestParam(value = "messageError", required = false) String messageError,
                        @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
         workflowService.initCreatorWorkflow();
-        if (statusFilter != null) {
-            if (!statusFilter.equals("all")) {
-                this.statusFilter = SignRequestStatus.valueOf(statusFilter);
-            } else {
-                this.statusFilter = null;
-            }
-        }
+//        if (statusFilter != null) {
+//            if (!statusFilter.equals("all")) {
+//                this.statusFilter = SignRequestStatus.valueOf(statusFilter);
+//            } else {
+//                this.statusFilter = null;
+//            }
+//        }
 
         List<SignRequest> signRequests;
-        if (this.statusFilter != null) {
-            signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), this.statusFilter);
+        if (statusFilter != null) {
+            signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.valueOf(statusFilter));
+            model.addAttribute("statusFilter", SignRequestStatus.valueOf(statusFilter));
         } else {
             signRequests = signRequestRepository.findByCreateBy(user.getEppn());
         }
-
-        for (SignRequest signRequest : signRequestService.getToSignRequests(user)) {
-            if (!signRequests.contains(signRequest)) {
-                signRequests.add(signRequest);
-            }
-        }
+//
+//        for (SignRequest signRequest : signRequestService.getToSignRequests(user)) {
+//            if (!signRequests.contains(signRequest)) {
+//                signRequests.add(signRequest);
+//            }
+//        }
 
         model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequests, pageable));
 
@@ -155,36 +156,9 @@ public class SignRequestController {
         }
         model.addAttribute("mydocs", "active");
         model.addAttribute("signBookId", signBookId);
-        model.addAttribute("statusFilter", this.statusFilter);
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("messageError", messageError);
         return "user/signrequests/list";
-    }
-
-    @GetMapping("/sended")
-    public String listSended(@RequestParam(value = "messageError", required = false) String messageError,
-                             @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
-        User user = userService.getUserFromAuthentication();
-        List<SignRequest> signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.pending);
-        model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequests, pageable));
-
-        if (user.getKeystore() != null) {
-            model.addAttribute("keystore", user.getKeystore().getFileName());
-        }
-        model.addAttribute("mydocs", "active");
-        model.addAttribute("messageError", messageError);
-        return "user/signrequests/list-sended";
-    }
-
-    @GetMapping("/to-sign")
-    public String listToSign(User user, @RequestParam(value = "messageError", required = false) String messageError,
-                             @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
-        List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
-        model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequestsToSign, pageable));
-        model.addAttribute("signRequestsSignedByMe", signRequestService.getSignRequestsSignedByUser(user));
-        model.addAttribute("messageError", messageError);
-        model.addAttribute("activeMenu", "tosign");
-        return "user/signrequests/list-to-sign";
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
@@ -245,6 +219,10 @@ public class SignRequestController {
                     model.addAttribute("signWidth", size[0]);
                     model.addAttribute("signHeight", size[1]);
                 } else {
+                    if(signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign)) {
+                        model.addAttribute("signable", "ko");
+                        model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter une image de votre signature");
+                    }
                     model.addAttribute("signWidth", 100);
                     model.addAttribute("signHeight", 75);
                 }
@@ -351,6 +329,9 @@ public class SignRequestController {
             signRequestParams.setXPos(xPos);
             signRequestParams.setYPos(yPos);
             signRequestParamsRepository.save(signRequestParams);
+            if(!signRequest.getSignRequestParams().contains(signRequestParams)) {
+                signRequest.getSignRequestParams().add(signRequestParams);
+            }
         }
         if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
             signRequestService.setStep("Démarrage de l'application NexU");
