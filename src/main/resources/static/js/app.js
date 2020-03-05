@@ -17,14 +17,14 @@
  */
 
 $(document).ready(function () {
-	$('#new-scroll').on('mousewheel DOMMouseScroll', function(event){
 
-		var delta = Math.max(-1, Math.min(1, (event.originalEvent.wheelDelta || -event.originalEvent.detail)));
-
-		$(this).scrollLeft( $(this).scrollLeft() - ( delta * 40 ) );
+	$('#newScroll').on('mousewheel DOMMouseScroll', function(event){
 		event.preventDefault();
+		var delta = Math.max(-1, Math.min(1, (event.originalEvent.wheelDelta || -event.originalEvent.detail)));
+		$(this).scrollLeft( $(this).scrollLeft() - ( delta * 100 ) );
 
 	});
+
 	$(document).click(function (event) {
 		var clickover = $(event.target);
 		var _opened = $("#user-infos").hasClass("user-infos collapse show");
@@ -61,6 +61,13 @@ $(document).ready(function () {
 			localStorage.setItem('sideBarStatus', 'on');
 		}
 	});
+
+	$('#toggleNewGrid').on('click', function () {
+		$('#newScroll').toggleClass('text-nowrap').toggleClass('min-vh-100');
+		$('#toSignList').toggleClass('d-flex d-none');
+		$('#toggleNewGrid').children().toggleClass('fa-th fa-chevron-up');
+	});
+	
 });
 
 

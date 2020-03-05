@@ -70,7 +70,7 @@ public class HomeController {
         model.addAttribute("forms", formService.getFormsByUser(user, true));
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
         model.addAttribute("signTypes", Arrays.asList(SignType.values()));
-        return "user/home";
+        return "user/home/index";
     }
 
 }

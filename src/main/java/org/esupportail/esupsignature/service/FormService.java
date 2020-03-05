@@ -134,7 +134,6 @@ public class FormService {
 		} else {
 			form.setVersion(1);
 		}
-		form.setNbPages(pdDocument.getNumberOfPages());
 		form.setDocument(document);
 		form.setTargetType(targetType);
 		form.setTargetUri(targetUri);

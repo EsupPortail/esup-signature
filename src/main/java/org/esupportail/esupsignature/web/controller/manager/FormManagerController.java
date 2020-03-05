@@ -134,7 +134,7 @@ public class FormManagerController {
 	@PutMapping("forms")
 	public String updateForm(@ModelAttribute Form updateForm) {
 		Form form = formService.getFormById(updateForm.getId());
-		form.setPdfDisplay(updateForm.isPdfDisplay());
+		form.setPdfDisplay(updateForm.getPdfDisplay());
 		form.setName(updateForm.getName());
 		form.setRole(updateForm.getRole());
 		form.setPreFillType(updateForm.getPreFillType());

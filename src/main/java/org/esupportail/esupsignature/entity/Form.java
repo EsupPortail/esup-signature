@@ -30,10 +30,10 @@ public class Form {
 	private String preFillType;
 
 	private String role;
-	
-	private Boolean pdfDisplay = true;
 
-	private Integer nbPages = 1;
+	private Boolean publicUsage = false;
+
+	private Boolean pdfDisplay = true;
 
 	private Boolean activeVersion = false;
 
@@ -49,29 +49,12 @@ public class Form {
 	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
 	private List<Field> fields = new ArrayList<>();
 
-	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
-	private List<Data> datas = new ArrayList<>();
-
-	@Transient
-	private Long nbSended;
-
-	@Transient
-	private Long nbDraft;
-
 	public Long getId() {
 		return id;
 	}
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public Integer getVersion() {
-		return version;
-	}
-
-	public void setVersion(Integer version) {
-		this.version = version;
 	}
 
 	public String getName() {
@@ -90,20 +73,12 @@ public class Form {
 		this.description = description;
 	}
 
-	public Document getDocument() {
-		return document;
+	public Integer getVersion() {
+		return version;
 	}
 
-	public void setDocument(Document document) {
-		this.document = document;
-	}
-
-	public List<Field> getFields() {
-		return fields;
-	}
-
-	public void setFields(List<Field> fields) {
-		this.fields = fields;
+	public void setVersion(Integer version) {
+		this.version = version;
 	}
 
 	public String getManager() {
@@ -113,13 +88,53 @@ public class Form {
 	public void setManager(String manager) {
 		this.manager = manager;
 	}
-	
+
 	public String getWorkflowType() {
 		return workflowType;
 	}
 
 	public void setWorkflowType(String workflowType) {
 		this.workflowType = workflowType;
+	}
+
+	public String getPreFillType() {
+		return preFillType;
+	}
+
+	public void setPreFillType(String preFillType) {
+		this.preFillType = preFillType;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
+	public Boolean getPublicUsage() {
+		return publicUsage;
+	}
+
+	public void setPublicUsage(Boolean publicUsage) {
+		this.publicUsage = publicUsage;
+	}
+
+	public Boolean getPdfDisplay() {
+		return pdfDisplay;
+	}
+
+	public void setPdfDisplay(Boolean pdfDisplay) {
+		this.pdfDisplay = pdfDisplay;
+	}
+
+	public Boolean getActiveVersion() {
+		return activeVersion;
+	}
+
+	public void setActiveVersion(Boolean activeVersion) {
+		this.activeVersion = activeVersion;
 	}
 
 	public DocumentIOType getTargetType() {
@@ -138,59 +153,19 @@ public class Form {
 		this.targetUri = targetUri;
 	}
 
-	public boolean isPdfDisplay() {
-		return pdfDisplay;
+	public Document getDocument() {
+		return document;
 	}
 
-	public void setPdfDisplay(boolean pdfDisplay) {
-		this.pdfDisplay = pdfDisplay;
+	public void setDocument(Document document) {
+		this.document = document;
 	}
 
-	public Integer getNbPages() {
-		return nbPages;
+	public List<Field> getFields() {
+		return fields;
 	}
 
-	public void setNbPages(Integer nbPages) {
-		this.nbPages = nbPages;
-	}
-
-	public String getRole() {
-		return role;
-	}
-
-	public void setRole(String role) {
-		this.role = role;
-	}
-
-	public String getPreFillType() {
-		return preFillType;
-	}
-
-	public void setPreFillType(String preFillType) {
-		this.preFillType = preFillType;
-	}
-
-	public Long getNbSended() {
-		return nbSended;
-	}
-
-	public void setNbSended(Long nbSended) {
-		this.nbSended = nbSended;
-	}
-
-	public Long getNbDraft() {
-		return nbDraft;
-	}
-
-	public void setNbDraft(Long nbDraft) {
-		this.nbDraft = nbDraft;
-	}
-
-	public Boolean getActiveVersion() {
-		return activeVersion;
-	}
-
-	public void setActiveVersion(Boolean activeVersion) {
-		this.activeVersion = activeVersion;
+	public void setFields(List<Field> fields) {
+		this.fields = fields;
 	}
 }

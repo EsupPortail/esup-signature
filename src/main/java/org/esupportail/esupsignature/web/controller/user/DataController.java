@@ -142,7 +142,7 @@ public class DataController {
 		model.addAttribute("data", new Data());
 		model.addAttribute("activeForm", form.getName());
 		model.addAttribute("page", page);
-		if(form.isPdfDisplay()) {
+		if(form.getPdfDisplay()) {
 			return "user/datas/create-pdf";
 		} else {
 			return "user/datas/create";
