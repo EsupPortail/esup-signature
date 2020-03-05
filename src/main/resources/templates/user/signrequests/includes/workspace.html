@@ -410,7 +410,7 @@
                     cross.style.height = cross.offsetHeight + 20;
                     borders.style.width = 200;
                     borders.style.height = borders.offsetHeight + 20;
-                    borders.insertAdjacentHTML("beforeend", "<span id='textDate' class='align-top' style='font-size:" + 8 * scale + "px;'>Le XX/XX/XXXX XX:XX</span>");
+                    borders.insertAdjacentHTML("beforeend", "<span id='textDate' class='align-top' style='font-size:" + 8 * scale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm') +"</span>");
                 } else {
                     dateActive = false;
                     cross.style.width = 100;

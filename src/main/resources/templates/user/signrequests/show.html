@@ -67,9 +67,6 @@
                     </div>
                 </div>
                 <div class="d-flex mb-1">
-                    <a class="btn btn-outline-dark mr-1 text-left d-none d-lg-block" th:href="'/user/signrequests/' + ${id} + '?form'" title="Details">
-                        <i class="fas fa-info-circle"></i>
-                    </a>
                     <a th:if="${signRequest.createBy == user.eppn && signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() == 'draft' || signRequest.parentSignBook.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>
                     <a th:if="${signRequest.createBy == user.eppn && signRequest.parentSignBook == null && (signRequest.status.name() == 'draft' || signRequest.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1" title="Modifier" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>
                     <th:block th:if="${documentType == 'pdf'}">
@@ -87,6 +84,10 @@
                     <div class="border ml-3 mr-3 d-none d-lg-block"></div>
                     <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
                     <button id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
+                    <div class="border ml-3 mr-3 "></div>
+                    <button class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block" data-toggle="modal" data-target="#attachment">
+                        <i class="fas fa-paperclip"></i> Pièces jointes <div th:if="${signRequest.attachments.size() > 0 }" th:text="${signRequest.attachments.size()}" class="badge badge-primary"></div>
+                    </button>
                     <div class="border ml-3 mr-3 "></div>
                     <div id="signtools" th:if="${signable == 'ok'}" style="display: none;">
                         <button id="pen" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer un visuel" class="btn btn-outline-success ml-1" onclick="toggleVisual()"><i class="fas fa-file-signature"></i></button>
@@ -120,9 +121,6 @@
                                 </a></li>
                             </ul>
                         </div>
-
-
-
                     </th:block>
                 </div>
                 <nav class="nav nav-tabs" th:if="${signRequest.parentSignBook != null}">
@@ -193,7 +191,7 @@
                             <i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
                         </a>
                         <div class="alert alert-warning float-left">
-                            L'application NexU n'a pas la bonne version.
+                            L'application NexU n’a pas la bonne version.
                             <span th:text="${nexuVersion} + 'nécessaire'"></span>
                             <br>
                         </div>
@@ -206,7 +204,7 @@
                             L'application NexU n'a pas été détectée
                             <br>
                             <small>
-                                Merci de lancer l'application sur votre poste puis d'actualiser la page.<br/>L'application NexU est disponible ici : <a target="_blank" th:href="${baseUrl}">NexU</a>
+                                Merci de lancer l’application sur votre poste puis d'actualiser la page.<br/>L'application NexU est disponible ici : <a target="_blank" th:href="${baseUrl}">NexU</a>
                             </small>
                         </div>
                     </div>
@@ -294,6 +292,9 @@
         </div>
     </div>
 </div>
+
+<div th:replace="user/signrequests/includes/modals/attachment"></div>
+
 <script>
     $(document).ready(function () {
        showSideBar();

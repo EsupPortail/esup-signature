@@ -175,7 +175,22 @@ public class SignRequestService {
 				throw new EsupSignatureIOException("", e);
 			}
 		}
+	}
 
+	public void addAttachmentToSignRequest(SignRequest signRequest, MultipartFile... multipartFiles) throws EsupSignatureIOException {
+		for(MultipartFile multipartFile : multipartFiles) {
+			try {
+				File file = fileService.inputStreamToTempFile(multipartFile.getInputStream(), multipartFile.getName());
+				String docName = documentService.getFormatedName("attachement_" + multipartFile.getOriginalFilename(), signRequest.getOriginalDocuments().size());
+				Document document = documentService.createDocument(new FileInputStream(file), docName, multipartFile.getContentType());
+				signRequest.getAttachments().add(document);
+				document.setParentId(signRequest.getId());
+				documentRepository.save(document);
+				file.delete();
+			} catch (IOException e) {
+				throw new EsupSignatureIOException("", e);
+			}
+		}
 	}
 
 	public List<SignRequestParams> scanSignatureFields(InputStream inputStream) throws EsupSignatureIOException {

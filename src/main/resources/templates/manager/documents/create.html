@@ -19,7 +19,7 @@
   				<div class="card-body">
                     <form id="addModel" th:action="'/manager/documents?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data" >
 						<div class="form-group">
-							<div class="input-group">
+							<div class="form-group">
 								<div class="custom-file">
 									<input aria-describedby="inputGroupFileAddon01" class="custom-file-input" data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile" type="file" />
 									<label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01">

@@ -239,21 +239,21 @@ public class SignRequestController {
             return "user/signrequests/show";
         }
     }
-
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
-    @PostMapping(value = "/add-docs/{id}")
-    public String addDocumentToNewSignRequest(@PathVariable("id") Long id,
-                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
-        logger.info("start add documents");
-        User user = userService.getUserFromAuthentication();
-        SignBook signBook = signBookRepository.findById(id).get();
-        for (MultipartFile multipartFile : multipartFiles) {
-            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
-            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
-            signBookService.addSignRequest(signBook, signRequest);
-        }
-        return "redirect:/user/signbooks/" + id + "/?form";
-    }
+//
+//    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
+//    @PostMapping(value = "/add-docs/{id}")
+//    public String addDocumentToNewSignRequest(@PathVariable("id") Long id,
+//                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
+//        logger.info("start add documents");
+//        User user = userService.getUserFromAuthentication();
+//        SignBook signBook = signBookRepository.findById(id).get();
+//        for (MultipartFile multipartFile : multipartFiles) {
+//            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
+//            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+//            signBookService.addSignRequest(signBook, signRequest);
+//        }
+//        return "redirect:/user/signbooks/" + id + "/?form";
+//    }
 
     @ResponseBody
     @PostMapping(value = "/remove-doc/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -396,6 +396,55 @@ public class SignRequestController {
                 response.setHeader("Content-Disposition", "attachment;filename=test-seda.zip");
                 response.setContentType("application/zip");
                 IOUtils.copy(sedaExportService.generateSip(signRequest), response.getOutputStream());
+            }
+        } catch (Exception e) {
+            logger.error("get file error", e);
+        }
+    }
+
+
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
+    @PostMapping(value = "/add-attachment/{id}")
+    public String addAttachement(@PathVariable("id") Long id, @RequestParam("multipartFiles") MultipartFile[] multipartFiles, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
+        logger.info("start add attachment");
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        for (MultipartFile multipartFile : multipartFiles) {
+            signRequestService.addAttachmentToSignRequest(signRequest, multipartFile);
+        }
+        redirectAttributes.addFlashAttribute("messageInfo", "La pieces jointe à bien été ajoutée");
+        return "redirect:/user/signrequests/" + id;
+    }
+
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
+    @GetMapping(value = "/remove-attachment/{id}/{attachementId}")
+    public String removeAttachement(@PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, RedirectAttributes redirectAttributes) {
+        logger.info("start remove attachment");
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        Document attachement = documentRepository.findById(attachementId).get();
+        if (!attachement.getParentId().equals(signRequest.getId())) {
+            redirectAttributes.addFlashAttribute("messageError", "Pièce jointe non trouvée ...");
+        } else {
+            signRequest.getAttachments().remove(attachement);
+            signRequestRepository.save(signRequest);
+            documentRepository.delete(attachement);
+        }
+        redirectAttributes.addFlashAttribute("messageInfo", "La pieces jointe à été supprimée");
+        return "redirect:/user/signrequests/" + id;
+    }
+
+    @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
+    @GetMapping(value = "/get-attachment/{id}/{attachementId}")
+    public void getAttachment(@PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, HttpServletResponse response, RedirectAttributes redirectAttributes) {
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        Document attachement = documentRepository.findById(attachementId).get();
+        try {
+            if (!attachement.getParentId().equals(signRequest.getId())) {
+                redirectAttributes.addFlashAttribute("messageError", "Pièce jointe non trouvée ...");
+                response.sendRedirect("/user/signsignrequests/" + id);
+            } else {
+                response.setHeader("Content-Disposition", "inline;filename=\"" + attachement.getFileName() + "\"");
+                response.setContentType(attachement.getContentType());
+                IOUtils.copy(attachement.getInputStream(), response.getOutputStream());
             }
         } catch (Exception e) {
             logger.error("get file error", e);
