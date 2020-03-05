@@ -111,6 +111,15 @@ public class SignBookService {
         }
     }
 
+    public boolean preAuthorizeManage(String name, Long id) {
+        User user = userService.getUserByEppn(name);
+        SignBook signBook = signBookRepository.findById(id).get();
+        if (checkUserManageRights(user, signBook)) {
+            return true;
+        }
+        return false;
+    }
+
     public void importWorkflow(SignBook signBook, Workflow workflow) {
         logger.info("import workflow steps in signBook " + signBook.getName() + " - " +signBook.getId());
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {

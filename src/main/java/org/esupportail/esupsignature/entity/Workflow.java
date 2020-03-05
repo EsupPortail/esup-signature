@@ -24,6 +24,9 @@ public class Workflow {
 	@Column(unique=true)
 	private String name;
 
+    @Size(max = 500)
+    private String description;
+
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
@@ -37,10 +40,11 @@ public class Workflow {
     private String updateBy;
     
     private Boolean external = false;
-    
-    @Size(max = 500)
-    private String description;
-    
+
+    private Boolean publicUsage = false;
+
+    private Boolean archive = false;
+
     @Enumerated(EnumType.STRING)
     private DocumentIOType sourceType;
     
@@ -80,6 +84,14 @@ public class Workflow {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Date getCreateDate() {
@@ -122,12 +134,20 @@ public class Workflow {
         this.external = external;
     }
 
-    public String getDescription() {
-        return description;
+    public Boolean getPublicUsage() {
+        return publicUsage;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setPublicUsage(Boolean publicUsage) {
+        this.publicUsage = publicUsage;
+    }
+
+    public Boolean getArchive() {
+        return archive;
+    }
+
+    public void setArchive(Boolean archive) {
+        this.archive = archive;
     }
 
     public DocumentIOType getSourceType() {
@@ -177,5 +197,4 @@ public class Workflow {
     public void setDocumentsTargetUri(String documentsTargetUri) {
         this.documentsTargetUri = documentsTargetUri;
     }
-
 }

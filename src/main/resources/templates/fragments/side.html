@@ -11,8 +11,8 @@
             <i class="sidebar-label fab fa-firstdraft"></i> <span class="sidebar-label">Mes brouillons</span>
             <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0}" class="badge badge-info mt-1" th:text="${nbDatas}"></span>
         </a>
-        <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user.eppn, 'pending').size()}" th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Suivre mes envois" href="/user/signrequests" class="btn btn-transparent col-12 mb-1 text-left">
-            <i class="fas fa-list"></i> <span class="sidebar-label">Mes envois</span>
+        <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user.eppn, 'pending').size()}" th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Tableau de bord" href="/user/signrequests" class="btn btn-transparent col-12 mb-1 text-left">
+            <i class="fas fa-paste"></i> <span class="sidebar-label">Tableau de bord</span>
         </a>
         <a th:classappend="${activeMenu == 'validation'} ? 'bg-secondary'" title="Valider la signature d'un document" href="/user/validation" class="btn btn-transparent col-12 mb-1 text-left">
             <i class="fas fa-shield-alt"></i> <span class="sidebar-label">Contrôler un document</span>

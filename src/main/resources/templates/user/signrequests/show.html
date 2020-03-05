@@ -10,7 +10,6 @@
     <div class="wrapper">
         <nav th:insert="fragments/side :: side"></nav>
         <nav id="sidebar2" class="scrollbar-primary">
-
             <button data-toggle="modal" data-target="#signAllModal" class="btn btn-light col-3 col-md-12 mb-1 text-left d-none" th:classappend="${signable != 'ok' || signRequest.parentSignBook == null || signRequest.parentSignBook .signRequests.size() < 2} ? 'd-none' ">
                 <i class="fas fa-bolt"></i> Tout signer
             </button>
@@ -49,7 +48,8 @@
         </nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/user/signrequests">Documents envoyés</a></li>
+                <li th:if="${signRequest.createBy == user.eppn}" class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
+                <li th:unless="${signRequest.createBy == user.eppn}" class="breadcrumb-item"><a href="/user/signrequests/?statusFilter=tosign">Documents à signer</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Document : <span th:text="${signRequest.title}"></span>
                 </li>
             </ol>

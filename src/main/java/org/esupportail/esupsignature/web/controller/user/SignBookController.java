@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -46,9 +47,6 @@ public class SignBookController {
     private UserService userService;
 
     @Resource
-    private RecipientRepository recipientRepository;
-
-    @Resource
     private SignRequestRepository signRequestRepository;
 
     @Resource
@@ -56,9 +54,6 @@ public class SignBookController {
 
     @Resource
     private WorkflowStepRepository workflowStepRepository;
-
-    @Resource
-    private UserRepository userRepository;
 
     @Resource
     private SignBookRepository signBookRepository;
@@ -75,23 +70,20 @@ public class SignBookController {
     @Resource
     private LogRepository logRepository;
 
-    @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
+    @PreAuthorize("@signBookService.preAuthorizeManage(authentication.name, #id)")
+    @GetMapping(value = "/{id}", params = "form", produces = "text/html")
     public String updateForm(@PathVariable("id") Long id, Model model) {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
-        if(signBookService.checkUserManageRights(user , signBook)) {
-            List<Log> logs = logRepository.findBySignRequestId(signBook.getId());
-            model.addAttribute("logs", logs);
-            model.addAttribute("signBook", signBook);
-            model.addAttribute("signTypes", SignType.values());
-            model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
-            return "user/signbooks/update";
-        } else {
-            return "redirect:/";
-        }
-
+        List<Log> logs = logRepository.findBySignRequestId(signBook.getId());
+        model.addAttribute("logs", logs);
+        model.addAttribute("signBook", signBook);
+        model.addAttribute("signTypes", SignType.values());
+        model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
+        return "user/signbooks/update";
     }
 
+    @PreAuthorize("@signBookService.preAuthorizeManage(authentication.name, #id)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@PathVariable("id") Long id) {
         SignBook signBook = signBookRepository.findById(id).get();
@@ -99,8 +91,8 @@ public class SignBookController {
         return "redirect:/user/signrequests/";
     }
 
-    @RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
-    public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
+    @GetMapping(value = "/get-last-file/{id}")
+    public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         User user = userService.getUserFromAuthentication();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
@@ -122,7 +114,7 @@ public class SignBookController {
         }
     }
 
-    @RequestMapping(value = "/change-step-sign-type/{id}/{step}", method = RequestMethod.GET)
+    @GetMapping(value = "/change-step-sign-type/{id}/{step}")
     public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
@@ -133,7 +125,7 @@ public class SignBookController {
         return "redirect:/user/signbooks/";
     }
 
-    @RequestMapping(value = "/update-step/{id}/{step}", method = RequestMethod.GET)
+    @GetMapping(value = "/update-step/{id}/{step}")
     public String changeStepSignType(@PathVariable("id") Long id,
                                      @PathVariable("step") Integer step,
                                      @RequestParam(name="name", required = false) String name,
@@ -279,7 +271,7 @@ public class SignBookController {
                           @RequestParam(value = "pageNumber", required = false) Integer pageNumber,
                           @RequestParam(value = "posX", required = false) Integer posX,
                           @RequestParam(value = "posY", required = false) Integer posY,
-                          HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
+                          HttpServletRequest request) {
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -289,11 +281,6 @@ public class SignBookController {
             logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
         }
         return "redirect:/user/signbooks/" + signRequest.getParentSignBook().getId() + "/" + signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
-    }
-
-    void populateEditForm(Model model, SignRequest signRequest) {
-        model.addAttribute("signRequest", signRequest);
-        model.addAttribute("signTypes", Arrays.asList(SignType.values()));
     }
 
 }

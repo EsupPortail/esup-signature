@@ -10,24 +10,23 @@
         <nav th:insert="fragments/side :: side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item active">Documents envoyés</li>
+                <li class="breadcrumb-item active">Tableau de bord</li>
             </ol>
         </nav>
         <div id="content" class="content">
             <div class="card mb-3">
                 <div id="myDocs" class="card-body">
 
-                    <a th:if="${status == statusFilter}" th:value="${status}" class="btn btn-sm btn-secondary"
-                      href="/user/signrequests">Tous</a>
-                    <a th:unless="${status == statusFilter}" th:value="${status}" class="btn btn-sm btn-outline-secondary"
-                       href="/user/signrequests">Tous</a>
-
-                    <th:block th:each="status : ${statuses}">
-                        <a th:if="${status == statusFilter}" th:value="${status}" class="btn btn-sm btn-secondary"
-                                th:text="#{'signbook.status.' + ${status}}" th:href="'/user/signrequests/?statusFilter=' + ${status}"></a>
-                        <a th:unless="${status == statusFilter}" th:value="${status}" class="btn btn-sm btn-outline-secondary"
-                           th:text="#{'signbook.status.' + ${status}}" th:href="'/user/signrequests/?statusFilter=' + ${status}"></a>
-                    </th:block>
+                    <a th:if="${status == statusFilter}" class="btn btn-sm btn-secondary" href="/user/signrequests">Tout voir</a>
+                    <a th:unless="${status == statusFilter}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests">Tout voir</a>
+                    <a th:if="${statusFilter == 'tosign'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=tosign">A signer</a>
+                    <a th:unless="${statusFilter == 'tosign'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=tosign">A signer</a>
+                    <a th:if="${statusFilter == 'pending'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=pending">Demandes envoyées</a>
+                    <a th:unless="${statusFilter == 'pending'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=pending">Demandes envoyées</a>
+                    <a th:if="${statusFilter == 'completed'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=completed">Demandes terminées</a>
+                    <a th:unless="${statusFilter == 'completed'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=completed">Demandes terminées</a>
+                    <a th:if="${statusFilter == 'refused'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=refused">Demandes refusées</a>
+                    <a th:unless="${statusFilter == 'refused'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=refused">Demandes refusées</a>
 
 <!--                    <form class="" action="" method="get">-->
 <!--                        <div class="input-group mb-2">-->
@@ -120,13 +119,13 @@
                                     </button>
                                     <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:200px; right: 100px;z-index: 1000;">
                                         <div class=" card-body">
-                                            <a class="btn btn-transparent text-dark text-left" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                                            <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                                                 <i class="fas fa-eye pr-2"></i>Consulter
                                             </a>
-                                            <a class="btn btn-transparent text-dark text-left" role="button" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'">
+                                            <a th:if="${signRequest.parentSignBook.createBy == user.eppn}" class="btn btn-transparent text-dark text-left col-12" role="button" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'">
                                                 <i class="fas fa-pencil-alt pr-2"></i>Modifier
                                             </a>
-                                            <a class="btn btn-transparent text-dark text-left" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${signRequest.id}">
+                                            <a th:if="${signRequest.parentSignBook.createBy == user.eppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${signRequest.id}">
                                                 <i class="fas fa-trash-alt pr-2"></i>Supprimer
                                             </a>
                                         </div>
@@ -168,13 +167,13 @@
                                     </button>
                                     <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:200px; right: 100px;z-index: 1000;">
                                         <div class=" card-body">
-                                            <a class="btn btn-transparent text-dark text-left" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                                            <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                                                 <i class="fas fa-eye pr-2"></i>Consulter
                                             </a>
-                                            <a class="btn btn-transparent text-dark text-left" role="button" title="Modifier" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'">
+                                            <a class="btn btn-transparent text-dark text-left col-12" role="button" title="Modifier" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'">
                                                 <i class="fas fa-pencil-alt pr-2"></i>Modifier
                                             </a>
-                                            <a class="btn btn-transparent text-dark text-left" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${signRequest.id}">
+                                            <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${signRequest.id}">
                                                 <i class="fas fa-trash-alt pr-2"></i>Supprimer
                                             </a>
                                         </div>

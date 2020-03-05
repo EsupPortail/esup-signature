@@ -127,27 +127,24 @@ public class SignRequestController {
                        @RequestParam(value = "messageError", required = false) String messageError,
                        @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
         workflowService.initCreatorWorkflow();
-//        if (statusFilter != null) {
-//            if (!statusFilter.equals("all")) {
-//                this.statusFilter = SignRequestStatus.valueOf(statusFilter);
-//            } else {
-//                this.statusFilter = null;
-//            }
-//        }
 
         List<SignRequest> signRequests;
         if (statusFilter != null) {
-            signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.valueOf(statusFilter));
-            model.addAttribute("statusFilter", SignRequestStatus.valueOf(statusFilter));
+            if (statusFilter.equals("tosign")) {
+                signRequests = signRequestService.getToSignRequests(user);
+                model.addAttribute("statusFilter", "tosign");
+            } else {
+                signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.valueOf(statusFilter));
+                model.addAttribute("statusFilter", SignRequestStatus.valueOf(statusFilter));
+            }
         } else {
             signRequests = signRequestRepository.findByCreateBy(user.getEppn());
+            for(SignRequest signRequest : signRequestService.getToSignRequests(user)) {
+                if(!signRequests.contains(signRequest)) {
+                    signRequests.add(signRequest);
+                }
+            }
         }
-//
-//        for (SignRequest signRequest : signRequestService.getToSignRequests(user)) {
-//            if (!signRequests.contains(signRequest)) {
-//                signRequests.add(signRequest);
-//            }
-//        }
 
         model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequests, pageable));
 
