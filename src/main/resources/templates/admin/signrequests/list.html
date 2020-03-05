@@ -15,38 +15,31 @@
                 </a>
             </div>
         </nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav text-uppercase">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active">Liste des demandes</li>
+            </ol>
+        </nav>
         <div id="content" class="content">
-    <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item active">Liste des demandes</li>
-        </ol>
-    </nav>
     <div class="card">
         <div class="card-header">
-            Documents envoyés
-            <div class="row">
-
-                <div class="col-lg-12">
-                    <form class="" action="" method="get">
-                        <div class="card">
-                            <div class="form-group">
-                                <div class="input-group-prepend">
-                                    <div class="input-group-text">Statut</div>
-                                </div>
-                                <select class="form-control" name="statusFilter" id="statusFilter" onchange="submit();">
-                                    <option value="" disabled="disabled" selected="selected">Choisir un statut</option>
-                                    <option value="all">Tous</option>
-                                    <th:block th:each="status : ${statuses}">
-                                        <option th:if="${status == statusFilter}" th:value="${status}" selected="selected" th:text="#{'signbook.status.' + ${status}}"></option>
-                                        <option th:unless="${status == statusFilter}" th:value="${status}" th:text="#{'signbook.status.' + ${status}}"></option>
-                                    </th:block>
-                                </select>
-                            </div>
+            <form class="" action="" method="get">
+                <div class="card">
+                    <div class="form-group">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">Statut</div>
                         </div>
-                    </form>
+                        <select class="form-control" name="statusFilter" id="statusFilter" onchange="submit();">
+                            <option value="" disabled="disabled" selected="selected">Choisir un statut</option>
+                            <option value="all">Tous</option>
+                            <th:block th:each="status : ${statuses}">
+                                <option th:if="${status == statusFilter}" th:value="${status}" selected="selected" th:text="#{'signbook.status.' + ${status}}"></option>
+                                <option th:unless="${status == statusFilter}" th:value="${status}" th:text="#{'signbook.status.' + ${status}}"></option>
+                            </th:block>
+                        </select>
+                    </div>
                 </div>
-            </div>
-            <div style="display: none;" id="alertsigndocs" class="alert alert-danger" role="alert">Impossible de signer en masse la selection actuelle</div>
+            </form>
         </div>
         <div class="card-body">
             <div class="table-responsive">

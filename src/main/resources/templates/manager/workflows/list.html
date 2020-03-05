@@ -21,7 +21,7 @@
             </div>
             <div class="card col-lg-10">
                 <div class="card-body">
-                    <table class="table table-borderless table-hover table-striped">
+                    <table class="table table-sm table-borderless table-hover table-striped">
                         <thead class="thead-dark">
                         <tr>
                             <th class="none">Nom</th>
@@ -60,11 +60,11 @@
                                 </td>
                                 <td class="utilbox">
                                     <a role="button" th:if="${workflow.id != null}" aria-label="Voir"
-                                       class="btn btn-primary" title="Voir"
+                                       class="btn btn-sm btn-primary" title="Voir"
                                        th:href="'/manager/workflows/' + ${workflow.id}">
                                         <i aria-hidden="true" class="fas fa-eye"></i></a>
                                     <a role="button" th:unless="${workflow.id != null}" aria-label="Voir"
-                                       class="btn btn-primary" title="Voir"
+                                       class="btn btn-sm btn-primary" title="Voir"
                                        th:href="'/manager/workflows/' + ${workflow.name}">
                                         <i aria-hidden="true" class="fas fa-eye"></i></a>
                                 </td>

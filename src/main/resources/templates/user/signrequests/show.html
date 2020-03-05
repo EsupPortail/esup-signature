@@ -90,8 +90,8 @@
                     </button>
                     <div class="border ml-3 mr-3 "></div>
                     <div id="signtools" th:if="${signable == 'ok'}" style="display: none;">
-                        <button id="pen" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer un visuel" class="btn btn-outline-success ml-1" onclick="toggleVisual()"><i class="fas fa-file-signature"></i></button>
-                        <button id="clock" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer la date" class="btn btn-outline-secondary ml-1" onclick="toggleDate()"><i class="fas fa-clock"></i></button>
+                        <button id="pen" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer un visuel" class="btn btn-outline-success ml-1" onclick="toggleVisual()"><i class="fas fa-eye"></i></button>
+                        <button id="clock" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer la date" class="btn btn-outline-dark ml-1" onclick="toggleDate()"><i class="fas fa-clock"></i></button>
                     </div>
                     <div id="signButtons" th:if="${signable == 'ok'}" class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#signButtons').toggleClass('active');" onmouseout="$('#signButtons').toggleClass('active');">
                         <a class="btn-floating btn-lg bg-primary waves-effect">

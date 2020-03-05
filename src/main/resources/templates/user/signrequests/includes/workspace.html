@@ -52,7 +52,8 @@
                 pageNum = 1,
                 pageRendering = false,
                 pageNumPending = null,
-                scale = 0.75,
+                oldscale = 1;
+                scale = 1,
                 rotation = 0;
             pdfjsLib.disableWorker = true;
             pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.js';
@@ -103,6 +104,7 @@
                             $("#postit[[${postit.id}]]").css("background-color", "#EEE");
                         }
                     [/]
+                    oldscale = scale;
                 }
             }
 
@@ -242,7 +244,6 @@
             }
 
             function updateCrossPosition() {
-                    console.log("change pos");
                     cross.style.backgroundColor = 'rgba(0, 255, 0, .5)';
                     cross.style.left = (posX + 15) + "px";
                     cross.style.top = posY + "px";
@@ -273,7 +274,7 @@
             }
 
             function displayComment() {
-                if(mode != 'comment') {
+                if(mode !== 'comment') {
                     return;
                 }
                 pointItEnable = false;
@@ -284,7 +285,7 @@
             }
 
             function hideComment() {
-                if(mode != 'comment') {
+                if(mode !== 'comment') {
                     return;
                 }
                 pointItEnable = true;
@@ -375,15 +376,29 @@
             }
 
             function refreshSign() {
-                $('#cross').css('left', [[${@signRequestService.getCurrentSignRequestParams(signRequest).XPos}]] * scale + 15);
-                $('#cross').css('top', [[${@signRequestService.getCurrentSignRequestParams(signRequest).YPos}]] * scale);
-                $('#cross').css('backgroundSize', [[${signWidth}]] * scale);
-                $('#cross').css('width', [[${signWidth}]] * scale);
-                $('#cross').css('height', [[${signHeight}]] * scale);
-                $('#borders').css('width', [[${signWidth}]] * scale);
-                $('#borders').css('height', [[${signHeight}]] * scale);
+                var cross = $('#cross');
+                cross.css('left',  parseInt(cross.css('left')) / oldscale * scale);
+                cross.css('top', parseInt(cross.css('top'))  / oldscale * scale);
+                cross.css('backgroundSize', [[${signWidth}]] * scale);
+                cross.css('width', [[${signWidth}]] * scale);
+                cross.css('height', [[${signHeight}]] * scale);
+                var borders = $('#borders');
+                borders.css('width', [[${signWidth}]] * scale);
+                borders.css('height', [[${signHeight}]] * scale);
                 $('#textVisa').css('font-size', 8 * scale);
+            }
 
+            function resetSign() {
+                var cross = $('#cross');
+                cross.css('left', [[${@signRequestService.getCurrentSignRequestParams(signRequest).XPos}]] * scale + 15);
+                cross.css('top', [[${@signRequestService.getCurrentSignRequestParams(signRequest).YPos}]] * scale);
+                cross.css('backgroundSize', [[${signWidth}]] * scale);
+                cross.css('width', [[${signWidth}]] * scale);
+                cross.css('height', [[${signHeight}]] * scale);
+                var borders = $('#borders');
+                borders.css('width', [[${signWidth}]] * scale);
+                borders.css('height', [[${signHeight}]] * scale);
+                $('#textVisa').css('font-size', 8 * scale);
             }
 
             function toggleVisual() {
@@ -395,11 +410,11 @@
                     $('#clock').prop('disabled', false);
                 }
                 $('#cross').toggle();
-                $('#pen').toggleClass('btn-outline-success btn-outline-secondary');
+                $('#pen').toggleClass('btn-outline-success btn-outline-dark').children().toggleClass('fa-eye-slash fa-eye');
             }
 
             function toggleDate() {
-                $('#clock').toggleClass('btn-outline-success btn-outline-secondary');
+                $('#clock').toggleClass('btn-outline-success btn-outline-dark');
                 var cross = document.getElementById("cross");
                 var borders = document.getElementById("borders");
                 var textDate;
@@ -423,10 +438,13 @@
             }
 
             $(document).ready(function () {
-                if(localStorage.getItem('mode') != null && localStorage.getItem('mode') != "") {
+                resetSign();
+                //refreshSign();
+
+                if(localStorage.getItem('mode') != null && localStorage.getItem('mode') !== "") {
                     mode = localStorage.getItem('mode');
                 } else {
-                    if(signable == 'ok') {
+                    if(signable === 'ok') {
                         localStorage.setItem('mode', 'sign');
                         mode = 'sign';
                     } else {
@@ -436,12 +454,12 @@
                         $('#readButton').removeClass('d-none');
                     }
                 }
-                if(mode == 'sign') {
+                if(mode === 'sign') {
                     pageNum = [[${@signRequestService.getCurrentSignRequestParams(signRequest).signPageNumber}]];
                     enableSignMode();
-                } else if(mode == 'comment') {
+                } else if(mode === 'comment') {
                     enableCommentMode();
-                } else if(mode == 'refuse') {
+                } else if(mode === 'refuse') {
                     enableRefuseMode();
                 } else {
                     enableSignMode();
@@ -459,18 +477,18 @@
             });
 
             function computeWhellEvent(event) {
-                if(event.ctrlKey == true) {
-                    if (detectMouseWheelDirection(event) == 'down'){
+                if(event.ctrlKey === true) {
+                    if (detectMouseWheelDirection(event) === 'down'){
                         zoomOut();
                     } else {
                         zoomIn();
                     }
                 } else {
-                    if (detectMouseWheelDirection(event) == 'down' && $(window).scrollTop() + $(window).height() == $(document).height()) {
+                    if (detectMouseWheelDirection(event) === 'down' && $(window).scrollTop() + $(window).height() === $(document).height()) {
                         if(pageNum < pdfDoc.numPages) {
                             nextPage();
                         }
-                    } else if (detectMouseWheelDirection(event) == 'up' && window.scrollY == 0) {
+                    } else if (detectMouseWheelDirection(event) === 'up' && window.scrollY === 0) {
                         if(pageNum > 1) {
                             prevPage();
                             window.scrollTo(0, document.body.scrollHeight);
@@ -502,7 +520,7 @@
         </script>
         <script th:inline="javascript" th:if="${signable == 'ok' && @signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
             $(document).ready(function () {
-                if(mode == 'sign') {
+                if(mode === 'sign') {
                     toggleVisual();
                     pageNum = 1;
                 }
@@ -516,8 +534,9 @@
             </div>
             <script th:inline="javascript" >
                 /*<![CDATA[*/
-                $('#[[${postit.id}]]').css('left', [[${postit.posX}]] * scale);
-                $('#[[${postit.id}]]').css('top', [[${postit.posY}]] * scale - 20 * scale);
+                var postit = $('#[[${postit.id}]]');
+                postit.css('left', [[${postit.posX}]] * scale);
+                postit.css('top', [[${postit.posY}]] * scale - 20 * scale);
                 /*]]>*/
             </script>
         </th:block>

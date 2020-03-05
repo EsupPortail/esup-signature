@@ -48,28 +48,28 @@
                             </div>
                         </div>
                     </div>
-<!--                    <div class="card mb-2" th:if="${datas.size() > 0}">-->
-<!--                        <div id="myDocs" class="card-body">-->
-<!--                            <h3>Bouillons</h3>-->
-<!--                            <table class="table table-sm table-borderless">-->
-<!--                                <tbody>-->
-<!--                                <th:block th:each="data : ${datas}">-->
-<!--                                    <tr>-->
-<!--                                        <td class="text-break w-50" th:text="${data.name}"></td>-->
-<!--                                        <td class="text-break w-40"-->
-<!--                                            th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>-->
-<!--                                        <td class="text-center w-10">-->
-<!--                                            <a title="Voir" th:href="'/user/datas/' + ${data.id} + '/update'"-->
-<!--                                               class="btn btn-warning">-->
-<!--                                                <i class="fas fa-pencil-alt"></i>-->
-<!--                                            </a>-->
-<!--                                        </td>-->
-<!--                                    </tr>-->
-<!--                                </th:block>-->
-<!--                                </tbody>-->
-<!--                            </table>-->
-<!--                        </div>-->
-<!--                    </div>-->
+                    <div class="card mb-2 d-none" th:if="${datas.size() > 0}">
+                        <div id="myDocs" class="card-body">
+                            <h5 class="text-center"><b>Bouillons</b></h5>
+                            <table class="table table-sm table-borderless">
+                                <tbody>
+                                <th:block th:each="data : ${datas}">
+                                    <tr>
+                                        <td class="text-break w-50" th:text="${data.name}"></td>
+                                        <td class="text-break w-40"
+                                            th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                        <td class="text-center w-10">
+                                            <a title="Voir" th:href="'/user/datas/' + ${data.id} + '/update'"
+                                               class="btn btn-warning">
+                                                <i class="fas fa-pencil-alt"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

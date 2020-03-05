@@ -7,27 +7,6 @@
 <main role="main">
     <div class="wrapper">
         <nav th:insert="fragments/manager-side :: manager-side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
-        <nav id="sidebar2">
-            <div class="m-1">
-                <button title="Modifier les paramètres" type="button" th:onclick="'location.href=\'/manager/workflows/' + ${workflow.id} + '?form\''" class="mb-1 col-12 btn btn-light btn-outline-dark text-left">
-                <i class="fas fa-edit"></i><span class="sidebar-label"> Modifier les paramètres</span>
-                </button>
-                <button title="Ajouter une étape" type="button" class="mb-1 col-12 btn btn-light btn-outline-dark text-left" data-toggle="modal" data-target="#addStep">
-                    <i class="fa fa-shoe-prints"></i><span class="sidebar-label"> Ajouter une étape</span>
-                </button>
-                <a th:if="${workflow.sourceType.name() != 'none'}" class="mb-1 col-12 btn btn-primary text-left" th:href="'/manager/workflows/get-files-from-source/' + ${id}">
-                    <i class="fas fa-file-import"></i> Importer manuellement
-                </a>
-                <form th:action="'/manager/workflows/' + ${workflow.id}" th:method="delete">
-                    <button title="Supprimer" type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="mb-1 col-12 btn btn-danger text-left">
-                        <i class="fas fa-trash-alt"></i><span class="sidebar-label"> Supprimer</span>
-                    </button>
-                </form>
-                <button title="Retour" type="button" class="mb-1 col-12 btn btn-light btn-outline-dark text-left" value="Retour" onclick="location.href='/manager/workflows'">
-                    <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
-                </button>
-            </div>
-        </nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol class="breadcrumb col-12">
                 <li class="breadcrumb-item active"><a href="/manager">Liste des circuits de visas</a></li>
@@ -37,6 +16,30 @@
             </ol>
         </nav>
         <div id="content" class="content col-lg-8">
+            <div id="addButton" class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+                <a class="btn-floating btn-lg bg-primary waves-effect">
+                    <i class="fas fa-ellipsis-v"></i>
+                </a>
+                <ul id="collapseExample" class="list-unstyled">
+                    <li>
+                        <a title="Modifier les paramètres" type="button" th:href="'/manager/workflows/' + ${workflow.id} + '?form'" class="btn-floating bg-dark waves-effect">
+                            <i class="fas fa-cog"></i>
+                        </a>
+                    </li>
+                    <li>
+                    <a role="button" title="Ajouter une étape" class="btn-floating bg-warning waves-effect" data-toggle="modal" data-target="#addStep">
+                        <i class="fa fa-shoe-prints"></i>
+                    </a>
+                    </li>
+                    <li>
+                        <form id="delete" th:action="'/manager/workflows/' + ${workflow.id}" th:method="delete" onsubmit="return confirm('Voulez-vous vraiment supprimer ce circuit ?')">
+                        <a role="button" title="Supprimer" type="submit" onclick="$('#delete').submit();" class="btn-floating bg-danger waves-effect">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                        </form>
+                    </li>
+                </ul>
+            </div>
             <div class="card">
                 <div class="card-body">
                     <dl class="row border-bottom m-0">
