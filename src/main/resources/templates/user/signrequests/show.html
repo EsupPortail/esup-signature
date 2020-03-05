@@ -94,7 +94,7 @@
                         <button id="clock" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer la date" class="btn btn-outline-secondary ml-1" onclick="toggleDate()"><i class="fas fa-clock"></i></button>
                     </div>
                     <div id="signButtons" th:if="${signable == 'ok'}" class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#signButtons').toggleClass('active');" onmouseout="$('#signButtons').toggleClass('active');">
-                        <a class="btn-floating btn-lg bg-success waves-effect">
+                        <a class="btn-floating btn-lg bg-primary waves-effect">
                             <i class="fas fa-signature"></i>
                         </a>
                         <ul id="signCollapse" class="list-unstyled">

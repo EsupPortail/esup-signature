@@ -63,7 +63,7 @@ $(document).ready(function () {
 	});
 
 	$('#toggleNewGrid').on('click', function () {
-		$('#newScroll').toggleClass('text-nowrap').toggleClass('min-vh-100');
+		$('#newScroll').toggleClass('text-nowrap').toggleClass('new-min-h');
 		$('#toSignList').toggleClass('d-flex d-none');
 		$('#toggleNewGrid').children().toggleClass('fa-th fa-chevron-up');
 	});

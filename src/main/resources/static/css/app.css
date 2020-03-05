@@ -843,3 +843,7 @@ float:left;
     transition: 0s;
     transform: scale(0, 0);
 }
+
+.new-min-h {
+    min-height: 70  vh;
+}

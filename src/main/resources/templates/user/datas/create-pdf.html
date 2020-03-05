@@ -16,47 +16,50 @@
                 </li>
             </ol>
         </nav>
-        <div id="content" class="content v-pills-tabContent">
+        <div id="content" class="content">
+            <div th:if="${data.status == null}" class="fixed-action-btn" style="bottom: 100px; right: 50px;">
+                <a role="button" title="Enregistrer les modifications" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" onclick="document.getElementById('newDataSubmit').click();" class="btn-floating btn-lg bg-success wave-effect">
+                    <i class="fas fa-save"></i><br/>
+                </a>
+            </div>
+            <div id="addButton" th:unless="${data.status == null}"  class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+                <a class="btn-floating btn-lg bg-primary waves-effect">
+                    <i class="fas fa-ellipsis-v"></i>
+                </a>
+                <ul id="collapseExample" class="list-unstyled">
+                    <li>
+                        <a role="button" title="Envoyer le document" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-floating bg-warning">
+                        <i class="fas fa-paper-plane"></i></a>
+                    </li>
+                    <li>
+                        <a target="_blank" title="Exporter en PDF" th:if="${data.status.name() == 'draft'}"
+                           th:href="'/user/datas/' + ${data.id} + '/export-pdf'"
+                           class="btn-floating bg-danger">
+                            <i class="fas fa-file-pdf"></i>
+                        </a>
+                    </li>
+                    <li><a role="button" title="Enregistrer les modifications" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" onclick="document.getElementById('newDataSubmit').click();" class="btn-floating bg-success">
+                        <i class="fas fa-save"></i></a>
+                    </li>
+                </ul>
+            </div>
             <div class="tools">
                 <div class="d-flex mb-1">
+                    <a title="Abandonner" href="/user/datas/" class="btn btn btn-outline-dark btn-light ml-1">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
                     <div class="bg-light ml-1 p-1 pt-2 d-inlinebirder"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
                     <button title="Page précédente" id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
-                        <i class="fas fa-arrow-left"></i>
+                        <i class="fas fa-arrow-up"></i>
                     </button>
                     <button title="Page suivante" id="next" class="btn btn-light btn-outline-dark ml-1" aria-label="Prochain">
-                        <i class="fas fa-arrow-right"></i>
+                        <i class="fas fa-arrow-down"></i>
                     </button>
                     <button id="zoomout" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-minus"></i></button>
                     <button id="zoomin" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-plus"></i></button>
                     <div class="bg-light ml-1 p-1 pt-2 d-inline d-none"><span id="zoom"></span> %</div>
                     <button title="Rotation à droite" id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
                     <button title="Rotation à gauche" id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
-                    <button title="Enregistrer les modifications" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" onclick="document.getElementById('newDataSubmit').click();" class="btn btn-light btn-outline-success ml-1">
-                        <i class="fas fa-save"></i><br/>
-                    </button>
-                    <div th:if="${data.status != null}" th:switch="${data.status.name()}">
-                        <th:block th:case="'draft'">
-                            <a target="_blank" title="Exporter en PDF" th:if="${data.status.name() == 'draft'}"
-                               th:href="'/user/datas/' + ${data.id} + '/export-pdf'"
-                               class="btn btn btn-outline-dark btn-light ml-1">
-                                <i class="fas fa-file-pdf"></i>
-                            </a>
-                            <button title="Envoyer le document" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn btn-success ml-1 ">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-<!--                            <button th:if="${data.signBook != null && data.signBook.signRequests.size() > 0}" type="button" data-toggle="modal"-->
-<!--                                    data-target="#nextStepModal"-->
-<!--                                    class="ml-1 btn btn-success">-->
-<!--                                <i class="fas fa-check"></i><br/>Etape suivante-->
-<!--                            </button>-->
-                        </th:block>
-                    </div>
-<!--                    <div th:if="${data.signBook != null && data.signBook.signRequests.size() > 0} class="alert alert-success ml-1" style="max-height: 40px;">-->
-<!--                        Vous devez signer ce document-->
-<!--                    </div>-->
-                    <a th:if="${toSign}" type="submit" title="Signer le document" class="ml-1 btn btn-success" th:href="'/user/signrequests/' + ${data.signBook.signRequests.get(0).id}">
-                        <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
-                    </a>
                 </div>
             </div>
             <div id="workspace" class="workspace alert alert-secondary fadein">
