@@ -96,80 +96,78 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="newForm" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Nouveau formulaire</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <form id="addModel"
-                      th:action="'/manager/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
-                      method="post" enctype="multipart/form-data">
-                    <div class="modal-body">
+</main>
+<div class="modal fade" id="newForm" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Nouveau formulaire</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="addModel"
+                  th:action="'/manager/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
+                  method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name" class="col-form-label">Nom</label>
+                        <input type="text" id="name" name="name" class="form-control" required>
+                    </div>
                         <div class="form-group">
-                            <label for="name" class="col-form-label">Nom</label>
-                            <input type="text" id="name" name="name" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <div class="form-group">
-                                <div class="custom-file">
-                                    <input aria-describedby="inputGroupFileAddon01" class="custom-file-input"
-                                           data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile"
-                                           type="file"/>
-                                    <label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01">
-                                        Choisir un fichier
-                                    </label>
-                                </div>
+                            <label for="inputGroupFile01" class="col-form-label">Modèle PDF Form</label>
+                            <div class="custom-file">
+                                <input aria-describedby="inputGroupFileAddon01" class="custom-file-input"
+                                       data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile"
+                                       type="file"/>
+                                <label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01">
+                                    Choisir un fichier
+                                </label>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="code" class="col-form-label">Code</label>
-                            <input type="text" id="code" name="code" class="form-control" required>
-                        </div>
-                        <div class="alert alert-info">
-                            Le "code" permet de mettre en lien le formulaire avec un role utilisateur, ceci pour gérer
-                            les droits sur les formulaires.
-                            Ce même code permet aussi de programmer un comportement spécifique pour le pré-remplissable
-                            des champs.
-                            Ex : pour les ordres de mission, mettre "ordre_mission"
-                        </div>
-                        <div class="form-group">
-                            <label for="targetType" class="col-form-label">Type de destination</label>
-                            <select class="form-control" id="targetType" name="targetType">
-                                <th:block th:each="targetType : ${targetTypes}">
-                                    <option th:value="${targetType}"
-                                            th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
-                                </th:block>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="name" class="col-form-label">Destination des documents</label>
-                            <input type="text" name="targetURI" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label for="workflowType" class="col-form-label">Type de workflow</label>
-                            <select class="form-control" id="workflowType" name="workflowType">
-                                <th:block th:each="workflowType : ${workflowTypes}">
-                                    <option th:value="${workflowType.name}"
-                                            th:text="${workflowType.description}"></option>
-                                </th:block>
-                            </select>
-                        </div>
-
+                    <div class="form-group">
+                        <label for="code" class="col-form-label">Code</label>
+                        <input type="text" id="code" name="code" class="form-control" required>
                     </div>
-                    <div class="modal-footer">
-                        <input type="submit" class="btn btn-success" value="Valider">
+                    <div class="alert alert-info">
+                        Le "code" permet de mettre en lien le formulaire avec un role utilisateur, ceci pour gérer
+                        les droits sur les formulaires.
+                        Ce même code permet aussi de programmer un comportement spécifique pour le pré-remplissable
+                        des champs.
+                        Ex : pour les ordres de mission, mettre "ordre_mission"
                     </div>
-                </form>
-            </div>
+                    <div class="form-group">
+                        <label for="targetType" class="col-form-label">Type de destination</label>
+                        <select class="form-control" id="targetType" name="targetType">
+                            <th:block th:each="targetType : ${targetTypes}">
+                                <option th:value="${targetType}"
+                                        th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name" class="col-form-label">Destination des documents</label>
+                        <input type="text" name="targetURI" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="workflowType" class="col-form-label">Type de workflow</label>
+                        <select class="form-control" id="workflowType" name="workflowType">
+                            <th:block th:each="workflowType : ${workflowTypes}">
+                                <option th:value="${workflowType.name}"
+                                        th:text="${workflowType.description}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <input type="submit" class="btn btn-success" value="Valider">
+                </div>
+            </form>
         </div>
     </div>
-    </div>
-</main>
+</div>
 <footer th:replace="fragments/footer :: footer"></footer>
 </body>
 </html>

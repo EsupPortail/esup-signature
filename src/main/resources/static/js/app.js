@@ -135,12 +135,12 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 
 	//input type file
-	var inputFile = document.getElementById("inputGroupFile01");
+	var inputFile = document.querySelector(".custom-file-input");
 	if(inputFile != null) {
 		inputFile.onchange = 
     		function(){
             var fileName = this.files[0].name;
-            document.getElementById("inputGroupLabel01").innerHTML = fileName;
+            inputFile.innerHTML = fileName;
     	};
 	}
 
@@ -373,92 +373,9 @@ document.addEventListener('DOMContentLoaded', function() {
 //image picker
 document.addEventListener('DOMContentLoaded', function() {
 	
-	var vanillaResult = document.querySelector('.vanilla-result'), vanillaUpload = document.querySelector('.vanilla-upload');
-	if(document.getElementById('vanilla-crop') != null) {
-		var vanillaCrop = new Croppie(document.getElementById('vanilla-crop'), {
-			viewport : {
-				width : 200,
-				height : 150
-			},
-			boundary : {
-				width : 400,
-				height : 300
-			},
-			enableExif : true,
-			enableOrientation : true,
-			enableResize : true,
-			enforceBoundary : false
-	
-		});
-	
-		$('.vanilla-rotate').on('click', function(ev) {
-            vanillaCrop.rotate(parseInt($(this).data('deg')));
-        });
-		
-		document.getElementById('vanilla-crop').addEventListener('update', function(ev) {
-			var result = vanillaCrop.result('base64');
-			result.then(saveVanilla);
-		});
-	
-		vanillaUpload.addEventListener('change', function() {
-			readFile(this);
-		});
-	}
 
-	function saveVanilla(result) {
-		document.getElementById('signImageBase64').value = result;
-	}
-
-	function readFile(input) {
-		if (input.files) {
-			if (input.files[0]) {
-				var reader = new FileReader();
-
-				reader.onload = function(e) {
-					document.getElementById('vanilla-crop').classList.add('good');
-					vanillaCrop.bind({
-						url : e.target.result,
-						orientation : 1
-					});
-				}
-				reader.readAsDataURL(input.files[0]);
-			}
-		}
-	}
 
 });
-
-//create signBook
-var	signBookTypeSelect;
-var recipientEmailInput;
-var signBooksIdsInput;
-var tempoFieldInput;
-
-document.addEventListener('DOMContentLoaded', function() {
-	/*
-	signBookTypeSelect = document.getElementById("_signBookType_id");
-	recipientEmailInput = document.getElementById("_c_org_esupportail_esupsignature_domain_SignRequest_recipientemails");
-	signBooksIdsInput = document.getElementById("_c_org_esupportail_esupsignature_domain_SignRequest_signBooksIds");
-	tempoFieldInput = document.getElementById("_c_org_esupportail_esupsignature_domain_SignRequest_tempofield");
-	if(recipientEmailInput != null) {
-		recipientEmailInput.style.display = "none";
-		signBooksIdsInput.style.display = "none";
-	}
-	*/
-});
-
-function changeSignBookForm() {
-	var selectedValue = signBookTypeSelect.options[signBookTypeSelect.selectedIndex].value;
-	if(selectedValue == "group") {
-		recipientEmailInput.style.display = "flex";
-		signBooksIdsInput.style.display = "none";
-		tempoFieldInput.style.display = "none";
-	} else {
-		recipientEmailInput.style.display = "none";
-		signBooksIdsInput.style.display = "flex";
-		tempoFieldInput.style.display = "none";
-	}
-}
 
 //create user
 var signImageForm;
@@ -469,7 +386,6 @@ var emailAlertFrequencySelect;
 var emailAlertDay;
 var emailAlertHour;
 var signTypeSelect;
-var selectedValue;
 
 document.addEventListener('DOMContentLoaded', function() {
 	signImageInput = document.getElementById("inputGroupFile01");
@@ -498,53 +414,3 @@ function checkAlertFrequency() {
 		emailAlertHour.style.display = "none";
 	}
 }
-
-$(document).ready(function() {
-    $('#select-from').dblclick(function(){
-        $('#select-from option:selected').each( function() {
-                $('#select-to').append("<option value='"+$(this).val()+"'>"+$(this).text()+"</option>");
-            $(this).remove();
-        });
-    });
-    $('#select-to').dblclick(function(){
-        $('#select-to option:selected').each( function() {
-            $('#select-from').append("<option value='"+$(this).val()+"'>"+$(this).text()+"</option>");
-            $(this).remove();
-        });
-    });
-    $('#btn-up').bind('click', function() {
-        $('#select-to option:selected').each( function() {
-            var newPos = $('#select-to option').index(this) - 1;
-            if (newPos > -1) {
-                $('#select-to option').eq(newPos).before("<option value='"+$(this).val()+"' selected='selected'>"+$(this).text()+"</option>");
-                $(this).remove();
-            }
-        });
-    });
-    $('#btn-down').bind('click', function() {
-        var countOptions = $('#select-to option').length;
-        $('#select-to option:selected').each( function() {
-            var newPos = $('#select-to option').index(this) + 1;
-            if (newPos < countOptions) {
-                $('#select-to option').eq(newPos).after("<option value='"+$(this).val()+"' selected='selected'>"+$(this).text()+"</option>");
-                $(this).remove();
-            }
-        });
-    });
-    
-    $('#fc_org_esupportail_esupsignature_domain_SignBook').submit(function(){
-        $('#select-to option').prop('selected', true);
-    });
-});
-
-function resizeHeader() {
-	$(document.body).css("margin-top", $(".header-fixed").height());
-}
-
-$( document ).ready(function() {
-	resizeHeader();
-});
-
-$(window).resize(function() {
-	resizeHeader();
-}).resize();

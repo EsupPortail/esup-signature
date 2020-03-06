@@ -1,31 +1,27 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
-    <th:block th:if="${referer == null}">
-        <nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-    </th:block>
-    <th:block th:unless="${referer == null}">
-        <nav th:replace="fragments/emptyBar :: emptyBar"></nav>
-    </th:block>
+<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
 <main role="main">
     <div class="wrapper">
         <nav th:insert="fragments/side :: side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item active">Paramètres : <span th:text="${user.firstname} + ' ' + ${user.name}"></span></li>
+                <li class="breadcrumb-item active">Paramètres :
+                <span th:text="${user.firstname} + ' ' + ${user.name}"></span></li>
             </ol>
         </nav>
-        <div id="content" class="content d-flex">
+        <div id="content" class="content">
             <div class="fixed-action-btn" style="bottom: 100px; right: 50px;">
                 <a onclick="document.getElementById('fu_org_esupportail_esupsignature_domain_User').submit();" class="btn-floating btn-lg bg-primary wave-effect">
                     <i class="fas fa-save"></i>
                 </a>
             </div>
             <form id="fu_org_esupportail_esupsignature_domain_User" th:object="${user}" th:action="'/user/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
-                <input type="hidden" name="referer" th:value="${referer}"/>
                 <input type="hidden" name="id" th:value="${user.id}"/>
-                <div class="card mb-3">
+                <div class="card mb-1 col-lg-10">
                     <div class="card-body">
                         <h5 class="text-center"><b>Paramètres de signature</b></h5>
                         <div id="signImageForm" class="form-group">
@@ -44,70 +40,21 @@
                                 </div>
                             </label>
                             <div class="row">
-                                <div class="col-12">
-                                    <div th:if="${signFile != null}">
-                                    Image actuelle
-                                    <img alt="signature" th:src="'data:image/png;base64,' + ${signFile}"/>
-                                    </div>
-                                    <div th:unless="${signFile != null}" class="alert alert-danger">
-                                        Pas d'image de la signature
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <label>Dessiner une signature</label>
+
+                                <div class="col-12 text-center">
+                                    <label>Dessinez une signature</label>
                                         <br/>
-                                <canvas onmouseover="this.style.cursor= 'pointer';" onmousedown="firstClearSignaturePad();" id="canvas" width="200" height="150" style="border: 1px solid black;"></canvas>
+                                <canvas id="canvas" onmouseover="this.style.cursor= 'pointer';" width="200" height="150" style="border: 1px solid black;"></canvas>
                                     <br>
-                                <button type="button" class="btn btn-light btn-outline-dark" onclick="saveSignaturePad();">Valider la signature</button>
-                                <button type="button" class="btn btn-light btn-outline-dark" onclick="clearSignaturePad();">Effacer</button>
-                                <button type="button" class="btn btn-light btn-outline-dark" onclick="resetSignaturePad();">Réinitialiser</button>
-                                <script language="JavaScript">
-                                    /*<![CDATA[*/
-                                    var lastSign = "data:image/png;base64,[[${signFile}]]";
-                                    var canvas = document.querySelector("canvas");
-                                    var signaturePad = new SignaturePad(canvas);
-                                    var firstClear = false;
-
-                                    var ratio =  Math.max(window.devicePixelRatio || 1, 1);
-                                    if(ratio == 1) {
-                                        signaturePad.fromDataURL(lastSign);
-                                    } else {
-                                        firstClearSignaturePad();
-                                    }
-
-                                    function firstClearSignaturePad() {
-                                        if(!firstClear) {
-                                            clearSignaturePad();
-                                            firstClear = true;
-                                        }
-                                    }
-                                    function saveSignaturePad() {
-                                        console.log(signaturePad.toDataURL("image/png"));
-                                        $('#signImageBase64').val(signaturePad.toDataURL("image/png"));
-                                        $('#canvas').css("backgroundColor", "rgba(0, 255, 0, .5)");
-                                    }
-                                    function clearSignaturePad() {
-                                        $('#canvas').css("backgroundColor", "rgba(255, 255, 255, 1)");
-                                        signaturePad.clear();
-                                        $('#signImageBase64').val(lastSign);
-                                    }
-                                    function resetSignaturePad() {
-                                        $('#canvas').css("backgroundColor", "rgba(255, 255, 255, 1)");
-                                        signaturePad.clear();
-                                        signaturePad.fromDataURL(lastSign);
-                                        $('#signImageBase64').val(lastSign);
-                                    }
-
-                                    //signaturePad.fromDataURL("data:image/png;base64,[[${signFile}]]");
-                                    /*]]>*/
-                                </script>
+                                <button id="validate" type="button" class="btn btn-light btn-outline-dark">Valider la signature</button>
+                                <button id="erase" type="button" class="btn btn-light btn-outline-dark">Effacer</button>
+                                <button id="reset" type="button" class="btn btn-light btn-outline-dark">Réinitialiser</button>
                                     <h5 class="hr">ou</h5>
-                                    <label>Choisissez un fichier image</label>
                                     <div class="form-group">
                                         <div class="custom-file">
-                                            <input type="file" class="vanilla-upload custom-file-input " id="inputGroupFile01" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
-                                            <label class="custom-file-label" id="inputGroupLabel01" for="inputGroupFile01">
-                                                Choisir une nouvelle image
+                                            <input type="file" class="custom-file-input" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
+                                            <label class="custom-file-label" id="inputGroupLabel01" for="vanilla-upload">
+                                                Choisissez une nouvelle image
                                             </label>
                                         </div>
                                     </div>
@@ -151,7 +98,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card mb-3">
+                <div class="card mb-1 col-lg-10" >
                     <div class="card-body">
                         <h5 class="text-center"><b>Fréquence des alertes</b></h5>
                         <div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertFrequency">
@@ -194,32 +141,39 @@
         </div>
     </div>
 </main>
-    <div class="modal fade" id="testKeystore" tabindex="-1" role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <form action="/user/users/view-cert" method="get">
-                    <div class="modal-header">
-                        <h3 class="modal-title">Tester mon certificat</h3>
-                    </div>
-                    <div class="modal-body">
-                        <div class="input-group mb-2">
-                            <div th:if="${password == null}">
-                                <input class="form-control" placeholder="Mot de passe" type="password" name="password" />
-                            </div>
-                            <div th:unless="${password == null}">
-                                Mot de passe en cache
-                            </div>
+<div class="modal fade" id="testKeystore" tabindex="-1" role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form action="/user/users/view-cert" method="get">
+                <div class="modal-header">
+                    <h3 class="modal-title">Tester mon certificat</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-2">
+                        <div th:if="${password == null}">
+                            <input class="form-control" placeholder="Mot de passe" type="password" name="password" />
+                        </div>
+                        <div th:unless="${password == null}">
+                            Mot de passe en cache
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
-                        <input class="btn btn-primary" type="submit" value="Afficher le certificat" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
+                    <input class="btn btn-primary" type="submit" value="Afficher le certificat" />
 
-                    </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 </body>
+<script type="module" language="JavaScript">
+    /*<![CDATA[*/
+    import {UserSignaturePad, UserSignatureCrop} from "/js/modules/user.js";
+    new UserSignaturePad("data:image/png;base64,[[${signFile}]]");
+    new UserSignatureCrop();
+    /*]]>*/
+</script>
 <footer th:replace="fragments/footer :: footer"></footer>
 </html>
