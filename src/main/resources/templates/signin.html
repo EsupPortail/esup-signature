@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.springframework.org/security/tags">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="fragments/head"></head>
 <body>
-<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+<nav th:replace="fragments/menu"></nav>
 <main role="main" class="container">
     <div class="content2">
         <div class="card">
@@ -22,6 +22,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="fragments/footer"></footer>
 </body>
 </html>

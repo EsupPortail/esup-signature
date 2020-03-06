@@ -1,12 +1,12 @@
 <!doctype html>
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="fragments/head"></head>
 <body>
-<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+<header th:replace="fragments/menu"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side :: side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
+        <nav th:insert="fragments/side" class="auto-hide"></nav>
         <nav id="sidebar2" class="scrollbar-primary">
             <div class="m-1">
                 <div th:if="${user.eppn == signBook.createBy}">
@@ -275,6 +275,6 @@
         signBookSelect = document.getElementById("signBookNames");
     });
 </script>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="fragments/footer"></footer>
 </body>
 </html>

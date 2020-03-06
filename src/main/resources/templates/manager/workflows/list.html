@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflows" type="java.util.List<org.esupportail.esupsignature.entity.Workflow>"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="fragments/head"></head>
 <body>
-<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+<header th:replace="fragments/menu"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/manager-side :: manager-side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
+        <nav th:insert="fragments/manager-side :: manager-side" class="auto-hide"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol class="breadcrumb col-12">
                 <li class="breadcrumb-item active">Liste des circuits de visas</li>
@@ -101,6 +101,6 @@
         </div>
     </div>
 </div>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="fragments/footer"></footer>
 </body>
 </html>

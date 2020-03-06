@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="fragments/head"></head>
 <body>
-<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+<header th:replace="fragments/menu"></header>
 <main role="main">
     <div class="wrapper">
-        <div th:replace="fragments/side :: side"></div>
+        <div th:replace="fragments/side"></div>
         <div class="content" id="v-pills-tabContent">
             <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
                 <ol class="breadcrumb">
@@ -81,6 +81,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="fragments/footer"></footer>
 </body>
 </html>

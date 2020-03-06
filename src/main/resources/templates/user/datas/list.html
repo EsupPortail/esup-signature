@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.thymeleaf.org/spring-data">
 <!--/*@thymesVar id="data" type="org.esupportail.esupsignature.entity.Data"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="fragments/head"></head>
 <body>
-<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+<header th:replace="fragments/menu"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side :: side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
+        <nav th:insert="fragments/side" class="auto-hide"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol class="breadcrumb col-12">
                 <li class="breadcrumb-item active">Mes brouillons</li>

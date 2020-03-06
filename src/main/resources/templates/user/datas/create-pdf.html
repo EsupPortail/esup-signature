@@ -3,12 +3,12 @@
 <!--/*@thymesVar id="recipient" type="org.esupportail.esupsignature.entity.Recipient"*/-->
 <!--/*@thymesVar id="data" type="org.esupportail.esupsignature.entity.Data"*/-->
 <!--/*@thymesVar id="step" type="org.esupportail.esupsignature.entity.WorkflowStep"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="fragments/head"></head>
 <body>
-<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+<header th:replace="fragments/menu"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side :: side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
+        <nav th:insert="fragments/side" class="auto-hide"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/datas">Mes brouillons</a></li>
@@ -489,6 +489,6 @@
     </div>
 </div>
 
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="fragments/footer"></footer>
 </body>
 </html>

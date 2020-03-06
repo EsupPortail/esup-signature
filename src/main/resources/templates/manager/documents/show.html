@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="fragments/head"></head>
 <body>
-<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+<header th:replace="fragments/menu"></header>
 <div id="ribbon" class="card">
     <div class="card-body">
         <button th:if="${form == null}" class="mr-2 btn btn-outline-dark btn-light float-left" data-toggle="modal" data-target="#generateForm">
@@ -50,7 +50,7 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="fragments/footer"></footer>
 </body>
 
 <div id="generateForm" class="modal fade" tabindex="-1" role="dialog">

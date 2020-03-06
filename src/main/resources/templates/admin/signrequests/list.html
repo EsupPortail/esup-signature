@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.thymeleaf.org/spring-data">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="fragments/head"></head>
 <body>
-<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+<nav th:replace="fragments/menu"></nav>
 <main role="main" class="">
     <div class="wrapper">
         <nav id="sidebar">
@@ -106,6 +106,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="fragments/footer"></footer>
 </body>
 </html>

@@ -3,12 +3,12 @@
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="postit" type="org.esupportail.esupsignature.entity.Log"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="fragments/head"></head>
 <body>
-<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+<header th:replace="fragments/menu"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side :: side"></nav>
+        <nav th:insert="fragments/side"></nav>
         <nav id="sidebar2" class="scrollbar-primary">
             <button data-toggle="modal" data-target="#signAllModal" class="btn btn-light col-3 col-md-12 mb-1 text-left d-none" th:classappend="${signable != 'ok' || signRequest.parentSignBook == null || signRequest.parentSignBook .signRequests.size() < 2} ? 'd-none' ">
                 <i class="fas fa-bolt"></i> Tout signer
@@ -184,8 +184,6 @@
             <div class="modal-body">
                 <div th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}" class="alert alert-success"></div>
                 <div th:if="${signType == 'nexuSign'}">
-<!--                    <script type="text/javascript" src="/js/jsSignatureLevel.js"></script>-->
-                    <script type="text/javascript" th:replace="user/signrequests/includes/scriptnexu :: scriptnexu"></script>
                     <div id="nexu_version_alert" style="display: none;">
                         <a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left">
                             <i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
@@ -295,11 +293,18 @@
 
 <div th:replace="user/signrequests/includes/modals/attachment"></div>
 
-<script>
-    $(document).ready(function () {
-       showSideBar();
-    });
-</script>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="fragments/footer"></footer>
 </body>
+<!--                    <script type="text/javascript" src="/js/jsSignatureLevel.js"></script>-->
+<script type="module">
+    /*<![CDATA[*/
+    import {globalUi} from "/js/main.js";
+    import {Nexu} from "/js/modules/nexu.js";
+
+    $(document).ready(function() {
+        globalUi.showSideBar();
+        new Nexu("[[${nexuUrl}]]", "[[${nexuVersion}]]");
+    });
+    /*]]>*/
+</script>
 </html>

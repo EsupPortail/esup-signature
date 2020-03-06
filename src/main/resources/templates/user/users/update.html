@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="fragments/head"></head>
 <body>
-<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
+<nav th:replace="fragments/menu"></nav>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side :: side" onmouseover="autoShowSideBar();" onmouseout="hideSideBar();"></nav>
+        <nav th:insert="fragments/side" class="auto-hide"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Paramètres :
@@ -53,7 +53,7 @@
                                     <div class="form-group">
                                         <div class="custom-file">
                                             <input type="file" class="custom-file-input" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
-                                            <label class="custom-file-label" id="inputGroupLabel01" for="vanilla-upload">
+                                            <label class="custom-file-label" for="vanilla-upload">
                                                 Choisissez une nouvelle image
                                             </label>
                                         </div>
@@ -69,7 +69,7 @@
                         <input type="hidden" th:field="*{signImageBase64}"/>
                         </div>
                         <div id="keyForm" class="form-group">
-                            <label class="col-form-label" for="inputGroupFile02"><strong>Keystore</strong>
+                            <label class="col-form-label"><strong>Keystore</strong>
                                 <button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
                             <span class="fas fa-info-circle "> <!-- -->
                             </span>
@@ -90,8 +90,8 @@
                             </div>
                             <div class="form-group">
                                 <div class="custom-file">
-                                    <input type="file" accept="application/x-pkcs12" class="custom-file-input" name="multipartKeystore" id="inputGroupFile02" value="Choose a file" aria-describedby="inputGroupFileAddon02"/> <label
-                                        class="custom-file-label" id="inputGroupLabel02" for="inputGroupFile02"> Choisir un keystore
+                                    <input id="inputGroupFile02" type="file" accept="application/x-pkcs12" class="custom-file-input" name="multipartKeystore" value="Choose a file" aria-describedby="inputGroupFileAddon02"/>
+                                    <label for="inputGroupFile02" class="custom-file-label"> Choisir un keystore
                                 </label>
                             </div>
                             </div>
@@ -121,12 +121,12 @@
                                 </th:block>
                             </select>
                         </div>
-                        <div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertHour" style="display: none;">
+                        <div class="form-group" id="emailAlertHour" style="display: none;">
                             <label class="col-form-label" for="emailAlertHour"> <strong>Heure d'alerte</strong>
                             </label>
                             <input id="emailAlertHour" name="emailAlertHour" class="form-control" type="time" th:value="${user.emailAlertHour}" autocomplete="off"/>
                         </div>
-                        <div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertDay" style="display: none;">
+                        <div class="form-group" id="emailAlertDay" style="display: none;">
                             <label class="col-form-label" for="_emailAlertDay_id"> <strong>Jour de l'alerte</strong></label>
                             <select class="form-control" id="_emailAlertDay_id" name="emailAlertDay">
                                 <th:block th:each="emailAlertDay : ${daysOfWeek}" var="emailAlertDay">
@@ -167,13 +167,14 @@
         </div>
     </div>
 </div>
+<footer th:replace="fragments/footer"></footer>
 </body>
-<script type="module" language="JavaScript">
+<script type="module">
     /*<![CDATA[*/
-    import {UserSignaturePad, UserSignatureCrop} from "/js/modules/user.js";
-    new UserSignaturePad("data:image/png;base64,[[${signFile}]]");
-    new UserSignatureCrop();
+    import {User} from "/js/modules/user.js";
+    $(document).ready(function() {
+        new User("data:image/png;base64,[[${signFile}]]");
+    });
     /*]]>*/
 </script>
-<footer th:replace="fragments/footer :: footer"></footer>
 </html>
