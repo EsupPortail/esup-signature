@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
+<!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
 <div th:fragment="workspace">
     <div class="row">
         <div class="col-12">
@@ -8,16 +9,16 @@
         <canvas title="Cliquez pour ajouter une annotation" id="pdf" class="drop-shadows ">
         </canvas>
         <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && @signRequestService.getCurrentSignType(signRequest).name() != 'visa'}">
-            <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();"
+            <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();"
                  ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
                  onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                  onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
-                 th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center; left: ' + ${@signRequestService.getCurrentSignRequestParams(signRequest).XPos + 100} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
+                 th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;  left: ' + ${@signRequestService.getCurrentSignRequestParams(signRequest).XPos} + 'px;top: ' + ${@signRequestService.getCurrentSignRequestParams(signRequest).YPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
                 <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
             </div>
         </th:block>
         <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && @signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
-            <div onclick="dragSignature();" id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();"
+            <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();"
                  ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
                  onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                  onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
@@ -35,7 +36,7 @@
                 <i class="fas fa-save"></i>
             </button>
         </div>
-        <input class="form-control form-control-sm col-6 d-none" value="0" id="signPageNumber" type="text" name="pageNumber"/>
+        <input class="form-control form-control-sm col-6 d-none" value="1" id="signPageNumber" type="text" name="pageNumber"/>
         <input class="form-control form-control-sm col-6 d-none" value="0" id="xPos" type="text" name="posX"/>
         <input class="form-control form-control-sm col-6 d-none" value="0" id="yPos" type="text" name="posY"/>
         <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="visual" id="visual"/>
@@ -72,19 +73,17 @@
         </div>
     </div>
     <script th:replace="user/signrequests/includes/scriptshow :: scriptshow"></script>
-    <script type="module">
-        /*<![CDATA[*/
+    <script th:inline="javascript" type="module" th:with="signRequestParams = ${@signRequestService.getCurrentSignRequestParams(signRequest)}">
         import {WorkspacePdf} from "/js/modules/workspacePdf.js";
         $(document).ready(function() {
             new WorkspacePdf('/user/signrequests/get-last-file/' + [[${signRequest.id}]],
-                '[[${@signRequestService.getCurrentSignRequestParams(signRequest)}]]',
+                [[${signRequestParams}]],
                 '[[${@signRequestService.getCurrentSignType(signRequest).name()}]]',
                 [[${signWidth}]],
                 [[${signHeight}]],
                 '[[${signable}]]',
-                '[[${postits}]]'
+                [[${postits}]]
             );
         });
-        /*]]>*/
     </script>
 </div>

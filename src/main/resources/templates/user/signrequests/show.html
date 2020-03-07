@@ -16,10 +16,10 @@
             <button th:if="${documentType == 'pdf'}" id="readButton" onclick="enableReadMode()" class="d-none btn btn-light col-12 mb-1 text-left">
                 <i class="fas fa-eye"></i> Mode consultation
             </button>
-            <button id="signButton" onclick="enableSignMode()" class="btn btn-light col-12 mb-1 text-left" th:if="${signable == 'ok'}">
+            <button id="signButton" class="btn btn-light col-12 mb-1 text-left" th:if="${signable == 'ok'}">
                 <i class="fas fa-signature"></i> Mode signature
             </button>
-            <button th:if="${documentType == 'pdf'}" id="commentButton" onclick="enableCommentMode();" class="btn btn-light col-12 mb-1 text-left">
+            <button th:if="${documentType == 'pdf'}" id="commentButton" class="btn btn-light col-12 mb-1 text-left">
                 <i class="fas fa-comment-alt"></i> Mode commentaires
                 <span th:if="${postits.size() > 0}" class="float-right badge badge-warning mt-1" th:text="${postits.size()}"></span>
             </button>
@@ -90,8 +90,8 @@
                     </button>
                     <div class="border ml-3 mr-3 "></div>
                     <div id="signtools" th:if="${signable == 'ok'}" style="display: none;">
-                        <button id="pen" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer un visuel" class="btn btn-outline-success ml-1" onclick="toggleVisual()"><i class="fas fa-eye"></i></button>
-                        <button id="clock" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer la date" class="btn btn-outline-dark ml-1" onclick="toggleDate()"><i class="fas fa-clock"></i></button>
+                        <button id="visualButton" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer un visuel" class="btn btn-outline-success ml-1"><i class="fas fa-eye"></i></button>
+                        <button id="dateButton" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer la date" class="btn btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>
                     </div>
                     <div id="signButtons" th:if="${signable == 'ok'}" class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#signButtons').toggleClass('active');" onmouseout="$('#signButtons').toggleClass('active');">
                         <a class="btn-floating btn-lg bg-primary waves-effect">

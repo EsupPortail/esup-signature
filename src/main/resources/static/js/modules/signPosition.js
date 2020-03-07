@@ -1,15 +1,32 @@
 export class SignPosition {
 
+    pdf = document.getElementById("pdf");
     pointerDiv;
     startPosX;
     startPosY;
     signWidth;
     signHeight;
+    posX;
+    posY;
     pointItMove = false;
+    dateActive = false;
+    cross = $('#cross');
+    borders = $('#borders');
+    scale = 1;
 
-    constructor() {
+    constructor(xPos, yPos) {
+        this.posX = parseInt(xPos, 10);
+        this.posY = parseInt(yPos, 10);
+        this.init()
     }
 
+    init() {
+        window.addEventListener("touchmove", e => this.touchmove(e));
+    }
+
+    setScale(scale) {
+        this.scale = scale;
+    }
 
     point(e) {
         if(this.mode === 'sign') {
@@ -43,6 +60,7 @@ export class SignPosition {
     }
 
     updateCrossPosition() {
+        console.log("updat cross pos");
         this.cross.style.backgroundColor = 'rgba(0, 255, 0, .5)';
         this.cross.style.left = (posX + 15) + "px";
         this.cross.style.top = posY + "px";
@@ -64,9 +82,9 @@ export class SignPosition {
             var dataURL = pointerCanvas.toDataURL('image/png')
             $('#pdf').css('cursor', 'url('+dataURL+'), auto');
             this.posX = e.offsetX ? (e.offsetX)
-                : e.clientX - pointerDiv.offsetLeft;
+                : e.clientX - this.pointerDiv.offsetLeft;
             this.posY = e.offsetY ? (e.offsetY)
-                : e.clientY - pointerDiv.offsetTop;
+                : e.clientY - this.pointerDiv.offsetTop;
             document.getElementById("xPos").value = Math.round(posX / scale);
             document.getElementById("yPos").value = Math.round(posY / scale);
         }
@@ -74,18 +92,15 @@ export class SignPosition {
 
 
     resetPosition() {
-        console.log("out");
-        var cross = document.getElementById("cross");
-        if(cross != null) {
-            cross.style.left = (startPosX * zoom) + "px";
-            cross.style.top = (startPosY * zoom)  + "px";
-            document.getElementById("xPos").value = startPosX;
-            document.getElementById("yPos").value = startPosY;
-            cross.style.pointerEvents = "auto";
-            document.body.style.cursor = "default";
-            pointItEnable = false;
-            pointItMove = false
-        }
+        console.log("reset position");
+        this.cross.style.left = (this.startPosX * zoom) + "px";
+        this.cross.style.top = (this.startPosY * zoom)  + "px";
+        document.getElementById("xPos").value = this.startPosX;
+        document.getElementById("yPos").value = this.startPosY;
+        this.cross.style.pointerEvents = "auto";
+        document.body.style.cursor = "default";
+        this.pointItEnable = false;
+        this.pointItMove = false
     }
 
 
@@ -101,7 +116,9 @@ export class SignPosition {
     }
 
     resetSign() {
-        this.cross.css('left', this.posX * this.scale + 15);
+        console.log("reset sign to "  + this.posX + " " + this.posY);
+        this.cross.show();
+        this.cross.css('left', ((this.posX * this.scale) + 15) + "px");
         this.cross.css('top', this.posY * this.scale);
         this.cross.css('backgroundSize', this.signWidth * this.scale);
         this.cross.css('width', this.signWidth * this.scale);
@@ -114,21 +131,56 @@ export class SignPosition {
     savePosition() {
         if(pointItEnable && pointItMove) {
             console.log("save");
-            startPosX = Math.round(posX * scale - 15);
-            startPosY = Math.round(posY * scale);
+            this.startPosX = Math.round(posX * scale - 15);
+            this.startPosY = Math.round(posY * scale);
         }
-        cross.style.backgroundColor= 'rgba(0, 255, 0, 0)';
-        cross.style.pointerEvents = "auto";
+        this.cross.style.backgroundColor= 'rgba(0, 255, 0, 0)';
+        this.cross.style.pointerEvents = "auto";
         document.body.style.cursor = "default";
-        pointItEnable = false;
-        pointItMove = false
+        this.pointItEnable = false;
+        this.pointItMove = false
     }
 
     dragSignature() {
         console.log("drag");
-        cross.style.pointerEvents = "none";
-        pdf.style.pointerEvents = "auto";
+        this.cross.style.pointerEvents = "none";
+        $('#pdf').style.pointerEvents = "auto";
         document.body.style.cursor = "move";
-        pointItEnable = true;
+        this.pointItEnable = true;
+    }
+
+    toggleVisual() {
+        console.log("toggle visual");
+        if(this.visualActive) {
+            this.visualActive = false;
+            $('#clock').prop('disabled', true);
+        } else {
+            this.visualActive = true;
+            $('#clock').prop('disabled', false);
+        }
+        this.cross.toggle();
+        $('#pen').toggleClass('btn-outline-success btn-outline-dark').children().toggleClass('fa-eye-slash fa-eye');
+    }
+
+    toggleDate() {
+        console.log("toggle date");
+        $('#clock').toggleClass('btn-outline-success btn-outline-dark');
+        var textDate;
+        if(!this.dateActive) {
+            this.dateActive = true;
+            this.cross.style.width = 200;
+            this.cross.style.height = this.signPosition.cross.offsetHeight + 20;
+            this.borders.style.width = 200;
+            this.borders.style.height = borders.offsetHeight + 20;
+            this.borders.insertAdjacentHTML("beforeend", "<span id='textDate' class='align-top' style='font-size:" + 8 * this.scale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm') +"</span>");
+        } else {
+            this.dateActive = false;
+            this.cross.style.width = 100;
+            this.cross.style.height = this.signPosition.cross.offsetHeight - 20;
+            this.borders.style.width = 100;
+            this.borders.style.height = borders.offsetHeight - 20;
+            textDate = document.getElementById("textDate");
+            textDate.remove();
+        }
     }
 }
