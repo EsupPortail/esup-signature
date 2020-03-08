@@ -2,7 +2,6 @@ export class PdfViewer {
 
     pageRendering = false;
     pageNumPending;
-    oldscale = 1;
     scale = 1;
     canvas = document.getElementById('pdf');
     ctx = this.canvas.getContext('2d');
@@ -62,8 +61,6 @@ export class PdfViewer {
         document.getElementById('zoomout').addEventListener('click', e => this.zoomOut());
         document.getElementById('rotateleft').addEventListener('click', e => this.rotateLeft());
         document.getElementById('rotateright').addEventListener('click', e => this.rotateRight());
-
-        this.canvas.addEventListener('mousemove', e => this.signPosition.point(e));
     }
 
 
@@ -88,9 +85,6 @@ export class PdfViewer {
                 $('#prev').prop('disabled', true);
                 $('#next').prop('disabled', true);
             }
-
-
-            this.oldscale = this.scale;
         }
     }
 

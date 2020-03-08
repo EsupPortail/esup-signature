@@ -87,8 +87,8 @@ public class PdfService {
             float height = pdPage.getMediaBox().getHeight();
             float width = pdPage.getMediaBox().getWidth();
 
-            int xPos = params.getXPos();
-            int yPos = params.getYPos();
+            int xPos = params.getxPos();
+            int yPos = params.getyPos();
             DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
             File signImage = null;
             String text = "";
@@ -411,8 +411,8 @@ public class PdfService {
                         }
                         PDPage pdPage = pdDocument.getPage(annotationPages.get(0) - 1);
                         signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
-                        signRequestParams.setXPos((int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX());
-                        signRequestParams.setYPos((int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight());
+                        signRequestParams.setxPos((int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX());
+                        signRequestParams.setyPos((int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight());
                         signRequestParams.setSignPageNumber(annotationPages.get(0));
                         signRequestParamsList.add(signRequestParams);
                     }
@@ -422,7 +422,7 @@ public class PdfService {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
-		return signRequestParamsList.stream().sorted(Comparator.comparingInt(value -> value.getXPos())).sorted(Comparator.comparingInt(value -> value.getYPos())).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
+		return signRequestParamsList.stream().sorted(Comparator.comparingInt(value -> value.getxPos())).sorted(Comparator.comparingInt(value -> value.getyPos())).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
     }
 
     public InputStream fill(InputStream pdfFile, Map<String, String> datas) {

@@ -79,6 +79,10 @@ public class SignRequest {
     @Transient
     transient User creator;
 
+    @JsonIgnore
+    @Transient
+    transient Boolean signable;
+
     public Long getId() {
         return id;
     }
@@ -238,4 +242,17 @@ public class SignRequest {
     public void setCreator(User creator) {
         this.creator = creator;
     }
+
+    public SignRequestParams getCurrentSignRequestParams() {
+        if(getSignRequestParams().size() > getSignedDocuments().size()) {
+            return getSignRequestParams().get(getSignedDocuments().size());
+        } else {
+            SignRequestParams signRequestParams = new SignRequestParams();
+            signRequestParams.setSignPageNumber(1);
+            signRequestParams.setxPos(0);
+            signRequestParams.setyPos(0);
+            return signRequestParams;
+        }
+    }
+
 }

@@ -30,7 +30,6 @@ import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.support.MutableSortDefinition;
-import org.springframework.beans.support.PagedListHolder;
 import org.springframework.beans.support.PropertyComparator;
 import org.springframework.beans.support.SortDefinition;
 import org.springframework.data.domain.Page;
@@ -258,13 +257,13 @@ public class SignRequestService {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				if(visual) {
 					step = "Conversion du document";
-					InputStream signedInputStream = pdfService.stampImage(toSignDocuments.get(0), signRequest, getCurrentSignType(signRequest), getCurrentSignRequestParams(signRequest), user, addDate);
+					InputStream signedInputStream = pdfService.stampImage(toSignDocuments.get(0), signRequest, getCurrentSignType(signRequest), signRequest.getCurrentSignRequestParams(), user, addDate);
 					addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
 				}
 			}
 		} else if(signType.equals(SignType.pdfImageStamp)) {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-				InputStream signedInputStream = pdfService.stampImage(toSignDocuments.get(0), signRequest, getCurrentSignType(signRequest), getCurrentSignRequestParams(signRequest), user, addDate);
+				InputStream signedInputStream = pdfService.stampImage(toSignDocuments.get(0), signRequest, getCurrentSignType(signRequest), signRequest.getCurrentSignRequestParams(), user, addDate);
 				addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
 			}
 		} else {
@@ -333,7 +332,7 @@ public class SignRequestService {
 				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else if(signatureForm.equals(SignatureForm.PAdES)) {
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, getCurrentSignRequestParams(signRequest), ((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign(), user, addDate);
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentSignRequestParams(), ((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign(), user, addDate);
 			}
 
 			if(signatureForm.equals(SignatureForm.PAdES)) {
@@ -599,8 +598,8 @@ public class SignRequestService {
 	public SignRequestParams getEmptySignRequestParams() {
 		SignRequestParams signRequestParams = new SignRequestParams();
 		signRequestParams.setSignPageNumber(1);
-		signRequestParams.setXPos(0);
-		signRequestParams.setYPos(0);
+		signRequestParams.setxPos(0);
+		signRequestParams.setyPos(0);
 		return signRequestParams;
 	}
 
@@ -651,13 +650,13 @@ public class SignRequestService {
 		}
 	}
 
-	public SignRequestParams getCurrentSignRequestParams(SignRequest signRequest) {
-		if(signRequest.getSignRequestParams().size() > signRequest.getSignedDocuments().size()) {
-			return signRequest.getSignRequestParams().get(signRequest.getSignedDocuments().size());
-		} else {
-			return getEmptySignRequestParams();
-		}
-	}
+//	public SignRequestParams getCurrentSignRequestParams(SignRequest signRequest) {
+//		if(signRequest.getSignRequestParams().size() > signRequest.getSignedDocuments().size()) {
+//			return signRequest.getSignRequestParams().get(signRequest.getSignedDocuments().size());
+//		} else {
+//			return getEmptySignRequestParams();
+//		}
+//	}
 
 	public Page<SignRequest> getSignRequestsPageGrouped(List<SignRequest> signRequests, Pageable pageable) {
 		List<SignRequest> signRequestsGrouped = new ArrayList<>();

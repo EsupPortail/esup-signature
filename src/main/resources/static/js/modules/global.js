@@ -15,6 +15,7 @@ export class GlobalUi {
     }
 
     init() {
+        console.info("Starting global UI");
         $(document).on('click', e => this.closeUserMenu(e));
         $(document).on('click', e => this.scrollToHash());
         this.initSideBar();
@@ -49,7 +50,6 @@ export class GlobalUi {
     }
 
     initSideBar() {
-        console.info("init side bar");
         $('#sidebarCollapse').on('click', e => this.toggleSideBarAction());
         if(this.sideBarStatus == null) {
             localStorage.setItem('sideBarStatus', 'off');

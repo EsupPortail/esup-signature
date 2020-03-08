@@ -1,6 +1,6 @@
 export class SignPosition {
 
-    pdf = document.getElementById("pdf");
+    pdf = $('#pdf');
     pointerDiv;
     startPosX;
     startPosY;
@@ -12,7 +12,7 @@ export class SignPosition {
     dateActive = false;
     cross = $('#cross');
     borders = $('#borders');
-    scale = 1;
+    currentScale = 1;
 
     constructor(xPos, yPos) {
         this.posX = parseInt(xPos, 10);
@@ -21,20 +21,28 @@ export class SignPosition {
     }
 
     init() {
+        console.log("init signPosition event listeners");
         window.addEventListener("touchmove", e => this.touchmove(e));
-    }
+        this.cross.on('mousedown', e => this.dragSignature());
+        this.cross.on('touchstart', e => this.dragSignature());
+        this.cross.on('mouseup', e => this.savePosition());
+        this.cross.on('touchend', e => this.savePosition());
 
-    setScale(scale) {
-        this.scale = scale;
-    }
 
-    point(e) {
-        if(this.mode === 'sign') {
-            this.pointIt(e);
-        } else if(this.mode === 'comment') {
-            this.pointIt2(e);
+    }
+    //
+    // setScale(scale) {
+    //     this.scale = scale;
+    // }
+
+
+    pointIt(e) {
+        if(this.pointItEnable) {
+            this.pointItMove = true;
+            this.posX = e.offsetX ? (e.offsetX) : e.clientX;
+            this.posY = e.offsetY ? (e.offsetY) : e.clientY;
+            this.updateCrossPosition();
         }
-
     }
 
     touchmove(e) {
@@ -50,22 +58,13 @@ export class SignPosition {
         }
     }
 
-    pointIt(e) {
-        if(this.pointItEnable) {
-            this.pointItMove = true;
-            this.posX = e.offsetX ? (e.offsetX) : e.clientX;
-            this.posY = e.offsetY ? (e.offsetY) : e.clientY;
-            this.updateCrossPosition();
-        }
-    }
-
     updateCrossPosition() {
-        console.log("updat cross pos");
-        this.cross.style.backgroundColor = 'rgba(0, 255, 0, .5)';
-        this.cross.style.left = (posX + 15) + "px";
-        this.cross.style.top = posY + "px";
-        document.getElementById("xPos").value = Math.round(posX / scale);
-        document.getElementById("yPos").value = Math.round(posY / scale);
+        console.debug("update cross pos to : " + (this.posX + 15) + " " + (this.posY));
+        this.cross.css('backgroundColor', 'rgba(0, 255, 0, .5)');
+        this.cross.css('left', (this.posX + 15) + "px");
+        this.cross.css('top', this.posY + "px");
+        document.getElementById("xPos").value = Math.round(this.posX / this.currentScale);
+        document.getElementById("yPos").value = Math.round(this.posY / this.currentScale);
     }
 
     pointIt2(e) {
@@ -79,63 +78,65 @@ export class SignPosition {
             pointerCtx.textAlign = "center";
             pointerCtx.textBaseline = "middle";
             pointerCtx.fillText("\uf075", 12, 12);
-            var dataURL = pointerCanvas.toDataURL('image/png')
-            $('#pdf').css('cursor', 'url('+dataURL+'), auto');
+            let dataURL = pointerCanvas.toDataURL('image/png')
+            pdf.css('cursor', 'url('+dataURL+'), auto');
             this.posX = e.offsetX ? (e.offsetX)
                 : e.clientX - this.pointerDiv.offsetLeft;
             this.posY = e.offsetY ? (e.offsetY)
                 : e.clientY - this.pointerDiv.offsetTop;
-            document.getElementById("xPos").value = Math.round(posX / scale);
-            document.getElementById("yPos").value = Math.round(posY / scale);
+            document.getElementById("xPos").value = Math.round(this.posX / this.currentScale);
+            document.getElementById("yPos").value = Math.round(this.posY / this.currentScale);
         }
     }
 
 
     resetPosition() {
         console.log("reset position");
-        this.cross.style.left = (this.startPosX * zoom) + "px";
-        this.cross.style.top = (this.startPosY * zoom)  + "px";
+        this.cross.css('left', (this.startPosX * zoom) + "px");
+        this.cross.css('top', (this.startPosY * zoom)  + "px");
         document.getElementById("xPos").value = this.startPosX;
         document.getElementById("yPos").value = this.startPosY;
-        this.cross.style.pointerEvents = "auto";
+        this.cross.css('pointer-events', 'auto');
         document.body.style.cursor = "default";
         this.pointItEnable = false;
         this.pointItMove = false
     }
 
 
-    refreshSign() {
-        this.cross.css('left',  parseInt(cross.css('left')) / this.oldscale * this.scale);
-        this.cross.css('top', parseInt(cross.css('top'))  / this.oldscale * this.scale);
-        this.cross.css('backgroundSize', this.signWidth * this.scale);
-        this.cross.css('width', this.signWidth * this.scale);
-        this.cross.css('height', this.signHeight * this.scale);
-        this.borders.css('width', this.signWidth * this.scale);
-        this.borders.css('height', this.signHeight * this.scale);
-        $('#textVisa').css('font-size', 8 * this.scale);
+    refreshSign(scale) {
+        console.log("refresh sign with new scale : " + scale);
+        this.cross.css('left',  parseInt(this.cross.css('left')) / this.currentScale * scale);
+        this.cross.css('top', parseInt(this.cross.css('top'))  / this.currentScale * scale);
+        this.updateSignSize(scale);
+        $('#textVisa').css('font-size', 8 * scale);
+        this.currentScale = scale;
     }
 
     resetSign() {
         console.log("reset sign to "  + this.posX + " " + this.posY);
         this.cross.show();
-        this.cross.css('left', ((this.posX * this.scale) + 15) + "px");
-        this.cross.css('top', this.posY * this.scale);
-        this.cross.css('backgroundSize', this.signWidth * this.scale);
-        this.cross.css('width', this.signWidth * this.scale);
-        this.cross.css('height', this.signHeight * this.scale);
-        this.borders.css('width', this.signWidth * this.scale);
-        this.borders.css('height', this.signHeight * this.scale);
-        $('#textVisa').css('font-size', 8 * this.scale);
+        this.cross.css('left', ((this.posX * this.currentScale) + 15) + "px");
+        this.cross.css('top', this.posY * this.currentScale);
+        this.updateSignSize(this.currentScale);
+        $('#textVisa').css('font-size', 8 * this.currentScale);
+    }
+
+    updateSignSize(scale) {
+        this.cross.css('backgroundSize', this.signWidth * scale);
+        this.cross.css('width', this.signWidth * scale);
+        this.cross.css('height', this.signHeight * scale);
+        this.borders.css('width', this.signWidth * scale);
+        this.borders.css('height', this.signHeight * scale);
     }
 
     savePosition() {
-        if(pointItEnable && pointItMove) {
-            console.log("save");
-            this.startPosX = Math.round(posX * scale - 15);
-            this.startPosY = Math.round(posY * scale);
+        if(this.pointItEnable && this.pointItMove) {
+            console.log("save position to  :" + Math.round(this.posX * this.scale - 15) + " " + Math.round(this.posY * this.currentScale));
+            this.startPosX = Math.round(this.posX * this.currentScale - 15);
+            this.startPosY = Math.round(this.posY * this.currentScale);
         }
-        this.cross.style.backgroundColor= 'rgba(0, 255, 0, 0)';
-        this.cross.style.pointerEvents = "auto";
+        this.cross.css('backgroundColor', 'rgba(0, 255, 0, 0)');
+        this.cross.css('pointerEvents', "auto");
         document.body.style.cursor = "default";
         this.pointItEnable = false;
         this.pointItMove = false
@@ -143,8 +144,8 @@ export class SignPosition {
 
     dragSignature() {
         console.log("drag");
-        this.cross.style.pointerEvents = "none";
-        $('#pdf').style.pointerEvents = "auto";
+        this.cross.css('pointerEvents', "none");
+        pdf.style.pointerEvents = "auto";
         document.body.style.cursor = "move";
         this.pointItEnable = true;
     }
@@ -168,17 +169,17 @@ export class SignPosition {
         var textDate;
         if(!this.dateActive) {
             this.dateActive = true;
-            this.cross.style.width = 200;
-            this.cross.style.height = this.signPosition.cross.offsetHeight + 20;
+            this.cross.css('width', 200);
+            this.cross.css('height', this.cross.outerHeight() + 20);
             this.borders.style.width = 200;
-            this.borders.style.height = borders.offsetHeight + 20;
-            this.borders.insertAdjacentHTML("beforeend", "<span id='textDate' class='align-top' style='font-size:" + 8 * this.scale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm') +"</span>");
+            this.borders.style.height = this.borders.outerHeight() + 20;
+            this.borders.append("<span id='textDate' class='align-top' style='font-size:" + 8 * this.scale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm') +"</span>");
         } else {
             this.dateActive = false;
-            this.cross.style.width = 100;
-            this.cross.style.height = this.signPosition.cross.offsetHeight - 20;
+            this.cross.css('width', 100);
+            this.cross.css('height', this.cross.outerHeight() - 20);
             this.borders.style.width = 100;
-            this.borders.style.height = borders.offsetHeight - 20;
+            this.borders.style.height = this.borders.outerHeight() - 20;
             textDate = document.getElementById("textDate");
             textDate.remove();
         }

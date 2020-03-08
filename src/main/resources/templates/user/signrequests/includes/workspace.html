@@ -9,20 +9,18 @@
         <canvas title="Cliquez pour ajouter une annotation" id="pdf" class="drop-shadows ">
         </canvas>
         <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && @signRequestService.getCurrentSignType(signRequest).name() != 'visa'}">
-            <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();"
-                 ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
+            <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                  onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                  onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
-                 th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;  left: ' + ${@signRequestService.getCurrentSignRequestParams(signRequest).XPos} + 'px;top: ' + ${@signRequestService.getCurrentSignRequestParams(signRequest).YPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
+                 th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;  left: ' + ${signRequest.getCurrentSignRequestParams().xPos} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
                 <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
             </div>
         </th:block>
         <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && @signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
-            <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)'; dragSignature();"
-                 ontouchend="savePosition();" onmousedown="dragSignature();" onmouseup="savePosition();"
+            <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                  onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                  onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
-                 th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${@signRequestService.getCurrentSignRequestParams(signRequest).XPos} + 'px;top: ' + ${@signRequestService.getCurrentSignRequestParams(signRequest).YPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
+                 th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${signRequest.getCurrentSignRequestParams().xPos} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
                 <div id="borders" class="anim-border"th:style="'vertical-align:top; text-align:left;line-height:6px; width:  ' + ${signWidth} + 'px; height:  ' + ${signHeight} + 'px;'">
                     <span id="textVisa" style="font-size: 6px;" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span>
                     <br>
@@ -73,11 +71,11 @@
         </div>
     </div>
     <script th:replace="user/signrequests/includes/scriptshow :: scriptshow"></script>
-    <script th:inline="javascript" type="module" th:with="signRequestParams = ${@signRequestService.getCurrentSignRequestParams(signRequest)}">
+    <script th:inline="javascript" type="module">
         import {WorkspacePdf} from "/js/modules/workspacePdf.js";
         $(document).ready(function() {
             new WorkspacePdf('/user/signrequests/get-last-file/' + [[${signRequest.id}]],
-                [[${signRequestParams}]],
+                [[${signRequest.getCurrentSignRequestParams()}]],
                 '[[${@signRequestService.getCurrentSignType(signRequest).name()}]]',
                 [[${signWidth}]],
                 [[${signHeight}]],

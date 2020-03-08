@@ -226,13 +226,13 @@ public class SignService {
 		if (pdfParameters.getRotation() == 0) {
 			imageParameters.setWidth(signSize[0]);
 			imageParameters.setHeight(signSize[1]);
-			imageParameters.setxAxis(signRequestParams.getXPos());
-			imageParameters.setyAxis(signRequestParams.getYPos());
+			imageParameters.setxAxis(signRequestParams.getxPos());
+			imageParameters.setyAxis(signRequestParams.getyPos());
 		} else {
 			imageParameters.setWidth(signSize[1]);
 			imageParameters.setHeight(signSize[0]);
-			imageParameters.setxAxis(signRequestParams.getXPos() - 50);
-			imageParameters.setyAxis(signRequestParams.getYPos());
+			imageParameters.setxAxis(signRequestParams.getxPos() - 50);
+			imageParameters.setyAxis(signRequestParams.getyPos());
 		}
 		imageParameters.setDpi(300);
 		imageParameters.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.LEFT);

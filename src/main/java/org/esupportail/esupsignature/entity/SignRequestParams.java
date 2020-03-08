@@ -39,19 +39,19 @@ public class SignRequestParams {
 		this.pdSignatureFieldName = pdSignatureFieldName;
 	}
 
-	public int getXPos() {
+	public int getxPos() {
         return this.xPos;
     }
 
-	public void setXPos(int xPos) {
+	public void setxPos(int xPos) {
         this.xPos = xPos;
     }
 
-	public int getYPos() {
+	public int getyPos() {
         return this.yPos;
     }
 
-	public void setYPos(int yPos) {
+	public void setyPos(int yPos) {
         this.yPos = yPos;
     }
 
