@@ -22,7 +22,7 @@ export class WorkspacePdf {
         this.currentSignRequestParams = new SignRequestParams(currentSignRequestParams.pdSignatureFieldName, currentSignRequestParams.signPageNumber, currentSignRequestParams.xPos, currentSignRequestParams.yPos);
         this.postits = postits;
         this.signable = signable;
-        this.signPosition = new SignPosition(this.currentSignRequestParams.xPos,this.currentSignRequestParams.yPos);
+        this.signPosition = new SignPosition(this.currentSignRequestParams.xPos,this.currentSignRequestParams.yPos, signWidth, signHeight);
         this.pdfViewer = new PdfViewer(url, this.signPosition);
 
         this.init();

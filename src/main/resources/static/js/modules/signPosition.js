@@ -14,9 +14,11 @@ export class SignPosition {
     borders = $('#borders');
     currentScale = 1;
 
-    constructor(xPos, yPos) {
+    constructor(xPos, yPos, signWidth, signHeight) {
         this.posX = parseInt(xPos, 10);
         this.posY = parseInt(yPos, 10);
+        this.signWidth = signWidth;
+        this.signHeight = signHeight;
         this.init()
     }
 
@@ -105,7 +107,7 @@ export class SignPosition {
 
     refreshSign(scale) {
         console.log("refresh sign with new scale : " + scale);
-        this.cross.css('left',  parseInt(this.cross.css('left')) / this.currentScale * scale);
+        this.cross.css('left',  parseInt((this.cross.css('left')) - 15 / this.currentScale * scale) + 15 * scale);
         this.cross.css('top', parseInt(this.cross.css('top'))  / this.currentScale * scale);
         this.updateSignSize(scale);
         $('#textVisa').css('font-size', 8 * scale);
@@ -122,6 +124,7 @@ export class SignPosition {
     }
 
     updateSignSize(scale) {
+        console.log(this.signWidth + " * " + this.currentScale)
         this.cross.css('backgroundSize', this.signWidth * scale);
         this.cross.css('width', this.signWidth * scale);
         this.cross.css('height', this.signHeight * scale);
