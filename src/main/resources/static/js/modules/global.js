@@ -18,6 +18,8 @@ export class GlobalUi {
         console.info("Starting global UI");
         $(document).on('click', e => this.closeUserMenu(e));
         $(document).on('click', e => this.scrollToHash());
+        this.sideBar2.on('mouseover', e => this.disableBodyScroll());
+        this.sideBar2.on('mouseout', e => this.enableBodyScroll());
         this.initSideBar();
         this.clickableRow.on('click',  e => this.gotoRowHref());
         this.inputFile.on('change', e => this.changeFileInputName(e));
@@ -25,6 +27,14 @@ export class GlobalUi {
 
     gotoRowHref() {
         window.location = this.clickableRow.data("href");
+    }
+
+    disableBodyScroll() {
+        $('body').addClass('overflow-hidden');
+    }
+
+    enableBodyScroll() {
+        $('body').removeClass('overflow-hidden');
     }
 
     changeFileInputName(e) {

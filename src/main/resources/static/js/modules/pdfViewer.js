@@ -125,6 +125,7 @@ export class PdfViewer {
         this.pageNum--;
         this.queueRenderPage(this.pageNum);
         window.scrollTo(0, 0);
+        this.fireEvent('pageChange', ['prev']);
 
     }
 
@@ -135,6 +136,7 @@ export class PdfViewer {
         this.pageNum++;
         this.queueRenderPage(this.pageNum);
         window.scrollTo(0, 0);
+        this.fireEvent('pageChange', ['next']);
     }
 
     zoomIn() {
@@ -154,7 +156,7 @@ export class PdfViewer {
         $('#textDate').css('font-size', 8 * this.scale + 'px')
         //$('#borders').css('line-height', 8 * this.scale + 'px')
         this.queueRenderPage(this.pageNum);
-        this.fireEvent('scale', ['in']);
+        this.fireEvent('scaleChange', ['in']);
     }
 
 
@@ -173,7 +175,7 @@ export class PdfViewer {
         $('#textDate').css('font-size', 8 * this.scale + 'px')
         //$('#borders').css('line-height', 8 * this.scale + 'px')
         this.queueRenderPage(this.pageNum);
-        this.fireEvent('scale', ['out']);
+        this.fireEvent('scaleChange', ['out']);
     }
 
 
@@ -183,6 +185,7 @@ export class PdfViewer {
         }
         this.rotation = this.rotation - 90;
         this.queueRenderPage(this.pageNum);
+        this.fireEvent('rotate', ['left']);
     }
 
     rotateRight() {
@@ -191,6 +194,7 @@ export class PdfViewer {
         }
         this.rotation = this.rotation + 90;
         this.queueRenderPage(this.pageNum);
+        this.fireEvent('rotate', ['right']);
     }
 
 }

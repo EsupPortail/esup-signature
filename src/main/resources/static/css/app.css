@@ -575,7 +575,7 @@ float:left;
 .circle {
     display: none;
     position: absolute;
-    opacity:0.75;
+    opacity: 0.75;
     cursor: pointer;
 }
 
