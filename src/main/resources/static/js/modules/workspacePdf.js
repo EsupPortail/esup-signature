@@ -268,9 +268,6 @@ export class WorkspacePdf {
     detectMouseWheelDirection(e) {
         var delta = null,
             direction = false;
-        // if ( !e ) {
-        //     e = window.event;
-        // }
         var e_delta = (e.deltaY || -e.wheelDelta || e.detail);
         if ( e_delta ) {
             delta = e_delta  / 60;

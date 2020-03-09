@@ -847,3 +847,8 @@ float:left;
 .new-min-h {
     min-height: 70vh;
 }
+
+.zoom {
+    text-align: center;
+    min-width: 60px !important;
+}
