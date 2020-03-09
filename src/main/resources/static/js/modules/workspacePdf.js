@@ -1,6 +1,6 @@
 import {PdfViewer} from "./pdfViewer.js";
 import {SignPosition} from "./signPosition.js";
-import {SignRequestParams} from "../prototypes/SignRequestParams.js";
+import {SignRequestParams} from "../prototypes/signRequestParams.js";
 
 export class WorkspacePdf {
 
@@ -26,8 +26,9 @@ export class WorkspacePdf {
         this.pdfViewer = new PdfViewer(url, this.signPosition);
 
         this.init();
-        this.initWorkspace()
+        this.initWorkspace();
         this.signPosition.resetSign();
+
     }
 
     init() {
@@ -61,16 +62,16 @@ export class WorkspacePdf {
         if(this.mode === 'sign') {
             this.pageNum = this.signPageNumber;
             this.enableSignMode();
-        } else if(mode === 'comment') {
+        } else if(this.mode === 'comment') {
             this.enableCommentMode();
-        } else if(mode === 'refuse') {
+        } else if(this.mode === 'refuse') {
             this.enableRefuseMode();
         } else {
             this.enableSignMode();
         }
         if(this.signable === 'ok' && this.currentSignType === 'visa') {
-            if(mode === 'sign') {
-                toggleVisual();
+            if(this.mode === 'sign') {
+                this.signPosition.toggleVisual();
                 pageNum = 1;
             }
         }

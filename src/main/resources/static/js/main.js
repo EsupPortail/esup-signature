@@ -16,7 +16,4 @@
  * limitations under the License.
  */
 import {GlobalUi} from "./modules/global.js";
-export let globalUi;
-if(typeof globalUi == 'undefined') {
-    globalUi = new GlobalUi();
-}
+export let globalUi = new GlobalUi();

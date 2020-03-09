@@ -106,8 +106,8 @@ export class SignPosition {
 
 
     refreshSign(scale) {
-        console.log("refresh sign with new scale : " + scale);
-        this.cross.css('left',  parseInt((this.cross.css('left')) - 15 / this.currentScale * scale) + 15 * scale);
+        console.debug("refresh sign with new scale : " + scale);
+        this.cross.css('left',  ((parseInt(this.cross.css('left')) - (15)) / this.currentScale)  * scale + (15));
         this.cross.css('top', parseInt(this.cross.css('top'))  / this.currentScale * scale);
         this.updateSignSize(scale);
         $('#textVisa').css('font-size', 8 * scale);
@@ -115,7 +115,7 @@ export class SignPosition {
     }
 
     resetSign() {
-        console.log("reset sign to "  + this.posX + " " + this.posY);
+        console.info("reset sign to "  + this.posX + " " + this.posY);
         this.cross.show();
         this.cross.css('left', ((this.posX * this.currentScale) + 15) + "px");
         this.cross.css('top', this.posY * this.currentScale);
@@ -124,17 +124,17 @@ export class SignPosition {
     }
 
     updateSignSize(scale) {
-        console.log(this.signWidth + " * " + this.currentScale)
-        this.cross.css('backgroundSize', this.signWidth * scale);
-        this.cross.css('width', this.signWidth * scale);
-        this.cross.css('height', this.signHeight * scale);
-        this.borders.css('width', this.signWidth * scale);
-        this.borders.css('height', this.signHeight * scale);
+        this.cross.css('width', this.cross.width() / this.currentScale * scale);
+        this.cross.css('height', this.cross.height() / this.currentScale * scale);
+        this.borders.css('width', this.borders.width() / this.currentScale * scale);
+        this.borders.css('height', this.borders.height() / this.currentScale * scale);
+
+        this.cross.css('background-size', parseInt(this.cross.css('background-size')) / this.currentScale * scale);
     }
 
     savePosition() {
         if(this.pointItEnable && this.pointItMove) {
-            console.log("save position to  :" + Math.round(this.posX * this.scale - 15) + " " + Math.round(this.posY * this.currentScale));
+            console.info("save position to  :" + Math.round(this.posX * this.currentScale - 15) + " " + Math.round(this.posY * this.currentScale));
             this.startPosX = Math.round(this.posX * this.currentScale - 15);
             this.startPosY = Math.round(this.posY * this.currentScale);
         }
@@ -172,17 +172,17 @@ export class SignPosition {
         var textDate;
         if(!this.dateActive) {
             this.dateActive = true;
-            this.cross.css('width', 200);
-            this.cross.css('height', this.cross.outerHeight() + 20);
-            this.borders.style.width = 200;
-            this.borders.style.height = this.borders.outerHeight() + 20;
-            this.borders.append("<span id='textDate' class='align-top' style='font-size:" + 8 * this.scale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm') +"</span>");
+            //this.cross.css('width', 200);
+            this.cross.css('height', (this.cross.outerHeight() + (8 * this.currentScale)));
+            //this.borders.css('width', 200);
+            this.borders.css('height', (this.borders.outerHeight() + (8 * this.currentScale)));
+            this.borders.append("<span id='textDate' class='align-top' style='font-size:" + 8 * this.currentScale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm') +"</span>");
         } else {
             this.dateActive = false;
-            this.cross.css('width', 100);
-            this.cross.css('height', this.cross.outerHeight() - 20);
-            this.borders.style.width = 100;
-            this.borders.style.height = this.borders.outerHeight() - 20;
+            //this.cross.css('width', 100);
+            this.cross.css('height', (this.cross.outerHeight() - (8 * this.currentScale)));
+            //this.borders.css('width', 100);
+            this.borders.css('height', (this.borders.outerHeight() - (8 * this.currentScale)));
             textDate = document.getElementById("textDate");
             textDate.remove();
         }

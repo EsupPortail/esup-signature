@@ -152,7 +152,7 @@ export class PdfViewer {
         this.scale = this.scale + 0.25;
         //textDate = document.getElementById("textDate");
         $('#textDate').css('font-size', 8 * this.scale + 'px')
-        $('#borders').css('line-height', 8 * this.scale + 'px')
+        //$('#borders').css('line-height', 8 * this.scale + 'px')
         this.queueRenderPage(this.pageNum);
         this.fireEvent('scale', ['in']);
     }
@@ -162,16 +162,16 @@ export class PdfViewer {
         if (this.scale <= 0.75) {
             return;
         }
-        $(".circle").each(function( index ) {
-            var left = Math.round($(this).css('left').replace("px", "") / this.scale * (this.scale - 0.25));
-            var top = Math.round((($(this).css('top').replace("px", "") / this.scale) - 20) * (this.scale - 0.25)) + 20 * (this.scale - 0.25);
-            console.log(top);
-            $(this).css('left', left);
-            $(this).css('top', top);
-        });
+        // $(".circle").each(function( index ) {
+        //     var left = Math.round($(this).css('left').replace("px", "") / this.scale * (this.scale - 0.25));
+        //     var top = Math.round((($(this).css('top').replace("px", "") / this.scale) - 20) * (this.scale - 0.25)) + 20 * (this.scale - 0.25);
+        //     console.log(top);
+        //     $(this).css('left', left);
+        //     $(this).css('top', top);
+        // });
         this.scale = this.scale - 0.25;
         $('#textDate').css('font-size', 8 * this.scale + 'px')
-        $('#borders').css('line-height', 8 * this.scale + 'px')
+        //$('#borders').css('line-height', 8 * this.scale + 'px')
         this.queueRenderPage(this.pageNum);
         this.fireEvent('scale', ['out']);
     }
