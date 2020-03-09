@@ -3,12 +3,9 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
 <!--/*@thymesVar id="postit" type="org.esupportail.esupsignature.entity.Log"*/-->
-<div th:fragment="workspace">
-    <div class="row">
-        <div class="col-12">
+<div th:fragment="workspace" id="workspace" class="workspace-sign alert alert-secondary fadein">
     <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post" th:if="${documentType == 'pdf'}">
-        <canvas title="Cliquez pour ajouter une annotation" id="pdf" class="drop-shadows ">
-        </canvas>
+        <div id="pdf" class="drop-shadows "></div>
         <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && @signRequestService.getCurrentSignType(signRequest).name() != 'visa'}">
             <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                  onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
@@ -46,8 +43,6 @@
             </div>
         </th:block>
     </form>
-        </div>
-    </div>
     <div th:if="${documentType != 'pdf' && signRequest.originalDocuments.size() > 0}" class="col-6">
     <div class="card mb-1">
         <div class="card-header">

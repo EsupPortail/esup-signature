@@ -134,12 +134,8 @@
                 </nav>
             </div>
             <div class="row">
-            <div id="workspace" class="workspace-sign alert alert-secondary fadein">
-                <div th:replace="user/signrequests/includes/workspace :: workspace"></div>
-            </div>
-            <div id="infos" class="d-none d-xl-block">
-
-            </div>
+            <div th:insert="user/signrequests/includes/workspace :: workspace"></div>
+            <div id="infos" class="d-none d-xl-block"></div>
             </div>
         </div>
     </div>
@@ -296,15 +292,12 @@
 <footer th:replace="fragments/footer"></footer>
 </body>
 <!--                    <script type="text/javascript" src="/js/jsSignatureLevel.js"></script>-->
-<script type="module">
-    /*<![CDATA[*/
+<script th:inline="javascript" type="module">
     import {globalUi} from "/js/main.js";
     import {Nexu} from "/js/modules/nexu.js";
-
     $(document).ready(function() {
         globalUi.showSideBar();
-        new Nexu("[[${nexuUrl}]]", "[[${nexuVersion}]]");
+        new Nexu([[${nexuUrl}]], [[${nexuVersion}]]);
     });
-    /*]]>*/
 </script>
 </html>

@@ -26,7 +26,7 @@ export class WorkspacePdf {
 
     init() {
 
-        this.pdfViewer.addEventListener('scaleChange', e => this.signPosition.refreshSign(this.pdfViewer.scale));
+        this.pdfViewer.addEventListener('scaleChange', e => this.signPosition.refreshSign(this.pdfViewer.scale / 0.75));
         this.pdfViewer.addEventListener('pageChange', e => this.refreshComments());
 
         document.getElementById('commentButton').addEventListener('click', e => this.enableCommentMode());
@@ -175,7 +175,7 @@ export class WorkspacePdf {
         this.mode = 'comment';
         localStorage.setItem('mode', 'comment');
         this.signPosition.pointItEnable = true;
-        this.pdfViewer.scale = 1;
+        this.pdfViewer.scale = 0.75;
         $('#workspace').toggleClass('alert-warning alert-secondary');
         $('#commentButton').toggleClass('btn-light btn-warning');
         $('#commentsTools').show();
@@ -203,7 +203,7 @@ export class WorkspacePdf {
             this.signPosition.cross.show();
         }
         this.pdfViewer.rotation = 0;
-        this.pdfViewer.scale = 1;
+        this.pdfViewer.scale = 0.75;
         this.pdfViewer.queueRenderPage(parseInt(this.signPageNumber.value, 10));
 
     }

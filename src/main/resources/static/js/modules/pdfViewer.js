@@ -1,16 +1,18 @@
 export class PdfViewer {
 
+    pdfPageView = null;
     pageRendering = false;
     pageNumPending;
-    scale = 1;
+    scale = 0.75;
     canvas = document.getElementById('pdf');
-    ctx = this.canvas.getContext('2d');
     url;
     pdfDoc;
     pageNum = 1;
     numPages = 1;
     signPosition;
-
+    page;
+    dataFields;
+    formRender = false;
     events = {};
 
     addEventListener(name, handler) {
@@ -21,12 +23,10 @@ export class PdfViewer {
     };
 
     removeEventListener(name, handler) {
-        /* This is a bit tricky, because how would you identify functions?
-           This simple solution should work if you pass THE SAME handler. */
         if (!this.events.hasOwnProperty(name))
             return;
 
-        var index = this.events[name].indexOf(handler);
+        let index = this.events[name].indexOf(handler);
         if (index != -1)
             this.events[name].splice(index, 1);
     };
@@ -38,8 +38,8 @@ export class PdfViewer {
         if (!args || !args.length)
             args = [];
 
-        var evs = this.events[name], l = evs.length;
-        for (var i = 0; i < l; i++) {
+        let evs = this.events[name], l = evs.length;
+        for (let i = 0; i < l; i++) {
             evs[i].apply(null, args);
         }
     };
@@ -72,34 +72,164 @@ export class PdfViewer {
     }
 
     renderPage(num) {
-        console.log("render page " + num);
+        console.log("render page " + num + ", scale : " + this.scale);
+        if(this.dataFields != null) {
+            this.setValues();
+            this.formRender = true;
+        }
         if(this.pdfDoc != null) {
-            document.getElementById('signPageNumber').value = num;
-            this.pageRendering = true;
-            this.pdfDoc.getPage(num).then(page => this.renderTask(page));
-            this.pageNum = num;
+            //document.getElementById('signPageNumber').value = num;
             document.getElementById('page_num').textContent = num;
             document.getElementById('zoom').textContent = 100 * this.scale;
-            //parent.signPosition.refreshSign();
             if(this.pdfDoc.numPages === 1) {
                 $('#prev').prop('disabled', true);
                 $('#next').prop('disabled', true);
             }
+            this.pageRendering = true;
+            this.pdfDoc.getPage(num).then(page => this.renderTask(page));
+            this.pageNum = num;
         }
     }
 
     renderTask(page) {
+        console.log("launch render task");
+        this.page = page;
         let scale = this.scale;
         let rotation = this.rotation;
         let viewport = page.getViewport({scale, rotation});
-        this.canvas.height = viewport.height;
-        this.canvas.width = viewport.width;
-        let renderContext = {
-            canvasContext: this.ctx,
-            viewport: viewport
-        };
-        let renderTask = page.render(renderContext);
-        renderTask.promise.then(e => this.saveRender());
+        if(this.pdfPageView == null) {
+            this.pdfPageView = new pdfjsViewer.PDFPageView({
+                container: this.canvas,
+                id: this.pageNum,
+                scale: this.scale,
+                defaultViewport: viewport
+            });
+        }
+        if(this.formRender) {
+            this.pdfPageView.renderInteractiveForms = true;
+            this.pdfPageView.annotationLayerFactory = new pdfjsViewer.DefaultAnnotationLayerFactory();
+        }
+        this.pdfPageView.scale = this.scale;
+        this.pdfPageView.rotation = this.rotation;
+        this.pdfPageView.setPdfPage(page);
+        this.pdfPageView.draw();
+        this.pageRendering = false;
+        if(this.dataFields != null) {
+            this.page.getAnnotations().then(items => this.renderPdfForm(items));
+        }
+        this.canvas.style.width = (Math.round(this.pdfPageView.viewport.width) + 3) +"px";
+        this.canvas.style.height = (Math.round(this.pdfPageView.viewport.height) + 3) + "px";
+        this.fireEvent('render', ['end']);
+    }
+
+    renderPdfForm(items) {
+        console.log("rending pdfForm items");
+        let signFieldNumber = 0;
+        for (let i = 0; i < items.length; i++) {
+            let dataField = this.dataFields.filter(obj => {
+                return obj.name === items[i].fieldName
+            })[0];
+            if(items[i].fieldType === undefined && items[i].title.startsWith('sign')) {
+                signFieldNumber = signFieldNumber + 1;
+                $('.popupWrapper').remove();
+                let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+                signField.append('Champ signature');
+                signField.css('text-align', 'center');
+                signField.css('background-color', 'green');
+                signField.click(function(){
+                    $('#signModal').modal('show');
+                });
+            }
+            let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
+            inputField.attr('name', items[i].fieldName);
+            if(dataField != null) {
+                inputField.val(dataField.defaultValue);
+                if (dataField.required) {
+                    inputField.prop('required', true);
+                    inputField.addClass('required-field');
+                }
+                if (dataField.type === "radio") {
+                    inputField.val(items[i].buttonValue);
+                    if(dataField.defaultValue === items[i].buttonValue) {
+                        inputField.prop("checked", true);
+                    }
+                }
+                if (dataField.type === 'checkbox') {
+                    inputField.val('on');
+                    if(dataField.defaultValue === 'on') {
+                        inputField.attr("checked", "checked");
+                        inputField.prop("checked", true);
+                    }
+                }
+                if (dataField.type === "date") {
+                    inputField.datetimepicker({
+                        format: 'DD/MM/YYYY',
+                        locale: 'fr',
+                        icons: {
+                            time: 'fa fa-time',
+                            date: 'fa fa-calendar',
+                            up: 'fa fa-chevron-up',
+                            down: 'fa fa-chevron-down',
+                            previous: 'fa fa-chevron-left',
+                            next: 'fa fa-chevron-right',
+                            today: 'fa fa-screenshot',
+                            clear: 'fas fa-trash-alt',
+                            close: 'fa fa-check'
+                        },
+                        toolbarPlacement: 'bottom',
+                        showClear: true,
+                        showClose: true,
+                        keepOpen: true,
+                        widgetPositioning: {
+                            horizontal: 'right',
+                            vertical: 'top'
+                        },
+                    });
+                }
+                if (dataField.type == "time") {
+                    inputField.datetimepicker({
+                        format: 'LT',
+                        locale: 'fr',
+                        stepping: 5,
+                        icons: {
+                            time: 'fa fa-time',
+                            date: 'fa fa-calendar',
+                            up: 'fa fa-chevron-up',
+                            down: 'fa fa-chevron-down',
+                            previous: 'fa fa-chevron-left',
+                            next: 'fa fa-chevron-right',
+                            today: 'fa fa-screenshot',
+                            clear: 'fas fa-trash-alt',
+                            close: 'fa fa-check'
+                        },
+                        toolbarPlacement: 'bottom',
+                        showClear: true,
+                        showClose: true,
+                        keepOpen: true,
+                        widgetPositioning: {
+                            horizontal: 'right',
+                            vertical: 'top'
+                        },
+                    });
+                }
+            }
+        }
+    }
+
+    setValues() {
+        for (let i = 0; i < this.dataFields.length; i++) {
+            if(this.dataFields[i] != null) {
+                let inputField = $('input[name=\'' + this.dataFields[i].name + '\']');
+                if (inputField.val() != null) {
+                    this.dataFields[i].defaultValue = inputField.val();
+                    if(inputField.is(':checkbox')) {
+                        if(!inputField[0].checked) {
+                            this.dataFields[i].defaultValue = 'off';
+                        }
+                    }
+                }
+            }
+        }
     }
 
     saveRender() {
@@ -141,12 +271,12 @@ export class PdfViewer {
 
     zoomIn() {
         console.log('zoomin');
-        if (this.scale >= 2.5) {
+        if (this.scale >= 2) {
             return;
         }
         // $(".circle").each(function( index ) {
-        //     var left = Math.round($(this).css('left').replace("px", "") / this.scale * (this.scale + 0.25));
-        //     var top = Math.round((($(this).css('top').replace("px", "") / this.scale) - 20) * (this.scale + 0.25)) + 20 * (this.scale + 0.25);
+        //     let left = Math.round($(this).css('left').replace("px", "") / this.scale * (this.scale + 0.25));
+        //     let top = Math.round((($(this).css('top').replace("px", "") / this.scale) - 20) * (this.scale + 0.25)) + 20 * (this.scale + 0.25);
         //     console.log(top);
         //     $(this).css('left', left);
         //     $(this).css('top', top);
@@ -161,12 +291,12 @@ export class PdfViewer {
 
 
     zoomOut() {
-        if (this.scale <= 0.75) {
+        if (this.scale <= 0.50) {
             return;
         }
         // $(".circle").each(function( index ) {
-        //     var left = Math.round($(this).css('left').replace("px", "") / this.scale * (this.scale - 0.25));
-        //     var top = Math.round((($(this).css('top').replace("px", "") / this.scale) - 20) * (this.scale - 0.25)) + 20 * (this.scale - 0.25);
+        //     let left = Math.round($(this).css('left').replace("px", "") / this.scale * (this.scale - 0.25));
+        //     let top = Math.round((($(this).css('top').replace("px", "") / this.scale) - 20) * (this.scale - 0.25)) + 20 * (this.scale - 0.25);
         //     console.log(top);
         //     $(this).css('left', left);
         //     $(this).css('top', top);
@@ -195,6 +325,11 @@ export class PdfViewer {
         this.rotation = this.rotation + 90;
         this.queueRenderPage(this.pageNum);
         this.fireEvent('rotate', ['right']);
+    }
+
+
+    setDataFields(dataFields) {
+        this.dataFields = dataFields;
     }
 
 }

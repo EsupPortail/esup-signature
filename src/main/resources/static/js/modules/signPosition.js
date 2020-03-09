@@ -156,17 +156,9 @@ export class SignPosition {
         var textDate;
         if(!this.dateActive) {
             this.dateActive = true;
-            //this.cross.css('width', 200);
-            //this.cross.css('height', (this.cross.outerHeight() + (8 * this.currentScale)));
-            //this.borders.css('width', 200);
-            //this.borders.css('height', (this.borders.outerHeight() + (8 * this.currentScale)));
             this.borders.append("<span id='textDate' class='align-top' style='font-weight : bold;font-size:" + 8 * this.currentScale + "px;line-height:" + 8 * this.currentScale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm') +"</span>");
         } else {
             this.dateActive = false;
-            //this.cross.css('width', 100);
-            //this.cross.css('height', (this.cross.outerHeight() - (8 * this.currentScale)));
-            //this.borders.css('width', 100);
-            //this.borders.css('height', (this.borders.outerHeight() - (8 * this.currentScale)));
             textDate = document.getElementById("textDate");
             textDate.remove();
         }
