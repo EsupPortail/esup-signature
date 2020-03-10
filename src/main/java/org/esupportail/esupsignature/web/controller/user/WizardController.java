@@ -83,6 +83,7 @@ public class WizardController {
 
     @PostMapping(value = "/wiz3", produces = "text/html")
     public ModelAndView wiz3(@RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, HttpServletRequest request, Model model) throws EsupSignatureException, IOException, EsupSignatureIOException {
+        logger.info("wiz3");
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookService.getSignBook(name, user);
         model.addAttribute("signBook", signBook);

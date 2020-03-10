@@ -76,5 +76,9 @@
     </div>
 </main>
 <footer th:replace="fragments/footer"></footer>
+<script th:inline="javascript" type="module">
+    import {Home} from "/js/modules/home.js";
+    let home = new Home();
+</script>
 </body>
 </html>

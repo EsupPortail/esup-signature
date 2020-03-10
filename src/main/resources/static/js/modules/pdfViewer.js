@@ -2,7 +2,6 @@ export class PdfViewer {
 
     pdfPageView = null;
     pageRendering = false;
-    pageNumPending;
     scale = 0.75;
     canvas = document.getElementById('pdf');
     url;
@@ -27,7 +26,7 @@ export class PdfViewer {
             return;
 
         let index = this.events[name].indexOf(handler);
-        if (index != -1)
+        if (index !== -1)
             this.events[name].splice(index, 1);
     };
 
@@ -47,14 +46,13 @@ export class PdfViewer {
     constructor(url, signPosition) {
         this.url= url;
         this.signPosition = signPosition;
+        pdfjsLib.disableWorker = true;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.js';
+        pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
         this.init();
     }
 
     init() {
-        pdfjsLib.disableWorker = true;
-        pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.js';
-        pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
-
         document.getElementById('prev').addEventListener('click', e => this.prevPage());
         document.getElementById('next').addEventListener('click', e => this.nextPage());
         document.getElementById('zoomin').addEventListener('click', e => this.zoomIn());
@@ -65,10 +63,12 @@ export class PdfViewer {
 
 
     startRender(pdf) {
+        console.log("start render");
         this.pdfDoc = pdf;
         this.numPages = this.pdfDoc.numPages;
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
         this.renderPage(this.pageNum);
+        this.fireEvent("ready", ['ok']);
     }
 
     renderPage(num) {
@@ -186,7 +186,7 @@ export class PdfViewer {
                         },
                     });
                 }
-                if (dataField.type == "time") {
+                if (dataField.type === "time") {
                     inputField.datetimepicker({
                         format: 'LT',
                         locale: 'fr',
@@ -232,28 +232,12 @@ export class PdfViewer {
         }
     }
 
-    saveRender() {
-        this.pageRendering = false;
-        if (this.pageNumPending !== null) {
-            //this.renderPage(this.pageNumPending);
-            this.pageNumPending = null;
-        }
-    }
-
-    queueRenderPage(num) {
-        if (this.pageRendering) {
-            this.pageNumPending = num;
-        } else {
-            this.renderPage(num);
-        }
-    }
-
     prevPage() {
         if (this.pageNum <= 1) {
             return;
         }
         this.pageNum--;
-        this.queueRenderPage(this.pageNum);
+        this.renderPage(this.pageNum);
         window.scrollTo(0, 0);
         this.fireEvent('pageChange', ['prev']);
 
@@ -264,7 +248,7 @@ export class PdfViewer {
             return;
         }
         this.pageNum++;
-        this.queueRenderPage(this.pageNum);
+        this.renderPage(this.pageNum);
         window.scrollTo(0, 0);
         this.fireEvent('pageChange', ['next']);
     }
@@ -285,7 +269,7 @@ export class PdfViewer {
         //textDate = document.getElementById("textDate");
         $('#textDate').css('font-size', 8 * this.scale + 'px')
         //$('#borders').css('line-height', 8 * this.scale + 'px')
-        this.queueRenderPage(this.pageNum);
+        this.renderPage(this.pageNum);
         this.fireEvent('scaleChange', ['in']);
     }
 
@@ -304,7 +288,7 @@ export class PdfViewer {
         this.scale = this.scale - 0.25;
         $('#textDate').css('font-size', 8 * this.scale + 'px')
         //$('#borders').css('line-height', 8 * this.scale + 'px')
-        this.queueRenderPage(this.pageNum);
+        this.renderPage(this.pageNum);
         this.fireEvent('scaleChange', ['out']);
     }
 
@@ -314,7 +298,7 @@ export class PdfViewer {
             return;
         }
         this.rotation = this.rotation - 90;
-        this.queueRenderPage(this.pageNum);
+        this.renderPage(this.pageNum);
         this.fireEvent('rotate', ['left']);
     }
 
@@ -323,7 +307,7 @@ export class PdfViewer {
             return;
         }
         this.rotation = this.rotation + 90;
-        this.queueRenderPage(this.pageNum);
+        this.renderPage(this.pageNum);
         this.fireEvent('rotate', ['right']);
     }
 

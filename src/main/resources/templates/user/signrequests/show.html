@@ -6,6 +6,14 @@
 <head th:replace="fragments/head"></head>
 <body>
 <header th:replace="fragments/menu"></header>
+<script th:inline="javascript" type="module">
+    import {globalUi} from "/js/main.js";
+    import {Nexu} from "/js/modules/nexu.js";
+    $(document).ready(function() {
+        globalUi.showSideBar();
+        new Nexu([[${nexuUrl}]], [[${nexuVersion}]]);
+    });
+</script>
 <main role="main">
     <div class="wrapper">
         <nav th:insert="fragments/side"></nav>
@@ -292,12 +300,4 @@
 <footer th:replace="fragments/footer"></footer>
 </body>
 <!--                    <script type="text/javascript" src="/js/jsSignatureLevel.js"></script>-->
-<script th:inline="javascript" type="module">
-    import {globalUi} from "/js/main.js";
-    import {Nexu} from "/js/modules/nexu.js";
-    $(document).ready(function() {
-        globalUi.showSideBar();
-        new Nexu([[${nexuUrl}]], [[${nexuVersion}]]);
-    });
-</script>
 </html>

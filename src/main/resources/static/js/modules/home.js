@@ -10,6 +10,7 @@ export class Home {
     }
 
     toggleNewMenu () {
+        console.info("toggle new menu");
         $('#newScroll').toggleClass('text-nowrap').toggleClass('new-min-h');
         $('#toSignList').toggleClass('d-flex d-none');
         $('#toggleNewGrid').children().toggleClass('fa-th fa-chevron-up');

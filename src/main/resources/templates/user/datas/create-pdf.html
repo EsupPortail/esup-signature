@@ -241,8 +241,7 @@
     import {PdfViewer} from "/js/modules/pdfViewer.js";
     let pdfViewer = new PdfViewer('/user/documents/getfile/[[${form.document.id}]]', null);
     pdfViewer.setDataFields([[${fields}]]);
-    //pdfViewer.addEventListener('render', e => pdfViewer.renderPdfForm());
-
+    pdfViewer.scale = 1.5;
 </script>
 <footer th:replace="fragments/footer"></footer>
 </body>

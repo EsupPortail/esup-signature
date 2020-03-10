@@ -21,12 +21,10 @@ export class GlobalUi {
         this.sideBar2.on('mouseover', e => this.disableBodyScroll());
         this.sideBar2.on('mouseout', e => this.enableBodyScroll());
         this.initSideBar();
-        this.clickableRow.on('click',  e => this.gotoRowHref());
+        this.clickableRow.on('click',  function() {
+            window.location = $(this).closest('tr').attr('data-href');
+        });
         this.inputFile.on('change', e => this.changeFileInputName(e));
-    }
-
-    gotoRowHref() {
-        window.location = this.clickableRow.data("href");
     }
 
     disableBodyScroll() {

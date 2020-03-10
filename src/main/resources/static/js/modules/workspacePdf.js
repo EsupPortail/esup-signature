@@ -6,33 +6,29 @@ export class WorkspacePdf {
 
     signPageNumber = document.getElementById('signPageNumber');
     currentSignType;
-    signable;
-    postits;
     mode = 'read';
     visualActive = true;
-    currentSignRequestParams;
-    pdfViewer;
-    signPosition;
 
     constructor(url, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits) {
-        this.currentSignRequestParams = new SignRequestParams(currentSignRequestParams.pdSignatureFieldName, currentSignRequestParams.signPageNumber, currentSignRequestParams.xPos, currentSignRequestParams.yPos);
+        this.currentSignRequestParams =  new SignRequestParams(currentSignRequestParams);
         this.postits = postits;
         this.signable = signable;
-        this.signPosition = new SignPosition(this.currentSignRequestParams.xPos,this.currentSignRequestParams.yPos, signWidth, signHeight);
+        this.signPosition = new SignPosition(this.currentSignRequestParams.xPos,this.currentSignRequestParams.yPos, signWidth, signHeight, this.signPageNumber);
         this.pdfViewer = new PdfViewer(url, this.signPosition);
-        this.init();
-        this.initWorkspace();
+        this.initListeners();
     }
 
-    init() {
-
-        this.pdfViewer.addEventListener('scaleChange', e => this.signPosition.refreshSign(this.pdfViewer.scale / 0.75));
+    initListeners() {
+        this.pdfViewer.addEventListener('ready', e => this.initWorkspace());
+        this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
         this.pdfViewer.addEventListener('pageChange', e => this.refreshComments());
 
         document.getElementById('commentButton').addEventListener('click', e => this.enableCommentMode());
-        document.getElementById('signButton').addEventListener('click', e => this.enableSignMode());
-        document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
-        document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
+        if(this.signable === 'ok') {
+            document.getElementById('signButton').addEventListener('click', e => this.enableSignMode());
+            document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
+            document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
+        }
         document.getElementById('hideComment').addEventListener('click', e => this.hideComment());
 
         window.addEventListener("DOMMouseScroll", e => this.computeWhellEvent(e));
@@ -50,7 +46,7 @@ export class WorkspacePdf {
         if(localStorage.getItem('mode') != null && localStorage.getItem('mode') !== "") {
             this.mode = localStorage.getItem('mode');
         } else {
-            if(signable === 'ok') {
+            if(this.signable === 'ok') {
                 localStorage.setItem('mode', 'sign');
                 this.mode = 'sign';
             } else {
@@ -73,11 +69,16 @@ export class WorkspacePdf {
         if(this.signable === 'ok' && this.currentSignType === 'visa') {
             if(this.mode === 'sign') {
                 this.signPosition.toggleVisual();
-                pageNum = 1;
             }
         }
         this.refreshComments();
         this.signPosition.resetSign();
+        this.pdfViewer.removeEventListener('ready');
+    }
+
+    refreshWorkspace() {
+        this.signPosition.refreshSign(this.pdfViewer.scale / 0.75);
+        this.refreshComments();
     }
 
     clickAction() {
@@ -99,7 +100,7 @@ export class WorkspacePdf {
     }
 
     focusComment(postit) {
-        this.pdfViewer.queueRenderPage(postit.pageNumber)
+        this.pdfViewer.renderPage(postit.pageNumber)
         this.refreshComments();
     }
 
@@ -110,7 +111,8 @@ export class WorkspacePdf {
             if(postit.pageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
                 postitDiv.show();
                 postitDiv.css('left', postit.posX * this.pdfViewer.scale);
-                postitDiv.css('top', postit.posY * this.pdfViewer.scale - 20 * this.pdfViewer.scale);
+                postitDiv.css('top', postit.posY * this.pdfViewer.scale);
+                postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                 postitButton.css("background-color", "#FFC");
             } else {
                 postitDiv.hide();
@@ -157,6 +159,7 @@ export class WorkspacePdf {
 
     enableReadMode() {
         //$('#pdf').awesomeCursor('comment-alt');
+        console.log("enable read mode");
         this.disableAllModes();
         this.mode = 'read';
         localStorage.setItem('mode', 'read');
@@ -166,11 +169,11 @@ export class WorkspacePdf {
         $('#rotateleft').prop('disabled', false);
         $('#rotateright').prop('disabled', false);
         $('#stepscard').show();
-        this.pdfViewer.queueRenderPage(1);
+        this.pdfViewer.renderPage(1);
     }
 
     enableCommentMode() {
-        console.log("enable comments");
+        console.log("enable comments mode");
         this.disableAllModes();
         this.mode = 'comment';
         localStorage.setItem('mode', 'comment');
@@ -180,10 +183,11 @@ export class WorkspacePdf {
         $('#commentButton').toggleClass('btn-light btn-warning');
         $('#commentsTools').show();
         $('#infos').show();
-        this.pdfViewer.queueRenderPage(1);
+        this.pdfViewer.renderPage(1);
     }
 
     enableSignMode() {
+        console.log("enable sign mode");
         this.disableAllModes();
         this.mode = 'sign';
         localStorage.setItem('mode', 'sign');
@@ -204,7 +208,7 @@ export class WorkspacePdf {
         }
         this.pdfViewer.rotation = 0;
         this.pdfViewer.scale = 0.75;
-        this.pdfViewer.queueRenderPage(parseInt(this.signPageNumber.value, 10));
+        this.pdfViewer.renderPage(this.currentSignRequestParams.signPageNumber);
 
     }
 
@@ -216,7 +220,7 @@ export class WorkspacePdf {
         $('#refuseButton').toggleClass('btn-light btn-danger');
         $('#refusetools').show();
         $('#infos').show();
-        this.pdfViewer.queueRenderPage(pageNum);
+        this.pdfViewer.renderPage(pageNum);
     }
 
     disableAllModes() {
@@ -266,9 +270,9 @@ export class WorkspacePdf {
     }
 
     detectMouseWheelDirection(e) {
-        var delta = null,
+        let delta = null,
             direction = false;
-        var e_delta = (e.deltaY || -e.wheelDelta || e.detail);
+        let e_delta = (e.deltaY || -e.wheelDelta || e.detail);
         if ( e_delta ) {
             delta = e_delta  / 60;
         } else if ( e.detail ) {

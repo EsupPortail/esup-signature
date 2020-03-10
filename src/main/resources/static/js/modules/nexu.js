@@ -25,7 +25,7 @@ export class Nexu {
             context : this,
             success: data => this.checkNexu(data)
         }).fail(function (error) {
-            console.error("NexU not detected or not started ! " + JSON.stringify(error));
+            console.warn("NexU not detected or not started ! " + JSON.stringify(error));
             $("#warning-text").html("NexU not detected or not started ! ");
             $("#nexu_missing_alert").show();
         });
