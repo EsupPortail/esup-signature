@@ -2,7 +2,7 @@ export class Nexu {
 
     nexuUrl;
     nexuVersion;
-    rootUrl;
+    static rootUrl;
     tokenId;
     keyId;
     successDiv = $("#success");
@@ -10,7 +10,7 @@ export class Nexu {
     constructor(nexuUrl, nexuVersion, rootUrl) {
         this.nexuUrl = nexuUrl;
         this.nexuVersion = nexuVersion;
-        this.rootUrl = rootUrl;
+        Nexu.rootUrl = rootUrl;
         // if (!String.prototype.startsWith) {
         //     String.prototype.startsWith = function(searchString, position){
         //         return this.substr(position || 0, searchString.length) === searchString;
@@ -21,9 +21,9 @@ export class Nexu {
     }
 
     getCertificates() {
-        updateProgressBar("Chargement des certificats", "25%");
+        Nexu.updateProgressBar("Chargement des certificats", "25%");
         try {
-            nexu_get_certificates(getDataToSign, error);
+            nexu_get_certificates(Nexu.getDataToSign, Nexu.error);
         }
         catch(e) {
             console.error(e);
@@ -34,44 +34,44 @@ export class Nexu {
         }
     }
 
-    getDataToSign(certificateData) {
+    static getDataToSign(certificateData) {
         if(certificateData.response == null) {
             const merror = {
                 errorMessage: "Erreur au moment de lire le certificat"
             };
             error(Object.create(merror));
         } else {
-            updateProgressBar("Préparation de la signature", "35%");
-            var signingCertificate = certificateData.response.certificate;
-            var certificateChain = certificateData.response.certificateChain;
-            var encryptionAlgorithm = certificateData.response.encryptionAlgorithm;
-            tokenId = certificateData.response.tokenId.id;
-            keyId = certificateData.response.keyId;
-            var toSend = { signingCertificate: signingCertificate, certificateChain: certificateChain, encryptionAlgorithm: encryptionAlgorithm };
-
-            callUrl("[[${rootUrl}]]/user/nexu-sign/get-data-to-sign", "POST",  JSON.stringify(toSend), sign, error);
+            console.log(Nexu.rootUrl);
+            Nexu.updateProgressBar("Préparation de la signature", "35%");
+            let signingCertificate = certificateData.response.certificate;
+            let certificateChain = certificateData.response.certificateChain;
+            let encryptionAlgorithm = certificateData.response.encryptionAlgorithm;
+            this.tokenId = certificateData.response.tokenId.id;
+            this.keyId = certificateData.response.keyId;
+            let toSend = { signingCertificate: signingCertificate, certificateChain: certificateChain, encryptionAlgorithm: encryptionAlgorithm };
+            callUrl(Nexu.rootUrl + "/user/nexu-sign/get-data-to-sign", "POST",  JSON.stringify(toSend), Nexu.sign, Nexu.error);
         }
     }
 
-    sign(dataToSignResponse) {
+    static sign(dataToSignResponse) {
         if (dataToSignResponse == null) {
             const merror = {
                 errorMessage: "Erreur lors de la vérification du certificat"
             };
             error(Object.create(merror));
         } else {
-            updateProgressBar("Signature du/des documents(s)", "50%");
-            var digestAlgo = "SHA256";
-            nexu_sign_with_token_infos(tokenId, keyId, dataToSignResponse.dataToSign, digestAlgo, signDocument, error);
+            Nexu.updateProgressBar("Signature du/des documents(s)", "50%");
+            let digestAlgo = "SHA256";
+            nexu_sign_with_token_infos(tokenId, keyId, dataToSignResponse.dataToSign, digestAlgo, Nexu.signDocument, Nexu.error);
         }
     }
 
-    signDocument(signatureData) {
-        updateProgressBar("Enregistrement du/des documents(s)", "75%");
+    static signDocument(signatureData) {
+        Nexu.updateProgressBar("Enregistrement du/des documents(s)", "75%");
         if(signatureData.response != null) {
-            var signatureValue = signatureData.response.signatureValue;
-            var toSend = {signatureValue: signatureValue};
-            callUrl("[[${rootUrl}]]/user/nexu-sign/sign-document", "POST", JSON.stringify(toSend), downloadSignedDocument, error);
+            let signatureValue = signatureData.response.signatureValue;
+            let toSend = {signatureValue: signatureValue};
+            callUrl(Nexu.rootUrl + "/user/nexu-sign/sign-document", "POST", JSON.stringify(toSend), Nexu.downloadSignedDocument, Nexu.error);
         } else {
             const merror = {
                 errorMessage: "Erreur au moment de la signature du document"
@@ -80,14 +80,14 @@ export class Nexu {
         }
     }
 
-    downloadSignedDocument(signDocumentResponse) {
-        updateProgressBar("Signature terminée", "100%");
+    static downloadSignedDocument() {
+        Nexu.updateProgressBar("Signature terminée", "100%");
         $('#bar').removeClass('progress-bar-striped active');
         $('#bar').addClass('progress-bar-success');
         $("#success").show();
     }
 
-    error(error) {
+    static error(error) {
         console.log(error);
         $('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
         if (error!= null && error.errorMessage !=null) {
@@ -102,7 +102,8 @@ export class Nexu {
         $("#success").hide();
     }
 
-    updateProgressBar(action, percent) {
+    static updateProgressBar(action, percent) {
+        console.log("update " + action);
         $('#bar-text').html(action);
         $('#bar').width(percent);
     }
@@ -139,10 +140,10 @@ export class Nexu {
     }
 
     loadScript() {
-        var xhrObj = new XMLHttpRequest();
+        let xhrObj = new XMLHttpRequest();
         xhrObj.open('GET', this.nexuUrl + "/nexu.js");
         xhrObj.send(null);
-        var se = document.createElement('script');
+        let se = document.createElement('script');
         se.type = "text/javascript";
         se.text = xhrObj.responseText;
         document.getElementsByTagName('head')[0].appendChild(se);

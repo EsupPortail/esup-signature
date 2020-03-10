@@ -16,8 +16,9 @@
     let signable = [[${signRequest.signable}]];
     let currentSignType = [[${currentSignType}]];
     if(signable && currentSignType === 'nexuSign') {
-        new Nexu([[${nexuUrl}]], [[${nexuVersion}]]);
+        new Nexu([[${nexuUrl}]], [[${nexuVersion}]], null);
     }
+
     new SignUi([[${signRequest.id}]],
         [[${signRequest.getCurrentSignRequestParams()}]],
         currentSignType,

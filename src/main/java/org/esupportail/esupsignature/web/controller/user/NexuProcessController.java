@@ -49,6 +49,9 @@ public class NexuProcessController {
 	@Value("${nexuUrl}")
 	private String nexuUrl;
 
+	@Value("${nexuVersion}")
+	private String nexuVersion;
+
 	@ModelAttribute("user")
 	public User getUser() {
 		return userService.getUserFromAuthentication();
@@ -86,6 +89,7 @@ public class NexuProcessController {
 			model.addAttribute("digestAlgorithm", signatureDocumentForm.getDigestAlgorithm());
 			model.addAttribute("rootUrl", rootUrl);
 			model.addAttribute("nexuUrl", nexuUrl);
+			model.addAttribute("nexuVersion", nexuVersion);
 			model.addAttribute("referer", referer);
 			return "user/signrequests/nexu-signature-process";
 		} else {

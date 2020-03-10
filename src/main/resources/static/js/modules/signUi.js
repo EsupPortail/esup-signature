@@ -61,7 +61,7 @@ export class SignUi {
             signRequestUrlParams = "password=" + document.getElementById("password").value +
                 "&" + csrf.name + "=" + csrf.value;
         }
-        this.sendData(this.signRequestId, signRequestUrlParams);
+        this.sendData(signRequestUrlParams);
     }
 
     sendData(signRequestUrlParams) {
@@ -101,6 +101,7 @@ export class SignUi {
             document.getElementById("closeModal").style.display = "block";
             document.getElementById("bar").classList.remove("progress-bar-animated");
         } else if(result === "initNexu") {
+            console.info("redirect to NexU sign proccess");
             clearInterval(this.getProgressTimer);
             document.location.href="/user/nexu-sign/" + this.signRequestId;
         } else if (result === "end") {
