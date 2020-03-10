@@ -36,38 +36,6 @@
         <label for="recipientsEmail">Choisir les participants</label>
         <select name="recipientsEmail" id="recipientsEmail" size="5" multiple="multiple" required="required">
         </select>
-        <script language="JavaScript">
-            new SlimSelect({
-                select: "#recipientsEmail",
-                placeholder: 'Choisir un ou plusieurs participants',
-                searchText: 'Aucun résultat',
-                searchPlaceholder: 'Rechercher',
-                searchHighlight: true,
-                searchFilter: (option, search) => {
-                    return true;
-                },
-                ajax: function (search, callback) {
-                    if (search.length < 3) {
-                        callback('Merci de saisir au moins 3 caractères')
-                    } else {
-                        fetch('/user/users/search-user?searchString=' + search)
-                            .then(function (response) {
-                                return response.json()
-                            })
-                            .then(function (json) {
-                                let data = []
-                                for (let i = 0; i < json.length; i++) {
-                                    data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: json[i].mail});
-                                }
-                                callback(data)
-                            })
-                            .catch(function (error) {
-                                callback(false)
-                            })
-                    }
-                }
-            });
-        </script>
         <br/><br/>
         <label>
             Tous les participants doivent-ils signer ?
@@ -97,5 +65,9 @@
         <i class="fas fa-angle-left"></i> Précédent
     </button>
 </form>
+<script type="module">
+    import {SelectUser} from "/js/modules/selectUser.js";
+    new SelectUser("recipientsEmail");
+</script>
 </body>
 </html>

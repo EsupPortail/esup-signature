@@ -16,4 +16,13 @@
  * limitations under the License.
  */
 import {GlobalUi} from "./modules/global.js";
+import {Step} from "./modules/step.js";
+
 export let globalUi = new GlobalUi();
+export let stepper;
+
+let stepDiv = document.getElementById("stepper");
+if(stepDiv != null) {
+    stepper = new Step(stepDiv);
+    //stepper.stepTo(2);
+}

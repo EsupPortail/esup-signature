@@ -17,13 +17,6 @@
                     </div>
                 </div>
             </div>
-            <script language="JavaScript">
-                function confirmdel(name) {
-                    if (confirm("Confimer la suppression de l'étape")) {
-                        document.getElementById(name).submit();
-                    }
-                }
-            </script>
             <th:block th:if="${signBook.workflowSteps != null}">
                 <div id="stepper" class="bs-stepper">
                     <div class="bs-stepper-header container" role="tablist">
@@ -44,6 +37,13 @@
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </form>
+                                        <script>
+                                            function confirmdel(name) {
+                                                if (confirm("Confimer la suppression de l'étape")) {
+                                                    document.getElementById(name).submit();
+                                                }
+                                            }
+                                        </script>
                                     </div>
                                 </div>
                             </div>
@@ -127,36 +127,9 @@
                                                                             </div>
                                                                         </form>
                                                                     </div>
-                                                                    <script language="JavaScript">
-                                                                        new SlimSelect({
-                                                                            select: "#[['signBookNames' + ${workflowStep.id}]]",
-                                                                            placeholder: 'Choisir un ou plusieurs participants',
-                                                                            searchText: 'Aucun résultat',
-                                                                            searchPlaceholder: 'Rechercher',
-                                                                            searchHighlight: true,
-                                                                            searchFilter: (option, search) => {
-                                                                                return true;
-                                                                            },
-                                                                            ajax: function (search, callback) {
-                                                                                if (search.length < 3) {
-                                                                                    callback('Merci de saisir au moins 3 caractères')
-                                                                                }
-                                                                                fetch('/user/users/search-user?searchString=' + search)
-                                                                                    .then(function (response) {
-                                                                                        return response.json()
-                                                                                    })
-                                                                                    .then(function (json) {
-                                                                                        let data = []
-                                                                                        for (let i = 0; i < json.length; i++) {
-                                                                                            data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: json[i].mail});
-                                                                                        }
-                                                                                        callback(data)
-                                                                                    })
-                                                                                    .catch(function (error) {
-                                                                                        callback(false)
-                                                                                    })
-                                                                            }
-                                                                        });
+                                                                    <script th:inline="javascript" type="module">
+                                                                        import {SelectUser} from "/js/modules/selectUser.js";
+                                                                        new SelectUser("signBookNames[[${workflowStep.id}]]");
                                                                     </script>
                                                                 </div>
                                                             </div>
@@ -205,12 +178,9 @@
                     </div>
                 </div>
             </th:block>
-            <script language="JavaScript">
-                var stepper = new Stepper(document.getElementById("stepper"), {
-                    linear: false,
-                    animation: true
-                })
-                stepper.to([[${signBook.currentWorkflowStepNumber}]])
+            <script th:inline="javascript" type="module">
+                import {stepper} from "/js/main.js";
+                stepper.stepTo([[${signBook.currentWorkflowStepNumber}]])
             </script>
         </div>
     </div>

@@ -181,48 +181,11 @@
         </div>
     </div>
 </main>
-<script language="JavaScript">
-    var testSignBookName = document.getElementById("recipientsEmails");
-
-    if (testSignBookName != null) {
-        new SlimSelect({
-            select: '#recipientsEmails',
-            placeholder: 'Choisir un ou plusieurs participants',
-            searchText: 'Aucun résultat',
-            searchPlaceholder: 'Rechercher',
-            searchHighlight: true,
-            searchFilter: (option, search) => {
-                return true;
-            },
-            ajax: function (search, callback) {
-                if (search.length < 3) {
-                    callback('Merci de saisir au moins 3 caractères')
-                } else {
-                    fetch('/user/users/search-user?searchString=' + search)
-                        .then(function (response) {
-                            return response.json()
-                        })
-                        .then(function (json) {
-                            let data = []
-                            for (let i = 0; i < json.length; i++) {
-                                data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: json[i].mail});
-                            }
-                            callback(data)
-                        })
-                        .catch(function (error) {
-                            callback(false)
-                        })
-                }
-            }
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        allSignToComplete = document.getElementById("_allSignToComplete");
-        signBookSelect = document.getElementById("signBookNames");
-    });
-</script>
 <footer th:replace="fragments/footer"></footer>
 <div th:replace="fragments/message :: message"></div>
+<script type="module">
+    import {SelectUser} from "/js/modules/selectUser.js";
+    new SelectUser("recipientsEmail");
+</script>
 </body>
 </html>

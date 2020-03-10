@@ -104,44 +104,12 @@
                                         <option th:if="${recipient.user.email != null}" selected="selected" th:text="${recipient.user.email}" th:value="${step.stepNumber} + '*' + ${recipient.user.email}"></option>
                                     </th:block>
                                 </select>
-                                <script language="JavaScript">
-                                    /*<![CDATA[*/
-                                    new SlimSelect({
-                                        select: '#recipientEmailsSelect_[[${step.stepNumber}]]',
-                                        placeholder: 'Choisir un ou plusieurs utilisateurs',
-                                        searchText: 'Aucun résultat',
-                                        searchPlaceholder: 'Rechercher',
-                                        searchHighlight: true,
-                                        searchFilter: (option, search) => {
-                                            return true;
-                                        },
-                                        ajax: function (search, callback) {
-                                            if (search.length < 3) {
-                                                callback('Merci de saisir au moins 3 caractères')
-                                                return
-                                            }
-                                            fetch('/ws/search-user?searchString=' + search)
-                                                .then(function (response) {
-                                                    return response.json()
-                                                })
-                                                .then(function (json) {
-                                                    let data = []
-                                                    for (let i = 0; i < json.length; i++) {
-                                                        data.push({text: json[i].displayName, value: '[[${step.stepNumber}]]*' + json[i].mail});
-                                                    }
-                                                    callback(data)
-                                                })
-                                                .catch(function (error) {
-                                                    callback(false)
-                                                })
-                                        }
-
-                                    });
-                                    recipientEmailsSelect_[[${step.stepNumber}]] = document.getElementById('recipientEmailsSelect_[[${step.stepNumber}]]');
-                                    recipientEmailsSelect_[[${step.stepNumber}]].style.display = 'block';
-                                    recipientEmailsSelect_[[${step.stepNumber}]].classList.add('hide-select')
-
-                                    /*]]>*/
+                                <script type="module">
+                                    import {SelectUser} from "/js/modules/selectUser.js";
+                                    new SelectUser("recipientEmailsSelect_[[${step.stepNumber}]]");
+                                    // recipientEmailsSelect_[[${step.stepNumber}]] = document.getElementById('recipientEmailsSelect_[[${step.stepNumber}]]');
+                                    // recipientEmailsSelect_[[${step.stepNumber}]].style.display = 'block';
+                                    // recipientEmailsSelect_[[${step.stepNumber}]].classList.add('hide-select')
                                 </script>
                             </div>
                             <div th:unless="${step.changeable == true}" class="form-group d-inline">
@@ -160,47 +128,15 @@
                                     <option selected="selected" th:text="${targetEmail}" th:value="${targetEmail}"></option>
                                 </th:block>
                             </select>
-                            <script language="JavaScript">
-                                /*<![CDATA[*/
-                                new SlimSelect({
-                                    select: '#targetEmailsSelect',
-                                    placeholder: 'Choisir un ou plusieurs utilisateurs',
-                                    searchText: 'Aucun résultat',
-                                    searchPlaceholder: 'Rechercher',
-                                    searchHighlight: true,
-                                    searchFilter: (option, search) => {
-                                        return true;
-                                    },
-                                    ajax: function (search, callback) {
-                                        if (search.length < 3) {
-                                            callback('Merci de saisir au moins 3 caractères')
-                                            return
-                                        }
-                                        fetch('/ws/search-user?searchString=' + search)
-                                            .then(function (response) {
-                                                return response.json()
-                                            })
-                                            .then(function (json) {
-                                                let data = []
-                                                for (let i = 0; i < json.length; i++) {
-                                                    data.push({text: json[i].displayName, value: json[i].mail});
-                                                }
-                                                callback(data)
-                                            })
-                                            .catch(function (error) {
-                                                callback(false)
-                                            })
-                                    }
+                            <script type="module">
+                                import {SelectUser} from "/js/modules/selectUser.js";
+                                new SelectUser("targetEmailsSelect");
+                                // var targetEmailsSelect = document.getElementById('targetEmailsSelect');
+                                // targetEmailsSelect.style.display = 'block';
+                                // targetEmailsSelect.classList.add('hide-select')
 
-                                });
-                                var targetEmailsSelect = document.getElementById('targetEmailsSelect');
-                                targetEmailsSelect.style.display = 'block';
-                                targetEmailsSelect.classList.add('hide-select')
-
-                                /*]]>*/
                             </script>
                         </div>
-
                 </form>
             </div>
             <div class="modal-footer">
