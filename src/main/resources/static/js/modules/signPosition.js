@@ -6,12 +6,13 @@ export class SignPosition {
     startPosY;
     signWidth;
     signHeight;
-    posX = $("#xPos");
-    posY = $("#yPos");
+    posX;
+    posY;
     signPageNumber = $("#signPageNumber");
     pointItEnable = true;
     pointItMove = false;
     dateActive = false;
+    visualActive = true;
     cross = $('#cross');
     borders = $('#borders');
     currentScale = 1;
@@ -19,6 +20,8 @@ export class SignPosition {
     constructor(xPos, yPos, signWidth, signHeight, signPageNumber) {
         this.startPosX = parseInt(xPos, 10);
         this.startPosY = parseInt(yPos, 10);
+        this.posX = xPos;
+        this.posY = yPos;
         this.signPageNumber = signPageNumber;
         this.signWidth = signWidth;
         this.signHeight = signHeight;
@@ -81,8 +84,8 @@ export class SignPosition {
         console.log("reset position");
         this.cross.css('left', (this.startPosX * zoom) + "px");
         this.cross.css('top', (this.startPosY * zoom)  + "px");
-        document.getElementById("xPos").value = this.startPosX;
-        document.getElementById("yPos").value = this.startPosY;
+        this.posX.value = this.startPosX;
+        this.posY.value = this.startPosY;
         this.cross.css('pointer-events', 'auto');
         document.body.style.cursor = "default";
         this.pointItEnable = false;

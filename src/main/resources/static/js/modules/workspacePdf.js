@@ -7,7 +7,7 @@ export class WorkspacePdf {
     signPageNumber = document.getElementById('signPageNumber');
     currentSignType;
     mode = 'read';
-    visualActive = true;
+    signable;
 
     constructor(url, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits) {
         this.currentSignRequestParams =  new SignRequestParams(currentSignRequestParams);
@@ -202,7 +202,7 @@ export class WorkspacePdf {
         $('#signtools').show();
         $('#stepscard').show();
         $('#infos').show();
-        if(this.visualActive) {
+        if(this.signPosition.visualActive) {
             $('#pen').removeClass('btn-outline-secondary').addClass('btn-outline-success');
             this.signPosition.cross.show();
         }

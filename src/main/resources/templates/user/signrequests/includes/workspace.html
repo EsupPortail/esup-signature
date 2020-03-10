@@ -68,16 +68,6 @@
     </div>
     <script th:replace="user/signrequests/includes/scriptshow :: scriptshow"></script>
     <script th:inline="javascript" type="module">
-        import {WorkspacePdf} from "/js/modules/workspacePdf.js";
-        $(document).ready(function() {
-            new WorkspacePdf('/user/signrequests/get-last-file/' + [[${signRequest.id}]],
-                [[${signRequest.getCurrentSignRequestParams()}]],
-                '[[${@signRequestService.getCurrentSignType(signRequest).name()}]]',
-                [[${signWidth}]],
-                [[${signHeight}]],
-                '[[${signable}]]',
-                [[${postits}]]
-            );
-        });
+
     </script>
 </div>

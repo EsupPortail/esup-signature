@@ -16,7 +16,7 @@
 	<div id="collapseHelp" class="collapse show" aria-expanded="true" style="">
 
 	</div>
-	<form id="fc_org_esupportail_esupsignature_domain_User" th:object="${user}" enctype="multipart/form-data" action="user/users" method="post">
+	<form th:object="${user}" enctype="multipart/form-data" action="user/users" method="post">
 		<input type="hidden" th:field="*{id}">
 		<div id="accordion" role="tablist" aria-multiselectable="true">
 			<div class="card">
@@ -30,25 +30,25 @@
 
 				<div id="collapseOne" class="collapse show" role="tabpanel" aria-labelledby="headingOne">
 					<div class="card-body">
-						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_name">
+						<div class="form-group" id="name">
 							<label class="col-lg-3 col-form-label" for="name"><strong>Nom</strong></label>
 							<div class="col-lg-9">
 								<input class="form-control" readonly="readonly" type="text" th:field="*{name}">
 							</div>
 						</div>
-						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_firstname">
+						<div class="form-group" id="firstname">
 							<label class="col-lg-3 col-form-label" for="firstname"><strong>Prénom</strong></label>
 							<div class="col-lg-9">
 								<input class="form-control" readonly="readonly" type="text" th:field="*{firstname}">
 							</div>
 						</div>
-						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_eppn">
+						<div class="form-group" id="eppn">
 							<label class="col-lg-3 col-form-label" for="eppn"><strong>Eppn</strong></label>
 							<div class="col-lg-9">
 								<input class="form-control" readonly="readonly" type="text" th:field="*{eppn}">
 							</div>
 						</div>
-						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_User_email">
+						<div class="form-group" id="email">
 							<label class="col-lg-3 col-form-label" for="email"><strong>Email</strong></label>
 							<div class="col-lg-9">
 								<input class="form-control" readonly="readonly" type="text" th:field="*{email}">
@@ -67,7 +67,7 @@
 				</div>
 				<div id="collapseTwo" class="show" role="tabpanel" aria-labelledby="headingTwo">
 					<div class="card-body">
-						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_signType_id">
+						<div class="form-group" id="signType_id">
 							<label for="signType"><strong>Type de signature par défaut</strong>
 								<button data-target="#collapseHelpSignType" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
 									<span class="fas fa-info-circle "></span>
@@ -142,7 +142,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_SignRequest_newPageType_id">
+						<div class="form-group" id="newPageType_id">
 							<label class="col-form-label" for="newPageType"><strong>Ajout d'une Page de garde</strong></label> <select class="form-control" id="_newPageType_id" name="newPageType" size="1">
 								<th:block th:each="newPageType : ${newPageTypes}">
 									<option th:value="${newPageType}" th:text="#{'signbook.newpagetype.' + ${newPageType}}">${newPageType}</option>
@@ -162,7 +162,7 @@
 				</div>
 				<div id="collapseThree" class="show" role="tabpanel" aria-labelledby="headingThree">
 					<div class="card-body">
-						<div class="form-group" id="_c_org_esupportail_esupsignature_domain_user_emailAlertFrequency">
+						<div class="form-group" id="emailAlertFrequency">
 							<label class="col-lg-3  col-form-label" for="signType">Fréquence d'alerte
 								<button data-target="#collapseHelpEmailAlertFrequency" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
 									<span class="fas fa-info-circle "></span>

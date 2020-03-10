@@ -9,10 +9,20 @@
 <script th:inline="javascript" type="module">
     import {globalUi} from "/js/main.js";
     import {Nexu} from "/js/modules/nexu.js";
-    $(document).ready(function() {
-        globalUi.showSideBar();
-        new Nexu([[${nexuUrl}]], [[${nexuVersion}]]);
-    });
+    import {SignUi} from "/js/modules/signUi.js";
+
+    globalUi.showSideBar();
+    let signable = '[[${signable}]]';
+    console.log(signable);
+    new Nexu([[${nexuUrl}]], [[${nexuVersion}]]);
+    new SignUi([[${signRequest.id}]],
+        [[${signRequest.getCurrentSignRequestParams()}]],
+        '[[${@signRequestService.getCurrentSignType(signRequest).name()}]]',
+        [[${signWidth}]],
+        [[${signHeight}]],
+        '[[${signable}]]',
+        [[${postits}]]
+    );
 </script>
 <main role="main">
     <div class="wrapper">
@@ -216,24 +226,24 @@
                             <br/>
                             <small>Vous pouvez utiliser une clé materielle ou un keystore</small>
                         </div>
-                        <button class="mb-1 col-12 btn btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.id} + ');'">Signer</button>
+                        <button id="launchSignButton" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.id}">Signer</button>
                     </div>
                 </div>
                 <input th:classappend="${signType != 'certSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
                 <script>
                     $("#password").on('keyup', function (e) {
                         if (e.keyCode === 13) {
-                            launchSign([[${signRequest.id}]]);
+                            $("#launchSignButton").click();
                         }
                     });
                 </script>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                <button th:if="${signType == 'certSign' || signType == 'pdfImageStamp'}" class="btn btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.id} + ');'">
+                <button id="launchSignButton" th:if="${signType == 'certSign' || signType == 'pdfImageStamp'}" class="btn btn-success" title="Signer" th:value="${signRequest.id}">
                     <i class="fas fa-signature"></i> Signer
                 </button>
-                <button th:if="${signType == 'visa'}" class="btn btn-success" title="Signer" th:onclick="'launchSign(' + ${signRequest.id} + ');'">
+                <button id="launchSignButton" th:if="${signType == 'visa'}" class="btn btn-success" title="Signer" th:value="${signRequest.id}">
                     <i class="fas fa-check"></i> Viser
                 </button>
             </div>
@@ -241,7 +251,7 @@
     </div>
 </div>
 
-<div th:if="${signable == 'ok'}" class="modal fade" id="signAllModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
+<div th:if="${signable == 'ok' && signRequest.parentSignBook != null}" class="modal fade" id="signAllModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -262,11 +272,13 @@
             </script>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary col-12" data-dismiss="modal">Annuler</button>
-                <button th:if="${signRequest.parentSignBook != null && @signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="mb-1 col-12 btn btn-success" title="Signer" th:onclick="'launchSignAll(' + ${signRequest.parentSignBook.id} + ')'">
-                    <i class="fas fa-signature"></i> Signer
-                </button>
-                <button th:if="${signRequest.parentSignBook != null && @signRequestService.getCurrentSignType(signRequest).name() == 'visa'}" class="mb-1 col-12 btn btn-success" title="Signer" th:onclick="'launchSignAll(' + ${signRequest.parentSignBook.id} + ')'">
+                <button id="launchAllSignButton" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
+                    <span th:if="${signRequest.parentSignBook != null && @signRequestService.getCurrentSignType(signRequest).name() != 'visa'}">
+                        <i class="fas fa-signature"></i> Signer
+                    </span>
+                    <span th:if="${signRequest.parentSignBook != null && @signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
                     <i class="fas fa-check"></i> Viser
+                        </span>
                 </button>
             </div>
         </div>
@@ -294,10 +306,7 @@
         </div>
     </div>
 </div>
-
 <div th:replace="user/signrequests/includes/modals/attachment"></div>
-
 <footer th:replace="fragments/footer"></footer>
 </body>
-<!--                    <script type="text/javascript" src="/js/jsSignatureLevel.js"></script>-->
 </html>

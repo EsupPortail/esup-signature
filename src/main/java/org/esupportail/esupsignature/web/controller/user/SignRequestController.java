@@ -156,35 +156,6 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
-    @GetMapping(value = "/{id}", params = "form")
-    public String updateForm(@PathVariable("id") Long id, Model model) throws Exception {
-        User currentUser = userService.getUserFromAuthentication();
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        model.addAttribute("signBooks", signBookService.getAllSignBooks());
-        List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
-        logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
-        model.addAttribute("logs", logs);
-        model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
-        List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
-        model.addAttribute("refuseLogs", refuseLogs);
-        if (currentUser.getSignImage() != null) {
-            model.addAttribute("signFile", fileService.getBase64Image(currentUser.getSignImage()));
-        }
-        if (currentUser.getKeystore() != null) {
-            model.addAttribute("keystore", currentUser.getKeystore().getFileName());
-        }
-        model.addAttribute("signRequest", signRequest);
-
-        if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(currentUser, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
-            model.addAttribute("signable", "ok");
-        }
-        model.addAttribute("signTypes", SignType.values());
-        model.addAttribute("workflows", workflowRepository.findAll());
-        return "user/signrequests/update";
-
-    }
-
-    @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
     @GetMapping(value = "/{id}")
     public String show(@PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
         User user = userService.getUserFromAuthentication();
@@ -197,6 +168,7 @@ public class SignRequestController {
         ) {
             model.addAttribute("signable", "ok");
             model.addAttribute("nexuUrl", nexuUrl);
+            model.addAttribute("nexuVersion", nexuVersion);
             model.addAttribute("baseUrl", baseUrl);
         }
         Document toDisplayDocument;
@@ -240,6 +212,36 @@ public class SignRequestController {
             return "user/signrequests/show";
         }
     }
+
+    @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
+    @GetMapping(value = "/{id}", params = "form")
+    public String updateForm(@PathVariable("id") Long id, Model model) throws Exception {
+        User currentUser = userService.getUserFromAuthentication();
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        model.addAttribute("signBooks", signBookService.getAllSignBooks());
+        List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
+        logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
+        model.addAttribute("logs", logs);
+        model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
+        List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
+        model.addAttribute("refuseLogs", refuseLogs);
+        if (currentUser.getSignImage() != null) {
+            model.addAttribute("signFile", fileService.getBase64Image(currentUser.getSignImage()));
+        }
+        if (currentUser.getKeystore() != null) {
+            model.addAttribute("keystore", currentUser.getKeystore().getFileName());
+        }
+        model.addAttribute("signRequest", signRequest);
+
+        if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(currentUser, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
+            model.addAttribute("signable", "ok");
+        }
+        model.addAttribute("signTypes", SignType.values());
+        model.addAttribute("workflows", workflowRepository.findAll());
+        return "user/signrequests/update";
+
+    }
+
 //
 //    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
 //    @PostMapping(value = "/add-docs/{id}")
