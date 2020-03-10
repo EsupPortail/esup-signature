@@ -6,8 +6,7 @@ export class WorkflowUi {
     targetUri = document.getElementById("documentsTargetUriDiv");
 
     constructor() {
-        console.info("Start workflowUI");
-        console.log(this.sourceTypeSelect);
+        console.info("Starting workflow UI");
         if (this.sourceTypeSelect.value === "none") {
             this.sourceUri.style.display = "none";
         }

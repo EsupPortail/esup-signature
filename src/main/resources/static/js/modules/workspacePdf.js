@@ -14,6 +14,7 @@ export class WorkspacePdf {
     pdfViewer;
 
     constructor(url, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, isPdf) {
+        console.info("Starting workspace UI");
         this.currentSignRequestParams =  new SignRequestParams(currentSignRequestParams);
         this.currentSignType = currentSignType;
         this.postits = postits;

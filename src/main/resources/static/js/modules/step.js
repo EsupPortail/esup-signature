@@ -1,4 +1,4 @@
-export class Step {
+export default class Step {
 
     stepper;
 

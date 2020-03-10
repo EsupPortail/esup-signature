@@ -18,6 +18,7 @@ export class SignPosition {
     currentScale = 1;
 
     constructor(xPos, yPos, signWidth, signHeight, signPageNumber) {
+        console.info("Starting sign position tools");
         this.startPosX = parseInt(xPos, 10);
         this.startPosY = parseInt(yPos, 10);
         this.posX = xPos;
@@ -29,7 +30,6 @@ export class SignPosition {
     }
 
     init() {
-        console.log("init signPosition event listeners");
         window.addEventListener("touchmove", e => this.touchmove(e));
         this.cross.on('mousedown', e => this.dragSignature());
         this.cross.on('touchstart', e => this.dragSignature());

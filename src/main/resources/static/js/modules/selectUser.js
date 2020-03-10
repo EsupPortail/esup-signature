@@ -1,6 +1,7 @@
 export default class SelectUser {
 
     constructor(selectName) {
+        console.info("Enable slim-select for " + selectName);
         this.createUserSelect(selectName)
     }
 

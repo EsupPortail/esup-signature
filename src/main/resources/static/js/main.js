@@ -24,7 +24,8 @@ if(document.URL.match("(\/user\/signrequests\/[\\s\\S]+[^?|^\/])")) {
 export let stepper;
 let stepDiv = document.getElementById("stepperDefault");
 if (stepDiv != null) {
-    import('./modules/step.js').then((selectUser) => {
+    import('./modules/step.js').then((step) => {
+        const Step = step.default;
         stepper = new Step(stepDiv);
     });
 }

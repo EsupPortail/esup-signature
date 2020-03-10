@@ -1,6 +1,10 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
+<script type="module">
+    import {WorkflowUi} from "/js/modules/workflowUi.js";
+    new WorkflowUi();
+</script>
 <body>
 <nav th:replace="fragments/menu"></nav>
 <main role="main">
@@ -94,10 +98,4 @@
 <footer th:replace="fragments/footer"></footer>
 <div th:replace="fragments/message :: message"></div>
 </body>
-<script type="module">
-    import {WorkflowUi} from "/js/modules/workflowUi.js";
-    //import {SelectUser} from "/js/modules/selectUser.js";
-    new WorkflowUi();
-    //new SelectUser("managersSelect");
-</script>
 </html>

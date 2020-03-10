@@ -10,6 +10,7 @@ export class FilesInput {
     csrfToken;
 
     constructor(input, name, document, readOnly, csrfParameterName, csrfToken) {
+        console.info("Enable file input for : " + name);
         this.input = input;
         this.name = name;
         this.csrfParameterName = csrfParameterName;

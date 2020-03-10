@@ -44,6 +44,7 @@ export class PdfViewer {
     };
 
     constructor(url, signPosition) {
+        console.info("Starting PDF Viewer");
         this.url= url;
         this.signPosition = signPosition;
         pdfjsLib.disableWorker = true;
