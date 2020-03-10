@@ -166,7 +166,8 @@ public class SignRequestController {
                 && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0
                 && signRequestService.needToSign(signRequest, user)
         ) {
-            model.addAttribute("signable", "ok");
+            signRequest.setSignable(true);
+            //model.addAttribute("signable", true);
             model.addAttribute("nexuUrl", nexuUrl);
             model.addAttribute("nexuVersion", nexuVersion);
             model.addAttribute("baseUrl", baseUrl);
@@ -181,7 +182,7 @@ public class SignRequestController {
                 model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
                 if (user.getSignImage() != null && user.getSignImage().getSize() > 0) {
                     if(user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
-                        model.addAttribute("signable", "ko");
+                        //model.addAttribute("signable", false);
                         model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter un keystore à votre profil");
                     }
                     model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
@@ -190,7 +191,7 @@ public class SignRequestController {
                     model.addAttribute("signHeight", size[1]);
                 } else {
                     if(signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign)) {
-                        model.addAttribute("signable", "ko");
+                        //model.addAttribute("signable", false);
                         model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter une image de votre signature");
                     }
                     model.addAttribute("signWidth", 100);
@@ -234,7 +235,8 @@ public class SignRequestController {
         model.addAttribute("signRequest", signRequest);
 
         if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(currentUser, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
-            model.addAttribute("signable", "ok");
+            signRequest.setSignable(true);
+            //model.addAttribute("signable", true);
         }
         model.addAttribute("signTypes", SignType.values());
         model.addAttribute("workflows", workflowRepository.findAll());

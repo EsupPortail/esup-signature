@@ -6,7 +6,7 @@
 <div th:fragment="workspace" id="workspace" class="workspace-sign alert alert-secondary fadein">
     <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post" th:if="${documentType == 'pdf'}">
         <div id="pdf" class="drop-shadows "></div>
-        <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && @signRequestService.getCurrentSignType(signRequest).name() != 'visa'}">
+        <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed' && @signRequestService.getCurrentSignType(signRequest).name() != 'visa'}">
             <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                  onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                  onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
@@ -14,7 +14,7 @@
                 <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
             </div>
         </th:block>
-        <th:block th:if="${signable == 'ok' && signRequest.status.name() != 'signed' && @signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
+        <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed' && @signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
             <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                  onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                  onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"

@@ -150,9 +150,6 @@ public class AdminSignRequestController {
 			}
 			model.addAttribute("signRequest", signRequest);
 			model.addAttribute("itemId", id);
-			if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
-				model.addAttribute("signable", "ok");
-			}
 			return "admin/signrequests/show";
 	}
 

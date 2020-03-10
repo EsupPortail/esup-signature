@@ -81,7 +81,7 @@ public class SignRequest {
 
     @JsonIgnore
     @Transient
-    transient Boolean signable;
+    transient Boolean signable = false;
 
     public Long getId() {
         return id;
@@ -241,6 +241,14 @@ public class SignRequest {
 
     public void setCreator(User creator) {
         this.creator = creator;
+    }
+
+    public Boolean getSignable() {
+        return signable;
+    }
+
+    public void setSignable(Boolean signable) {
+        this.signable = signable;
     }
 
     public SignRequestParams getCurrentSignRequestParams() {

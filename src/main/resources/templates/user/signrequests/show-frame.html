@@ -7,7 +7,7 @@
 <body style="margin: 0">
             <div id="tools" style="top:0px;">
                 <div class="d-flex mb-1" th:unless="${documentType == 'pdf'}">
-                    <div id="signtools" th:if="${signable == 'ok'}" style="display: none;">
+                    <div id="signtools" th:if="${signRequest.signable}" style="display: none;">
                         <button th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="btn btn-success" title="Signer" data-toggle="modal" data-target="#signModal">
                             <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                         </button>
@@ -45,7 +45,7 @@
                     <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-undo"></i></button>
                     <button id="rotateright" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-redo"></i></button>
                     <div class="border ml-3 mr-3 "></div>
-                    <div id="signtools" class="mr-1" th:if="${signable == 'ok'}" style="display: none;">
+                    <div id="signtools" class="mr-1" th:if="${signRequest.signable}" style="display: none;">
                         <button id="pen" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer un visuel" class="btn btn-outline-success ml-1" onclick="toggleVisual()"><i class="fas fa-pencil-alt"></i></button>
                         <button id="clock" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer la date" class="btn btn-outline-secondary ml-1" onclick="toggleDate()"><i class="fas fa-clock"></i></button>
                         <button th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="btn btn-success" title="Signer" data-toggle="modal" data-target="#signModal">
@@ -55,7 +55,7 @@
                             <i class="fas fa-check"></i> <span class="sidebar-label">Viser</span>
                         </button>
                     </div>
-                    <div id="" th:if="${signable == 'ok'}" style="display: block;">
+                    <div id="" th:if="${signRequest.signable}" style="display: block;">
                         <button class="btn btn-danger" title="Refuser" th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal">
                             <i class="fas fa-ban"></i> <span class="sidebar-label">Refuser</span>
                         </button>
@@ -106,7 +106,7 @@
     </div>
 </div>
 
-<div th:if="${signable == 'ok'}" class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
+<div th:if="${signRequest.signable}" class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -165,7 +165,7 @@
     </div>
 </div>
 
-<div th:if="${signable == 'ok'}" class="modal fade" id="signAllModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
+<div th:if="${signRequest.signable}" class="modal fade" id="signAllModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">

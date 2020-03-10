@@ -24,7 +24,7 @@ export class WorkspacePdf {
         this.pdfViewer.addEventListener('pageChange', e => this.refreshComments());
 
         document.getElementById('commentButton').addEventListener('click', e => this.enableCommentMode());
-        if(this.signable === 'ok') {
+        if(this.signable) {
             document.getElementById('signButton').addEventListener('click', e => this.enableSignMode());
             document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
             document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
@@ -46,7 +46,7 @@ export class WorkspacePdf {
         if(localStorage.getItem('mode') != null && localStorage.getItem('mode') !== "") {
             this.mode = localStorage.getItem('mode');
         } else {
-            if(this.signable === 'ok') {
+            if(this.signable) {
                 localStorage.setItem('mode', 'sign');
                 this.mode = 'sign';
             } else {
@@ -66,7 +66,7 @@ export class WorkspacePdf {
             this.enableSignMode();
         }
 
-        if(this.signable === 'ok' && this.currentSignType === 'visa') {
+        if(this.signable && this.currentSignType === 'visa') {
             if(this.mode === 'sign') {
                 this.signPosition.toggleVisual();
             }
