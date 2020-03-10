@@ -14,12 +14,13 @@
 
     globalUi.showSideBar();
     let signable = [[${signRequest.signable}]];
-    if(signable) {
+    let currentSignType = [[${currentSignType}]];
+    if(signable && currentSignType === 'nexuSign') {
         new Nexu([[${nexuUrl}]], [[${nexuVersion}]]);
     }
     new SignUi([[${signRequest.id}]],
         [[${signRequest.getCurrentSignRequestParams()}]],
-        '[[${@signRequestService.getCurrentSignType(signRequest).name()}]]',
+        currentSignType,
         [[${signWidth}]],
         [[${signHeight}]],
         signable,
@@ -78,10 +79,10 @@
             <div class="tools">
                 <div class="d-flex mb-1" th:if="${documentType != 'pdf'}">
                     <div id="signtools" th:if="${signRequest.signable}" style="display: none;">
-                        <button th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="btn btn-success" title="Signer" data-toggle="modal" data-target="#signModal">
+                        <button th:if="${currentSignType != 'visa'}" class="btn btn-success" title="Signer" data-toggle="modal" data-target="#signModal">
                             <i class="fas fa-signature"></i> Signer
                         </button>
-                        <button th:unless="${@signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="btn btn-success" title="Viser" data-toggle="modal" data-target="#signModal">
+                        <button th:unless="${currentSignType != 'visa'}" class="btn btn-success" title="Viser" data-toggle="modal" data-target="#signModal">
                             <i class="fas fa-check"></i> Viser
                         </button>
                     </div>
@@ -110,16 +111,16 @@
                     </button>
                     <div class="border ml-3 mr-3 "></div>
                     <div id="signtools" th:if="${signRequest.signable}" style="display: none;">
-                        <button id="visualButton" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer un visuel" class="btn btn-outline-success ml-1"><i class="fas fa-eye"></i></button>
-                        <button id="dateButton" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'pdfImageStamp'}" title="Inserer la date" class="btn btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>
+                        <button th:if="${currentSignType != 'pdfImageStamp'}" id="visualButton" title="Inserer un visuel" class="btn btn-outline-success ml-1"><i class="fas fa-eye"></i></button>
+                        <button id="dateButton" title="Inserer la date" class="btn btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>
                     </div>
                     <div id="signButtons" th:if="${signRequest.signable}" class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#signButtons').toggleClass('active');" onmouseout="$('#signButtons').toggleClass('active');">
                         <a class="btn-floating btn-lg bg-primary waves-effect">
                             <i class="fas fa-signature"></i>
                         </a>
                         <ul id="signCollapse" class="list-unstyled">
-                            <li><a role="button" th:if="${@signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="btn-floating bg-success waves-effect" title="Signer" data-toggle="modal" data-target="#signModal"><i class="fas fa-file-signature"></i></a></li>
-                            <li><a role="button" th:unless="${@signRequestService.getCurrentSignType(signRequest).name() != 'visa'}" class="btn-floating bg-success waves-effect" title="Viser" data-toggle="modal" data-target="#signModal"><i class="fas fa-check"></i></a></li>
+                            <li><a role="button" th:if="${currentSignType != 'visa'}" class="btn-floating bg-success waves-effect" title="Signer" data-toggle="modal" data-target="#signModal"><i class="fas fa-file-signature"></i></a></li>
+                            <li><a role="button" th:unless="${currentSignType != 'visa'}" class="btn-floating bg-success waves-effect" title="Viser" data-toggle="modal" data-target="#signModal"><i class="fas fa-check"></i></a></li>
                             <li><a role="button" class="btn-floating bg-danger waves-effect" title="Refuser" th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal"><i class="fas fa-file-excel"></i></a></li>
                         </ul>
                     </div>
@@ -188,7 +189,7 @@
     </div>
 </div>
 
-<div th:if="${signRequest.signable}" th:with="signType = ${@signRequestService.getCurrentSignType(signRequest).name()}" class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
+<div th:if="${signRequest.signable}" th:with="signType = ${currentSignType}" class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -263,7 +264,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <input autocomplete="new-password" th:classappend="${@signRequestService.getCurrentSignType(signRequest).name() != 'certSign' && @signRequestService.getCurrentSignType(signRequest).name() != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="passwordAll" name="passwordAll" value="" placeholder="Mot de passe du keystore"/>
+                <input autocomplete="new-password" th:classappend="${currentSignType != 'certSign' && currentSignType != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="passwordAll" name="passwordAll" value="" placeholder="Mot de passe du keystore"/>
             </div>
             <script>
                 $("#passwordAll").on('keyup', function (e) {
@@ -275,10 +276,10 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary col-12" data-dismiss="modal">Annuler</button>
                 <button id="launchAllSignButton" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
-                    <span th:if="${signRequest.parentSignBook != null && @signRequestService.getCurrentSignType(signRequest).name() != 'visa'}">
+                    <span th:if="${signRequest.parentSignBook != null && currentSignType != 'visa'}">
                         <i class="fas fa-signature"></i> Signer
                     </span>
-                    <span th:if="${signRequest.parentSignBook != null && @signRequestService.getCurrentSignType(signRequest).name() == 'visa'}">
+                    <span th:if="${signRequest.parentSignBook != null && currentSignType == 'visa'}">
                     <i class="fas fa-check"></i> Viser
                         </span>
                 </button>

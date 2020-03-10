@@ -204,6 +204,7 @@ public class SignRequestController {
             FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
             model.addAttribute("documentType", fileService.getExtension(fsFile.getName()));
         }
+        model.addAttribute("currentSignType", signRequestService.getCurrentSignType(signRequest).name());
         List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
         model.addAttribute("refuseLogs", refuseLogs);
         model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));

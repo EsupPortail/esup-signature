@@ -478,7 +478,6 @@ input:checked + .slider:before {
 }
 .step-trigger {
     width: 100% !important;
-    border: 1px solid #555555 !important;
     justify-content: left !important;
 }
 

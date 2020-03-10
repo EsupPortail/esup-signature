@@ -8,9 +8,11 @@ export class WorkspacePdf {
     currentSignType;
     mode = 'read';
     signable;
+    currentSignType
 
     constructor(url, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits) {
         this.currentSignRequestParams =  new SignRequestParams(currentSignRequestParams);
+        this.currentSignType = currentSignType;
         this.postits = postits;
         this.signable = signable;
         this.signPosition = new SignPosition(this.currentSignRequestParams.xPos,this.currentSignRequestParams.yPos, signWidth, signHeight, this.signPageNumber);
@@ -26,7 +28,9 @@ export class WorkspacePdf {
         document.getElementById('commentButton').addEventListener('click', e => this.enableCommentMode());
         if(this.signable) {
             document.getElementById('signButton').addEventListener('click', e => this.enableSignMode());
-            document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
+            if(this.currentSignType !== "pdfImageStamp") {
+                document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
+            }
             document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
         }
         document.getElementById('hideComment').addEventListener('click', e => this.hideComment());

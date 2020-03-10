@@ -21,7 +21,7 @@ import {Step} from "./modules/step.js";
 export let globalUi = new GlobalUi();
 export let stepper;
 
-let stepDiv = document.getElementById("stepper");
+let stepDiv = document.getElementById("stepperdDefault");
 if(stepDiv != null) {
     stepper = new Step(stepDiv);
     //stepper.stepTo(2);
