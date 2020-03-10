@@ -84,7 +84,7 @@ public class SedaExportService {
             ArchiveUnit id2ArchiveUnit = sb.addNewSubArchiveUnit("ID1", "ID2", "Item", "validation.xml", "");
             SimpleReport simpleReport = reports.getSimpleReportJaxb();
             for(XmlSignature xmlSignature : simpleReport.getSignature()) {
-                //User user = userRepository.findByEppn(xmlSignature.getSignedBy()).get(0);
+                //UserUi user = userRepository.findByEppn(xmlSignature.getSignedBy()).get(0);
                 Signature signature = new Signature();
                 signature.addMetadata(new Signer(xmlSignature.getSignedBy(), convertToLocalDateTimeViaInstant(xmlSignature.getBestSignatureTime())));
                 Validator validator = new Validator("DSS Validator", convertToLocalDateTimeViaInstant(xmlSignature.getBestSignatureTime()));

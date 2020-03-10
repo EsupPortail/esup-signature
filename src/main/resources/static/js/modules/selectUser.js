@@ -1,12 +1,12 @@
-export class SelectUser {
-
-    selectName;
+export default class SelectUser {
 
     constructor(selectName) {
-        this.selectName = selectName;
+        this.createUserSelect(selectName)
+    }
 
+    createUserSelect(selectName) {
         new SlimSelect({
-            select: "#" + this.selectName,
+            select: "#" + selectName,
             placeholder: 'Choisir un ou plusieurs participants',
             searchText: 'Aucun résultat',
             searchPlaceholder: 'Rechercher',
@@ -36,7 +36,5 @@ export class SelectUser {
             }
         });
     }
-
-
 
 }

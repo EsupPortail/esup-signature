@@ -163,7 +163,7 @@ public class MailService {
 //        final Context ctx = new Context(Locale.FRENCH);
 //        ctx.setVariable("rootUrl", rootUrl);
 //        ctx.setVariable("signBook", signBook);
-//        User user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
+//        UserUi user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
 //        ctx.setVariable("user", user);
 //        setTemplate(ctx);
 //        final MimeMessage mimeMessage = mailSender.createMimeMessage();

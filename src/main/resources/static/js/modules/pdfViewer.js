@@ -61,13 +61,11 @@ export class PdfViewer {
         document.getElementById('rotateright').addEventListener('click', e => this.rotateRight());
     }
 
-
     startRender(pdf) {
-        console.log("start render");
+        console.group("Start render");
         this.pdfDoc = pdf;
         this.numPages = this.pdfDoc.numPages;
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
-        this.renderPage(this.pageNum);
         this.fireEvent("ready", ['ok']);
     }
 
@@ -120,6 +118,7 @@ export class PdfViewer {
         this.canvas.style.width = (Math.round(this.pdfPageView.viewport.width) + 3) +"px";
         this.canvas.style.height = (Math.round(this.pdfPageView.viewport.height) + 3) + "px";
         this.fireEvent('render', ['end']);
+        console.groupEnd();
     }
 
     renderPdfForm(items) {
@@ -254,7 +253,7 @@ export class PdfViewer {
     }
 
     zoomIn() {
-        console.log('zoomin');
+        console.group('zoom in');
         if (this.scale >= 2) {
             return;
         }
@@ -275,6 +274,7 @@ export class PdfViewer {
 
 
     zoomOut() {
+        console.group('zoom out');
         if (this.scale <= 0.50) {
             return;
         }
@@ -294,6 +294,7 @@ export class PdfViewer {
 
 
     rotateLeft() {
+        console.group('rotate left');
         if (this.rotation < -90) {
             return;
         }
@@ -303,6 +304,7 @@ export class PdfViewer {
     }
 
     rotateRight() {
+        console.group('rotate right');
         if (this.rotation > 90) {
             return;
         }

@@ -120,14 +120,12 @@
 			<artifactId>thymeleaf-spring-data-dialect</artifactId>
 			<version>3.4.0</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.webjars/popper.js -->
+
 		<dependency>
 		   <groupId>org.webjars</groupId>
 		   <artifactId>popper.js</artifactId>
 		   <version>1.14.1</version>
 		</dependency>
-		 
-		<!-- https://mvnrepository.com/artifact/org.webjars/bootstrap -->
 
 		<dependency>
 			<groupId>org.webjars.bowergithub.mozilla</groupId>

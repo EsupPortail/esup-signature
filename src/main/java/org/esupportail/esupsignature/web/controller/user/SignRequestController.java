@@ -251,7 +251,7 @@ public class SignRequestController {
 //    public String addDocumentToNewSignRequest(@PathVariable("id") Long id,
 //                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
 //        logger.info("start add documents");
-//        User user = userService.getUserFromAuthentication();
+//        UserUi user = userService.getUserFromAuthentication();
 //        SignBook signBook = signBookRepository.findById(id).get();
 //        for (MultipartFile multipartFile : multipartFiles) {
 //            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);

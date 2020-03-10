@@ -76,7 +76,7 @@ public class FormUserController {
 //
 //    @GetMapping("forms/{id}/list")
 //    public String getFormByIdList(@PathVariable("id") Long id, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) throws RuntimeException {
-//        User user = userService.getUserFromAuthentication();
+//        UserUi user = userService.getUserFromAuthentication();
 //        Form form = formRepository.findById(id).get();
 //        Form activeVersionForm = formRepository.findFormByNameAndActiveVersion(form.getName(), true).get(0);
 //        model.addAttribute("form", form);
@@ -96,7 +96,7 @@ public class FormUserController {
 //
 //    @PostMapping("forms/{id}")
 //    public String addForm(@PathVariable("id") Long id, @RequestParam MultiValueMap<String, String> formData) {
-//        User user = userService.getUserFromAuthentication();
+//        UserUi user = userService.getUserFromAuthentication();
 //        Form form = formRepository.findById(id).get();
 //        Data data = new Data();
 //        data.setName(form.getName());

@@ -11,15 +11,21 @@ export class SignUi {
     launchAllSignButton = $("#launchAllSignButton");
     workspace;
 
-    constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits) {
+    constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, pdf) {
+        console.info("Starting sign UI");
         this.signRequestId = id;
         this.initListeners();
-        this.workspace = new WorkspacePdf('/user/signrequests/get-last-file/' + id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits);
+        this.workspace = new WorkspacePdf('/user/signrequests/get-last-file/' + id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, pdf);
     }
 
     initListeners() {
         this.launchSignButton.on('click', e => this.launchSign());
         this.launchAllSignButton.on('click', e => this.launchAllSign());
+        $("#password").on('keyup', function (e) {
+            if (e.keyCode === 13) {
+                $("#launchSignButton").click();
+            }
+        });
     }
 
     launchSign() {

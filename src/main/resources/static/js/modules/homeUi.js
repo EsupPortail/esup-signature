@@ -1,4 +1,4 @@
-export class Home {
+export class HomeUi {
 
     constructor() {
         this.init();

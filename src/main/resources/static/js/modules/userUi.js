@@ -1,4 +1,4 @@
-export class User {
+export class UserUi {
 
     static signImageBase64 = $('#signImageBase64');
     emailAlertFrequencySelect = document.getElementById("_emailAlertFrequency_id");
@@ -15,7 +15,7 @@ export class User {
     }
 
     checkAlertFrequency() {
-        var selectedValue = this.emailAlertFrequencySelect.options[this.emailAlertFrequencySelect.selectedIndex].value;
+        let selectedValue = this.emailAlertFrequencySelect.options[this.emailAlertFrequencySelect.selectedIndex].value;
         if(selectedValue === 'daily') {
             this.emailAlertDay.style.display = "none";
             this.emailAlertHour.style.display = "flex";
@@ -37,10 +37,10 @@ export class UserSignaturePad {
 
     constructor(lastSign) {
         this.setLastSign(lastSign);
-        this.init();
+        this.initListeners();
     }
 
-    init() {
+    initListeners() {
         this.canvas.mousedown(e => this.firstClearSignaturePad());
         $('#erase').click(e => this.clearSignaturePad());
         $('#validate').click(e =>this.saveSignaturePad());
@@ -66,21 +66,21 @@ export class UserSignaturePad {
 
     saveSignaturePad() {
         console.log(this.signaturePad.toDataURL("image/png"));
-        User.signImageBase64.val(this.signaturePad.toDataURL("image/png"));
+        UserUi.signImageBase64.val(this.signaturePad.toDataURL("image/png"));
         this.canvas.css("backgroundColor", "rgba(0, 255, 0, .5)");
     }
 
     clearSignaturePad() {
         this.canvas.css("backgroundColor", "rgba(255, 255, 255, 1)");
         this.signaturePad.clear();
-        User.signImageBase64.val(this.lastSign);
+        UserUi.signImageBase64.val(this.lastSign);
     }
 
     resetSignaturePad() {
         this.canvas.css("backgroundColor", "rgba(255, 255, 255, 1)");
         this.signaturePad.clear();
         this.signaturePad.fromDataURL(this.lastSign);
-        User.signImageBase64.val(this.lastSign);
+        UserUi.signImageBase64.val(this.lastSign);
         this.firstClear = true;
     }
 
@@ -108,17 +108,17 @@ export class UserSignatureCrop {
             enforceBoundary : false
 
         });
-        this.init();
+        this.initListeners();
     }
 
-    init() {
+    initListeners() {
         this.vanillaRotate.click(e => this.rotate(this.vanillaCroppie));
         this.vanillaCrop.addEventListener('update', e => this.update());
         this.vanillaUpload.addEventListener('change', e=> this.readFile(this.vanillaUpload));
     }
 
     update() {
-        var result = this.getResult();
+        let result = this.getResult();
         result.then(this.saveVanilla);
     }
 
@@ -127,7 +127,7 @@ export class UserSignatureCrop {
     }
 
     saveVanilla(result) {
-        User.signImageBase64.value = result;
+        UserUi.signImageBase64.value = result;
     }
 
     getResult() {

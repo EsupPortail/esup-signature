@@ -4,6 +4,10 @@
 <!--/*@thymesVar id="data" type="org.esupportail.esupsignature.entity.Data"*/-->
 <!--/*@thymesVar id="step" type="org.esupportail.esupsignature.entity.WorkflowStep"*/-->
 <head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import {CreateDataUi} from "/js/modules/createDataUi.js";
+    new CreateDataUi([[${form.document.id}]], [[${fields}]]);
+</script>
 <body>
 <header th:replace="fragments/menu"></header>
 <main role="main">
@@ -173,12 +177,6 @@
         </div>
     </div>
 </div>
-<script th:inline="javascript" type="module">
-    import {PdfViewer} from "/js/modules/pdfViewer.js";
-    let pdfViewer = new PdfViewer('/user/documents/getfile/[[${form.document.id}]]', null);
-    pdfViewer.setDataFields([[${fields}]]);
-    pdfViewer.scale = 1.5;
-</script>
 <footer th:replace="fragments/footer"></footer>
 </body>
 </html>

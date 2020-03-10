@@ -65,7 +65,7 @@
         <i class="fas fa-angle-left"></i> Précédent
     </button>
 </form>
-<script type="module">
+<script th:inline="javascript" type="module">
     import {SelectUser} from "/js/modules/selectUser.js";
     new SelectUser("recipientsEmail");
 </script>

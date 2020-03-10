@@ -44,30 +44,31 @@
         </th:block>
     </form>
     <div th:if="${documentType != 'pdf' && signRequest.originalDocuments.size() > 0}" class="col-6">
-    <div class="card mb-1">
-        <div class="card-header">
-            Liste des documents originaux
-        </div>
-        <div class="card-body">
-            <div class="file-loading">
-                <input id="multipartFile" name="multipartFiles" type="file" multiple="multiple"/>
+        <div class="card mb-1">
+            <div class="card-header">
+                Liste des documents originaux
+            </div>
+            <div class="card-body">
+                <div class="file-loading">
+                    <input id="multipartFile" name="multipartFiles" type="file" multiple="multiple"/>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="card mb-1" th:if="${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported'}">
-        <div class="card-header">
-            Liste des documents signés
-        </div>
-        <div class="card-body">
+        <div class="card mb-1" th:if="${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported'}">
+            <div class="card-header">
+                Liste des documents signés
+            </div>
+            <div class="card-body">
             </div>
             <div class="file-loading">
-                <input id="signedFiles" name="multipartFiles" type="file" multiple="multiple"/>
+                <input id="signedFile" name="multipartFiles" type="file" multiple="multiple"/>
             </div>
         </div>
+        <script th:inline="javascript" type="module">
+            import {FilesInput} from "/js/modules/filesInput.js";
+            new FilesInput($("#multipartFile"), [[${name}]], null, false, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
+            new FilesInput($("#signedFile"), [[${name}]], null, false, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
+        </script>
     </div>
-    <script th:replace="user/signrequests/includes/scriptshow :: scriptshow"></script>
-    <script th:inline="javascript" type="module">
-
-    </script>
 </div>

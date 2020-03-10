@@ -2,6 +2,10 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import {UserUi} from "/js/modules/userUi.js";
+    new UserUi("data:image/png;base64, " + [[${signFile}]]);
+</script>
 <body>
 <nav th:replace="fragments/menu"></nav>
 <main role="main">
@@ -169,12 +173,4 @@
 </div>
 <footer th:replace="fragments/footer"></footer>
 </body>
-<script type="module">
-    /*<![CDATA[*/
-    import {User} from "/js/modules/user.js";
-    $(document).ready(function() {
-        new User("data:image/png;base64,[[${signFile}]]");
-    });
-    /*]]>*/
-</script>
 </html>

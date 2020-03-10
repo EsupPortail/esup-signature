@@ -3,6 +3,10 @@
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import {HomeUi} from "/js/modules/homeUi.js";
+    new HomeUi();
+</script>
 <body>
 <header th:replace="fragments/menu"></header>
 <main role="main">
@@ -76,9 +80,5 @@
     </div>
 </main>
 <footer th:replace="fragments/footer"></footer>
-<script th:inline="javascript" type="module">
-    import {Home} from "/js/modules/home.js";
-    let home = new Home();
-</script>
 </body>
 </html>

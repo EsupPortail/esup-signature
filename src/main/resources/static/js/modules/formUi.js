@@ -1,13 +1,13 @@
-export class Form {
+export class FormUi {
 
     btnAddField = document.querySelector('btn-add-field');
     btnRemove = document.querySelector('btn-remove');
 
     constructor() {
-        this.init();
+        this.initListeners();
     }
 
-    init() {
+    initListeners() {
         this.btnAddField.on('click', e => this.addField(e));
         this.btnRemove.on('click', e => this.removeField(e));
     }

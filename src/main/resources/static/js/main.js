@@ -15,13 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {GlobalUi} from "./modules/global.js";
-import {Step} from "./modules/step.js";
-
-export let globalUi = new GlobalUi();
+import {GlobalUi} from "./modules/globalUi.js";
+let globalUi = new GlobalUi();
+if(document.URL.match("(\/user\/signrequests\/[\\s\\S]+[^?|^\/])")) {
+    globalUi.showSideBar();
+}
 
 export let stepper;
 let stepDiv = document.getElementById("stepperDefault");
-if(stepDiv != null) {
-    stepper = new Step(stepDiv);
+if (stepDiv != null) {
+    import('./modules/step.js').then((selectUser) => {
+        stepper = new Step(stepDiv);
+    });
+}
+
+if ($("#managersSelect").length) {
+    import('./modules/selectUser.js').then((selectUser) => {
+        const SelectUser = selectUser.default;
+        new SelectUser("managersSelect");
+    });
 }

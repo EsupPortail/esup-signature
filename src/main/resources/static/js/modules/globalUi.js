@@ -11,16 +11,16 @@ export class GlobalUi {
     autoHide = $('.auto-hide');
 
     constructor() {
-        this.init();
+        console.info("Starting global UI");
+        this.initListeners();
+        this.initSideBar();
     }
 
-    init() {
-        console.info("Starting global UI");
+    initListeners() {
         $(document).on('click', e => this.closeUserMenu(e));
         $(document).on('click', e => this.scrollToHash());
         this.sideBar2.on('mouseover', e => this.disableBodyScroll());
         this.sideBar2.on('mouseout', e => this.enableBodyScroll());
-        this.initSideBar();
         this.clickableRow.on('click',  function() {
             window.location = $(this).closest('tr').attr('data-href');
         });

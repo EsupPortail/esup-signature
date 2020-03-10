@@ -8,25 +8,14 @@
 <body>
 <header th:replace="fragments/menu"></header>
 <script th:inline="javascript" type="module">
-    import {globalUi} from "/js/main.js";
     import {Nexu} from "/js/modules/nexu.js";
     import {SignUi} from "/js/modules/signUi.js";
-
-    globalUi.showSideBar();
     let signable = [[${signRequest.signable}]];
     let currentSignType = [[${currentSignType}]];
     if(signable && currentSignType === 'nexuSign') {
         new Nexu([[${nexuUrl}]], [[${nexuVersion}]], null);
     }
-
-    new SignUi([[${signRequest.id}]],
-        [[${signRequest.getCurrentSignRequestParams()}]],
-        currentSignType,
-        [[${signWidth}]],
-        [[${signHeight}]],
-        signable,
-        [[${postits}]]
-    );
+    new SignUi([[${signRequest.id}]], [[${signRequest.getCurrentSignRequestParams()}]], currentSignType, [[${signWidth}]], [[${signHeight}]], signable, [[${postits}]], [[${documentType == 'pdf'}]]);
 </script>
 <main role="main">
     <div class="wrapper">
@@ -203,10 +192,10 @@
                 <div th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}" class="alert alert-success"></div>
                 <div th:if="${signType == 'nexuSign'}">
                     <div id="nexu_version_alert" style="display: none;">
-                        <a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left">
-                            <i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
-                        </a>
                         <div class="alert alert-warning float-left">
+                            <a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left">
+                                <i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
+                            </a>
                             L'application NexU n’a pas la bonne version.
                             <span th:text="${nexuVersion} + 'nécessaire'"></span>
                             <br>
@@ -225,22 +214,15 @@
                         </div>
                     </div>
                     <div id="nexu_ready_alert" style="display: none;">
-                        <div class="alert alert-success float-left mb-1">
-                            L'application NexU est fonctionnelle
+                        <div class="alert alert-success float-left mt-1 mb-1 col-12">
+                            L’application NexU est fonctionnelle
                             <br/>
-                            <small>Vous pouvez utiliser une clé materielle ou un keystore</small>
+                            <small>Vous pouvez utiliser une clé matérielle ou un keystore</small>
                         </div>
-                        <button id="launchSignButton" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.id}">Signer</button>
+                        <button id="launchSignButton" class="mb-1 btn btn-success float-right" title="Signer" th:value="${signRequest.id}">Signer</button>
                     </div>
                 </div>
                 <input th:classappend="${signType != 'certSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
-                <script>
-                    $("#password").on('keyup', function (e) {
-                        if (e.keyCode === 13) {
-                            $("#launchSignButton").click();
-                        }
-                    });
-                </script>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
