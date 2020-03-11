@@ -72,7 +72,7 @@ public class SignBookService {
             signBookRepository.save(signBook);
             return signBook;
         } else {
-            throw new EsupSignatureException("Un parapheur porte déjà ce nom");
+            throw new EsupSignatureException("Un circuit porte déjà ce nom");
         }
     }
 
@@ -232,7 +232,7 @@ public class SignBookService {
 
     public void pendingSignBook(SignBook signBook, User user) {
         WorkflowStep currentWorkflowStep = getCurrentWorkflowStep(signBook);
-        updateStatus(signBook, SignRequestStatus.pending, "Parapheur envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber(), user, "SUCCESS", signBook.getComment());
+        updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber(), user, "SUCCESS", signBook.getComment());
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequestService.addRecipients(signRequest, currentWorkflowStep.getRecipients());
             signRequestService.pendingSignRequest(signRequest, currentWorkflowStep.getSignType(), currentWorkflowStep.getAllSignToComplete(), user);
@@ -246,7 +246,7 @@ public class SignBookService {
                 }
             }
         }
-        logger.info("Parapheur " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber());
+        logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber());
     }
 
     public void updateStatus(SignBook signBook, SignRequestStatus signRequestStatus, String action, User user, String returnCode, String comment) {

@@ -28,6 +28,7 @@ export default class UserUi {
 export class UserSignaturePad {
 
     constructor(lastSign) {
+        console.info("Starting user signature pad tool");
         this.canvas = $("#canvas");
         this.signImageBase64 = $("#signImageBase64");
         this.signaturePad = new SignaturePad(document.querySelector("canvas"));
@@ -62,7 +63,6 @@ export class UserSignaturePad {
     }
 
     saveSignaturePad() {
-        console.log(this.signaturePad.toDataURL("image/png"));
         this.signImageBase64.val(this.signaturePad.toDataURL("image/png"));
         this.canvas.css("backgroundColor", "rgba(0, 255, 0, .5)");
     }
@@ -87,7 +87,6 @@ export class UserSignatureCrop {
 
     constructor() {
         console.info("Starting user signature crop tool");
-        this.signImageBase64 = $("#signImageBase64");
         this.vanillaUpload = document.getElementById('vanilla-upload');
         this.vanillaRotate = document.querySelector('.vanilla-rotate');
         this.vanillaCrop = document.getElementById('vanilla-crop')
@@ -125,7 +124,6 @@ export class UserSignatureCrop {
     }
 
     saveVanilla(result) {
-        console.log(Promise.resolve(result));
         $("#signImageBase64").val(result);
     }
 

@@ -110,7 +110,7 @@ public class WorkflowManagerController {
 		try {
 			workflow = workflowService.createWorkflow(name, user,false);
 		} catch (EsupSignatureException e) {
-			redirectAttrs.addAttribute("messageError", "Ce parapheur existe déjà");
+			redirectAttrs.addAttribute("messageError", "Ce circuit existe déjà");
 			return "redirect:/manager/workflows/";
 		}
 		return "redirect:/manager/workflows/" + workflow.getId();

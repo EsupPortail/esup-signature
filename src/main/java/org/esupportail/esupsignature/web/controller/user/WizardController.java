@@ -69,7 +69,7 @@ public class WizardController {
     @PostMapping(value = "/wiz2", produces = "text/html")
     public String wiz2(@RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model, RedirectAttributes redirectAttributes) {
         if(signBookRepository.countByName(name) > 0) {
-            redirectAttributes.addFlashAttribute("messageError", "Un parapheur portant ce nom existe déjà");
+            redirectAttributes.addFlashAttribute("messageError", "Un circuit portant ce nom existe déjà");
             return "redirect:/user/wizard/wiz1";
         }
         logger.info("init new signBook : " + name);

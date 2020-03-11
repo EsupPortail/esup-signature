@@ -68,7 +68,7 @@ export class PdfViewer {
     }
 
     renderPage(num) {
-        console.log("render page " + num + ", scale : " + this.scale);
+        console.debug("render page " + num + ", scale : " + this.scale);
         if(this.dataFields != null) {
             this.setValues();
             this.formRender = true;
@@ -88,7 +88,7 @@ export class PdfViewer {
     }
 
     renderTask(page) {
-        console.log("launch render task");
+        console.debug("launch render task");
         this.page = page;
         let scale = this.scale;
         let rotation = this.rotation;

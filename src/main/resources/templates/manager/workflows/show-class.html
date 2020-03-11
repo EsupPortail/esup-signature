@@ -17,7 +17,7 @@
         </nav>
         <div id="content" class="content">
             <div class="card bg-light">
-                <div class="card-header">Parapheur : <span th:text="${workflow.name}"></span></div>
+                <div class="card-header">Circuit : <span th:text="${workflow.name}"></span></div>
                 <div class="card-body">
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Description</dt>
@@ -28,7 +28,7 @@
                         <div th:replace="manager/workflows/cards/stepscard-light :: stepscard-light"></div>
                     </dl>
                     <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Gestionnaire(s) du parapheur</dt>
+                        <dt class="col-lg-5">Gestionnaire(s) du circuit</dt>
                         <dd>
                             <div class="alert alert-dark col-12">
                                 <th:block th:each="manager : ${workflow.managers}">

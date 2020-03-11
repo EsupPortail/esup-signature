@@ -1,13 +1,11 @@
 export class Nexu {
 
-    static rootUrl;
-    static tokenId;
-    static keyId;
-
     constructor(nexuUrl, nexuVersion, rootUrl) {
         this.nexuUrl = nexuUrl;
         this.nexuVersion = nexuVersion;
         Nexu.rootUrl = rootUrl;
+        this.tokenId = null;
+        this.keyId = null;
         this.checkNexuClient();
         this.successDiv = $("#success");
         this.successDiv.hide();

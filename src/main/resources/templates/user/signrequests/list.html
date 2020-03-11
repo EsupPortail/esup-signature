@@ -49,7 +49,7 @@
                     <table class="table table-borderless table-hover mt-2">
                         <thead class="thead-dark">
                         <tr>
-                            <th class="w-25">Parapheur</th>
+                            <th class="w-25">Circuit</th>
                             <th class="w-25">Titre des documents</th>
                             <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
                             <th class="d-none d-lg-table-cell">Participants</th>
@@ -61,7 +61,7 @@
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr>
                                 <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
-                                <td class="text-break" th:unless="${signRequest.parentSignBook != null}">Demande hors parapheur</td>
+                                <td class="text-break" th:unless="${signRequest.parentSignBook != null}">Signature rapide</td>
                                 <td class="text-break"><span th:text="${signRequest.viewTitle}"></span></td>
                                 <td class="d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                 </td>
