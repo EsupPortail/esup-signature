@@ -59,6 +59,7 @@ public class WizardController {
 
     @GetMapping(value = "/wiz1")
     public String wiz1(@RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
+        logger.info("Saisie du nom");
         if (workflowId != null) {
             Workflow workflow = workflowRepository.findById(workflowId).get();
             model.addAttribute("workflow", workflow);
@@ -68,6 +69,7 @@ public class WizardController {
 
     @PostMapping(value = "/wiz2", produces = "text/html")
     public String wiz2(@RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model, RedirectAttributes redirectAttributes) {
+        logger.info("Choix des fichiers");
         if(signBookRepository.countByName(name) > 0) {
             redirectAttributes.addFlashAttribute("messageError", "Un circuit portant ce nom existe déjà");
             return "redirect:/user/wizard/wiz1";
@@ -83,7 +85,7 @@ public class WizardController {
 
     @PostMapping(value = "/wiz3", produces = "text/html")
     public ModelAndView wiz3(@RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, HttpServletRequest request, Model model) throws EsupSignatureException, IOException, EsupSignatureIOException {
-        logger.info("wiz3");
+        logger.info("Choix d'un workflow");
         User user = userService.getUserFromAuthentication();
         SignBook signBook = signBookService.getSignBook(name, user);
         model.addAttribute("signBook", signBook);

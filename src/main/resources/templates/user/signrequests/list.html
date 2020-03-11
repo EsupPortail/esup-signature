@@ -3,6 +3,10 @@
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import {HomeUi} from "/js/modules/homeUi.js";
+    let homeUi = new HomeUi();
+</script>
 <body>
 <header th:replace="fragments/menu"></header>
 <main role="main">
@@ -14,7 +18,13 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="card mb-3">
+            <div class="fixed-action-btn" style="bottom: 100px; right: 50px;">
+                <a title="Créer un nouveau circuit" data-toggle="modal" data-target="#newFomModal" type="button"
+                   class="btn-floating btn-lg bg-primary wave-effect">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+            <div class="card col-lg-10">
                 <div id="myDocs" class="card-body">
 
                     <a th:if="${status == statusFilter}" class="btn btn-sm btn-secondary" href="/user/signrequests">Tout voir</a>
@@ -226,12 +236,25 @@
         </div>
     </div>
 </main>
-<script>
-    localStorage.removeItem('mode');
-    $('#wizardModal').on('shown.bs.modal', function () {
-        $(this).modal({backdrop: 'none', keyboard: false})
-    });
-</script>
+<div class="modal fade" id="newFomModal" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Choix du document</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div th:replace="user/home/include/new"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Annuler</button>
+            </div>
+        </div>
+    </div>
+</div>
 <footer th:replace="fragments/footer"></footer>
 </body>
 </html>

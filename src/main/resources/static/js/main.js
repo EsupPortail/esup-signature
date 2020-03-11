@@ -18,7 +18,12 @@
 import {GlobalUi} from "./modules/globalUi.js";
 let globalUi = new GlobalUi();
 if(document.URL.match("(\/user\/signrequests\/[\\s\\S]+[^?|^\/])")) {
+    console.info("show side bar");
     globalUi.showSideBar();
+}
+if(document.URL.match("(\/user\/signrequests\/?$)")) {
+    console.info("localStorage remove : mode");
+    localStorage.removeItem('mode');
 }
 
 export let stepper;

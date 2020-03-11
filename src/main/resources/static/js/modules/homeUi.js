@@ -1,6 +1,7 @@
 export class HomeUi {
 
     constructor() {
+        console.info("Starting home UI");
         this.init();
     }
 

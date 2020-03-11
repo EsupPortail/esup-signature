@@ -7,10 +7,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.*;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsFile;
@@ -91,7 +88,7 @@ public class SignRequestController {
     private SignRequestParamsRepository signRequestParamsRepository;
 
     @Resource
-    private SignBookRepository signBookRepository;
+    private FormService formService;
 
     @Resource
     private WorkflowRepository workflowRepository;
@@ -152,6 +149,8 @@ public class SignRequestController {
         model.addAttribute("signBookId", signBookId);
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("messageError", messageError);
+        model.addAttribute("forms", formService.getFormsByUser(user, true));
+        model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
         return "user/signrequests/list";
     }
 

@@ -2,7 +2,9 @@ export default class SelectUser {
 
     constructor(selectName, valuePrefix) {
         console.info("Enable slim-select for " + selectName);
-        this.valuePrefix = valuePrefix;
+        if(valuePrefix == null) {
+            valuePrefix = "";
+        };
         this.createUserSelect(selectName, valuePrefix);
     }
 
