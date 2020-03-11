@@ -32,8 +32,8 @@
                 </a>
                 <ul id="collapseExample" class="list-unstyled">
                     <li>
-                        <a role="button" title="Envoyer le document" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-floating bg-warning">
-                        <i class="fas fa-paper-plane"></i></a>
+                        <a role="button" title="Demarrer la procédure" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-floating bg-primary">
+                        <i class="fas fa-play"></i></a>
                     </li>
                     <li>
                         <a target="_blank" title="Exporter en PDF" th:if="${data.status.name() == 'draft'}"
@@ -142,7 +142,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Annuler</button>
-                <button type="button" onclick="document.getElementById('send').submit();" class="btn btn-success">Envoyer</button>
+                <button type="button" onclick="document.getElementById('send').submit();" class="btn btn-success">Valider</button>
             </div>
         </div>
     </div>

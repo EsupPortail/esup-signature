@@ -81,7 +81,7 @@ export class FilesInput {
             showCaption: false,
             showClose: false,
             showBrowse: !readOnly,
-            showUpload: !readOnly,
+            showUpload: false,
             showRemove: !readOnly,
             dropZoneEnabled: !readOnly,
             browseOnZoneClick: !readOnly,
