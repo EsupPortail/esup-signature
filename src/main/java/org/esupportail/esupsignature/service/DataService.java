@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -99,7 +100,7 @@ public class DataService {
 //				recipientRepository.save(recipient);
 //			}
 //		}
-		Workflow workflow = getWorkflowSteps(data, recipientEmails, user);
+		Workflow workflow = getWorkflowByDataAndUser(data, recipientEmails, user);
 		workflow.setName(workflow.getName() + "_" + form.getName());
 //		workflow.getWorkflowSteps().addAll(workflowSteps);
 		signBookService.importWorkflow(signBook, workflow);
@@ -115,19 +116,27 @@ public class DataService {
 		return signBook;
 	}
 
-	public Workflow getWorkflowSteps(Data data, List<String> recipientEmails, User user) {
+	public Workflow getWorkflowByDataAndUser(Data data, List<String> recipientEmails, User user) {
 		DefaultWorkflow workflow = workflowService.getWorkflowByClassName(data.getForm().getWorkflowType());
-		workflow.generateWorkflowSteps(user, data, recipientEmails);
-		int step = 1;
-		for(WorkflowStep workflowStep: workflow.getWorkflowSteps())  {
-			for(Recipient recipient : workflowStep.getRecipients()) {
-				recipientRepository.save(recipient);
+		try {
+			DefaultWorkflow defaultWorkflow = (DefaultWorkflow) BeanUtils.cloneBean(workflow);
+			List<WorkflowStep> workflowSteps = workflow.generateWorkflowSteps(user, data, recipientEmails);
+			defaultWorkflow.initWorkflowSteps();
+			defaultWorkflow.getWorkflowSteps().addAll(workflowSteps);
+			int step = 1;
+			for(WorkflowStep workflowStep: workflowSteps)  {
+				for(Recipient recipient : workflowStep.getRecipients()) {
+					recipientRepository.save(recipient);
+				}
+				workflowStepRepository.save(workflowStep);
+				userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
+				step++;
 			}
-			workflowStepRepository.save(workflowStep);
-			userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
-			step++;
+			return defaultWorkflow;
+		} catch (Exception e) {
+			logger.error("bean cloning fail", e);
 		}
-		return workflow;
+		return null;
 	}
 
 	public InputStream generateFile(Data data) {

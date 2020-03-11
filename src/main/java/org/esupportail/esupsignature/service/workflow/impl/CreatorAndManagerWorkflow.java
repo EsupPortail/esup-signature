@@ -4,12 +4,10 @@ import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.springframework.stereotype.Component;
-import org.springframework.test.annotation.NotTransactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -20,7 +18,7 @@ public class CreatorAndManagerWorkflow extends DefaultWorkflow {
 
     private String name = "CreatorAndManagerWorkflow";
     private String description = "Signature du créateur puis du responsable";
-    private List<WorkflowStep> workflowSteps = new ArrayList<>();
+    private List<WorkflowStep> workflowSteps;
 
     @Resource
     private UserService userService;
@@ -40,13 +38,18 @@ public class CreatorAndManagerWorkflow extends DefaultWorkflow {
 
     @Override
     public List<WorkflowStep> getWorkflowSteps() {
-        if(this.workflowSteps.size() == 0) {
-            generateWorkflowSteps(userService.getCreatorUser(), null, null);
+        if(this.workflowSteps == null) {
+            this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null, null);
         }
         return this.workflowSteps;
     }
 
-    public void generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
+    public void initWorkflowSteps() {
+        this.workflowSteps = new ArrayList<>();
+    }
+
+    @Override
+    public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         //STEP 1
         WorkflowStep workflowStep1 = new WorkflowStep();
@@ -67,7 +70,7 @@ public class CreatorAndManagerWorkflow extends DefaultWorkflow {
         }
         workflowStep2.setChangeable(true);
         workflowSteps.add(workflowStep2);
-        this.workflowSteps = workflowSteps;
+        return workflowSteps;
     }
 
 

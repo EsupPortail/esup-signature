@@ -8,7 +8,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
-import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -19,8 +18,6 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.test.annotation.NotTransactional;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
@@ -28,11 +25,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
-import javax.persistence.Transient;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -168,7 +162,7 @@ public class DataController {
 			if(userProperties.size() > 0 ) {
 				model.addAttribute("targetEmails", userProperties.get(0).getTargetEmail().split(","));
 			}
-			Workflow workflow = dataService.getWorkflowSteps(data, null, user);
+			Workflow workflow = dataService.getWorkflowByDataAndUser(data, null, user);
 			model.addAttribute("steps", workflow.getWorkflowSteps());
 			model.addAttribute("fields", fields);
 			model.addAttribute("form", form);

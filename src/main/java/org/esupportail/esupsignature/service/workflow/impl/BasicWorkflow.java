@@ -39,12 +39,13 @@ public class BasicWorkflow extends DefaultWorkflow {
 	@Override
 	public List<WorkflowStep> getWorkflowSteps() {
 		if(this.workflowSteps.size() == 0) {
-			generateWorkflowSteps(userService.getUserFromAuthentication(), null, null);
+			this.workflowSteps = generateWorkflowSteps(userService.getUserFromAuthentication(), null, null);
 		}
-		return workflowSteps;
+		return this.workflowSteps;
 	}
 
-	public void generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
+	@Override
+	public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		WorkflowStep workflowStep = new WorkflowStep();
 		workflowStep.setStepNumber(1);
@@ -57,6 +58,6 @@ public class BasicWorkflow extends DefaultWorkflow {
 			workflowStep.getRecipients().add(recipientService.createRecipient(null, userService.getGenericUser("Utilisateur issue des favoris", "")));
 		}
 		workflowSteps.add(workflowStep);
-		this.workflowSteps = workflowSteps;
+		return workflowSteps;
 	}
 }

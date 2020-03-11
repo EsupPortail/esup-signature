@@ -108,12 +108,9 @@
                                         <option th:if="${recipient.user.email != null}" selected="selected" th:text="${recipient.user.email}" th:value="${step.stepNumber} + '*' + ${recipient.user.email}"></option>
                                     </th:block>
                                 </select>
-                                <script type="module">
+                                <script th:inline="javascript" type="module">
                                     import {default as SelectUser} from "/js/modules/selectUser.js";
-                                    new SelectUser("recipientEmailsSelect_[[${step.stepNumber}]]");
-                                    // recipientEmailsSelect_[[${step.stepNumber}]] = document.getElementById('recipientEmailsSelect_[[${step.stepNumber}]]');
-                                    // recipientEmailsSelect_[[${step.stepNumber}]].style.display = 'block';
-                                    // recipientEmailsSelect_[[${step.stepNumber}]].classList.add('hide-select')
+                                    new SelectUser("recipientEmailsSelect_[[${step.stepNumber}]]", "[[${step.stepNumber}]]*");
                                 </script>
                             </div>
                             <div th:unless="${step.changeable == true}" class="form-group d-inline">

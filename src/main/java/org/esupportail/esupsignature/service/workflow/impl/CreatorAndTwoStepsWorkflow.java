@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.service.workflow.impl;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WorkflowStep;
-import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
@@ -39,12 +38,13 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 	@Override
 	public List<WorkflowStep> getWorkflowSteps() {
 		if(this.workflowSteps.size() == 0) {
-			generateWorkflowSteps(userService.getCreatorUser(), null, null);
+			this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null, null);
 		}
 		return this.workflowSteps;
 	}
 
-	public void generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
+	@Override
+	public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		//STEP 1
 		WorkflowStep workflowStep1 = new WorkflowStep();
@@ -71,7 +71,7 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 		}
 		workflowStep3.setChangeable(true);
 		workflowSteps.add(workflowStep3);
-		this.workflowSteps = workflowSteps;
+		return workflowSteps;
 	}
 }
 

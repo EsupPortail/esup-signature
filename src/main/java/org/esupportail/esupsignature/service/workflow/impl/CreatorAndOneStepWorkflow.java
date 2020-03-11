@@ -38,12 +38,13 @@ public class CreatorAndOneStepWorkflow extends DefaultWorkflow {
 	@Override
 	public List<WorkflowStep> getWorkflowSteps() {
 		if(this.workflowSteps.size() == 0) {
-			generateWorkflowSteps(userService.getCreatorUser(), null, null);
+			this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null, null);
 		}
 		return this.workflowSteps;
 	}
 
-	public void generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
+	@Override
+	public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		//STEP 1
 		WorkflowStep workflowStep1 = new WorkflowStep();
@@ -62,7 +63,7 @@ public class CreatorAndOneStepWorkflow extends DefaultWorkflow {
 		}
 		workflowStep2.setChangeable(true);
 		workflowSteps.add(workflowStep2);
-		this.workflowSteps = workflowSteps;
+		return workflowSteps;
 	}
 }
 

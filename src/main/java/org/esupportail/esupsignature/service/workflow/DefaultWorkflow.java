@@ -2,19 +2,16 @@ package org.esupportail.esupsignature.service.workflow;
 
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-import org.esupportail.esupsignature.repository.RecipientRepository;
-import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.UserPropertieService;
 import org.esupportail.esupsignature.service.UserService;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DefaultWorkflow extends Workflow {
+public class DefaultWorkflow extends Workflow implements Cloneable {
 
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
@@ -52,7 +49,12 @@ public class DefaultWorkflow extends Workflow {
         return this.workflowSteps;
     }
 
-    public void generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
+    public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
+        return new ArrayList<>();
+    }
+
+    public void initWorkflowSteps() {
+        this.workflowSteps = new ArrayList<>();
     }
 
     public List<Recipient> getFavoriteRecipientEmail(int step, Form form, List<String> recipientEmails, User user) {
