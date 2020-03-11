@@ -1,22 +1,15 @@
 export class Nexu {
 
-    nexuUrl;
-    nexuVersion;
     static rootUrl;
-    tokenId;
-    keyId;
-    successDiv = $("#success");
+    static tokenId;
+    static keyId;
 
     constructor(nexuUrl, nexuVersion, rootUrl) {
         this.nexuUrl = nexuUrl;
         this.nexuVersion = nexuVersion;
         Nexu.rootUrl = rootUrl;
-        // if (!String.prototype.startsWith) {
-        //     String.prototype.startsWith = function(searchString, position){
-        //         return this.substr(position || 0, searchString.length) === searchString;
-        //     };
-        // }
         this.checkNexuClient();
+        this.successDiv = $("#success");
         this.successDiv.hide();
     }
 

@@ -1,12 +1,11 @@
 export class WorkflowUi {
 
-    sourceTypeSelect = document.getElementById("sourceTypeSelect");
-    targetTypeSelect = document.getElementById("targetTypeSelect");
-    sourceUri = document.getElementById("documentsSourceUriDiv");
-    targetUri = document.getElementById("documentsTargetUriDiv");
-
     constructor() {
         console.info("Starting workflow UI");
+        this.sourceTypeSelect = document.getElementById("sourceTypeSelect");
+        this.targetTypeSelect = document.getElementById("targetTypeSelect");
+        this.sourceUri = document.getElementById("documentsSourceUriDiv");
+        this.targetUri = document.getElementById("documentsTargetUriDiv");
         if (this.sourceTypeSelect.value === "none") {
             this.sourceUri.style.display = "none";
         }

@@ -1,9 +1,8 @@
 export class FormUi {
 
-    btnAddField = document.querySelector('btn-add-field');
-    btnRemove = document.querySelector('btn-remove');
-
     constructor() {
+        this.btnAddField = document.querySelector('btn-add-field');
+        this.btnRemove = document.querySelector('btn-remove');
         this.initListeners();
     }
 

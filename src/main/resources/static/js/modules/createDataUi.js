@@ -2,8 +2,6 @@ import {PdfViewer} from "./pdfViewer.js";
 
 export class CreateDataUi {
 
-    pdfViewer;
-
     constructor(documentId, fields) {
         this.pdfViewer = new PdfViewer('/user/documents/getfile/' + documentId, null);
         this.pdfViewer.setDataFields(fields);

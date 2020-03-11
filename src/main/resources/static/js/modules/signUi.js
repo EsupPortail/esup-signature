@@ -2,20 +2,20 @@ import {WorkspacePdf} from "./workspacePdf.js";
 
 export class SignUi {
 
-    signRequestId;
-    percent = 0;
-    getProgressTimer;
-    wait = $('#wait');
-    passwordError = document.getElementById("passwordError");
-    launchSignButton = $("#launchSignButton");
-    launchAllSignButton = $("#launchAllSignButton");
-    workspace;
-
-    constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, pdf) {
+    constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, isPdf) {
         console.info("Starting sign UI");
         this.signRequestId = id;
+        this.percent = 0;
+        this.getProgressTimer = null;
+        this.wait = $('#wait');
+        this.passwordError = document.getElementById("passwordError");
+        this.launchSignButton = $("#launchSignButton");
+        this.launchAllSignButton = $("#launchAllSignButton");
+        this.workspace = null;
+        if(isPdf) {
+            this.workspace = new WorkspacePdf('/user/signrequests/get-last-file/' + id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits);
+        }
         this.initListeners();
-        this.workspace = new WorkspacePdf('/user/signrequests/get-last-file/' + id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, pdf);
     }
 
     initListeners() {

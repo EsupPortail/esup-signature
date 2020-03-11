@@ -71,6 +71,15 @@ public class WorkflowManagerController {
 		return userService.getUserFromAuthentication();
 	}
 
+	@GetMapping(produces = "text/html")
+	public String list(Model model) {
+		User user = userService.getUserFromAuthentication();
+		List<Workflow> workflows = new ArrayList<>();
+		workflows.addAll(workflowService.getWorkflows());
+		workflows.addAll(workflowRepository.findAll());
+		model.addAttribute("workflows", workflows);
+		return "manager/workflows/list";
+	}
 
 	@GetMapping(value = "/{id}", produces = "text/html")
 	public String show(@PathVariable("id") String id, Model uiModel, RedirectAttributes redirectAttributes) {
@@ -90,16 +99,6 @@ public class WorkflowManagerController {
 			uiModel.addAttribute("workflow", workflow);
 			return "manager/workflows/show-class";
 		}
-	}
-
-	@GetMapping(produces = "text/html")
-	public String list(Model model) {
-		User user = userService.getUserFromAuthentication();
-    	List<Workflow> workflows = new ArrayList<>();
-    	workflows.addAll(workflowService.getWorkflows());
-    	workflows.addAll(workflowRepository.findAll());
-		model.addAttribute("workflows", workflows);
-		return "manager/workflows/list";
 	}
 
 	@PostMapping(produces = "text/html")

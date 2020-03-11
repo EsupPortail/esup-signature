@@ -167,7 +167,6 @@ public class SignRequestController {
                 && signRequestService.needToSign(signRequest, user)
         ) {
             signRequest.setSignable(true);
-            //model.addAttribute("signable", true);
             model.addAttribute("nexuUrl", nexuUrl);
             model.addAttribute("nexuVersion", nexuVersion);
             model.addAttribute("baseUrl", baseUrl);
@@ -181,8 +180,7 @@ public class SignRequestController {
                 model.addAttribute("pdfHeight", pdfParameters.getHeight());
                 model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
                 if (user.getSignImage() != null && user.getSignImage().getSize() > 0) {
-                    if(user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
-                        //model.addAttribute("signable", false);
+                    if(signRequestService.checkUserSignRights(user, signRequest) && user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
                         model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter un keystore à votre profil");
                     }
                     model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));

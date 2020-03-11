@@ -2,13 +2,6 @@ import {Preview} from "../prototypes/preview.js";
 
 export class FilesInput {
 
-    input;
-    name;
-    uploadUrl;
-    files;
-    csrfParameterName;
-    csrfToken;
-
     constructor(input, name, document, readOnly, csrfParameterName, csrfToken) {
         console.info("Enable file input for : " + name);
         this.input = input;
@@ -51,10 +44,11 @@ export class FilesInput {
     initFileInput(documents, readOnly) {
         let urls = [];
         let previews = [];
+        let type = 'other';
         if (documents != null) {
             documents.forEach(function (document) {
-                urls.push(document.url);
-                let type;
+                console.log(document);
+                urls.push('/user/documents/getfile/' + document.id);
                 switch (document.contentType.split('/')[1]) {
                     case "pdf" :
                         type = "pdf";
@@ -68,13 +62,19 @@ export class FilesInput {
                     default :
                         type = "other";
                 }
-                let preview = new Preview('/user/signrequests/remove-doc/' + document.id,
-                    type,
+
+                let preview = new Preview(
+                    '/user/signrequests/remove-doc/' + document.id,
+                    document.contentType,
                     document.size,
-                    '/user/documents/getfile/' + document.id, document.name, document.id);
+                    document.fileName,
+                    document.id);
                 previews.push(preview);
+                console.info("addind :" + document.fileName + ", " + type + ", " + JSON.stringify(preview));
             });
         }
+
+        console.log(urls);
 
         this.input.fileinput({
             language: "fr",
@@ -93,7 +93,7 @@ export class FilesInput {
             initialPreview: [urls],
             initialPreviewConfig: [previews],
             initialPreviewAsData: true,
-            initialPreviewFileType: 'pdf',
+            initialPreviewFileType: type,
             preferIconicPreview: true,
             previewFileIconSettings: { // configure your icon file extensions
                 'doc': '<i class="fas fa-file-word text-primary  fa-2x"></i>',

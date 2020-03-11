@@ -1,18 +1,25 @@
 export class PdfViewer {
 
-    pdfPageView = null;
-    pageRendering = false;
-    scale = 0.75;
-    canvas = document.getElementById('pdf');
-    url;
-    pdfDoc;
-    pageNum = 1;
-    numPages = 1;
-    signPosition;
-    page;
-    dataFields;
-    formRender = false;
-    events = {};
+    constructor(url, signPosition) {
+        console.info("Starting PDF Viewer");
+        this.url= url;
+        this.signPosition = signPosition;
+        this.pdfPageView = null;
+        this.pageRendering = false;
+        this.scale = 0.75;
+        this.canvas = document.getElementById('pdf');
+        this.pdfDoc = null;
+        this.pageNum = 1;
+        this.numPages = 1;
+        this.page = null;
+        this.dataFields = null;
+        this.formRender = false;
+        this.events = {};
+        pdfjsLib.disableWorker = true;
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.js';
+        pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
+        this.init();
+    }
 
     addEventListener(name, handler) {
         if (this.events.hasOwnProperty(name))
@@ -42,16 +49,6 @@ export class PdfViewer {
             evs[i].apply(null, args);
         }
     };
-
-    constructor(url, signPosition) {
-        console.info("Starting PDF Viewer");
-        this.url= url;
-        this.signPosition = signPosition;
-        pdfjsLib.disableWorker = true;
-        pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.js';
-        pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
-        this.init();
-    }
 
     init() {
         document.getElementById('prev').addEventListener('click', e => this.prevPage());

@@ -1,9 +1,8 @@
 export class DssReport {
 
-    divs = document.getElementsByTagName("div");
-    spans = document.getElementsByTagName("span");
-
     constructor() {
+        this.divs = document.getElementsByTagName("div");
+        this.spans = document.getElementsByTagName("span");
         this.hackDivs();
         this.hackSpans();
     }

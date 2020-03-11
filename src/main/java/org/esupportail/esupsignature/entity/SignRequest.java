@@ -263,4 +263,13 @@ public class SignRequest {
         }
     }
 
+    public List<Document> getLiteOriginalDocuments() {
+        List<Document> liteDocuments = new ArrayList<>();
+        for (Document document : this.originalDocuments) {
+            document.setBigFile(null);
+            liteDocuments.add(document);
+        }
+        return liteDocuments;
+    }
+
 }

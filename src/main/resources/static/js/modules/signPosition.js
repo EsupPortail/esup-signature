@@ -1,22 +1,5 @@
 export class SignPosition {
 
-    pdf = $('#pdf');
-    pointerDiv;
-    startPosX;
-    startPosY;
-    signWidth;
-    signHeight;
-    posX;
-    posY;
-    signPageNumber = $("#signPageNumber");
-    pointItEnable = true;
-    pointItMove = false;
-    dateActive = false;
-    visualActive = true;
-    cross = $('#cross');
-    borders = $('#borders');
-    currentScale = 1;
-
     constructor(xPos, yPos, signWidth, signHeight, signPageNumber) {
         console.info("Starting sign position tools");
         this.startPosX = parseInt(xPos, 10);
@@ -26,6 +9,14 @@ export class SignPosition {
         this.signPageNumber = signPageNumber;
         this.signWidth = signWidth;
         this.signHeight = signHeight;
+        this.pdf = $('#pdf');
+        this.pointItEnable = true;
+        this.pointItMove = false;
+        this.dateActive = false;
+        this.visualActive = true;
+        this.cross = $('#cross');
+        this.borders = $('#borders');
+        this.currentScale = 1;
         this.init()
     }
 

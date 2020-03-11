@@ -4,25 +4,16 @@ import {SignRequestParams} from "../prototypes/signRequestParams.js";
 
 export class WorkspacePdf {
 
-    signPageNumber = document.getElementById('signPageNumber');
-    mode = 'read';
-    signable;
-    currentSignType;
-    currentSignRequestParams;
-    postits;
-    signPosition;
-    pdfViewer;
-
-    constructor(url, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, isPdf) {
+    constructor(url, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits) {
         console.info("Starting workspace UI");
         this.currentSignRequestParams =  new SignRequestParams(currentSignRequestParams);
         this.currentSignType = currentSignType;
         this.postits = postits;
         this.signable = signable;
-        if(signHeight != null) {
-            this.signPosition = new SignPosition(this.currentSignRequestParams.xPos, this.currentSignRequestParams.yPos, signWidth, signHeight, this.signPageNumber);
-            this.pdfViewer = new PdfViewer(url, this.signPosition);
-        }
+        this.signPosition = new SignPosition(this.currentSignRequestParams.xPos, this.currentSignRequestParams.yPos, signWidth, signHeight, this.signPageNumber);
+        this.pdfViewer = new PdfViewer(url, this.signPosition);
+        this.signPageNumber = document.getElementById('signPageNumber');
+        this.mode = 'read';
         this.initListeners();
     }
 

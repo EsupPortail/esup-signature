@@ -28,11 +28,8 @@
         <span class="bs-stepper-label">Fin</span>
     </div>
 </div>
-    <script>
-        /*<![CDATA[*/
-        parent.location.href='/user/signrequests/[[${signBook.signRequests.get(0).id}]]';
-        location.href='/user/wizard/wiz1';
-        /*]]>*/
-    </script>
+<script th:inline="javascript">
+    parent.location.href='/user/signrequests/[[${signBook.signRequests.get(0).id}]]';
+</script>
 </body>
 </html>

@@ -1,17 +1,16 @@
 export class GlobalUi {
 
-    sideBarStatus = localStorage.getItem('sideBarStatus');
-    sideBar = $('#sidebar');
-    sideBar2 = $('#sidebar2');
-    sideBarLabels = $('.sidebar-label');
-    content = $('#content');
-    breadcrumb = $('#breadcrumb');
-    inputFile = $(".custom-file-input");
-    clickableRow = $(".clickable-row");
-    autoHide = $('.auto-hide');
-
     constructor() {
         console.info("Starting global UI");
+        this.sideBarStatus = localStorage.getItem('sideBarStatus');
+        this.sideBar = $('#sidebar');
+        this.sideBar2 = $('#sidebar2');
+        this.sideBarLabels = $('.sidebar-label');
+        this.content = $('#content');
+        this.breadcrumb = $('#breadcrumb');
+        this.inputFile = $(".custom-file-input");
+        this.clickableRow = $(".clickable-row");
+        this.autoHide = $('.auto-hide');
         this.initListeners();
         this.initSideBar();
     }

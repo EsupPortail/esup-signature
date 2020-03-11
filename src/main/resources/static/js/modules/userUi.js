@@ -1,17 +1,13 @@
-export class UserUi {
-
-    static signImageBase64 = $('#signImageBase64');
-    emailAlertFrequencySelect = document.getElementById("_emailAlertFrequency_id");
-    emailAlertDay = document.getElementById("emailAlertDay");
-    emailAlertHour = document.getElementById("emailAlertHour");
-    userSignaturePad;
-    userSignatureCrop;
+export default class UserUi {
 
     constructor(lastSign) {
-        console.log('const user');
-        this.checkAlertFrequency();
+        console.log('Starting user UI');
+        this.emailAlertFrequencySelect = document.getElementById("_emailAlertFrequency_id");
+        this.emailAlertDay = document.getElementById("emailAlertDay");
+        this.emailAlertHour = document.getElementById("emailAlertHour");
         this.userSignaturePad = new UserSignaturePad(lastSign);
         this.userSignatureCrop = new UserSignatureCrop();
+        this.checkAlertFrequency();
     }
 
     checkAlertFrequency() {
@@ -30,12 +26,13 @@ export class UserUi {
 }
 
 export class UserSignaturePad {
-    lastSign;
-    canvas = $("#canvas");
-    signaturePad = new SignaturePad(document.querySelector("canvas"));
-    firstClear = true;
 
     constructor(lastSign) {
+        this.canvas = $("#canvas");
+        this.signImageBase64 = $("#signImageBase64");
+        this.signaturePad = new SignaturePad(document.querySelector("canvas"));
+        this.firstClear = true;
+        this.lastSign = null;
         this.setLastSign(lastSign);
         this.initListeners();
     }
@@ -66,33 +63,34 @@ export class UserSignaturePad {
 
     saveSignaturePad() {
         console.log(this.signaturePad.toDataURL("image/png"));
-        UserUi.signImageBase64.val(this.signaturePad.toDataURL("image/png"));
+        this.signImageBase64.val(this.signaturePad.toDataURL("image/png"));
         this.canvas.css("backgroundColor", "rgba(0, 255, 0, .5)");
     }
 
     clearSignaturePad() {
         this.canvas.css("backgroundColor", "rgba(255, 255, 255, 1)");
         this.signaturePad.clear();
-        UserUi.signImageBase64.val(this.lastSign);
+        this.signImageBase64.val(this.lastSign);
     }
 
     resetSignaturePad() {
         this.canvas.css("backgroundColor", "rgba(255, 255, 255, 1)");
         this.signaturePad.clear();
         this.signaturePad.fromDataURL(this.lastSign);
-        UserUi.signImageBase64.val(this.lastSign);
+        this.signImageBase64.val(this.lastSign);
         this.firstClear = true;
     }
 
 }
 
 export class UserSignatureCrop {
-    vanillaUpload = document.getElementById('vanilla-upload');
-    vanillaRotate = document.querySelector('.vanilla-rotate');
-    vanillaCrop = document.getElementById('vanilla-crop')
-    vanillaCroppie;
 
     constructor() {
+        console.info("Starting user signature crop tool");
+        this.signImageBase64 = $("#signImageBase64");
+        this.vanillaUpload = document.getElementById('vanilla-upload');
+        this.vanillaRotate = document.querySelector('.vanilla-rotate');
+        this.vanillaCrop = document.getElementById('vanilla-crop')
         this.vanillaCroppie = new Croppie(this.vanillaCrop, {
             viewport : {
                 width : 200,
@@ -113,8 +111,8 @@ export class UserSignatureCrop {
 
     initListeners() {
         this.vanillaRotate.click(e => this.rotate(this.vanillaCroppie));
-        this.vanillaCrop.addEventListener('update', e => this.update());
         this.vanillaUpload.addEventListener('change', e=> this.readFile(this.vanillaUpload));
+        this.vanillaCrop.addEventListener('update', e => this.update());
     }
 
     update() {
@@ -127,7 +125,8 @@ export class UserSignatureCrop {
     }
 
     saveVanilla(result) {
-        UserUi.signImageBase64.value = result;
+        console.log(Promise.resolve(result));
+        $("#signImageBase64").val(result);
     }
 
     getResult() {

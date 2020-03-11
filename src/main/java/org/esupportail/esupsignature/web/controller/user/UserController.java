@@ -185,7 +185,7 @@ public class UserController {
 		model.addAttribute("forms", formService.getFormsByUser(user, true));
 		model.addAttribute("users", userRepository.findAll());
 		model.addAttribute("activeMenu", "params");
-		return "user/params";
+		return "user/users/params";
 	}
 
 	@PostMapping("/add-share")
