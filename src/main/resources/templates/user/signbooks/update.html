@@ -51,11 +51,10 @@
                         <table class="table table-sm table-hover">
                             <thead class="thead-dark">
                             <tr>
-                                <th class="">Titre</th>
+                                <th>Titre</th>
                                 <th class="d-none d-md-table-cell">Date de création</th>
                                 <th class="d-none d-lg-table-cell">Créé par</th>
-                                <th>Details</th>
-                                <th>Supprimer</th>
+                                <th>Action</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -64,21 +63,22 @@
                                     <td class="text-break" th:text="${signRequest.title}"></td>
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy}"></span></td>
-                                    <td class="utilbox">
-                                        <button class="btn btn-sm btn-info" title="Détails" th:onclick="'location.href=\'/user/signrequests/' + ${signRequest.id} + '?form\''">
-                                            <i class="fas fa-info"></i>
+                                    <td>
+                                        <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
+                                            <i class="fas fa-ellipsis-v"></i>
                                         </button>
-                                    </td>
-                                    <td class="utilbox">
-                                        <form class="delete" th:action="'/user/signrequests/' + ${signRequest.id}" method="post">
-                                            <input type="hidden" name="_method" value="DELETE"/>
-                                            <button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" value="Supprimer Sign Request" type="submit" title="Supprimer Sign Request"
-                                                    class="btn btn-sm btn-danger">
-                                                <i class=" fas fa-trash-alt"></i>
-                                            </button>
-                                        </form>
-                                    </td>
+                                        <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:200px; right: 100px;z-index: 1000;">
+                                            <div class=" card-body">
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                                                    <i class="fas fa-eye pr-2"></i>Consulter
+                                                </a>
+                                                <a th:if="${signRequest.parentSignBook.createBy == user.eppn}" class="btn btn-transparent text-dark text-left col-12" role="button" title="Modifier" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'">
+                                                    <i class="fas fa-pencil-alt pr-2"></i>Modifier
+                                                </a>
 
+                                            </div>
+                                        </div>
+                                    </td>
                                 </tr>
                             </th:block>
                             </tbody>

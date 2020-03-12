@@ -48,7 +48,7 @@
             </div>
             </th:block>
             <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
-            <div class="card mb-1" th:if="${signRequest.status.name() != 'exported' && signRequest.parentSignBook == null}">
+            <div class="card mb-1" th:if="${signRequest.status.name() != 'exported'}">
                 <div class="card-header">
                     Liste des documents originaux
                     <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'draft')}">

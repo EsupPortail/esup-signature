@@ -82,12 +82,12 @@
                             <td class="status" style="width: 150px;">
                                 <div th:replace="user/signrequests/includes/status :: status"></div>
                             </td>
-                            <td class="utilbox">
+                            <td >
                                 <button class="btn btn-primary fas fa-eye" title="Sign Request" th:onclick="'location.href=\'/admin/signrequests/' + ${signRequest.id} + '\''">
                                     <!--  -->
                                 </button>
                             </td>
-                            <td class="utilbox">
+                            <td >
                                 <form class="delete" th:action="'/admin/signrequests/' + ${signRequest.id}" method="post">
                                     <input type="hidden" name="_method" value="DELETE"/>
                                     <button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" value="Supprimer Sign Request" type="submit" title="Supprimer Sign Request" class="btn btn-danger fas fa-trash-alt"></button>

@@ -173,10 +173,10 @@ public class SignRequestController {
             model.addAttribute("nexuVersion", nexuVersion);
             model.addAttribute("baseUrl", baseUrl);
         }
-        Document toDisplayDocument;
         if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
-            toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
-            if (toDisplayDocument.getContentType().equals("application/pdf")) {
+            List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest);
+            if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
+                Document toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
                 PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
                 model.addAttribute("pdfWidth", pdfParameters.getWidth());
                 model.addAttribute("pdfHeight", pdfParameters.getHeight());
@@ -197,8 +197,8 @@ public class SignRequestController {
                     model.addAttribute("signWidth", 100);
                     model.addAttribute("signHeight", 75);
                 }
+                model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
             }
-            model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
         } else if (signRequestService.getLastSignedFsFile(signRequest) != null) {
             FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
             model.addAttribute("documentType", fileService.getExtension(fsFile.getName()));
@@ -241,6 +241,54 @@ public class SignRequestController {
         model.addAttribute("workflows", workflowRepository.findAll());
         return "user/signrequests/update";
 
+    }
+
+
+    @PreAuthorize("@signRequestService.preAuthorizeSign(authentication.name, #id)")
+    @ResponseBody
+    @PostMapping(value = "/sign/{id}")
+    public ResponseEntity sign(@PathVariable("id") Long id,
+                               @RequestParam(value = "xPos", required = false) Integer xPos,
+                               @RequestParam(value = "yPos", required = false) Integer yPos,
+                               @RequestParam(value = "comment", required = false) String comment,
+                               @RequestParam(value = "addDate", required = false) Boolean addDate,
+                               @RequestParam(value = "visual", required = false) Boolean visual,
+                               @RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
+                               @RequestParam(value = "password", required = false) String password,
+                               HttpServletRequest request) {
+        if (addDate == null) {
+            addDate = false;
+        }
+        if (visual == null) {
+            visual = true;
+        }
+
+        User user = userService.getUserFromAuthentication();
+        user.setIp(request.getRemoteAddr());
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        if (signPageNumber != null && xPos != null && yPos != null && visual) {
+            SignRequestParams signRequestParams = signRequest.getCurrentSignRequestParams();
+            signRequestParams.setSignPageNumber(signPageNumber);
+            signRequestParams.setxPos(xPos);
+            signRequestParams.setyPos(yPos);
+            signRequestParamsRepository.save(signRequestParams);
+            if(!signRequest.getSignRequestParams().contains(signRequestParams)) {
+                signRequest.getSignRequestParams().add(signRequestParams);
+            }
+        }
+        if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
+            signRequestService.setStep("Démarrage de l'application NexU");
+            signRequestService.setStep("initNexu");
+            return new ResponseEntity(HttpStatus.OK);
+        }
+        try {
+            signRequest.setComment(comment);
+            signRequestService.sign(signRequest, user, password, addDate, visual);
+            signRequestService.setStep("end");
+        } catch (EsupSignatureException | IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
@@ -301,52 +349,6 @@ public class SignRequestController {
         return "redirect:/user/signrequests";
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeSign(authentication.name, #id)")
-    @ResponseBody
-    @PostMapping(value = "/sign/{id}")
-    public ResponseEntity sign(@PathVariable("id") Long id,
-                               @RequestParam(value = "xPos", required = false) Integer xPos,
-                               @RequestParam(value = "yPos", required = false) Integer yPos,
-                               @RequestParam(value = "comment", required = false) String comment,
-                               @RequestParam(value = "addDate", required = false) Boolean addDate,
-                               @RequestParam(value = "visual", required = false) Boolean visual,
-                               @RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
-                               @RequestParam(value = "password", required = false) String password,
-                               HttpServletRequest request) {
-        if (addDate == null) {
-            addDate = false;
-        }
-        if (visual == null) {
-            visual = true;
-        }
-
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        if (signPageNumber != null && xPos != null && yPos != null && visual) {
-            SignRequestParams signRequestParams = signRequest.getCurrentSignRequestParams();
-            signRequestParams.setSignPageNumber(signPageNumber);
-            signRequestParams.setxPos(xPos);
-            signRequestParams.setyPos(yPos);
-            signRequestParamsRepository.save(signRequestParams);
-            if(!signRequest.getSignRequestParams().contains(signRequestParams)) {
-                signRequest.getSignRequestParams().add(signRequestParams);
-            }
-        }
-        if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
-            signRequestService.setStep("Démarrage de l'application NexU");
-            signRequestService.setStep("initNexu");
-            return new ResponseEntity(HttpStatus.OK);
-        }
-        try {
-            signRequest.setComment(comment);
-            signRequestService.sign(signRequest, user, password, addDate, visual);
-            signRequestService.setStep("end");
-        } catch (EsupSignatureException | IOException e) {
-            logger.error(e.getMessage(), e);
-        }
-        return new ResponseEntity(HttpStatus.OK);
-    }
 
     @ResponseBody
     @GetMapping(value = "/get-step")

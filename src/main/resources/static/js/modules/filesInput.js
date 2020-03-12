@@ -176,16 +176,19 @@ export class FilesInput {
     }
 
     changerUploadMethod () {
-        console.log('change');
+        console.group('change upload url');
         if ($('#unique :checkbox').is(":checked")){
-            $('#multipartFile').fileinput('refresh', {
+            console.info('to group mode');
+            this.input.fileinput('refresh', {
                 uploadUrl: '/ws/add-docs-in-sign-book-group/' + this.name + '?'+ this.csrfParameterName + '=' + this.csrfToken
             });
         } else {
-            $('#multipartFile').fileinput('refresh', {
+            console.info('to unique mode');
+            this.input.fileinput('refresh', {
                 uploadUrl: '/ws/add-docs-in-sign-book-unique/' + this.name + '?'+ this.csrfParameterName + '=' + this.csrfToken
         });
         }
+        console.groupEnd();
     }
 
 }
