@@ -16,6 +16,8 @@ import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -234,7 +236,6 @@ public class SignRequestController {
 
         if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(currentUser, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
             signRequest.setSignable(true);
-            //model.addAttribute("signable", true);
         }
         model.addAttribute("signTypes", SignType.values());
         model.addAttribute("workflows", workflowRepository.findAll());
@@ -242,34 +243,33 @@ public class SignRequestController {
 
     }
 
-//
-//    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
-//    @PostMapping(value = "/add-docs/{id}")
-//    public String addDocumentToNewSignRequest(@PathVariable("id") Long id,
-//                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
-//        logger.info("start add documents");
-//        UserUi user = userService.getUserFromAuthentication();
-//        SignBook signBook = signBookRepository.findById(id).get();
-//        for (MultipartFile multipartFile : multipartFiles) {
-//            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
-//            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
-//            signBookService.addSignRequest(signBook, signRequest);
-//        }
-//        return "redirect:/user/signbooks/" + id + "/?form";
-//    }
-
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
     @ResponseBody
-    @PostMapping(value = "/remove-doc/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object removeDocument(@PathVariable("id") Long id, HttpServletRequest request) {
+    @PostMapping(value = "/add-docs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Object addDocumentToNewSignRequest(@PathVariable("id") Long id, @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
+        logger.info("start add documents");
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        for (MultipartFile multipartFile : multipartFiles) {
+            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+        }
+        return new String[]{"ok"};
+    }
+
+    //@PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
+    @ResponseBody
+    @PostMapping(value = "/remove-doc/{id}/", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String removeDocument(@PathVariable("id") Long id) throws JSONException {
+        logger.info("remove document " + id);
+        JSONObject result = new JSONObject();
         User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
         Document document = documentRepository.findById(id).get();
         SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
-        if (signRequest.getCreateBy().equals(user.getEppn())) {
+        if(signRequest.getCreateBy().equals(user.getEppn())) {
             signRequest.getOriginalDocuments().remove(document);
+        } else {
+            result.put("error", "Not autorized");
         }
-        String[] ok = {"ok"};
-        return ok;
+        return result.toString();
     }
 
     @GetMapping("/sign-by-token/{token}")

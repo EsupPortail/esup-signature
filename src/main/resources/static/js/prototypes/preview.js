@@ -1,11 +1,14 @@
 export class Preview {
 
-    constructor(url, type, size, caption, key) {
-        this.url = url; //remove url
+    constructor(type, size, filetype, caption, url, key, downloadUrl, filename) {
         this.type = type;
         this.size = size;
+        this.filetype = filetype;
         this.caption = caption;
+        this.url = url;
         this.key = key;
+        this.downloadUrl = downloadUrl;
+        this.filename = filename;
     }
 }
 

@@ -2,13 +2,20 @@ import {Preview} from "../prototypes/preview.js";
 
 export class FilesInput {
 
-    constructor(input, name, document, readOnly, csrfParameterName, csrfToken) {
-        console.info("Enable file input for : " + name);
+    constructor(input, name, document, readOnly, csrfParameterName, csrfToken, signRequestId) {
+        console.info("Enable file input for : " + name + " with " + csrfParameterName + "=" + csrfToken);
         this.input = input;
         this.name = name;
         this.csrfParameterName = csrfParameterName;
         this.csrfToken = csrfToken;
-        this.uploadUrl = '/ws/add-docs-in-sign-book-unique/' + this.name + '?'+ csrfParameterName + '=' + csrfToken;
+        this.async = true;
+        this.uploadUrl = null;
+        if(signRequestId == null) {
+            this.uploadUrl = '/ws/add-docs-in-sign-book-unique/' + this.name + '?'+ csrfParameterName + '=' + csrfToken;
+        } else {
+            this.async = false;
+            this.uploadUrl = '/user/signrequests/add-docs/' + signRequestId + '?'+ csrfParameterName + '=' + csrfToken;
+        }
         this.initListeners();
         this.initFileInput(document, readOnly);
     }
@@ -17,17 +24,14 @@ export class FilesInput {
         $("#fileUpload").on('click', e => this.fileUpload());
 
         //
-        // this.input.on('filebatchuploadcomplete', function (event, file, previewId, index, reader) {
-        //     location.reload();
-        // });
         //
         // this.input.on('fileuploaded', function (event, file, previewId, index, reader) {
         //     location.reload();
         // });
+        if(!this.async) {
+            this.input.on('fileloaded', e => this.uploadFile());
+        }
 
-        // this.input.on('fileloaded', function (event, file, previewId, index, reader) {
-        //     this.input.fileinput('upload');
-        // });
         //
         // this.input.on('filedeleted', function (event, id, index) {
         //     location.reload();
@@ -40,15 +44,20 @@ export class FilesInput {
 
     }
 
+    uploadFile() {
+        this.input.fileinput('upload');
+    }
+
     // [# th:if="${signRequest.status.name() != 'draft' || user.eppn != signRequest.createBy || signRequest.signedDocuments.size() > 0}"]
     initFileInput(documents, readOnly) {
         let urls = [];
         let previews = [];
         let type = 'other';
+        let csrfParameterName = this.csrfParameterName;
+        let csrfToken = this.csrfToken;
         if (documents != null) {
             documents.forEach(function (document) {
-                console.log(document);
-                urls.push('/user/documents/getfile/' + document.id);
+                urls.push("/user/documents/getfile/" + document.id);
                 switch (document.contentType.split('/')[1]) {
                     case "pdf" :
                         type = "pdf";
@@ -64,18 +73,18 @@ export class FilesInput {
                 }
 
                 let preview = new Preview(
-                    '/user/signrequests/remove-doc/' + document.id,
-                    document.contentType,
+                    type,
                     document.size,
+                    document.contentType,
                     document.fileName,
-                    document.id);
+                    "/user/signrequests/remove-doc/" + document.id + "/?" + csrfParameterName + "=" + csrfToken,
+                    document.id,
+                    "/user/documents/getfile/" + document.id,
+                    document.fileName
+                    );
                 previews.push(preview);
-                console.info("addind :" + document.fileName + ", " + type + ", " + JSON.stringify(preview));
             });
         }
-
-        console.log(urls);
-
         this.input.fileinput({
             language: "fr",
             showCaption: false,
@@ -87,26 +96,24 @@ export class FilesInput {
             browseOnZoneClick: !readOnly,
             uploadUrl: this.uploadUrl,
             uploadAsync: false,
-            overwriteInitial: false,
             theme: 'explorer-fas',
             pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
-            initialPreview: [urls],
-            initialPreviewConfig: [previews],
+            initialPreview: urls,
+            initialPreviewConfig : previews,
             initialPreviewAsData: true,
-            initialPreviewFileType: type,
+            initialPreviewFileType: 'other',
+            overwriteInitial: false,
             preferIconicPreview: true,
-            previewFileIconSettings: { // configure your icon file extensions
-                'doc': '<i class="fas fa-file-word text-primary  fa-2x"></i>',
-                'xls': '<i class="fas fa-file-excel text-success  fa-2x"></i>',
-                'docx': '<i class="fas fa-file-word text-primary  fa-2x"></i>',
-                'xlsx': '<i class="fas fa-file-excel text-success  fa-2x"></i>',
-                'ppt': '<i class="fas fa-file-powerpoint text-danger  fa-2x"></i>',
-                'pdf': '<i class="fas fa-file-pdf text-danger  fa-2x"></i>',
-                'zip': '<i class="fas fa-file-archive text-muted  fa-2x"></i>',
-                'htm': '<i class="fas fa-file-code text-info  fa-2x"></i>',
+            previewFileIconSettings: {
+                'pdf': '<i class="fas fa-file-pdf text-danger fa-2x"></i>',
+                'doc': '<i class="fas fa-file-word text-primary fa-2x"></i>',
+                'xls': '<i class="fas fa-file-excel text-success fa-2x"></i>',
+                'ppt': '<i class="fas fa-file-powerpoint text-danger fa-2x"></i>',
+                'zip': '<i class="fas fa-file-archive text-muted fa-2x"></i>',
+                'htm': '<i class="fas fa-file-code text-info fa-2x"></i>',
                 'txt': '<i class="fas fa-file-alt text-info fa-2x"></i>',
                 'mov': '<i class="fas fa-file-video text-warning fa-2x"></i>',
-                'mp3': '<i class="fas fa-file-audio text-warning  fa-2x"></i>',
+                'mp3': '<i class="fas fa-file-audio text-warning fa-2x"></i>',
                 'jpg': '<i class="fas fa-file-image text-danger fa-2x"></i>',
                 'gif': '<i class="fas fa-file-image text-muted fa-2x"></i>',
                 'png': '<i class="fas fa-file-image text-primary fa-2x"></i>'
@@ -119,7 +126,7 @@ export class FilesInput {
                     return ext.match(/(xls|xlsx)$/i);
                 },
                 'ppt': function(ext) {
-                    return ext.match(/(ppt|pptx)$/i);
+                    return ext.match(/(odp|ppt|pptx)$/i);
                 },
                 'zip': function(ext) {
                     return ext.match(/(zip|rar|tar|gzip|gz|7z)$/i);

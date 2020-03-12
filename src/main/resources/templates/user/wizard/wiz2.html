@@ -1,6 +1,10 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import {FilesInput} from "/js/modules/filesInput.js";
+    let filesInput = new FilesInput($("#multipartFiles"), [[${name}]], null, false, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
+</script>
 <body>
 <div id="stepper1" class="bs-stepper linear">
     <div class="bs-stepper-header" role="tablist">
@@ -36,7 +40,7 @@
     <input th:if="${workflow != null}" type="hidden" name="workflowId" th:value="${workflow.id}">
     <div class="col-lg-12">
         <div class="file-loading">
-            <input id="multipartFile" name="multipartFiles" type="file" multiple="multiple"/>
+            <input id="multipartFiles" name="multipartFiles" type="file" multiple="multiple"/>
         </div>
         <div id="unique" class="form-check d-none">
             <label>Regrouper les documents dans une archive lors de la signature</label>
@@ -52,10 +56,6 @@
     <button type="button" id="fileUpload" class="btn btn-success" style="position: absolute;right: 10px;bottom: 10px;">
         Suivant <i class="fas fa-angle-right"></i>
     </button>
-    <script th:inline="javascript" type="module">
-        import {FilesInput} from "/js/modules/filesInput.js";
-        let filesInput = new FilesInput($("#multipartFile"), [[${name}]], null, false, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
-    </script>
 </form>
 </body>
 </html>
