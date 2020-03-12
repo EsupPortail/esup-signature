@@ -37,7 +37,7 @@ public class LdapPersonService {
             ldapTemplateSelected = ldapTemplates.get(ldapTemplateName);
         }
         if (ldapTemplateSelected != null) {
-            List<PersonLdap> results = personLdapRepository.findByCnIgnoreCaseOrDisplayNameIgnoreCaseOrUidOrMail(searchString, searchString, searchString, searchString);
+            List<PersonLdap> results = personLdapRepository.findByDisplayNameStartingWithIgnoreCaseOrCnStartingWithIgnoreCaseOrDisplayNameStartingWithIgnoreCaseOrUidStartingWithOrMailStartingWith(searchString, searchString, searchString, searchString);
             return results;
         } else {
             log.debug("No ldapTemplate found -> LdapPersonService.searchByCommonName result is empty");

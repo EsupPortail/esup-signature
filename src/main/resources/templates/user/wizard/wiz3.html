@@ -36,7 +36,7 @@
         <form th:action="'/user/wizard/wiz4/' + ${signBook.id}" method="post">
             <div class="form-group">
                 <select id="workflowId" name="workflowId" class="form-control" required>
-                    <option value="" disabled selected>Choisir un circuit de signatures existant</option>
+                    <option value="" disabled selected>Choisir un circuit précédemment enregistré</option>
                     <th:block th:each="workflow : ${workflows} ">
                         <option th:value="${workflow.id}" th:text="${workflow.name}"></option>
                     </th:block>

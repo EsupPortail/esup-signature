@@ -13,4 +13,5 @@ public interface PersonLdapRepository extends LdapRepository<PersonLdap> {
     List<PersonLdap> findByMail(String mail);
     List<PersonLdap> findByUid(String uid);
     List<PersonLdap> findByCnIgnoreCaseOrDisplayNameIgnoreCaseOrUidOrMail(String cn, String displayName, String uid, String mail);
+    List<PersonLdap> findByDisplayNameStartingWithIgnoreCaseOrCnStartingWithIgnoreCaseOrDisplayNameStartingWithIgnoreCaseOrUidStartingWithOrMailStartingWith(String cn, String displayName, String uid, String mail);
 }

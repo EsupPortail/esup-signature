@@ -16,7 +16,7 @@ public final class PersonLdap {
 	private String cn;
 	private String sn;
 	private String givenName;
-	private String displayName;
+	private @Attribute(name = "displayName") String displayName;
 	private String schacDateOfBirth;
 	private String mail;
 	private String md5UserPassword;

@@ -14,7 +14,12 @@ export default class SelectUser {
             placeholder: 'Choisir un ou plusieurs participants',
             searchText: 'Aucun résultat',
             searchPlaceholder: 'Rechercher',
-            searchHighlight: true,
+            searchHighlight: false,
+            hideSelectedOption: true,
+            closeOnSelect: false,
+            searchFilter: (option, search) => {
+                return true;
+            },
             ajax: function (search, callback) {
                 if (search.length < 3) {
                     callback('Merci de saisir au moins 3 caractères')

@@ -247,10 +247,10 @@ public class UserService {
 			if(ldapSearchList.size() > 0) {
 				List<PersonLdap> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
 				for (PersonLdap personLdapList : ldapList) {
-					if (personLdaps.stream().filter(personLdap -> personLdap.getMail().equals(personLdapList.getMail())).count() > 0) {
-						continue;
-					} else {
-						personLdaps.add(personLdapList);
+					if(personLdapList.getMail() != null) {
+						if (!personLdaps.stream().anyMatch(personLdap -> personLdap.getMail().equals(personLdapList.getMail()))) {
+							personLdaps.add(personLdapList);
+						}
 					}
 				}
 			}

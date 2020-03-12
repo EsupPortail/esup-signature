@@ -129,7 +129,7 @@ public class SignRequestController {
                 model.addAttribute("statusFilter", "tosign");
             } else {
                 signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.valueOf(statusFilter));
-                model.addAttribute("statusFilter", SignRequestStatus.valueOf(statusFilter));
+                model.addAttribute("statusFilter", statusFilter);
             }
         } else {
             signRequests = signRequestRepository.findByCreateBy(user.getEppn());
