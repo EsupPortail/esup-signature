@@ -74,6 +74,7 @@ export class UserSignaturePad {
     }
 
     resetSignaturePad() {
+        console.info("reset pad");
         this.canvas.css("backgroundColor", "rgba(255, 255, 255, 1)");
         this.signaturePad.clear();
         this.signaturePad.fromDataURL(this.lastSign);

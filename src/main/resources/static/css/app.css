@@ -88,8 +88,14 @@ code {
 .file-details-cell {
     width: 100%;
 }
+
+.croppie-container .cr-boundary {
+    z-index: 0;
+}
+
 .custom-file-label {
     justify-content: left !important;
+    z-index: 0;
 }
 .custom-file-input:lang(fr) ~ .custom-file-label::after {
 	content: "Parcourir" !important;
@@ -409,8 +415,21 @@ input:checked + .slider:before {
         position: relative !important;
         top: 0px;
     }
+    .breadcrumb {
+        display: none;
+    }
+
+    .workspace-sign {
+        display: block;
+        width: 100%;
+    }
+
+    #sidebar2 {
+        display: none;
+    }
+
     #sidebar {
-        top : 0px;
+        top : 56px;
         position: relative;
         max-width: initial;
         min-height: 0px;
@@ -419,9 +438,7 @@ input:checked + .slider:before {
         top : 0px;
         position: relative;
         max-width: initial;
-        min-height: 0px;
         min-width: initial;
-        min-height: initial;
     }
     #sidebarCollapse {
         display: none;
