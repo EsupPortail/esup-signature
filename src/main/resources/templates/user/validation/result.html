@@ -1,6 +1,10 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
+<script type="module">
+    import {DssReport} from "/js/modules/dssReport.js";
+    new DssReport();
+</script>
 <body>
 <header th:replace="fragments/menu"></header>
 <main role="main">

@@ -168,6 +168,7 @@ public class SignRequestController {
                 && signRequestService.needToSign(signRequest, user)
         ) {
             signRequest.setSignable(true);
+            model.addAttribute("currentSignType", signRequestService.getCurrentSignType(signRequest).name());
             model.addAttribute("nexuUrl", nexuUrl);
             model.addAttribute("nexuVersion", nexuVersion);
             model.addAttribute("baseUrl", baseUrl);
@@ -196,14 +197,13 @@ public class SignRequestController {
                     model.addAttribute("signWidth", 100);
                     model.addAttribute("signHeight", 75);
                 }
-
             }
             model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
         } else if (signRequestService.getLastSignedFsFile(signRequest) != null) {
             FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
             model.addAttribute("documentType", fileService.getExtension(fsFile.getName()));
         }
-        model.addAttribute("currentSignType", signRequestService.getCurrentSignType(signRequest).name());
+
         List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
         model.addAttribute("refuseLogs", refuseLogs);
         model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
@@ -255,7 +255,7 @@ public class SignRequestController {
         return new String[]{"ok"};
     }
 
-    //@PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
     @ResponseBody
     @PostMapping(value = "/remove-doc/{id}/", produces = MediaType.APPLICATION_JSON_VALUE)
     public String removeDocument(@PathVariable("id") Long id) throws JSONException {
@@ -317,7 +317,7 @@ public class SignRequestController {
             addDate = false;
         }
         if (visual == null) {
-            visual = false;
+            visual = true;
         }
 
         User user = userService.getUserFromAuthentication();

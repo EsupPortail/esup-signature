@@ -66,51 +66,41 @@
             </ol>
         </nav>
         <div id="content" class="content">
+            <div id="signButtons" th:if="${signRequest.signable}" class="fixed-action-btn active" style="width: 100px; bottom: 50px; right: 50px;">
+                <ul class="list-unstyled">
+                    <li><a role="button" th:if="${currentSignType != 'visa'}" class="btn-floating btn-lg bg-success waves-effect" title="Signer" data-toggle="modal" data-target="#signModal"><i class="fas fa-file-signature"></i></a></li>
+                    <li><a role="button" th:unless="${currentSignType != 'visa'}" class="btn-floating btn-lg bg-success waves-effect" title="Viser" data-toggle="modal" data-target="#signModal"><i class="fas fa-check"></i></a></li>
+                    <li><a role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Refuser" th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal"><i class="fas fa-file-excel"></i></a></li>
+                </ul>
+            </div>
             <div class="tools">
-                <div class="d-flex mb-1" th:if="${documentType != 'pdf'}">
-                    <div id="signtools" th:if="${signRequest.signable}" style="display: none;">
-                        <button th:if="${currentSignType != 'visa'}" class="btn btn-success" title="Signer" data-toggle="modal" data-target="#signModal">
-                            <i class="fas fa-signature"></i> Signer
-                        </button>
-                        <button th:unless="${currentSignType != 'visa'}" class="btn btn-success" title="Viser" data-toggle="modal" data-target="#signModal">
-                            <i class="fas fa-check"></i> Viser
-                        </button>
-                    </div>
-                </div>
                 <div class="d-flex mb-1">
                     <a th:if="${signRequest.createBy == user.eppn && signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() == 'draft' || signRequest.parentSignBook.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>
                     <a th:if="${signRequest.createBy == user.eppn && signRequest.parentSignBook == null && (signRequest.status.name() == 'draft' || signRequest.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1" title="Modifier" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>
                     <th:block th:if="${documentType == 'pdf'}">
-                    <div class="bg-light ml-1 p-1 pt-2 d-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
-                    <button id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
-                        <i class="fas fa-arrow-up"></i>
-                    </button>
-                    <button id="next" class="btn btn-light btn-outline-dark ml-1" aria-label="Prochain">
-                        <i class="fas fa-arrow-down"></i>
-                    </button>
-                    <div class="border ml-3 mr-3 d-none d-lg-block"></div>
-                    <button id="zoomout" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-minus"></i></button>
-                    <button id="zoomin" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-plus"></i></button>
-                    <div class="zoom bg-light ml-1 p-1 pt-2 d-inline d-none"><span id="zoom"></span> %</div>
-                    <div class="border ml-3 mr-3 d-none d-lg-block"></div>
-                    <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
-                    <button id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
-                    <div class="border ml-3 mr-3 "></div>
-                    <button class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block" data-toggle="modal" data-target="#attachment">
-                        <i class="fas fa-paperclip"></i> Pièces jointes <div th:if="${signRequest.attachments.size() > 0 }" th:text="${signRequest.attachments.size()}" class="badge badge-primary"></div>
-                    </button>
-                    <div class="border ml-3 mr-3 "></div>
-                    <div id="signtools" th:if="${signRequest.signable}" style="display: none;">
-                        <button th:if="${currentSignType != 'pdfImageStamp'}" id="visualButton" title="Inserer un visuel" class="btn btn-outline-success ml-1"><i class="fas fa-eye"></i></button>
-                        <button id="dateButton" title="Inserer la date" class="btn btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>
-                    </div>
-                    <div id="signButtons" th:if="${signRequest.signable}" class="fixed-action-btn active" style="width: 100px; bottom: 50px; right: 50px;">
-                        <ul class="list-unstyled">
-                            <li><a role="button" th:if="${currentSignType != 'visa'}" class="btn-floating btn-lg bg-success waves-effect" title="Signer" data-toggle="modal" data-target="#signModal"><i class="fas fa-file-signature"></i></a></li>
-                            <li><a role="button" th:unless="${currentSignType != 'visa'}" class="btn-floating btn-lg bg-success waves-effect" title="Viser" data-toggle="modal" data-target="#signModal"><i class="fas fa-check"></i></a></li>
-                            <li><a role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Refuser" th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal"><i class="fas fa-file-excel"></i></a></li>
-                        </ul>
-                    </div>
+                        <div class="bg-light ml-1 p-1 pt-2 d-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
+                        <button id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <button id="next" class="btn btn-light btn-outline-dark ml-1" aria-label="Prochain">
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
+                        <div class="border ml-3 mr-3 d-none d-lg-block"></div>
+                        <button id="zoomout" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-minus"></i></button>
+                        <button id="zoomin" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-plus"></i></button>
+                        <div class="zoom bg-light ml-1 p-1 pt-2 d-inline d-none"><span id="zoom"></span> %</div>
+                        <div class="border ml-3 mr-3 d-none d-lg-block"></div>
+                        <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
+                        <button id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
+                        <div class="border ml-3 mr-3 "></div>
+                        <button class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block" data-toggle="modal" data-target="#attachment">
+                            <i class="fas fa-paperclip"></i> Pièces jointes <div th:if="${signRequest.attachments.size() > 0 }" th:text="${signRequest.attachments.size()}" class="badge badge-primary"></div>
+                        </button>
+                        <div class="border ml-3 mr-3 "></div>
+                        <div id="signtools" th:if="${signRequest.signable}" style="display: none;">
+                            <button th:if="${currentSignType != 'pdfImageStamp'}" id="visualButton" title="Inserer un visuel" class="btn btn-outline-success ml-1"><i class="fas fa-eye"></i></button>
+                            <button id="dateButton" title="Inserer la date" class="btn btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>
+                        </div>
                     </th:block>
                     <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported')}">
                         <div id="endButtons" class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#endButtons').toggleClass('active');" onmouseout="$('#endButtons').toggleClass('active');">
@@ -143,32 +133,27 @@
             </div>
             <div class="row">
             <div th:if="${documentType == 'pdf'}" th:insert="user/signrequests/includes/workspace :: workspace"></div>
-            <div th:if="${documentType != 'pdf' && signRequest.originalDocuments.size() > 0}" class="col-6">
+            <div th:if="${documentType != 'pdf' && signRequest.originalDocuments.size() > 0}"  id="workspace" class="workspace-sign alert alert-secondary col-lg-10">
                 <div class="card mb-1">
-                    <div class="card-header">
-                        Liste des documents originaux
-                    </div>
                     <div class="card-body">
+                        <h5 class="text-center">Liste des documents originaux</h5>
                         <div class="file-loading">
                             <input id="multipartFiles" name="multipartFiles" type="file" multiple="multiple"/>
                         </div>
                     </div>
                 </div>
-
                 <div class="card mb-1" th:if="${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported'}">
-                    <div class="card-header">
-                        Liste des documents signés
-                    </div>
                     <div class="card-body">
-                    </div>
-                    <div class="file-loading">
-                        <input id="signedFile" name="multipartFiles" type="file" multiple="multiple"/>
+                        <h5 class="text-center">Liste des documents signés</h5>
+                        <div class="file-loading">
+                            <input id="signedFiles" name="signedFiles" type="file" multiple="multiple"/>
+                        </div>
                     </div>
                 </div>
                 <script th:inline="javascript" type="module">
                     import {FilesInput} from "/js/modules/filesInput.js";
                     new FilesInput($("#multipartFiles"), "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
-                    //new FilesInput($("#signedFile"), signedFile, [[${signRequest.liteOriginalDocuments}]], false, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
+                    new FilesInput($("#signedFiles"), "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
                 </script>
             </div>
             <div id="infos" class="d-none d-xl-block"></div>

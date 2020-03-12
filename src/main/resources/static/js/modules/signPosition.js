@@ -85,11 +85,12 @@ export class SignPosition {
     updateCrossPosition() {
         if(this.posX < 0) this.posX = 0;
         if(this.posY < 0) this.posY = 0;
-        console.debug("update cross pos to : " + this.posX + " " + this.posY);
         this.cross.css('backgroundColor', 'rgba(0, 255, 0, .5)');
         this.cross.css('left', this.posX + "px");
         this.cross.css('top', this.posY + "px");
+        console.debug("update cross pos to : " + this.posX + " " + this.posY);
         this.scalePosition(1);
+        console.debug("save cross pos to : " + this.posX + " " + this.posY);
     }
 
     updateSignSize(scale) {

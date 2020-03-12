@@ -50,9 +50,8 @@ export class SignUi {
 
     submitSignRequest() {
         let csrf = document.getElementsByName("_csrf")[0];
-        let signPageNumber = document.getElementById("signPageNumber");
         let signRequestUrlParams;
-        if(signPageNumber != null) {
+        if(this.workspace != null) {
             signRequestUrlParams = "password=" + document.getElementById("password").value +
                 "&addDate=" + this.workspace.signPosition.dateActive +
                 "&visual=" + this.workspace.signPosition.visualActive +
@@ -65,11 +64,11 @@ export class SignUi {
             signRequestUrlParams = "password=" + document.getElementById("password").value +
                 "&" + csrf.name + "=" + csrf.value;
         }
+        console.debug("params to send : " + signRequestUrlParams);
         this.sendData(signRequestUrlParams);
     }
 
     sendData(signRequestUrlParams) {
-        console.log("params : " + signRequestUrlParams);
         this.passwordError.style.display = "none";
         document.getElementById("signError").style.display = "none";
         document.getElementById("closeModal").style.display = "none";
