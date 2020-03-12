@@ -13,11 +13,10 @@ import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.configurationprocessor.json.JSONException;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -34,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import javax.json.JsonObject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -303,10 +303,10 @@ public class SignRequestController {
         return new String[]{"ok"};
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
+    //@PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
     @ResponseBody
-    @PostMapping(value = "/remove-doc/{id}/", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String removeDocument(@PathVariable("id") Long id) throws JSONException {
+    @PostMapping(value = "/remove-doc/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String removeDocument(@PathVariable("id") Long id) {
         logger.info("remove document " + id);
         JSONObject result = new JSONObject();
         User user = userService.getUserFromAuthentication();
