@@ -9,8 +9,6 @@ export class SignUi {
         this.getProgressTimer = null;
         this.wait = $('#wait');
         this.passwordError = document.getElementById("passwordError");
-        this.launchSignButton = $("#launchSignButton");
-        this.launchAllSignButton = $("#launchAllSignButton");
         this.workspace = null;
         if(isPdf) {
             this.workspace = new WorkspacePdf('/user/signrequests/get-last-file/' + id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits);
@@ -19,8 +17,8 @@ export class SignUi {
     }
 
     initListeners() {
-        this.launchSignButton.on('click', e => this.launchSign());
-        this.launchAllSignButton.on('click', e => this.launchAllSign());
+        $("#launchSignButton").on('click', e => this.launchSign());
+        $("#launchAllSignButton").on('click', e => this.launchAllSign());
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
                 $("#launchSignButton").click();

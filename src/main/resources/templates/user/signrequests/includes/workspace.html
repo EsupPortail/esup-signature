@@ -3,28 +3,31 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
 <!--/*@thymesVar id="postit" type="org.esupportail.esupsignature.entity.Log"*/-->
-<div th:fragment="workspace" id="workspace" class="workspace-sign alert alert-secondary fadein">
+<div th:fragment="workspace" id="workspace" class="workspace-sign alert alert-secondary">
     <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
-        <div id="pdf" class="drop-shadows "></div>
-        <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed' && currentSignType != 'visa'}">
-            <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                 onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                 onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
-                 th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;  left: ' + ${signRequest.getCurrentSignRequestParams().xPos} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
-                <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
-            </div>
-        </th:block>
-        <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed' && currentSignType == 'visa'}">
-            <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                 onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                 onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
-                 th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${signRequest.getCurrentSignRequestParams().xPos} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
-                <div id="borders" class="anim-border" th:style="'vertical-align:top; text-align:left;line-height:6px; width:  ' + ${signWidth} + 'px; height:  ' + ${signHeight} + 'px;'">
-                    <span id="textVisa" style="font-size: 8px; line-height: normal; font-weight: bold" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span>
-                    <br>
+        <div id="pdf" class="drop-shadows" >
+            <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed' && currentSignType != 'visa'}">
+                <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
+                     onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
+                     onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
+                     th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;  left: ' + ${signRequest.getCurrentSignRequestParams().xPos} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
+                    <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
                 </div>
-            </div>
-        </th:block>
+            </th:block>
+            <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed' && currentSignType == 'visa'}">
+                <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
+                     onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
+                     onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
+                     th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${signRequest.getCurrentSignRequestParams().xPos} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
+                    <div id="borders" class="anim-border" th:style="'vertical-align:top; text-align:left;line-height:6px; width:  ' + ${signWidth} + 'px; height:  ' + ${signHeight} + 'px;'">
+                        <span id="textVisa" style="font-size: 8px; line-height: normal; font-weight: bold" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span>
+                        <br>
+                    </div>
+                </div>
+            </th:block>
+
+        </div>
+
         <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">
             <span id="hideComment" class="float-right" style="cursor: pointer;">X</span>
             <textarea id="comment" name="comment" class="postitarea" placeholder="Saisir une annotation"></textarea>
@@ -32,11 +35,6 @@
                 <i class="fas fa-save"></i>
             </button>
         </div>
-        <input class="form-control form-control-sm col-6 d-none" value="1" id="signPageNumber" type="text" name="pageNumber"/>
-        <input class="form-control form-control-sm col-6 d-none" value="0" id="xPos" type="text" name="posX"/>
-        <input class="form-control form-control-sm col-6 d-none" value="0" id="yPos" type="text" name="posY"/>
-        <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="visual" id="visual"/>
-        <input class="form-control form-control-sm col-6 d-none" type="checkbox" name="addDate" id="addDate"/>
         <th:block th:each="postit : ${postits}">
             <div th:id="${postit.id}" class="circle" th:onmouseover="'$(\'#postit' + ${postit.id} + '\').addClass(\'circle-border\');'" th:onmouseout="'$(\'#postit' + ${postit.id} + '\').removeClass(\'circle-border\');'">
                 <i class="fas fa-comment fa-3x"></i>

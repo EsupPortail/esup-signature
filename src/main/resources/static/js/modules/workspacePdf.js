@@ -197,8 +197,6 @@ export class WorkspacePdf {
         $(".circle").each(function( index ) {
             $(this).hide();
         });
-        document.getElementById("xPos").value = Math.round(this.signPosition.posX);
-        document.getElementById("yPos").value = Math.round(this.signPosition.posY);
         $('#signButton').toggleClass('btn-light btn-success');
         $('#signtools').show();
         $('#stepscard').show();

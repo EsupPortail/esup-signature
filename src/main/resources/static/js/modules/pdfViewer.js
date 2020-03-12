@@ -113,8 +113,8 @@ export class PdfViewer {
         if(this.dataFields != null) {
             this.page.getAnnotations().then(items => this.renderPdfForm(items));
         }
-        this.canvas.style.width = (Math.round(this.pdfPageView.viewport.width) + 3) +"px";
-        this.canvas.style.height = (Math.round(this.pdfPageView.viewport.height) + 3) + "px";
+        this.canvas.style.width = Math.round(this.pdfPageView.viewport.width) +"px";
+        this.canvas.style.height = Math.round(this.pdfPageView.viewport.height) + "px";
         this.fireEvent('render', ['end']);
         console.groupEnd();
     }
@@ -130,9 +130,10 @@ export class PdfViewer {
                 signFieldNumber = signFieldNumber + 1;
                 $('.popupWrapper').remove();
                 let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                signField.append('Champ signature');
+                signField.append('Champ signature ' + signFieldNumber);
                 signField.css('text-align', 'center');
-                signField.css('background-color', 'green');
+                signField.css('background-color', 'rgba(0, 255, 0, .5)');
+                signField.css('cursor', 'default');
                 signField.click(function(){
                     $('#signModal').modal('show');
                 });
@@ -176,7 +177,7 @@ export class PdfViewer {
                         toolbarPlacement: 'bottom',
                         showClear: true,
                         showClose: true,
-                        keepOpen: true,
+                        keepOpen: false,
                         widgetPositioning: {
                             horizontal: 'right',
                             vertical: 'top'
@@ -202,7 +203,7 @@ export class PdfViewer {
                         toolbarPlacement: 'bottom',
                         showClear: true,
                         showClose: true,
-                        keepOpen: true,
+                        keepOpen: false,
                         widgetPositioning: {
                             horizontal: 'right',
                             vertical: 'top'
