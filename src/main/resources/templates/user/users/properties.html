@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="userShare" type="org.esupportail.esupsignature.entity.UserShare"*/-->
+<head th:replace="fragments/head :: head"></head>
+<body>
+<nav th:replace="fragments/menu"></nav>
+<main role="main">
+    <div class="wrapper">
+        <div id="sidebar">
+            <div class="nav flex-column nav-pills m-1" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+                </button>
+                <a class="nav-link btn-transparent" href="/user/users/shares">
+                    <i class="fa fa-share"></i> Délégation
+                </a>
+                <a class="nav-link btn-transparent" href="/user/users/properties">
+                    <i class="fa fa-bookmark"></i> Favoris
+                </a>
+                <a class="nav-link btn-transparent" href="/user/users/?form">
+                    <i class="fa fa-signature"></i> Paramètres de signature
+                </a>
+            </div>
+        </div>
+        <div class="content">
+            <div class="tab-content">
+                <div class="card">
+                        <div class="card-header">
+                            <h2>Favoris</h2>
+                        </div>
+                        <div class="card-body text-center">
+                            <table class="table table-hover table-striped table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>Service</th>
+                                    <th>Etape</th>
+                                    <th>Signataire</th>
+                                    <th>Destinataire</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <th:block th:each="userProperties : ${userProperties}">
+                                    <tr>
+                                        <td>
+                                            <span th:text="${userProperties.form.name}"></span>
+                                        </td>
+                                        <td>
+                                            <span th:text="${userProperties.step}"></span>
+                                        </td>
+                                        <td>
+                                            <span th:text="${userProperties.recipients}"></span>
+                                        </td>
+                                        <td>
+                                            <span th:text="${userProperties.targetEmail}"></span>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>

@@ -48,6 +48,11 @@ public class UserController {
 		return "active";
 	}
 
+	@ModelAttribute("user")
+	public User getUser() {
+		return userService.getUserFromAuthentication();
+	}
+
 	@Resource
 	private UserRepository userRepository;
 
@@ -174,18 +179,27 @@ public class UserController {
 		return userService.getPersonLdaps(searchString, ldapTemplateName);
    }
 
-
-	@GetMapping("/params")
-	public String params(Model model) {
+	@GetMapping("/properties")
+	public String properties(Model model) {
 		User user = userService.getUserFromAuthentication();
 		List<UserShare> userShares = userShareRepository.findByUser(user);
-		model.addAttribute("userShares", userShares);
 		List<UserPropertie> userProperties = userPropertieRepository.findByUser(user);
 		model.addAttribute("userProperties", userProperties);
 		model.addAttribute("forms", formService.getFormsByUser(user, true));
 		model.addAttribute("users", userRepository.findAll());
 		model.addAttribute("activeMenu", "params");
-		return "user/users/params";
+		return "user/users/properties";
+	}
+
+	@GetMapping("/shares")
+	public String params(Model model) {
+		User user = userService.getUserFromAuthentication();
+		List<UserShare> userShares = userShareRepository.findByUser(user);
+		model.addAttribute("userShares", userShares);
+		model.addAttribute("forms", formService.getFormsByUser(user, true));
+		model.addAttribute("users", userRepository.findAll());
+		model.addAttribute("activeMenu", "params");
+		return "user/users/shares";
 	}
 
 	@PostMapping("/add-share")

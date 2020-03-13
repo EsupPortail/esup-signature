@@ -88,9 +88,13 @@ export class UserSignatureCrop {
 
     constructor() {
         console.info("Starting user signature crop tool");
+        this.cropDiv = document.getElementById('crop-div');
+        this.zoomLevel = 1;
+        this.zoomInButton = document.getElementById('zoomin');
+        this.zoomOutButton = document.getElementById('zoomout');
         this.vanillaUpload = document.getElementById('vanilla-upload');
         this.vanillaRotate = document.querySelector('.vanilla-rotate');
-        this.vanillaCrop = document.getElementById('vanilla-crop')
+        this.vanillaCrop = document.getElementById('vanilla-crop');
         this.vanillaCroppie = new Croppie(this.vanillaCrop, {
             viewport : {
                 width : 200,
@@ -103,14 +107,16 @@ export class UserSignatureCrop {
             enableExif : true,
             enableOrientation : true,
             enableResize : true,
-            enforceBoundary : false
-
+            enforceBoundary : false,
+            mouseWheelZoom: false
         });
         this.initListeners();
     }
 
     initListeners() {
         this.vanillaRotate.click(e => this.rotate(this.vanillaCroppie));
+        this.zoomInButton.addEventListener('click', e => this.zoomIn());
+        this.zoomOutButton.addEventListener('click', e => this.zoomOut());
         this.vanillaUpload.addEventListener('change', e=> this.readFile(this.vanillaUpload));
         this.vanillaCrop.addEventListener('update', e => this.update());
     }
@@ -122,6 +128,20 @@ export class UserSignatureCrop {
 
     rotate(elem) {
         this.vanillaCroppie.rotate(parseInt($(elem).data('deg')));
+    }
+
+    zoomIn() {
+        this.zoomLevel = this.zoomLevel + 0.05;
+        this.zoom();
+    }
+
+    zoomOut() {
+        this.zoomLevel = this.zoomLevel - 0.05;
+        this.zoom();
+    }
+
+    zoom()  {
+        this.vanillaCroppie.setZoom(this.zoomLevel);
     }
 
     saveVanilla(result) {
@@ -136,11 +156,13 @@ export class UserSignatureCrop {
         this.vanillaCrop.classList.add('good');
         this.vanillaCroppie.bind({
             url : e.target.result,
-            orientation : 1
+            orientation : 1,
+            currentZoom : 1
         });
     }
 
     readFile(input) {
+        this.cropDiv.style.display = "block";
         if (input.files) {
             if (input.files[0]) {
                 let reader = new FileReader();

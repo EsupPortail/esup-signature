@@ -16,16 +16,45 @@ export class SignPosition {
         this.visualActive = true;
         this.cross = $('#cross');
         this.borders = $('#borders');
+        this.signZoomOutButton = $('#signZoomOut');
+        this.signZoomInButton = $('#signZoomIn');
         this.currentScale = 1;
-        this.init()
+        this.signScale = 1;
+        this.initListeners()
     }
 
-    init() {
+    initListeners() {
         window.addEventListener("touchmove", e => this.touchmove(e));
         this.cross.on('mousedown', e => this.dragSignature());
         this.cross.on('touchstart', e => this.dragSignature());
         this.cross.on('mouseup', e => this.savePosition());
         this.cross.on('touchend', e => this.savePosition());
+        this.signZoomOutButton.on('click', e => this.signZoomOut());
+        this.signZoomInButton.on('click', e => this.signZoomIn());
+    }
+
+    signZoomOut() {
+        this.updateSignZoom(this.signScale - 0.1);
+        this.signScale = this.signScale - 0.1;
+    }
+
+    signZoomIn() {
+        this.updateSignZoom(this.signScale + 0.1);
+        this.signScale = this.signScale + 0.1;
+    }
+
+    updateSignZoom(signScale) {
+        this.signWidth = this.signWidth / this.signScale * signScale;
+        this.signHeight = this.signHeight / this.signScale * signScale;
+        this.cross.css('width', this.signWidth);
+        this.cross.css('height', this.signHeight);
+        this.borders.css('width', this.signWidth);
+        this.borders.css('height', this.signHeight);
+        this.cross.css('background-size', this.signWidth + 'px');
+
+        // this.cross.css('zoom', signScale);
+        // this.cross.css('left', this.posX + "px");
+        // this.cross.css('top', this.posY + "px");
     }
 
     pointIt(e) {
@@ -94,11 +123,19 @@ export class SignPosition {
     }
 
     updateSignSize(scale) {
-        this.cross.css('width', this.cross.width() / this.currentScale * scale);
-        this.cross.css('height', this.cross.height() / this.currentScale * scale);
+        this.signWidth = this.signWidth / this.currentScale * scale;
+        this.signHeight = this.signHeight / this.currentScale * scale;
+        this.posX = this.posX / this.currentScale  * scale;
+        this.posY = this.posY / this.currentScale  * scale;
+        this.cross.css('left', this.posX);
+        this.cross.css('top', this.posY);
+        this.cross.css('width', this.signWidth);
+        this.cross.css('height', this.signHeight);
         this.borders.css('width', this.borders.width() / this.currentScale * scale);
         this.borders.css('height', this.borders.height() / this.currentScale * scale);
         this.cross.css('background-size', parseInt(this.cross.css('background-size')) / this.currentScale * scale);
+        $('#textVisa').css('font-size', 8 * scale);
+        this.currentScale = scale;
     }
 
     savePosition() {

@@ -224,7 +224,7 @@ public class FileService {
 
 	public File addTextToImage(InputStream imageStream, String text) throws IOException {
 		final BufferedImage signImage = ImageIO.read(imageStream);
-		BufferedImage  image = new BufferedImage(300, 150, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage  image = new BufferedImage(signImage.getWidth(), signImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
 		graphics2D.setColor(new Color(255,255,255,0 ));
 		graphics2D.fillRect(0, 0, 300, 150);

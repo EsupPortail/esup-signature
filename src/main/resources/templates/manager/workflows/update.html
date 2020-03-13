@@ -41,7 +41,7 @@
                                     </div>
                                 </div>
                             </label>
-                            <select id="managersSelect" multiple="multiple" name="managers">
+                            <select id="managersSelect" class="select-users" multiple="multiple" name="managers">
                                 <th:block th:each="manager : ${workflow.managers}">
                                     <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
                                 </th:block>

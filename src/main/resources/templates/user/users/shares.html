@@ -1,42 +1,44 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="userShare" type="org.esupportail.esupsignature.entity.UserShare"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
-<nav th:replace="fragments/nav :: nav(activeNav)"></nav>
+<nav th:replace="fragments/menu"></nav>
 <main role="main">
     <div class="wrapper">
         <div id="sidebar">
-            <div class="nav flex-column nav-pills m-1" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
+            <div class="nav flex-column nav-pills ml-1 mt-1" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <button title="Accueil" type="button" onclick="location.href='/'" class="btn btn-transparent col-12 mb-1 text-left">
                     <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
                 </button>
-                <a class="nav-link btn-transparent active" id="v-pills-share-tab" data-toggle="pill" href="#v-pills-share" role="tab" aria-controls="v-pills-share" aria-selected="true">
-                    <i class="fa fa-share"></i> Délégations <span class="badge badge-light" th:if="${toSignDocs != null}" th:text="${toSignDocs.size()}"></span>
+                <a class="btn btn-transparent col-12 mb-1 text-left" href="/user/users/shares">
+                    <i class="fa fa-share"></i> Délégation
                 </a>
-                <a class="nav-link btn-transparent" id="v-pills-properties-tab" data-toggle="pill" href="#v-pills-properties" role="tab" aria-controls="v-pills-properties" aria-selected="false">
-                    <i class="fa fa-bookmark"></i> Favoris <span th:if="${pendingDocs != null}" class="badge badge-warning" th:text="${pendingDocs != null}? ${pendingDocs.getTotalElements()}"></span>
+                <a class="btn btn-transparent col-12 mb-1 text-left" href="/user/users/properties">
+                    <i class="fa fa-bookmark"></i> Favoris
                 </a>
-                <a class="nav-link btn-transparent" th:href="${signServerUrl} +'/user/users/?form&referer=true'">
+                <a class="btn btn-transparent col-12 mb-1 text-left" href="/user/users/?form">
                     <i class="fa fa-signature"></i> Paramètres de signature
                 </a>
             </div>
         </div>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item active">Délégations</li>
+            </ol>
+        </nav>
         <div class="content">
-            <nav th:replace="fragments/breadcrumb :: breadcrumb"></nav>
-            <div class="tab-content">
-                <div class="tab-pane fade show active" id="v-pills-share" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+            <div class="fixed-action-btn" style="bottom: 100px; right: 50px;">
+                <a title="Créer un nouveau circuit" data-toggle="modal" data-target="#newShareModal" type="button"
+                   class="btn-floating btn-lg bg-primary wave-effect">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+            <div class="tab-pane fade show active" id="v-pills-share" role="tabpanel" aria-labelledby="v-pills-profile-tab">
                     <div class="card">
-                        <div class="card-header">
-                            <h2>Délégations
-                                <button type="button" data-toggle="modal" data-target="#newShareModal" class="btn btn-success btn-circle btn-xl float-right">
-                                    <i class="fas fa-plus fa-2x"></i>
-                                </button>
-                            </h2>
-
-                        </div>
                         <div class="card-body text-center">
-                            <table class="table table-hover table-striped table-bordered">
-                                <thead>
+                            <table class="table table-hover table-striped table-borderless">
+                                <thead class="thead-dark">
                                 <tr>
                                     <th>Service</th>
                                     <th>Utilisateurs</th>
@@ -103,44 +105,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="tab-pane fade" id="v-pills-properties" role="tabpanel" aria-labelledby="v-pills-signed-tab">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2>Favoris</h2>
-                        </div>
-                        <div class="card-body text-center">
-                            <table class="table table-hover table-striped table-bordered">
-                                <thead>
-                                <tr>
-                                    <th>Service</th>
-                                    <th>Etape</th>
-                                    <th>Signataire</th>
-                                    <th>Destinataire</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <th:block th:each="userProperties : ${userProperties}">
-                                    <tr>
-                                        <td>
-                                            <span th:text="${userProperties.form.name}"></span>
-                                        </td>
-                                        <td>
-                                            <span th:text="${userProperties.step}"></span>
-                                        </td>
-                                        <td>
-                                            <span th:text="${userProperties.recipientEmail}"></span>
-                                        </td>
-                                        <td>
-                                            <span th:text="${userProperties.targetEmail}"></span>
-                                        </td>
-                                    </tr>
-                                </th:block>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
     <div class="modal fade" id="newShareModal" tabindex="-1" role="dialog"
@@ -158,30 +122,17 @@
                     <form id="shareForm" th:action="'/user/' + ${eppn} + '/add-share'" method="post">
                         <div class="form-group">
                             <label for="selectForm">Service à déléguer</label>
-                            <select id="selectForm" name="formId">
+                            <select id="selectForm" class="slim-select" name="formId">
+                                <option></option>
+                                <option value="sign">Signature</option>
                                 <th:block th:each="form : ${forms}">
                                     <option th:value="${form.id}" th:text="${form.name}"></option>
                                 </th:block>
                             </select>
-                            <script>
-                                new SlimSelect({
-                                    select: '#selectForm'
-                                })
-                            </script>
                         </div>
                         <div class="form-group">
                             <label for="selectUsers">Choix des utilisateurs</label>
-                            <select id="selectUsers" name="userIds" multiple="multiple">
-                                <th:block th:each="user : ${users}">
-                                    <option th:value="${user.id}" th:text="${user.firstname} + ' ' + ${user.name}"></option>
-                                </th:block>
-                            </select>
-                            <script>
-
-                                new SlimSelect({
-                                    select: '#selectUsers'
-                                })
-                            </script>
+                            <select id="selectUsers" class="select-users" name="userIds" multiple="multiple"></select>
                         </div>
                         <div class="form-group">
                             <label for="selectUsers">Date de début</label>

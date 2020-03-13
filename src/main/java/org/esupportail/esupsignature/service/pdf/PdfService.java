@@ -360,8 +360,8 @@ public class PdfService {
         int signWidth;
         int signHeight;
         if (bimg.getWidth() <= pdfConfig.getPdfProperties().getSignWidthThreshold() * 2) {
-            signWidth = bimg.getWidth() / 2;
-            signHeight = bimg.getHeight() / 2;
+            signWidth = bimg.getWidth();
+            signHeight = bimg.getHeight();
         } else {
             signWidth = pdfConfig.getPdfProperties().getSignWidthThreshold();
             double percent = ((double) pdfConfig.getPdfProperties().getSignWidthThreshold() / (double) bimg.getWidth());

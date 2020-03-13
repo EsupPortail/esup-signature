@@ -80,7 +80,7 @@ export class WorkspacePdf {
     }
 
     refreshWorkspace() {
-        this.signPosition.refreshSign(this.pdfViewer.scale / 0.75);
+        this.signPosition.updateSignSize(this.pdfViewer.scale / 0.75);
         this.refreshComments();
     }
 

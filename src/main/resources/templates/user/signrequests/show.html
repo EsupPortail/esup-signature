@@ -38,6 +38,17 @@
             <th:block th:if="${signRequest.parentSignBook != null}">
                 <div th:replace="user/signrequests/cards/stepscard :: stepscard"></div>
             </th:block>
+            <div id="signTools">
+                <div class="alert alert-success">
+                    <p>Modifier la signature</p>
+                    <button type="button" id="signZoomOut" class="btn btn-light">
+                        <i class="fa fas fa-search-minus"></i>
+                    </button>
+                    <button type="button" id="signZoomIn" class="btn btn-light">
+                        <i class="fa fas fa-search-plus"></i>
+                    </button>
+                </div>
+            </div>
             <div id="commentsTools" th:if="${documentType == 'pdf'}">
                 <div th:unless="${postits.size() > 0}" class="alert alert-warning">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
                 <div th:if="${postits.size() > 0}" class="alert alert-warning">

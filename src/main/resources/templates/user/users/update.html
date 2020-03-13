@@ -10,7 +10,22 @@
 <nav th:replace="fragments/menu"></nav>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side" class="auto-hide"></nav>
+        <nav id="sidebar">
+            <div class="ml-1 mt-1" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <button title="Accueil" type="button" onclick="location.href='/'" class="btn btn-transparent col-12 mb-1 text-left">
+                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+                </button>
+                <a class="btn btn-transparent col-12 mb-1 text-left" href="/user/users/shares">
+                    <i class="fa fa-share"></i> Délégation
+                </a>
+                <a class="btn btn-transparent col-12 mb-1 text-left" href="/user/users/properties">
+                    <i class="fa fa-bookmark"></i> Favoris
+                </a>
+                <a class="btn btn-transparent col-12 mb-1 text-left" href="/user/users/?form">
+                    <i class="fa fa-signature"></i> Paramètres de signature
+                </a>
+            </div>
+        </nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Paramètres :
@@ -45,7 +60,7 @@
                             </label>
                             <div class="row">
 
-                                <div class="col-12 text-center">
+                                <div class="col-6 text-center border-right">
                                     <label>Dessinez une signature</label>
                                         <br/>
                                 <canvas id="canvas" onmouseover="this.style.cursor= 'pointer';" width="200" height="150" style="border: 1px solid black;"></canvas>
@@ -53,22 +68,25 @@
                                 <button id="validate" type="button" class="btn btn-light btn-outline-dark">Valider la signature</button>
                                 <button id="erase" type="button" class="btn btn-light btn-outline-dark">Effacer</button>
                                 <button id="reset" type="button" class="btn btn-light btn-outline-dark">Réinitialiser</button>
-                                    <h5 class="hr">ou</h5>
-                                    <div class="form-group">
-                                        <div class="custom-file">
-                                            <input type="file" class="custom-file-input" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
-                                            <label class="custom-file-label" for="vanilla-upload">
-                                                Choisissez une nouvelle image
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="alert alert-light text-dark text-center">
-                                            <button type="button" class="btn btn-dark vanilla-rotate" data-deg="90"><i class="fas fa-undo"></i></button>
-                                            Rotation de l'image
-                                            <button type="button" class="btn btn-dark vanilla-rotate" data-deg="-90"><i class="fas fa-redo"></i></button>
-                                            <div id="vanilla-crop"></div>
-                                    </div>
                                 </div>
+                                <div class="col-lg-6 text-center">
+                                <div class="custom-file mb-1">
+                                    <input type="file" class="custom-file-input" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
+                                    <label class="custom-file-label" for="vanilla-upload">
+                                        Choisissez une nouvelle image
+                                    </label>
+                                </div>
+                                <div id="crop-div" class="alert alert-light text-dark text-center" style="display: none;">
+                                    <div class="d-flex justify-content-center">
+                                    <button type="button" id="zoomout" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-minus"></i></button>
+                                    <button type="button" id="zoomin" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-plus"></i></button>
+                                    <button type="button" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block vanilla-rotate" data-deg="90"><i class="fas fa-undo"></i></button>
+                                    <button type="button" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block vanilla-rotate" data-deg="-90"><i class="fas fa-redo"></i></button>
+                                    </div>
+                                    <div id="vanilla-crop" class="mt-2"></div>
+                                </div>
+                                    </div>
+                            </div>
                         </div>
                         <input type="hidden" th:field="*{signImageBase64}"/>
                         </div>

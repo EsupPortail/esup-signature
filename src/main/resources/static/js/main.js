@@ -17,6 +17,7 @@
  */
 import {GlobalUi} from "./modules/globalUi.js";
 let globalUi = new GlobalUi();
+
 if(document.URL.match("(\/user\/signrequests\/[\\s\\S]+[^?|^\/])")) {
     console.info("show side bar");
     globalUi.showSideBar();
@@ -35,9 +36,17 @@ if (stepDiv != null) {
     });
 }
 
-if ($("#managersSelect").length) {
+$(".select-users").each(function () {
+    let selectId = $(this).attr('id');
     import('./modules/selectUser.js').then((selectUser) => {
         const SelectUser = selectUser.default;
-        new SelectUser("managersSelect");
+        new SelectUser(selectId);
     });
-}
+});
+
+$(".slim-select").each(function () {
+    console.info("enable slim-select for : " + $(this).attr('id'));
+    new SlimSelect({
+        select: '#' + $(this).attr('id')
+    })
+})

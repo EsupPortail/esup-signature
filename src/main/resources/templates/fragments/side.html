@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <nav th:fragment="side" id="sidebar">
     <div class="ml-1 mt-1">
-        <button th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}" th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button" onclick="location.href='/'" class="mt-1 mb-1 col-12 btn btn-transparent text-left">
+        <button th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}" th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
             <i th:classappend="${nbToSign > 0} ? 'sidebar-label'" class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
             <span title="Demandes à signer" th:if="${nbToSign > 0}" class="badge badge-danger mt-1" th:text="${nbToSign}"></span>
         </button>
