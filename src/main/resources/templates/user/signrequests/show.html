@@ -29,7 +29,7 @@
             </button>
             <button id="signButton" class="btn btn-light col-12 mb-1 text-left" th:if="${signRequest.signable}">
                 <i class="fas fa-signature"></i> Mode signature
-            </button>
+               </button>
             <button th:if="${documentType == 'pdf'}" id="commentButton" class="btn btn-light col-12 mb-1 text-left">
                 <i class="fas fa-comment"></i> Mode commentaires
                 <span th:if="${postits.size() > 0}" class="float-right badge badge-warning mt-1" th:text="${postits.size()}"></span>
@@ -38,7 +38,7 @@
             <th:block th:if="${signRequest.parentSignBook != null}">
                 <div th:replace="user/signrequests/cards/stepscard :: stepscard"></div>
             </th:block>
-            <div id="signTools">
+            <div id="signTools" th:if="${documentType == 'pdf' && signRequest.signable}">
                 <div class="alert alert-success">
                     <p>Modifier la signature</p>
                     <button type="button" id="signZoomOut" class="btn btn-light">
@@ -47,6 +47,8 @@
                     <button type="button" id="signZoomIn" class="btn btn-light">
                         <i class="fa fas fa-search-plus"></i>
                     </button>
+                    <button th:if="${currentSignType != 'pdfImageStamp'}" id="visualButton" title="Inserer un visuel" class="btn btn-outline-success ml-1"><i class="fas fa-eye"></i></button>
+                    <button id="dateButton" title="Inserer la date" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>
                 </div>
             </div>
             <div id="commentsTools" th:if="${documentType == 'pdf'}">
@@ -108,10 +110,6 @@
                             <i class="fas fa-paperclip"></i> Pièces jointes <div th:if="${signRequest.attachments.size() > 0 }" th:text="${signRequest.attachments.size()}" class="badge badge-primary"></div>
                         </button>
                         <div class="border ml-3 mr-3 "></div>
-                        <div id="signtools" th:if="${signRequest.signable}" style="display: none;">
-                            <button th:if="${currentSignType != 'pdfImageStamp'}" id="visualButton" title="Inserer un visuel" class="btn btn-outline-success ml-1"><i class="fas fa-eye"></i></button>
-                            <button id="dateButton" title="Inserer la date" class="btn btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>
-                        </div>
                     </th:block>
                     <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported')}">
                         <div id="endButtons" class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#endButtons').toggleClass('active');" onmouseout="$('#endButtons').toggleClass('active');">

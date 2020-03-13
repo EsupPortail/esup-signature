@@ -93,14 +93,15 @@ export class SignPosition {
         }
     }
 
-    refreshSign(scale) {
-        console.debug("refresh sign with new scale : " + scale);
-        this.cross.css('left', parseInt(this.cross.css('left')) / this.currentScale  * scale);
-        this.cross.css('top', parseInt(this.cross.css('top'))  / this.currentScale * scale);
-        this.updateSignSize(scale);
-        $('#textVisa').css('font-size', 8 * scale);
-        this.currentScale = scale;
-    }
+    // refreshSign(scale) {
+    //     console.debug("refresh sign with new scale : " + scale);
+    //     this.cross.css('left', parseInt(this.cross.css('left')) / this.currentScale  * scale);
+    //     this.cross.css('top', parseInt(this.cross.css('top'))  / this.currentScale * scale);
+    //     this.updateSignSize(scale);
+    //     $('#textVisa').css('font-size', 8 * scale);
+    //     $('#textDate').css('font-size', 8 * scale)
+    //     this.currentScale = scale;
+    // }
 
     resetSign() {
         console.info("reset sign to "  + this.startPosX + " " + this.startPosY);
@@ -123,18 +124,20 @@ export class SignPosition {
     }
 
     updateSignSize(scale) {
+        console.info("update sign from scale : " + this.currentScale + " to " + scale);
         this.signWidth = this.signWidth / this.currentScale * scale;
         this.signHeight = this.signHeight / this.currentScale * scale;
-        this.posX = this.posX / this.currentScale  * scale;
-        this.posY = this.posY / this.currentScale  * scale;
+        this.posX = this.posX / this.currentScale * scale;
+        this.posY = this.posY / this.currentScale * scale;
         this.cross.css('left', this.posX);
         this.cross.css('top', this.posY);
         this.cross.css('width', this.signWidth);
         this.cross.css('height', this.signHeight);
-        this.borders.css('width', this.borders.width() / this.currentScale * scale);
-        this.borders.css('height', this.borders.height() / this.currentScale * scale);
-        this.cross.css('background-size', parseInt(this.cross.css('background-size')) / this.currentScale * scale);
-        $('#textVisa').css('font-size', 8 * scale);
+        this.borders.css('width', this.signWidth);
+        this.borders.css('height', this.signHeight);
+        this.cross.css('background-size', this.signWidth);
+        $('#textVisa').css('font-size', 8 * scale + "px");
+        $('#textDate').css('font-size', 8 * scale + "px");
         this.currentScale = scale;
     }
 
@@ -163,10 +166,10 @@ export class SignPosition {
         console.log("toggle visual");
         if(this.visualActive) {
             this.visualActive = false;
-            $('#clock').prop('disabled', true);
+            $('#dateButton').prop('disabled', true);
         } else {
             this.visualActive = true;
-            $('#clock').prop('disabled', false);
+            $('#dateButton').prop('disabled', false);
         }
         this.cross.toggle();
         $('#pen').toggleClass('btn-outline-success btn-outline-dark').children().toggleClass('fa-eye-slash fa-eye');
@@ -174,11 +177,11 @@ export class SignPosition {
 
     toggleDate() {
         console.log("toggle date");
-        $('#clock').toggleClass('btn-outline-success btn-outline-dark');
+        $('#dateButton').toggleClass('btn-outline-success btn-outline-dark');
         var textDate;
         if(!this.dateActive) {
             this.dateActive = true;
-            this.borders.append("<span id='textDate' class='align-top' style='font-weight : bold;font-size:" + 8 * this.currentScale + "px;line-height:" + 8 * this.currentScale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm') +"</span>");
+            this.borders.append("<span id='textDate' class='align-top' style='font-weight : bold;font-size:" + 8 * this.currentScale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm') +"</span>");
         } else {
             this.dateActive = false;
             textDate = document.getElementById("textDate");

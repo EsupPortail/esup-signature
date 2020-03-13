@@ -264,9 +264,6 @@ export class PdfViewer {
         //     $(this).css('top', top);
         // });
         this.scale = this.scale + 0.25;
-        //textDate = document.getElementById("textDate");
-        $('#textDate').css('font-size', 8 * this.scale + 'px')
-        //$('#borders').css('line-height', 8 * this.scale + 'px')
         this.renderPage(this.pageNum);
         this.fireEvent('scaleChange', ['in']);
     }
@@ -285,8 +282,6 @@ export class PdfViewer {
         //     $(this).css('top', top);
         // });
         this.scale = this.scale - 0.25;
-        $('#textDate').css('font-size', 8 * this.scale + 'px')
-        //$('#borders').css('line-height', 8 * this.scale + 'px')
         this.renderPage(this.pageNum);
         this.fireEvent('scaleChange', ['out']);
     }
