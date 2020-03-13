@@ -74,21 +74,21 @@ public class PdfService {
     @Resource
     private SignRequestService signRequestService;
 
-    public InputStream stampImage(Document toSignFile, SignRequest signRequest, SignType signType, SignRequestParams params, User user, boolean addDate) {
+    public InputStream stampImage(Document toSignFile, SignRequest signRequest, SignType signType, SignRequestParams signRequestParams, User user, boolean addDate) {
         signRequestService.setStep("Apposition de la signature");
         PdfParameters pdfParameters;
         try {
             PDDocument pdDocument = PDDocument.load(toSignFile.getInputStream());
             pdfParameters = getPdfParameters(pdDocument);
-            PDPage pdPage = pdDocument.getPage(params.getSignPageNumber() - 1);
+            PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
             PDImageXObject pdImage;
 
             PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
             float height = pdPage.getMediaBox().getHeight();
             float width = pdPage.getMediaBox().getWidth();
 
-            int xPos = params.getxPos();
-            int yPos = params.getyPos();
+            int xPos = signRequestParams.getxPos();
+            int yPos = signRequestParams.getyPos();
             DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
             File signImage = null;
             String text = "";
@@ -124,14 +124,14 @@ public class PdfService {
                 ImageIO.write(bufferedImage, "png", flipedSignImage);
                 pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
                 contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
-                contentStream.drawImage(pdImage, xPos, yPos + topHeight, size[0], size[1]);
+                contentStream.drawImage(pdImage, xPos, yPos + topHeight, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
             } else {
                 AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
                 contentStream.transform(new Matrix(at));
                 ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
                 ImageIO.write(bufferedImage, "png", flipedSignImage);
                 pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
-                contentStream.drawImage(pdImage, xPos, yPos + topHeight - 37, size[0], size[1]);
+                contentStream.drawImage(pdImage, xPos, yPos + topHeight - 37, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
             }
 
             contentStream.close();

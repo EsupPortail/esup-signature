@@ -186,10 +186,10 @@ public class SignService {
 
 	public File getFileImage(InputStream imageStream) throws IOException {
 		final BufferedImage signImage = ImageIO.read(imageStream);
-		BufferedImage  image = new BufferedImage(300, 150, BufferedImage.TYPE_INT_RGB);
+		BufferedImage  image = new BufferedImage(signImage.getWidth(), signImage.getHeight(), BufferedImage.TYPE_INT_RGB);
 		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
 		graphics2D.setColor(Color.white);
-		graphics2D.fillRect(0, 0, 300, 150);
+		graphics2D.fillRect(0, 0, signImage.getWidth(), signImage.getHeight());
 		graphics2D.drawImage(signImage, 0, 0, null);
 		graphics2D.setRenderingHint(
 				RenderingHints.KEY_TEXT_ANTIALIASING,
@@ -224,13 +224,13 @@ public class SignService {
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
 		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile.getInputStream());
 		if (pdfParameters.getRotation() == 0) {
-			imageParameters.setWidth(signSize[0]);
-			imageParameters.setHeight(signSize[1]);
+			imageParameters.setWidth(signRequestParams.getSignWidth());
+			imageParameters.setHeight(signRequestParams.getSignHeight());
 			imageParameters.setxAxis(signRequestParams.getxPos());
 			imageParameters.setyAxis(signRequestParams.getyPos());
 		} else {
-			imageParameters.setWidth(signSize[1]);
-			imageParameters.setHeight(signSize[0]);
+			imageParameters.setWidth(signRequestParams.getSignHeight());
+			imageParameters.setHeight(signRequestParams.getSignWidth());
 			imageParameters.setxAxis(signRequestParams.getxPos() - 50);
 			imageParameters.setyAxis(signRequestParams.getyPos());
 		}

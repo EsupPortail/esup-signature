@@ -199,7 +199,7 @@ export class WorkspacePdf {
             $(this).hide();
         });
         $('#signButton').toggleClass('btn-light btn-success');
-        $('#signtools').show();
+        $('#signTools').show();
         $('#stepscard').show();
         $('#infos').show();
         if(this.signPosition.visualActive) {
@@ -232,7 +232,7 @@ export class WorkspacePdf {
         $('#readButton').addClass('btn-light').removeClass('btn-secondary');
         $('#commentsTools').hide();
         $('#stepscard').hide();
-        $('#signtools').hide();
+        $('#signTools').hide();
         this.signPosition.cross.hide();
         $('#infos').hide();
         $('#postit').hide();

@@ -39,7 +39,7 @@
                 <div th:replace="user/signrequests/cards/stepscard :: stepscard"></div>
             </th:block>
             <div id="signTools" th:if="${documentType == 'pdf' && signRequest.signable}">
-                <div class="alert alert-success">
+                <div class="alert alert-success mb-1">
                     <p>Modifier la signature</p>
                     <button type="button" id="signZoomOut" class="btn btn-light">
                         <i class="fa fas fa-search-minus"></i>
@@ -51,7 +51,7 @@
                     <button id="dateButton" title="Inserer la date" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>
                 </div>
             </div>
-            <div id="commentsTools" th:if="${documentType == 'pdf'}">
+            <div id="commentsTools" th:if="${documentType == 'pdf'}" style="display: none;">
                 <div th:unless="${postits.size() > 0}" class="alert alert-warning">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
                 <div th:if="${postits.size() > 0}" class="alert alert-warning">
                     <ul class="list-group">

@@ -248,6 +248,8 @@ public class SignRequestController {
     @ResponseBody
     @PostMapping(value = "/sign/{id}")
     public ResponseEntity sign(@PathVariable("id") Long id,
+                               @RequestParam(value = "signWidth", required = false) Integer signWidth,
+                               @RequestParam(value = "signHeight", required = false) Integer signHeight,
                                @RequestParam(value = "xPos", required = false) Integer xPos,
                                @RequestParam(value = "yPos", required = false) Integer yPos,
                                @RequestParam(value = "comment", required = false) String comment,
@@ -269,6 +271,8 @@ public class SignRequestController {
         if (signPageNumber != null && xPos != null && yPos != null && visual) {
             SignRequestParams signRequestParams = signRequest.getCurrentSignRequestParams();
             signRequestParams.setSignPageNumber(signPageNumber);
+            signRequestParams.setSignWidth(signWidth);
+            signRequestParams.setSignHeight(signHeight);
             signRequestParams.setxPos(xPos);
             signRequestParams.setyPos(yPos);
             signRequestParamsRepository.save(signRequestParams);

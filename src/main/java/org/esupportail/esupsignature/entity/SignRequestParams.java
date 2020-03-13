@@ -18,10 +18,14 @@ public class SignRequestParams {
 	private String pdSignatureFieldName;
 	
 	private int signPageNumber;
-	
-	private int xPos;
 
-	private int yPos;
+    private int signWidth = 150;
+
+    private int signHeight = 75;
+
+	private int xPos = 0;
+
+	private int yPos = 0;
 
 	public int getSignPageNumber() {
         return this.signPageNumber;
@@ -39,7 +43,23 @@ public class SignRequestParams {
 		this.pdSignatureFieldName = pdSignatureFieldName;
 	}
 
-	public int getxPos() {
+    public int getSignWidth() {
+        return signWidth;
+    }
+
+    public void setSignWidth(int signWidth) {
+        this.signWidth = signWidth;
+    }
+
+    public int getSignHeight() {
+        return signHeight;
+    }
+
+    public void setSignHeight(int signHeight) {
+        this.signHeight = signHeight;
+    }
+
+    public int getxPos() {
         return this.xPos;
     }
 

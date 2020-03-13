@@ -26,7 +26,7 @@ export class WorkspaceOther {
         pointItEnable = false;
         $('#workspace').toggleClass('alert-success alert-secondary');
         $('#signButton').toggleClass('btn-light btn-success');
-        $('#signtools').show();
+        $('#signTools').show();
         $('#stepscard').show();
         $('#infos').show();
     }
@@ -52,7 +52,7 @@ export class WorkspaceOther {
         $('#readButton').addClass('btn-light').removeClass('btn-secondary');
         $('#commentsTools').hide();
         $('#stepscard').hide();
-        $('#signtools').hide();
+        $('#signTools').hide();
         $('#cross').hide();
         $('#infos').hide();
         $('#refusetools').hide();

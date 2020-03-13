@@ -44,8 +44,9 @@ export class SignPosition {
     }
 
     updateSignZoom(signScale) {
-        this.signWidth = this.signWidth / this.signScale * signScale;
-        this.signHeight = this.signHeight / this.signScale * signScale;
+        console.info("sign zoom to : " + signScale);
+        this.signWidth = Math.round(this.signWidth / this.signScale * signScale);
+        this.signHeight = Math.round(this.signHeight / this.signScale * signScale);
         this.cross.css('width', this.signWidth);
         this.cross.css('height', this.signHeight);
         this.borders.css('width', this.signWidth);
@@ -125,10 +126,10 @@ export class SignPosition {
 
     updateSignSize(scale) {
         console.info("update sign from scale : " + this.currentScale + " to " + scale);
-        this.signWidth = this.signWidth / this.currentScale * scale;
-        this.signHeight = this.signHeight / this.currentScale * scale;
-        this.posX = this.posX / this.currentScale * scale;
-        this.posY = this.posY / this.currentScale * scale;
+        this.signWidth = Math.round(this.signWidth / this.currentScale * scale);
+        this.signHeight = Math.round(this.signHeight / this.currentScale * scale);
+        this.posX = Math.round(this.posX / this.currentScale * scale);
+        this.posY = Math.round(this.posY / this.currentScale * scale);
         this.cross.css('left', this.posX);
         this.cross.css('top', this.posY);
         this.cross.css('width', this.signWidth);

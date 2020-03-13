@@ -57,6 +57,8 @@ export class SignUi {
                 "&visual=" + this.workspace.signPosition.visualActive +
                 "&xPos=" + this.workspace.signPosition.posX +
                 "&yPos=" + this.workspace.signPosition.posY +
+                "&signWidth=" + this.workspace.signPosition.signWidth +
+                "&signHeight=" + this.workspace.signPosition.signHeight +
                 "&signPageNumber=" + this.workspace.pdfViewer.pageNum +
                 "&" + csrf.name + "=" + csrf.value
             ;

@@ -227,7 +227,7 @@ public class FileService {
 		BufferedImage  image = new BufferedImage(signImage.getWidth(), signImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
 		graphics2D.setColor(new Color(255,255,255,0 ));
-		graphics2D.fillRect(0, 0, 300, 150);
+		graphics2D.fillRect(0, 0, signImage.getWidth(), signImage.getHeight());
 		graphics2D.drawImage(signImage, 0, 0, null);
 		Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
 		int fontSize = 18;

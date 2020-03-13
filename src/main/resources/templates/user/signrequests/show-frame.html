@@ -7,7 +7,7 @@
 <body style="margin: 0" >
             <div id="tools" style="top:0px;">
                 <div class="d-flex mb-1" th:unless="${documentType == 'pdf'}">
-                    <div id="signtools" th:if="${signRequest.signable}" style="display: none;">
+                    <div id="signTools" th:if="${signRequest.signable}" style="display: none;">
                         <button th:if="${currentSignType != 'visa'}" class="btn btn-success" title="Signer" data-toggle="modal" data-target="#signModal">
                             <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
                         </button>
@@ -45,7 +45,7 @@
                     <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-undo"></i></button>
                     <button id="rotateright" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-redo"></i></button>
                     <div class="border ml-3 mr-3 "></div>
-                    <div id="signtools" class="mr-1" th:if="${signRequest.signable}" style="display: none;">
+                    <div id="signTools" class="mr-1" th:if="${signRequest.signable}" style="display: none;">
                         <button id="pen" th:if="${currentSignType != 'pdfImageStamp'}" title="Inserer un visuel" class="btn btn-outline-success ml-1" onclick="toggleVisual()"><i class="fas fa-pencil-alt"></i></button>
                         <button id="clock" th:if="${currentSignType != 'pdfImageStamp'}" title="Inserer la date" class="btn btn-outline-secondary ml-1" onclick="toggleDate()"><i class="fas fa-clock"></i></button>
                         <button th:if="${currentSignType != 'visa'}" class="btn btn-success" title="Signer" data-toggle="modal" data-target="#signModal">
