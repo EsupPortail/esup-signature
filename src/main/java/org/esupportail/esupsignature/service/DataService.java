@@ -73,7 +73,6 @@ public class DataService {
 	public void reset(Data data) {
 		data.setStatus(SignRequestStatus.draft);
 		data.setSignBook(null);
-		data.setSignBookName(null);
 		dataRepository.save(data);
 	}
 

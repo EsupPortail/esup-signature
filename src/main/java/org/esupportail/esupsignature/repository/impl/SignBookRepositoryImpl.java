@@ -22,8 +22,8 @@ public class SignBookRepositoryImpl implements SignBookRepositoryCustom {
         CriteriaQuery<SignBook> query = criteriaBuilder.createQuery(SignBook.class);
         Root<SignBook> queryRoot = query.from(SignBook.class);
         
-        final List<Predicate> predicates = new ArrayList<Predicate>();
-        final List<Order> orders = new ArrayList<Order>();
+        final List<Predicate> predicates = new ArrayList<>();
+        final List<Order> orders = new ArrayList<>();
         
        	predicates.add(criteriaBuilder.and(criteriaBuilder.notEqual(queryRoot.get("createBy"), createBy)));
 

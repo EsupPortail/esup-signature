@@ -33,8 +33,8 @@ public class SignRequestRepositoryImpl implements SignRequestRepositoryCustom {
         Root<SignRequest> countRoot = count.from(SignRequest.class);
 
 
-        final List<Predicate> predicates = new ArrayList<Predicate>();
-        final List<Predicate> predicatesCount = new ArrayList<Predicate>();
+        final List<Predicate> predicates = new ArrayList<>();
+        final List<Predicate> predicatesCount = new ArrayList<>();
 
         if(status != null) {
             predicates.add(criteriaBuilder.or(criteriaBuilder.equal(queryRoot.get("status"), status)));

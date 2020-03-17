@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface FormRepositoryCustom {
 
-    List<Form> findFormByUserAndActiveVersion(User user, Boolean activeVersion);
+    List<Form> findFormByUser(User user);
 
 
 }

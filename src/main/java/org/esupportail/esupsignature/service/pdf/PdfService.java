@@ -98,7 +98,7 @@ public class PdfService {
                     if (addDate) {
                         text +="Le " + dateFormat.format(new Date());
                     }
-                    signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), text);
+                    signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
                 } catch (IOException e) {
                     logger.error(e.getMessage(), e);
                 }
@@ -110,7 +110,7 @@ public class PdfService {
                 if (addDate) {
                     text +="Le " + dateFormat.format(new Date());
                 }
-                signImage = fileService.addTextToImage(user.getSignImage().getInputStream(), text);
+                signImage = fileService.addTextToImage(user.getSignImage().getInputStream(), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
             }
             int topHeight = 0;
             BufferedImage bufferedImage = ImageIO.read(signImage);

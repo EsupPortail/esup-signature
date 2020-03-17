@@ -158,19 +158,6 @@ public class UserController {
 		}
         return "redirect:/user/users/?form";
     }
-    
-	@RequestMapping(value = "/get-keystore-file", method = RequestMethod.GET)
-	public void getSignedFile(HttpServletResponse response, Model model) {
-		User user = userService.getUserFromAuthentication();
-		Document userKeystore = user.getKeystore();
-		try {
-			response.setHeader("Content-Disposition", "inline;filename=\"" + userKeystore.getFileName() + "\"");
-			response.setContentType(userKeystore.getContentType());
-			IOUtils.copy(userKeystore.getInputStream(), response.getOutputStream());
-		} catch (Exception e) {
-			logger.error("get file error", e);
-		}
-	}
 
 	@RequestMapping(value="/search-user")
 	@ResponseBody
@@ -182,10 +169,9 @@ public class UserController {
 	@GetMapping("/properties")
 	public String properties(Model model) {
 		User user = userService.getUserFromAuthentication();
-		List<UserShare> userShares = userShareRepository.findByUser(user);
 		List<UserPropertie> userProperties = userPropertieRepository.findByUser(user);
 		model.addAttribute("userProperties", userProperties);
-		model.addAttribute("forms", formService.getFormsByUser(user, true));
+		model.addAttribute("forms", formService.getFormsByUser(user));
 		model.addAttribute("users", userRepository.findAll());
 		model.addAttribute("activeMenu", "params");
 		return "user/users/properties";
@@ -196,38 +182,36 @@ public class UserController {
 		User user = userService.getUserFromAuthentication();
 		List<UserShare> userShares = userShareRepository.findByUser(user);
 		model.addAttribute("userShares", userShares);
-		model.addAttribute("forms", formService.getFormsByUser(user, true));
+		model.addAttribute("forms", formService.getFormsByUser(user));
 		model.addAttribute("users", userRepository.findAll());
 		model.addAttribute("activeMenu", "params");
 		return "user/users/shares";
 	}
 
 	@PostMapping("/add-share")
-	public String addShare(@RequestParam("formId") long formId,
-						   @RequestParam("userIds") long[] userIds,
-						   @RequestParam("beginDate") String beginDate,
-						   @RequestParam("endDate") String endDate,
-						   @PathVariable String eppn) {
-		User user = userService.getUserFromSu(eppn);
+	public String addShare(@RequestParam("formId") long formId, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) {
+		User user = userService.getUserFromAuthentication();
 		UserShare userShare = new UserShare();
 		userShare.setUser(user);
 		userShare.setForm(formRepository.findById(formId).get());
-		for (long toUserId : userIds) {
-			userShare.getToUsers().add(userRepository.findById(toUserId).get());
+		for (String userEmail : userEmails) {
+			userShare.getToUsers().add(userRepository.findByEmail(userEmail).get(0));
 		}
-		try {
-			userShare.setBeginDate(new SimpleDateFormat("dd/MM/yyyy").parse(beginDate));
-			userShare.setEndDate(new SimpleDateFormat("dd/MM/yyyy").parse(endDate));
-		} catch (ParseException e) {
-			logger.error("error on parsing dates", e);
+		if(beginDate != null && endDate != null) {
+			try {
+				userShare.setBeginDate(new SimpleDateFormat("dd/MM/yyyy").parse(beginDate));
+				userShare.setEndDate(new SimpleDateFormat("dd/MM/yyyy").parse(endDate));
+			} catch (ParseException e) {
+				logger.error("error on parsing dates", e);
+			}
 		}
 		userShareRepository.save(userShare);
-		return "redirect:/user/params";
+		return "redirect:/user/users/shares";
 	}
 
 	@DeleteMapping("/del-share/{id}")
-	public String addShare(@PathVariable long id, @PathVariable String eppn) {
-		User user = userService.getUserFromSu(eppn);
+	public String addShare(@PathVariable long id) {
+		User user = userService.getUserFromAuthentication();
 		UserShare userShare = userShareRepository.findById(id).get();
 		if (userShare.getUser().equals(user)) {
 			userShareRepository.delete(userShare);

@@ -24,6 +24,17 @@
 				</th:block>
 			</ul>
 			<ul class="navbar-nav" th:if="${user.firstname != null}">
+				<li class="nav-item">
+					<form th:if="${session.suEppn == null}" id="changeSuEppn" action="/change" method="post">
+						<select class="form-control" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
+							<option th:value="${user.eppn}" selected>Délégation désactivée</option>
+							<th:block th:each="suUser : ${suUsers}">
+								<option th:if="${user.eppn == suUser.eppn}" th:value="${suUser.eppn}" th:text="${suUser.firstname} + ' ' + ${suUser.name} " selected></option>
+								<option th:unless="${user.eppn == suUser.eppn}" th:value="${suUser.eppn}" th:text="${suUser.firstname} + ' ' + ${suUser.name} "></option>
+							</th:block>
+						</select>
+					</form>
+				</li>
 				<li class="nav-item text-white">
 						<span class="d-none d-md-inline" th:text="${user.firstname} + ' ' + ${user.name}">
 						</span>

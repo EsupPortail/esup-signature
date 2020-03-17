@@ -24,6 +24,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -52,16 +54,13 @@ public class UserService {
 	private PersonLdapRepository personLdapRepository;
 
 	@Resource
-	private OrganizationalUnitLdapRepository organizationalUnitLdapRepository;
-
-	@Resource
 	private UserShareRepository userShareRepository;
 
 	@Resource
 	private MailService mailService;
 	
 	public List<User> getAllUsers() {
-		List<User> list = new ArrayList<User>();
+		List<User> list = new ArrayList<>();
 		userRepository.findAll().forEach(e -> list.add(e));
 		return list;
 	}
@@ -113,7 +112,7 @@ public class UserService {
 			uid = authentication.getName();
 		}
 		List<PersonLdap> personLdaps =  personLdapRepository.findByUid(uid);
-		String eppn = personLdaps.get(0).getEduPersonPrincipalName();
+		String eppn = uid + "@univ-rouen.fr";
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
         String firstName = personLdaps.get(0).getGivenName();
@@ -148,7 +147,7 @@ public class UserService {
 		userRepository.save(user);
 		return user;
 	}
-	
+
 	public boolean checkEmailAlert(User user) {
 		Date date = new Date();
 		Calendar calendar = Calendar.getInstance();
@@ -176,10 +175,13 @@ public class UserService {
 	
     public User getUserFromAuthentication() {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    	String eppn = auth.getName();
+    	String eppn = auth.getName() + "@univ-rouen.fr";
     	if(ldapPersonService != null) {
     		if(personLdapRepository.findByUid(auth.getName()).size() > 0) {
-    			eppn = personLdapRepository.findByUid(auth.getName()).get(0).getEduPersonPrincipalName();
+    			String ldapEppn = personLdapRepository.findByUid(auth.getName()).get(0).getEduPersonPrincipalName();
+    			if(ldapEppn != null) {
+    				eppn = ldapEppn;
+				}
     		}
     	}
 		if (userRepository.countByEppn(eppn) > 0) {
@@ -196,7 +198,6 @@ public class UserService {
 		} else {
 			return getSystemUser();
 		}
-    	
     }
 
 	public User getSystemUser() {
@@ -226,11 +227,15 @@ public class UserService {
 
 	public List<User> getSuUsers() {
 		User user = getUserFromAuthentication();
-		List<User> suEppns = new ArrayList<>();
-		for (UserShare userShare : userShareRepository.findByToUsers(Arrays.asList(user))) {
-			suEppns.add(userShare.getUser());
+		List<User> suUsers = new ArrayList<>();
+		for (UserShare userShare : userShareRepository.findByUser(user)) {
+			for(User userTo : userShare.getToUsers()) {
+				if(!suUsers.contains(userTo)) {
+					suUsers.add(userTo);
+				}
+			}
 		}
-		return suEppns;
+		return suUsers;
 	}
 
 	public List<PersonLdap> getPersonLdaps(String searchString, String ldapTemplateName) {
@@ -278,19 +283,16 @@ public class UserService {
 	public PersonLdap getPersonLdap(User user) {
 		if (ldapPersonService != null) {
 			List<PersonLdap> personLdaps = personLdapRepository.findByEduPersonPrincipalName(user.getEppn());
-			return personLdaps.get(0);
+			if(personLdaps.size() > 0) {
+				return personLdaps.get(0);
+			}
 		}
 		return null;
 	}
 
-	public OrganizationalUnitLdap getOrganizationalUnitLdap(String supannCodeEntite) {
-		if (ldapPersonService != null) {
-			List<OrganizationalUnitLdap> organizationalUnitLdap = organizationalUnitLdapRepository.findBySupannCodeEntite(supannCodeEntite);
-			if(organizationalUnitLdap.size() > 0) {
-				return organizationalUnitLdap.get(0);
-			}
-		}
-		return null;
+	@PostMapping("/change")
+	public String change(@RequestParam("suEppn") String suEppn) {
+		return "redirect:/user/" + suEppn + "/";
 	}
 
 }

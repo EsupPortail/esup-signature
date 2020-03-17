@@ -37,15 +37,13 @@ public class Data {
     private Date updateDate;
     
     @ElementCollection(fetch = FetchType.EAGER)
-	private Map<String, String> datas = new HashMap<String, String>();
+	private Map<String, String> datas = new HashMap<>();
 
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	private SignBook signBook = null;
-    
-    private String signBookName;
 
 	public Long getId() {
 		return id;
@@ -125,14 +123,6 @@ public class Data {
 
 	public void setCreateDate(Date createDate) {
 		this.createDate = createDate;
-	}
-
-	public String getSignBookName() {
-		return signBookName;
-	}
-
-	public void setSignBookName(String signBookName) {
-		this.signBookName = signBookName;
 	}
 
 	public SignRequestStatus getStatus() {

@@ -21,6 +21,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -45,8 +46,13 @@ public class HomeController {
     }
 
     @ModelAttribute("user")
-    public User getUser() {
-        return userService.getUserFromAuthentication();
+    public User getUser(@RequestParam(required = false) String suEppn) {
+        return userService.getUserFromSu(suEppn);
+    }
+
+    @ModelAttribute("suUsers")
+    public List<User> getSuUsers() {
+        return userService.getSuUsers();
     }
 
     @Resource
@@ -70,7 +76,7 @@ public class HomeController {
         model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequestsToSign, pageable));
         List<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft);
         model.addAttribute("datas", datas);
-        model.addAttribute("forms", formService.getFormsByUser(user, true));
+        model.addAttribute("forms", formService.getFormsByUser(user));
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
         model.addAttribute("signTypes", Arrays.asList(SignType.values()));
         return "user/home/index";

@@ -64,20 +64,16 @@ public class FormService {
 		}
 	}
 	
-	public List<Form> getFormsByUser(User user, Boolean activeVersion){
-		if(user.getRoles().size() > 0) {
-			List<Form> forms = new ArrayList<>();
-			if(user.equals(userService.getUserFromAuthentication())) {
-				forms = formRepository.findFormByUserAndActiveVersion(userService.getUserFromAuthentication(), activeVersion);
-			} else {
-				for(UserShare userShare : userShareRepository.findByUserAndToUsers(user, Arrays.asList(userService.getUserFromAuthentication()))) {
-					forms.add(userShare.getForm());
-				}
-			}
-			return forms;
+	public List<Form> getFormsByUser(User user){
+		List<Form> forms = new ArrayList<>();
+		if(user.equals(userService.getUserFromAuthentication())) {
+			forms = formRepository.findFormByUser(userService.getUserFromAuthentication());
 		} else {
-			return null; 
+			for(UserShare userShare : userShareRepository.findByUserAndToUsers(user, Arrays.asList(userService.getUserFromAuthentication()))) {
+				forms.add(userShare.getForm());
+			}
 		}
+		return forms;
 	}
 
 	public List<Form> getAllForms(){

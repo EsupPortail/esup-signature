@@ -182,25 +182,6 @@ public class SignService {
 		return parameters;
 	}
 
-
-
-	public File getFileImage(InputStream imageStream) throws IOException {
-		final BufferedImage signImage = ImageIO.read(imageStream);
-		BufferedImage  image = new BufferedImage(signImage.getWidth(), signImage.getHeight(), BufferedImage.TYPE_INT_RGB);
-		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
-		graphics2D.setColor(Color.white);
-		graphics2D.fillRect(0, 0, signImage.getWidth(), signImage.getHeight());
-		graphics2D.drawImage(signImage, 0, 0, null);
-		graphics2D.setRenderingHint(
-				RenderingHints.KEY_TEXT_ANTIALIASING,
-				RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
-		graphics2D.setColor(Color.black);
-		File fileImage = fileService.getTempFile("sign.png");
-		ImageIO.write(image, "png", fileImage);
-		graphics2D.dispose();
-		return fileImage;
-	}
-
 	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user, boolean addDate) throws IOException {
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
@@ -210,9 +191,9 @@ public class SignService {
 		if(addDate) {
 			DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
 			String text = "Le " + dateFormat.format(new Date());
-			signImage = fileService.addTextToImage(user.getSignImage().getInputStream(), text);
+			signImage = fileService.addTextToImage(user.getSignImage().getInputStream(), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
 		} else {
-			signImage = getFileImage(user.getSignImage().getInputStream());
+			signImage = fileService.addTextToImage(user.getSignImage().getInputStream(), null, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
 		}
 
 		fileDocumentImage = new InMemoryDocument(new FileInputStream(signImage), "sign.png");

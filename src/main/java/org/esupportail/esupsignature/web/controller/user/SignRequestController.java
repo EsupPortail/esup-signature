@@ -151,7 +151,7 @@ public class SignRequestController {
         model.addAttribute("signBookId", signBookId);
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("messageError", messageError);
-        model.addAttribute("forms", formService.getFormsByUser(user, true));
+        model.addAttribute("forms", formService.getFormsByUser(user));
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
         return "user/signrequests/list";
     }
@@ -264,7 +264,6 @@ public class SignRequestController {
         if (visual == null) {
             visual = true;
         }
-
         User user = userService.getUserFromAuthentication();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();

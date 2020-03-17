@@ -10,8 +10,7 @@ import java.util.List;
 public interface FormRepository extends CrudRepository<Form, Long>, FormRepositoryCustom {
 	Long countById(Long id);
 	List<Form> findByDocument(Document document);
-	List<Form> findFormByActiveVersion(Boolean activeVersion);
 	List<Form> findFormByNameAndActiveVersion(String name, Boolean activeVersion);
-	List<Form> findFormByUserAndActiveVersion(User user, Boolean activeVersion);
-	List<Form> findFormByIdAndVersion(Long id, Integer version);
+	List<Form> findFormByUser(User user);
+
 }

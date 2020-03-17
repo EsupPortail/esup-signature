@@ -49,13 +49,13 @@ public class DataController {
 	private FormService formService;
 
 	@Resource
+	private FormRepository formRepository;
+
+	@Resource
 	private UserService userService;
 
 	@Resource
 	private UserPropertieRepository userPropertieRepository;
-
-	@Resource
-	private WorkflowService workflowService;
 
 	@Resource
 	private PreFillService preFillService;
@@ -88,7 +88,7 @@ public class DataController {
 
 	@ModelAttribute("forms")
 	public List<Form> getForms() {
-		return 	formService.getFormsByUser(userService.getUserFromAuthentication(), true);
+		return 	formService.getFormsByUser(userService.getUserFromAuthentication());
 	}
 
 	@GetMapping("datas")
@@ -104,13 +104,12 @@ public class DataController {
 		User user = userService.getUserFromAuthentication();
 		Data data = dataService.getDataById(id);
 		model.addAttribute("data", data);
-		if(page == null) {
-			page = 1;
-		}
-		if(user.getEppn().equals(data.getOwner())) {
-				Integer finalPage = page;
-				model.addAttribute("page", page);
-				model.addAttribute("fields", data.getDatas());
+		if (user.getEppn().equals(data.getOwner())) {
+			if (page == null) {
+				page = 1;
+			}
+			model.addAttribute("page", page);
+			model.addAttribute("fields", data.getDatas());
 			return "user/datas/show";
 		} else {
 			return "redirect:/";
@@ -118,29 +117,36 @@ public class DataController {
 	}
 
 	@GetMapping("datas/form/{id}")
-	public String createData(@PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model) {
+	public String createData(@PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
 		User user = userService.getUserFromAuthentication();
+		List<Form> autorizedForms = formRepository.findFormByUser(user);
 		Form form = formService.getFormById(id);
-		if(page == null) {
-			page = 1;
-		}
-		model.addAttribute("form", form);
-		if(form.getPreFillType() != null && !form.getPreFillType().isEmpty()) {
-			Integer finalPage = page;
-			List<Field> fields = form.getFields().stream().filter(field -> field.getPage() == finalPage).collect(Collectors.toList());
-			model.addAttribute("fields", preFillService.getPreFillServiceByName(form.getPreFillType(), fields, user));
+		if(autorizedForms.contains(form)) {
+			if (page == null) {
+				page = 1;
+			}
+			model.addAttribute("form", form);
+			if (form.getPreFillType() != null && !form.getPreFillType().isEmpty()) {
+				Integer finalPage = page;
+				List<Field> fields = form.getFields().stream().filter(field -> field.getPage() == finalPage).collect(Collectors.toList());
+				model.addAttribute("fields", preFillService.getPreFillServiceByName(form.getPreFillType(), fields, user));
+			} else {
+				model.addAttribute("fields", form.getFields());
+			}
+
+			model.addAttribute("data", new Data());
+			model.addAttribute("activeForm", form.getName());
+			model.addAttribute("page", page);
+			if (form.getPdfDisplay()) {
+				return "user/datas/create-pdf";
+			} else {
+				return "user/datas/create";
+			}
 		} else {
-			model.addAttribute("fields", form.getFields());
+			redirectAttributes.addFlashAttribute("messageError", "Formulaire non autorisé");
+			return "redirect:/user/";
 		}
 
-		model.addAttribute("data", new Data());
-		model.addAttribute("activeForm", form.getName());
-		model.addAttribute("page", page);
-		if(form.getPdfDisplay()) {
-			return "user/datas/create-pdf";
-		} else {
-			return "user/datas/create";
-		}
 	}
 
 	@GetMapping("datas/{id}/update")
