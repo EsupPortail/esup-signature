@@ -46,7 +46,8 @@
                            style="width: 200px; height: 200px;" th:href="'/user/datas/form/' + ${form.id}"
                            th:title="${form.name}">
                             <div class="crop">
-                                <img th:src="'/user/forms/' + ${form.id} + '/get-image/'" height="150px"/>
+                                <i class="fas fa-file-alt fa-4x"></i>
+<!--                                <img th:src="'/user/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
                             </div>
                             <h6 th:text="${form.name}"></h6>
                         </a>
