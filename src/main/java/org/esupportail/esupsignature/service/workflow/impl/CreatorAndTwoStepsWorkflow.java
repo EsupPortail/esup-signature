@@ -17,7 +17,7 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 
 	private String name = "CreatorAndTwoStepsWorkflow";
 	private String description = "Signature du créateur puis de deux signataires en série";
-	private List<WorkflowStep> workflowSteps = new ArrayList<>();
+	private List<WorkflowStep> workflowSteps;
 
 	@Resource
 	private UserService userService;
@@ -37,10 +37,14 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 
 	@Override
 	public List<WorkflowStep> getWorkflowSteps() {
-		if(this.workflowSteps.size() == 0) {
+		if(this.workflowSteps == null) {
 			this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null, null);
 		}
 		return this.workflowSteps;
+	}
+
+	public void initWorkflowSteps() {
+		this.workflowSteps = new ArrayList<>();
 	}
 
 	@Override

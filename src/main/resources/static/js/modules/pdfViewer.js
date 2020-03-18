@@ -139,76 +139,86 @@ export class PdfViewer {
                 });
             }
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
-            inputField.attr('name', items[i].fieldName);
-            if(dataField != null) {
-                inputField.val(dataField.defaultValue);
-                if (dataField.required) {
-                    inputField.prop('required', true);
-                    inputField.addClass('required-field');
-                }
-                if (dataField.type === "radio") {
-                    inputField.val(items[i].buttonValue);
-                    if(dataField.defaultValue === items[i].buttonValue) {
-                        inputField.prop("checked", true);
+            if(inputField.length > 0) {
+                inputField.attr('name', items[i].fieldName);
+                if (dataField != null) {
+                    inputField.val(dataField.defaultValue);
+                    if (dataField.required) {
+                        inputField.prop('required', true);
+                        inputField.addClass('required-field');
+                    }
+                    if (dataField.type === "radio") {
+                        inputField.val(items[i].buttonValue);
+                        if (dataField.defaultValue === items[i].buttonValue) {
+                            inputField.prop("checked", true);
+                        }
+                    }
+                    if (dataField.type === 'checkbox') {
+                        inputField.val('on');
+                        if (dataField.defaultValue === 'on') {
+                            inputField.attr("checked", "checked");
+                            inputField.prop("checked", true);
+                        }
+                    }
+                    if (dataField.type === "date") {
+                        inputField.datetimepicker({
+                            format: 'DD/MM/YYYY',
+                            locale: 'fr',
+                            icons: {
+                                time: 'fa fa-time',
+                                date: 'fa fa-calendar',
+                                up: 'fa fa-chevron-up',
+                                down: 'fa fa-chevron-down',
+                                previous: 'fa fa-chevron-left',
+                                next: 'fa fa-chevron-right',
+                                today: 'fa fa-screenshot',
+                                clear: 'fas fa-trash-alt',
+                                close: 'fa fa-check'
+                            },
+                            toolbarPlacement: 'bottom',
+                            showClear: true,
+                            showClose: true,
+                            keepOpen: false,
+                            widgetPositioning: {
+                                horizontal: 'right',
+                                vertical: 'top'
+                            },
+                        });
+                    }
+                    if (dataField.type === "time") {
+                        inputField.datetimepicker({
+                            format: 'LT',
+                            locale: 'fr',
+                            stepping: 5,
+                            icons: {
+                                time: 'fa fa-time',
+                                date: 'fa fa-calendar',
+                                up: 'fa fa-chevron-up',
+                                down: 'fa fa-chevron-down',
+                                previous: 'fa fa-chevron-left',
+                                next: 'fa fa-chevron-right',
+                                today: 'fa fa-screenshot',
+                                clear: 'fas fa-trash-alt',
+                                close: 'fa fa-check'
+                            },
+                            toolbarPlacement: 'bottom',
+                            showClear: true,
+                            showClose: true,
+                            keepOpen: false,
+                            widgetPositioning: {
+                                horizontal: 'right',
+                                vertical: 'top'
+                            },
+                        });
                     }
                 }
-                if (dataField.type === 'checkbox') {
-                    inputField.val('on');
-                    if(dataField.defaultValue === 'on') {
-                        inputField.attr("checked", "checked");
-                        inputField.prop("checked", true);
+            } else {
+                let inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
+                if(inputField.length > 0) {
+                    inputField.attr('name', items[i].fieldName);
+                    if (dataField != null) {
+                        inputField.val(dataField.defaultValue);
                     }
-                }
-                if (dataField.type === "date") {
-                    inputField.datetimepicker({
-                        format: 'DD/MM/YYYY',
-                        locale: 'fr',
-                        icons: {
-                            time: 'fa fa-time',
-                            date: 'fa fa-calendar',
-                            up: 'fa fa-chevron-up',
-                            down: 'fa fa-chevron-down',
-                            previous: 'fa fa-chevron-left',
-                            next: 'fa fa-chevron-right',
-                            today: 'fa fa-screenshot',
-                            clear: 'fas fa-trash-alt',
-                            close: 'fa fa-check'
-                        },
-                        toolbarPlacement: 'bottom',
-                        showClear: true,
-                        showClose: true,
-                        keepOpen: false,
-                        widgetPositioning: {
-                            horizontal: 'right',
-                            vertical: 'top'
-                        },
-                    });
-                }
-                if (dataField.type === "time") {
-                    inputField.datetimepicker({
-                        format: 'LT',
-                        locale: 'fr',
-                        stepping: 5,
-                        icons: {
-                            time: 'fa fa-time',
-                            date: 'fa fa-calendar',
-                            up: 'fa fa-chevron-up',
-                            down: 'fa fa-chevron-down',
-                            previous: 'fa fa-chevron-left',
-                            next: 'fa fa-chevron-right',
-                            today: 'fa fa-screenshot',
-                            clear: 'fas fa-trash-alt',
-                            close: 'fa fa-check'
-                        },
-                        toolbarPlacement: 'bottom',
-                        showClear: true,
-                        showClose: true,
-                        keepOpen: false,
-                        widgetPositioning: {
-                            horizontal: 'right',
-                            vertical: 'top'
-                        },
-                    });
                 }
             }
         }

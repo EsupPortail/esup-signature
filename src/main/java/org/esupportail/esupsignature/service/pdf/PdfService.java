@@ -439,6 +439,9 @@ public class PdfService {
                 for(PDField pdField : fields) {
                     if (pdField instanceof PDTextField) {
                         //pdField.getAcroForm().setNeedAppearances(true);
+                        PDTextField defaultField = new PDTextField(pdAcroForm);
+                        String da = defaultField.getDefaultAppearance();
+                        ((PDTextField) pdField).setDefaultAppearance(da);
                         pdField.setValue(datas.get(pdField.getPartialName()));
                     } else if (pdField instanceof PDCheckBox) {
                         if(datas.get(pdField.getPartialName()) != null && datas.get(pdField.getPartialName()).equals("on")) {

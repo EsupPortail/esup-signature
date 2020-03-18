@@ -94,14 +94,15 @@
             <div class="modal-body">
                 <form th:action="'/user/datas/' + ${data.id} + '/send'" method="post" id="send">
                         <p>
-                            <span th:text="'La procedure ' + ${form.name} + ' comporte ' + ${steps.size()} + ' étapes.'"></span>
-                        <p>
-                            Les signataires sont pré-séléctionnés en fonction de vos précédentes saisis.
-                            <br>
-                            Si aucun signataire n'est présent ou si la selection de convient pas, vous pouvez modifier les valeurs.
+                            <span th:text="'La procedure ' + ${form.name} + ' comporte ' + ${steps.size()} + ' étape(s)'"></span>
                         </p>
                         <th:block th:each="step,iterator : ${steps}">
                             <div th:if="${step.changeable == true}" class="form-group">
+                                <p class="small">
+                                    Les signataires sont pré-séléctionnés en fonction de vos précédentes saisis.
+                                    <br>
+                                    Si aucun signataire n'est présent ou si la selection de convient pas, vous pouvez modifier les valeurs.
+                                </p>
                                 <label th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></label>
                                 <select th:id="'recipientEmailsSelect_' + ${step.stepNumber}" multiple="multiple" name="recipientEmails" required>
                                     <th:block th:each="recipient : ${step.recipients}">

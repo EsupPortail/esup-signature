@@ -20,6 +20,8 @@ import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserPropertieRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -29,6 +31,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class FormService {
+
+	private static final Logger logger = LoggerFactory.getLogger(FormService.class);
 
 	@Resource
 	private FormRepository formRepository;
@@ -161,6 +165,7 @@ public class FormService {
 					COSString cosString = (COSString) pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K).getItem(COSName.JS);
 					type = cosString.toString();
 				}
+				logger.info(type);
 				if(type.equals("text")) {
 					field.setType(FieldType.text);
 				} else if(type.contains("Time")) {

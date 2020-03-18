@@ -18,7 +18,7 @@ public class BasicWorkflow extends DefaultWorkflow {
 
 	private String name = "BasicWorkflow";
 	private String description = "Une signature";
-	private List<WorkflowStep> workflowSteps = new ArrayList<>();
+	private List<WorkflowStep> workflowSteps;
 
 	@Resource
 	private UserService userService;
@@ -38,10 +38,14 @@ public class BasicWorkflow extends DefaultWorkflow {
 
 	@Override
 	public List<WorkflowStep> getWorkflowSteps() {
-		if(this.workflowSteps.size() == 0) {
+		if(this.workflowSteps == null) {
 			this.workflowSteps = generateWorkflowSteps(userService.getUserFromAuthentication(), null, null);
 		}
 		return this.workflowSteps;
+	}
+
+	public void initWorkflowSteps() {
+		this.workflowSteps = new ArrayList<>();
 	}
 
 	@Override

@@ -11,6 +11,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +29,17 @@ public class LdapExtValue implements ExtValue {
 	
 	@Override
 	public String getValueByName(String name, User user) {
+		if(name.equals("schacDateOfBirth")) {
+			String schacDateOfBirth = initValues(user).get(name).toString();
+			DateFormat originalFormat = new SimpleDateFormat("yyyyMMdd");
+			DateFormat targetFormat = new SimpleDateFormat("dd/MM/yyyy");
+			try {
+				Date date = originalFormat.parse(schacDateOfBirth);
+				return targetFormat.format(date);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}
 		return initValues(user).get(name).toString();
 	}
 

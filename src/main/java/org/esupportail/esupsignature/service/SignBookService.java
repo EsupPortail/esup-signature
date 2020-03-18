@@ -72,7 +72,7 @@ public class SignBookService {
             signBookRepository.save(signBook);
             return signBook;
         } else {
-            throw new EsupSignatureException("Un circuit porte déjà ce nom");
+            throw new EsupSignatureException("Un circuit porte déjà le nom : " + name);
         }
     }
 
