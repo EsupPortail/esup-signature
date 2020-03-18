@@ -112,7 +112,7 @@ public class UserService {
 			uid = authentication.getName();
 		}
 		List<PersonLdap> personLdaps =  personLdapRepository.findByUid(uid);
-		String eppn = uid + "@univ-rouen.fr";
+		String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
         String firstName = personLdaps.get(0).getGivenName();
@@ -175,7 +175,7 @@ public class UserService {
 	
     public User getUserFromAuthentication() {
     	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    	String eppn = auth.getName() + "@univ-rouen.fr";
+    	String eppn = auth.getName();
     	if(ldapPersonService != null) {
     		if(personLdapRepository.findByUid(auth.getName()).size() > 0) {
     			String ldapEppn = personLdapRepository.findByUid(auth.getName()).get(0).getEduPersonPrincipalName();
