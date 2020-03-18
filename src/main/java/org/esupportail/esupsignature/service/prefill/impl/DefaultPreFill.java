@@ -39,7 +39,7 @@ public class DefaultPreFill implements PreFill {
 				String extValueType = field.getName().split("_")[1];
 				String extValueName = field.getName().split("_")[2];
 				ExtValue extValue = extValueService.getExtValueServiceByName(extValueType);
-				field.setDefaultValue(extValue.getValueByNameAndUser(extValueName, user));
+				field.setDefaultValue(extValue.getValueByName(extValueName, user));
 			}
 			filledFields.add(field);
 		}

@@ -19,6 +19,11 @@ body {
     font-weight: 200;
 }
 
+
+h6 {
+    font-size: 11px;
+}
+
 dt {
     font-weight: normal;
 }
@@ -874,4 +879,8 @@ float:left;
 .zoom {
     text-align: center;
     min-width: 60px !important;
+}
+
+.textWidgetAnnotation input {
+    padding: 0 !important;
 }

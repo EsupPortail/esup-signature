@@ -37,7 +37,7 @@ public class OrdreMissionPreFill implements PreFill {
 		PDResources resources = new PDResources();
 		resources.put(COSName.getPDFName("Helvetica"), font);
 		ExtValue extLdapValue = extValueService.getExtValueServiceByName("ldap");
-		Map<String, Object> ldapValues = extLdapValue.getAllValuesByUser(user);
+		Map<String, Object> ldapValues = extLdapValue.initValues(user);
 		for(Field field : fields) {
 			if(field.getName().split("_")[0].equals("extvalue")) {
 				if(field.getName().split("_")[1].equals("ldap")) {	

@@ -151,7 +151,7 @@ public class FormManagerController {
 	@DeleteMapping("forms/{id}")
 	public String deleteForm(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		formService.deleteForm(id);
-		redirectAttributes.addFlashAttribute("messageError", "Le formulaire à bien été supprimé");
+		redirectAttributes.addFlashAttribute("messageInfo", "Le formulaire à bien été supprimé");
 		return "redirect:/manager/forms";
 	}
 	

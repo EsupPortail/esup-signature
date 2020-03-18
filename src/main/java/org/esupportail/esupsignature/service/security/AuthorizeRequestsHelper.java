@@ -13,15 +13,15 @@ public class AuthorizeRequestsHelper {
 		for (String ip : nfcWsAccessAuthorizeIps) {
 			http.authorizeRequests().antMatchers("/nfc-ws/**").access("hasIpAddress('"+ ip +"')");			
 		}
-//		http.authorizeRequests()
-//		.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
-//		.antMatchers("/manager/", "/manager/**").access("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
-//		.antMatchers("/user/", "/user/**").authenticated()
-//		.antMatchers("/webjars/**").permitAll();
-
 		http.authorizeRequests()
-		.antMatchers("/", "/**").authenticated()
+		.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
+		.antMatchers("/manager/", "/manager/**").access("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+		.antMatchers("/user/", "/user/**").authenticated()
 		.antMatchers("/webjars/**").permitAll();
+
+//		http.authorizeRequests()
+//		.antMatchers("/", "/**").authenticated()
+//		.antMatchers("/webjars/**").permitAll();
 	}
 
 }

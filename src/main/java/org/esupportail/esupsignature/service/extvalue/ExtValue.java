@@ -2,11 +2,12 @@ package org.esupportail.esupsignature.service.extvalue;
 
 import org.esupportail.esupsignature.entity.User;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public interface ExtValue {
+	String getName();
+	Map<String, Object> initValues(User user);
+	String getValueByName(String name, User user);
 
-	public String getName();
-	public String getValueByNameAndUser(String name, User user);
-	public Map<String, Object> getAllValuesByUser(User user);
 }
