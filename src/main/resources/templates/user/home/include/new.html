@@ -9,8 +9,8 @@
             <h5 class="text-center"><b>Nouveau</b></h5>
             <div id="newScroll" class="text-center text-nowrap col-lg-10 col-xl-12 overflow-auto text-wrap scrollbar-primary">
                 <div class="d-inline">
-                    <a role="button" class="btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden" data-toggle="modal"
-                        data-target="#wizardModal" style="width: 150px; height: 200px;"
+                    <a role="button" class="btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
+                        data-target="#wizardModal" style="width: 200px; height: 200px;"
                         title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant"
                         onclick="$('#wizIframe').attr('src', '/user/wizard/wiz1');">
                         <div class="crop">
@@ -19,8 +19,8 @@
                         <h6>Circuit personnalisé</h6>
                     </a>
 
-                    <a role="button" class="btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden" data-toggle="modal"
-                        data-target="#fastSignRequestModal" style="width: 150px; height: 200px;"
+                    <a role="button" class="btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
+                        data-target="#fastSignRequestModal" style="width: 200px; height: 200px;"
                         title="Vous devez signer un document présent sur votre poste">
                         <div class="crop">
                             <i class="fas fa-bolt fa-4x"></i>
@@ -29,8 +29,8 @@
                     </a>
 
                     <th:block th:each="workflow : ${workflows}">
-                        <a role="button" class="btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden"
-                            style="width: 150px; height: 200px;" data-toggle="modal"
+                        <a role="button" class="btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0"
+                            style="width: 200px; height: 200px;" data-toggle="modal"
                             data-target="#newRequest"
                             th:title="${workflow.name}"
                             th:onclick="'$(\'#workflowIFrame\').attr(\'src\', \'/user/wizard/wiz1?workflowId=' + ${workflow.id} +'\');'">
@@ -42,8 +42,8 @@
                     </th:block>
 
                     <th:block th:each="form : ${forms}">
-                        <a role="button" class="btn btn-material btn-light text-center mr-2 overflow-hidden"
-                           style="width: 150px; height: 200px;" th:href="'/user/datas/form/' + ${form.id}"
+                        <a role="button" class="btn btn-material btn-light text-center mr-2 overflow-hidden p-0"
+                           style="width: 200px; height: 200px;" th:href="'/user/datas/form/' + ${form.id}"
                            th:title="${form.name}">
                             <div class="crop">
                                 <img th:src="'/user/forms/' + ${form.id} + '/get-image/'" height="150px"/>

@@ -111,6 +111,7 @@ export class PdfViewer {
         this.pdfPageView.draw();
         this.pageRendering = false;
         if(this.dataFields != null) {
+            console.info("render form");
             this.page.getAnnotations().then(items => this.renderPdfForm(items));
         }
         this.canvas.style.width = Math.round(this.pdfPageView.viewport.width) +"px";
@@ -126,17 +127,16 @@ export class PdfViewer {
             let dataField = this.dataFields.filter(obj => {
                 return obj.name === items[i].fieldName
             })[0];
-            if(items[i].fieldType === undefined && items[i].title.startsWith('sign')) {
+            console.debug(items[i]);
+            if(items[i].fieldType === undefined && items[i].title.toLowerCase().startsWith('sign')) {
+                console.debug("found sign field");
                 signFieldNumber = signFieldNumber + 1;
                 $('.popupWrapper').remove();
                 let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                signField.append('Champ signature ' + signFieldNumber);
-                signField.css('text-align', 'center');
-                signField.css('background-color', 'rgba(0, 255, 0, .5)');
-                signField.css('cursor', 'default');
-                signField.click(function(){
-                    $('#signModal').modal('show');
-                });
+                signField.append('Champ signature ' + signFieldNumber + ' : <br>');
+                signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
+                signField.addClass("sign-field");
+
             }
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length > 0) {

@@ -22,7 +22,7 @@
         </nav>
         <div id="content" class="content">
             <div th:if="${data.status == null}" class="fixed-action-btn" style="bottom: 100px; right: 50px;">
-                <a role="button" title="Enregistrer les modifications" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" onclick="document.getElementById('newDataSubmit').click();" class="btn-floating btn-lg bg-success wave-effect">
+                <a role="button" title="Enregistrer les modifications" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" class="btn-floating btn-lg bg-success wave-effect" data-toggle="modal" data-target="#saveModal">
                     <i class="fas fa-save"></i><br/>
                 </a>
             </div>
@@ -70,10 +70,7 @@
                 <form id="newData" th:action="'/user/datas/form/' + ${form.id}" method="post">
                     <input id="newDataSubmit" type="submit" style="display: none;"/>
                     <input id="dataId" type="hidden" name="dataId" th:value="${data.id}"/>
-                    <div class="form-group">
-                        <label for="name">Nom du document</label>
-                        <input id="name" autocomplete="no" class="form-control" type="text" name="name" placeholder="Saisir un nom pour ce document" th:value="${data.name}" required="true" />
-                    </div>
+                    <input id="name" type="hidden" name="name" th:value="${data.name}"/>
                     <div id="pdf" class="drop-shadows"></div>
                 </form>
             </div>
@@ -148,30 +145,25 @@
         </div>
     </div>
 </div>
-
-<div id="wait" class="modal fade" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
+<div id="saveModal" class="modal fade" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
+            <div class="modal-header">
+                <h5>Enregistrement du document</h5>
+            </div>
+            <form id="saveForm" onsubmit="">
             <div class="modal-body text-center">
-                <h5>Signature en cours</h5>
-                <div class="progress">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated active" style="width: 100%;" id="bar">
-                    </div>
-                </div>
-                <span id="bar-text"></span>
-                <div style="display: none;" id="passwordError" class="alert alert-danger" role="alert">
-                    Mauvais mot de passe
-                </div>
-                <div style="display: none;" id="signError" class="alert alert-danger" role="alert">
-                    Erreur du système de signature
+                <div class="form-group">
+                    <input id="tempMame" autocomplete="no" class="form-control" type="text" name="name" placeholder="Saisir un nom pour ce document" th:value="${data.name}" required="true" />
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">
+                <button type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">
                     Fermer
                 </button>
-                <button id="validModal" onclick="location.reload();" class="btn btn-success">Terminer</button>
+                <button type="submit" id="saveButton" class="btn btn-success">Enregistrer</button>
             </div>
+            </form>
         </div>
     </div>
 </div>

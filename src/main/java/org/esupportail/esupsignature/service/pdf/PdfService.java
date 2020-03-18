@@ -437,13 +437,7 @@ public class PdfService {
             if(pdAcroForm != null) {
                 List<PDField> fields = pdAcroForm.getFields();
                 for(PDField pdField : fields) {
-                    if (pdField instanceof PDTextField) {
-                        //pdField.getAcroForm().setNeedAppearances(true);
-                        PDTextField defaultField = new PDTextField(pdAcroForm);
-                        String da = defaultField.getDefaultAppearance();
-                        ((PDTextField) pdField).setDefaultAppearance(da);
-                        pdField.setValue(datas.get(pdField.getPartialName()));
-                    } else if (pdField instanceof PDCheckBox) {
+                    if (pdField instanceof PDCheckBox) {
                         if(datas.get(pdField.getPartialName()) != null && datas.get(pdField.getPartialName()).equals("on")) {
                             ((PDCheckBox) pdField).check();
                         }
@@ -453,6 +447,13 @@ public class PdfService {
                             pdRadioButton.setValue(datas.get(pdField.getPartialName()));
                         } catch (NullPointerException e) {
                             logger.debug("radio buton is null");
+                        }
+                    } else {
+                        if(!(pdField instanceof PDSignatureField)) {
+                            PDTextField defaultField = new PDTextField(pdAcroForm);
+                            String da = defaultField.getDefaultAppearance();
+                            ((PDTextField) pdField).setDefaultAppearance(da);
+                            pdField.setValue(datas.get(pdField.getPartialName()));
                         }
                     }
                     pdField.setReadOnly(true);

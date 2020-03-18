@@ -19,11 +19,6 @@ body {
     font-weight: 200;
 }
 
-
-h6 {
-    font-size: 11px;
-}
-
 dt {
     font-weight: normal;
 }
@@ -883,4 +878,10 @@ float:left;
 
 .textWidgetAnnotation input {
     padding: 0 !important;
+}
+
+.sign-field {
+    background-color: rgba(0, 255, 0, .5);
+    cursor: default;
+    font-size: 9px;
 }

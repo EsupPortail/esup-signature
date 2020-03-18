@@ -15,7 +15,7 @@
     if(signable && currentSignType === 'nexuSign') {
         new Nexu([[${nexuUrl}]], [[${nexuVersion}]], null);
     }
-    new SignUi([[${signRequest.id}]], [[${signRequest.getCurrentSignRequestParams()}]], currentSignType, [[${signWidth}]], [[${signHeight}]], signable, [[${postits}]], [[${documentType == 'pdf'}]]);
+    new SignUi([[${signRequest.id}]], [[${signRequest.getCurrentSignRequestParams()}]], currentSignType, 100, 75, signable, [[${postits}]], [[${documentType == 'pdf'}]]);
 </script>
 <main role="main">
     <div class="wrapper">
@@ -118,7 +118,7 @@
                             </a>
                             <ul id="endCollapse" class="list-unstyled">
                                 <li><a class="btn-floating bg-primary waves-effect" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
-                                    <i class="fas fa-save"></i>
+                                    <i class="fas fa-download"></i>
                                 </a></li>
                                 <li><a title="Export SEDA" class="btn-floating bg-primary    waves-effect" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
                                     <i class="fa fa-file-export"></i>
@@ -192,7 +192,7 @@
                 <button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">
                     Fermer
                 </button>
-                <button id="validModal" onclick="location.reload();" class="btn btn-success">Terminer</button>
+                <button id="validModal" onclick="location.reload();" class="btn btn-secondary">Terminer</button>
             </div>
         </div>
     </div>

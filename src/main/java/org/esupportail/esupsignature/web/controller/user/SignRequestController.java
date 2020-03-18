@@ -207,6 +207,7 @@ public class SignRequestController {
         List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
         model.addAttribute("refuseLogs", refuseLogs);
         model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
+        signRequestService.setStep("");
         if (frameMode != null && frameMode) {
             return "user/signrequests/show-frame";
         } else {
@@ -288,10 +289,11 @@ public class SignRequestController {
             signRequest.setComment(comment);
             signRequestService.sign(signRequest, user, password, addDate, visual);
             signRequestService.setStep("end");
+            return new ResponseEntity(HttpStatus.OK);
         } catch (EsupSignatureException | IOException e) {
-            logger.error(e.getMessage(), e);
+            logger.error(e.getMessage());
         }
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
@@ -363,7 +365,7 @@ public class SignRequestController {
     @ResponseBody
     @GetMapping(value = "/get-progress", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getProgress() {
-        logger.debug("getProgress : " + progress);
+        signRequestService.setStep("");
         return progress;
     }
 
