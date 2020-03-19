@@ -71,6 +71,13 @@ public class SignBookController {
     private LogRepository logRepository;
 
     @PreAuthorize("@signBookService.preAuthorizeManage(authentication.name, #id)")
+    @GetMapping(value = "/{id}")
+    public String show(@PathVariable("id") Long id) {
+        SignBook signBook = signBookRepository.findById(id).get();
+        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+    }
+
+    @PreAuthorize("@signBookService.preAuthorizeManage(authentication.name, #id)")
     @GetMapping(value = "/{id}", params = "form", produces = "text/html")
     public String updateForm(@PathVariable("id") Long id, Model model) {
         User user = userService.getUserFromAuthentication();
