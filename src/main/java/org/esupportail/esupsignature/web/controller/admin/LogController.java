@@ -30,7 +30,7 @@ public class LogController {
 	
 	@ModelAttribute("user")
 	public User getUser() {
-		return userService.getUserFromAuthentication();
+		return userService.getCurrentUser();
 	}
 
 	@RequestMapping(value = "/{id}", produces = "text/html")

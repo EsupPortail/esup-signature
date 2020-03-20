@@ -149,7 +149,7 @@ public class SignRequestService {
 		signRequest.setCreateDate(new Date());
 		signRequest.setStatus(SignRequestStatus.draft);
 		signRequestRepository.save(signRequest);
-		updateStatus(signRequest, SignRequestStatus.draft, "Création de la demande", user, "SUCCESS");
+		updateStatus(signRequest, SignRequestStatus.draft, "Création de la demande", "SUCCESS");
 		return signRequest;
 	}
 
@@ -237,12 +237,12 @@ public class SignRequestService {
 
 	}
 
-	public void pendingSignRequest(SignRequest signRequest, SignType signType, boolean allSignToComplete, User user) {
+	public void pendingSignRequest(SignRequest signRequest, SignType signType, boolean allSignToComplete) {
 		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
 			signRequest.setSignType(signType);
 			signRequest.setAllSignToComplete(allSignToComplete);
 			signRequest.setCurrentStepNumber(signRequest.getCurrentStepNumber() + 1);
-			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS");
+			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS");
 			sendEmailAlerts(signRequest);
 		} else {
 			logger.warn("already pending");
@@ -272,15 +272,15 @@ public class SignRequestService {
 		SignRequestParams params = signRequest.getCurrentSignRequestParams();
 		if (signType.equals(SignType.visa)) {
 			if(signRequest.getComment() != null && !signRequest.getComment().isEmpty()) {
-				updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", signRequest.getComment(), params.getSignPageNumber(), params.getxPos(), params.getyPos());
+				updateStatus(signRequest, SignRequestStatus.checked, "Visa",  "SUCCESS", signRequest.getComment(), params.getSignPageNumber(), params.getxPos(), params.getyPos());
 			} else {
-				updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS");
+				updateStatus(signRequest, SignRequestStatus.checked, "Visa", "SUCCESS");
 			}
 		} else {
 			if(signRequest.getComment() != null && !signRequest.getComment().isEmpty()) {
-				updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS");
+				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", signRequest.getComment(), params.getSignPageNumber(), params.getxPos(), params.getyPos());
 			} else {
-
+				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS");
 			}
 		}
 		step = "Paramétrage de la prochaine étape";
@@ -384,7 +384,7 @@ public class SignRequestService {
 		recipientService.validateRecipient(signRequest.getRecipients(), user);
 		if(signRequest.getParentSignBook() != null) {
 			if(!isSignRequestCompleted(signRequest)) {
-				updateStatus(signRequest, SignRequestStatus.pending, "Demande incomplète", user, "SUCCESS");
+				updateStatus(signRequest, SignRequestStatus.pending, "Demande incomplète", "SUCCESS");
 			}
 			if(signBookService.isUserSignAllDocs(signRequest.getParentSignBook(), user)) {
 				WorkflowStep currentWorkflowStep = signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook());
@@ -433,7 +433,7 @@ public class SignRequestService {
 //			result = sendSignRequestsToTarget("Demande terminée", signRequests, documentIOType, targetUri);
 //		} else {
 			for(SignRequest signRequest : signRequests) {
-				updateStatus(signRequest, SignRequestStatus.completed, "Terminé", user, "SUCCESS");
+				updateStatus(signRequest, SignRequestStatus.completed, "Terminé", "SUCCESS");
 			}
 //		}
 		return result;
@@ -465,7 +465,7 @@ public class SignRequestService {
 						if(fsAccessService.getFileFromURI(documentUri) != null) {
 							signRequest.setExportedDocumentURI(documentUri);
 							clearAllDocuments(signRequest);
-							updateStatus(signRequest, SignRequestStatus.exported, "Exporté", userService.getSystemUser(), "SUCCESS");
+							updateStatus(signRequest, SignRequestStatus.exported, "Exporté", "SUCCESS");
 						}
 					}
 				} catch (EsupSignatureFsException e) {
@@ -521,11 +521,12 @@ public class SignRequestService {
 		}
 	}
 
-	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, User user, String returnCode) {
-		updateStatus(signRequest, signRequestStatus, action, user, returnCode, null, null, null, null);
+	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode) {
+		updateStatus(signRequest, signRequestStatus, action, returnCode, null, null, null, null);
 	}
 
-	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, User user, String returnCode, String comment, Integer pageNumber, Integer posX, Integer posY ) {
+	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, String comment, Integer pageNumber, Integer posX, Integer posY ) {
+		User user = userService.getUserFromAuthentication();
 		Log log = new Log();
 		log.setSignRequestId(signRequest.getId());
 		log.setEppn(user.getEppn());
@@ -553,7 +554,7 @@ public class SignRequestService {
 		if(signRequest.getParentSignBook() != null) {
 			signBookService.refuse(signRequest.getParentSignBook(), signRequest.getComment(), user);
 		} else {
-			updateStatus(signRequest, SignRequestStatus.refused, "Refusé", user, "SUCCESS");
+			updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS");
 		}
 	}
 

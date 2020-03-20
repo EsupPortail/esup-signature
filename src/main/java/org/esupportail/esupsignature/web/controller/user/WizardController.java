@@ -39,7 +39,7 @@ public class WizardController {
 
     @ModelAttribute("user")
     public User getUser() {
-        return userService.getUserFromAuthentication();
+        return userService.getCurrentUser();
     }
 
     @Resource
@@ -86,7 +86,7 @@ public class WizardController {
     @PostMapping(value = "/wiz3", produces = "text/html")
     public ModelAndView wiz3(@RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, HttpServletRequest request, Model model) throws EsupSignatureException, IOException, EsupSignatureIOException {
         logger.info("Choix d'un workflow");
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         SignBook signBook = signBookService.getSignBook(name, user);
         model.addAttribute("signBook", signBook);
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
@@ -105,7 +105,7 @@ public class WizardController {
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        @RequestParam(value = "selfSign", required = false) Boolean selfSign,
                        Model model) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user.getEppn())) {
             model.addAttribute("signBook", signBook);
@@ -136,7 +136,7 @@ public class WizardController {
                        @RequestParam(name="addNew", required = false) Boolean addNew,
                        @RequestParam(name="end", required = false) Boolean end,
                        Model model) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user.getEppn())) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
@@ -166,7 +166,7 @@ public class WizardController {
 
     @GetMapping(value = "/wiz5/{id}")
     public String saveForm(@PathVariable("id") Long id, Model model) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user.getEppn())) {
             model.addAttribute("signBook", signBook);
@@ -176,7 +176,7 @@ public class WizardController {
 
     @PostMapping(value = "/wiz5/{id}")
     public String saveWorkflow(@PathVariable("id") Long id, @RequestParam(name="name") String name, Model model) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         try {
             signBookService.saveWorkflow(name, user, signBook);
@@ -190,7 +190,7 @@ public class WizardController {
 
     @RequestMapping(value = "/wizend/{id}", produces = "text/html")
     public String wizEnd(@PathVariable("id") Long id, Model model) throws EsupSignatureException {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user.getEppn())) {
             model.addAttribute("signBook", signBook);

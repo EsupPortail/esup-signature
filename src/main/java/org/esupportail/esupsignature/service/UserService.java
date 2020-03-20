@@ -14,10 +14,14 @@ import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.scheduler.ScheduledTaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -51,36 +55,29 @@ public class UserService {
 	@Resource
 	private MailService mailService;
 
-	private String suEppn;
+	public void setSuEppn(String eppn) {
+		ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+		attr.getRequest().getSession().setAttribute("suEppn", eppn);
+	}
+
+	public String getSuEppn() {
+		ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+		return (String) attr.getRequest().getSession().getAttribute("suEppn");
+	}
 
 	public User getUserFromAuthentication() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		String eppn = auth.getName();
-//		if(this.suEppn != null) {
-//			eppn = this.suEppn;
-//		}
-		if(ldapPersonService != null) {
-			if(personLdapRepository.findByUid(eppn).size() > 0) {
-				String ldapEppn = personLdapRepository.findByUid(eppn).get(0).getEduPersonPrincipalName();
-				if(ldapEppn != null) {
-					eppn = ldapEppn;
-				}
-			}
+		return getUserByEppn(eppn);
+	}
+
+	public User getCurrentUser() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		String eppn = auth.getName();
+		if(getSuEppn() != null) {
+			eppn = getSuEppn();
 		}
-		if (userRepository.countByEppn(eppn) > 0) {
-			User user = userRepository.findByEppn(eppn).get(0);
-			if(user.getSignImage() != null) {
-				try {
-					user.setSignImageBase64(fileService.getBase64Image(user.getSignImage()));
-				} catch (IOException e) {
-					logger.error("sign image read error", e);
-				}
-			}
-			userRepository.save(user);
-			return user;
-		} else {
-			return getSystemUser();
-		}
+		return getUserByEppn(eppn);
 	}
 
 	public User getSystemUser() {
@@ -125,13 +122,24 @@ public class UserService {
 		}
 		if(ldapPersonService != null) {
 			if(personLdapRepository.findByUid(eppn).size() > 0) {
-				eppn = personLdapRepository.findByUid(eppn).get(0).getEduPersonPrincipalName();
+				String ldapEppn = personLdapRepository.findByUid(eppn).get(0).getEduPersonPrincipalName();
+				if(ldapEppn != null) {
+					eppn = ldapEppn;
+				}
 			}
 		}
-		if(userRepository.countByEppn(eppn) > 0) {
-			return userRepository.findByEppn(eppn).get(0);
+		if (userRepository.countByEppn(eppn) > 0) {
+			User user = userRepository.findByEppn(eppn).get(0);
+			if(user.getSignImage() != null) {
+				try {
+					user.setSignImageBase64(fileService.getBase64Image(user.getSignImage()));
+				} catch (IOException e) {
+					logger.error("sign image read error", e);
+				}
+			}
+			return user;
 		}
-		return null;
+		return getSystemUser();
 	}
 
 	public User createUser(String mail) {
@@ -274,17 +282,12 @@ public class UserService {
 		return null;
 	}
 
-	public String switchUser(String suEppn) {
-		setSuEppn(suEppn);
-		//check shares
-		return this.suEppn;
+	public void switchUser(String suEppn) {
+		if(suEppn.isEmpty()) {
+			setSuEppn(null);
+		}else {
+			setSuEppn(suEppn);
+		}
 	}
 
-	public void setSuEppn(String eppn) {
-		this.suEppn = eppn;
-	}
-
-	public String getSuEppn() {
-		return this.suEppn;
-	}
 }

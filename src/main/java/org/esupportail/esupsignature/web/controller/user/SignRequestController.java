@@ -11,7 +11,6 @@ import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsFile;
-import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -33,7 +32,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
-import javax.json.JsonObject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -70,7 +68,7 @@ public class SignRequestController {
 
     @ModelAttribute("user")
     public User getUser() {
-        return userService.getUserFromAuthentication();
+        return userService.getCurrentUser();
     }
 
     @ModelAttribute("suUsers")
@@ -164,7 +162,7 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
     @GetMapping(value = "/{id}")
     public String show(@PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         model.addAttribute("signRequest", signRequest);
 
@@ -223,7 +221,7 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
     @GetMapping(value = "/{id}", params = "form")
     public String updateForm(@PathVariable("id") Long id, Model model) throws Exception {
-        User currentUser = userService.getUserFromAuthentication();
+        User currentUser = userService.getCurrentUser();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         model.addAttribute("signBooks", signBookService.getAllSignBooks());
         List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
@@ -270,7 +268,7 @@ public class SignRequestController {
         if (visual == null) {
             visual = true;
         }
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signPageNumber != null && xPos != null && yPos != null && visual) {
@@ -319,7 +317,7 @@ public class SignRequestController {
     public String removeDocument(@PathVariable("id") Long id) {
         logger.info("remove document " + id);
         JSONObject result = new JSONObject();
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         Document document = documentRepository.findById(id).get();
         SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
         if(signRequest.getCreateBy().equals(user.getEppn())) {
@@ -332,7 +330,7 @@ public class SignRequestController {
 
     @GetMapping("/sign-by-token/{token}")
     public String signByToken(@PathVariable("token") String token) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
         if (signRequestService.checkUserSignRights(user, signRequest)) {
             return "redirect:/user/signrequests/" + signRequest.getId();
@@ -345,13 +343,13 @@ public class SignRequestController {
     public String createSignRequest(@RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                     @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
         logger.info("création rapide demande de signature");
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         if (multipartFiles != null) {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
             signRequestService.addRecipients(signRequest, user);
 
-            signRequestService.pendingSignRequest(signRequest, signType, false, user);
+            signRequestService.pendingSignRequest(signRequest, signType, false);
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             logger.warn("no file to import");
@@ -377,7 +375,7 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeSign(authentication.name, #id)")
     @GetMapping(value = "/refuse/{id}")
     public String refuse(@PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttrs, HttpServletRequest request) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
@@ -508,7 +506,7 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
     @RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
     public String complete(@PathVariable("id") Long id, HttpServletRequest request) throws EsupSignatureException {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
@@ -524,12 +522,12 @@ public class SignRequestController {
     public String pending(@PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
                           HttpServletRequest request) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
         if (signRequest.getStatus().equals(SignRequestStatus.draft) || signRequest.getStatus().equals(SignRequestStatus.completed)) {
-            signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS");
+            signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS");
         } else {
             logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");
         }
@@ -561,10 +559,8 @@ public class SignRequestController {
                           @RequestParam(value = "posX", required = false) Integer posX,
                           @RequestParam(value = "posY", required = false) Integer posY,
                           HttpServletRequest request) {
-        User user = userService.getUserFromAuthentication();
-        user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", user, "SUCCESS", comment, pageNumber, posX, posY);
+        signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", comment, pageNumber, posX, posY);
         return "redirect:/user/signrequests/" + signRequest.getId();
     }
 

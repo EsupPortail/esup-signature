@@ -2,8 +2,6 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
@@ -24,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 
 @RequestMapping("/user/documents")
 @Controller
@@ -51,7 +48,7 @@ public class DocumentController {
 
     @GetMapping(value = "/getfile/{id}")
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response) throws IOException {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Document document = documentRepository.findById(id).get();
 		if(document.equals(user.getKeystore())) {
 			return getDocumentResponseEntity(response, document);

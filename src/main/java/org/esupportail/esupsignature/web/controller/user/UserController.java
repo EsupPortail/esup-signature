@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
@@ -14,7 +13,6 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.file.FileService;
-import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -26,7 +24,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -50,7 +47,7 @@ public class UserController {
 
 	@ModelAttribute("user")
 	public User getUser() {
-		return userService.getUserFromAuthentication();
+		return userService.getCurrentUser();
 	}
 
 	@Resource
@@ -221,9 +218,11 @@ public class UserController {
 	}
 
 	@PostMapping("/change")
-	public String change(@RequestParam("suEppn") String suEppn) {
+	public String change(@RequestParam("suEppn") String suEppn, HttpServletRequest httpServletRequest) {
 		userService.switchUser(suEppn);
-		return "redirect:/";
+		String referer = httpServletRequest.getHeader("Referer");
+		System.err.println(referer);
+		return "redirect:"+ referer;
 	}
 
 }

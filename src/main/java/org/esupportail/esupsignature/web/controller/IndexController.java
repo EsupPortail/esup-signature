@@ -17,11 +17,7 @@
  */
 package org.esupportail.esupsignature.web.controller;
 
-import org.esupportail.esupsignature.entity.Data;
-import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -30,7 +26,6 @@ import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -40,8 +35,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.Resource;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 @RequestMapping("/")
@@ -64,29 +57,14 @@ public class IndexController {
 	@Resource
 	private UserService userService;
 
-	@Resource
-	private FormService formService;
-
-	@Resource
-	private WorkflowService workflowService;
-
-	@Resource
-	private SignRequestService signRequestService;
-
-	@Resource
-	private DataRepository dataRepository;
-
-	@Resource
-	private FileService fileService;
-
 	@ModelAttribute("user")
 	public User getUser() {
-		return userService.getUserFromAuthentication();
+		return userService.getCurrentUser();
 	}
 	
 	@GetMapping
 	public String index(Model model) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		model.addAttribute("user", user);
 		if(user != null && !user.getEppn().equals("System")) {
 			return "redirect:/user/";

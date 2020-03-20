@@ -67,12 +67,12 @@ public class WorkflowManagerController {
 
 	@ModelAttribute("user")
 	public User getUser() {
-		return userService.getUserFromAuthentication();
+		return userService.getCurrentUser();
 	}
 
 	@GetMapping(produces = "text/html")
 	public String list(Model model) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		List<Workflow> workflows = new ArrayList<>();
 		workflows.addAll(workflowService.getWorkflows());
 		workflows.addAll(workflowRepository.findAll());
@@ -102,7 +102,7 @@ public class WorkflowManagerController {
 
 	@PostMapping(produces = "text/html")
 	public String create(@RequestParam(name = "name") String name, RedirectAttributes redirectAttrs) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Workflow newWorkflow = new Workflow();
 		newWorkflow.setName(name);
 		Workflow workflow;
@@ -117,7 +117,7 @@ public class WorkflowManagerController {
 
     @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
     public String updateForm(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
 		if (!workflowService.checkUserManageRights(user, workflow)) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
@@ -134,7 +134,7 @@ public class WorkflowManagerController {
 	
     @PostMapping(value = "/update/{id}")
     public String update(@PathVariable("id") Long id, @Valid Workflow workflow, @RequestParam(required = false) List<String> managers) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Workflow workflowToUpdate = workflowRepository.findById(workflow.getId()).get();
 		if(workflowToUpdate.getCreateBy().equals(user.getEppn())) {
 			if(managers != null && managers.size() > 0) {
@@ -161,7 +161,7 @@ public class WorkflowManagerController {
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@PathVariable("id") Long id, RedirectAttributes redirectAttrs) {
-    	User user = userService.getUserFromAuthentication();
+    	User user = userService.getCurrentUser();
     	Workflow workflow = workflowRepository.findById(id).get();
 		if (!workflowService.checkUserManageRights(user, workflow)) {
 			redirectAttrs.addFlashAttribute("messageCustom", "Non autorisé");
@@ -177,7 +177,7 @@ public class WorkflowManagerController {
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
 						  @RequestParam("signType") String signType,
 						  RedirectAttributes redirectAttrs) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
 		if (!workflow.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
@@ -192,7 +192,7 @@ public class WorkflowManagerController {
 	public String removeStepRecipient(@PathVariable("id") Long id,
 									  @PathVariable("workflowStepId") Long workflowStepId,
 									  @RequestParam(value = "recipientId") Long recipientId, HttpServletRequest request) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		user.setIp(request.getRemoteAddr());
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
@@ -210,7 +210,7 @@ public class WorkflowManagerController {
 									  @PathVariable("workflowStepId") Long workflowStepId,
 									  @RequestParam String recipientsEmails,
 									  RedirectAttributes redirectAttrs, HttpServletRequest request) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		user.setIp(request.getRemoteAddr());
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
@@ -225,7 +225,7 @@ public class WorkflowManagerController {
 
 	@RequestMapping(value = "/toggle-need-all-sign/{id}/{step}", method = RequestMethod.GET)
 	public String toggleNeedAllSign(@PathVariable("id") Long id,@PathVariable("step") Integer step) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
 		if(user.getEppn().equals(workflow.getCreateBy())) {
 			Long stepId = workflowService.toggleNeedAllSign(workflow, step);
@@ -236,7 +236,7 @@ public class WorkflowManagerController {
 
 	@RequestMapping(value = "/change-step-sign-type/{id}/{step}", method = RequestMethod.GET)
 	public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
 		if(user.getEppn().equals(workflow.getCreateBy())) {
 			workflowService.changeSignType(workflow, step, null, signType);
@@ -247,7 +247,7 @@ public class WorkflowManagerController {
 
 	@DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
 	public String addStep(@PathVariable("id") Long id, @PathVariable("stepNumber") Integer stepNumber, RedirectAttributes redirectAttrs) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
 		if (!workflow.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
@@ -263,7 +263,7 @@ public class WorkflowManagerController {
 	@RequestMapping(value = "/add-params/{id}", method = RequestMethod.POST)
 	public String addParams(@PathVariable("id") Long id, 
 			RedirectAttributes redirectAttrs) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
 
 		if (!workflow.getCreateBy().equals(user.getEppn())) {
@@ -277,7 +277,7 @@ public class WorkflowManagerController {
 
 	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
 	public String getFileFromSource(@PathVariable("id") Long id, RedirectAttributes redirectAttrs) throws Exception {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
 
 		if (!workflow.getCreateBy().equals(user.getEppn())) {

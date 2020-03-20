@@ -70,10 +70,10 @@ public class FormService {
 	
 	public List<Form> getFormsByUser(User user){
 		List<Form> forms = new ArrayList<>();
-		if(user.equals(userService.getUserFromAuthentication())) {
-			forms = formRepository.findFormByUser(userService.getUserFromAuthentication());
+		if(user.equals(userService.getCurrentUser())) {
+			forms = formRepository.findFormByUser(userService.getCurrentUser());
 		} else {
-			for(UserShare userShare : userShareRepository.findByUserAndToUsers(user, Arrays.asList(userService.getUserFromAuthentication()))) {
+			for(UserShare userShare : userShareRepository.findByUserAndToUsers(user, Arrays.asList(userService.getCurrentUser()))) {
 				forms.add(userShare.getForm());
 			}
 		}

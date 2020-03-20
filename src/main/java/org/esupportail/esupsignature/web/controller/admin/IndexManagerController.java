@@ -36,7 +36,7 @@ public class IndexManagerController {
 	
 	@ModelAttribute("user")
 	public User getUser() {
-		return userService.getUserFromAuthentication();
+		return userService.getCurrentUser();
 	}
 
 	@Resource

@@ -68,7 +68,7 @@ public class DataController {
 
 	@ModelAttribute("user")
 	public User getUser() {
-		return userService.getUserFromAuthentication();
+		return userService.getCurrentUser();
 	}
 
 	@ModelAttribute("suUsers")
@@ -88,12 +88,12 @@ public class DataController {
 
 	@ModelAttribute("forms")
 	public List<Form> getForms() {
-		return 	formService.getFormsByUser(userService.getUserFromAuthentication());
+		return 	formService.getFormsByUser(userService.getCurrentUser());
 	}
 
 	@GetMapping("datas")
 	public String list(@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 3) Pageable pageable, Model model) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Page<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft, pageable);
 		model.addAttribute("datas", datas);
 		return "user/datas/list";
@@ -101,7 +101,7 @@ public class DataController {
 
 	@GetMapping("datas/{id}")
 	public String show(@PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
 		model.addAttribute("data", data);
 		if (user.getEppn().equals(data.getOwner())) {
@@ -118,7 +118,7 @@ public class DataController {
 
 	@GetMapping("datas/form/{id}")
 	public String createData(@PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		List<Form> autorizedForms = formRepository.findFormByUser(user);
 		Form form = formService.getFormById(id);
 		if(autorizedForms.contains(form)) {
@@ -151,7 +151,7 @@ public class DataController {
 
 	@GetMapping("datas/{id}/update")
 	public String updateData(@PathVariable("id") Long id, Model model) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
 		model.addAttribute("data", data);
 		if(data.getStatus().equals(SignRequestStatus.draft)) {
@@ -185,7 +185,7 @@ public class DataController {
 
 	@PostMapping("datas/form/{id}")
 	public String addData(@PathVariable("id") Long id, @RequestParam Long dataId, @RequestParam String name, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Form form = formService.getFormById(id);
 		formData.remove("_csrf");
 		Data data;
@@ -200,7 +200,7 @@ public class DataController {
 		data.setFormName(form.getName());
 		data.setFormVersion(form.getVersion());
 		data.setStatus(SignRequestStatus.draft);
-		data.setCreateBy(userService.getUserFromAuthentication().getEppn());
+		data.setCreateBy(userService.getCurrentUser().getEppn());
 		data.setOwner(user.getEppn());
 		data.setCreateDate(new Date());
 		dataRepository.save(data);
@@ -210,7 +210,7 @@ public class DataController {
 
 	@PutMapping("datas/{id}")
 	public String updateData(@PathVariable("id") Long id, @RequestParam String name, @RequestParam(required = false) String navPage, @RequestParam(required = false) Integer page, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
 		if(page == null) {
 			page = 1;
@@ -240,7 +240,7 @@ public class DataController {
 	@PostMapping("datas/{id}/send")
 	public String sendDataById(@PathVariable("id") Long id,
                                @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
 		try {
 			SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user);
@@ -254,7 +254,7 @@ public class DataController {
 
 	@DeleteMapping("datas/{id}")
 	public String deleteData(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Data data = dataRepository.findById(id).get();
 		if(user.getEppn().equals(data.getCreateBy())) {
 			dataService.delete(data);
@@ -282,7 +282,7 @@ public class DataController {
 
 	@GetMapping("datas/{id}/reset")
 	public String resetData(@PathVariable("id") Long id) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
 		if(user.getEmail().equals(data.getCreateBy())) {
 			signBookService.delete(data.getSignBook());
@@ -296,14 +296,14 @@ public class DataController {
 
 	@GetMapping("datas/{id}/clone")
 	public String cloneData(@PathVariable("id") Long id) {
-		User user = userService.getUserFromAuthentication();
+		User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
 		long nbDatas = dataRepository.countByNameStartsWith(data.getName());
 		if(user.getEmail().equals(data.getCreateBy())) {
 			Data cloneData = new Data();
 			cloneData.setName(data.getName() + "(" + nbDatas + ")");
 			cloneData.setStatus(SignRequestStatus.draft);
-			cloneData.setCreateBy(userService.getUserFromAuthentication().getEppn());
+			cloneData.setCreateBy(userService.getCurrentUser().getEppn());
 			cloneData.setCreateDate(new Date());
 			cloneData.setOwner(data.getOwner());
 			cloneData.getDatas().putAll(data.getDatas());

@@ -39,7 +39,7 @@ public class MySignWorkflow extends DefaultWorkflow {
 	@Override
 	public List<WorkflowStep> getWorkflowSteps() {
 		if(this.workflowSteps == null) {
-			this.workflowSteps = generateWorkflowSteps(userService.getUserFromAuthentication(), null, null);
+			this.workflowSteps = generateWorkflowSteps(userService.getCurrentUser(), null, null);
 		}
 		return this.workflowSteps;
 	}

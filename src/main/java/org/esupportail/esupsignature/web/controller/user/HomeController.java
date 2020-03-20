@@ -8,7 +8,6 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -21,10 +20,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -47,7 +44,7 @@ public class HomeController {
 
     @ModelAttribute("user")
     public User getUser() {
-        return userService.getUserFromAuthentication();
+        return userService.getCurrentUser();
     }
 
     @ModelAttribute("suUsers")

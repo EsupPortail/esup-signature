@@ -23,7 +23,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 @RequestMapping("/user/signbooks")
@@ -40,7 +39,7 @@ public class SignBookController {
 
     @ModelAttribute("user")
     public User getUser() {
-        return userService.getUserFromAuthentication();
+        return userService.getCurrentUser();
     }
 
     @Resource
@@ -80,7 +79,7 @@ public class SignBookController {
     @PreAuthorize("@signBookService.preAuthorizeManage(authentication.name, #id)")
     @GetMapping(value = "/{id}", params = "form", produces = "text/html")
     public String updateForm(@PathVariable("id") Long id, Model model) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         List<Log> logs = logRepository.findBySignRequestId(signBook.getId());
         model.addAttribute("logs", logs);
@@ -101,7 +100,7 @@ public class SignBookController {
     @GetMapping(value = "/get-last-file/{id}")
     public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
             List<Document> documents = signRequestService.getToSignDocuments(signRequest);
             try {
@@ -123,7 +122,7 @@ public class SignBookController {
 
     @GetMapping(value = "/change-step-sign-type/{id}/{step}")
     public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         if(user.getEppn().equals(signBook.getCreateBy()) && signBook.getCurrentWorkflowStepNumber() <= step + 1) {
             signBookService.changeSignType(signBook, step, signType);
@@ -138,7 +137,7 @@ public class SignBookController {
                                      @RequestParam(name="name", required = false) String name,
                                      @RequestParam(name="signType") SignType signType,
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         if(user.getEppn().equals(signBook.getCreateBy()) && signBook.getCurrentWorkflowStepNumber() <= step + 1) {
             if(allSignToComplete == null) {
@@ -156,7 +155,7 @@ public class SignBookController {
                           @RequestParam("recipientsEmails") String[] recipientsEmails,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam("signType") String signType) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         if (signBookService.checkUserViewRights(user, signBook)) {
             WorkflowStep workflowStep = workflowService.createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
@@ -167,7 +166,7 @@ public class SignBookController {
 
     @DeleteMapping(value = "/remove-step/{id}/{step}")
     public String removeStep(@PathVariable("id") Long id, @PathVariable("step") Integer step) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         if(user.getEppn().equals(signBook.getCreateBy()) && signBook.getCurrentWorkflowStepNumber() <= step + 1) {
             signBookService.removeStep(signBook, step);
@@ -178,7 +177,7 @@ public class SignBookController {
     @PostMapping(value = "/add-workflow/{id}")
     public String addWorkflow(@PathVariable("id") Long id,
                           @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         if (signBookService.checkUserViewRights(user, signBook)) {
             Workflow workflow = workflowRepository.findById(workflowSignBookId).get();
@@ -193,7 +192,7 @@ public class SignBookController {
     public String addDocumentToNewSignRequest(@PathVariable("id") Long id,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         if (signBookService.checkUserViewRights(user, signBook)) {
             for (MultipartFile multipartFile : multipartFiles) {
@@ -210,7 +209,7 @@ public class SignBookController {
                                  @PathVariable("workflowStepId") Long workflowStepId,
                                  @RequestParam(value = "signBookNames") String[] signBookNames,
                                  RedirectAttributes redirectAttrs, HttpServletRequest request) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
         SignBook signBook = signBookRepository.findById(id).get();
         if (signBookService.checkUserViewRights(user, signBook)) {
@@ -228,7 +227,7 @@ public class SignBookController {
     public String removeStepRecipient(@PathVariable("id") Long id,
                                  @PathVariable("step") Integer step,
                                  @RequestParam(value = "recipientId") Long recipientId, HttpServletRequest request) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
         SignBook signBook = signBookRepository.findById(id).get();
         if (signBookService.checkUserViewRights(user, signBook)) {
@@ -243,7 +242,7 @@ public class SignBookController {
     public String pending(@PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
                           HttpServletRequest request) throws EsupSignatureIOException {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
         SignBook signBook = signBookRepository.findById(id).get();
         if (signBookService.checkUserViewRights(user, signBook)) {
@@ -256,7 +255,7 @@ public class SignBookController {
     @RequestMapping(value = "/scan-pdf-sign/{id}", method = RequestMethod.GET)
     public String scanPdfSign(@PathVariable("id") Long id,
                           RedirectAttributes redirectAttrs, HttpServletRequest request) throws IOException {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
         SignBook signBook = signBookRepository.findById(id).get();
         for(SignRequest signRequest : signBook.getSignRequests()) {
@@ -279,11 +278,11 @@ public class SignBookController {
                           @RequestParam(value = "posX", required = false) Integer posX,
                           @RequestParam(value = "posY", required = false) Integer posY,
                           HttpServletRequest request) {
-        User user = userService.getUserFromAuthentication();
+        User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
-            signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", user, "SUCCESS", comment, pageNumber, posX, posY);
+            signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", comment, pageNumber, posX, posY);
         } else {
             logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
         }

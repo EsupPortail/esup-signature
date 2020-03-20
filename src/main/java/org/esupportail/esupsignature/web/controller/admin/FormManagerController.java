@@ -58,7 +58,7 @@ public class FormManagerController {
 
 	@ModelAttribute("user")
 	public User getUser() {
-		return userService.getUserFromAuthentication();
+		return userService.getCurrentUser();
 	}
 
 	@ModelAttribute("suUsers")

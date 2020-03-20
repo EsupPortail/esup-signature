@@ -1,7 +1,7 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.sprinfgramework.org/schema/security">
 <header th:fragment="nav" class="fixed-top">
-    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark bg-dark">
+    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark" th:classappend="${@userService.getUserFromAuthentication() != user}? 'bg-striped' : 'bg-dark'">
         <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse" class="btn btn-lg text-white float-left">
             <i class="fas fa-bars"></i>
         </button>
@@ -12,7 +12,7 @@
         <h1 aria-label="Esup-Signature" title="Esup-Signature" style="width: 200px;">
             <a href="/"><img alt="Logo Esup-Signature" src="/images/logo.svg" height="40"/></a>
         </h1>
-        <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between bg-dark">
+        <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
             <ul class="navbar-nav" sec:authorize="isAuthenticated()">
                 <li class="nav-item text-white">
                     <button th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}"
@@ -53,28 +53,48 @@
                     </a>
                 </li>
             </ul>
-            <ul class="navbar-nav" th:if="${user.firstname != null}">
+            <ul class="navbar-nav" th:if="${user != null}">
                 <li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
                     <a href="/admin/signrequests" th:class="'nav-link ' + ${adminMenu}"><i class="fas fa-crown"></i></a>
+                </li>
+                <li class="nav-item text-white">
+                    <a>
+
+                    </a>
                 </li>
                 <li class="nav-item text-white">
                    <a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos"
                        aria-label="Paramètres utilisateur" class="text-decoration-none user-toggle"
                        aria-controls="user-infos" data-toggle="collapse">
-						<span class="d-none d-lg-inline nav-link" th:text="${user.firstname} + ' ' + ${user.name}">
-						</span>
+                       <b th:if="${@userService.getUserFromAuthentication() != user}" class="d-none d-lg-inline nav-link text-light" th:text="'(' + ${user.firstname} + ' ' + ${user.name} +')'"></b>
+						<b class="d-none d-lg-inline nav-link text-light" th:text="${@userService.getUserFromAuthentication().firstname} + ' ' + ${@userService.getUserFromAuthentication().name}"></b>
                         <div class="btn-floating btn-small btn-secondary user-toggle"><i class="fas fa-user"></i></div>
                     </a>
                 </li>
             </ul>
         </div>
     </nav>
-    <div id="user-infos" class="card position-fixed user-infos collapse overflow-y-scroll" style="right: 0;">
+    <div th:if="${user != null}" id="user-infos" class="card position-fixed user-infos collapse overflow-y-scroll" style="right: 0;">
         <div id="myDocs" class="card-body">
-            <h3>
-                Vos informations
+            <h3 th:if="${@userService.getUserFromAuthentication() != user}">
+                Vous avez activé la délégation
             </h3>
-            <a class="btn btn-sm btn-secondary" aria-label="Paramètres utilisateur "
+            <h3 th:unless="${@userService.getUserFromAuthentication() != user}">
+                Activer une délégation
+            </h3>
+            <form id="changeSuEppn" th:action="'/user/users/change'" method="post">
+                <select class="form-control" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
+                    <option value="" selected>Délégation désactivée</option>
+                    <th:block th:each="suUser : ${suUsers}">
+                        <option th:if="${user.eppn == suUser.eppn}" th:value="${suUser.eppn}"
+                                th:text="${suUser.firstname} + ' ' + ${suUser.name} " selected></option>
+                        <option th:unless="${user.eppn == suUser.eppn}" th:value="${suUser.eppn}"
+                                th:text="${suUser.firstname} + ' ' + ${suUser.name} "></option>
+                    </th:block>
+                </select>
+            </form>
+            <h3>Vos informations</h3>
+            <a th:unless="${@userService.getUserFromAuthentication() != user}" class="btn btn-sm btn-secondary" aria-label="Paramètres utilisateur "
                title="Paramètres" href="/user/users/?form">
                 <i class="fa fa-cog"></i> Modifier mes paramètres
             </a>
@@ -123,20 +143,6 @@
                 </tr>
                 </tbody>
             </table>
-            <h3>
-                Activer une délégation
-            </h3>
-            <form th:if="${session.suEppn == null}" id="changeSuEppn" th:action="'/user/users/change'" method="post">
-                <select class="form-control" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
-                    <option th:value="${user.eppn}" selected>Délégation désactivée</option>
-                    <th:block th:each="suUser : ${suUsers}">
-                        <option th:if="${user.eppn == suUser.eppn}" th:value="${suUser.eppn}"
-                                th:text="${suUser.firstname} + ' ' + ${suUser.name} " selected></option>
-                        <option th:unless="${user.eppn == suUser.eppn}" th:value="${suUser.eppn}"
-                                th:text="${suUser.firstname} + ' ' + ${suUser.name} "></option>
-                    </th:block>
-                </select>
-            </form>
         </div>
     </div>
 
