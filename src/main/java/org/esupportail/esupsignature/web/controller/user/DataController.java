@@ -121,7 +121,7 @@ public class DataController {
 		User user = userService.getCurrentUser();
 		List<Form> autorizedForms = formRepository.findFormByUser(user);
 		Form form = formService.getFormById(id);
-		if(autorizedForms.contains(form)) {
+		if(autorizedForms.contains(form) && userService.checkServiceShare(UserShare.ShareType.create, form.getName())) {
 			if (page == null) {
 				page = 1;
 			}

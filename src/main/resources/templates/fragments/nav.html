@@ -1,7 +1,7 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.sprinfgramework.org/schema/security">
 <header th:fragment="nav" class="fixed-top">
-    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark" th:classappend="${@userService.getUserFromAuthentication() != user}? 'bg-striped' : 'bg-dark'">
+    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark" th:classappend="${@userService.getUserFromAuthentication() != user && user.name != null}? 'bg-striped' : 'bg-dark'">
         <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse" class="btn btn-lg text-white float-left">
             <i class="fas fa-bars"></i>
         </button>
@@ -53,7 +53,7 @@
                     </a>
                 </li>
             </ul>
-            <ul class="navbar-nav" th:if="${user != null}">
+            <ul class="navbar-nav" th:if="${user.name != null}">
                 <li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
                     <a href="/admin/signrequests" th:class="'nav-link ' + ${adminMenu}"><i class="fas fa-crown"></i></a>
                 </li>
@@ -74,7 +74,7 @@
             </ul>
         </div>
     </nav>
-    <div th:if="${user != null}" id="user-infos" class="card position-fixed user-infos collapse overflow-y-scroll" style="right: 0;">
+    <div th:if="${user.name != null}" id="user-infos" class="card position-fixed user-infos collapse overflow-y-scroll" style="right: 0;">
         <div id="myDocs" class="card-body user-infos">
             <h3 th:if="${@userService.getUserFromAuthentication() != user}">
                 Vous avez activé la délégation

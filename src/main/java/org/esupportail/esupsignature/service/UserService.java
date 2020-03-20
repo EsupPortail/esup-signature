@@ -302,7 +302,12 @@ public class UserService {
 		return false;
 	}
 
-	public Boolean checkServiceShare(User fromUser, User toUser, UserShare.ShareType shareType, String formName) {
+	public Boolean checkServiceShare(UserShare.ShareType shareType, String formName) {
+		User fromUser = getCurrentUser();
+		User toUser = getUserFromAuthentication();
+		if(fromUser.equals(toUser)) {
+			return true;
+		}
 		List<UserShare> userShares = userShareRepository.findByUserAndToUsersAndShareType(fromUser, Arrays.asList(toUser), shareType);
 		if(shareType.equals(UserShare.ShareType.sign) && userShares.size() > 0) {
 			return true;
