@@ -184,15 +184,20 @@ public class UserController {
 	}
 
 	@PostMapping("/add-share")
-	public String addShare(@RequestParam("formId") long formId, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) {
+	public String addShare(@RequestParam("formId") String formId, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) {
 		User user = userService.getUserFromAuthentication();
 		UserShare userShare = new UserShare();
 		userShare.setUser(user);
-		userShare.setForm(formRepository.findById(formId).get());
+		if(formId.equals("sign")) {
+			userShare.setShareType(UserShare.ShareType.sign);
+		} else {
+			userShare.setShareType(UserShare.ShareType.create);
+			userShare.setForm(formRepository.findById(Long.valueOf(formId)).get());
+		}
 		for (String userEmail : userEmails) {
 			userShare.getToUsers().add(userRepository.findByEmail(userEmail).get(0));
 		}
-		if(beginDate != null && endDate != null) {
+		if (beginDate != null && endDate != null) {
 			try {
 				userShare.setBeginDate(new SimpleDateFormat("dd/MM/yyyy").parse(beginDate));
 				userShare.setEndDate(new SimpleDateFormat("dd/MM/yyyy").parse(endDate));
@@ -205,13 +210,14 @@ public class UserController {
 	}
 
 	@DeleteMapping("/del-share/{id}")
-	public String addShare(@PathVariable long id) {
+	public String addShare(@PathVariable long id, RedirectAttributes redirectAttributes) {
 		User user = userService.getUserFromAuthentication();
 		UserShare userShare = userShareRepository.findById(id).get();
 		if (userShare.getUser().equals(user)) {
 			userShareRepository.delete(userShare);
 		}
-		return "redirect:/user/params";
+		redirectAttributes.addFlashAttribute("messageInfo", "Élément supprimé");
+		return "redirect:/user/users/shares";
 	}
 
 }

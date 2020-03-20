@@ -229,11 +229,9 @@ public class UserService {
 	public List<User> getSuUsers() {
 		User user = getUserFromAuthentication();
 		List<User> suUsers = new ArrayList<>();
-		for (UserShare userShare : userShareRepository.findByUser(user)) {
-			for(User userTo : userShare.getToUsers()) {
-				if(!suUsers.contains(userTo)) {
-					suUsers.add(userTo);
-				}
+		for (UserShare userShare : userShareRepository.findByToUsers(Arrays.asList(user))) {
+			if(!suUsers.contains(userShare.getUser())) {
+				suUsers.add(userShare.getUser());
 			}
 		}
 		return suUsers;

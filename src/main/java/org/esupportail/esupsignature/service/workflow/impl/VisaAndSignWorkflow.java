@@ -71,7 +71,11 @@ public class VisaAndSignWorkflow extends DefaultWorkflow {
         workflowStep2.setSignType(SignType.pdfImageStamp);
         workflowStep2.setDescription("Signature du Président de l’université");
         List<Recipient> recipientsStep2 = new ArrayList<>();
-        recipientsStep2.add(recipientService.createRecipient(data.getId(), userService.getUser("david.lemaignent@univ-rouen.fr")));
+        if(data != null) {
+            recipientsStep2.add(recipientService.createRecipient(data.getId(), userService.getUser("david.lemaignent@univ-rouen.fr")));
+        } else {
+            recipientsStep2.add(recipientService.createRecipient(null, userService.getGenericUser("david.lemaignent@univ-rouen.fr", "")));
+        }
         workflowStep2.setRecipients(recipientsStep2);
         workflowStep2.setAllSignToComplete(false);
         workflowSteps.add(workflowStep2);

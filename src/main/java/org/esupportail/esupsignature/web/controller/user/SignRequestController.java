@@ -73,6 +73,11 @@ public class SignRequestController {
         return userService.getUserFromAuthentication();
     }
 
+    @ModelAttribute("suUsers")
+    public List<User> getSuUsers() {
+        return userService.getSuUsers();
+    }
+
     private String progress = "0";
 
     private SignRequestStatus statusFilter = null;

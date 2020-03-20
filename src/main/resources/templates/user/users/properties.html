@@ -7,43 +7,43 @@
 <main role="main">
     <div class="wrapper">
         <nav th:insert="fragments/user-side" class="auto-hide"></nav>
-        <div class="content">
-            <div class="tab-content">
-                <div class="card">
-                        <div class="card-header">
-                            <h2>Favoris</h2>
-                        </div>
-                        <div class="card-body text-center">
-                            <table class="table table-hover table-striped table-bordered">
-                                <thead>
-                                <tr>
-                                    <th>Service</th>
-                                    <th>Etape</th>
-                                    <th>Signataire</th>
-                                    <th>Destinataire</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <th:block th:each="userProperties : ${userProperties}">
-                                    <tr>
-                                        <td>
-                                            <span th:text="${userProperties.form.name}"></span>
-                                        </td>
-                                        <td>
-                                            <span th:text="${userProperties.step}"></span>
-                                        </td>
-                                        <td>
-                                            <span th:text="${userProperties.recipients}"></span>
-                                        </td>
-                                        <td>
-                                            <span th:text="${userProperties.targetEmail}"></span>
-                                        </td>
-                                    </tr>
-                                </th:block>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item active">Favoris</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body text-center">
+                    <table class="table table-hover table-borderless table-striped">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th>Service</th>
+                            <th>Etape</th>
+                            <th>Signataire</th>
+                            <th>Destinataire</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="userProperties : ${userProperties}">
+                            <tr>
+                                <td>
+                                    <span th:text="${userProperties.form.name}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${userProperties.step}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${userProperties.recipients}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${userProperties.targetEmail}"></span>
+                                </td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
