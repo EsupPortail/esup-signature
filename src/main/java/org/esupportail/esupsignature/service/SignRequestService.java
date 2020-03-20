@@ -562,25 +562,22 @@ public class SignRequestService {
 		return recipientService.needSign(signRequest.getRecipients(), user);
 	}
 
-	public boolean preAuthorizeOwner(String name, Long id) {
-		User user = userService.getUserByEppn(name);
+	public boolean preAuthorizeOwner(String eppn, Long id) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		return signRequest.getCreateBy().equals(user.getEppn());
+		return signRequest.getCreateBy().equals(userService.getUserFromAuthentication().getEppn());
 	}
 
-	public boolean preAuthorizeView(String name, Long id) {
-		User user = userService.getUserByEppn(name);
+	public boolean preAuthorizeView(String eppn, Long id) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		if (checkUserViewRights(user, signRequest) || checkUserSignRights(user, signRequest)) {
+		if (checkUserViewRights(userService.getCurrentUser(), signRequest) || checkUserSignRights(userService.getCurrentUser(), signRequest)) {
 			return true;
 		}
 		return false;
 	}
 
-	public boolean preAuthorizeSign(String name, Long id) {
-		User user = userService.getUserByEppn(name);
+	public boolean preAuthorizeSign(String eppn, Long id) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		if (checkUserSignRights(user, signRequest)) {
+		if (checkUserSignRights(userService.getCurrentUser(), signRequest)) {
 			return true;
 		}
 		return false;

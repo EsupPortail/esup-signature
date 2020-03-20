@@ -111,10 +111,9 @@ public class SignBookService {
         }
     }
 
-    public boolean preAuthorizeManage(String name, Long id) {
-        User user = userService.getUserByEppn(name);
+    public boolean preAuthorizeManage(String eppn, Long id) {
         SignBook signBook = signBookRepository.findById(id).get();
-        if (checkUserManageRights(user, signBook)) {
+        if (checkUserManageRights(userService.getUserFromAuthentication(), signBook)) {
             return true;
         }
         return false;

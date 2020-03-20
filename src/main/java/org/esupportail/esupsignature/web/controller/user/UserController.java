@@ -218,10 +218,11 @@ public class UserController {
 	}
 
 	@PostMapping("/change")
-	public String change(@RequestParam("suEppn") String suEppn, HttpServletRequest httpServletRequest) {
-		userService.switchUser(suEppn);
+	public String change(@RequestParam("suEppn") String suEppn, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
+		if(userService.switchUser(suEppn)) {
+			redirectAttributes.addFlashAttribute("messageSuccess", "Délégation activée : " + suEppn);
+		}
 		String referer = httpServletRequest.getHeader("Referer");
-		System.err.println(referer);
 		return "redirect:"+ referer;
 	}
 

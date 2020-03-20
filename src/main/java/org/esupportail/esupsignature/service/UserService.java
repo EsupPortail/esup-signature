@@ -282,12 +282,37 @@ public class UserService {
 		return null;
 	}
 
-	public void switchUser(String suEppn) {
+	public Boolean switchUser(String suEppn) {
 		if(suEppn.isEmpty()) {
 			setSuEppn(null);
 		}else {
-			setSuEppn(suEppn);
+			if(checkShare(getUserByEppn(suEppn), getUserFromAuthentication())) {
+				setSuEppn(suEppn);
+				return true;
+			}
 		}
+		return false;
+	}
+
+	public Boolean checkShare(User fromUser, User toUser) {
+		List<UserShare> userShares = userShareRepository.findByUserAndToUsers(fromUser, Arrays.asList(toUser));
+		if(userShares.size() > 0) {
+			return true;
+		}
+		return false;
+	}
+
+	public Boolean checkServiceShare(User fromUser, User toUser, UserShare.ShareType shareType, String formName) {
+		List<UserShare> userShares = userShareRepository.findByUserAndToUsersAndShareType(fromUser, Arrays.asList(toUser), shareType);
+		if(shareType.equals(UserShare.ShareType.sign) && userShares.size() > 0) {
+			return true;
+		}
+		for(UserShare userShare : userShares) {
+			if(userShare.getForm().getName().equals(formName)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }
