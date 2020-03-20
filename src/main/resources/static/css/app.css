@@ -611,8 +611,9 @@ float:left;
 .circle {
     display: none;
     position: absolute;
-    opacity: 0.75;
+    opacity: 0.5;
     cursor: pointer;
+    z-index: 2;
 }
 
 .circle-border {

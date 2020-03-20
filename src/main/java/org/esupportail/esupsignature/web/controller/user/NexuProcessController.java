@@ -158,7 +158,7 @@ public class NexuProcessController {
 			try {
 				Document signedFile = signRequestService.nexuSign(signRequest, user, signatureDocumentForm, parameters);
 				if(signedFile != null) {
-					signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
+					signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS");
 
 					signRequestService.applyEndOfStepRules(signRequest, user);
 				}

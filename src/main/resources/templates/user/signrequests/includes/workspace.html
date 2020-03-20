@@ -32,6 +32,11 @@
                     <p class="postitarea" th:text="${postit.comment}"></p>
                 </div>
             </th:block>
+            <th:block th:each="postit : ${postits}">
+                <div th:id="${postit.id}" class="circle" th:onmouseover="'$(\'#postit' + ${postit.id} + '\').addClass(\'circle-border\');'" th:onmouseout="'$(\'#postit' + ${postit.id} + '\').removeClass(\'circle-border\');'">
+                    <i class="fas fa-comment fa-3x"></i>
+                </div>
+            </th:block>
         </div>
 
         <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">
@@ -42,10 +47,5 @@
             </button>
         </div>
 
-        <th:block th:each="postit : ${postits}">
-            <div th:id="${postit.id}" class="circle" th:onmouseover="'$(\'#postit' + ${postit.id} + '\').addClass(\'circle-border\');'" th:onmouseout="'$(\'#postit' + ${postit.id} + '\').removeClass(\'circle-border\');'">
-                <i class="fas fa-comment fa-3x"></i>
-            </div>
-        </th:block>
     </form>
 </div>

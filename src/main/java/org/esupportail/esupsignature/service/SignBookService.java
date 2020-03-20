@@ -280,7 +280,7 @@ public class SignBookService {
         mailService.sendRefusedMail(signBook);
         updateStatus(signBook, SignRequestStatus.refused, "Au moins un document a été refusé", user, "SUCCESS", comment);
         for(SignRequest signRequest : signBook.getSignRequests()) {
-            signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", user, "SUCCESS", signRequest.getComment());
+            signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", user, "SUCCESS");
         }
     }
 

@@ -114,9 +114,9 @@ export class WorkspacePdf {
             let postitButton = $('#postit' + postit.id);
             if(postit.pageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
                 postitDiv.show();
-                postitDiv.css('left', postit.posX * this.pdfViewer.scale);
-                postitDiv.css('top', postit.posY * this.pdfViewer.scale);
-                postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
+                postitDiv.css('left', postit.posX * this.signPosition.signScale);
+                postitDiv.css('top', postit.posY * this.signPosition.signScale);
+                postitDiv.width(postitDiv.width() * this.signPosition.signScale);
                 postitButton.css("background-color", "#FFC");
             } else {
                 postitDiv.hide();
