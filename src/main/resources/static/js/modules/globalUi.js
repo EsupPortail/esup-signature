@@ -17,7 +17,7 @@ export class GlobalUi {
 
     initListeners() {
         $(document).on('click', e => this.closeUserMenu(e));
-        $(document).on('click', e => this.scrollToHash());
+        //$(document).on('click', e => this.scrollToHash());
         this.sideBar.on('mouseover', e => this.disableBodyScroll());
         this.sideBar.on('mouseout', e => this.enableBodyScroll());
         this.clickableRow.on('click',  function() {
@@ -49,8 +49,8 @@ export class GlobalUi {
     }
 
     closeUserMenu(event) {
-        var clickover = $(event.target);
-        var _opened = $("#user-infos").hasClass("user-infos collapse show");
+        let clickover = $(event.target);
+        let _opened = $("#user-infos").hasClass("show");
         if (_opened === true && !clickover.hasClass("user-toggle")) {
             $("#user-toggle").click();
         }

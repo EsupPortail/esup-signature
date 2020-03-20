@@ -75,7 +75,7 @@
         </div>
     </nav>
     <div th:if="${user != null}" id="user-infos" class="card position-fixed user-infos collapse overflow-y-scroll" style="right: 0;">
-        <div id="myDocs" class="card-body">
+        <div id="myDocs" class="card-body user-infos">
             <h3 th:if="${@userService.getUserFromAuthentication() != user}">
                 Vous avez activé la délégation
             </h3>
