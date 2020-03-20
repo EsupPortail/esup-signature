@@ -125,12 +125,12 @@ public class AdminSignRequestController {
 			if(signRequestService.getToSignDocuments(signRequest).size() == 1) {
 				toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
-					PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
-					if (pdfParameters != null) {
-						model.addAttribute("pdfWidth", pdfParameters.getWidth());
-						model.addAttribute("pdfHeight", pdfParameters.getHeight());
-						model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-					}
+//					PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
+//					if (pdfParameters != null) {
+//						model.addAttribute("pdfWidth", pdfParameters.getWidth());
+//						model.addAttribute("pdfHeight", pdfParameters.getHeight());
+//						model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
+//					}
 					if(user.getSignImage() != null) {
 						model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
 						int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());

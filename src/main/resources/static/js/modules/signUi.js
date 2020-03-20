@@ -56,6 +56,7 @@ export class SignUi {
             signRequestUrlParams = "password=" + document.getElementById("password").value +
                 "&addDate=" + this.workspace.signPosition.dateActive +
                 "&visual=" + this.workspace.signPosition.visualActive +
+                "&comment=" + this.workspace.signPosition.signComment.val() +
                 "&xPos=" + this.workspace.signPosition.posX +
                 "&yPos=" + this.workspace.signPosition.posY +
                 "&signWidth=" + this.workspace.signPosition.signWidth +

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="logs" type="java.util.List<esupportail.esupsignature.entity.Log>"*/-->
 <div th:fragment="logscard">
     <div class="card mb-1">
         <div class="card-header">
@@ -16,6 +17,7 @@
                         <th class="none">Action</th>
                         <th class="none">Statut initial</th>
                         <th class="none">Statut final</th>
+                        <th class="none">Commentaire</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -26,6 +28,7 @@
                             <td><span th:text="${log.action}"></span></td>
                             <td><span th:text="#{'signbook.status.' + ${log.initialStatus}}"></span></td>
                             <td><span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span></td>
+                            <td><span th:text="${log.comment}"></span></td>
                         </tr>
                     </th:block>
                     </tbody>

@@ -20,6 +20,7 @@ export class SignPosition {
         this.signZoomInButton = $('#signZoomIn');
         this.currentScale = 1;
         this.signScale = 1;
+        this.signComment = $("#signComment");
         this.initListeners()
     }
 

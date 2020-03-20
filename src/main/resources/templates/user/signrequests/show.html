@@ -62,20 +62,28 @@
                         <div class="border ml-3 mr-3 "></div>
                     </th:block>
                     <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported')}">
-                        <div id="endButtons" class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#endButtons').toggleClass('active');" onmouseout="$('#endButtons').toggleClass('active');">
-                            <a class="btn-floating btn-lg bg-primary waves-effect">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </a>
+                        <div id="endButtons" class="fixed-action-btn active" style="width: 100px; bottom: 50px; right: 50px;">
                             <ul id="endCollapse" class="list-unstyled">
-                                <li><a class="btn-floating bg-primary waves-effect" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
-                                    <i class="fas fa-download"></i>
-                                </a></li>
-                                <li><a title="Export SEDA" class="btn-floating bg-primary    waves-effect" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
+                                <li>
+                                    <a class="btn-lg btn-floating bg-primary waves-effect" th:onclick="'printJS(\'/user/signrequests/get-last-file/' + ${id} + '\');'" title="Imprimer le document">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="btn-lg btn-floating bg-primary waves-effect" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a title="Export SEDA" class="btn-lg btn-floating bg-primary    waves-effect" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
                                     <i class="fa fa-file-export"></i>
-                                </a></li>
-                                <li><a th:if="${signRequest.status.name() != 'exported'}" class="btn-floating bg-primary waves-effect" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+                                    </a>
+                                </li>
+                                <li>
+                                    <a th:if="${signRequest.status.name() != 'exported'}" class="btn-lg btn-floating bg-primary waves-effect" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
                                     <i class="fas fa-shield-alt "></i>
-                                </a></li>
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                     </th:block>
@@ -156,6 +164,9 @@
             </div>
             <div class="modal-body">
                 <div th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}" class="alert alert-success"></div>
+                <div class="modal-body">
+                    <textarea id="signComment" placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment"></textarea>
+                </div>
                 <div th:if="${signType == 'nexuSign'}">
                     <div id="nexu_version_alert" style="display: none;">
                         <div class="alert alert-warning float-left">

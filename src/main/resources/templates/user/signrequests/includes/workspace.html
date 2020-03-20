@@ -25,7 +25,13 @@
                     </div>
                 </div>
             </th:block>
-
+            <th:block th:each="postit : ${postits}">
+                <div th:if="${postit.finalStatus == 'checked'}" class="postitVisa" th:style="'z-index : 1; position: absolute; left: ' + ${postit.posX} + 'px; top : ' + ${postit.posY} + 'px;'">
+                    <b th:text="'Visé par ' + ${@userService.getUserByEppn(postit.eppn).firstname + ' ' + @userService.getUserByEppn(postit.eppn).name}"></b>
+                    <span th:text="'le ' + ${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></span>
+                    <p class="postitarea" th:text="${postit.comment}"></p>
+                </div>
+            </th:block>
         </div>
 
         <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">
@@ -35,6 +41,7 @@
                 <i class="fas fa-save"></i>
             </button>
         </div>
+
         <th:block th:each="postit : ${postits}">
             <div th:id="${postit.id}" class="circle" th:onmouseover="'$(\'#postit' + ${postit.id} + '\').addClass(\'circle-border\');'" th:onmouseout="'$(\'#postit' + ${postit.id} + '\').removeClass(\'circle-border\');'">
                 <i class="fas fa-comment fa-3x"></i>

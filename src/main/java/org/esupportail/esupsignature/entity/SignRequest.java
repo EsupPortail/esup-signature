@@ -252,8 +252,8 @@ public class SignRequest {
     }
 
     public SignRequestParams getCurrentSignRequestParams() {
-        if(getSignRequestParams().size() > getSignedDocuments().size()) {
-            return getSignRequestParams().get(getSignedDocuments().size());
+        if(getSignRequestParams().size() > currentStepNumber - 1) {
+            return getSignRequestParams().get(currentStepNumber - 1);
         } else {
             SignRequestParams signRequestParams = new SignRequestParams();
             signRequestParams.setSignPageNumber(1);

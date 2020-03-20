@@ -242,7 +242,7 @@ public class SignRequestService {
 			signRequest.setSignType(signType);
 			signRequest.setAllSignToComplete(allSignToComplete);
 			signRequest.setCurrentStepNumber(signRequest.getCurrentStepNumber() + 1);
-			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", signRequest.getComment());
+			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", user, "SUCCESS", "");
 			sendEmailAlerts(signRequest);
 		} else {
 			logger.warn("already pending");
@@ -269,10 +269,11 @@ public class SignRequestService {
 		} else {
 			certSign(signRequest, user, password, addDate, visual);
 		}
+		SignRequestParams params = signRequest.getCurrentSignRequestParams();
 		if (signType.equals(SignType.visa)) {
-			updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", signRequest.getComment());
+			updateStatus(signRequest, SignRequestStatus.checked, "Visa", user, "SUCCESS", signRequest.getComment(), params.getSignPageNumber(), params.getxPos(), params.getyPos());
 		} else {
-			updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
+			updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment(), params.getSignPageNumber(), params.getxPos(), params.getyPos());
 		}
 		step = "Paramétrage de la prochaine étape";
 		applyEndOfStepRules(signRequest, user);
