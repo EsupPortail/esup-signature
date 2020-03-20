@@ -1,0 +1,17 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
+<nav th:fragment="home-side" id="sidebar">
+    <div class="ml-1 mt-3">
+        <button id="noFilterButton" th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}" title="Circuits" type="button" class="mb-1 col-12 btn btn-light text-left">
+            <i class="fas fa-eye"></i> <span class="sidebar-label">Tout voir</span>
+        </button>
+        <button id="workflowFilterButton" th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}" title="Circuits" type="button" class="disabled mb-1 col-12 btn btn-light text-left">
+            <i class="fas fa-project-diagram"></i> <span class="sidebar-label">Circuits</span>
+        </button>
+        <button id="formFilterButton" th:with="nbDatas=${@dataRepository.findByCreateByAndStatus(user.eppn, 'draft').size()}" th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Formulaires" class="disabled btn btn-light col-12 mb-1 text-left">
+            <i class="fas fa-file-alt"></i> <span class="sidebar-label">Formulaires</span>
+        </button>
+    </div>
+</nav>
+</html>

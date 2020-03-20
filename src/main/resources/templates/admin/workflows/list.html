@@ -3,10 +3,10 @@
 <!--/*@thymesVar id="workflows" type="java.util.List<org.esupportail.esupsignature.entity.Workflow>"*/-->
 <head th:replace="fragments/head"></head>
 <body>
-<header th:replace="fragments/menu"></header>
+<header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/manager-side :: manager-side" class="auto-hide"></nav>
+        <nav th:insert="fragments/admin-side" class="auto-hide"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol class="breadcrumb col-12">
                 <li class="breadcrumb-item active">Liste des circuits de visas</li>
@@ -61,11 +61,11 @@
                                 <td >
                                     <a role="button" th:if="${workflow.id != null}" aria-label="Voir"
                                        class="btn btn-sm btn-primary" title="Voir"
-                                       th:href="'/manager/workflows/' + ${workflow.id}">
+                                       th:href="'/admin/workflows/' + ${workflow.id}">
                                         <i aria-hidden="true" class="fas fa-eye"></i></a>
                                     <a role="button" th:unless="${workflow.id != null}" aria-label="Voir"
                                        class="btn btn-sm btn-primary" title="Voir"
-                                       th:href="'/manager/workflows/' + ${workflow.name}">
+                                       th:href="'/admin/workflows/' + ${workflow.name}">
                                         <i aria-hidden="true" class="fas fa-eye"></i></a>
                                 </td>
                             </tr>
@@ -80,7 +80,7 @@
 <div class="modal fade" id="newSignBook" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form th:action="'/manager/workflows'" method="post">
+            <form th:action="'/admin/workflows'" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="exampleModalLabel">Ajouter un circuit</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">

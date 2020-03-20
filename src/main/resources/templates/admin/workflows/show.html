@@ -3,13 +3,13 @@
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <head th:replace="fragments/head"></head>
 <body>
-<header th:replace="fragments/menu"></header>
+<header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/manager-side :: manager-side" class="auto-hide"></nav>
+        <nav th:insert="fragments/admin-side" class="auto-hide"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
             <ol class="breadcrumb col-12">
-                <li class="breadcrumb-item active"><a href="/manager">Liste des circuits de visas</a></li>
+                <li class="breadcrumb-item active"><a href="/admin">Liste des circuits de visas</a></li>
                 <li aria-current="page" class="breadcrumb-item active">Circuit
                     : <span th:text="${workflow.name}"></span>
                 </li>
@@ -22,7 +22,7 @@
                 </a>
                 <ul id="collapseExample" class="list-unstyled">
                     <li>
-                        <a title="Modifier les paramètres" type="button" th:href="'/manager/workflows/' + ${workflow.id} + '?form'" class="btn-floating bg-dark waves-effect">
+                        <a title="Modifier les paramètres" type="button" th:href="'/admin/workflows/' + ${workflow.id} + '?form'" class="btn-floating bg-dark waves-effect">
                             <i class="fas fa-cog"></i>
                         </a>
                     </li>
@@ -32,7 +32,7 @@
                     </a>
                     </li>
                     <li>
-                        <form id="delete" th:action="'/manager/workflows/' + ${workflow.id}" th:method="delete" onsubmit="return confirm('Voulez-vous vraiment supprimer ce circuit ?')">
+                        <form id="delete" th:action="'/admin/workflows/' + ${workflow.id}" th:method="delete" onsubmit="return confirm('Voulez-vous vraiment supprimer ce circuit ?')">
                         <a role="button" title="Supprimer" type="submit" onclick="$('#delete').submit();" class="btn-floating bg-danger waves-effect">
                             <i class="fas fa-trash-alt"></i>
                         </a>
@@ -49,7 +49,7 @@
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Circuit de signatures</dt>
                         <dd>
-                            <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="manager/workflows/cards/stepscard :: stepscard"></div>
+                            <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="admin/workflows/cards/stepscard :: stepscard"></div>
                             <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
                                 Vous pouvez ajouter des étapes
                             </div>
@@ -93,7 +93,7 @@
             <div class="modal fade" id="addStep" tabindex="-1" role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
-                        <form th:action="'/manager/workflows/add-step/' + ${id}" method="post">
+                        <form th:action="'/admin/workflows/add-step/' + ${id}" method="post">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="addStepLabel">Ajouter une étape</h5>
                             </div>

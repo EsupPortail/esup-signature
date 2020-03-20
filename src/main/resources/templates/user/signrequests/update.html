@@ -7,7 +7,7 @@
     new FilesInput($("#multipartFiles"), "multipartFiles", [[${signRequest.liteOriginalDocuments}]], [[${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported'}]], [[${_csrf.parameterName}]], [[${_csrf.token}]], [[${signRequest.id}]]);
 </script>
 <body>
-<header th:replace="fragments/menu"></header>
+<header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
         <nav th:insert="fragments/side" class="auto-hide"></nav>

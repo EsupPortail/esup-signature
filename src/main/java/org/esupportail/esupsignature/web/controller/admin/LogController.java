@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller.manager;
+package org.esupportail.esupsignature.web.controller.admin;
 
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.LogRepository;
@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 
-@RequestMapping("/manager/logs")
+@RequestMapping("/admin/logs")
 @Controller
 public class LogController {
 
 	@ModelAttribute("active")
 	public String getActiveMenu() {
-		return "manager/logs";
+		return "admin/logs";
 	}
 	
 	@Autowired
@@ -38,7 +38,7 @@ public class LogController {
         addDateTimeFormatPatterns(uiModel);
         uiModel.addAttribute("log", logRepository.findById(id).get());
         uiModel.addAttribute("itemId", id);
-        return "manager/logs/show";
+        return "admin/logs/show";
     }
 
 	@RequestMapping(produces = "text/html")
@@ -53,7 +53,7 @@ public class LogController {
             uiModel.addAttribute("logs", logRepository.findAll());
         }
         addDateTimeFormatPatterns(uiModel);
-        return "manager/logs/list";
+        return "admin/logs/list";
     }
 
 	void addDateTimeFormatPatterns(Model uiModel) {

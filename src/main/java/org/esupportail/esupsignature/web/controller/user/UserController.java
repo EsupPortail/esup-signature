@@ -111,13 +111,11 @@ public class UserController {
     
     @PostMapping
     public String create(
-		    @RequestParam(value = "referer", required=false) String referer,
-    		@RequestParam(value = "signImageBase64", required=false) String signImageBase64, 
+    		@RequestParam(value = "signImageBase64", required=false) String signImageBase64,
     		@RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
     		@RequestParam(value = "emailAlertHour", required=false) String emailAlertHour,
     		@RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
-    		@RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, Model model) throws Exception {
-        model.asMap().clear();
+    		@RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, RedirectAttributes redirectAttributes) throws Exception {
 		User user = userService.getUserFromAuthentication();
         if(multipartKeystore != null && !multipartKeystore.isEmpty()) {
             if(user.getKeystore() != null) {
@@ -139,11 +137,8 @@ public class UserController {
     	user.setEmailAlertFrequency(emailAlertFrequency);
     	user.setEmailAlertHour(emailAlertHour);
     	user.setEmailAlertDay(emailAlertDay);
-    	if(referer != null && !"".equals(referer)) {
-			return "redirect:" + referer;
-		} else {
-			return "redirect:/user/users/?form";
-		}
+    	redirectAttributes.addFlashAttribute("messageSuccess", "Vos paramètres on été enregistrés");
+		return "redirect:/user/users/?form";
     }
     
     @RequestMapping(value = "/view-cert", method = RequestMethod.GET, produces = "text/html")

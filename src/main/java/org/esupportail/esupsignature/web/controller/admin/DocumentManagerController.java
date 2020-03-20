@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller.manager;
+package org.esupportail.esupsignature.web.controller.admin;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
@@ -66,7 +66,7 @@ public class DocumentManagerController {
 	@GetMapping("documents/form")
 	public String creatDocument(Model model) {
 		model.addAttribute("document", new Document());
-		return "manager/documents/create";
+		return "admin/documents/create";
 	}
 	
 	@GetMapping("documents/{id}")
@@ -79,7 +79,7 @@ public class DocumentManagerController {
 		if(formService.getFormByDocument(document) != null) {
 			model.addAttribute("form", formService.getFormByDocument(document));
 		}
-		return "manager/documents/show";
+		return "admin/documents/show";
 	}
 
 	@PostMapping("documents/{id}/generate")
@@ -88,28 +88,28 @@ public class DocumentManagerController {
 		if(formService.getFormByDocument(document) == null) {
 			formService.createForm(document, name, workflowType, code, targetType, targetUri);
 		}
-		return "redirect:/manager/documents/" + id;
+		return "redirect:/admin/documents/" + id;
 	}
 	
 	@GetMapping("documents")
 	public String getAllDocuments(Model model) {
 		List<Document> documents = documentService.getAllDocuments();
 		model.addAttribute("documents", documents);
-		return "manager/documents/list";
+		return "admin/documents/list";
 	}
 	
 	@PostMapping("documents")
 	public String addDocument(@RequestParam("multipartFile") MultipartFile multipartFile, RedirectAttributes redirectAttributes) throws IOException {
 		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
 		redirectAttributes.addFlashAttribute("info", "Document ajouté");
-		return "redirect:/manager/documents/" + document.getId();
+		return "redirect:/admin/documents/" + document.getId();
 	}
 	
 	@DeleteMapping("documents/{id}")
 	public String deleteDocument(@PathVariable("id") Long id) {
 		Document document = documentRepository.findById(id).get();
 		documentRepository.delete(document);
-		return "redirect:/manager/documents";
+		return "redirect:/admin/documents";
 	}
 
 	@GetMapping("documents/{id}/getimagepdfpage/{page}")

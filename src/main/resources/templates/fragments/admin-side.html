@@ -1,0 +1,23 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
+<nav th:fragment="admin-side" id="sidebar">
+    <div class="ml-1 mt-1">
+        <a title="Accueil" type="button" href="/" class="mb-1 col-12 btn btn-light text-left">
+            <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
+        </a>
+        <a title="Toutes les demandes" type="button" href="/admin/signrequests" class="mb-1 col-12 btn btn-light text-left" th:classappend="${activeMenu == 'adminsignrequests'} ? 'bg-secondary'">
+            <i class="fas fa-paste"></i> <span class="sidebar-label">Demandes</span>
+        </a>
+        <a th:classappend="${activeMenu == 'workflows'} ? 'bg-secondary'"  title="Circuits de signature" href="/admin/workflows" class="btn btn-light col-12 mb-1 text-left">
+            <i class="fas fa-project-diagram"></i> <span class="sidebar-label">Circuits</span>
+        </a>
+        <a th:classappend="${activeMenu == 'forms'} ? 'bg-secondary'"  title="Modèles de documents" href="/admin/forms" class="btn btn-light col-12 mb-1 text-left">
+            <i class="fas fa-file-alt"></i> <span class="sidebar-label">Formulaires</span>
+        </a>
+        <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="mb-1 col-12 btn btn-light text-left">
+            <i class="fas fa-code"></i> <span class="sidebar-label">APIs Doc</span>
+        </a>
+    </div>
+</nav>
+</html>

@@ -3,9 +3,9 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
 <!--/*@thymesVar id="postit" type="org.esupportail.esupsignature.entity.Log"*/-->
-<div th:fragment="workspace" id="workspace" class="workspace-sign alert alert-secondary">
+<div th:fragment="workspace" id="workspace" class="workspace-sign alert alert-secondary justify-content-center">
     <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
-        <div id="pdf" class="drop-shadows" >
+        <div id="pdf" class="drop-shadows mx-auto">
             <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed' && currentSignType != 'visa'}">
                 <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                      onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"

@@ -123,6 +123,7 @@ export class PdfViewer {
     renderPdfForm(items) {
         console.log("rending pdfForm items");
         let signFieldNumber = 0;
+        let visaFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
             let dataField = this.dataFields.filter(obj => {
                 return obj.name === items[i].fieldName
@@ -133,10 +134,18 @@ export class PdfViewer {
                 signFieldNumber = signFieldNumber + 1;
                 $('.popupWrapper').remove();
                 let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                signField.append('Champ signature ' + signFieldNumber + ' : <br>');
-                signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
+                signField.append('Champ signature ' + signFieldNumber + '<br>');
+                //signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
                 signField.addClass("sign-field");
-
+            }
+            if(items[i].fieldType === undefined && items[i].title.toLowerCase().startsWith('visa')) {
+                console.debug("found sign field");
+                visaFieldNumber = visaFieldNumber + 1;
+                $('.popupWrapper').remove();
+                let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+                signField.append('Champ visa ' + visaFieldNumber + '<br>');
+                //signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
+                signField.addClass("sign-field");
             }
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length > 0) {

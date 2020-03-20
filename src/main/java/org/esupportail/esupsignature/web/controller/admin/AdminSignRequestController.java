@@ -50,8 +50,13 @@ public class AdminSignRequestController {
 	private static final Logger logger = LoggerFactory.getLogger(AdminSignRequestController.class);
 
 	@ModelAttribute("adminMenu")
-	public String getActiveMenu() {
+	public String getAdminMenu() {
 		return "active";
+	}
+
+	@ModelAttribute("activeMenu")
+	public String getActiveMenu() {
+		return "adminsignrequests";
 	}
 
 	@ModelAttribute("user")

@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller.manager;
+package org.esupportail.esupsignature.web.controller.admin;
 
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Field;
@@ -25,14 +25,14 @@ import java.io.IOException;
 import java.util.List;
 
 @Controller
-@RequestMapping("manager")
+@RequestMapping("/admin/forms")
 @Transactional
 public class FormManagerController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FormManagerController.class);
 
-	@ModelAttribute("managerMenu")
-	public String getManagerMenu() {
+	@ModelAttribute("adminMenu")
+	public String getAdminMenu() {
 		return "active";
 	}
 
@@ -66,7 +66,7 @@ public class FormManagerController {
 		return userService.getSuUsers();
 	}
 
-	@PostMapping("forms")
+	@PostMapping()
 	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames, @RequestParam("fieldTypes[]") String[] fieldTypes, Model model) {
 		Form form = new Form();
 		form.setDocument(null);
@@ -86,25 +86,25 @@ public class FormManagerController {
 		form.setVersion(1);
 		form.setActiveVersion(true);
 		formRepository.save(form);
-		return "redirect:/manager/forms/" + form.getId();
+		return "redirect:/admin/forms/" + form.getId();
 	}
 	
-	@GetMapping("forms/{id}")
+	@GetMapping("{id}")
 	public String getFormById(@PathVariable("id") Long id, Model model) {
 		Form form = formService.getFormById(id);
 		model.addAttribute("form", form);
 		model.addAttribute("document", form.getDocument());
-		return "manager/forms/show";
+		return "admin/forms/show";
 	}
 
-	@PostMapping("forms/generate")
+	@PostMapping("generate")
 	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String workflowType, String code, DocumentIOType targetType, String targetUri, Model model) throws IOException {
 		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
 		Form form = formService.createForm(document, name, workflowType, code, targetType, targetUri);
-		return "redirect:/manager/forms/" + form.getId();
+		return "redirect:/admin/forms/" + form.getId();
 	}
 
-	@GetMapping("forms/update/{id}")
+	@GetMapping("update/{id}")
 	public String updateForm(@PathVariable("id") long id, Model model) {
 		Form form = formService.getFormById(id);
 		model.addAttribute("form", form);
@@ -113,26 +113,26 @@ public class FormManagerController {
 		model.addAttribute("workflowTypes", workflowService.getWorkflows());
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("model", form.getDocument());
-		return "manager/forms/update";
+		return "admin/forms/update";
 	}
 
-	@GetMapping("forms/create")
+	@GetMapping("create")
 	public String createForm(Model model) {
 		model.addAttribute("form", new Form());
-		return "manager/forms/create";
+		return "admin/forms/create";
 	}
 
-	@GetMapping("forms")
+	@GetMapping()
 	public String list(Model model) {
 		List<Form> forms = formService.getAllForms();
 		model.addAttribute("forms", forms);
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("workflowTypes", workflowService.getWorkflows());
-		return "manager/forms/list";
+		return "admin/forms/list";
 	}
 	
-	@PutMapping("forms")
-	public String updateForm(@ModelAttribute Form updateForm) {
+	@PutMapping()
+	public String updateForm(@ModelAttribute Form updateForm, RedirectAttributes redirectAttributes) {
 		Form form = formService.getFormById(updateForm.getId());
 		form.setPdfDisplay(updateForm.getPdfDisplay());
 		form.setName(updateForm.getName());
@@ -143,16 +143,16 @@ public class FormManagerController {
 		form.setTargetType(updateForm.getTargetType());
 		form.setDescription(updateForm.getDescription());
 		form.setPublicUsage(updateForm.getPublicUsage());
-
 		formRepository.save(form);
-		return "redirect:/manager/forms/update/" + updateForm.getId();
+		redirectAttributes.addFlashAttribute("messageSuccess", "Modifications enregistrées");
+		return "redirect:/admin/forms/update/" + updateForm.getId();
 	}
 	
-	@DeleteMapping("forms/{id}")
+	@DeleteMapping("{id}")
 	public String deleteForm(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		formService.deleteForm(id);
 		redirectAttributes.addFlashAttribute("messageInfo", "Le formulaire à bien été supprimé");
-		return "redirect:/manager/forms";
+		return "redirect:/admin/forms";
 	}
 	
 } 

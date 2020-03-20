@@ -2,20 +2,20 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
 <body>
-<header th:replace="fragments/menu"></header>
+<header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/manager-side :: manager-side" class="auto-hide"></nav>
+        <nav th:insert="fragments/admin-side" class="auto-hide"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/manager/forms">Liste des formulaires</a></li>
+                <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active">Nouveau formulaire</li>
             </ol>
         </nav>
         <div id="content" class="content">
             <div class="card">
                 <div class="card-body">
-                    <form th:action="'/manager/forms'" method="post">
+                    <form th:action="'/admin/forms'" method="post">
                         <div class="form-group">
                             <label for="name">Name</label>
                             <input id="name" class="form-control" type="text" name="name"/>

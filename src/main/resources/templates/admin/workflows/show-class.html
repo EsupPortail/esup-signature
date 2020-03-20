@@ -3,13 +3,13 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
 <body>
-<header th:replace="fragments/menu"></header>
+<header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/manager-side :: manager-side" class="auto-hide"></nav>
+        <nav th:insert="fragments/admin-side" class="auto-hide"></nav>
         <nav id="breadcrumb" class="breadcrumb-nav text-uppercase" aria-label="breadcrumb">
             <ol class="breadcrumb col-12">
-                <li class="breadcrumb-item active"><a href="/manager">Liste des circuits de visas</a></li>
+                <li class="breadcrumb-item active"><a href="/admin">Liste des circuits de visas</a></li>
                 <li aria-current="page" class="breadcrumb-item active">Circuit prédéfini
                     : <span th:text="${workflow.name}"></span>
                 </li>
@@ -25,7 +25,7 @@
                     </dl>
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Circuit de signatures</dt>
-                        <div th:replace="manager/workflows/cards/stepscard-light :: stepscard-light"></div>
+                        <div th:replace="admin/workflows/cards/stepscard-light :: stepscard-light"></div>
                     </dl>
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Gestionnaire(s) du circuit</dt>

@@ -1,0 +1,186 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.sprinfgramework.org/schema/security">
+<header th:fragment="nav" class="fixed-top">
+    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark bg-dark">
+        <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse" class="btn btn-lg text-white float-left">
+            <i class="fas fa-bars"></i>
+        </button>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar_toggle"
+                aria-controls="navbar_toggle" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <h1 aria-label="Esup-Signature" title="Esup-Signature" style="width: 200px;">
+            <a href="/"><img alt="Logo Esup-Signature" src="/images/logo.svg" height="40"/></a>
+        </h1>
+        <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between bg-dark">
+            <ul class="navbar-nav" sec:authorize="isAuthenticated()">
+                <li class="nav-item text-white">
+                    <button th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}"
+                            th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
+                            onclick="location.href='/'" class="btn btn-transparent text-left">
+                        <i class="fas fa-home"></i> <span class="sidebar-label d-lg-inline">Accueil</span>
+                        <span title="Demandes à signer" th:if="${nbToSign > 0}" class="badge badge-danger mt-1"
+                              th:text="${nbToSign}"></span>
+                    </button>
+                </li>
+                <li class="nav-item text-white">
+                    <a th:with="nbDatas=${@dataRepository.findByCreateByAndStatus(user.eppn, 'draft').size()}"
+                       th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes brouillons"
+                       href="/user/datas" class="btn btn-transparent text-left">
+                        <i class="fab fa-firstdraft"></i> <span class="sidebar-label d-lg-inline">Mes brouillons</span>
+                        <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0}"
+                              class="badge badge-info mt-1" th:text="${nbDatas}"></span>
+
+                    </a>
+                </li>
+                <li class="nav-item text-white">
+                    <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user.eppn, 'pending').size()}"
+                       th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Tableau de bord"
+                       href="/user/signrequests" class="btn btn-transparent text-left">
+                        <i class="fas fa-paste"></i> <span class="sidebar-label d-xl-inline">Tableau de bord</span>
+                    </a>
+                </li>
+                <li class="nav-item text-white">
+                    <a role="button" class="btn btn-transparent text-left" data-toggle="modal"
+                       data-target="#fastSignRequestModal" title="Vous devez signer un document présent sur votre poste">
+                        <i class="fas fa-bolt"></i><span class="sidebar-label d-xl-inline"> Signature rapide</span>
+                    </a>
+                </li>
+                <li class="nav-item text-white">
+                    <a th:classappend="${activeMenu == 'validation'} ? 'bg-secondary'"
+                       title="Valider la signature d'un document" href="/user/validation" class="btn btn-transparent text-left">
+                        <i class="fas fa-shield-alt"></i> <span class="sidebar-label d-xxl-inline">Contrôler un document</span>
+                    </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav" th:if="${user.firstname != null}">
+                <li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
+                    <a href="/admin/signrequests" th:class="'nav-link ' + ${adminMenu}"><i class="fas fa-crown"></i></a>
+                </li>
+                <li class="nav-item text-white">
+                   <a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos"
+                       aria-label="Paramètres utilisateur" class="text-decoration-none user-toggle"
+                       aria-controls="user-infos" data-toggle="collapse">
+						<span class="d-none d-lg-inline nav-link" th:text="${user.firstname} + ' ' + ${user.name}">
+						</span>
+                        <div class="btn-floating btn-small btn-secondary user-toggle"><i class="fas fa-user"></i></div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div id="user-infos" class="card position-fixed user-infos collapse overflow-y-scroll" style="right: 0;">
+        <div id="myDocs" class="card-body">
+            <h3>
+                Vos informations
+            </h3>
+            <a class="btn btn-sm btn-secondary" aria-label="Paramètres utilisateur "
+               title="Paramètres" href="/user/users/?form">
+                <i class="fa fa-cog"></i> Modifier mes paramètres
+            </a>
+            <table class="table table-sm table-borderless">
+                <tbody>
+                <tr>
+                    <th class="text-break w-50">Nom</th>
+                    <td class="text-break w-50" th:text="${user.name}"></td>
+                </tr>
+                <tr>
+                    <th class="text-break w-50">Prénom</th>
+                    <td class="text-break w-50" th:text="${user.firstname}"></td>
+                </tr>
+                <tr>
+                    <th class="text-break w-50">Email</th>
+                    <td class="text-break w-50" th:text="${user.email}"></td>
+                </tr>
+                <tr>
+                    <th class="text-break w-50">Identifiant</th>
+                    <td class="text-break w-50" th:text="${user.eppn}"></td>
+                </tr>
+                <tr>
+                    <th class="text-break w-50">Image de la signature</th>
+                    <td class="text-break w-50">
+                        <img th:if="${user.signImage != null}" alt="signature"
+                             th:src="'data:image/png;base64,' + ${user.signImageBase64}"/>
+                        <div th:unless="${user.signImage != null}" class="alert alert-danger">
+                            Pas de signature
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="text-break w-50">Keystore</th>
+                    <td class="text-break w-50">
+                        <div th:if="${user.keystore != null}" class="alert alert-secondary">
+                            Keystore actuel :
+                            <br>
+                            <a th:href="'/user/documents/getfile/' + ${user.keystore.id}">
+                                <span th:text="${user.keystore.fileName}"></span>
+                            </a>
+                        </div>
+                        <div th:if="${user.keystore == null}" class="alert alert-danger">
+                            Pas de keystore
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <h3>
+                Activer une délégation
+            </h3>
+            <form th:if="${session.suEppn == null}" id="changeSuEppn" action="/change" method="post">
+                <select class="form-control" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
+                    <option th:value="${user.eppn}" selected>Délégation désactivée</option>
+                    <th:block th:each="suUser : ${suUsers}">
+                        <option th:if="${user.eppn == suUser.eppn}" th:value="${suUser.eppn}"
+                                th:text="${suUser.firstname} + ' ' + ${suUser.name} " selected></option>
+                        <option th:unless="${user.eppn == suUser.eppn}" th:value="${suUser.eppn}"
+                                th:text="${suUser.firstname} + ' ' + ${suUser.name} "></option>
+                    </th:block>
+                </select>
+            </form>
+        </div>
+    </div>
+
+</header>
+
+<div class="modal fade" id="fastSignRequestModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/signrequests/fast-sign-request?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
+                  method="post" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="fastSignRequestLabel">Signature rapide</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="col-lg-12">
+                        <div class="form-group">
+                            <div class="custom-file">
+                                <input required aria-describedby="inputGroupLabel01" class="custom-file-input"
+                                       data-buttontext="Choisir fichier" id="inputGroupFile01" name="multipartFiles"
+                                       type="file">
+                                <label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01"
+                                       aria-label="Choisir un document">
+                                    Choisir un document
+                                </label>
+                            </div>
+                        </div>
+                        <label for="signType">Choisir un type de signature</label>
+                        <select name="signType" id="signType" class="form-control">
+                            <th:block th:each="signType : ${signTypes}">
+                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Annuler</button>
+                    <button type="submit" id="fast-form-submit" class="btn btn-success float-right">Valider</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</html>

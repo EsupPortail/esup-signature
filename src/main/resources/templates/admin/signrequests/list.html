@@ -2,19 +2,10 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.thymeleaf.org/spring-data">
 <head th:replace="fragments/head"></head>
 <body>
-<nav th:replace="fragments/menu"></nav>
+<nav th:replace="fragments/nav"></nav>
 <main role="main" class="">
     <div class="wrapper">
-        <nav id="sidebar">
-            <div class="m-1">
-                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
-                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
-                </button>
-                <a title="Accueil" target="_blank" type="button" href="/swagger-ui.html" class="mb-1 col-12 btn btn-transparent text-left">
-                    <i class="fas fa-code"></i> <span class="sidebar-label">APIs Doc</span>
-                </a>
-            </div>
-        </nav>
+        <nav th:insert="fragments/admin-side" class="auto-hide"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav text-uppercase">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item active">Liste des demandes</li>

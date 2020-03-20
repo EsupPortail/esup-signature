@@ -4,19 +4,19 @@
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <head th:replace="fragments/head"></head>
 <body>
-<header th:replace="fragments/menu"></header>
+<header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/manager-side :: manager-side" class="auto-hide"></nav>
+        <nav th:insert="fragments/admin-side" class="auto-hide"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav text-uppercase">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/manager/forms">Liste des formulaires</a></li>
+                <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active" th:text="'Liste des champs du formulaire : ' + ${form.name}"></li>
             </ol>
         </nav>
         <div id="content" class="content col-lg-8">
             <div class="fixed-action-btn" style="bottom: 100px; right: 50px;">
-                <a title="Créer un nouveau circuit" type="button" th:href="'/manager/forms/update/' + ${form.id}"
+                <a title="Créer un nouveau circuit" type="button" th:href="'/admin/forms/update/' + ${form.id}"
                    class="btn-floating btn-lg bg-warning">
                     <i class="fas fa-pencil-alt"></i>
                 </a>

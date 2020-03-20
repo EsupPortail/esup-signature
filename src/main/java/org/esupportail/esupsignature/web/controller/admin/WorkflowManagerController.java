@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller.manager;
+package org.esupportail.esupsignature.web.controller.admin;
 
 import org.esupportail.esupsignature.entity.Recipient;
 import org.esupportail.esupsignature.entity.User;
@@ -22,21 +22,20 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-@RequestMapping("/manager/workflows")
+@RequestMapping("/admin/workflows")
 @Controller
 @Transactional
 public class WorkflowManagerController {
 
 	private static final Logger logger = LoggerFactory.getLogger(WorkflowManagerController.class);
 	
-	@ModelAttribute("managerMenu")
-	public String getManagerMenu() {
+	@ModelAttribute("adminMenu")
+	public String getAdminMenu() {
 		return "active";
 	}
 
@@ -78,7 +77,7 @@ public class WorkflowManagerController {
 		workflows.addAll(workflowService.getWorkflows());
 		workflows.addAll(workflowRepository.findAll());
 		model.addAttribute("workflows", workflows);
-		return "manager/workflows/list";
+		return "admin/workflows/list";
 	}
 
 	@GetMapping(value = "/{id}", produces = "text/html")
@@ -88,16 +87,16 @@ public class WorkflowManagerController {
 		try {
 			workflow = workflowRepository.findById(Long.valueOf(id)).get();
 			uiModel.addAttribute("workflow", workflow);
-			return "manager/workflows/show";
+			return "admin/workflows/show";
 		} catch (NumberFormatException e) {
 			logger.debug(e.getMessage());
 			workflow = workflowService.getWorkflowByName(id);
 			if(workflow == null) {
 				redirectAttributes.addFlashAttribute("Workflow introuvable");
-				return "redirect:/manager/workflows";
+				return "redirect:/admin/workflows";
 			}
 			uiModel.addAttribute("workflow", workflow);
-			return "manager/workflows/show-class";
+			return "admin/workflows/show-class";
 		}
 	}
 
@@ -111,9 +110,9 @@ public class WorkflowManagerController {
 			workflow = workflowService.createWorkflow(name, user,false);
 		} catch (EsupSignatureException e) {
 			redirectAttrs.addAttribute("messageError", "Ce circuit existe déjà");
-			return "redirect:/manager/workflows/";
+			return "redirect:/admin/workflows/";
 		}
-		return "redirect:/manager/workflows/" + workflow.getId();
+		return "redirect:/admin/workflows/" + workflow.getId();
 	}
 
     @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
@@ -122,7 +121,7 @@ public class WorkflowManagerController {
 		Workflow workflow = workflowRepository.findById(id).get();
 		if (!workflowService.checkUserManageRights(user, workflow)) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/manager/workflows/" + id;
+			return "redirect:/admin/workflows/" + id;
 		}
 		uiModel.addAttribute("workflow", workflow);
 		uiModel.addAttribute("users", userRepository.findAll());
@@ -130,7 +129,7 @@ public class WorkflowManagerController {
 		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
 		uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
 		uiModel.addAttribute("signrequests", signRequestRepository.findAll());
-        return "manager/workflows/update";
+        return "admin/workflows/update";
     }
 	
     @PostMapping(value = "/update/{id}")
@@ -156,7 +155,7 @@ public class WorkflowManagerController {
 			workflowToUpdate.setUpdateDate(new Date());
 			workflowRepository.save(workflowToUpdate);
 		}
-        return "redirect:/manager/workflows/" + workflow.getId();
+        return "redirect:/admin/workflows/" + workflow.getId();
 
     }
 
@@ -166,10 +165,10 @@ public class WorkflowManagerController {
     	Workflow workflow = workflowRepository.findById(id).get();
 		if (!workflowService.checkUserManageRights(user, workflow)) {
 			redirectAttrs.addFlashAttribute("messageCustom", "Non autorisé");
-			return "redirect:/manager/workflows/" + id;
+			return "redirect:/admin/workflows/" + id;
 		}
 		workflowRepository.delete(workflow);
-        return "redirect:/manager/workflows";
+        return "redirect:/admin/workflows";
     }
 
 	@PostMapping(value = "/add-step/{id}")
@@ -182,11 +181,11 @@ public class WorkflowManagerController {
 		Workflow workflow = workflowRepository.findById(id).get();
 		if (!workflow.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/manager/workflows/" + id;
+			return "redirect:/admin/workflows/" + id;
 		}
 		WorkflowStep workflowStep = workflowService.createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
 		workflow.getWorkflowSteps().add(workflowStep);
-		return "redirect:/manager/workflows/" + id;
+		return "redirect:/admin/workflows/" + id;
 	}
 
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
@@ -203,7 +202,7 @@ public class WorkflowManagerController {
 		} else {
 			logger.warn(user.getEppn() + " try to move " + workflow.getId() + " without rights");
 		}
-		return "redirect:/manager/workflows/" + id + "#" + workflowStep.getId();
+		return "redirect:/admin/workflows/" + id + "#" + workflowStep.getId();
 	}
 
 	@PostMapping(value = "/add-step-recipents/{id}/{workflowStepId}")
@@ -220,7 +219,7 @@ public class WorkflowManagerController {
 		} else {
 			logger.warn(user.getEppn() + " try to update " + workflow.getId() + " without rights");
 		}
-		return "redirect:/manager/workflows/" + id + "#" + workflowStep.getId();
+		return "redirect:/admin/workflows/" + id + "#" + workflowStep.getId();
 	}
 
 
@@ -230,9 +229,9 @@ public class WorkflowManagerController {
 		Workflow workflow = workflowRepository.findById(id).get();
 		if(user.getEppn().equals(workflow.getCreateBy())) {
 			Long stepId = workflowService.toggleNeedAllSign(workflow, step);
-			return "redirect:/manager/workflows/" + id + "#" + stepId;
+			return "redirect:/admin/workflows/" + id + "#" + stepId;
 		}
-		return "redirect:/manager/workflows/";
+		return "redirect:/admin/workflows/";
 	}
 
 	@RequestMapping(value = "/change-step-sign-type/{id}/{step}", method = RequestMethod.GET)
@@ -241,9 +240,9 @@ public class WorkflowManagerController {
 		Workflow workflow = workflowRepository.findById(id).get();
 		if(user.getEppn().equals(workflow.getCreateBy())) {
 			workflowService.changeSignType(workflow, step, null, signType);
-			return "redirect:/manager/workflows/" + id;
+			return "redirect:/admin/workflows/" + id;
 		}
-		return "redirect:/manager/workflows/";
+		return "redirect:/admin/workflows/";
 	}
 
 	@DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
@@ -252,13 +251,13 @@ public class WorkflowManagerController {
 		Workflow workflow = workflowRepository.findById(id).get();
 		if (!workflow.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/manager/workflows/" + id;
+			return "redirect:/admin/workflows/" + id;
 		}
 		WorkflowStep workflowStep = workflow.getWorkflowSteps().get(stepNumber);
 		workflow.getWorkflowSteps().remove(workflowStep);
 		workflowRepository.save(workflow);
 		workflowStepRepository.delete(workflowStep);
-		return "redirect:/manager/workflows/" + id;
+		return "redirect:/admin/workflows/" + id;
 	}
 
 	@RequestMapping(value = "/add-params/{id}", method = RequestMethod.POST)
@@ -269,11 +268,11 @@ public class WorkflowManagerController {
 
 		if (!workflow.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/manager/workflows/" + id;
+			return "redirect:/admin/workflows/" + id;
 		}
 		workflow.setUpdateBy(user.getEppn());
 		workflow.setUpdateDate(new Date());
-		return "redirect:/manager/workflows/" + id;
+		return "redirect:/admin/workflows/" + id;
 	}
 
 	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
@@ -283,7 +282,7 @@ public class WorkflowManagerController {
 
 		if (!workflow.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/manager/workflows/" + id;
+			return "redirect:/admin/workflows/" + id;
 		}
 		List<FsFile> fsFiles = workflowService.importFilesFromSource(workflow, user);
 		if(fsFiles.size() == 0) {
@@ -291,7 +290,7 @@ public class WorkflowManagerController {
 		} else {
 			redirectAttrs.addFlashAttribute("messageInfo", fsFiles.size() + " ficher(s) importé(s)");
 		}
-		return "redirect:/manager/workflows/" + id;
+		return "redirect:/admin/workflows/" + id;
 	}
 
 }

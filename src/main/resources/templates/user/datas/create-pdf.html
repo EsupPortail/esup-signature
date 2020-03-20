@@ -9,7 +9,7 @@
     new CreateDataUi([[${form.document.id}]], [[${fields}]]);
 </script>
 <body>
-<header th:replace="fragments/menu"></header>
+<header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
         <nav th:insert="fragments/side" class="auto-hide"></nav>
@@ -27,25 +27,24 @@
                 </a>
             </div>
             <div id="addButton" th:unless="${data.status == null}"  class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
-                <a class="btn-floating btn-lg bg-primary waves-effect">
-                    <i class="fas fa-ellipsis-v"></i>
-                </a>
-                <ul id="collapseExample" class="list-unstyled">
-                    <li>
-                        <a role="button" title="Demarrer la procédure" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-floating bg-primary">
-                        <i class="fas fa-play"></i></a>
-                    </li>
-                    <li>
-                        <a target="_blank" title="Exporter en PDF" th:if="${data.status.name() == 'draft'}"
-                           th:href="'/user/datas/' + ${data.id} + '/export-pdf'"
-                           class="btn-floating bg-danger">
-                            <i class="fas fa-file-pdf"></i>
-                        </a>
-                    </li>
-                    <li><a role="button" title="Enregistrer les modifications" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" onclick="document.getElementById('newDataSubmit').click();" class="btn-floating bg-success">
-                        <i class="fas fa-save"></i></a>
-                    </li>
-                </ul>
+                <div id="signButtons" class="fixed-action-btn active" style="width: 100px; bottom: 50px; right: 50px;">
+                    <ul class="list-unstyled">
+                        <li>
+                            <a role="button" title="Demarrer la procédure" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-lg btn-floating bg-primary">
+                                <i class="fas fa-play"></i></a>
+                        </li>
+                        <li>
+                            <a target="_blank" title="Exporter en PDF" th:if="${data.status.name() == 'draft'}"
+                               th:href="'/user/datas/' + ${data.id} + '/export-pdf'"
+                               class="btn-lg btn-floating bg-danger">
+                                <i class="fas fa-file-pdf"></i>
+                            </a>
+                        </li>
+                        <li><a role="button" title="Enregistrer les modifications" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" onclick="document.getElementById('newDataSubmit').click();" class="btn-lg btn-floating bg-success">
+                            <i class="fas fa-save"></i></a>
+                        </li>
+                    </ul>
+                </div>
             </div>
             <div class="tools">
                 <div class="d-flex mb-1">
@@ -66,12 +65,12 @@
                     <button title="Rotation à gauche" id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
                 </div>
             </div>
-            <div id="workspace" class="workspace alert alert-secondary fadein">
+            <div id="workspace" class="workspace alert alert-secondary fadein justify-content-center">
                 <form id="newData" th:action="'/user/datas/form/' + ${form.id}" method="post">
                     <input id="newDataSubmit" type="submit" style="display: none;"/>
                     <input id="dataId" type="hidden" name="dataId" th:value="${data.id}"/>
                     <input id="name" type="hidden" name="name" th:value="${data.name}"/>
-                    <div id="pdf" class="drop-shadows"></div>
+                    <div id="pdf" class="drop-shadows mx-auto"></div>
                 </form>
             </div>
         </div>

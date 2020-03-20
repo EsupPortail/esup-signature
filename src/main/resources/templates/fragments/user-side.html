@@ -1,0 +1,17 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
+<nav th:fragment="home-side" id="sidebar">
+    <div class="ml-1 mt-3">
+        <a class="btn btn-light col-12 mb-1 text-left" href="/user/users/?form">
+            <i class="fa fa-user-cog"></i> <span class="sidebar-label">Paramètres de signature</span>
+        </a>
+        <a class="btn btn-light col-12 mb-1 text-left" href="/user/users/shares">
+            <i class="fa fa-share"></i> <span class="sidebar-label">Délégation</span>
+        </a>
+        <a class="btn btn-light col-12 mb-1 text-left" href="/user/users/properties">
+            <i class="fa fa-bookmark"></i> <span class="sidebar-label">Favoris</span>
+        </a>
+    </div>
+</nav>
+</html>

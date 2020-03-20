@@ -18,8 +18,8 @@ export class GlobalUi {
     initListeners() {
         $(document).on('click', e => this.closeUserMenu(e));
         $(document).on('click', e => this.scrollToHash());
-        this.sideBar2.on('mouseover', e => this.disableBodyScroll());
-        this.sideBar2.on('mouseout', e => this.enableBodyScroll());
+        this.sideBar.on('mouseover', e => this.disableBodyScroll());
+        this.sideBar.on('mouseout', e => this.enableBodyScroll());
         this.clickableRow.on('click',  function() {
             window.location = $(this).closest('tr').attr('data-href');
         });
@@ -70,8 +70,8 @@ export class GlobalUi {
         if(this.sideBarStatus === 'on' && this.sideBar.hasClass('active')) {
             this.toggleSideBar();
         }
-        this.autoHide.on('mouseover', e => this.autoShowSideBar());
-        this.autoHide.on('mouseout', e => this.hideSideBar());
+        // this.autoHide.on('mouseover', e => this.autoShowSideBar());
+        // this.autoHide.on('mouseout', e => this.hideSideBar());
     }
 
     toggleSideBarAction() {

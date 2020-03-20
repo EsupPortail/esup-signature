@@ -7,7 +7,7 @@
            	<div class="card">
 		    	<div class="card-header"><h2>Ajouter un individu</h2></div>
   				<div class="card-body">
-                    <form action="#" th:action="@{/manager/person/update}" th:object="${person}" method="post">
+                    <form action="#" th:action="@{/admin/person/update}" th:object="${person}" method="post">
                         <input type="hidden" name="_method" value="put" />
                     	<input type="hidden" th:field="*{id}">                    
 	                    <div class="form-group">

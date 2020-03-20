@@ -10,6 +10,7 @@ import java.util.List;
 
 @Entry(base = "ou=people", objectClasses = {"inetOrgPerson"})
 public final class PersonLdap {
+
 	@Id
 	private Name dn;
 	private String uid;

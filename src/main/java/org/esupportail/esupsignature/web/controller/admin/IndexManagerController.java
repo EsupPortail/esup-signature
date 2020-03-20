@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.esupportail.esupsignature.web.controller.manager;
+package org.esupportail.esupsignature.web.controller.admin;
 
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.Resource;
 
-@RequestMapping("/manager")
+@RequestMapping("/admin")
 @Controller
 public class IndexManagerController {
 
@@ -44,7 +44,7 @@ public class IndexManagerController {
 	
 	@RequestMapping
 	public String index() {
-		return "redirect:/manager/workflows";
+		return "redirect:/admin/workflows";
 	}
 
 }

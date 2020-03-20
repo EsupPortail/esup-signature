@@ -49,10 +49,6 @@ code {
     margin-top: 10px;
 }
 
-.navbar-nav {
-    margin-right: 5px;
-}
-
 .nav-item {
     margin: 5px;
 }
@@ -253,12 +249,17 @@ input:checked + .slider:before {
 }
 
 #navbar {
-    min-height: 60px;
-    max-height: 60px;
+    min-height: 50px;
     padding: 0;
-    padding-right: 5px;
+    padding-top: 5px;
+    padding-right: 10px;
     padding-left: 5px;
 }
+
+.navbar-nav {
+    margin-right: 5px;
+}
+
 
 #infos {
     position: absolute;
@@ -268,14 +269,14 @@ input:checked + .slider:before {
 }
 
 .workspace {
-    margin-top: 50px;
+    margin-left: 5px;
+    margin-top: 46px;
     display: flex;
 }
 
 .workspace-sign {
-    display: block;
-    margin-top: 98px;
-    width: calc(100vw - 284px);
+    margin-top: 93px;
+    display: flex;
 }
 
 #pdf {
@@ -286,14 +287,13 @@ input:checked + .slider:before {
     z-index: 1;
 }
 
-
 .wrapper {
     display: block;
 }
 
 .content {
     margin-top: 112px;
-    margin-left: 260px;
+    margin-left: 265px;
     padding: 5px;
 }
 
@@ -303,7 +303,6 @@ input:checked + .slider:before {
     padding: 5px;
 }
 
-
 #sidebar {
     top: 60px;
     padding-right: 10px;
@@ -312,36 +311,23 @@ input:checked + .slider:before {
     min-width: 260px;
     max-width: 260px;
     min-height: 100vh;
-    background: #555555;
-    color: #fff;
-}
-
-#sidebar2 {
-    padding: 5px;
-    bottom: 50px;
-    position: fixed;
-    z-index: 2;
-    min-width: 260px;
-    max-width: 260px;
-    max-height: calc(100vh - 300px);
-    min-height: calc(100vh - 300px);
+    /*background: #555555;*/
     overflow-y: scroll;
     overflow-x: fragments;
-    z-index: 3;
+    -moz-box-shadow: 2px 2px 4px 4px rgba(0, 0, 0, 0.2);
+    -webkit-box-shadow: 2px 2px 4px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 2px 2px 4px 4px rgba(0, 0, 0, 0.2);
 }
 
-.scrollbar-primary::-webkit-scrollbar {
+#sidebar::-webkit-scrollbar {
     width: 5px;
     height: 5px;
     background-color: transparent;
 }
 
-.scrollbar-primary::-webkit-scrollbar-thumb {
+#sidebar::-webkit-scrollbar-thumb {
     -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
-    background-color: #ebebeb }
-
-.scrollbar-primary {
-    scrollbar-color: #4285F4 #F5F5F5;
+    background-color: #ebebeb
 }
 
 #sidebar.active {
@@ -368,6 +354,8 @@ input:checked + .slider:before {
     width: 100%;
     z-index: 2;
     position: fixed;
+    padding-left: 10px;
+    border-bottom: 1px solid #ebebeb;
 }
 
 .breadcrumb-nav {
@@ -375,8 +363,8 @@ input:checked + .slider:before {
     padding: 4px;
     position: fixed;
     background-color: white;
-    margin-left: 260px;
-    width: calc(100vw - 274px);
+    margin-left: 265px;
+    width: calc(100vw - 265px);
     z-index: 2;
 }
 
@@ -385,8 +373,8 @@ input:checked + .slider:before {
     padding: 4px;
     position: fixed;
     background-color: white;
-    margin-left: 60px;
-    width: 100%;
+    margin-left: 65px;
+    width: calc(100vw - 65px);
     z-index: 2;
 }
 
@@ -406,6 +394,13 @@ input:checked + .slider:before {
 .sign-preview {
     margin-left: 160px;
 }
+
+@media (max-width: 572px) {
+.sidebar-label {
+    display: inline !important;
+}
+}
+
 @media (max-width: 768px) {
     .workspace-sign {
         display: flex;
@@ -417,11 +412,6 @@ input:checked + .slider:before {
     }
     .breadcrumb {
         display: none;
-    }
-
-    .workspace-sign {
-        display: block;
-        width: 100%;
     }
 
     #sidebar2 {
@@ -455,9 +445,6 @@ input:checked + .slider:before {
         min-width: initial !important;
         margin-left: 0px;
     }
-    .sidebar-label {
-        display: inline !important;
-    }
     .sign-menu {
         max-width: initial;
         position: relative !important;
@@ -466,6 +453,13 @@ input:checked + .slider:before {
         overflow: auto;
         margin-left: initial;
     }
+}
+
+@media (min-width: 1500px) {
+    .d-xxl-inline {
+        display: inline !important;
+    }
+    
 }
 
 .svg-container {
@@ -665,9 +659,9 @@ float:left;
 }
 
 .crop {
-    height:150px;
     overflow:hidden;
     margin:0;
+    margin-bottom: 20px;
 }
 
 .fa-4x {

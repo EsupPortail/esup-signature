@@ -2,11 +2,11 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
 <body>
-<header th:replace="fragments/menu"></header>
+<header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
         <nav id="sidebar">
-            <a class="mr-2 btn btn-outline-dark btn-light float-left col-12" href="/manager/documents/form">
+            <a class="mr-2 btn btn-outline-dark btn-light float-left col-12" href="/admin/documents/form">
                 <i class="fa fa-plus"></i> Ajouter un modèle
             </a>
         </nav>
@@ -36,7 +36,7 @@
                             <td th:text="${document.fileName}"></td>
                             <td th:text="${document.contentType}"></td>
                             <td class="show text-center"><a type="button"
-                                                            th:href="'/manager/documents/' + ${document.id}"
+                                                            th:href="'/admin/documents/' + ${document.id}"
                                                             class="btn btn-primary"><i class="fas fa-eye"></i></a></td>
                             <td class="delete text-center">
                                 <button type="button" data-toggle="modal" data-target="#modal-warning"
@@ -46,7 +46,7 @@
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <form id="command"
-                                                  th:action="'/manager/documents/' + ${document.id}"
+                                                  th:action="'/admin/documents/' + ${document.id}"
                                                   th:method="delete">
                                                 <div class="modal-header">
                                                     <button type="button" class="close" data-dismiss="modal"

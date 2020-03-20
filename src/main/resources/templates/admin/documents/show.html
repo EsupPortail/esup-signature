@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
 <body>
-<header th:replace="fragments/menu"></header>
+<header th:replace="fragments/nav"></header>
 <div id="ribbon" class="card">
     <div class="card-body">
         <button th:if="${form == null}" class="mr-2 btn btn-outline-dark btn-light float-left" data-toggle="modal" data-target="#generateForm">
@@ -12,10 +12,10 @@
             <i class="fas fa-times fa-1x"></i>
         </button>
 		<div th:if="${form != null}">
-			<a class="btn btn-light btn-outline-dark" th:href="'/manager/forms/' + ${form.id}">
+			<a class="btn btn-light btn-outline-dark" th:href="'/admin/forms/' + ${form.id}">
 				<i class="fa fa-eye fa-2x"></i> <br/> Aperçu du formulaire
 			</a>
-			<a class="btn btn-light btn-outline-dark" th:href="'/manager/forms/update/' + ${form.id}">
+			<a class="btn btn-light btn-outline-dark" th:href="'/admin/forms/update/' + ${form.id}">
 				<i class="fa fa-cogs fa-2x"></i> <br/> Paramètres du formulaire
 			</a>
 		</div>
@@ -62,7 +62,7 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form th:if="${form == null}" th:action="'/manager/documents/' + ${document.id} + '/generate'">
+            <form th:if="${form == null}" th:action="'/admin/documents/' + ${document.id} + '/generate'">
                 <div class="modal-body">
 
                     <div class="form-group">
