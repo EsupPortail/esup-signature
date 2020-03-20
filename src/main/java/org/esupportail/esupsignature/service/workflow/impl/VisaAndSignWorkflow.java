@@ -58,6 +58,11 @@ public class VisaAndSignWorkflow extends DefaultWorkflow {
         workflowStep1.getRecipients().add(recipientService.createRecipient(null, user));
         workflowStep1.setDescription("Visa de votre supérieur hiérarchique (présélectionné en fonction de vos précédentes saisies)");
         workflowStep1.setSignType(SignType.visa);
+        if(data != null) {
+            workflowStep1.setRecipients(getFavoriteRecipientEmail(1, data.getForm(), recipentEmailsStep, user));
+        } else {
+            workflowStep1.getRecipients().add(recipientService.createRecipient(null, userService.getGenericUser("Utilisateur issue des favoris", "")));
+        }
         workflowStep1.setChangeable(true);
         workflowSteps.add(workflowStep1);
         //STEP 2

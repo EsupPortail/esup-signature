@@ -244,9 +244,7 @@ public class DataController {
 		Data data = dataService.getDataById(id);
 		try {
 			SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user);
-			if (recipientService.needSign(data.getSignBook().getSignRequests().get(0).getRecipients(), user)) {
-				return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
-			}
+			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 		} catch (EsupSignatureException e) {
 			logger.error(e.getMessage(), e);
 			redirectAttributes.addFlashAttribute("messageError", e.getMessage());

@@ -450,9 +450,6 @@ public class PdfService {
                         }
                     } else {
                         if(!(pdField instanceof PDSignatureField)) {
-                            PDTextField defaultField = new PDTextField(pdAcroForm);
-                            String da = defaultField.getDefaultAppearance();
-                            ((PDTextField) pdField).setDefaultAppearance(da);
                             pdField.setValue(datas.get(pdField.getPartialName()));
                         }
                     }

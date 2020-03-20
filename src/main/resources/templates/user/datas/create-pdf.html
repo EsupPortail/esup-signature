@@ -69,7 +69,7 @@
                 <form id="newData" th:action="'/user/datas/form/' + ${form.id}" method="post">
                     <input id="newDataSubmit" type="submit" style="display: none;"/>
                     <input id="dataId" type="hidden" name="dataId" th:value="${data.id}"/>
-                    <input id="name" type="hidden" name="name" th:value="${data.name}"/>
+                    <input id="name" type="hidden" name="name" th:value="${data.name}" required/>
                     <div id="pdf" class="drop-shadows mx-auto"></div>
                 </form>
             </div>

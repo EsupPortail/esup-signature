@@ -224,6 +224,10 @@ export class PdfViewer {
             } else {
                 let inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
                 if(inputField.length > 0) {
+                    if (dataField.required) {
+                        inputField.prop('required', true);
+                        inputField.addClass('required-field');
+                    }
                     inputField.attr('name', items[i].fieldName);
                     if (dataField != null) {
                         inputField.val(dataField.defaultValue);
