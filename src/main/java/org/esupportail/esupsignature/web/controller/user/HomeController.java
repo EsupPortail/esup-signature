@@ -46,8 +46,8 @@ public class HomeController {
     }
 
     @ModelAttribute("user")
-    public User getUser(@RequestParam(required = false) String suEppn) {
-        return userService.getUserFromSu(suEppn);
+    public User getUser() {
+        return userService.getUserFromAuthentication();
     }
 
     @ModelAttribute("suUsers")

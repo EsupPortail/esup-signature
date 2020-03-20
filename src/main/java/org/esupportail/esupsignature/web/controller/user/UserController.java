@@ -220,4 +220,10 @@ public class UserController {
 		return "redirect:/user/users/shares";
 	}
 
+	@PostMapping("/change")
+	public String change(@RequestParam("suEppn") String suEppn) {
+		userService.switchUser(suEppn);
+		return "redirect:/";
+	}
+
 }

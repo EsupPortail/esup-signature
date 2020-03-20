@@ -67,7 +67,7 @@ public class DefaultWorkflow extends Workflow implements Cloneable {
         } else {
             List<String> favoritesEmail = userPropertieService.getFavoritesEmails(user, step, form);
             for(String email : favoritesEmail) {
-                User recipientUser = userService.getUser(email);
+                User recipientUser = userService.getUserByEmail(email);
                 recipients.add(recipientService.createRecipient(null, recipientUser));
             }
         }

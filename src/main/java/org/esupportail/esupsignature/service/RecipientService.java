@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.entity.Recipient;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.RecipientRepository;
-import org.esupportail.esupsignature.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -53,7 +52,7 @@ public class RecipientService {
     }
 
     public Recipient getRecipientByEmail(Long parentId, String email) {
-        User user = userService.getUser(email);
+        User user = userService.getUserByEmail(email);
         Recipient recipient = new Recipient();
         recipient.setParentId(parentId);
         recipient.setUser(user);

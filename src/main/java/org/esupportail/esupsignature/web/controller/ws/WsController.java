@@ -36,7 +36,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -175,7 +174,7 @@ public class WsController {
     @GetMapping(value = "/list-sign-requests", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<JsonDocuments> listSignedFiles(@RequestParam("recipientEmail") String recipientEmail, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureException {
         List<JsonDocuments> signedFiles = new ArrayList<>();
-        User user = userService.getUser(recipientEmail);
+        User user = userService.getUserByEmail(recipientEmail);
         List<SignRequest> signRequests = signRequestService.getSignRequestsSignedByUser(user);
 
         for (SignRequest signRequest : signRequests) {

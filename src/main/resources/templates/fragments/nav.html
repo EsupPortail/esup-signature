@@ -126,7 +126,7 @@
             <h3>
                 Activer une délégation
             </h3>
-            <form th:if="${session.suEppn == null}" id="changeSuEppn" action="/change" method="post">
+            <form th:if="${session.suEppn == null}" id="changeSuEppn" th:action="'/user/users/change'" method="post">
                 <select class="form-control" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
                     <option th:value="${user.eppn}" selected>Délégation désactivée</option>
                     <th:block th:each="suUser : ${suUsers}">
