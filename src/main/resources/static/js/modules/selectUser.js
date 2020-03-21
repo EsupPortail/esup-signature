@@ -16,7 +16,7 @@ export default class SelectUser {
             searchPlaceholder: 'Rechercher',
             searchHighlight: false,
             hideSelectedOption: true,
-            closeOnSelect: false,
+            closeOnSelect: true,
             searchFilter: (option, search) => {
                 return true;
             },
