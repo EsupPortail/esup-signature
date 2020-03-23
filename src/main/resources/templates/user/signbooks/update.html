@@ -22,7 +22,7 @@
                 </div>
             </div>
         </nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav text-uppercase">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/signrequests">Documents envoyés</a></li>
                 <li class="breadcrumb-item"><a th:href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:text="'Demande : ' + ${signBook.name}"></a></li>

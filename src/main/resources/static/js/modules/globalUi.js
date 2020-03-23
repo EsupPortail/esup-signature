@@ -88,8 +88,8 @@ export class GlobalUi {
         this.sideBar.toggleClass('active');
         this.sideBar2.toggleClass('d-none');
         this.sideBarLabels.toggleClass('d-none');
-        this.content.toggleClass('content content2');
-        this.breadcrumb.toggleClass('breadcrumb-nav breadcrumb-nav2');
+        this.content.toggleClass('content content-full');
+        this.breadcrumb.toggleClass('breadcrumb-nav breadcrumb-nav-full');
     }
 
     autoShowSideBar() {
@@ -102,8 +102,8 @@ export class GlobalUi {
         this.sideBar.removeClass('active');
         this.sideBar2.removeClass('d-none');
         this.sideBarLabels.removeClass('d-none');
-        this.content.addClass('content').removeClass('content2');
-        this.breadcrumb.addClass('breadcrumb-nav').removeClass('breadcrumb-nav2');
+        this.content.addClass('content').removeClass('content-full');
+        this.breadcrumb.addClass('breadcrumb-nav').removeClass('breadcrumb-nav-full');
     }
 
     hideSideBar() {
@@ -111,8 +111,8 @@ export class GlobalUi {
             this.sideBar.addClass('active');
             this.sideBar2.addClass('d-none');
             this.sideBarLabels.addClass('d-none');
-            this.content.removeClass('content').addClass('content2');
-            this.breadcrumb.removeClass('breadcrumb-nav').addClass('breadcrumb-nav2');
+            this.content.removeClass('content').addClass('content-full');
+            this.breadcrumb.removeClass('breadcrumb-nav').addClass('breadcrumb-nav-full');
         }
     }
 }

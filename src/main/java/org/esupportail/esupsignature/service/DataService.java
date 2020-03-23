@@ -34,6 +34,9 @@ public class DataService {
 	private SignRequestService signRequestService;
 
 	@Resource
+	private UserService userService;
+
+	@Resource
 	private SignBookService signBookService;
 
 	@Resource
@@ -60,7 +63,15 @@ public class DataService {
 	public Data getDataById(Long dataId) {
 		Data obj = dataRepository.findById(dataId).get();
 		return obj;
-	}	
+	}
+
+	public boolean preAuthorizeUpdate(Long id) {
+		Data data = dataRepository.findById(id).get();
+		if (data.getCreateBy().equals(userService.getCurrentUser().getEppn()) || data.getOwner().equals(userService.getCurrentUser().getEppn())) {
+			return true;
+		}
+		return false;
+	}
 
 	public void delete(Data data) {
 		if(data.getSignBook() != null) {

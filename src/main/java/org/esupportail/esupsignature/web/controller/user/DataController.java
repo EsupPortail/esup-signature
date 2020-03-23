@@ -17,6 +17,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -149,6 +150,7 @@ public class DataController {
 
 	}
 
+	@PreAuthorize("@dataService.preAuthorizeUpdate(#id)")
 	@GetMapping("datas/{id}/update")
 	public String updateData(@PathVariable("id") Long id, Model model) {
 		User user = userService.getCurrentUser();
@@ -200,7 +202,7 @@ public class DataController {
 		data.setFormName(form.getName());
 		data.setFormVersion(form.getVersion());
 		data.setStatus(SignRequestStatus.draft);
-		data.setCreateBy(userService.getCurrentUser().getEppn());
+		data.setCreateBy(userService.getUserFromAuthentication().getEppn());
 		data.setOwner(user.getEppn());
 		data.setCreateDate(new Date());
 		dataRepository.save(data);
@@ -237,6 +239,7 @@ public class DataController {
 		}
 	}
 
+	@PreAuthorize("@dataService.preAuthorizeUpdate(#id)")
 	@PostMapping("datas/{id}/send")
 	public String sendDataById(@PathVariable("id") Long id,
                                @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{

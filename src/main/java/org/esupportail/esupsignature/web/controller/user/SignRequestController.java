@@ -159,7 +159,7 @@ public class SignRequestController {
         return "user/signrequests/list";
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeView(#id)")
     @GetMapping(value = "/{id}")
     public String show(@PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
         User user = userService.getCurrentUser();
@@ -218,7 +218,7 @@ public class SignRequestController {
         }
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeView(#id)")
     @GetMapping(value = "/{id}", params = "form")
     public String updateForm(@PathVariable("id") Long id, Model model) throws Exception {
         User currentUser = userService.getCurrentUser();
@@ -248,7 +248,7 @@ public class SignRequestController {
     }
 
 
-    @PreAuthorize("@signRequestService.preAuthorizeSign(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeSign(#id)")
     @ResponseBody
     @PostMapping(value = "/sign/{id}")
     public ResponseEntity sign(@PathVariable("id") Long id,
@@ -299,7 +299,7 @@ public class SignRequestController {
         return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
     @ResponseBody
     @PostMapping(value = "/add-docs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Object addDocumentToNewSignRequest(@PathVariable("id") Long id, @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
@@ -311,7 +311,7 @@ public class SignRequestController {
         return new String[]{"ok"};
     }
 
-    //@PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
+    //@PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
     @ResponseBody
     @PostMapping(value = "/remove-doc/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String removeDocument(@PathVariable("id") Long id) {
@@ -372,7 +372,7 @@ public class SignRequestController {
         return progress;
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeSign(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeSign(#id)")
     @GetMapping(value = "/refuse/{id}")
     public String refuse(@PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttrs, HttpServletRequest request) {
         User user = userService.getCurrentUser();
@@ -383,7 +383,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + signRequest.getId();
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -397,7 +397,7 @@ public class SignRequestController {
 
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeView(#id)")
     @RequestMapping(value = "/get-last-file-seda/{id}", method = RequestMethod.GET)
     public void getLastFileSeda(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -416,7 +416,7 @@ public class SignRequestController {
     }
 
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
     @PostMapping(value = "/add-attachment/{id}")
     public String addAttachement(@PathVariable("id") Long id, @RequestParam("multipartFiles") MultipartFile[] multipartFiles, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         logger.info("start add attachment");
@@ -428,7 +428,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
     @GetMapping(value = "/remove-attachment/{id}/{attachementId}")
     public String removeAttachement(@PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, RedirectAttributes redirectAttributes) {
         logger.info("start remove attachment");
@@ -445,7 +445,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeView(#id)")
     @GetMapping(value = "/get-attachment/{id}/{attachementId}")
     public void getAttachment(@PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, HttpServletResponse response, RedirectAttributes redirectAttributes) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -464,7 +464,7 @@ public class SignRequestController {
         }
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeView(#id)")
     @RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
     public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -495,7 +495,7 @@ public class SignRequestController {
         }
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
     @RequestMapping(value = "/change-step-sign-type/{id}/{step}", method = RequestMethod.GET)
     public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name = "signType") SignType signType) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -503,7 +503,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
     @RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
     public String complete(@PathVariable("id") Long id, HttpServletRequest request) throws EsupSignatureException {
         User user = userService.getCurrentUser();
@@ -517,7 +517,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
     @RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
     public String pending(@PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
@@ -534,7 +534,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
     @PostMapping(value = "/add-recipients/{id}")
     public String addRecipients(@PathVariable("id") Long id,
                                 @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
@@ -551,7 +551,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeView(authentication.name, #id)")
+    @PreAuthorize("@signRequestService.preAuthorizeView(#id)")
     @PostMapping(value = "/comment/{id}")
     public String comment(@PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,

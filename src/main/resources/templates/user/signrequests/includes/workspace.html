@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
 <!--/*@thymesVar id="postit" type="org.esupportail.esupsignature.entity.Log"*/-->
-<div th:fragment="workspace" id="workspace" class="workspace-sign alert alert-secondary justify-content-center">
+<div th:fragment="workspace" id="workspace" class="alert alert-secondary justify-content-center" th:classappend="${signRequest.parentSignBook.signRequests.size() > 1} ? 'workspace-sign' : 'workspace'">
     <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
         <div id="pdf" class="drop-shadows mx-auto">
             <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed' && currentSignType != 'visa'}">

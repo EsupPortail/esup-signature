@@ -44,7 +44,11 @@ public class CovidPreFill implements PreFill {
 				if(field.getName().split("_")[1].equals("ldap")) {	
 					String extValueName = field.getName().split("_")[2];
 					if(ldapValues.containsKey(extValueName)) {
-						field.setDefaultValue((String) ldapValues.get(extValueName));
+						if(extValueName.equals("schacDateOfBirth")) {
+							field.setDefaultValue(extLdapValue.getValueByName("schacDateOfBirth", user));
+						} else {
+							field.setDefaultValue((String) ldapValues.get(extValueName));
+						}
 					}
 				} else if(field.getName().split("_")[1].equals("default")) {
 					String extValueName = field.getName().split("_")[2];

@@ -20,7 +20,7 @@
 <main role="main">
     <div class="wrapper">
         <nav th:insert="fragments/sign-side"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="text-uppercase breadcrumb-nav">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li th:if="${signRequest.createBy == user.eppn}" class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
                 <li th:unless="${signRequest.createBy == user.eppn}" class="breadcrumb-item"><a href="/user/signrequests/?statusFilter=tosign">Documents à signer</a></li>
@@ -88,7 +88,7 @@
                         </div>
                     </th:block>
                 </div>
-                <nav class="nav nav-tabs" th:if="${signRequest.parentSignBook != null}">
+                <nav class="nav nav-tabs" th:if="${signRequest.parentSignBook != null && signRequest.parentSignBook.signRequests.size() > 1}">
                     <th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
                         <li class="nav-item" th:classappend="${signRequest.parentSignBook.signRequests.size() > 1} ? 'file-tab'">
                             <a class="nav-link" th:classappend="${signRequest.id == signRequestTab.id} ? 'active'" th:href="'/user/signrequests/' + ${signRequestTab.id}">

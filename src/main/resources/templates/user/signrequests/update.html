@@ -11,7 +11,7 @@
 <main role="main">
     <div class="wrapper">
         <nav th:insert="fragments/side" class="auto-hide"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav text-uppercase">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
                 <li class="breadcrumb-item" aria-current="page"><a th:href="'/user/signrequests/' + ${signRequest.id}">Demande de signature : <span th:text="${signRequest.title}"></span></a></li>
