@@ -1,6 +1,6 @@
 export class PdfViewer {
 
-    constructor(url, signPosition) {
+    constructor(url, signPosition, signable) {
         console.info("Starting PDF Viewer");
         this.url= url;
         this.signPosition = signPosition;
@@ -14,6 +14,7 @@ export class PdfViewer {
         this.page = null;
         this.dataFields = null;
         this.formRender = false;
+        this.signable = signable;
         this.events = {};
         pdfjsLib.disableWorker = true;
         pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.js';
@@ -69,7 +70,7 @@ export class PdfViewer {
 
     renderPage(num) {
         console.debug("render page " + num + ", scale : " + this.scale);
-        if(this.dataFields != null) {
+        if(this.dataFields != null || this.signable) {
             this.setValues();
             this.formRender = true;
         }
@@ -110,7 +111,7 @@ export class PdfViewer {
         this.pdfPageView.setPdfPage(page);
         this.pdfPageView.draw();
         this.pageRendering = false;
-        if(this.dataFields != null) {
+        if(this.dataFields != null || true) {
             console.info("render form");
             this.page.getAnnotations().then(items => this.renderPdfForm(items));
         }
@@ -125,9 +126,12 @@ export class PdfViewer {
         let signFieldNumber = 0;
         let visaFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
-            let dataField = this.dataFields.filter(obj => {
-                return obj.name === items[i].fieldName
-            })[0];
+            let dataField;
+            if(this.dataFields != null) {
+                dataField = this.dataFields.filter(obj => {
+                    return obj.name === items[i].fieldName
+                })[0];
+            }
             console.debug(items[i]);
             if(items[i].fieldType === undefined && items[i].title.toLowerCase().startsWith('sign')) {
                 console.debug("found sign field");
@@ -148,6 +152,7 @@ export class PdfViewer {
                 signField.addClass("sign-field");
             }
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
+            console.log(inputField);
             if(inputField.length > 0) {
                 inputField.attr('name', items[i].fieldName);
                 if (dataField != null) {

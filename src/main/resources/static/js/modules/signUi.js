@@ -10,6 +10,7 @@ export class SignUi {
         this.wait = $('#wait');
         this.passwordError = document.getElementById("passwordError");
         this.workspace = null;
+        this.moreData = document.getElementById("moreDatas");
         if(isPdf) {
             this.workspace = new WorkspacePdf('/user/signrequests/get-last-file/' + id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits);
         }
@@ -28,12 +29,12 @@ export class SignUi {
     }
 
     launchSign() {
-        this.percent = 0;
-        console.log('launch sign for : ' + this.signRequestId);
-        $('#signModal').modal('hide');
-        this.wait.modal('show');
-        this.wait.modal({backdrop: 'static', keyboard: false});
-        this.submitSignRequest(this.signRequestId);
+           this.percent = 0;
+            console.log('launch sign for : ' + this.signRequestId);
+            $('#signModal').modal('hide');
+            this.wait.modal('show');
+            this.wait.modal({backdrop: 'static', keyboard: false});
+            this.submitSignRequest(this.signRequestId);
     }
 
     launchAllSign() {
@@ -50,6 +51,11 @@ export class SignUi {
     }
 
     submitSignRequest() {
+        var formData = { };
+        $.each($('#signForm').serializeArray(), function() {
+            formData[this.name] = this.value;
+        });
+        console.log(formData);
         let csrf = document.getElementsByName("_csrf")[0];
         let signRequestUrlParams;
         if(this.workspace != null) {
@@ -62,6 +68,7 @@ export class SignUi {
                 "&signWidth=" + this.workspace.signPosition.signWidth +
                 "&signHeight=" + this.workspace.signPosition.signHeight +
                 "&signPageNumber=" + this.workspace.pdfViewer.pageNum +
+                "&formData=" + JSON.stringify(formData) +
                 "&" + csrf.name + "=" + csrf.value
             ;
         } else {
@@ -77,6 +84,7 @@ export class SignUi {
         this.xmlHttpMain.open('POST', '/user/signrequests/sign/' + this.signRequestId, true);
         this.xmlHttpMain.addEventListener('readystatechange', e => this.end());
         this.xmlHttpMain.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+        // this.xmlHttpMain.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         this.xmlHttpMain.send(signRequestUrlParams);
         this.getProgressTimer = setInterval(e => this.getStep(), 500);
     }

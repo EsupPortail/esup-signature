@@ -11,7 +11,7 @@ export class WorkspacePdf {
         this.postits = postits;
         this.signable = signable;
         this.signPosition = new SignPosition(this.currentSignRequestParams.xPos, this.currentSignRequestParams.yPos, signWidth, signHeight, this.signPageNumber);
-        this.pdfViewer = new PdfViewer(url, this.signPosition);
+        this.pdfViewer = new PdfViewer(url, this.signPosition, signable);
         this.signPageNumber = document.getElementById('signPageNumber');
         this.mode = 'read';
         this.initListeners();

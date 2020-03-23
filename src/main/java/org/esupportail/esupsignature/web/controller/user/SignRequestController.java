@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -27,6 +28,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -257,11 +259,14 @@ public class SignRequestController {
                                @RequestParam(value = "xPos", required = false) Integer xPos,
                                @RequestParam(value = "yPos", required = false) Integer yPos,
                                @RequestParam(value = "comment", required = false) String comment,
+                               @RequestParam(value = "moreDatas", required = false) String moreDatas,
+                               @RequestParam(value = "formData", required = false) String formData,
                                @RequestParam(value = "addDate", required = false) Boolean addDate,
                                @RequestParam(value = "visual", required = false) Boolean visual,
                                @RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
                                @RequestParam(value = "password", required = false) String password,
                                HttpServletRequest request) {
+
         if (addDate == null) {
             addDate = false;
         }
@@ -271,6 +276,18 @@ public class SignRequestController {
         User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
+
+        Map<String, String> formDataMap = null;
+        if(formData != null) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                formDataMap = objectMapper.readValue(formData, Map.class);
+                System.err.println(formDataMap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         if (signPageNumber != null && xPos != null && yPos != null && visual) {
             SignRequestParams signRequestParams = signRequest.getCurrentSignRequestParams();
             signRequestParams.setSignPageNumber(signPageNumber);
@@ -290,7 +307,7 @@ public class SignRequestController {
         }
         try {
             signRequest.setComment(comment);
-            signRequestService.sign(signRequest, user, password, addDate, visual);
+            signRequestService.sign(signRequest, user, password, addDate, visual, formDataMap);
             signRequestService.setStep("end");
             return new ResponseEntity(HttpStatus.OK);
         } catch (EsupSignatureException | IOException e) {

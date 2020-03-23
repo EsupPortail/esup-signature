@@ -206,6 +206,7 @@ public class DataController {
 		data.setOwner(user.getEppn());
 		data.setCreateDate(new Date());
 		dataRepository.save(data);
+		redirectAttributes.addFlashAttribute("messageSuccess", "Données enregistrées");
 		return "redirect:/user/datas/" + data.getId() + "/update";
 	}
 	

@@ -16,13 +16,13 @@ export class CreateDataUi {
 
     saveData(e) {
         e.preventDefault();
-        let tempName = document.getElementById('tempMame');
+        let tempName = document.getElementById('tempName');
         if (tempName.checkValidity()) {
             document.getElementById('name').value = tempName.value;
             document.getElementById('newDataSubmit').click();
         } else {
             tempName.focus();
-            document.getElementById('tempMame');
+            document.getElementById('tempName');
         }
     }
 

@@ -74,11 +74,11 @@ public class PdfService {
     @Resource
     private SignRequestService signRequestService;
 
-    public InputStream stampImage(Document toSignFile, SignRequest signRequest, SignType signType, SignRequestParams signRequestParams, User user, boolean addDate) {
+    public InputStream stampImage(InputStream inputStream, String fileName, SignRequest signRequest, SignType signType, SignRequestParams signRequestParams, User user, boolean addDate) {
         signRequestService.setStep("Apposition de la signature");
         PdfParameters pdfParameters;
         try {
-            PDDocument pdDocument = PDDocument.load(toSignFile.getInputStream());
+            PDDocument pdDocument = PDDocument.load(inputStream);
             pdfParameters = getPdfParameters(pdDocument);
             PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
             PDImageXObject pdImage;
@@ -114,7 +114,6 @@ public class PdfService {
             }
             int topHeight = 0;
             BufferedImage bufferedImage = ImageIO.read(signImage);
-            int[] size = getSignSize(bufferedImage);
             if (pdfParameters.getRotation() == 0) {
                 AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
                 tx.translate(0, -bufferedImage.getHeight(null));
@@ -143,7 +142,7 @@ public class PdfService {
             signImage.delete();
             try {
                 if(signRequest.getSignedDocuments().size() == 0) {
-                    return convertGS(writeMetadatas(in, toSignFile.getFileName(), signRequest));
+                    return convertGS(writeMetadatas(in, fileName, signRequest));
                 } else {
                     return in;
                 }
@@ -155,6 +154,55 @@ public class PdfService {
         }
         return null;
     }
+
+
+    public InputStream stampText(Document document, String text, int xPos, int yPos, int pageNumber) {
+        signRequestService.setStep("Apposition de la signature");
+        PdfParameters pdfParameters;
+        try {
+            PDDocument pdDocument = PDDocument.load(document.getInputStream());
+            pdfParameters = getPdfParameters(pdDocument);
+            PDPage pdPage = pdDocument.getPage(pageNumber - 1);
+            PDImageXObject pdImage;
+
+            PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
+            float height = pdPage.getMediaBox().getHeight();
+            float width = pdPage.getMediaBox().getWidth();
+            File signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), text, text.length() * 10, 20);
+            BufferedImage bufferedImage = ImageIO.read(signImage);
+            if (pdfParameters.getRotation() == 0) {
+                AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+                tx.translate(0, -bufferedImage.getHeight(null));
+                AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+                bufferedImage = op.filter(bufferedImage, null);
+                ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
+                ImageIO.write(bufferedImage, "png", flipedSignImage);
+                pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
+                contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
+                contentStream.drawImage(pdImage, xPos, yPos, bufferedImage.getWidth(), bufferedImage.getHeight());
+            } else {
+                AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
+                contentStream.transform(new Matrix(at));
+                ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
+                ImageIO.write(bufferedImage, "png", flipedSignImage);
+                pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
+                contentStream.drawImage(pdImage, xPos, yPos - 37, bufferedImage.getWidth(), bufferedImage.getWidth());
+            }
+            contentStream.close();
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            pdDocument.setAllSecurityToBeRemoved(true);
+            pdDocument.save(out);
+            ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+            pdDocument.close();
+            signImage.delete();
+            return in;
+        } catch (IOException e) {
+            logger.error("error to add image", e);
+        }
+        return null;
+    }
+
+
 
     public InputStream writeMetadatas(InputStream inputStream, String fileName, SignRequest signRequest) {
 
@@ -429,31 +477,38 @@ public class PdfService {
         try {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
-            PDFont font = PDType1Font.HELVETICA;
-            PDResources resources = new PDResources();
-            resources.put(COSName.getPDFName("Helv"), font);
-            resources.put(COSName.getPDFName("Helvetica"), font);
-            pdAcroForm.setDefaultResources(resources);
             if(pdAcroForm != null) {
+                PDFont font = PDType1Font.HELVETICA;
+                PDResources resources = new PDResources();
+                resources.put(COSName.getPDFName("Helv"), font);
+                resources.put(COSName.getPDFName("Helvetica"), font);
+                pdAcroForm.setDefaultResources(resources);
                 List<PDField> fields = pdAcroForm.getFields();
                 for(PDField pdField : fields) {
-                    if (pdField instanceof PDCheckBox) {
-                        if(datas.get(pdField.getPartialName()) != null && datas.get(pdField.getPartialName()).equals("on")) {
-                            ((PDCheckBox) pdField).check();
-                        }
-                    } else if (pdField instanceof PDRadioButton) {
-                        PDRadioButton pdRadioButton = (PDRadioButton) pdField;
-                        try {
-                            pdRadioButton.setValue(datas.get(pdField.getPartialName()));
-                        } catch (NullPointerException e) {
-                            logger.debug("radio buton is null");
-                        }
-                    } else {
-                        if(!(pdField instanceof PDSignatureField)) {
-                            pdField.setValue(datas.get(pdField.getPartialName()));
+                    if(datas.containsKey(pdField.getPartialName())) {
+                        if (pdField instanceof PDCheckBox) {
+                            if (datas.get(pdField.getPartialName()) != null && datas.get(pdField.getPartialName()).equals("on")) {
+                                ((PDCheckBox) pdField).check();
+                            }
+                        } else if (pdField instanceof PDRadioButton) {
+                            PDRadioButton pdRadioButton = (PDRadioButton) pdField;
+                            try {
+                                pdRadioButton.setValue(datas.get(pdField.getPartialName()));
+                            } catch (NullPointerException e) {
+                                logger.debug("radio buton is null");
+                            }
+                        } else {
+                            if (!(pdField instanceof PDSignatureField)) {
+                                pdField.setValue(datas.get(pdField.getPartialName()));
+                            }
                         }
                     }
-                    pdField.setReadOnly(true);
+                    if (!pdField.isReadOnly()) {
+                        pdField.setReadOnly(true);
+                    } else {
+                        pdField.setReadOnly(false);
+                        pdField.setRequired(true);
+                    }
                 }
             }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
