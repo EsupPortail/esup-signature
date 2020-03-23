@@ -199,7 +199,7 @@ public class UserController {
 				userShare.setBeginDate(new SimpleDateFormat("dd/MM/yyyy").parse(beginDate));
 				userShare.setEndDate(new SimpleDateFormat("dd/MM/yyyy").parse(endDate));
 			} catch (ParseException e) {
-				logger.error("error on parsing dates", e);
+				logger.error("error on parsing dates");
 			}
 		}
 		userShareRepository.save(userShare);

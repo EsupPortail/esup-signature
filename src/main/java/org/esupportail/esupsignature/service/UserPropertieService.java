@@ -23,7 +23,7 @@ public class UserPropertieService {
     public void createUserPropertie(User user, int step, WorkflowStep workflowStep, Form form) {
         List<User> recipientsUser = workflowStep.getRecipients().stream().map(Recipient::getUser).collect(Collectors.toList());
         List<String> recipientsEmail = recipientsUser.stream().map(User::getEmail).collect(Collectors.toList());
-        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndRecipientsAndForm(user, step, recipientsEmail, form);
+        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndForm(user, step, form);
         if (userProperties.size() == 0) {
             UserPropertie userPropertie = new UserPropertie();
             userPropertie.setStep(step);
@@ -64,8 +64,12 @@ public class UserPropertieService {
     public List<String> getFavoritesEmails(User user, int step, Form form) {
         List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndForm(user, step, form);
         List<String> favoriteRecipients = new ArrayList<>();
+        int bestScore = 0;
         for (UserPropertie userPropertie : userProperties) {
-            favoriteRecipients.addAll(userPropertie.getRecipients());
+            if(userPropertie.getScore() >= bestScore) {
+                favoriteRecipients.clear();
+                favoriteRecipients.addAll(userPropertie.getRecipients());
+            }
         }
         return favoriteRecipients;
     }
