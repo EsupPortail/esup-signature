@@ -202,7 +202,7 @@ public class SignRequestController {
 //                model.addAttribute("pdfHeight", pdfParameters.getHeight());
 //                model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
                 if (user.getSignImage() != null && user.getSignImage().getSize() > 0) {
-                    if(signRequestService.checkUserSignRights(user, signRequest) && user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
+                    if(signRequest.getSignable() && signRequestService.checkUserSignRights(user, signRequest) && user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
                         model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter un keystore à votre profil");
                     }
                     model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
@@ -210,7 +210,7 @@ public class SignRequestController {
                     model.addAttribute("signWidth", size[0]);
                     model.addAttribute("signHeight", size[1]);
                 } else {
-                    if(signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign)) {
+                    if(signRequest.getSignable() && signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign)) {
                         //model.addAttribute("signable", false);
                         model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter une image de votre signature");
                     }
