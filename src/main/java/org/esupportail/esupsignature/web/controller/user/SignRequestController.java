@@ -95,6 +95,9 @@ public class SignRequestController {
     private SignRequestParamsRepository signRequestParamsRepository;
 
     @Resource
+    private DataRepository dataRepository;
+
+    @Resource
     private FormService formService;
 
     @Resource
@@ -177,6 +180,14 @@ public class SignRequestController {
             model.addAttribute("nexuUrl", nexuUrl);
             model.addAttribute("nexuVersion", nexuVersion);
             model.addAttribute("baseUrl", baseUrl);
+            if(signRequest.getParentSignBook() != null) {
+                Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
+                List<Field> fields = data.getForm().getFields();
+                for (Field field : fields) {
+                    field.setDefaultValue(data.getDatas().get(field.getName()));
+                }
+                model.addAttribute("fields", fields);
+            }
         }
         if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
             List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest);

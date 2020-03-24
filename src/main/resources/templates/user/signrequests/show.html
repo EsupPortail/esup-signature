@@ -15,7 +15,8 @@
     if(signable && currentSignType === 'nexuSign') {
         new Nexu([[${nexuUrl}]], [[${nexuVersion}]], null);
     }
-    new SignUi([[${signRequest.id}]], [[${signRequest.getCurrentSignRequestParams()}]], currentSignType, 100, 75, signable, [[${postits}]], [[${documentType == 'pdf'}]]);
+    let signUi = new SignUi([[${signRequest.id}]], [[${signRequest.getCurrentSignRequestParams()}]], currentSignType, 100, 75, signable, [[${postits}]], [[${documentType == 'pdf'}]], [[${signRequest.currentStepNumber}]]);
+    signUi.workspace.pdfViewer.setDataFields([[${fields}]]);
 </script>
 <main role="main">
     <div class="wrapper">

@@ -2,7 +2,7 @@ import {WorkspacePdf} from "./workspacePdf.js";
 
 export class SignUi {
 
-    constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, isPdf) {
+    constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, isPdf, currentStepNumber) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -12,7 +12,7 @@ export class SignUi {
         this.workspace = null;
         this.moreData = document.getElementById("moreDatas");
         if(isPdf) {
-            this.workspace = new WorkspacePdf('/user/signrequests/get-last-file/' + id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits);
+            this.workspace = new WorkspacePdf('/user/signrequests/get-last-file/' + id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber);
         }
         this.xmlHttpMain = new XMLHttpRequest();
         this.initListeners();

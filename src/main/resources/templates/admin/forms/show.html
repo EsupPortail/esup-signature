@@ -29,7 +29,10 @@
                         <th>Id</th>
                         <th>Nom</th>
                         <th>Type</th>
-                        <th>Aperçu</th>
+                        <th>ExtValue</th>
+                        <th>Etapes autorisées</th>
+                        <th>Utilisateurs concernés</th>
+                        <th class="d-none">Aperçu</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -38,7 +41,10 @@
                             <td th:text="${field.name}"></td>
                             <td th:text="${field.label}"></td>
                             <td th:text="${field.type}"></td>
-                            <td>
+                            <td th:text="${field.extValue}"></td>
+                            <td th:text="${field.stepNumbers}"></td>
+                            <td th:text="${field.eppnEditRight}"></td>
+                            <td  class="d-none">
                                 <div class="form-group">
                                     <div th:switch="${#strings.toString(field.type)}">
                                         <input th:case="radio" type="radio" th:name="${field.name}"

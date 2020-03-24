@@ -153,7 +153,7 @@ public class FormService {
 			}
 			if(pdField instanceof PDTextField){
 				Field field = new Field();
-				field.setName(pdField.getPartialName());
+				this.resolveFieldName(field, pdField.getPartialName());
 				field.setLabel(pdField.getAlternateFieldName());
 				field.setPage(page);
 				PDTextField pdTextField = (PDTextField) pdField;
@@ -184,7 +184,7 @@ public class FormService {
 				fields.add(field);
 	        } else if(pdField instanceof PDCheckBox){
 				Field field = new Field();
-				field.setName(pdField.getPartialName());
+				this.resolveFieldName(field, pdField.getPartialName());
 				field.setLabel(pdField.getAlternateFieldName());
 				field.setPage(page);
 				field.setType(FieldType.checkbox);
@@ -199,7 +199,7 @@ public class FormService {
 				List<PDAnnotationWidget> pdAnnotationWidgets = pdField.getWidgets();
 				for(PDAnnotationWidget pdAnnotationWidget : pdAnnotationWidgets) {
 					Field field = new Field();
-					field.setName(pdField.getPartialName());
+					this.resolveFieldName(field, pdField.getPartialName());
 					COSName labelCOSName = (COSName) pdAnnotationWidget.getAppearance().getNormalAppearance().getSubDictionary().keySet().toArray()[0];
 					field.setLabel(labelCOSName.getName());
 					field.setPage(page);
@@ -224,5 +224,19 @@ public class FormService {
 		formRepository.save(form);
 		document.setParentId(form.getId());
 		return form;
+	}
+
+	private void resolveFieldName(Field field, String name) {
+		String[] nameValues = name.split("(?=>|\\$|#|!)");
+		field.setName(nameValues[0]);
+		for(int i = 1; i < nameValues.length; i++) {
+			if(nameValues[i].contains("$")) {
+				field.setExtValue(nameValues[i].replace("$", ""));
+			} else if(nameValues[i].contains("#")) {
+				field.setStepNumbers(nameValues[i].replace("#", ""));
+			} else if(nameValues[i].contains("!")) {
+				field.setEppnEditRight(nameValues[i].replace("!", ""));
+			}
+		}
 	}
 }

@@ -33,13 +33,19 @@ public class Field {
 	private Integer page;
 
 	private Boolean required;
-	
+
+	private String stepNumbers = "0";
+
+	private String extValue;
+
+	private String eppnEditRight;
+
 	transient String defaultValue;
 	
 	@Enumerated(EnumType.STRING)
     private FieldType type;
 	
-	transient List<String> defaultValues = new ArrayList<String>();
+	transient List<String> defaultValues = new ArrayList<>();
 
 	public Long getId() {
 		return id;
@@ -151,5 +157,29 @@ public class Field {
 
 	public void setRequired(Boolean required) {
 		this.required = required;
+	}
+
+	public String getStepNumbers() {
+		return stepNumbers;
+	}
+
+	public void setStepNumbers(String stepNumbers) {
+		this.stepNumbers = stepNumbers;
+	}
+
+	public String getExtValue() {
+		return extValue;
+	}
+
+	public void setExtValue(String extValue) {
+		this.extValue = extValue;
+	}
+
+	public String getEppnEditRight() {
+		return eppnEditRight;
+	}
+
+	public void setEppnEditRight(String eppnEditRight) {
+		this.eppnEditRight = eppnEditRight;
 	}
 }

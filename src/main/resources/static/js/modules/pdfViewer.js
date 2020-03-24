@@ -1,11 +1,10 @@
 export class PdfViewer {
 
-    constructor(url, signPosition, signable) {
+    constructor(url, signable, currentStepNumber) {
         console.info("Starting PDF Viewer");
         this.url= url;
-        this.signPosition = signPosition;
         this.pdfPageView = null;
-        this.pageRendering = false;
+        this.currentStepNumber = currentStepNumber;
         this.scale = 0.75;
         this.canvas = document.getElementById('pdf');
         this.pdfDoc = null;
@@ -61,7 +60,6 @@ export class PdfViewer {
     }
 
     startRender(pdf) {
-        console.group("Start render");
         this.pdfDoc = pdf;
         this.numPages = this.pdfDoc.numPages;
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
@@ -69,10 +67,13 @@ export class PdfViewer {
     }
 
     renderPage(num) {
-        console.debug("render page " + num + ", scale : " + this.scale);
-        if(this.dataFields != null || this.signable) {
-            this.setValues();
+        console.group("Start render");
+        console.debug("render page " + num + ", scale : " + this.scale + ", signable : " + this.signable + " ,step : " + this.currentStepNumber);
+        if(this.currentStepNumber === 0 || this.signable) {
             this.formRender = true;
+            if (this.dataFields != null) {
+                this.setValues();
+            }
         }
         if(this.pdfDoc != null) {
             //document.getElementById('signPageNumber').value = num;
@@ -89,7 +90,7 @@ export class PdfViewer {
     }
 
     renderTask(page) {
-        console.debug("launch render task");
+        console.info("launch render task");
         this.page = page;
         let scale = this.scale;
         let rotation = this.rotation;
@@ -102,19 +103,21 @@ export class PdfViewer {
                 defaultViewport: viewport
             });
         }
-        if(this.formRender) {
-            this.pdfPageView.renderInteractiveForms = true;
-            this.pdfPageView.annotationLayerFactory = new pdfjsViewer.DefaultAnnotationLayerFactory();
-        }
         this.pdfPageView.scale = this.scale;
         this.pdfPageView.rotation = this.rotation;
         this.pdfPageView.setPdfPage(page);
-        this.pdfPageView.draw();
-        this.pageRendering = false;
-        if(this.dataFields != null || true) {
-            console.info("render form");
-            this.page.getAnnotations().then(items => this.renderPdfForm(items));
+        if(this.formRender) {
+            console.debug("enable render form");
+            this.pdfPageView.renderInteractiveForms = true;
+            this.pdfPageView.annotationLayerFactory = new pdfjsViewer.DefaultAnnotationLayerFactory();
         }
+        this.pdfPageView.draw();
+        if(this.formRender) {
+            if(this.dataFields != null) {
+                this.page.getAnnotations().then(items => this.renderPdfForm(items));
+            }
+        }
+
         this.canvas.style.width = Math.round(this.pdfPageView.viewport.width) +"px";
         this.canvas.style.height = Math.round(this.pdfPageView.viewport.height) + "px";
         this.fireEvent('render', ['end']);
@@ -122,17 +125,18 @@ export class PdfViewer {
     }
 
     renderPdfForm(items) {
-        console.log("rending pdfForm items");
+        console.debug("rending pdfForm items");
         let signFieldNumber = 0;
         let visaFieldNumber = 0;
+        console.debug(this.dataFields);
         for (let i = 0; i < items.length; i++) {
+            console.debug(">>Start compute field");
             let dataField;
-            if(this.dataFields != null) {
+            if(this.dataFields != null && items[i].fieldName != null) {
                 dataField = this.dataFields.filter(obj => {
-                    return obj.name === items[i].fieldName
+                    return obj.name === items[i].fieldName.split(/\$|#|!/)[0]
                 })[0];
             }
-            console.debug(items[i]);
             if(items[i].fieldType === undefined && items[i].title.toLowerCase().startsWith('sign')) {
                 console.debug("found sign field");
                 signFieldNumber = signFieldNumber + 1;
@@ -141,6 +145,7 @@ export class PdfViewer {
                 signField.append('Champ signature ' + signFieldNumber + '<br>');
                 //signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
                 signField.addClass("sign-field");
+                signField.addClass("d-none");
             }
             if(items[i].fieldType === undefined && items[i].title.toLowerCase().startsWith('visa')) {
                 console.debug("found sign field");
@@ -150,81 +155,92 @@ export class PdfViewer {
                 signField.append('Champ visa ' + visaFieldNumber + '<br>');
                 //signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
                 signField.addClass("sign-field");
+                signField.addClass("d-none");
             }
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
-            console.log(inputField);
-            if(inputField.length > 0) {
-                inputField.attr('name', items[i].fieldName);
-                if (dataField != null) {
-                    inputField.val(dataField.defaultValue);
+            if(inputField != null && dataField != null) {
+                console.debug(items[i]);
+                console.debug(inputField);
+                console.debug(dataField);
+                inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
+                if(!dataField.stepNumbers.includes("" + this.currentStepNumber)) {
+                    inputField.prop('disabled', true);
+                    inputField.prop('required', false);
+                    //inputField.addClass('required-field');
+                } else {
+                    inputField.prop('disabled', false);
                     if (dataField.required) {
                         inputField.prop('required', true);
                         inputField.addClass('required-field');
                     }
-                    if (dataField.type === "radio") {
-                        inputField.val(items[i].buttonValue);
-                        if (dataField.defaultValue === items[i].buttonValue) {
-                            inputField.prop("checked", true);
-                        }
+                }
+                inputField.val(items[i].fieldValue);
+                if(dataField.defaultValue != null) {
+                    inputField.val(dataField.defaultValue);
+                }
+                if (dataField.type === "radio") {
+                    inputField.val(items[i].buttonValue);
+                    if (dataField.defaultValue === items[i].buttonValue) {
+                        inputField.prop("checked", true);
                     }
-                    if (dataField.type === 'checkbox') {
-                        inputField.val('on');
-                        if (dataField.defaultValue === 'on') {
-                            inputField.attr("checked", "checked");
-                            inputField.prop("checked", true);
-                        }
+                }
+                if (dataField.type === 'checkbox') {
+                    inputField.val('on');
+                    if (dataField.defaultValue === 'on') {
+                        inputField.attr("checked", "checked");
+                        inputField.prop("checked", true);
                     }
-                    if (dataField.type === "date") {
-                        inputField.datetimepicker({
-                            format: 'DD/MM/YYYY',
-                            locale: 'fr',
-                            icons: {
-                                time: 'fa fa-time',
-                                date: 'fa fa-calendar',
-                                up: 'fa fa-chevron-up',
-                                down: 'fa fa-chevron-down',
-                                previous: 'fa fa-chevron-left',
-                                next: 'fa fa-chevron-right',
-                                today: 'fa fa-screenshot',
-                                clear: 'fas fa-trash-alt',
-                                close: 'fa fa-check'
-                            },
-                            toolbarPlacement: 'bottom',
-                            showClear: true,
-                            showClose: true,
-                            keepOpen: false,
-                            widgetPositioning: {
-                                horizontal: 'right',
-                                vertical: 'top'
-                            },
-                        });
-                    }
-                    if (dataField.type === "time") {
-                        inputField.datetimepicker({
-                            format: 'LT',
-                            locale: 'fr',
-                            stepping: 5,
-                            icons: {
-                                time: 'fa fa-time',
-                                date: 'fa fa-calendar',
-                                up: 'fa fa-chevron-up',
-                                down: 'fa fa-chevron-down',
-                                previous: 'fa fa-chevron-left',
-                                next: 'fa fa-chevron-right',
-                                today: 'fa fa-screenshot',
-                                clear: 'fas fa-trash-alt',
-                                close: 'fa fa-check'
-                            },
-                            toolbarPlacement: 'bottom',
-                            showClear: true,
-                            showClose: true,
-                            keepOpen: false,
-                            widgetPositioning: {
-                                horizontal: 'right',
-                                vertical: 'top'
-                            },
-                        });
-                    }
+                }
+                if (dataField.type === "date") {
+                    inputField.datetimepicker({
+                        format: 'DD/MM/YYYY',
+                        locale: 'fr',
+                        icons: {
+                            time: 'fa fa-time',
+                            date: 'fa fa-calendar',
+                            up: 'fa fa-chevron-up',
+                            down: 'fa fa-chevron-down',
+                            previous: 'fa fa-chevron-left',
+                            next: 'fa fa-chevron-right',
+                            today: 'fa fa-screenshot',
+                            clear: 'fas fa-trash-alt',
+                            close: 'fa fa-check'
+                        },
+                        toolbarPlacement: 'bottom',
+                        showClear: true,
+                        showClose: true,
+                        keepOpen: false,
+                        widgetPositioning: {
+                            horizontal: 'right',
+                            vertical: 'top'
+                        },
+                    });
+                }
+                if (dataField.type === "time") {
+                    inputField.datetimepicker({
+                        format: 'LT',
+                        locale: 'fr',
+                        stepping: 5,
+                        icons: {
+                            time: 'fa fa-time',
+                            date: 'fa fa-calendar',
+                            up: 'fa fa-chevron-up',
+                            down: 'fa fa-chevron-down',
+                            previous: 'fa fa-chevron-left',
+                            next: 'fa fa-chevron-right',
+                            today: 'fa fa-screenshot',
+                            clear: 'fas fa-trash-alt',
+                            close: 'fa fa-check'
+                        },
+                        toolbarPlacement: 'bottom',
+                        showClear: true,
+                        showClose: true,
+                        keepOpen: false,
+                        widgetPositioning: {
+                            horizontal: 'right',
+                            vertical: 'top'
+                        },
+                    });
                 }
             } else {
                 let inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
@@ -234,11 +250,13 @@ export class PdfViewer {
                         inputField.addClass('required-field');
                     }
                     inputField.attr('name', items[i].fieldName);
+                    inputField.val(items[i].fieldValue);
                     if (dataField != null) {
                         inputField.val(dataField.defaultValue);
                     }
                 }
             }
+            console.debug(">>End compute field");
         }
     }
 
