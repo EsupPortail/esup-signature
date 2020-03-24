@@ -296,7 +296,16 @@ public class SignRequestController {
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 formDataMap = objectMapper.readValue(formData, Map.class);
-                System.err.println(formDataMap);
+                formDataMap.remove("_csrf");
+                if(signRequest.getParentSignBook() != null) {
+                    Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
+                    for(Map.Entry<String, String> entry : formDataMap.entrySet()) {
+                        if(!data.getDatas().containsKey(entry.getKey())) {
+                            data.getDatas().put(entry.getKey(), entry.getValue());
+                        }
+                    }
+                    dataRepository.save(data);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

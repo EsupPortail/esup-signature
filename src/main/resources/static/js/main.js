@@ -21,7 +21,14 @@ let globalUi = new GlobalUi();
 if(document.URL.match("(\/user\/signrequests\/[\\s\\S]+[^?|^\/])")) {
     console.info("show side bar");
     globalUi.showSideBar();
+    $("#sidebarCollapse").attr("disabled", true);
+    // $("#sidebarCollapse").children().toggleClass("fa-bars fa-arrow-left");
+    // $("#sidebarCollapse").on("mousedown", function(e){
+    //     e.preventDefault();
+    //    document.location.href = "/user/signrequests";
+    // });
 }
+
 if(document.URL.match("(\/user\/signrequests\/?$)")) {
     console.info("localStorage remove : mode");
     localStorage.removeItem('mode');

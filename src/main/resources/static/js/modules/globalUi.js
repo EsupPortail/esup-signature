@@ -16,7 +16,10 @@ export class GlobalUi {
     }
 
     initListeners() {
-        $(document).on('click', e => this.closeUserMenu(e));
+        //$(document).on('click', e => this.closeUserMenu(e));
+        $("#closeUserInfo").on('click', function() {
+            $("#user-toggle").click();
+        });
         //$(document).on('click', e => this.scrollToHash());
         this.sideBar.on('mouseover', e => this.disableBodyScroll());
         this.sideBar.on('mouseout', e => this.enableBodyScroll());
