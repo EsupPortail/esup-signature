@@ -75,7 +75,6 @@ public class HomeController {
         model.addAttribute("datas", datas);
         model.addAttribute("forms", formService.getFormsByUser(user));
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
-        model.addAttribute("signTypes", Arrays.asList(SignType.values()));
         return "user/home/index";
     }
 

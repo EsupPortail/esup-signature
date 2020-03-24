@@ -305,7 +305,7 @@ export class PdfViewer {
     }
 
     zoomIn() {
-        console.group('zoom in');
+        console.info('zoom in');
         if (this.scale >= 2) {
             return;
         }
@@ -323,7 +323,7 @@ export class PdfViewer {
 
 
     zoomOut() {
-        console.group('zoom out');
+        console.info('zoom out');
         if (this.scale <= 0.50) {
             return;
         }

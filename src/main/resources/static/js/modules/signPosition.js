@@ -127,17 +127,13 @@ export class SignPosition {
 
     updateSignSize(scale) {
         console.info("update sign from scale : " + this.currentScale + " to " + scale);
-        this.signWidth = Math.round(this.signWidth / this.currentScale * scale);
-        this.signHeight = Math.round(this.signHeight / this.currentScale * scale);
-        this.posX = Math.round(this.posX / this.currentScale * scale);
-        this.posY = Math.round(this.posY / this.currentScale * scale);
-        this.cross.css('left', this.posX);
-        this.cross.css('top', this.posY);
-        this.cross.css('width', this.signWidth);
-        this.cross.css('height', this.signHeight);
-        this.borders.css('width', this.signWidth);
-        this.borders.css('height', this.signHeight);
-        this.cross.css('background-size', this.signWidth);
+        this.cross.css('left', this.posX * scale);
+        this.cross.css('top', this.posY * scale);
+        this.cross.css('width', this.signWidth * scale);
+        this.cross.css('height', this.signHeight * scale);
+        this.borders.css('width', this.signWidth * scale);
+        this.borders.css('height', this.signHeight * scale);
+        this.cross.css('background-size', this.signWidth * scale);
         $('#textVisa').css('font-size', 8 * scale + "px");
         $('#textDate').css('font-size', 8 * scale + "px");
         this.currentScale = scale;
@@ -145,9 +141,9 @@ export class SignPosition {
 
     savePosition() {
         if(this.pointItEnable && this.pointItMove) {
-            console.info("save position to  :" + Math.round(this.posX * this.currentScale) + " " + Math.round(this.posY * this.currentScale));
-            this.startPosX = Math.round(this.posX * this.currentScale);
-            this.startPosY = Math.round(this.posY * this.currentScale);
+            console.info("save position to  :" + this.posX + " " + this.posY);
+            this.startPosX = this.posX;
+            this.startPosY = this.posY;
         }
         this.cross.css('backgroundColor', 'rgba(0, 255, 0, 0)');
         this.cross.css('pointerEvents', "auto");

@@ -21,7 +21,7 @@ export class SignUi {
 
     initListeners() {
         $("#launchSignButton").on('click', e => this.launchSign());
-        $("#launchAllSignButton").on('click', e => this.launchAllSign());
+        //$("#launchAllSignButton").on('click', e => this.launchAllSign());
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
                 $("#launchSignButton").click();
@@ -44,7 +44,7 @@ export class SignUi {
             console.log('launch sign for : ' + this.signRequestId);
             this.wait.modal('show');
             this.wait.modal({backdrop: 'static', keyboard: false});
-            this.submitSignRequest(this.signRequestId);
+            this.submitSignRequest();
         } else {
             $('#signModal').on('hidden.bs.modal', function () {
                 $("#checkDataSubmit").click();
@@ -52,18 +52,18 @@ export class SignUi {
         }
     }
 
-    launchAllSign() {
-        $('#signAllModal').modal('hide');
-        this.wait.modal('show');
-        this.wait.modal({backdrop: 'static', keyboard: false});
-        let csrf = document.getElementsByName("_csrf")[0];
-        let signRequestParams = "password=" + document.getElementById("passwordAll").value +
-            "&" + csrf.name + "=" + csrf.value;
-        let xmlHttp = new XMLHttpRequest();
-        xmlHttp.open('POST', '/user/signbooks/sign/' + this.signRequestId, true);
-        xmlHttp.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-        xmlHttp.send(signRequestParams);
-    }
+    // launchAllSign() {
+    //     $('#signAllModal').modal('hide');
+    //     this.wait.modal('show');
+    //     this.wait.modal({backdrop: 'static', keyboard: false});
+    //     let csrf = document.getElementsByName("_csrf")[0];
+    //     let signRequestParams = "password=" + document.getElementById("passwordAll").value +
+    //         "&" + csrf.name + "=" + csrf.value;
+    //     let xmlHttp = new XMLHttpRequest();
+    //     xmlHttp.open('POST', '/user/signbooks/sign/' + this.signRequestId, true);
+    //     xmlHttp.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+    //     xmlHttp.send(signRequestParams);
+    // }
 
     submitSignRequest() {
         var formData = { };
@@ -152,7 +152,7 @@ export class SignUi {
             document.getElementById("bar").classList.remove("progress-bar-animated");
             document.getElementById("bar-text").innerHTML = "Signature terminée";
             document.getElementById("bar").style.width = 100 + "%";
-        } else {
+        } else if(result !== ""){
             console.debug("update bar : " + result);
             document.getElementById("bar").style.display = "block";
             document.getElementById("bar").style.width = this.percent + "%";

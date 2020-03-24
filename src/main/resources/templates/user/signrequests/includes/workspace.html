@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
 <!--/*@thymesVar id="postit" type="org.esupportail.esupsignature.entity.Log"*/-->
-<div th:fragment="workspace" id="workspace" class="alert alert-secondary justify-content-center" th:classappend="${signRequest.parentSignBook.signRequests.size() > 1} ? 'workspace-sign' : 'workspace'">
+<div th:fragment="workspace" id="workspace" class="alert alert-secondary justify-content-center" th:classappend="${signRequest.parentSignBook != null && signRequest.parentSignBook.signRequests.size() > 1} ? 'workspace-sign' : 'workspace'">
     <form id="signForm" th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="drop-shadows mx-auto">

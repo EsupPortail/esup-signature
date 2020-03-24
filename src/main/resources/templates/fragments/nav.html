@@ -175,7 +175,7 @@
                         </div>
                         <label for="signType">Choisir un type de signature</label>
                         <select name="signType" id="signType" class="form-control">
-                            <th:block th:each="signType : ${signTypes}">
+                            <th:block th:each="signType : ${@signService.getSignTypes()}">
                                 <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
                             </th:block>
                         </select>

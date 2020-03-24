@@ -31,6 +31,7 @@ import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
@@ -486,5 +487,9 @@ public class SignService {
 
 	public Long getPasswordTimeout() {
 		return signConfig.getSignProperties().getPasswordTimeout();
+	}
+
+	public List<SignType> getSignTypes() {
+		return Arrays.asList(SignType.values());
 	}
 }
