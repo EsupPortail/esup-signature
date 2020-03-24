@@ -39,9 +39,20 @@ public class UserPropertieService {
                 userPropertie.setScore(0);
                 userPropertieRepository.save(userPropertie);
             }
-            UserPropertie userPropertie = userProperties.get(0);
-            userPropertie.setScore(userPropertie.getScore() + 1);
-            userPropertieRepository.save(userPropertie);
+            if(userProperties.size() == 1 && userProperties.get(0).getRecipients().size() == 0) {
+                for(Recipient recipient : workflowStep.getRecipients()) {
+                    userProperties.get(0).getRecipients().add(recipient.getUser().getEmail());
+                }
+            }
+            for(UserPropertie userPropertie : userProperties) {
+                List<String> recipientEmails = new ArrayList<>();
+                for(Recipient recipient : workflowStep.getRecipients()) {
+                    recipientEmails.add(recipient.getUser().getEmail());
+                }
+                if(userPropertie.getRecipients().containsAll(recipientEmails)) {
+                    userPropertie.setScore(userPropertie.getScore() + 1);
+                }
+            }
         }
     }
 
