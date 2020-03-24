@@ -57,10 +57,10 @@
                         <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
                         <button id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
                         <div class="border ml-3 mr-3 "></div>
-                        <button class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block" data-toggle="modal" data-target="#attachment">
-                            <i class="fas fa-paperclip"></i> Pièces jointes <div th:if="${signRequest.attachments.size() > 0 }" th:text="${signRequest.attachments.size()}" class="badge badge-primary"></div>
-                        </button>
-                        <div class="border ml-3 mr-3 "></div>
+<!--                        <button class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block" data-toggle="modal" data-target="#attachment">-->
+<!--                            <i class="fas fa-paperclip"></i> Pièces jointes <div th:if="${signRequest.attachments.size() > 0 }" th:text="${signRequest.attachments.size()}" class="badge badge-primary"></div>-->
+<!--                        </button>-->
+<!--                        <div class="border ml-3 mr-3 "></div>-->
                     </th:block>
                     <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported')}">
                         <div id="endButtons" class="fixed-action-btn active" style="width: 100px; bottom: 50px; right: 50px;">

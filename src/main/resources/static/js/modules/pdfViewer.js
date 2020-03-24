@@ -165,7 +165,7 @@ export class PdfViewer {
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber)) {
                     inputField.prop('disabled', true);
                     inputField.prop('required', false);
-                    //inputField.addClass('required-field');
+                    inputField.addClass('disabled-field');
                 } else {
                     inputField.val(items[i].fieldValue);
                     if(dataField.defaultValue != null) {

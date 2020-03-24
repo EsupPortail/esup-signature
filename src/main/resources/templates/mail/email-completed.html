@@ -13,11 +13,14 @@
         <div class="card-body">
             <h4>Bonjour,</h4>
             <h5>La demande de signature "<b><span th:text="${signBook.name}"></span></b>" est terminée.</h5>
-            <p>Liste des signataires</p>
+            <p>Liste des signataires : </p>
             <ul>
             <th:block th:each="workflowStep : ${signBook.workflowSteps}">
                 <th:block th:each="recipient : ${workflowStep.recipients}">
-                    <li th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></li>
+                    <li>
+                        <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                        <span th:text="'(' + #{'signbook.signtype.' + ${workflowStep.signType}} + ')'"></span>
+                    </li>
                 </th:block>
             </th:block>
             </ul>
@@ -26,7 +29,7 @@
             </p>
 
             <p>
-                <a th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" class="btn btn-primary">Voir le circuit</a>
+                <a th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" class="btn btn-primary">Voir la demande</a>
             </p>
         </div>
         <div class="card-footer bg-secondary">

@@ -318,7 +318,7 @@ input:checked + .slider:before {
     max-width: 260px;
     min-height: 100vh;
     /*background: #555555;*/
-    overflow-y: scroll;
+    overflow-y: auto;
     overflow-x: fragments;
     -moz-box-shadow: 2px 2px 4px 4px rgba(0, 0, 0, 0.2);
     -webkit-box-shadow: 2px 2px 4px 4px rgba(0, 0, 0, 0.2);
@@ -688,6 +688,10 @@ float:left;
     border-color: red !important;
 }
 
+.disabled-field {
+    color: black;
+}
+
 .crop {
     overflow:hidden;
     margin:0;
@@ -901,6 +905,7 @@ float:left;
 }
 
 .textWidgetAnnotation input {
+    font-size: 11px !important;
     padding: 0 !important;
 }
 

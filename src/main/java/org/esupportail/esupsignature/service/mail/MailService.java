@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -119,11 +121,16 @@ public class MailService {
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;
+        List<String> toEmails = new ArrayList<>();
+        toEmails.add(user.getEmail());
+        for(Recipient recipient : signBook.getWorkflowSteps().get(signBook.getWorkflowSteps().size() - 2).getRecipients()) {
+            toEmails.add(recipient.getUser().getEmail());
+        }
         try {
             message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             message.setSubject("Esup-Signature : demande signature refusée");
             message.setFrom(mailConfig.getMailFrom());
-            message.setTo(user.getEmail());
+            message.setTo(toEmails.toArray(String[]::new));
             String htmlContent = templateEngine.process("mail/email-refused.html", ctx);
             message.setText(htmlContent, true);
             mailSender.send(mimeMessage);
