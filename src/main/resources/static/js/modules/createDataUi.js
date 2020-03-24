@@ -11,13 +11,16 @@ export class CreateDataUi {
     }
 
     initListeners() {
+        document.getElementById('saveButton').addEventListener('click', e => this.saveData(e));
         document.getElementById('saveForm').addEventListener('submit', e => this.saveData(e));
     }
 
     saveData(e) {
         e.preventDefault();
+        console.info("check data name");
         let tempName = document.getElementById('tempName');
         if (tempName.checkValidity()) {
+            console.info("submit form");
             document.getElementById('name').value = tempName.value;
             document.getElementById('newDataSubmit').click();
         } else {

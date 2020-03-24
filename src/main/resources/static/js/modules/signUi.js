@@ -11,6 +11,7 @@ export class SignUi {
         this.passwordError = document.getElementById("passwordError");
         this.workspace = null;
         this.moreData = document.getElementById("moreDatas");
+        this.signForm = document.getElementById("signForm");
         if(isPdf) {
             this.workspace = new WorkspacePdf('/user/signrequests/get-last-file/' + id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber);
         }
@@ -29,12 +30,24 @@ export class SignUi {
     }
 
     launchSign() {
-           this.percent = 0;
+        $('#signModal').modal('hide');
+        this.percent = 0;
+        let inputs = this.signForm.getElementsByTagName("input");
+        let good = true;
+        for(var i = 0, len = inputs.length; i < len; i++) {
+            let input = inputs[i];
+            if(!input.checkValidity()) {
+                good = false;
+            }
+        }
+        if(good) {
             console.log('launch sign for : ' + this.signRequestId);
-            $('#signModal').modal('hide');
             this.wait.modal('show');
             this.wait.modal({backdrop: 'static', keyboard: false});
             this.submitSignRequest(this.signRequestId);
+        } else {
+            $("#checkDataSubmit").click();
+        }
     }
 
     launchAllSign() {

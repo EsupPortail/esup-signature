@@ -54,7 +54,7 @@ public class DocumentService {
 		String name = "";
 		name += String.format("%02d", order);
 		name += "_";
-		SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
 		name += format.format(new Date());
 		name += "_";
 		name += fileService.getNameOnly(originalName).replaceAll(" ", "-");

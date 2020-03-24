@@ -289,7 +289,7 @@ public class SignBookService {
         signBookName += user.getFirstname().substring(0, 1).toUpperCase();
         signBookName += user.getName().substring(0, 1).toUpperCase();
         signBookName += "_";
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
         signBookName += format.format(new Date());
         signBookName += "_";
         signBookName += name.replaceAll("[\\\\/:*?\"<>|]", "-");

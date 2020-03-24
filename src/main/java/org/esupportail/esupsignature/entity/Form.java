@@ -35,6 +35,8 @@ public class Form {
 
 	private Boolean pdfDisplay = true;
 
+	private Boolean needName = false;
+
 	private Boolean activeVersion = false;
 
     @Enumerated(EnumType.STRING)
@@ -167,5 +169,13 @@ public class Form {
 
 	public void setFields(List<Field> fields) {
 		this.fields = fields;
+	}
+
+	public Boolean getNeedName() {
+		return needName;
+	}
+
+	public void setNeedName(Boolean needName) {
+		this.needName = needName;
 	}
 }

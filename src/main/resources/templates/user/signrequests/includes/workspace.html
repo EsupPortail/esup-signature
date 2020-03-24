@@ -5,27 +5,30 @@
 <!--/*@thymesVar id="postit" type="org.esupportail.esupsignature.entity.Log"*/-->
 <div th:fragment="workspace" id="workspace" class="alert alert-secondary justify-content-center" th:classappend="${signRequest.parentSignBook.signRequests.size() > 1} ? 'workspace-sign' : 'workspace'">
     <form id="signForm" th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
+        <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="drop-shadows mx-auto">
-            <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed' && currentSignType != 'visa'}">
-                <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                     onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                     onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
-                     th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;  left: ' + ${signRequest.getCurrentSignRequestParams().xPos} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
-                    <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
-                </div>
-            </th:block>
-            <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed' && currentSignType == 'visa'}">
-                <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                     onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                     onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
-                     th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${signRequest.getCurrentSignRequestParams().xPos} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
-                    <div id="borders" class="anim-border" th:style="'vertical-align:top; text-align:left;line-height:6px; width:  ' + ${signWidth} + 'px; height:  ' + ${signHeight} + 'px;'">
-                        <span id="textVisa" style="font-size: 8px; line-height: normal; font-weight: bold" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span>
-                        <br>
+            <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed'}">
+                <th:block th:if="${currentSignType != 'visa'}">
+                    <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
+                         onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
+                         onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
+                         th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;  left: ' + ${signRequest.getCurrentSignRequestParams().xPos} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
+                        <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
                     </div>
-                </div>
+                </th:block>
+                <th:block th:if="${currentSignType == 'visa'}">
+                    <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
+                         onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
+                         onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
+                         th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${signRequest.getCurrentSignRequestParams().xPos} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
+                        <div id="borders" class="anim-border" th:style="'vertical-align:top; text-align:left;line-height:6px; width:  ' + ${signWidth} + 'px; height:  ' + ${signHeight} + 'px;'">
+                            <span id="textVisa" style="font-size: 8px; line-height: normal; font-weight: bold" th:text="'Visé par ' + ${user.firstname} + ' ' + ${user.name}"></span>
+                            <br>
+                        </div>
+                    </div>
+                </th:block>
             </th:block>
-            <th:block th:each="postit : ${postits}">
+            <th:block th:if="${signRequest.status.name() == 'pending'}" th:each="postit : ${postits}">
                 <div th:if="${postit.finalStatus == 'checked'}" class="postitVisa" th:style="'z-index : 1; position: absolute; left: ' + ${postit.posX} + 'px; top : ' + ${postit.posY} + 'px;'">
                     <b th:text="'Visé par ' + ${@userService.getUserByEppn(postit.eppn).firstname + ' ' + @userService.getUserByEppn(postit.eppn).name}"></b>
                     <span th:text="'le ' + ${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></span>

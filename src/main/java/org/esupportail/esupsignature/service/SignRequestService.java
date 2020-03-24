@@ -253,25 +253,25 @@ public class SignRequestService {
 		step = "Démarrage de la signature";
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
 		SignType signType = getCurrentSignType(signRequest);
+		InputStream filledInputStream;
+		if(formDataMap != null && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
+			step = "Remplissage du document";
+			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap);
+		} else {
+			filledInputStream = toSignDocuments.get(0).getInputStream();
+		}
 		if (signType.equals(SignType.visa)) {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-				InputStream filledInputStream;
-				if(formDataMap != null) {
-					step = "Remplissage du document";
-					filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap);
-				} else {
-					filledInputStream = toSignDocuments.get(0).getInputStream();
-				}
-				InputStream signedInputStream = filledInputStream;
+				InputStream toSignInputStream = filledInputStream;
 				if(visual) {
 					step = "Conversion du document";
-					signedInputStream = pdfService.stampImage(filledInputStream, toSignDocuments.get(0).getFileName(), signRequest, getCurrentSignType(signRequest), signRequest.getCurrentSignRequestParams(), user, addDate);
+					toSignInputStream = pdfService.stampImage(filledInputStream, toSignDocuments.get(0).getFileName(), signRequest, getCurrentSignType(signRequest), signRequest.getCurrentSignRequestParams(), user, addDate);
 				}
-				addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
+				addSignedFile(signRequest, toSignInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
 			}
 		} else if(signType.equals(SignType.pdfImageStamp)) {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-				InputStream signedInputStream = pdfService.stampImage(toSignDocuments.get(0).getInputStream(), toSignDocuments.get(0).getFileName(), signRequest, getCurrentSignType(signRequest), signRequest.getCurrentSignRequestParams(), user, addDate);
+				InputStream signedInputStream = pdfService.stampImage(filledInputStream, toSignDocuments.get(0).getFileName(), signRequest, getCurrentSignType(signRequest), signRequest.getCurrentSignRequestParams(), user, addDate);
 				addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
 			}
 		} else {

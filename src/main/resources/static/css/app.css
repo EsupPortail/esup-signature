@@ -679,7 +679,7 @@ float:left;
 }
 
 .required-field {
-    background-color: #FDF8E4 !important;
+    border-color: red !important;
 }
 
 .crop {

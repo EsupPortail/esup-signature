@@ -34,6 +34,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
@@ -73,6 +74,9 @@ public class PdfService {
 
     @Resource
     private SignRequestService signRequestService;
+
+    @Resource
+    private SignBookService signBookService;
 
     public InputStream stampImage(InputStream inputStream, String fileName, SignRequest signRequest, SignType signType, SignRequestParams signRequestParams, User user, boolean addDate) {
         signRequestService.setStep("Apposition de la signature");
@@ -141,7 +145,7 @@ public class PdfService {
             pdDocument.close();
             signImage.delete();
             try {
-                if(signRequest.getSignedDocuments().size() == 0) {
+                if(signRequest.getParentSignBook() == null || signBookService.isStepAllSignDone(signRequest.getParentSignBook())) {
                     return convertGS(writeMetadatas(in, fileName, signRequest));
                 } else {
                     return in;

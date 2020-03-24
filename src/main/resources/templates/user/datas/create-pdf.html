@@ -2,6 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="recipient" type="org.esupportail.esupsignature.entity.Recipient"*/-->
 <!--/*@thymesVar id="data" type="org.esupportail.esupsignature.entity.Data"*/-->
+<!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <!--/*@thymesVar id="step" type="org.esupportail.esupsignature.entity.WorkflowStep"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
@@ -21,8 +22,11 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div th:if="${data.status == null}" class="fixed-action-btn" style="bottom: 100px; right: 50px;">
-                <a role="button" title="Enregistrer les modifications" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" class="btn-floating btn-lg bg-success wave-effect" data-toggle="modal" data-target="#saveModal">
+            <div th:if="${data.status == null && (data.signBook == null || data.signBook.signRequests.size() == 0)}" class="fixed-action-btn" style="bottom: 100px; right: 50px;">
+                <a th:if="${form.needName}" role="button" title="Enregistrer les modifications" type="button" class="btn-floating btn-lg bg-success wave-effect" data-toggle="modal" data-target="#saveModal">
+                    <i class="fas fa-save"></i><br/>
+                </a>
+                <a th:unless="${form.needName}" onclick="return false;" id="saveButton" href="#" title="Enregistrer les modifications" class="btn-floating btn-lg bg-success wave-effect">
                     <i class="fas fa-save"></i><br/>
                 </a>
             </div>
@@ -153,14 +157,14 @@
             <form id="saveForm" onsubmit="">
             <div class="modal-body text-center">
                 <div class="form-group">
-                    <input id="tempName" autocomplete="no" class="form-control" type="text" name="name" placeholder="Saisir un nom pour ce document" th:value="${data.name}" required="true" />
+                    <input id="tempName" autocomplete="no" class="form-control" type="text" name="name" placeholder="Saisir un nom pour ce document" th:value="${data.name}" />
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">
                     Fermer
                 </button>
-                <button type="submit" id="saveButton" class="btn btn-success">Enregistrer</button>
+                <button type="submit" class="btn btn-success">Enregistrer</button>
             </div>
             </form>
         </div>

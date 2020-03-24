@@ -275,8 +275,7 @@ public class SignRequestController {
                                @RequestParam(value = "addDate", required = false) Boolean addDate,
                                @RequestParam(value = "visual", required = false) Boolean visual,
                                @RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
-                               @RequestParam(value = "password", required = false) String password,
-                               HttpServletRequest request) {
+                               @RequestParam(value = "password", required = false) String password, HttpServletRequest httpServletRequest) {
 
         if (addDate == null) {
             addDate = false;
@@ -285,7 +284,7 @@ public class SignRequestController {
             visual = true;
         }
         User user = userService.getCurrentUser();
-        user.setIp(request.getRemoteAddr());
+        user.setIp(httpServletRequest.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
 
         Map<String, String> formDataMap = null;
