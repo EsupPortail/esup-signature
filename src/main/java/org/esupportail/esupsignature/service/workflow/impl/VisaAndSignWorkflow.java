@@ -54,9 +54,10 @@ public class VisaAndSignWorkflow extends DefaultWorkflow {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         //STEP 1
         WorkflowStep workflowStep1 = new WorkflowStep();
+        workflowStep1.setName("Supérieur hiérarchique");
         workflowStep1.setStepNumber(1);
         workflowStep1.getRecipients().add(recipientService.createRecipient(null, user));
-        workflowStep1.setDescription("Visa de votre supérieur hiérarchique (présélectionné en fonction de vos précédentes saisies)");
+        workflowStep1.setDescription("Visa de votre supérieur hiérarchique");
         workflowStep1.setSignType(SignType.visa);
         if(data != null) {
             workflowStep1.setRecipients(getFavoriteRecipientEmail(1, data.getForm(), recipentEmailsStep, user));
@@ -67,6 +68,7 @@ public class VisaAndSignWorkflow extends DefaultWorkflow {
         workflowSteps.add(workflowStep1);
         //STEP 2
         WorkflowStep workflowStep2 = new WorkflowStep();
+        workflowStep2.setName("Président de l’université");
         workflowStep2.setStepNumber(2);
         workflowStep2.setSignType(SignType.pdfImageStamp);
         workflowStep2.setDescription("Signature du Président de l’université");

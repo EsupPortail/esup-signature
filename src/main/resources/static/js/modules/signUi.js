@@ -46,7 +46,9 @@ export class SignUi {
             this.wait.modal({backdrop: 'static', keyboard: false});
             this.submitSignRequest(this.signRequestId);
         } else {
-            $("#checkDataSubmit").click();
+            $('#signModal').on('hidden.bs.modal', function () {
+                $("#checkDataSubmit").click();
+            })
         }
     }
 

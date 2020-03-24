@@ -9,17 +9,28 @@
                     <div class="bs-stepper-header" role="tablist">
                         <th:block th:each="workflowStep,iterator : ${signRequest.parentSignBook.workflowSteps}">
                             <div class="step border border-dark rounded" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber} ? 'div-disable'">
-                                    <span title="Étape en cours" th:if="${iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle bg-primary">
-                                        <i class="fa fa-play"></i>
+                                    <th:block th:if="${iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}">
+                                    <span title="Étape en cours" th:if="${signRequest.status.name() == 'pending'}" class="bs-stepper-circle bg-primary">
+                                        <i class="fas fa-spinner fa-pulse"></i>
                                     </span>
+                                    <span title="Étape annulée" th:if="${signRequest.status.name() == 'refused'}" class="bs-stepper-circle bg-danger">
+                                        <i class="fas fa-times"></i>
+                                    </span>
+                                    </th:block>
                                     <span title="Étape à venir" th:if="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle">
-                                        <i class="fa fa-pause"></i>
+                                        <i class="fa fa-clock"></i>
                                     </span>
-                                    <span title="Étape effectuée" th:unless="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber || iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" class="bs-stepper-circle bg-success">
-                                        <i class="fa fa-check"></i>
-                                    </span>
+                                    <th:block th:unless="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber || iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}">
+                                        <span title="Document visé" th:if="${workflowStep.signType.name() == 'visa'}" class="bs-stepper-circle bg-success">
+                                            <i class="fa fa-check"></i>
+                                        </span>
+                                        <span title="Document signé" th:unless="${workflowStep.signType.name() == 'visa'}" class="bs-stepper-circle bg-success">
+                                            <i class="fa fa-signature"></i>
+                                        </span>
+                                    </th:block>
+                                <br>
                                     <div class="bs-stepper-label">
-                                        <span  th:text="#{'signbook.signtype.' + ${workflowStep.getSignType()}}"></span>
+                                        <span  th:text="#{'signbook.signtype.' + ${workflowStep.signType.name()}}"></span>
                                         <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}" class="text-danger"><i class="fas fa-users"></i></span>
                                         <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}"><i class="fas fa-user"></i></span>
                                         <br/>
@@ -28,7 +39,7 @@
                                         <th:block th:each="recipient : ${workflowStep.recipients}">
                                             <tr>
                                                 <td th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
-                                                <td th:if="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber || iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}" th:switch="${recipient.signed}">
+                                                <td th:if="${(iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber || iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber) && signRequest.status.name() == 'pending'}" th:switch="${recipient.signed}">
                                                     <i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
                                                     <i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
                                                 </td>
@@ -45,6 +56,22 @@
                             <div class="step border border-dark rounded" th:title="${signRequest.parentSignBook.documentsTargetUri}" th:classappend="${signRequest.parentSignBook.status.name() != 'exported'} ? 'div-disable'">
                                 <div title="Export" th:classappend="${signRequest.parentSignBook.status.name() == 'exported'} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></div>
                                 <div class="bs-stepper-label text-break" th:text="${signRequest.parentSignBook.targetType}"></div>
+                            </div>
+                        </th:block>
+                        <th:block th:if="${signRequest.parentSignBook.status.name() == 'completed'}">
+                            <div class="bs-stepper-line"></div>
+                            <div class="step border border-dark rounded">
+                                <div title="Fin" class="bs-stepper-circle bg-success">
+                                    <i class="fas fa-flag-checkered"></i></div>
+                                <div class="bs-stepper-label text-break">La procédure est terminée. Les intervenants ont été informés par mail</div>
+                            </div>
+                        </th:block>
+                        <th:block th:if="${signRequest.parentSignBook.status.name() == 'refused'}">
+                            <div class="bs-stepper-line"></div>
+                            <div class="step border border-dark rounded">
+                                <div title="Fin" class="bs-stepper-circle bg-danger">
+                                    <i class="fas fa-exclamation-triangle"></i></div>
+                                <div class="bs-stepper-label text-break">La procédure est terminée. Les intervenants ont été informés par mail</div>
                             </div>
                         </th:block>
                     </div>

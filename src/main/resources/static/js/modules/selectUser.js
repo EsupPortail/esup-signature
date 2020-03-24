@@ -1,15 +1,18 @@
 export default class SelectUser {
 
     constructor(selectName, valuePrefix) {
+        this.slimSelect = null;
+        this.selectField = $("#" + selectName);
         console.info("Enable slim-select for " + selectName);
         if(valuePrefix == null) {
             valuePrefix = "";
-        };
+        }
         this.createUserSelect(selectName, valuePrefix);
+        this.selectField.addClass("slim-select-hack");
     }
 
     createUserSelect(selectName, valuePrefix) {
-        new SlimSelect({
+        this.slimSelect = new SlimSelect({
             select: "#" + selectName,
             placeholder: 'Choisir un ou plusieurs participants',
             searchText: 'Aucun résultat',

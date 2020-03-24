@@ -2,10 +2,9 @@ package org.esupportail.esupsignature.service.mail;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.esupportail.esupsignature.config.mail.MailConfig;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -69,6 +68,9 @@ public class MailService {
     private SignBookService signBookService;
 
     @Resource
+    private LogRepository logRepository;
+
+    @Resource
     private SignRequestService signRequestService;
 
     @Resource
@@ -112,6 +114,8 @@ public class MailService {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", rootUrl);
+        List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signBook.getSignRequests().get(0).getId(), SignRequestStatus.refused.name());
+        ctx.setVariable("refuseLogs", refuseLogs);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;

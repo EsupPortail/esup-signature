@@ -213,6 +213,12 @@ input:checked + .slider:before {
   display: none;
 }
 
+.slim-select-hack {
+    opacity: 0;
+    height: 0;
+    display: block !important;
+}
+
 /* select slim */
 .ss-main .ss-multi-selected .ss-values .ss-value {
     font-size: 16px;

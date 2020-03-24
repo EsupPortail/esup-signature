@@ -31,7 +31,7 @@
             <th:block th:if="${signRequest.status.name() == 'pending'}" th:each="postit : ${postits}">
                 <div th:if="${postit.finalStatus == 'checked'}" class="postitVisa" th:style="'z-index : 1; position: absolute; left: ' + ${postit.posX} + 'px; top : ' + ${postit.posY} + 'px;'">
                     <b th:text="'Visé par ' + ${@userService.getUserByEppn(postit.eppn).firstname + ' ' + @userService.getUserByEppn(postit.eppn).name}"></b>
-                    <span th:text="'le ' + ${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></span>
+                    <p th:text="'le ' + ${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></p>
                     <p class="postitarea" th:text="${postit.comment}"></p>
                 </div>
             </th:block>

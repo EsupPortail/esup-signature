@@ -166,7 +166,8 @@
             <div class="modal-body">
                 <div th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}" class="alert alert-success"></div>
                 <div class="modal-body">
-                    <textarea id="signComment" placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment"></textarea>
+                    <label th:if="${signType == 'visa'}" for="signComment">Vous <b>pouvez</b> ajouter un commentaire à destination du Président de l’université</label>
+                    <textarea id="signComment" placeholder="Commentaire" class="form-control" name="comment"></textarea>
                 </div>
                 <div th:if="${signType == 'nexuSign'}">
                     <div id="nexu_version_alert" style="display: none;">
