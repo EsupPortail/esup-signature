@@ -66,7 +66,7 @@
                         <div id="endButtons" class="fixed-action-btn active" style="width: 100px; bottom: 50px; right: 50px;">
                             <ul id="endCollapse" class="list-unstyled">
                                 <li>
-                                    <a class="btn-lg btn-floating bg-primary waves-effect" th:onclick="'printJS(\'/user/signrequests/get-last-file/' + ${id} + '\');'" title="Imprimer le document">
+                                    <a id="print" class="btn-lg btn-floating bg-primary waves-effect" th:onclick="'printJS({printable:\'/user/signrequests/get-last-file/' + ${id} + '\', type:\'pdf\', showModal:true});'" title="Imprimer le document">
                                         <i class="fas fa-print"></i>
                                     </a>
                                 </li>

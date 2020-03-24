@@ -253,6 +253,7 @@ public class DataController {
 			logger.error(e.getMessage(), e);
 			redirectAttributes.addFlashAttribute("messageError", e.getMessage());
 		}
+		redirectAttributes.addFlashAttribute("messageSuccess", "La procédure est démarrée");
 		return "redirect:/user/datas/" + id + "/update";
 	}
 

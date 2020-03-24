@@ -237,14 +237,15 @@ public class SignBookService {
             signRequestService.pendingSignRequest(signRequest, currentWorkflowStep.getSignType(), currentWorkflowStep.getAllSignToComplete());
         }
 
-        for (Recipient recipient : currentWorkflowStep.getRecipients()) {
-            User recipientUser = recipient.getUser();
-            if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(User.EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
-                if(!recipientUser.equals(user)) {
-                    userService.sendEmailAlert(recipientUser);
-                }
-            }
-        }
+// TODO : verifier doublon
+//        for (Recipient recipient : currentWorkflowStep.getRecipients()) {
+//            User recipientUser = recipient.getUser();
+//            if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(User.EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
+//                if(!recipientUser.equals(user)) {
+//                    userService.sendEmailAlert(recipientUser);
+//                }
+//            }
+//        }
         logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber());
     }
 

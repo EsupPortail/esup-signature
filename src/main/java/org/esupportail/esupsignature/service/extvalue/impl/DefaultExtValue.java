@@ -12,10 +12,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class DefaultExtValue implements ExtValue {
@@ -41,8 +38,13 @@ public class DefaultExtValue implements ExtValue {
 		cal.setTime(date);
 		values.put("day", new SimpleDateFormat("dd").format(date));
 		values.put("month", new SimpleDateFormat("MM").format(date));
+		values.put("year", new SimpleDateFormat("YYYY").format(date));
 		values.put("signDate", new SimpleDateFormat("dd/MM/YYYY").format(date));
+		values.put("date", new SimpleDateFormat("dd/MM/YYYY").format(date));
+		values.put("time", new SimpleDateFormat("HH:mm").format(date));
+		values.put("dateTime", new SimpleDateFormat("dd/MM/YYYY HH:mm").format(date));
 		values.put("currentUser", user.getFirstname() + " " + user.getName());
+		values.put("stepUsers", Arrays.asList(""));
 		return values;
 	}
 

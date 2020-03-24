@@ -18,7 +18,7 @@ export class PdfViewer {
         pdfjsLib.disableWorker = true;
         pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.js';
         pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
-        this.init();
+        this.initListeners();
     }
 
     addEventListener(name, handler) {
@@ -50,7 +50,7 @@ export class PdfViewer {
         }
     };
 
-    init() {
+    initListeners() {
         document.getElementById('prev').addEventListener('click', e => this.prevPage());
         document.getElementById('next').addEventListener('click', e => this.nextPage());
         document.getElementById('zoomin').addEventListener('click', e => this.zoomIn());
@@ -117,7 +117,6 @@ export class PdfViewer {
                 this.page.getAnnotations().then(items => this.renderPdfForm(items));
             }
         }
-
         this.canvas.style.width = Math.round(this.pdfPageView.viewport.width) +"px";
         this.canvas.style.height = Math.round(this.pdfPageView.viewport.height) + "px";
         this.fireEvent('render', ['end']);
@@ -168,15 +167,15 @@ export class PdfViewer {
                     inputField.prop('required', false);
                     //inputField.addClass('required-field');
                 } else {
+                    inputField.val(items[i].fieldValue);
+                    if(dataField.defaultValue != null) {
+                        inputField.val(dataField.defaultValue);
+                    }
                     inputField.prop('disabled', false);
                     if (dataField.required) {
                         inputField.prop('required', true);
                         inputField.addClass('required-field');
                     }
-                }
-                inputField.val(items[i].fieldValue);
-                if(dataField.defaultValue != null) {
-                    inputField.val(dataField.defaultValue);
                 }
                 if (dataField.type === "radio") {
                     inputField.val(items[i].buttonValue);
@@ -245,15 +244,23 @@ export class PdfViewer {
             } else {
                 let inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
                 if(inputField.length > 0) {
-                    if (dataField.required) {
-                        inputField.prop('required', true);
-                        inputField.addClass('required-field');
+                    if(!dataField.stepNumbers.includes("" + this.currentStepNumber)) {
+                        inputField.prop('disabled', true);
+                        inputField.prop('required', false);
+                        //inputField.addClass('required-field');
+                    } else {
+                        inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
+                        inputField.val(items[i].fieldValue);
+                        if (dataField != null) {
+                            inputField.val(dataField.defaultValue);
+                        }
+                        inputField.prop('disabled', false);
+                        if (dataField.required) {
+                            inputField.prop('required', true);
+                            inputField.addClass('required-field');
+                        }
                     }
-                    inputField.attr('name', items[i].fieldName);
-                    inputField.val(items[i].fieldValue);
-                    if (dataField != null) {
-                        inputField.val(dataField.defaultValue);
-                    }
+
                 }
             }
             console.debug(">>End compute field");
@@ -356,6 +363,13 @@ export class PdfViewer {
 
     setDataFields(dataFields) {
         this.dataFields = dataFields;
+    }
+
+    printPdf() {
+        this.pdfPageView.eventBus.dispatch('print', {
+            source: self
+        });
+
     }
 
 }
