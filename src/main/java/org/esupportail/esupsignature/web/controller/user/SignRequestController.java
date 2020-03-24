@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,6 +85,9 @@ public class SignRequestController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private PreFillService preFillService;
 
     @Resource
     private SignRequestRepository signRequestRepository;
@@ -186,7 +190,7 @@ public class SignRequestController {
                 for (Field field : fields) {
                     field.setDefaultValue(data.getDatas().get(field.getName()));
                 }
-                model.addAttribute("fields", fields);
+                model.addAttribute("fields", preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user));
             }
         }
         if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {

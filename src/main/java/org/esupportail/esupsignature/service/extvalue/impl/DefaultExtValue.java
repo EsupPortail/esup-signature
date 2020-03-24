@@ -41,6 +41,7 @@ public class DefaultExtValue implements ExtValue {
 		cal.setTime(date);
 		values.put("day", new SimpleDateFormat("dd").format(date));
 		values.put("month", new SimpleDateFormat("MM").format(date));
+		values.put("signDate", new SimpleDateFormat("dd/MM/YYYY").format(date));
 		values.put("currentUser", user.getFirstname() + " " + user.getName());
 		return values;
 	}

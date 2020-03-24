@@ -22,7 +22,7 @@ public class PreFillService {
 		return null;
 	}
 	
-	public List<Field> getPreFillServiceByName(String name, List<Field> fields, User user) {
+	public List<Field> getPreFilledFieldsByServiceName(String name, List<Field> fields, User user) {
 		if(name == null || name.isEmpty()) {
 			name = "default";
 		}

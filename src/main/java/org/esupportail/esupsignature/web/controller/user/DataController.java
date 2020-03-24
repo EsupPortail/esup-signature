@@ -130,7 +130,7 @@ public class DataController {
 			if (form.getPreFillType() != null && !form.getPreFillType().isEmpty()) {
 				Integer finalPage = page;
 				List<Field> fields = form.getFields().stream().filter(field -> field.getPage() == finalPage).collect(Collectors.toList());
-				model.addAttribute("fields", preFillService.getPreFillServiceByName(form.getPreFillType(), fields, user));
+				model.addAttribute("fields", preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), fields, user));
 			} else {
 				model.addAttribute("fields", form.getFields());
 			}
