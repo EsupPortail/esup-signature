@@ -62,8 +62,11 @@ export class SignPosition {
     pointIt(e) {
         if(this.pointItEnable) {
             this.pointItMove = true;
-            this.posX = e.offsetX ? (e.offsetX) : e.clientX;
-            this.posY = e.offsetY ? (e.offsetY) : e.clientY;
+            var offset = $("#pdf").offset();
+            this.posX = e.pageX - offset.left;
+            this.posY = e.pageY - offset.top;
+            // this.posX = e.offsetX ? (e.offsetX) : e.clientX;
+            // this.posY = e.offsetY ? (e.offsetY) : e.clientY;
             this.updateCrossPosition();
         }
     }
@@ -87,8 +90,8 @@ export class SignPosition {
             e.preventDefault();
             this.pointItMove = true;
             console.log("touch");
-            var rect = pdf.getBoundingClientRect();
-            var touch = e.touches[0] || e.changedTouches[0];
+            let rect = pdf.getBoundingClientRect();
+            let touch = e.touches[0] || e.changedTouches[0];
             this.posX = touch.pageX;
             this.posY = touch.pageY - (rect.top + window.scrollY);
             this.updateCrossPosition();

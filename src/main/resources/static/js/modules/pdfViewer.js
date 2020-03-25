@@ -145,6 +145,7 @@ export class PdfViewer {
                 //signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
                 signField.addClass("sign-field");
                 signField.addClass("d-none");
+                signField.parent().remove();
             }
             if(items[i].fieldType === undefined && items[i].title.toLowerCase().startsWith('visa')) {
                 console.debug("found sign field");
@@ -155,7 +156,9 @@ export class PdfViewer {
                 //signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
                 signField.addClass("sign-field");
                 signField.addClass("d-none");
+                signField.parent().remove();
             }
+
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField != null && dataField != null) {
                 console.debug(items[i]);
@@ -165,7 +168,8 @@ export class PdfViewer {
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber)) {
                     inputField.prop('disabled', true);
                     inputField.prop('required', false);
-                    inputField.addClass('disabled-field');
+                    inputField.addClass('disabled-field disable-selection');
+                    inputField.parent().addClass('disable-div-selection');
                 } else {
                     inputField.val(items[i].fieldValue);
                     if(dataField.defaultValue != null) {

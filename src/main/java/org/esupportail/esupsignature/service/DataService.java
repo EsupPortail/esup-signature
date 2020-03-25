@@ -96,7 +96,10 @@ public class DataService {
 			String targetUrl = String.join(",", targetEmails);
 			userPropertieService.createTargetPropertie(user, targetUrl, form);
 		}
-		String name = form.getName().replaceAll("[\\\\/:*?\"<>|]", "-") + "_" + data.getName().replaceAll("[\\\\/:*?\"<>|]", "-");
+		String name = form.getName().replaceAll("[\\\\/:*?\"<>|]", "-");
+		if(!data.getName().isEmpty()) {
+			name += "_" + data.getName().replaceAll("[\\\\/:*?\"<>|]", "-");
+		}
 		String signBookName = signBookService.generateName(name, user);
 		SignBook signBook = signBookService.createSignBook(signBookName, user, false);
 		SignRequest signRequest = signRequestService.createSignRequest(name, user);

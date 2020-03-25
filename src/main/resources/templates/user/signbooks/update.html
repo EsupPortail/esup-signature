@@ -13,7 +13,7 @@
                     <div th:if="${(signBook.status.name() == 'draft' || signBook.status.name() == 'completed')}">
                         <div th:if="${signBook.signRequests.size() > 0 && signBook.workflowSteps.size() > 0}">
                             <th:block th:if="${signBook.workflowSteps.get(0).recipients.size() > 0}">
-                                <button title="Lancer la procedure de signature" type="button" class="mb-1 col-12 btn btn-success text-left" data-toggle="modal" data-target="#sendModal">
+                                <button title="Lancer la procédure de signature" type="button" class="mb-1 col-12 btn btn-success text-left" data-toggle="modal" data-target="#sendModal">
                                     <i class="fa fa-paper-plane " aria-hidden="true"></i> <span class="sidebar-label">Lancer la procedure de signature</span>
                                 </button>
                             </th:block>
@@ -178,7 +178,7 @@
         <div class="modal-content">
             <form th:action="'/user/signbooks/pending/' + ${id}">
                 <div class="modal-header">
-                    <h3 class="modal-title">Demarrer le circuit</h3>
+                    <h3 class="modal-title">Démarrer le circuit</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
                     </button>

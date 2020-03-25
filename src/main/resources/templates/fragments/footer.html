@@ -3,7 +3,7 @@
 <div th:fragment="footer" id="footer">
 	<div th:replace="fragments/message :: message"></div>
 	<footer  class="footer bg-secondary fixed-bottom text-center">
-		<span class="text-white">Université de Rouen - 2019</span>
+		<span class="text-white">Université de Rouen Normandie - <span th:text="${#dates.year(#dates.createNow())}"></span></span>
 		<a rel="noreferrer" aria-label="Guide utilisateur" target="_blank" style="background-color: #e30037;" class="btn btn-sm text-white float-right mt-1 mr-1" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>
 	</footer>
 </div>

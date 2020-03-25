@@ -292,8 +292,10 @@ public class SignBookService {
         signBookName += "_";
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
         signBookName += format.format(new Date());
-        signBookName += "_";
-        signBookName += name.replaceAll("[\\\\/:*?\"<>|]", "-");
+        if(!name.isEmpty()) {
+            signBookName += "_";
+            signBookName += name.replaceAll("[\\\\/:*?\"<>|]", "-");
+        }
         return signBookName;
     }
 }

@@ -36,7 +36,10 @@ export class WorkspacePdf {
         window.addEventListener("wheel", e => this.computeWhellEvent(e));
 
         this.pdfViewer.canvas.addEventListener('mouseup', e => this.clickAction());
-        this.pdfViewer.canvas.addEventListener('mousemove', e => this.moveAction(e));
+
+        // this.pdfViewer.canvas.addEventListener('mousemove', e => this.moveAction(e));
+        $(document).mousemove(e => this.moveAction(e));
+
         this.postits.forEach((postit, index) => {
             let postitButton = $('#postit' + postit.id);
             postitButton.on('click', e => this.focusComment(postit));

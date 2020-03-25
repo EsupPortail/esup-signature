@@ -16,7 +16,7 @@
         <i class="fas fa-comment"></i> Mode commentaires
         <span th:if="${postits.size() > 0}" class="float-right badge badge-warning mt-1" th:text="${postits.size()}"></span>
     </button>
-    <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
+<!--    <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>-->
     <div id="signTools" th:if="${documentType == 'pdf' && signRequest.signable}" class="d-none">
         <div class="alert alert-success mb-1">
             <p>Modifier la signature</p>
@@ -49,7 +49,7 @@
         </div>
     </div>
     <th:block th:if="${signRequest.parentSignBook != null}">
-        <div th:replace="user/signrequests/cards/stepscard :: stepscard"></div>
+        <div th:replace="user/signrequests/cards/stepscard"></div>
     </th:block>
     </div>
 </nav>
