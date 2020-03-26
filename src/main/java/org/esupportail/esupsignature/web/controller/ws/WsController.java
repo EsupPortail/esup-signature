@@ -165,7 +165,7 @@ public class WsController {
         JsonWorkflowStep jsonWorkflowStep = mapper.readValue(jsonWorkflowStepString, JsonWorkflowStep.class);
         int level = jsonWorkflowStep.getSignLevel();
         signType = signRequestService.getSignTypeByLevel(level);
-        WorkflowStep workflowStep = workflowService.createWorkflowStep("", jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientEmails().stream().toArray(String[]::new));
+        WorkflowStep workflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientEmails().stream().toArray(String[]::new));
         signBook.getWorkflowSteps().add(workflowStep);
         return new ResponseEntity(HttpStatus.OK);
     }

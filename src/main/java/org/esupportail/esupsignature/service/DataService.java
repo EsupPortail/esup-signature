@@ -88,6 +88,9 @@ public class DataService {
 	}
 
 	public SignBook sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user) throws EsupSignatureException, EsupSignatureIOException {
+		if(recipientEmails == null) {
+			recipientEmails = new ArrayList<>();
+		}
 		Form form = data.getForm();
 		if(form.getTargetType().equals(DocumentIOType.mail)) {
 			if(targetEmails == null || targetEmails.size() == 0) {
@@ -136,15 +139,17 @@ public class DataService {
 			List<WorkflowStep> workflowSteps = workflow.generateWorkflowSteps(user, data, recipientEmails);
 			defaultWorkflow.initWorkflowSteps();
 			defaultWorkflow.getWorkflowSteps().addAll(workflowSteps);
-			int step = 1;
-			for(WorkflowStep workflowStep: workflowSteps)  {
-				for(Recipient recipient : workflowStep.getRecipients()) {
-					recipientRepository.save(recipient);
-				}
-				workflowStepRepository.save(workflowStep);
-				userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
-				step++;
-			}
+//			if(recipientEmails != null) {
+//				int step = 1;
+//				for (WorkflowStep workflowStep : workflowSteps) {
+//					for (Recipient recipient : workflowStep.getRecipients()) {
+//						recipientRepository.save(recipient);
+//					}
+//					workflowStepRepository.save(workflowStep);
+//					userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
+//					step++;
+//				}
+//			}
 			return defaultWorkflow;
 		} catch (Exception e) {
 			logger.error("bean cloning fail", e);

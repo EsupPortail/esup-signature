@@ -74,6 +74,7 @@ public class WorkflowService {
             WorkflowStep workflowStep = new WorkflowStep();
             workflowStep.setName("Ma signature");
             workflowStep.setSignType(SignType.certSign);
+            workflowStep.setParentType("System");
             Recipient recipient = recipientService.createRecipient(workflowStep.getId(), creator);
             recipientRepository.save(recipient);
             workflowStep.getRecipients().add(recipient);
@@ -219,11 +220,13 @@ public class WorkflowService {
         }
     }
 
-    public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, String... recipientEmails) {
+    public WorkflowStep createWorkflowStep(String name, String parentType, Long parentId, Boolean allSignToComplete, SignType signType, String... recipientEmails) {
         WorkflowStep workflowStep = new WorkflowStep();
         if(name != null) {
             workflowStep.setName(name);
         }
+        workflowStep.setParentType(parentType);
+        workflowStep.setParentId(parentId);
         if(allSignToComplete ==null) {
             workflowStep.setAllSignToComplete(false);
         } else {

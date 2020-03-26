@@ -183,7 +183,7 @@ public class WorkflowManagerController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/admin/workflows/" + id;
 		}
-		WorkflowStep workflowStep = workflowService.createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+		WorkflowStep workflowStep = workflowService.createWorkflowStep("", "workflow", workflow.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
 		workflow.getWorkflowSteps().add(workflowStep);
 		return "redirect:/admin/workflows/" + id;
 	}

@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.WorkflowService;
@@ -60,14 +61,14 @@ public class MailService {
     @Autowired
     ResourceLoader resourceLoader;
 
-    @Autowired
+    @Resource
     private UserRepository userRepository;
 
-    @Autowired
+    @Resource
     private TemplateEngine templateEngine;
 
     @Resource
-    private SignBookService signBookService;
+    private UserShareRepository userShareRepository;
 
     @Resource
     private LogRepository logRepository;
@@ -76,9 +77,6 @@ public class MailService {
     private SignRequestService signRequestService;
 
     @Resource
-    private WorkflowService workflowService;
-
-    @Autowired
     private FileService fileService;
 
     @Value("${root.url}")
@@ -124,6 +122,7 @@ public class MailService {
         List<String> toEmails = new ArrayList<>();
         toEmails.add(user.getEmail());
         for(Recipient recipient : signBook.getWorkflowSteps().get(signBook.getWorkflowSteps().size() - 2).getRecipients()) {
+            //TODO search shares
             toEmails.add(recipient.getUser().getEmail());
         }
         try {
@@ -147,9 +146,9 @@ public class MailService {
         ctx.setVariable("signRequests", signRequests);
         ctx.setVariable("rootUrl", rootUrl);
         for(SignRequest signRequest : signRequests) {
-            User user = userRepository.findByEmail(recipientEmail).get(0);
-            signRequest.setCreator(user);
+            signRequest.setCreator(userRepository.findByEppn(signRequest.getCreateBy()).get(0));
         }
+        User user = userRepository.findByEmail(recipientEmail).get(0);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;
@@ -157,7 +156,16 @@ public class MailService {
             message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             message.setSubject("Esup-Signature : nouveau document à signer");
             message.setFrom(mailConfig.getMailFrom());
-            message.setTo(recipientEmail);
+            List<String> toEmails = new ArrayList<>();
+            toEmails.add(recipientEmail);
+            for(UserShare userShare : userShareRepository.findByUser(user)) {
+                if(userShare.getShareType().equals(UserShare.ShareType.sign)) {
+                    for(User toUser : userShare.getToUsers()) {
+                        toEmails.add(toUser.getEmail());
+                    }
+                }
+            }
+            message.setTo(toEmails.toArray(String[]::new));
             String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
             message.setText(htmlContent, true);
             mailSender.send(mimeMessage);

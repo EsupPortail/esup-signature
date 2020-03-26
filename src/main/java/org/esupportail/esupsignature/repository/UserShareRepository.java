@@ -11,4 +11,5 @@ public interface UserShareRepository extends CrudRepository<UserShare, Long>  {
 	List<UserShare> findByToUsers(List<User> toUsers);
 	List<UserShare> findByUserAndToUsers(User user, List<User> toUsers);
 	List<UserShare> findByUserAndToUsersAndShareType(User user, List<User> toUsers, UserShare.ShareType shareType);
+	List<UserShare> findByToUsersAndShareType(List<User> toUsers, UserShare.ShareType shareType);
 }

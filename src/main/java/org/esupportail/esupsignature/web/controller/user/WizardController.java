@@ -141,7 +141,7 @@ public class WizardController {
         if(signBook.getCreateBy().equals(user.getEppn())) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
                 logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
-                WorkflowStep workflowStep = workflowService.createWorkflowStep("", allSignToComplete, signType, recipientsEmail);
+                WorkflowStep workflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, signType, recipientsEmail);
                 signBook.getWorkflowSteps().add(workflowStep);
                 if (addNew != null) {
                     model.addAttribute("workflowStepForm", true);

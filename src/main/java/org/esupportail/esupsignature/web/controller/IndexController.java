@@ -17,8 +17,10 @@
  */
 package org.esupportail.esupsignature.web.controller;
 
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.DataRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
@@ -26,6 +28,7 @@ import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -33,8 +36,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RequestMapping("/")
@@ -56,6 +61,12 @@ public class IndexController {
 	
 	@Resource
 	private UserService userService;
+
+	@Resource
+	private SignRequestService signRequestService;
+
+	@Resource
+	private SignRequestRepository signRequestRepository;
 
 	@ModelAttribute("user")
 	public User getUser() {
@@ -84,6 +95,24 @@ public class IndexController {
 	@RequestMapping("/login/**")
 	public String loginRedirection() {
 		return "redirect:/";			
+	}
+
+	@RequestMapping("/denied/**")
+	public String denied(HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+		String forwardUri = (String) httpServletRequest.getAttribute("javax.servlet.forward.request_uri");
+		String[] uriParams = forwardUri.split("/");
+		if(uriParams.length == 4 && uriParams[1].equals("user") && uriParams[2].equals("signrequests")) {
+			SignRequest signRequest = signRequestRepository.findById(Long.valueOf(uriParams[3])).get();
+			User suUser = signRequestService.checkShare(signRequest);
+			if(suUser != null) {
+				if(userService.switchUser(suUser.getEppn())) {
+					redirectAttributes.addFlashAttribute("messageSuccess", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName());
+				}
+				return "redirect:"+ forwardUri;
+			}
+		}
+		//TODO check shares
+		return "denied";
 	}
 
 }

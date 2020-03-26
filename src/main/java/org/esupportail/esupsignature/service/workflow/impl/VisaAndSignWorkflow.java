@@ -54,17 +54,20 @@ public class VisaAndSignWorkflow extends DefaultWorkflow {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         //STEP 1
         WorkflowStep workflowStep1 = new WorkflowStep();
-        workflowStep1.setName("Supérieur hiérarchique");
+        workflowStep1.setName("Directeur de composante");
         workflowStep1.setStepNumber(1);
         workflowStep1.getRecipients().add(recipientService.createRecipient(null, user));
-        workflowStep1.setDescription("Visa de votre supérieur hiérarchique");
+        workflowStep1.setDescription("Visa de votre directeur de composante");
         workflowStep1.setSignType(SignType.visa);
         if(data != null) {
+            workflowStep1.setParentType("data");
+            workflowStep1.setParentId(data.getId());
             workflowStep1.setRecipients(getFavoriteRecipientEmail(1, data.getForm(), recipentEmailsStep, user));
         } else {
             workflowStep1.getRecipients().add(recipientService.createRecipient(null, userService.getGenericUser("Utilisateur issue des favoris", "")));
         }
         workflowStep1.setChangeable(true);
+        workflowStep1.setMaxRecipients(1);
         workflowSteps.add(workflowStep1);
         //STEP 2
         WorkflowStep workflowStep2 = new WorkflowStep();
@@ -74,6 +77,8 @@ public class VisaAndSignWorkflow extends DefaultWorkflow {
         workflowStep2.setDescription("Signature du Président de l’université");
         List<Recipient> recipientsStep2 = new ArrayList<>();
         if(data != null) {
+            workflowStep2.setParentType("data");
+            workflowStep2.setParentId(data.getId());
             recipientsStep2.add(recipientService.createRecipient(data.getId(), userService.getUserByEmail("david.lemaignent@univ-rouen.fr")));
         } else {
             recipientsStep2.add(recipientService.createRecipient(null, userService.getGenericUser("david.lemaignent@univ-rouen.fr", "")));

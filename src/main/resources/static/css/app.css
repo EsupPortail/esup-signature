@@ -909,6 +909,11 @@ float:left;
     padding: 0 !important;
 }
 
+.textWidgetAnnotation textarea {
+    font-size: 11px !important;
+    padding: 0 !important;
+}
+
 .sign-field {
     background-color: rgba(0, 255, 0, .5);
     cursor: default;

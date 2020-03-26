@@ -158,7 +158,7 @@ public class SignBookController {
         User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         if (signBookService.checkUserViewRights(user, signBook)) {
-            WorkflowStep workflowStep = workflowService.createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+            WorkflowStep workflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
             signBook.getWorkflowSteps().add(workflowStep);
         }
         return "redirect:/user/signbooks/" + id + "/?form";

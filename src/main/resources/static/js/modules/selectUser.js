@@ -1,11 +1,15 @@
 export default class SelectUser {
 
-    constructor(selectName, valuePrefix) {
+    constructor(selectName, valuePrefix, limit) {
         this.slimSelect = null;
         this.selectField = $("#" + selectName);
         console.info("Enable slim-select for " + selectName);
         if(valuePrefix == null) {
             valuePrefix = "";
+        }
+        this.limit = 99;
+        if(limit != null) {
+            this.limit = limit;
         }
         this.createUserSelect(selectName, valuePrefix);
         this.selectField.addClass("slim-select-hack");
@@ -20,6 +24,7 @@ export default class SelectUser {
             searchHighlight: false,
             hideSelectedOption: true,
             closeOnSelect: true,
+            limit: this.limit,
             searchFilter: (option, search) => {
                 return true;
             },

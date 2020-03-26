@@ -160,12 +160,17 @@ export class PdfViewer {
             }
 
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
-            if(inputField != null && dataField != null) {
+            if(inputField.length && dataField != null) {
                 console.debug(items[i]);
                 console.debug(inputField);
                 console.debug(dataField);
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber)) {
+                    //TODO debug
+                    inputField.val(items[i].fieldValue);
+                    if(dataField.defaultValue != null) {
+                        inputField.val(dataField.defaultValue);
+                    }
                     inputField.prop('disabled', true);
                     inputField.prop('required', false);
                     inputField.addClass('disabled-field disable-selection');
@@ -251,7 +256,8 @@ export class PdfViewer {
                     if(!dataField.stepNumbers.includes("" + this.currentStepNumber)) {
                         inputField.prop('disabled', true);
                         inputField.prop('required', false);
-                        //inputField.addClass('required-field');
+                        inputField.addClass('disabled-field disable-selection');
+                        inputField.parent().addClass('disable-div-selection');
                     } else {
                         inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                         inputField.val(items[i].fieldValue);

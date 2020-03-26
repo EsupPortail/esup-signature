@@ -103,6 +103,12 @@ public class SignRequestService {
 	@Resource
 	private MailService mailService;
 
+	@Resource
+	private UserShareRepository userShareRepository;
+
+	@Resource
+	private DataRepository dataRepository;
+
 	private String step = "";
 
 	public List<SignRequest> getToSignRequests(User user) {
@@ -714,4 +720,23 @@ public class SignRequestService {
 		}
 		return signType;
 	}
+
+	public User checkShare(SignRequest signRequest) {
+		SignBook signBook = signRequest.getParentSignBook();
+		if(signBook != null) {
+			User toUser = userService.getUserFromAuthentication();
+			List<UserShare> userShares = userShareRepository.findByToUsersAndShareType(Collections.singletonList(toUser), UserShare.ShareType.sign);
+			Data data = dataRepository.findBySignBook(signBook).get(0);
+			if(data != null) {
+				for (UserShare userShare : userShares) {
+					if (userShare.getForm() != null && userShare.getForm().equals(data.getForm()) && checkUserSignRights(userShare.getUser(), signRequest)) {
+						return userShare.getUser();
+					}
+				}
+			}
+			//TODO share for workflows
+		}
+		return null;
+	}
+
 }
