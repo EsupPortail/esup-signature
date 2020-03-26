@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
@@ -302,7 +303,7 @@ public class UserService {
 		return false;
 	}
 
-	public Boolean checkServiceShare(UserShare.ShareType shareType, String formName) {
+	public Boolean checkServiceShare(UserShare.ShareType shareType, Form form) {
 		User fromUser = getCurrentUser();
 		User toUser = getUserFromAuthentication();
 		if(fromUser.equals(toUser)) {
@@ -313,7 +314,7 @@ public class UserService {
 			return true;
 		}
 		for(UserShare userShare : userShares) {
-			if(userShare.getForm().getName().equals(formName)) {
+			if(userShare.getForm().equals(form)) {
 				return true;
 			}
 		}

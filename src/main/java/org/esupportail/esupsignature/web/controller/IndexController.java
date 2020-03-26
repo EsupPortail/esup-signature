@@ -106,7 +106,7 @@ public class IndexController {
 			User suUser = signRequestService.checkShare(signRequest);
 			if(suUser != null) {
 				if(userService.switchUser(suUser.getEppn())) {
-					redirectAttributes.addFlashAttribute("messageSuccess", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName());
+					redirectAttributes.addFlashAttribute("messageWarning", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName());
 				}
 				return "redirect:"+ forwardUri;
 			}

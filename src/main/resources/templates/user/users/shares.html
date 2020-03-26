@@ -24,6 +24,7 @@
                     <table class="table table-hover table-striped table-borderless">
                         <thead class="thead-dark">
                         <tr>
+                            <th>Type</th>
                             <th>Service</th>
                             <th>Utilisateurs</th>
                             <th>Date de début</th>
@@ -35,8 +36,11 @@
                         <th:block th:each="userShare : ${userShares}">
                             <tr>
                                 <td>
-                                    <span th:if="${userShare.shareType.name() == 'create'}" th:text="${userShare.form.name}"></span>
                                     <span th:if="${userShare.shareType.name() == 'sign'}">Signature</span>
+                                    <span th:if="${userShare.shareType.name() == 'create'}">Creation</span>
+                                </td>
+                                <td>
+                                    <span th:text="${userShare.form.name}"></span>
                                 </td>
                                 <td>
                                     <th:block th:each="toUser : ${userShare.toUsers}">
@@ -105,13 +109,20 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
+                <form id="shareForm" th:action="'/user/users/add-share'" method="post">
                 <div class="modal-body">
-                    <form id="shareForm" th:action="'/user/users/add-share'" method="post">
                         <div class="form-group">
-                            <label for="selectForm">Service à déléguer</label>
-                            <select id="selectForm" class="slim-select" name="formId">
-                                <option></option>
+                            <label for="selectType">Type de délégation</label>
+                            <select id="selectType" class="slim-select" name="type" required>
+                                <option value="" disabled selected>Choisir un type</option>
                                 <option value="sign">Signature</option>
+                                <option value="create">Création</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="selectService">Service à déléguer</label>
+                            <select id="selectService" class="slim-select" name="service" required>
+                                <option value="" disabled selected>Choisir un service</option>
                                 <th:block th:each="form : ${forms}">
                                     <option th:value="${form.id}" th:text="${form.name}"></option>
                                 </th:block>
@@ -119,7 +130,7 @@
                         </div>
                         <div class="form-group">
                             <label for="selectUsers">Choix des utilisateurs</label>
-                            <select id="selectUsers" class="select-users" name="userIds" multiple="multiple"></select>
+                            <select id="selectUsers" class="select-users" name="userIds" multiple="multiple" required></select>
                         </div>
                         <div class="form-group">
                             <label for="selectUsers">Date de début</label>
@@ -129,13 +140,12 @@
                             <label for="selectUsers">Date de fin</label>
                             <input type="text" name="endDate" class="form-control datepicker">
                         </div>
-                    </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-dismiss="modal">Annuler</button>
-                    <input type="button" onclick="document.getElementById('shareForm').submit();"
-                           class="btn btn-success" value="Valider">
+                    <input type="submit" class="btn btn-success" value="Valider">
                 </div>
+                </form>
             </div>
         </div>
     </div>

@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface FormRepositoryCustom {
 
-    List<Form> findFormByUser(User user);
+    List<Form> findAutorizedFormByUser(User user);
 
 
 }

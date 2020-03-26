@@ -120,9 +120,9 @@ public class DataController {
 	@GetMapping("datas/form/{id}")
 	public String createData(@PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
 		User user = userService.getCurrentUser();
-		List<Form> autorizedForms = formRepository.findFormByUser(user);
+		List<Form> autorizedForms = formRepository.findAutorizedFormByUser(user);
 		Form form = formService.getFormById(id);
-		if(autorizedForms.contains(form) && userService.checkServiceShare(UserShare.ShareType.create, form.getName())) {
+		if(autorizedForms.contains(form) && userService.checkServiceShare(UserShare.ShareType.create, form)) {
 			if (page == null) {
 				page = 1;
 			}

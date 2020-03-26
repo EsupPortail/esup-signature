@@ -11,6 +11,5 @@ public interface FormRepository extends CrudRepository<Form, Long>, FormReposito
 	Long countById(Long id);
 	List<Form> findByDocument(Document document);
 	List<Form> findFormByNameAndActiveVersion(String name, Boolean activeVersion);
-	List<Form> findFormByUser(User user);
 
 }

@@ -20,7 +20,7 @@ public class FormRepositoryImpl implements FormRepositoryCustom {
 	private EntityManager entityManager;
 
 	@Override
-	public List<Form> findFormByUser(User user) {
+	public List<Form> findAutorizedFormByUser(User user) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Form> query = criteriaBuilder.createQuery(Form.class);
         Root<Form> queryRoot = query.from(Form.class);

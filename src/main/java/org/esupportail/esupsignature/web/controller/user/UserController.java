@@ -181,16 +181,12 @@ public class UserController {
 	}
 
 	@PostMapping("/add-share")
-	public String addShare(@RequestParam("formId") String formId, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) {
+	public String addShare(@RequestParam("service") Long service, @RequestParam("type") String type, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) {
 		User user = userService.getUserFromAuthentication();
 		UserShare userShare = new UserShare();
 		userShare.setUser(user);
-		if(formId.equals("sign")) {
-			userShare.setShareType(UserShare.ShareType.sign);
-		} else {
-			userShare.setShareType(UserShare.ShareType.create);
-			userShare.setForm(formRepository.findById(Long.valueOf(formId)).get());
-		}
+		userShare.setShareType(UserShare.ShareType.valueOf(type));
+		userShare.setForm(formRepository.findById(service).get());
 		for (String userEmail : userEmails) {
 			userShare.getToUsers().add(userRepository.findByEmail(userEmail).get(0));
 		}
