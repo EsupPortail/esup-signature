@@ -37,13 +37,13 @@
                             <a role="button" title="Démarrer la procédure" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-lg btn-floating bg-primary">
                                 <i class="fas fa-play"></i></a>
                         </li>
-                        <li>
-                            <a target="_blank" title="Exporter en PDF" th:if="${data.status.name() == 'draft'}"
-                               th:href="'/user/datas/' + ${data.id} + '/export-pdf'"
-                               class="btn-lg btn-floating bg-danger">
-                                <i class="fas fa-file-pdf"></i>
-                            </a>
-                        </li>
+<!--                        <li>-->
+<!--                            <a target="_blank" title="Exporter en PDF" th:if="${data.status.name() == 'draft'}"-->
+<!--                               th:href="'/user/datas/' + ${data.id} + '/export-pdf'"-->
+<!--                               class="btn-lg btn-floating bg-danger">-->
+<!--                                <i class="fas fa-file-pdf"></i>-->
+<!--                            </a>-->
+<!--                        </li>-->
                         <li>
                             <a th:unless="${form.needName}" onclick="return false;" id="saveButton" href="#" title="Enregistrer les modifications" class="btn-floating btn-lg bg-success wave-effect">
                                 <i class="fas fa-save"></i><br/>
