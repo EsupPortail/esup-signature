@@ -15,7 +15,17 @@
     if(signable && currentSignType === 'nexuSign') {
         new Nexu([[${nexuUrl}]], [[${nexuVersion}]], null);
     }
-    let signUi = new SignUi([[${signRequest.id}]], [[${signRequest.getCurrentSignRequestParams()}]], currentSignType, 100, 75, signable, [[${postits}]], [[${documentType == 'pdf'}]], [[${signRequest.currentStepNumber}]]);
+    let signUi = new SignUi([[${signRequest.id}]],
+        [[${signRequest.getCurrentSignRequestParams()}]],
+        currentSignType,
+        100,
+        75,
+        signable,
+        [[${postits}]],
+        [[${documentType == 'pdf'}]],
+        [[${signRequest.currentStepNumber}]],
+        [[${formRender}]]
+    );
     signUi.workspace.pdfViewer.setDataFields([[${fields}]]);
 </script>
 <main role="main">
@@ -30,7 +40,7 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div id="signButtons" th:if="${signRequest.signable}" class="fixed-action-btn active">
+            <div id="signButtons" th:if="${signRequest.signable}" class="fixed-action-btns active">
                 <ul class="list-unstyled">
                     <li><a role="button" th:if="${currentSignType != 'visa'}" class="btn-floating btn-lg bg-success waves-effect" title="Signer" data-toggle="modal" data-target="#signModal"><i class="fas fa-file-signature"></i></a></li>
                     <li><a role="button" th:unless="${currentSignType != 'visa'}" class="btn-floating btn-lg bg-success waves-effect" title="Viser" data-toggle="modal" data-target="#signModal"><i class="fas fa-check"></i></a></li>
@@ -62,32 +72,49 @@
 <!--                        </button>-->
 <!--                        <div class="border ml-3 mr-3 "></div>-->
                     </th:block>
-                    <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported')}">
-                        <div id="endButtons" class="fixed-action-btn active">
-                            <ul id="endCollapse" class="list-unstyled">
-                                <li>
-                                    <a id="print" class="btn-lg btn-floating bg-primary waves-effect" th:onclick="'printJS({printable:\'/user/signrequests/get-last-file/' + ${id} + '\', type:\'pdf\', showModal:true});'" title="Imprimer le document">
-                                        <i class="fas fa-print"></i>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="btn-lg btn-floating bg-primary waves-effect" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
-                                        <i class="fas fa-download"></i>
-                                    </a>
-                                </li>
-<!--                                <li>-->
-<!--                                    <a title="Export SEDA" class="btn-lg btn-floating bg-primary    waves-effect" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">-->
-<!--                                    <i class="fa fa-file-export"></i>-->
-<!--                                    </a>-->
-<!--                                </li>-->
-<!--                                <li>-->
-<!--                                    <a th:if="${signRequest.status.name() != 'exported'}" class="btn-lg btn-floating bg-primary waves-effect" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">-->
-<!--                                    <i class="fas fa-shield-alt "></i>-->
-<!--                                    </a>-->
-<!--                                </li>-->
-                            </ul>
-                        </div>
-                    </th:block>
+
+                    <div id="openButtons" class="fixed-action-btns active" th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported')}" onmouseover="$('#openButtons').toggleClass('active');" onmouseout="$('#openButtons').toggleClass('active');">
+                        <ul class="list-unstyled">
+                            <li>
+                                <a id="print" class="btn-lg btn-floating bg-primary waves-effect" th:onclick="'printJS({printable:\'/user/signrequests/get-last-file/' + ${id} + '\', type:\'pdf\', showModal:true});'" title="Imprimer le document">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="btn-lg btn-floating bg-primary waves-effect" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+<!--                    <div id="openButtons" class="fixed-action-btn" th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported')}" onmouseover="$('#openButtons').toggleClass('active');" onmouseout="$('#openButtons').toggleClass('active');">-->
+<!--                        <a title="Menu" class="btn-floating btn-lg bg-primary wave-effect">-->
+<!--                            <i class="fas fa-ellipsis-v"></i>-->
+<!--                        </a>-->
+<!--                        <ul class="list-unstyled">-->
+<!--                            <li>-->
+<!--                                <a id="print" class="btn-floating bg-primary waves-effect" th:onclick="'printJS({printable:\'/user/signrequests/get-last-file/' + ${id} + '\', type:\'pdf\', showModal:true});'" title="Imprimer le document">-->
+<!--                                    <i class="fas fa-print"></i>-->
+<!--                                </a>-->
+<!--                            </li>-->
+<!--                            <li>-->
+<!--                                <a class="btn-floating bg-primary waves-effect" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">-->
+<!--                                    <i class="fas fa-download"></i>-->
+<!--                                </a>-->
+<!--                            </li>-->
+<!--                            <li>-->
+<!--                                <a title="Export SEDA" class="btn-floating bg-primary waves-effect" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">-->
+<!--                                <i class="fa fa-file-export"></i>-->
+<!--                                </a>-->
+<!--                            </li>-->
+<!--                            <li>-->
+<!--                                <a th:if="${signRequest.status.name() != 'exported'}" class="btn-floating bg-primary waves-effect" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">-->
+<!--                                <i class="fas fa-shield-alt "></i>-->
+<!--                                </a>-->
+<!--                            </li>-->
+<!--                        </ul>-->
+<!--                    </div>-->
                 </div>
                 <nav class="nav nav-tabs" th:if="${signRequest.parentSignBook != null && signRequest.parentSignBook.signRequests.size() > 1}">
                     <th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">

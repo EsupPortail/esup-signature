@@ -170,7 +170,6 @@ public class SignRequestController {
         User user = userService.getCurrentUser();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         model.addAttribute("signRequest", signRequest);
-
         if (signRequest.getStatus().equals(SignRequestStatus.pending)
                 && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0
                 && signRequestService.needToSign(signRequest, user)
@@ -180,13 +179,21 @@ public class SignRequestController {
             model.addAttribute("nexuUrl", nexuUrl);
             model.addAttribute("nexuVersion", nexuVersion);
             model.addAttribute("baseUrl", baseUrl);
-            if(signRequest.getParentSignBook() != null) {
-                Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
+        }
+        if(signRequest.getParentSignBook() != null) {
+            Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
+            if(data != null) {
                 List<Field> fields = data.getForm().getFields();
-                for (Field field : fields) {
-                    field.setDefaultValue(data.getDatas().get(field.getName()));
+                List<Field> prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
+                for (Field field : prefilledFields) {
+                    if(!field.getStepNumbers().contains(signRequest.getCurrentStepNumber().toString())) {
+                        field.setDefaultValue("");
+                    }
+                    if(data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
+                        field.setDefaultValue(data.getDatas().get(field.getName()));
+                    }
                 }
-                model.addAttribute("fields", preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user));
+                model.addAttribute("fields", prefilledFields);
             }
         }
         if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {

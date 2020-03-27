@@ -69,12 +69,6 @@ export class PdfViewer {
     renderPage(num) {
         console.group("Start render");
         console.debug("render page " + num + ", scale : " + this.scale + ", signable : " + this.signable + " ,step : " + this.currentStepNumber);
-        if(this.currentStepNumber === 0 || this.signable) {
-            this.formRender = true;
-            if (this.dataFields != null) {
-                this.setValues();
-            }
-        }
         if(this.pdfDoc != null) {
             //document.getElementById('signPageNumber').value = num;
             document.getElementById('page_num').textContent = num;
@@ -83,7 +77,6 @@ export class PdfViewer {
                 $('#prev').prop('disabled', true);
                 $('#next').prop('disabled', true);
             }
-            this.pageRendering = true;
             this.pdfDoc.getPage(num).then(page => this.renderTask(page));
             this.pageNum = num;
         }
@@ -106,16 +99,17 @@ export class PdfViewer {
         this.pdfPageView.scale = this.scale;
         this.pdfPageView.rotation = this.rotation;
         this.pdfPageView.setPdfPage(page);
-        if(this.formRender) {
+        if(this.dataFields != null) {
             console.debug("enable render form");
             this.pdfPageView.renderInteractiveForms = true;
             this.pdfPageView.annotationLayerFactory = new pdfjsViewer.DefaultAnnotationLayerFactory();
+        } else {
+            console.debug("disable render form");
+            this.pdfPageView.renderInteractiveForms = false;
         }
         this.pdfPageView.draw();
-        if(this.formRender) {
-            if(this.dataFields != null) {
-                this.page.getAnnotations().then(items => this.renderPdfForm(items));
-            }
+        if(this.dataFields != null) {
+            this.page.getAnnotations().then(items => this.renderPdfForm(items));
         }
         this.canvas.style.width = Math.round(this.pdfPageView.viewport.width) +"px";
         this.canvas.style.height = Math.round(this.pdfPageView.viewport.height) + "px";
@@ -165,7 +159,7 @@ export class PdfViewer {
                 console.debug(inputField);
                 console.debug(dataField);
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
-                if(!dataField.stepNumbers.includes("" + this.currentStepNumber)) {
+                if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
                     //TODO debug
                     inputField.val(items[i].fieldValue);
                     if(dataField.defaultValue != null) {
@@ -176,10 +170,12 @@ export class PdfViewer {
                     inputField.addClass('disabled-field disable-selection');
                     inputField.parent().addClass('disable-div-selection');
                 } else {
-                    inputField.val(items[i].fieldValue);
-                    if(dataField.defaultValue != null) {
-                        inputField.val(dataField.defaultValue);
-                    }
+                    // if(dataField.stepNumbers.includes("" + this.currentStepNumber)) {
+                        inputField.val(items[i].fieldValue);
+                        if(dataField.defaultValue != null) {
+                            inputField.val(dataField.defaultValue);
+                        }
+                    // }
                     inputField.prop('disabled', false);
                     if (dataField.required) {
                         inputField.prop('required', true);
@@ -253,7 +249,7 @@ export class PdfViewer {
             } else {
                 let inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
                 if(inputField.length > 0) {
-                    if(!dataField.stepNumbers.includes("" + this.currentStepNumber)) {
+                    if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
                         inputField.prop('disabled', true);
                         inputField.prop('required', false);
                         inputField.addClass('disabled-field disable-selection');
@@ -277,21 +273,21 @@ export class PdfViewer {
         }
     }
 
-    setValues() {
-        for (let i = 0; i < this.dataFields.length; i++) {
-            if(this.dataFields[i] != null) {
-                let inputField = $('input[name=\'' + this.dataFields[i].name + '\']');
-                if (inputField.val() != null) {
-                    this.dataFields[i].defaultValue = inputField.val();
-                    if(inputField.is(':checkbox')) {
-                        if(!inputField[0].checked) {
-                            this.dataFields[i].defaultValue = 'off';
-                        }
-                    }
-                }
-            }
-        }
-    }
+    // setValues() {
+    //     for (let i = 0; i < this.dataFields.length; i++) {
+    //         if(this.dataFields[i] != null) {
+    //             let inputField = $('input[name=\'' + this.dataFields[i].name + '\']');
+    //             if (inputField.val() != null) {
+    //                 this.dataFields[i].defaultValue = inputField.val();
+    //                 if(inputField.is(':checkbox')) {
+    //                     if(!inputField[0].checked) {
+    //                         this.dataFields[i].defaultValue = 'off';
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     prevPage() {
         if (this.pageNum <= 1) {
@@ -373,6 +369,7 @@ export class PdfViewer {
 
     setDataFields(dataFields) {
         this.dataFields = dataFields;
+        this.formRender = true;
     }
 
     printPdf() {

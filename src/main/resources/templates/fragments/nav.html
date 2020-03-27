@@ -15,13 +15,13 @@
         <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between bg-dark">
             <ul class="navbar-nav" sec:authorize="isAuthenticated()">
                 <li class="nav-item text-white">
-                    <button th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}"
+                    <a th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}"
                             th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
-                            onclick="location.href='/'" class="btn btn-transparent text-left">
+                            href="/" class="btn btn-transparent text-left">
                         <i class="fas fa-home"></i> <span class="nav-item-label d-none d-lg-inline">Accueil</span>
                         <span title="Demandes à signer" th:if="${nbToSign > 0}" class="badge badge-danger mt-1"
                               th:text="${nbToSign}"></span>
-                    </button>
+                    </a>
                 </li>
                 <li class="nav-item text-white">
                     <a th:with="nbDatas=${@dataRepository.findByCreateByAndStatus(user.eppn, 'draft').size()}"
