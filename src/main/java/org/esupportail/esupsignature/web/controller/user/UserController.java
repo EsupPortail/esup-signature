@@ -188,7 +188,7 @@ public class UserController {
 		userShare.setShareType(UserShare.ShareType.valueOf(type));
 		userShare.setForm(formRepository.findById(service).get());
 		for (String userEmail : userEmails) {
-			userShare.getToUsers().add(userRepository.findByEmail(userEmail).get(0));
+			userShare.getToUsers().add(userService.createUser(userEmail));
 		}
 		if (beginDate != null && endDate != null) {
 			try {
