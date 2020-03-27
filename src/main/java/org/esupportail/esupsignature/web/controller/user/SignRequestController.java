@@ -79,10 +79,6 @@ public class SignRequestController {
         return userService.getSuUsers();
     }
 
-    private String progress = "0";
-
-    private SignRequestStatus statusFilter = null;
-
     @Resource
     private UserService userService;
 
@@ -405,13 +401,6 @@ public class SignRequestController {
         return signRequestService.getStep();
     }
 
-    @ResponseBody
-    @GetMapping(value = "/get-progress", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getProgress() {
-        signRequestService.setStep("");
-        return progress;
-    }
-
     @PreAuthorize("@signRequestService.preAuthorizeSign(#id)")
     @GetMapping(value = "/refuse/{id}")
     public String refuse(@PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttrs, HttpServletRequest request) {
@@ -438,7 +427,7 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id)")
-    @RequestMapping(value = "/get-last-file-seda/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/get-last-file-seda/{id}")
     public void getLastFileSeda(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         List<Document> documents = signRequestService.getToSignDocuments(signRequest);
@@ -505,7 +494,7 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id)")
-    @RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/get-last-file/{id}")
     public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         InputStream inputStream = null;
@@ -536,7 +525,7 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
-    @RequestMapping(value = "/change-step-sign-type/{id}/{step}", method = RequestMethod.GET)
+    @GetMapping(value = "/change-step-sign-type/{id}/{step}")
     public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name = "signType") SignType signType) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setSignType(signType);
@@ -544,7 +533,7 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
-    @RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/complete/{id}")
     public String complete(@PathVariable("id") Long id, HttpServletRequest request) throws EsupSignatureException {
         User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
@@ -558,7 +547,7 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
-    @RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/pending/{id}")
     public String pending(@PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
                           HttpServletRequest request) {

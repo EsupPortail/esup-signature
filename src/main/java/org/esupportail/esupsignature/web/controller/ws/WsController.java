@@ -43,7 +43,7 @@ import java.util.List;
 
 @Controller
 @Transactional
-@RequestMapping(value = "/ws/")
+@RequestMapping("/ws/")
 public class WsController {
 
     private static final Logger logger = LoggerFactory.getLogger(WsController.class);
@@ -428,7 +428,7 @@ public class WsController {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/check-sign-book", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/check-sign-book", produces = MediaType.APPLICATION_JSON_VALUE)
     public JsonSignRequestStatus checkSignBook(@RequestParam String fileToken) {
         try {
             if (signRequestRepository.countByToken(fileToken) > 0) {

@@ -98,7 +98,7 @@
             <form th:action="'/user/datas/' + ${data.id} + '/send'" method="post" id="send">
             <div class="modal-body">
                     <p>
-                        <span th:text="'La procedure \'' + ${form.name} + '\' comporte ' + ${steps.size()} + ' étape(s) : '"></span>
+                        La procédure "<span th:text="${form.name}"></span>" comporte <span th:text="${steps.size()}"></span> étape<span th:if="${steps.size()} > 1">s</span>
                     </p>
                     <th:block th:each="step,iterator : ${steps}">
                         <div th:if="${step.changeable == true}" class="form-group">

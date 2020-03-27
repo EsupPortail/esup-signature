@@ -92,12 +92,12 @@ public class IndexController {
 
 	}
 	
-	@RequestMapping("/login/**")
+	@GetMapping("/login/**")
 	public String loginRedirection() {
 		return "redirect:/";			
 	}
 
-	@RequestMapping("/denied/**")
+	@GetMapping("/denied/**")
 	public String denied(HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
 		String forwardUri = (String) httpServletRequest.getAttribute("javax.servlet.forward.request_uri");
 		String[] uriParams = forwardUri.split("/");

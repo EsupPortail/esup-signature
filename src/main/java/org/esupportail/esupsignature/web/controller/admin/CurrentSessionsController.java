@@ -23,6 +23,7 @@ import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -43,21 +44,15 @@ public class CurrentSessionsController {
 	@Qualifier("sessionRegistry")
 	private SessionRegistry sessionRegistry;
 	
-	@RequestMapping
-	public String getCurrentSessions(Model uiModel) throws IOException {
-
-		
-		
+	@GetMapping
+	public String getCurrentSessions(Model uiModel) {
 		List<String> sessions = new Vector<String>();
 		List<Object> principals = sessionRegistry.getAllPrincipals();
-		
 		for(Object p: principals) {
 			sessions.add(((UserDetails) p).getUsername());
 		}
-		
 		uiModel.addAttribute("sessions", sessions);
 		uiModel.addAttribute("active", "sessions");
-		
 		return "admin/currentsessions";
 	}
 

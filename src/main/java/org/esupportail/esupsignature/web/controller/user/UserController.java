@@ -138,7 +138,7 @@ public class UserController {
 		return "redirect:/user/users/?form";
     }
     
-    @RequestMapping(value = "/view-cert", method = RequestMethod.GET, produces = "text/html")
+    @GetMapping(value = "/view-cert")
     public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
 		try {
@@ -151,7 +151,7 @@ public class UserController {
         return "redirect:/user/users/?form";
     }
 
-	@RequestMapping(value="/search-user")
+	@GetMapping(value="/search-user")
 	@ResponseBody
 	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString, @RequestParam(required=false) String ldapTemplateName) {
 		logger.debug("ldap search for : " + searchString);

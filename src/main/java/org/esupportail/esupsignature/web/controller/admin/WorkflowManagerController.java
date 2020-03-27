@@ -115,7 +115,7 @@ public class WorkflowManagerController {
 		return "redirect:/admin/workflows/" + workflow.getId();
 	}
 
-    @RequestMapping(value = "/{id}", params = "form", produces = "text/html")
+    @GetMapping(value = "/{id}", params = "form")
     public String updateForm(@PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
 		User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
@@ -223,7 +223,7 @@ public class WorkflowManagerController {
 	}
 
 
-	@RequestMapping(value = "/toggle-need-all-sign/{id}/{step}", method = RequestMethod.GET)
+	@GetMapping(value = "/toggle-need-all-sign/{id}/{step}")
 	public String toggleNeedAllSign(@PathVariable("id") Long id,@PathVariable("step") Integer step) {
 		User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
@@ -234,7 +234,7 @@ public class WorkflowManagerController {
 		return "redirect:/admin/workflows/";
 	}
 
-	@RequestMapping(value = "/change-step-sign-type/{id}/{step}", method = RequestMethod.GET)
+	@GetMapping(value = "/change-step-sign-type/{id}/{step}")
 	public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
 		User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
@@ -275,7 +275,7 @@ public class WorkflowManagerController {
 		return "redirect:/admin/workflows/" + id;
 	}
 
-	@RequestMapping(value = "/get-files-from-source/{id}", produces = "text/html")
+	@GetMapping(value = "/get-files-from-source/{id}")
 	public String getFileFromSource(@PathVariable("id") Long id, RedirectAttributes redirectAttrs) throws Exception {
 		User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();

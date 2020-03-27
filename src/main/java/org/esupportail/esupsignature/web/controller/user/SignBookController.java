@@ -204,7 +204,7 @@ public class SignBookController {
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
-    @RequestMapping(value = "/send-to-signbook/{id}/{workflowStepId}", method = RequestMethod.GET)
+    @GetMapping(value = "/send-to-signbook/{id}/{workflowStepId}")
     public String sendToSignBook(@PathVariable("id") Long id,
                                  @PathVariable("workflowStepId") Long workflowStepId,
                                  @RequestParam(value = "signBookNames") String[] signBookNames,
@@ -238,7 +238,7 @@ public class SignBookController {
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
-    @RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/pending/{id}")
     public String pending(@PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
                           HttpServletRequest request) throws EsupSignatureIOException {
@@ -252,7 +252,7 @@ public class SignBookController {
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
     }
 
-    @RequestMapping(value = "/scan-pdf-sign/{id}", method = RequestMethod.GET)
+    @GetMapping(value = "/scan-pdf-sign/{id}")
     public String scanPdfSign(@PathVariable("id") Long id,
                           RedirectAttributes redirectAttrs, HttpServletRequest request) throws IOException {
         User user = userService.getCurrentUser();

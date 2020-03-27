@@ -114,9 +114,6 @@ export class SignUi {
 
     reset() {
         this.percent = 0;
-        let xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("GET", "/user/signrequests/get-progress", true);
-        xmlHttp.send(null);
         this.passwordError.style.display = "none";
         document.getElementById("signError").style.display = "none";
         document.getElementById("closeModal").style.display = "none";

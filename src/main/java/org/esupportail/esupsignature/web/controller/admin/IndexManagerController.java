@@ -20,12 +20,13 @@ package org.esupportail.esupsignature.web.controller.admin;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.Resource;
 
-@RequestMapping("/admin")
+@RequestMapping("/manager")
 @Controller
 public class IndexManagerController {
 
@@ -42,7 +43,7 @@ public class IndexManagerController {
 	@Resource
 	private UserService userService;
 	
-	@RequestMapping
+	@GetMapping
 	public String index() {
 		return "redirect:/admin/workflows";
 	}

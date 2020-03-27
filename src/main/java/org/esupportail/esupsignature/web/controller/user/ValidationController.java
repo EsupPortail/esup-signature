@@ -34,7 +34,7 @@ import java.util.Arrays;
 
 @Controller
 @SessionAttributes({ "simpleReportXml", "detailedReportXml" })
-@RequestMapping(value = "/user/validation")
+@RequestMapping("/user/validation")
 public class ValidationController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ValidationController.class);
@@ -78,7 +78,7 @@ public class ValidationController {
 	@Resource
 	private SignRequestService signRequestService;
 	
-	@RequestMapping(method = RequestMethod.GET)
+	@GetMapping
 	public String showValidationForm() {
 		return "user/validation/form";
 	}
@@ -110,8 +110,8 @@ public class ValidationController {
 		return "user/validation/result";
 	}
 	
-	@Transactional
-	@RequestMapping(value = "/document/{id}")
+//	@Transactional
+	@GetMapping(value = "/document/{id}")
 	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException, SQLException {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 
@@ -141,7 +141,7 @@ public class ValidationController {
 		return "user/validation/result";
 	}
 	
-	@RequestMapping(value = "/download-simple-report")
+	@GetMapping(value = "/download-simple-report")
 	public void downloadSimpleReport(HttpSession session, HttpServletResponse response) {
 		try {
 			String simpleReport = (String) session.getAttribute("simpleReportXml");
@@ -155,7 +155,7 @@ public class ValidationController {
 		}
 	}
 
-	@RequestMapping(value = "/download-detailed-report")
+	@GetMapping(value = "/download-detailed-report")
 	public void downloadDetailedReport(HttpSession session, HttpServletResponse response) {
 		try {
 			String detailedReport = (String) session.getAttribute("detailedReportXml");

@@ -100,7 +100,7 @@ public class WizardController {
         return new ModelAndView("user/wizard/wiz3");
     }
 
-    @RequestMapping(value = "/wiz4/{id}", produces = "text/html")
+    @GetMapping(value = "/wiz4/{id}")
     public String wiz4(@PathVariable("id") Long id,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        @RequestParam(value = "selfSign", required = false) Boolean selfSign,
@@ -188,7 +188,7 @@ public class WizardController {
         return "redirect:/user/wizard/wizend/" + signBook.getId();
     }
 
-    @RequestMapping(value = "/wizend/{id}", produces = "text/html")
+    @GetMapping(value = "/wizend/{id}")
     public String wizEnd(@PathVariable("id") Long id, Model model) throws EsupSignatureException {
         User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();

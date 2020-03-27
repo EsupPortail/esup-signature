@@ -87,7 +87,7 @@ public class AdminSignRequestController {
 	@Resource
 	private FileService fileService;
 
-	@RequestMapping(produces = "text/html")
+	@GetMapping
 	public String list(
 			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "signBookId", required = false) Long signBookId,
@@ -113,7 +113,7 @@ public class AdminSignRequestController {
 		return "admin/signrequests/list";
 	}
 
-	@RequestMapping(value = "/{id}", produces = "text/html")
+	@GetMapping(value = "/{id}")
 	public String show(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
 		User user = userService.getCurrentUser();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -171,7 +171,7 @@ public class AdminSignRequestController {
 		return "redirect:/admin/signrequests/";
 	}
 
-	@RequestMapping(value = "/get-last-file/{id}", method = RequestMethod.GET)
+	@GetMapping(value = "/get-last-file/{id}")
 	public void getLastFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		User user = userService.getCurrentUser();
@@ -194,7 +194,7 @@ public class AdminSignRequestController {
 		}
 	}
 
-	@RequestMapping(value = "/complete/{id}", method = RequestMethod.GET)
+	@GetMapping(value = "/complete/{id}")
 	public String complete(@PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment,
 			HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) throws EsupSignatureException {
@@ -209,7 +209,7 @@ public class AdminSignRequestController {
 		return "redirect:/admin/signrequests/" + id;
 	}
 
-	@RequestMapping(value = "/pending/{id}", method = RequestMethod.GET)
+	@GetMapping(value = "/pending/{id}")
 	public String pending(@PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) throws IOException, EsupSignatureIOException {
 		User user = userService.getCurrentUser();
@@ -224,10 +224,9 @@ public class AdminSignRequestController {
 		return "redirect:/admin/signrequests/" + id;
 	}
 
-	@RequestMapping(value = "/comment/{id}", method = RequestMethod.GET)
+	@GetMapping(value = "/comment/{id}")
 	public String comment(@PathVariable("id") Long id,
-			@RequestParam(value = "comment", required = false) String comment,
-			HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) {
+			@RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttrs, HttpServletRequest request) {
 		User user = userService.getCurrentUser();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -236,12 +235,8 @@ public class AdminSignRequestController {
 		} else {
 			logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
 		}
+		redirectAttrs.addFlashAttribute("messageSuccess", "Commentaire ajouté");
 		return "redirect:/admin/signrequests/" + id;
-	}
-
-	void populateEditForm(Model model, SignRequest signRequest) {
-		model.addAttribute("signRequest", signRequest);
-		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
 	}
 
 }

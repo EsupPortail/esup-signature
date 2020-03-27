@@ -13,6 +13,13 @@ body {
     font-family: "Roboto",sans-serif;
     font-weight: lighter;
     margin-bottom: 40px;
+    overflow-y: scroll;
+    width: 100%;
+
+}
+
+.disable-body-scrollbar {
+    position: fixed;
 }
 
 .h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
@@ -255,17 +262,19 @@ input:checked + .slider:before {
 }
 
 #navbar {
-    min-height: 50px;
+    height: 50px;
     padding: 0;
-    padding-top: 5px;
-    padding-right: 10px;
-    padding-left: 5px;
+    padding-right: 5px;
 }
 
 .navbar-nav {
     margin-right: 5px;
 }
 
+#logo {
+    height: 40px;
+    margin-top: 5px;
+}
 
 #infos {
     position: absolute;
@@ -275,9 +284,10 @@ input:checked + .slider:before {
 }
 
 .workspace {
-    margin-left: 3px;
-    margin-top: 38px;
+    margin-top: 130px;
     display: flex;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 .workspace-sign {
@@ -298,19 +308,18 @@ input:checked + .slider:before {
 }
 
 .content {
-    margin-top: 100px;
-    margin-left: 265px;
-    padding: 5px;
+    width: calc(100vw - 275px);
+    margin-top: 80px;
+    margin-left: 260px;
 }
 
 .content-full {
-    margin-top: 94px;
+    width: calc(100vw - 75px);
     margin-left: 60px;
-    padding: 5px;
 }
 
 #sidebar {
-    top: 60px;
+    top: 50px;
     padding-right: 10px;
     position: fixed;
     z-index: 3;
@@ -354,7 +363,7 @@ input:checked + .slider:before {
 }
 
 .tools {
-    top: 90px;
+    top: 80px;
     padding-top: 5px;
     background-color: white;
     width: 100%;
@@ -365,27 +374,25 @@ input:checked + .slider:before {
 }
 
 .breadcrumb {
-    padding: 2px 15px !important;
+    padding: 0 !important;
+    padding-top: 2px !important;
+    padding-left: 15px !important;
 }
 
 .breadcrumb-nav {
-    top:60px;
+    top:50px;
     padding: 5px;
     position: fixed;
     background-color: white;
-    margin-left: 265px;
-    width: calc(100vw - 265px);
+    margin-left: 260px;
+    width: calc(100vw - 275px);
     z-index: 2;
 }
 
 .breadcrumb-nav-full {
-    top:60px;
     padding: 5px;
-    position: fixed;
-    background-color: white;
-    margin-left: 65px;
-    width: calc(100vw - 65px);
-    z-index: 2;
+    margin-left: 60px;
+    width: calc(100vw - 75px);
 }
 
 .breadcrumb {
@@ -848,6 +855,8 @@ float:left;
 }
 
 .list-unstyled {
+    vertical-align: bottom;
+    bottom: 0px;
     padding-left: 0;
     list-style: none;
 }

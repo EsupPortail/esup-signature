@@ -33,7 +33,7 @@ import java.util.List;
 
 @Controller
 @SessionAttributes(value = { "signatureDocumentForm", "signRequestId", "parameters"})
-@RequestMapping(value = "/user/nexu-sign")
+@RequestMapping("/user/nexu-sign")
 @Transactional
 public class NexuProcessController {
 

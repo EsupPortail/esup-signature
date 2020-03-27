@@ -77,9 +77,10 @@ public class ExportController {
 	@Resource
 	private SignRequestService signRequestService;
 	
-	@RequestMapping(method = RequestMethod.GET)
-	public String showValidationForm() {
-		return "user/validation/form";
+	@GetMapping
+	public String list() {
+
+		return "user/export/list";
 	}
 
 
