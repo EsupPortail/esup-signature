@@ -5,13 +5,13 @@ import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 
 public class AuthorizeRequestsHelper {
 
-	public static void setAuthorizeRequests(HttpSecurity http, String[] nfcWsAccessAuthorizeIps) throws Exception {
+	public static void setAuthorizeRequests(HttpSecurity http, String[] wsAccessAuthorizeIps) throws Exception {
 		http.logout().logoutSuccessUrl("/").permitAll();
 		AccessDeniedHandlerImpl accessDeniedHandlerImpl = new AccessDeniedHandlerImpl();
 		accessDeniedHandlerImpl.setErrorPage("/denied");
 		http.exceptionHandling().accessDeniedHandler(accessDeniedHandlerImpl);
-		for (String ip : nfcWsAccessAuthorizeIps) {
-			http.authorizeRequests().antMatchers("/nfc-ws/**").access("hasIpAddress('"+ ip +"')");			
+		for (String ip : wsAccessAuthorizeIps) {
+			http.authorizeRequests().antMatchers("/ws/**").access("hasIpAddress('"+ ip +"')");
 		}
 		http.authorizeRequests()
 		.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")

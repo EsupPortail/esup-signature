@@ -7,8 +7,9 @@
 <body class="bg-light">
 <div class="container">
 	<div class="card m-4">
-		<div class="card-header bg-dark">
-			<img class="mx-auto" th:src="@{|data:image/png;base64, ${logo}|}" />
+		<div class="card-header">
+			<img class="mx-auto float-left" th:src="@{|data:image/png;base64, ${logo}|}" />
+			<img class="mx-auto float-right" th:src="@{|data:image/png;base64, ${logo}|}" />
 		</div>
 		<div class="card-body">
 			<h4>Bonjour,</h4>

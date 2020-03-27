@@ -233,6 +233,7 @@ public class MailService {
     private void setTemplate(Context ctx) {
         try {
             ctx.setVariable("logo", fileService.getBase64Image(new ClassPathResource("/static/images/logo.png", MailService.class).getInputStream(), "logo.png"));
+            ctx.setVariable("logoUrn", fileService.getBase64Image(new ClassPathResource("/static/images/logo-urn.png", MailService.class).getInputStream(), "logo-urn.png"));
             try (Reader reader = new InputStreamReader(new ClassPathResource("/static/css/bootstrap.min.css", MailService.class).getInputStream(), UTF_8)) {
                 ctx.setVariable("css", FileCopyUtils.copyToString(reader));
             } catch (IOException e) {

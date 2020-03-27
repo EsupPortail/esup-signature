@@ -508,11 +508,12 @@ public class WsController {
         return result;
     }
 
-    @ResponseBody
-    @GetMapping(value = "/search-user")
-    public List<PersonLdap> searchUser(@RequestParam(value = "searchString") String searchString, @RequestParam(required = false) String ldapTemplateName) {
-        logger.debug("ldap search for : " + searchString);
-        return userService.getPersonLdaps(searchString, ldapTemplateName);
-    }
+//
+//    @ResponseBody
+//    @GetMapping(value = "/search-user")
+//    public List<PersonLdap> searchUser(@RequestParam(value = "searchString") String searchString, @RequestParam(required = false) String ldapTemplateName) {
+//        logger.debug("ldap search for : " + searchString);
+//        return userService.getPersonLdaps(searchString, ldapTemplateName);
+//    }
 
 }

@@ -260,7 +260,7 @@ public class WorkflowManagerController {
 		return "redirect:/admin/workflows/" + id;
 	}
 
-	@RequestMapping(value = "/add-params/{id}", method = RequestMethod.POST)
+	@PostMapping(value = "/add-params/{id}")
 	public String addParams(@PathVariable("id") Long id, 
 			RedirectAttributes redirectAttrs) {
 		User user = userService.getCurrentUser();

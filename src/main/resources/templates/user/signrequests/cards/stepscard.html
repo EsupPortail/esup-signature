@@ -10,7 +10,7 @@
                         <th:block th:each="workflowStep,iterator : ${signRequest.parentSignBook.workflowSteps}">
                             <div class="step border border-dark rounded" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber} ? 'div-disable'">
                                     <th:block th:if="${iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber}">
-                                    <span title="Étape en cours" th:if="${signRequest.status.name() == 'pending'}" class="bs-stepper-circle bg-primary">
+                                    <span title="Étape en cours" th:if="${signRequest.status.name() == 'pending'}" class="bs-stepper-circle bg-warning">
                                         <i class="fas fa-spinner fa-pulse"></i>
                                     </span>
                                     <span title="Étape annulée" th:if="${signRequest.status.name() == 'refused'}" class="bs-stepper-circle bg-danger">

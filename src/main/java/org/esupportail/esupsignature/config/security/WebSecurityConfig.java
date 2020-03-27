@@ -34,7 +34,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		AuthorizeRequestsHelper.setAuthorizeRequests(http, webSecurityProperties.getNfcWsAccessAuthorizeIps());
+		AuthorizeRequestsHelper.setAuthorizeRequests(http, webSecurityProperties.getWsAccessAuthorizeIps());
 		for(SecurityService securityService : securityServices) {
 			http.antMatcher("/**").authorizeRequests().antMatchers(securityService.getLoginUrl()).authenticated();
 			http.exceptionHandling().defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityService.getLoginUrl()));
