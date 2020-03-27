@@ -20,7 +20,7 @@
         </nav>
         <div id="content" class="content col-lg-8">
             <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported')}">
-                <div id="endButtons" class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#endButtons').toggleClass('active');" onmouseout="$('#endButtons').toggleClass('active');">
+                <div id="endButtons" class="fixed-action-btn"  onmouseover="$('#endButtons').toggleClass('active');" onmouseout="$('#endButtons').toggleClass('active');">
                     <a class="btn-floating btn-lg bg-primary waves-effect">
                         <i class="fas fa-ellipsis-v"></i>
                     </a>
@@ -38,7 +38,7 @@
                 </div>
             </th:block>
             <th:block th:unless="${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported'}">
-            <div id="addButton" class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+            <div id="addButton" class="fixed-action-btn"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <a class="btn-floating btn-lg bg-primary waves-effect">
                     <i class="fas fa-ellipsis-v"></i>
                 </a>

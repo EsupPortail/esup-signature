@@ -416,7 +416,11 @@ input:checked + .slider:before {
 .sidebar-label {
     display: inline !important;
 }
+.nav-item-label {
+    display: inline !important;
 }
+}
+
 
 @media (max-width: 768px) {
     .workspace-sign {
@@ -456,12 +460,10 @@ input:checked + .slider:before {
         position: relative;
     }
     .content {
+        width: 100%;
         margin: 0;
     }
-    .content-full {
-        min-width: initial !important;
-        margin-left: 0px;
-    }
+
     .sign-menu {
         max-width: initial;
         position: relative !important;
@@ -805,10 +807,9 @@ float:left;
 
 .fixed-action-btn {
     position: fixed;
-    right: 35px;
-    bottom: 35px;
-    z-index: 1;
-    margin-bottom: 0;
+    right: 80px;
+    bottom: 80px;
+    z-index: 1000;
     overflow: hidden;
     height: 500px;
     display: -webkit-box;
@@ -848,6 +849,59 @@ float:left;
     opacity: 1;
 }
 
+.fixed-action-btn ul li {
+    z-index: 0;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    margin-right: auto;
+    margin-bottom: 15px;
+    margin-left: auto;
+}
+
+.fixed-action-btns {
+    position: fixed;
+    right: 80px;
+    bottom: 80px;
+    margin-bottom: 0;
+    z-index: 1000;
+    overflow: hidden;
+    height: 500px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: end;
+    -ms-flex-align: end;
+    align-items: flex-end;
+    padding: 20px 50px 20px 50px;
+}
+
+.fixed-action-btns ul {
+    height: auto;
+    opacity: 1;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    padding: 0;
+    text-align: center;
+    -webkit-transition: 400ms all;
+    transition: 400ms all;
+}
+
+.fixed-action-btns li {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    margin-right: auto;
+    margin-bottom: 15px;
+    margin-left: auto;
+}
 
 .btn-floating.btn-lg i {
     font-size: 1.625rem;
@@ -861,14 +915,6 @@ float:left;
     list-style: none;
 }
 
-.fixed-action-btn ul li {
-    z-index: 0;
-    display: -webkit-box;
-    display: -ms-flexbox;
-    margin-right: auto;
-    margin-bottom: 15px;
-    margin-left: auto;
-}
 .toast {
     z-index: 10000;
 }

@@ -1,7 +1,7 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.sprinfgramework.org/schema/security">
 <header th:fragment="nav" class="fixed-top">
-    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark" th:classappend="${@userService.getUserFromAuthentication() != user && user.name != null}? 'bg-striped' : 'bg-dark'">
+    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark bg-dark" th:classappend="${@userService.getUserFromAuthentication() != user && user.name != null}? 'bg-striped' : 'bg-dark'">
         <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse" class="btn btn-lg text-white float-left">
             <i class="fas fa-bars"></i>
         </button>
@@ -12,13 +12,13 @@
         <h1 aria-label="Esup-Signature" title="Esup-Signature" style="width: 200px;">
             <a href="/"><img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg" /></a>
         </h1>
-        <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
+        <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between bg-dark">
             <ul class="navbar-nav" sec:authorize="isAuthenticated()">
                 <li class="nav-item text-white">
                     <button th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}"
                             th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
                             onclick="location.href='/'" class="btn btn-transparent text-left">
-                        <i class="fas fa-home"></i> <span class="sidebar-label d-lg-inline">Accueil</span>
+                        <i class="fas fa-home"></i> <span class="nav-item-label d-none d-lg-inline">Accueil</span>
                         <span title="Demandes à signer" th:if="${nbToSign > 0}" class="badge badge-danger mt-1"
                               th:text="${nbToSign}"></span>
                     </button>
@@ -27,7 +27,7 @@
                     <a th:with="nbDatas=${@dataRepository.findByCreateByAndStatus(user.eppn, 'draft').size()}"
                        th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes brouillons"
                        href="/user/datas" class="btn btn-transparent text-left">
-                        <i class="fab fa-firstdraft"></i> <span class="sidebar-label d-lg-inline">Mes brouillons</span>
+                        <i class="fab fa-firstdraft"></i> <span class="nav-item-label d-none d-lg-inline">Mes brouillons</span>
                         <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0}"
                               class="badge badge-info mt-1" th:text="${nbDatas}"></span>
 
@@ -37,19 +37,19 @@
                     <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user.eppn, 'pending').size()}"
                        th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Tableau de bord"
                        href="/user/signrequests" class="btn btn-transparent text-left">
-                        <i class="fas fa-paste"></i> <span class="sidebar-label d-xl-inline">Tableau de bord</span>
+                        <i class="fas fa-paste"></i> <span class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
                     </a>
                 </li>
                 <li class="nav-item text-white">
                     <a role="button" class="btn btn-transparent text-left" data-toggle="modal"
                        data-target="#fastSignRequestModal" title="Vous devez signer un document présent sur votre poste">
-                        <i class="fas fa-bolt"></i><span class="sidebar-label d-xl-inline"> Signature rapide</span>
+                        <i class="fas fa-bolt"></i><span class="nav-item-label d-none d-xl-inline"> Signature rapide</span>
                     </a>
                 </li>
                 <li class="nav-item text-white">
                     <a th:classappend="${activeMenu == 'validation'} ? 'bg-secondary'"
                        title="Valider la signature d'un document" href="/user/validation" class="btn btn-transparent text-left">
-                        <i class="fas fa-shield-alt"></i> <span class="sidebar-label d-xxl-inline">Contrôler un document</span>
+                        <i class="fas fa-shield-alt"></i> <span class="nav-item-label d-none d-xxl-inline">Contrôler un document</span>
                     </a>
                 </li>
             </ul>
@@ -58,16 +58,11 @@
                     <a href="/admin/signrequests" th:class="'nav-link ' + ${adminMenu}"><i class="fas fa-crown"></i></a>
                 </li>
                 <li class="nav-item text-white">
-                    <a>
-
-                    </a>
-                </li>
-                <li class="nav-item text-white">
                    <a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos"
                        aria-label="Paramètres utilisateur" class="text-decoration-none user-toggle"
                        aria-controls="user-infos" data-toggle="collapse">
-                       <b th:if="${@userService.getUserFromAuthentication() != user}" class="d-none d-lg-inline nav-link text-light" th:text="'(' + ${user.firstname} + ' ' + ${user.name} +')'"></b>
-						<b class="d-none d-lg-inline nav-link text-light" th:text="${@userService.getUserFromAuthentication().firstname} + ' ' + ${@userService.getUserFromAuthentication().name}"></b>
+                       <b th:if="${@userService.getUserFromAuthentication() != user}" class="d-inline nav-link text-light" th:text="'(' + ${user.firstname} + ' ' + ${user.name} +')'"></b>
+						<b class="nav-item-label d-none d-lg-inline nav-link text-light" th:text="${@userService.getUserFromAuthentication().firstname} + ' ' + ${@userService.getUserFromAuthentication().name}"></b>
                         <div class="btn-floating btn-small btn-secondary user-toggle"><i class="fas fa-user"></i></div>
                     </a>
                 </li>

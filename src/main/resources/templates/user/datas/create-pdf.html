@@ -22,7 +22,7 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div th:if="${data.status == null && (data.signBook == null || data.signBook.signRequests.size() == 0)}" class="fixed-action-btn" style="bottom: 100px; right: 50px;">
+            <div th:if="${data.status == null && (data.signBook == null || data.signBook.signRequests.size() == 0)}" class="fixed-action-btn" >
                 <a th:if="${form.needName}" role="button" title="Enregistrer les modifications" type="button" class="btn-floating btn-lg bg-success wave-effect" data-toggle="modal" data-target="#saveModal">
                     <i class="fas fa-save"></i><br/>
                 </a>
@@ -30,30 +30,46 @@
                     <i class="fas fa-save"></i><br/>
                 </a>
             </div>
-            <div id="addButton" th:unless="${data.status == null}"  class="fixed-action-btn" style="bottom: 100px; right: 50px;" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
-                <div id="signButtons" class="fixed-action-btn active" style="width: 100px; bottom: 50px; right: 50px;">
-                    <ul class="list-unstyled">
-                        <li>
-                            <a role="button" title="Démarrer la procédure" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-lg btn-floating bg-primary">
-                                <i class="fas fa-play"></i></a>
-                        </li>
-<!--                        <li>-->
-<!--                            <a target="_blank" title="Exporter en PDF" th:if="${data.status.name() == 'draft'}"-->
-<!--                               th:href="'/user/datas/' + ${data.id} + '/export-pdf'"-->
-<!--                               class="btn-lg btn-floating bg-danger">-->
-<!--                                <i class="fas fa-file-pdf"></i>-->
-<!--                            </a>-->
-<!--                        </li>-->
-                        <li>
-                            <a th:unless="${form.needName}" onclick="return false;" id="saveButton" href="#" title="Enregistrer les modifications" class="btn-floating btn-lg bg-success wave-effect">
-                                <i class="fas fa-save"></i><br/>
-                            </a>
-<!--                            <a role="button" title="Enregistrer les modifications" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" onclick="document.getElementById('newDataSubmit').click();" class="btn-lg btn-floating bg-success">-->
-<!--                            <i class="fas fa-save"></i></a>-->
-                        </li>
-                    </ul>
-                </div>
+            <div id="addButton" th:unless="${data.status == null}" class="fixed-action-btns active">
+                <ul class="">
+                    <li>
+                        <a role="button" title="Démarrer la procédure" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-lg btn-floating bg-primary wave-effect">
+                            <i class="fas fa-play"></i></a>
+                    </li>
+                    <li>
+                        <a th:if="${form.needName}" role="button" title="Enregistrer les modifications" type="button" class="btn-lg btn-floating bg-success wave-effect" data-toggle="modal" data-target="#saveModal">
+                            <i class="fas fa-save"></i><br/>
+                        </a>
+                        <a th:unless="${form.needName}" onclick="return false;" id="saveButton" href="#" title="Enregistrer les modifications" class="btn-floating btn-lg bg-success wave-effect">
+                            <i class="fas fa-save"></i><br/>
+                        </a>
+                    </li>
+                </ul>
             </div>
+
+                <!--            <div id="addButton" th:unless="${data.status == null}"  class="fixed-action-btn"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">-->
+<!--                <a role="button" title="Enregistrer les modifications" type="button" class="btn-floating btn-lg bg-success wave-effect" data-toggle="modal" data-target="#signButtons">-->
+<!--                    <i class="fas fa-ellipsis-v"></i>-->
+<!--                </a>-->
+<!--                <ul class="list-unstyled">-->
+<!--                    <li>-->
+<!--                        <a role="button" title="Démarrer la procédure" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-floating bg-primary wave-effect">-->
+<!--                            <i class="fas fa-play"></i></a>-->
+<!--                    </li>-->
+<!--                    <li>-->
+<!--                        <a target="_blank" title="Exporter en PDF" th:if="${data.status.name() == 'draft'}"-->
+<!--                           th:href="'/user/datas/' + ${data.id} + '/export-pdf'"-->
+<!--                           class="btn-floating bg-danger wave-effect">-->
+<!--                            <i class="fas fa-file-pdf"></i>-->
+<!--                        </a>-->
+<!--                    </li>-->
+<!--                    <li>-->
+<!--                        <a th:unless="${form.needName}" onclick="return false;" id="saveButton" href="#" title="Enregistrer les modifications" class="btn-floating bg-success wave-effect">-->
+<!--                            <i class="fas fa-save"></i><br/>-->
+<!--                        </a>-->
+<!--                    </li>-->
+<!--                </ul>-->
+<!--            </div>-->
             <div class="tools">
                 <div class="d-flex mb-1">
                     <a title="Abandonner" href="/user/datas/" class="btn btn btn-outline-dark btn-light ml-1">
