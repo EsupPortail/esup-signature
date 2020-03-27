@@ -10,7 +10,7 @@
 <nav th:replace="fragments/nav"></nav>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/user-side" class="auto-hide"></nav>
+        <nav th:insert="fragments/user-side"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Paramètres :
@@ -19,13 +19,13 @@
         </nav>
         <div id="content" class="content">
             <div class="fixed-action-btn" >
-                <a onclick="document.getElementById('fu_org_esupportail_esupsignature_domain_User').submit();" class="btn-floating btn-lg bg-success wave-effect">
+                <a onclick="document.getElementById('userParamsForm').submit();" class="btn-floating btn-lg bg-success wave-effect">
                     <i class="fas fa-save"></i>
                 </a>
             </div>
-            <form id="fu_org_esupportail_esupsignature_domain_User" th:object="${user}" th:action="'/user/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
+            <form id="userParamsForm" th:object="${user}" th:action="'/user/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
                 <input type="hidden" name="id" th:value="${user.id}"/>
-                <div class="card mb-1 col-lg-10">
+                <div class="card mb-1 col-lg-8 mx-auto">
                     <div class="card-body">
                         <h5 class="text-center"><b>Paramètres de signature</b></h5>
                         <div id="signImageForm" class="form-group">
@@ -104,7 +104,7 @@
                             </div>
                         </div>
                     </div>
-                <div class="card mb-1 col-lg-10" >
+                <div class="card mb-1 col-lg-8 mx-auto">
                     <div class="card-body">
                         <h5 class="text-center"><b>Fréquence des alertes</b></h5>
                         <div class="form-group" id="emailAlertFrequency">

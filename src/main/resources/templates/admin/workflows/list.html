@@ -6,7 +6,7 @@
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/admin-side" class="auto-hide"></nav>
+        <nav th:insert="fragments/admin-side"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb col-12">
                 <li class="breadcrumb-item active">Liste des circuits de visas</li>
@@ -19,13 +19,13 @@
                     <i class="fas fa-plus"></i>
                 </a>
             </div>
-            <div class="card col-lg-10">
+            <div class="card col-lg-8 mx-auto">
                 <div class="card-body">
                     <table class="table table-sm table-borderless table-hover table-striped">
                         <thead class="thead-dark">
                         <tr>
                             <th class="none">Nom</th>
-                            <th class="none">Créé par</th>
+<!--                            <th class="none">Créé par</th>-->
                             <th class="none">Destinataires</th>
                             <th class="none">Gestionnaire(s) du circuit</th>
                             <th>Voir</th>
@@ -35,7 +35,7 @@
                         <th:block th:each="workflow : ${workflows}">
                             <tr class="roocol">
                                 <td class="none" th:text="${workflow.name}"></td>
-                                <td class="none" th:text="${workflow.createBy}"></td>
+<!--                                <td class="none" th:text="${workflow.createBy}"></td>-->
                                 <td th:if="${workflow.workflowSteps.size() > 0}" class="none">
                                     <th:block th:each="workflowStep,iterator : ${workflow.workflowSteps}">
                                         <div class="alert alert-secondary">

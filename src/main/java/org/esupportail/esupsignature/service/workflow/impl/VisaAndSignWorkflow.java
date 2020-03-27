@@ -54,10 +54,10 @@ public class VisaAndSignWorkflow extends DefaultWorkflow {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         //STEP 1
         WorkflowStep workflowStep1 = new WorkflowStep();
-        workflowStep1.setName("Directeur de composante");
+        workflowStep1.setName("Directeur de composante du lieu d’accueil");
         workflowStep1.setStepNumber(1);
         workflowStep1.getRecipients().add(recipientService.createRecipient(null, user));
-        workflowStep1.setDescription("Visa de votre directeur de composante");
+        workflowStep1.setDescription("Visa du directeur de composante du lieu d’accueil");
         workflowStep1.setSignType(SignType.visa);
         if(data != null) {
             workflowStep1.setParentType("data");

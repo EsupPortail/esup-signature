@@ -233,7 +233,7 @@ public class FormService {
 			if(nameValues[i].contains("$")) {
 				field.setExtValue(nameValues[i].replace("$", ""));
 			} else if(nameValues[i].contains("#")) {
-				field.setStepNumbers(nameValues[i].replace("#", ""));
+				field.setStepNumbers(field.getStepNumbers() + nameValues[i]);
 			} else if(nameValues[i].contains("!")) {
 				field.setEppnEditRight(nameValues[i].replace("!", ""));
 			}

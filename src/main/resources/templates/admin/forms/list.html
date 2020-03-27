@@ -6,8 +6,8 @@
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/admin-side" class="auto-hide"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full">
+        <nav th:insert="fragments/admin-side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item active">Liste des formulaires</li>
             </ol>
@@ -22,7 +22,7 @@
                     <li><a title="Créer un formulaire depuis un formulaire PDF" data-toggle="modal" data-target="#newForm" class="btn-floating text-dark bg-primary waves-effect"><i class="fas fa-file-pdf"></i></a></li>
                 </ul>
             </div>
-            <div class="card col-lg-10">
+            <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <table th:if="${forms.size() > 0}" class="table table-striped table-hover table-borderless table-responsive">
                             <thead class="thead-dark">

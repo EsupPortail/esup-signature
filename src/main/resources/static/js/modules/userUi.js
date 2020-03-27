@@ -65,6 +65,7 @@ export class UserSignaturePad {
     saveSignaturePad() {
         this.signImageBase64.val(this.signaturePad.toDataURL("image/png"));
         this.canvas.css("backgroundColor", "rgba(0, 255, 0, .5)");
+        $("#userParamsForm").submit();
     }
 
     clearSignaturePad() {

@@ -309,7 +309,7 @@ input:checked + .slider:before {
 
 .content {
     width: calc(100vw - 275px);
-    margin-top: 80px;
+    margin-top: 86px;
     margin-left: 260px;
 }
 

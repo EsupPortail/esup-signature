@@ -1,0 +1,21 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
+<nav th:fragment="tdb-side" id="sidebar" class="scrollbar-primary">
+    <div class="ml-1 mt-1">
+        <a th:if="${status == statusFilter}" class="btn col-3 col-md-12 mb-1 text-left btn-light btn-outline-dark" href="/user/signrequests">Tout voir</a>
+        <a th:unless="${status == statusFilter}" class="btn col-3 col-md-12 mb-1 text-left btn-light" href="/user/signrequests">Tout voir</a>
+        <div class="hr">En cours</div>
+        <a th:if="${statusFilter == 'tosign'}" class="btn col-3 col-md-12 mb-1 text-left btn-light btn-outline-dark" href="/user/signrequests/?statusFilter=tosign">A signer</a>
+        <a th:unless="${statusFilter == 'tosign'}" class="btn col-3 col-md-12 mb-1 text-left btn-light" href="/user/signrequests/?statusFilter=tosign">A signer</a>
+        <div class="hr">Mes demandes</div>
+        <a th:if="${statusFilter == 'pending'}" class="btn col-3 col-md-12 mb-1 text-left btn-light btn-outline-dark" href="/user/signrequests/?statusFilter=pending">Demandes envoyées</a>
+        <a th:if="${statusFilter != 'pending'}" class="btn col-3 col-md-12 mb-1 text-left btn-light" href="/user/signrequests/?statusFilter=pending">Demandes envoyées</a>
+        <a th:if="${statusFilter == 'completed'}" class="btn col-3 col-md-12 mb-1 text-left btn-light btn-outline-dark" href="/user/signrequests/?statusFilter=completed">Demandes signées</a>
+        <a th:if="${statusFilter != 'completed'}" class="btn col-3 col-md-12 mb-1 text-left btn-light" href="/user/signrequests/?statusFilter=completed">Demandes signées</a>
+        <a th:if="${statusFilter == 'refused'}" class="btn col-3 col-md-12 mb-1 text-left btn-light btn-outline-dark" href="/user/signrequests/?statusFilter=refused">Demandes refusées</a>
+        <a th:if="${statusFilter != 'refused'}" class="btn col-3 col-md-12 mb-1 text-left btn-light" href="/user/signrequests/?statusFilter=refused">Demandes refusées</a>
+        <div class="hr">Historique</div>
+    </div>
+</nav>
+</html>

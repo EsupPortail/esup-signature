@@ -11,7 +11,7 @@
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side" class="auto-hide"></nav>
+        <nav th:insert="fragments/tdb-side"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item active">Tableau de bord</li>
@@ -26,16 +26,16 @@
             </div>
             <div class="card col-lg-10 mx-auto">
                 <div id="myDocs" class="card-body">
-                    <a th:if="${status == statusFilter}" class="btn btn-sm btn-secondary" href="/user/signrequests">Tout voir</a>
-                    <a th:unless="${status == statusFilter}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests">Tout voir</a>
-                    <a th:if="${statusFilter == 'tosign'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=tosign">A signer</a>
-                    <a th:unless="${statusFilter == 'tosign'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=tosign">A signer</a>
-                    <a th:if="${statusFilter == 'pending'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=pending">Demandes envoyées</a>
-                    <a th:if="${statusFilter != 'pending'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=pending">Demandes envoyées</a>
-                    <a th:if="${statusFilter == 'completed'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=completed">Demandes terminées</a>
-                    <a th:if="${statusFilter != 'completed'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=completed">Demandes terminées</a>
-                    <a th:if="${statusFilter == 'refused'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=refused">Demandes refusées</a>
-                    <a th:if="${statusFilter != 'refused'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=refused">Demandes refusées</a>
+<!--                    <a th:if="${status == statusFilter}" class="btn btn-sm btn-secondary" href="/user/signrequests">Tout voir</a>-->
+<!--                    <a th:unless="${status == statusFilter}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests">Tout voir</a>-->
+<!--                    <a th:if="${statusFilter == 'tosign'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=tosign">A signer</a>-->
+<!--                    <a th:unless="${statusFilter == 'tosign'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=tosign">A signer</a>-->
+<!--                    <a th:if="${statusFilter == 'pending'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=pending">Demandes envoyées</a>-->
+<!--                    <a th:if="${statusFilter != 'pending'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=pending">Demandes envoyées</a>-->
+<!--                    <a th:if="${statusFilter == 'completed'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=completed">Demandes terminées</a>-->
+<!--                    <a th:if="${statusFilter != 'completed'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=completed">Demandes terminées</a>-->
+<!--                    <a th:if="${statusFilter == 'refused'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=refused">Demandes refusées</a>-->
+<!--                    <a th:if="${statusFilter != 'refused'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=refused">Demandes refusées</a>-->
 
 <!--                    <form class="" action="" method="get">-->
 <!--                        <div class="input-group mb-2">-->
@@ -249,7 +249,7 @@
                 <div th:replace="user/home/include/new"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
             </div>
         </div>
     </div>

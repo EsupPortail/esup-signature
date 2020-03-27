@@ -62,7 +62,7 @@ export class GlobalUi {
     initSideBar() {
         $('#sidebarCollapse').on('click', e => this.toggleSideBarAction());
         if(this.sideBarStatus == null) {
-            localStorage.setItem('sideBarStatus', 'off');
+            localStorage.setItem('sideBarStatus', 'on');
             this.sideBarStatus = localStorage.getItem('sideBarStatus');
         }
 

@@ -5,95 +5,107 @@
 <nav th:replace="fragments/nav"></nav>
 <main role="main" class="">
     <div class="wrapper">
-        <nav th:insert="fragments/admin-side" class="auto-hide"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full">
+        <nav th:insert="fragments/admin-side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item active">Liste des demandes</li>
             </ol>
         </nav>
         <div id="content" class="content">
-    <div class="card">
-        <div class="card-header">
-            <form class="" action="" method="get">
-                <div class="card">
-                    <div class="form-group">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">Statut</div>
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-header">
+                    <form action="#" method="get">
+                        <div class="form-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">Statut</div>
+                            </div>
+                            <select class="form-control" name="statusFilter" id="statusFilter" onchange="submit();">
+                                <option value="" disabled="disabled" selected="selected">Choisir un statut</option>
+                                <option value="all">Tous</option>
+                                <th:block th:each="status : ${statuses}">
+                                    <option th:if="${status == statusFilter}" th:value="${status}"
+                                            selected="selected"
+                                            th:text="#{'signbook.status.' + ${status}}"></option>
+                                    <option th:unless="${status == statusFilter}" th:value="${status}"
+                                            th:text="#{'signbook.status.' + ${status}}"></option>
+                                </th:block>
+                            </select>
                         </div>
-                        <select class="form-control" name="statusFilter" id="statusFilter" onchange="submit();">
-                            <option value="" disabled="disabled" selected="selected">Choisir un statut</option>
-                            <option value="all">Tous</option>
-                            <th:block th:each="status : ${statuses}">
-                                <option th:if="${status == statusFilter}" th:value="${status}" selected="selected" th:text="#{'signbook.status.' + ${status}}"></option>
-                                <option th:unless="${status == statusFilter}" th:value="${status}" th:text="#{'signbook.status.' + ${status}}"></option>
+                    </form>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-hover table-borderless">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th class="none">Titre</th>
+                                <th class="none"><a class="sorted"
+                                                    sd:pagination-sort="createDate">Date de création</a></th>
+                                <th class="none">Créé par</th>
+                                <th class="none">Destinataires</th>
+                                <th class="status">Statut</th>
+                                <th>Voir</th>
+                                <th>Supprimer</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <th:block th:each="signRequest : ${signRequests}">
+                                <tr>
+                                    <td class="none"><p class="truncate" th:title="${signRequest.title}"
+                                                        th:text="${signRequest.title}"></p></td>
+                                    <td class="none"><span
+                                            th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </td>
+                                    <td class="none"><span th:text="${signRequest.createBy}"></span></td>
+                                    <td class="none">
+                                        <table class="table table-sm">
+                                            <tbody>
+                                            <th:block th:each="recipient : ${signRequest.recipients}">
+                                                <tr>
+                                                    <td width="100%"
+                                                        th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
+                                                    <td align="center">
+                                                        <div th:switch="${recipient.signed}">
+                                                            <i title="a signé le document" th:case="true"
+                                                               class="fas fa-check-circle text-success"></i>
+                                                            <i title="En attente de signature" th:case="false"
+                                                               class="fas fa-clock text-warning"></i>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </th:block>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                    <td class="status" style="width: 150px;">
+                                        <div th:replace="user/signrequests/includes/status :: status"></div>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary fas fa-eye" title="Sign Request"
+                                                th:onclick="'location.href=\'/admin/signrequests/' + ${signRequest.id} + '\''">
+                                            <!--  -->
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <form class="delete" th:action="'/admin/signrequests/' + ${signRequest.id}"
+                                              method="post">
+                                            <input type="hidden" name="_method" value="DELETE"/>
+                                            <button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');"
+                                                    value="Supprimer Sign Request" type="submit"
+                                                    title="Supprimer Sign Request"
+                                                    class="btn btn-danger fas fa-trash-alt"></button>
+                                        </form>
+                                    </td>
+                                </tr>
                             </th:block>
-                        </select>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </form>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-sm table-striped table-hover">
-                    <thead>
-                    <tr>
-                        <th class="none">Titre</th>
-                        <th class="none"><a class="sorted"
-                                            sd:pagination-sort="createDate">Date de création</a></th>
-                        <th class="none">Créé par</th>
-                        <th class="none">Destinataires</th>
-                        <th class="status">Statut</th>
-                        <th>Voir</th>
-                        <th>Supprimer</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <th:block th:each="signRequest : ${signRequests}">
-                        <tr>
-                            <td class="none"><p class="truncate" th:title="${signRequest.title}" th:text="${signRequest.title}"></p></td>
-                            <td class="none"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                            <td class="none"><span th:text="${signRequest.createBy}"></span></td>
-                            <td class="none">
-                                <table class="table table-sm">
-                                    <tbody>
-                                    <th:block th:each="recipient : ${signRequest.recipients}">
-                                        <tr>
-                                            <td width="100%" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
-                                            <td align="center">
-                                                <div th:switch="${recipient.signed}">
-                                                    <i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
-                                                    <i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </th:block>
-                                    </tbody>
-                                </table>
-                            </td>
-                            <td class="status" style="width: 150px;">
-                                <div th:replace="user/signrequests/includes/status :: status"></div>
-                            </td>
-                            <td >
-                                <button class="btn btn-primary fas fa-eye" title="Sign Request" th:onclick="'location.href=\'/admin/signrequests/' + ${signRequest.id} + '\''">
-                                    <!--  -->
-                                </button>
-                            </td>
-                            <td >
-                                <form class="delete" th:action="'/admin/signrequests/' + ${signRequest.id}" method="post">
-                                    <input type="hidden" name="_method" value="DELETE"/>
-                                    <button onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" value="Supprimer Sign Request" type="submit" title="Supprimer Sign Request" class="btn btn-danger fas fa-trash-alt"></button>
-                                </form>
-                            </td>
-                        </tr>
-                    </th:block>
-                    </tbody>
-                </table>
+                <div class="card-footer">
+                    <nav th:replace="fragments/pagination :: pagination"></nav>
+                </div>
             </div>
-        </div>
-        <div c lass="card-footer">
-            <nav th:replace="fragments/pagination :: pagination"></nav>
-        </div>
-    </div>
         </div>
     </div>
 </main>
