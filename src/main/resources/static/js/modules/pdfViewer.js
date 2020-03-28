@@ -182,6 +182,9 @@ export class PdfViewer {
                         inputField.addClass('required-field');
                     }
                 }
+                if (dataField.type === "number") {
+                    inputField.get(0).type = "number";
+                }
                 if (dataField.type === "radio") {
                     inputField.val(items[i].buttonValue);
                     if (dataField.defaultValue === items[i].buttonValue) {

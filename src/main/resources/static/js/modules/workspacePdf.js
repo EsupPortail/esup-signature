@@ -44,6 +44,25 @@ export class WorkspacePdf {
             let postitButton = $('#postit' + postit.id);
             postitButton.on('click', e => this.focusComment(postit));
         });
+
+        $("#visaButton").on('click', e => this.validateForm());
+        //$("#signForm").on('submit', e => this.validateForm(e));
+    }
+
+    validateForm() {
+        //TODO FIX
+        let valid = true;
+        $("form#signForm :input").each(function(e){
+            var input = $(this).get(0);
+            if (!input.checkValidity()) {
+                valid = false;
+            }
+        });
+        if(valid) {
+            $("#signModal").modal('toggle');
+        } else {
+            $("#checkDataSubmit").click();
+        }
     }
 
     initWorkspace() {

@@ -27,6 +27,16 @@ export class GlobalUi {
             window.location = $(this).closest('tr').attr('data-href');
         });
         this.inputFile.on('change', e => this.changeFileInputName(e));
+        let delay = 0;
+        let offset = 300;
+
+        document.addEventListener('invalid', function(e){
+            $(e.target).addClass("invalid");
+            $('html, body').animate({scrollTop: $($(".invalid")[0]).offset().top - offset }, delay);
+        }, true);
+        document.addEventListener('change', function(e){
+            $(e.target).removeClass("invalid")
+        }, true);
     }
 
     disableBodyScroll() {
