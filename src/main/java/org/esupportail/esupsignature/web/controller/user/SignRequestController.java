@@ -182,7 +182,7 @@ public class SignRequestController {
         }
         if(signRequest.getParentSignBook() != null) {
             Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
-            if(data != null) {
+            if(data != null && data.getForm() != null) {
                 List<Field> fields = data.getForm().getFields();
                 List<Field> prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
                 for (Field field : prefilledFields) {
