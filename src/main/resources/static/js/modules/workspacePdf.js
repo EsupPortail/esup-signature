@@ -21,10 +21,12 @@ export class WorkspacePdf {
         this.pdfViewer.addEventListener('ready', e => this.initWorkspace());
         this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
         this.pdfViewer.addEventListener('pageChange', e => this.refreshComments());
+        this.pdfViewer.addEventListener('render', e => this.initForm());
+
 
         document.getElementById('commentButton').addEventListener('click', e => this.enableCommentMode());
         if(this.signable) {
-            document.getElementById('signButton').addEventListener('click', e => this.enableSignMode());
+            //document.getElementById('signButton').addEventListener('click', e => this.enableSignMode());
             if(this.currentSignType !== "pdfImageStamp") {
                 document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
             }
@@ -44,25 +46,32 @@ export class WorkspacePdf {
             let postitButton = $('#postit' + postit.id);
             postitButton.on('click', e => this.focusComment(postit));
         });
-
-        $("#visaButton").on('click', e => this.validateForm());
+        console.log("init listener workspace");
+        $("#visaLaunchButton").on('click', e => this.launchSignModal(e));
+        $("#signLaunchButton").on('click', e => this.launchSignModal(e));
         //$("#signForm").on('submit', e => this.validateForm(e));
     }
 
-    validateForm() {
+    launchSignModal(e) {
+        console.log("test form");
+        if(WorkspacePdf.validateForm()) {
+            $("#signModal").modal('toggle');
+        }
+    }
+
+    static validateForm() {
         //TODO FIX
         let valid = true;
-        $("form#signForm :input").each(function(e){
+        $("#signForm :input").each(function() {
             var input = $(this).get(0);
             if (!input.checkValidity()) {
                 valid = false;
             }
         });
-        if(valid) {
-            $("#signModal").modal('toggle');
-        } else {
+        if(!valid) {
             $("#checkDataSubmit").click();
         }
+        return valid;
     }
 
     initWorkspace() {
@@ -99,6 +108,23 @@ export class WorkspacePdf {
             this.signPosition.resetSign();
         }
         this.pdfViewer.removeEventListener('ready');
+
+    }
+
+    initForm(e) {
+
+        $("#signForm :input").each(function () {
+            $(this).on('change', e => WorkspacePdf.launchValidate());
+        });
+    }
+
+    static launchValidate() {
+        if(!WorkspacePdf.validateForm()) {
+            $("#visaLaunchButton").attr('disabled', true);
+        } else {
+            $("#visaLaunchButton").attr('disabled', false);
+        }
+
     }
 
     refreshWorkspace() {

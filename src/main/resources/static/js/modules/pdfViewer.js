@@ -113,7 +113,6 @@ export class PdfViewer {
         }
         this.canvas.style.width = Math.round(this.pdfPageView.viewport.width) +"px";
         this.canvas.style.height = Math.round(this.pdfPageView.viewport.height) + "px";
-        this.fireEvent('render', ['end']);
         console.groupEnd();
     }
 
@@ -273,6 +272,7 @@ export class PdfViewer {
                 }
             }
             console.debug(">>End compute field");
+            this.fireEvent('render', ['end']);
         }
     }
 
