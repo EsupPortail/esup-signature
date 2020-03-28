@@ -229,13 +229,16 @@ public class FormService {
 	private void resolveFieldName(Field field, String name) {
 		String[] nameValues = name.split("(?=>|\\$|#|!)");
 		field.setName(nameValues[0]);
-		for(int i = 1; i < nameValues.length; i++) {
-			if(nameValues[i].contains("$")) {
-				field.setExtValue(nameValues[i].replace("$", ""));
-			} else if(nameValues[i].contains("#")) {
-				field.setStepNumbers(field.getStepNumbers() + nameValues[i]);
-			} else if(nameValues[i].contains("!")) {
-				field.setEppnEditRight(nameValues[i].replace("!", ""));
+		if(nameValues.length > 1) {
+			field.setStepNumbers("");
+			for (int i = 1; i < nameValues.length; i++) {
+				if (nameValues[i].contains("$")) {
+					field.setExtValue(nameValues[i].replace("$", ""));
+				} else if (nameValues[i].contains("#")) {
+					field.setStepNumbers(field.getStepNumbers() + nameValues[i]);
+				} else if (nameValues[i].contains("!")) {
+					field.setEppnEditRight(nameValues[i].replace("!", ""));
+				}
 			}
 		}
 	}
