@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -61,9 +62,12 @@ public class UserController {
 	
 	@Resource
 	private BigFileRepository bigFileRepository;
-	
+
 	@Resource
 	private FileService fileService;
+
+	@Resource
+	private PdfService pdfService;
 
 	@Resource
 	private FormService formService;
@@ -96,6 +100,9 @@ public class UserController {
 			}
 			if(user.getSignImage() != null) {
 				model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+				int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
+				model.addAttribute("signWidth", size[0]);
+				model.addAttribute("signHeight", size[1]);
 			}
 			return "user/users/update";
 		} else {

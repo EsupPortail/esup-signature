@@ -4,7 +4,7 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {default as UserUi} from "/js/modules/userUi.js";
-    new UserUi("data:image/png;base64, " + [[${signFile}]]);
+    new UserUi("data:image/png;base64, " + [[${signFile}]], [[${signWidth}]], [[${signHeight}]]);
 </script>
 <body>
 <nav th:replace="fragments/nav"></nav>
@@ -48,7 +48,7 @@
                                 <div class="col-6 text-center border-right">
                                     <label>Dessinez une signature</label>
                                         <br/>
-                                <canvas id="canvas" onmouseover="this.style.cursor= 'pointer';" width="200" height="150" style="border: 1px solid black;"></canvas>
+                                <canvas id="canvas" onmouseover="this.style.cursor= 'pointer';" style="border: 1px solid black;"></canvas>
                                     <br>
                                 <button id="validate" type="button" class="btn btn-light btn-outline-dark">Valider la signature</button>
                                 <button id="erase" type="button" class="btn btn-light btn-outline-dark">Effacer</button>

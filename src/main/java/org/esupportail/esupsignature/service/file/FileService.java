@@ -223,10 +223,10 @@ public class FileService {
 		return fileImage;
 	}
 
-		public InputStream svgToPng(InputStream svgInputStream) throws IOException {
-			File file = getTempFile("sceau.png");
-			ImageIO.write(ImageIO.read(svgInputStream), "PNG", file);
-			return new FileInputStream(file);
-		}
+	public InputStream svgToPng(InputStream svgInputStream) throws IOException {
+		File file = getTempFile("sceau.png");
+		ImageIO.write(ImageIO.read(svgInputStream), "PNG", file);
+		return new FileInputStream(file);
+	}
 
 }

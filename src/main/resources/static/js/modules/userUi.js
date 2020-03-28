@@ -1,11 +1,11 @@
 export default class UserUi {
 
-    constructor(lastSign) {
+    constructor(lastSign, signWidth, signHeight) {
         console.log('Starting user UI');
         this.emailAlertFrequencySelect = document.getElementById("_emailAlertFrequency_id");
         this.emailAlertDay = document.getElementById("emailAlertDay");
         this.emailAlertHour = document.getElementById("emailAlertHour");
-        this.userSignaturePad = new UserSignaturePad(lastSign);
+        this.userSignaturePad = new UserSignaturePad(lastSign, signWidth, signHeight);
         this.userSignatureCrop = new UserSignatureCrop();
         this.checkAlertFrequency();
     }
@@ -27,9 +27,13 @@ export default class UserUi {
 
 export class UserSignaturePad {
 
-    constructor(lastSign) {
+    constructor(lastSign, signWidth, signHeight) {
         console.info("Starting user signature pad tool");
         this.canvas = $("#canvas");
+        // if(signWidth != null) {
+        //     this.canvas.css('width', signWidth);
+        //     this.canvas.css('height', signHeight);
+        // }
         this.signImageBase64 = $("#signImageBase64");
         this.signaturePad = new SignaturePad(document.querySelector("canvas"));
         this.firstClear = true;
@@ -98,18 +102,18 @@ export class UserSignatureCrop {
         this.vanillaCrop = document.getElementById('vanilla-crop');
         this.vanillaCroppie = new Croppie(this.vanillaCrop, {
             viewport : {
-                width : 200,
+                width : 300,
                 height : 150
             },
             boundary : {
                 width : 400,
-                height : 300
+                height : 200
             },
             enableExif : true,
             enableOrientation : true,
             enableResize : true,
             enforceBoundary : false,
-            mouseWheelZoom: false
+            mouseWheelZoom: true
         });
         this.initListeners();
     }
