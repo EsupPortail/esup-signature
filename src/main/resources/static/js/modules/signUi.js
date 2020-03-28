@@ -78,10 +78,10 @@ export class SignUi {
                 "&addDate=" + this.workspace.signPosition.dateActive +
                 "&visual=" + this.workspace.signPosition.visualActive +
                 "&comment=" + this.workspace.signPosition.signComment.val() +
-                "&xPos=" + this.workspace.signPosition.posX +
-                "&yPos=" + this.workspace.signPosition.posY +
-                "&signWidth=" + this.workspace.signPosition.signWidth +
-                "&signHeight=" + this.workspace.signPosition.signHeight +
+                "&xPos=" + Math.round(this.workspace.signPosition.posX) +
+                "&yPos=" + Math.round(this.workspace.signPosition.posY) +
+                "&signWidth=" + Math.round(this.workspace.signPosition.signWidth / (this.workspace.signPosition.currentScale)) +
+                "&signHeight=" + Math.round(this.workspace.signPosition.signHeight / (this.workspace.signPosition.currentScale)) +
                 "&signPageNumber=" + this.workspace.pdfViewer.pageNum +
                 "&formData=" + JSON.stringify(formData) +
                 "&" + csrf.name + "=" + csrf.value

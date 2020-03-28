@@ -565,6 +565,11 @@ float:left;
 }
 
 .postitVisa {
+    user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
     list-style:none;
     padding:3px;
     text-decoration:none;

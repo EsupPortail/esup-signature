@@ -28,9 +28,9 @@ export class WorkspacePdf {
         if(this.signable) {
             //document.getElementById('signButton').addEventListener('click', e => this.enableSignMode());
             if(this.currentSignType !== "pdfImageStamp") {
-                document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
+                //document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
             }
-            document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
+            //document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
         }
         document.getElementById('hideComment').addEventListener('click', e => this.hideComment());
 
