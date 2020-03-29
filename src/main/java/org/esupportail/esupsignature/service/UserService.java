@@ -218,7 +218,7 @@ public class UserService {
 		List<SignRequest> toSignSignRequests = signRequestService.getToSignRequests(recipientUser);
 		//List<SignRequest> signRequestsToSend = new ArrayList<>();
 		//pour ne pas recevoir ses propres demandes
-		if(recipientUser.equals(userService.getUserFromAuthentication())) {
+		if(userService.getUserFromAuthentication() != null && recipientUser.equals(userService.getUserFromAuthentication())) {
 			toSignSignRequests = toSignSignRequests.stream().filter(signRequest -> !signRequest.getCreateBy().equals(recipientUser.getEppn())).collect(Collectors.toList());
 			if(toSignSignRequests.size() > 0) {
 				mailService.sendSignRequestAlert(Arrays.asList(recipientUser.getEmail()), toSignSignRequests);
