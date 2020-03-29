@@ -102,17 +102,17 @@ export class UserSignatureCrop {
         this.vanillaCrop = document.getElementById('vanilla-crop');
         this.vanillaCroppie = new Croppie(this.vanillaCrop, {
             viewport : {
-                width : 300,
-                height : 150
+                width : 600,
+                height : 300
             },
             boundary : {
-                width : 400,
-                height : 200
+                width : 804,
+                height : 404
             },
             enableExif : true,
             enableOrientation : true,
             enableResize : true,
-            enforceBoundary : false,
+            enforceBoundary : true,
             mouseWheelZoom: true
         });
         this.initListeners();

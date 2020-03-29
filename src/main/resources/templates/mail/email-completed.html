@@ -6,13 +6,14 @@
 </head>
 <body class="bg-light">
 <div class="container">
-    <div class="card m-4">
-        <div class="card-header bg-dark">
-            <img class="mx-auto" th:src="@{|data:image/png;base64, ${logo}|}" />
+    <div class="card rounded-0 m-1">
+        <div class="card-header rounded-0 bg-dark">
+            <img height="40" class="mx-auto float-left" th:src="@{|data:image/png;base64, ${logo}|}" />
+            <img height="40" class="mx-auto float-right" th:src="@{|data:image/png;base64, ${logoUrn}|}" />
         </div>
         <div class="card-body">
-            <h4>Bonjour,</h4>
-            <h5>La demande de signature "<b><span th:text="${signBook.name}"></span></b>" est terminée.</h5>
+            <p>Bonjour,</p>
+            <p>La demande de signature "<b><span th:text="${signBook.name}"></span></b>" est terminée.</p>
             <p>Liste des signataires : </p>
             <ul>
             <th:block th:each="workflowStep : ${signBook.workflowSteps}">
@@ -25,15 +26,14 @@
             </th:block>
             </ul>
             <p th:if="${signBook.exportedDocumentURI != null}">
-                Le document sera transmise à cette adresse : <span th:text="${signBook.exportedDocumentURI}"></span>
+                Le document a été transmise à cette adresse : <span th:text="${signBook.exportedDocumentURI}"></span>
             </p>
-
             <p>
-                <a th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" class="btn btn-primary">Voir la demande</a>
+                <a th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" class="btn btn-dark">Accéder à la demande</a>
             </p>
         </div>
-        <div class="card-footer bg-secondary">
-            <span class="text-white">Université de Rouen</span>
+        <div class="card-footer rounded-0 bg-secondary justify-content-center text-center">
+            <span class="text-white text-center">Université de Rouen Normandie</span>
         </div>
     </div>
 </div>

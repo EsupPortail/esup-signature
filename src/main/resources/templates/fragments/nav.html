@@ -152,7 +152,7 @@
                 <tr>
                     <th class="text-break w-50">Image de la signature</th>
                     <td class="text-break w-50">
-                        <img th:if="${user.signImage != null}" alt="signature"
+                        <img width="300" th:if="${user.signImage != null}" alt="signature"
                              th:src="'data:image/png;base64,' + ${user.signImageBase64}"/>
                         <div th:unless="${user.signImage != null}" class="alert alert-danger">
                             Pas de signature
@@ -160,17 +160,17 @@
                     </td>
                 </tr>
                 <tr>
-                    <th class="text-break w-50">Keystore</th>
+                    <th class="text-break w-50">Magasin de certificats</th>
                     <td class="text-break w-50">
                         <div th:if="${user.keystore != null}" class="alert alert-secondary">
-                            Keystore actuel :
+                            Votre magasin de certificats :
                             <br>
                             <a th:href="'/user/documents/getfile/' + ${user.keystore.id}">
                                 <span th:text="${user.keystore.fileName}"></span>
                             </a>
                         </div>
                         <div th:if="${user.keystore == null}" class="alert alert-danger">
-                            Pas de keystore
+                            Pas de magasin de certificats
                         </div>
                     </td>
                 </tr>

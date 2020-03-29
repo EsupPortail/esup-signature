@@ -4,6 +4,7 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {default as UserUi} from "/js/modules/userUi.js";
+
     new UserUi("data:image/png;base64, " + [[${signFile}]], [[${signWidth}]], [[${signHeight}]]);
 </script>
 <body>
@@ -14,16 +15,19 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Paramètres :
-                <span th:text="${user.firstname} + ' ' + ${user.name}"></span></li>
+                    <span th:text="${user.firstname} + ' ' + ${user.name}"></span></li>
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="fixed-action-btn" >
-                <a onclick="document.getElementById('userParamsForm').submit();" class="btn-floating btn-lg bg-success wave-effect">
+            <div class="fixed-action-btn">
+                <a onclick="document.getElementById('userParamsForm').submit();"
+                   class="btn-floating btn-lg bg-success wave-effect">
                     <i class="fas fa-save"></i>
                 </a>
             </div>
-            <form id="userParamsForm" th:object="${user}" th:action="'/user/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
+            <form id="userParamsForm" th:object="${user}"
+                  th:action="'/user/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
+                  enctype="multipart/form-data" method="post">
                 <input type="hidden" name="id" th:value="${user.id}"/>
                 <div class="card mb-1 col-lg-8 mx-auto">
                     <div class="card-body">
@@ -31,85 +35,123 @@
                         <div id="signImageForm" class="form-group">
                             <label class="col-form-label" for="inputGroupFile01">
                                 <strong>Image de la signature</strong>
-                                <button data-target="#collapseHelpSignImage" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
-                                <i class="fas fa-info-circle "></i>
+                                <button data-target="#collapseHelpSignImage" data-toggle="collapse" type="button"
+                                        class="btn btn-sm btn-info">
+                                    <i class="fas fa-info-circle "></i>
                                 </button>
                                 <div class="collapse" id="collapseHelpSignImage">
                                     <div class="alert alert-info">
-                                        <small> Après avoir sélectionné une image, vous pourrez ajuster sa taille pour que la signature entre dans le carré blanc. Si votre signature est grande (contient un tampon par exemple), il est possible
+                                        <small> Après avoir sélectionné une image, vous pourrez ajuster sa taille pour
+                                            que la signature entre dans le carré blanc. Si votre signature est grande
+                                            (contient un tampon par exemple), il est possible
                                             d'élargir
-                                            le carré blanc (la signature prendra plus de place sur le document) <br/> Une image de la signature sera toujours nécessaire pour signer un PDF
+                                            le carré blanc (la signature prendra plus de place sur le document) <br/>
+                                            Une image de la signature sera toujours nécessaire pour signer un PDF
                                         </small>
                                     </div>
                                 </div>
                             </label>
                             <div class="row">
 
-                                <div class="col-6 text-center border-right">
-                                    <label>Dessinez une signature</label>
-                                        <br/>
-                                <canvas id="canvas" onmouseover="this.style.cursor= 'pointer';" style="border: 1px solid black;"></canvas>
+                                <div class="col-12 text-center mb-2">
+                                    <label>Vous pouvez dessinez une signature dans le rectangle ci dessous</label>
+                                    <br/>
+                                    <canvas id="canvas" onmouseover="this.style.cursor= 'pointer';"
+                                            style="border: 1px solid black;"></canvas>
                                     <br>
-                                <button id="validate" type="button" class="btn btn-light btn-outline-dark">Valider la signature</button>
-                                <button id="erase" type="button" class="btn btn-light btn-outline-dark">Effacer</button>
-                                <button id="reset" type="button" class="btn btn-light btn-outline-dark">Réinitialiser</button>
+                                    <button id="validate" type="button" class="btn btn-light btn-outline-dark">Valider
+                                        la signature
+                                    </button>
+                                    <button id="erase" type="button" class="btn btn-light btn-outline-dark">Effacer
+                                    </button>
+                                    <button id="reset" type="button" class="btn btn-light btn-outline-dark">
+                                        Réinitialiser
+                                    </button>
                                 </div>
-                                <div class="col-lg-6 text-center">
-                                <div class="custom-file mb-1">
-                                    <input type="file" class="custom-file-input" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
-                                    <label class="custom-file-label" for="vanilla-upload">
-                                        Choisissez une nouvelle image
-                                    </label>
-                                </div>
-                                <div id="crop-div" class="alert alert-light text-dark text-center" style="display: none;">
-                                    <div class="d-flex justify-content-center">
-                                    <button type="button" id="zoomout" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-minus"></i></button>
-                                    <button type="button" id="zoomin" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-plus"></i></button>
-                                    <button type="button" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block vanilla-rotate" data-deg="90"><i class="fas fa-undo"></i></button>
-                                    <button type="button" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block vanilla-rotate" data-deg="-90"><i class="fas fa-redo"></i></button>
+                                <div class="col-lg-12 text-center">
+                                    <label>Vous pouvez choisir une image provenant de votre ordinateur</label>
+                                    <div class="custom-file mb-1">
+                                        <input type="file" class="custom-file-input" id="vanilla-upload"
+                                               value="Choose a file" accept="image/*"
+                                               aria-describedby="inputGroupFileAddon01"/>
+                                        <label class="custom-file-label" for="vanilla-upload">
+                                            Choisissez une nouvelle image
+                                        </label>
                                     </div>
-                                    <div id="vanilla-crop" class="mt-2"></div>
-                                </div>
+                                    <div id="crop-div" class="alert alert-light text-dark text-center"
+                                         style="display: none;">
+                                        <div class="d-flex justify-content-center">
+                                            <button type="button" id="zoomout"
+                                                    class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i
+                                                    class="fas fa-search-minus"></i></button>
+                                            <button type="button" id="zoomin"
+                                                    class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i
+                                                    class="fas fa-search-plus"></i></button>
+                                            <button type="button"
+                                                    class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block vanilla-rotate"
+                                                    data-deg="90"><i class="fas fa-undo"></i></button>
+                                            <button type="button"
+                                                    class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block vanilla-rotate"
+                                                    data-deg="-90"><i class="fas fa-redo"></i></button>
+                                        </div>
+                                        <div id="vanilla-crop" class="mt-2"></div>
                                     </div>
+                                </div>
                             </div>
                         </div>
                         <input type="hidden" th:field="*{signImageBase64}"/>
-                        </div>
-                        <div id="keyForm" class="form-group">
-                            <label class="col-form-label"><strong>Keystore</strong>
-                                <button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+                    </div>
+
+                </div>
+
+                <div class="card mb-1 col-lg-8 mx-auto">
+                    <div id="keyForm" class="form-group">
+                        <label class="col-form-label"><strong>Magasin de certificats</strong>
+                            <button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button"
+                                    class="btn btn-sm btn-info">
                             <span class="fas fa-info-circle "> <!-- -->
                             </span>
-                                </button>
-                                <div class="collapse collapse" id="collapseHelpKeyStore">
-                                    <div class="alert alert-info">
-                                        <small> Il est possible de générer un keystore en suivant cette procédure <a href="https://services.renater.fr/tcs/certcentral/orders/request-certificate" target="_blank">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a>
-                                        </small>
-                                    </div>
+                            </button>
+                            <div class="collapse collapse" id="collapseHelpKeyStore">
+                                <div class="alert alert-info">
+                                    <small> Il est possible de générer un keystore en suivant cette procédure <a
+                                            href="https://services.renater.fr/tcs/certcentral/orders/request-certificate"
+                                            target="_blank">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a>
+                                    </small>
                                 </div>
-                            </label>
-                            <div th:if="${user.keystore != null}" class="alert alert-secondary">
-                                Keystore actuel : <a th:href="'/user/documents/getfile/' + ${user.keystore.id}"><span th:text="${user.keystore.fileName}"></span></a>
-                                <br>
-                                <button type="button" th:if="${user.getKeystore() != null && referer == null  }" class="btn btn-sm btn-primary text-left" data-toggle="modal" data-target="#testKeystore">
-                                    <i class="fas fa-certificate"></i> <span class="sidebar-label">Tester mon certificat</span>
-                                </button>
                             </div>
-                            <div class="form-group">
-                                <div class="custom-file">
-                                    <input id="inputGroupFile02" type="file" accept="application/x-pkcs12" class="custom-file-input" name="multipartKeystore" value="Choose a file" aria-describedby="inputGroupFileAddon02"/>
-                                    <label for="inputGroupFile02" class="custom-file-label"> Choisir un keystore
+                        </label>
+                        <div th:if="${user.keystore != null}" class="alert alert-secondary">
+                            Keystore actuel : <a th:href="'/user/documents/getfile/' + ${user.keystore.id}"><span
+                                th:text="${user.keystore.fileName}"></span></a>
+                            <br>
+                            <button type="button" th:if="${user.getKeystore() != null && referer == null  }"
+                                    class="btn btn-sm btn-primary text-left" data-toggle="modal"
+                                    data-target="#testKeystore">
+                                <i class="fas fa-certificate"></i> <span
+                                    class="sidebar-label">Tester mon certificat</span>
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <div class="custom-file">
+                                <input id="inputGroupFile02" type="file" accept="application/x-pkcs12"
+                                       class="custom-file-input" name="multipartKeystore" value="Choose a file"
+                                       aria-describedby="inputGroupFileAddon02"/>
+                                <label for="inputGroupFile02" class="custom-file-label"> Choisir un keystore
                                 </label>
-                            </div>
                             </div>
                         </div>
                     </div>
+                </div>
+
                 <div class="card mb-1 col-lg-8 mx-auto">
                     <div class="card-body">
                         <h5 class="text-center"><b>Fréquence des alertes</b></h5>
                         <div class="form-group" id="emailAlertFrequency">
-                            <label class="col-form-label" for="_emailAlertFrequency_id"> <strong>Fréquence d'alerte</strong>
-                                <button data-target="#collapseHelpEmailAlertFrequency" data-toggle="collapse" type="button" class="btn btn-sm btn-info">
+                            <label class="col-form-label" for="_emailAlertFrequency_id"> <strong>Fréquence
+                                d'alerte</strong>
+                                <button data-target="#collapseHelpEmailAlertFrequency" data-toggle="collapse"
+                                        type="button" class="btn btn-sm btn-info">
 									<span class="fas fa-info-circle "> <!--  -->
 									</span>
                                 </button>
@@ -119,25 +161,36 @@
                                     </div>
                                 </div>
                             </label>
-                            <select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency" size="1" onchange="checkAlertFrequency();">
+                            <select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency"
+                                    size="1" onchange="checkAlertFrequency();">
                                 <option selected="selected" value="">-- Choisir votre préférence d'alerte --</option>
                                 <th:block th:each="emailAlertFrequency : ${emailAlertFrequencies}">
-                                    <option th:if="${emailAlertFrequency == user.emailAlertFrequency}" selected="selected" th:value="${emailAlertFrequency}" th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
-                                    <option th:unless="${emailAlertFrequency == user.emailAlertFrequency}" th:value="${emailAlertFrequency}" th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
+                                    <option th:if="${emailAlertFrequency == user.emailAlertFrequency}"
+                                            selected="selected" th:value="${emailAlertFrequency}"
+                                            th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
+                                    <option th:unless="${emailAlertFrequency == user.emailAlertFrequency}"
+                                            th:value="${emailAlertFrequency}"
+                                            th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
                                 </th:block>
                             </select>
                         </div>
                         <div class="form-group" id="emailAlertHour" style="display: none;">
                             <label class="col-form-label" for="emailAlertHour"> <strong>Heure d'alerte</strong>
                             </label>
-                            <input id="emailAlertHour" name="emailAlertHour" class="form-control" type="time" th:value="${user.emailAlertHour}" autocomplete="off"/>
+                            <input id="emailAlertHour" name="emailAlertHour" class="form-control" type="time"
+                                   th:value="${user.emailAlertHour}" autocomplete="off"/>
                         </div>
                         <div class="form-group" id="emailAlertDay" style="display: none;">
-                            <label class="col-form-label" for="_emailAlertDay_id"> <strong>Jour de l'alerte</strong></label>
+                            <label class="col-form-label" for="_emailAlertDay_id"> <strong>Jour de
+                                l'alerte</strong></label>
                             <select class="form-control" id="_emailAlertDay_id" name="emailAlertDay">
                                 <th:block th:each="emailAlertDay : ${daysOfWeek}" var="emailAlertDay">
-                                    <option th:if="${emailAlertDay == user.emailAlertDay}" selected="selected" th:value="${emailAlertDay}" th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
-                                    <option th:unless="${emailAlertDay == user.emailAlertDay}" th:value="${emailAlertDay}" th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
+                                    <option th:if="${emailAlertDay == user.emailAlertDay}" selected="selected"
+                                            th:value="${emailAlertDay}"
+                                            th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
+                                    <option th:unless="${emailAlertDay == user.emailAlertDay}"
+                                            th:value="${emailAlertDay}"
+                                            th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
                                 </th:block>
                             </select>
                         </div>
@@ -157,7 +210,7 @@
                 <div class="modal-body">
                     <div class="input-group mb-2">
                         <div th:if="${password == null}">
-                            <input class="form-control" placeholder="Mot de passe" type="password" name="password" />
+                            <input class="form-control" placeholder="Mot de passe" type="password" name="password"/>
                         </div>
                         <div th:unless="${password == null}">
                             Mot de passe en cache
@@ -166,7 +219,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
-                    <input class="btn btn-primary" type="submit" value="Afficher le certificat" />
+                    <input class="btn btn-primary" type="submit" value="Afficher le certificat"/>
 
                 </div>
             </form>
