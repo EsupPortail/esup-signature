@@ -281,7 +281,7 @@ public class SignBookService {
     }
 
     public void refuse(SignBook signBook, String comment, User user) {
-        mailService.sendRefusedMail(signBook);
+        mailService.sendRefusedMail(signBook, comment);
         updateStatus(signBook, SignRequestStatus.refused, "Un des documents du a été refusé, ceci annule toute la procédure", user, "SUCCESS", comment);
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", comment, null, null, null);

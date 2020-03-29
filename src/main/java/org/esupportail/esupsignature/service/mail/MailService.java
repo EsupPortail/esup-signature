@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
@@ -77,6 +78,9 @@ public class MailService {
     private SignRequestService signRequestService;
 
     @Resource
+    private UserService userService;
+
+    @Resource
     private FileService fileService;
 
     @Value("${root.url}")
@@ -90,6 +94,7 @@ public class MailService {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", rootUrl);
+        ctx.setVariable("userService", userService);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;
@@ -106,7 +111,7 @@ public class MailService {
         }
     }
 
-    public void sendRefusedMail(SignBook signBook) {
+    public void sendRefusedMail(SignBook signBook, String comment) {
         if (!checkMailSender()) {
             return;
         }
@@ -114,14 +119,14 @@ public class MailService {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", rootUrl);
-        List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signBook.getSignRequests().get(0).getId(), SignRequestStatus.refused.name());
-        ctx.setVariable("refuseLogs", refuseLogs);
+        ctx.setVariable("userService", userService);
+        ctx.setVariable("comment", comment);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;
         List<String> toEmails = new ArrayList<>();
         toEmails.add(user.getEmail());
-        for(Recipient recipient : signBook.getWorkflowSteps().get(signBook.getWorkflowSteps().size() - 2).getRecipients()) {
+        for(Recipient recipient : signBook.getWorkflowSteps().get(signBook.getWorkflowSteps().size() - 1).getRecipients()) {
             //TODO search shares
             toEmails.add(recipient.getUser().getEmail());
         }
@@ -145,9 +150,7 @@ public class MailService {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signRequests", signRequests);
         ctx.setVariable("rootUrl", rootUrl);
-        for(SignRequest signRequest : signRequests) {
-            signRequest.setCreator(userRepository.findByEppn(signRequest.getCreateBy()).get(0));
-        }
+        ctx.setVariable("userService", userService);
         //User user = userRepository.findByEmail(recipientEmail).get(0);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();

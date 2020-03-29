@@ -28,7 +28,9 @@
 					<tr>
 						<td th:text="${signRequest.title}"></td>
 						<td th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></td>
-						<td th:text="${signRequest.creator.firstname} + ' ' + ${signRequest.creator.name}"></td>
+						<td th:with="creator = ${userService.getUserByEppn(signBook.createBy)}">
+							<span  th:text="${creator.firstname} + ' ' + ${creator.name}"></span>
+						</td>
 						<td>
 							<a class="btn btn-sm btn-dark mx-auto" th:href="@{|${rootUrl}/user/signrequests/${signRequest.id}|}">Accéder au document</a>
 						</td>

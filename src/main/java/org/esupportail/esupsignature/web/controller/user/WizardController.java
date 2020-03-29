@@ -84,7 +84,7 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wiz3", produces = "text/html")
-    public ModelAndView wiz3(@RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, HttpServletRequest request, Model model) throws EsupSignatureException, IOException, EsupSignatureIOException {
+    public ModelAndView wiz3(@RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) throws EsupSignatureException, IOException, EsupSignatureIOException {
         logger.info("Choix d'un workflow");
         User user = userService.getCurrentUser();
         SignBook signBook = signBookService.getSignBook(name, user);
@@ -100,7 +100,8 @@ public class WizardController {
         return new ModelAndView("user/wizard/wiz3");
     }
 
-    @PostMapping(value = "/wiz4/{id}")
+    //TODO preauthorize
+    @GetMapping(value = "/wiz4/{id}")
     public String wiz4(@PathVariable("id") Long id,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        @RequestParam(value = "selfSign", required = false) Boolean selfSign,

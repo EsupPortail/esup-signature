@@ -13,9 +13,26 @@
         </div>
         <div class="card-body">
             <p>Bonjour,</p>
-            <p>La demande de signature "<b><span th:text="${signBook.name}"></span></b>" a été refusée</p>
+            <p>Votre demande de signature a été refusée.</p>
+            <p th:with="creator = ${userService.getUserByEppn(signBook.createBy)}">
+                Nom de la demande : <b><span th:text="${signBook.name}"></span></b>
+                <br>
+                Crée par : <b><span th:text="${creator.firstname} + ' ' + ${creator.name}"></span></b>
+                <br>
+                Date de création : <b><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span></b>
+                <br>
+            </p>
+            <p>Refusée par : </p>
+            <ul>
+                <th:block th:each="workflowStep : ${signBook.workflowSteps}">
+                    <th:block th:each="recipient : ${workflowStep.recipients}">
+                            <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                    </th:block>
+                </th:block>
+            </ul>
+            <p>Motif du refus : </p>
             <p>
-                <a th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" class="btn btn-primary">Voir la demande concernée</a>
+                <span th:text="${comment}"></span>
             </p>
         </div>
         <div class="card-footer rounded-0 bg-secondary justify-content-center text-center">

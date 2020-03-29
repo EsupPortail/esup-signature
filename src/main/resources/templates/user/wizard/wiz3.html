@@ -33,7 +33,7 @@
 <h4 class="d-flex justify-content-center mt-4">Paramétrage du circuit de signatures/visas</h4>
 <div class="row">
     <div class="col-lg-6 text-center border-right h-100">
-        <form th:action="'/user/wizard/wiz4/' + ${signBook.id}" method="post">
+        <form th:action="'/user/wizard/wiz4/' + ${signBook.id}" method="get">
             <div class="form-group">
                 <select id="workflowId" name="workflowId" class="form-control" required>
                     <option value="" disabled selected>Choisir un circuit précédemment enregistré</option>
@@ -49,7 +49,7 @@
         </form>
     </div>
     <div class="col-lg-6 text-center">
-        <form th:action="'/user/wizard/wiz4/' + ${signBook.id}" method="post">
+        <form th:action="'/user/wizard/wiz4/' + ${signBook.id}" method="get">
             <div class="form-group">
                 <button type="submit" class="btn btn-success">
                     Créer un nouveau circuit de signature <i class="fas fa-project-diagram"></i>

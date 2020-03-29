@@ -227,8 +227,7 @@ public class UserService {
 			userRepository.save(recipientUser);
 		} else {
 			List<String> toEmails = new ArrayList<>();
-//		toEmails.add(recipientEmail);
-
+//			toEmails.add(recipientEmail);
 			for(UserShare userShare : userShareRepository.findByUser(recipientUser)) {
 				if(userShare.getShareType().equals(UserShare.ShareType.sign)) {
 					for(User toUser : userShare.getToUsers()) {

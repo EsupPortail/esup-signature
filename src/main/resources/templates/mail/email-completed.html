@@ -13,12 +13,21 @@
         </div>
         <div class="card-body">
             <p>Bonjour,</p>
-            <p>La demande de signature "<b><span th:text="${signBook.name}"></span></b>" est terminée.</p>
+            <p>Votre demande de signature est terminée.</p>
+            <p th:with="creator = ${userService.getUserByEppn(signBook.createBy)}">
+                Nom de la demande : <b><span th:text="${signBook.name}"></span></b>
+                <br>
+                Crée par : <b><span th:text="${creator.firstname} + ' ' + ${creator.name}"></span></b>
+                <br>
+                Date de création : <b><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span></b>
+                <br>
+            </p>
+
             <p>Liste des signataires : </p>
             <ul>
             <th:block th:each="workflowStep : ${signBook.workflowSteps}">
                 <th:block th:each="recipient : ${workflowStep.recipients}">
-                    <li>
+                    <li if="${recipient.signed == true}">
                         <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                         <span th:text="'(' + #{'signbook.signtype.' + ${workflowStep.signType}} + ')'"></span>
                     </li>
@@ -26,7 +35,7 @@
             </th:block>
             </ul>
             <p th:if="${signBook.exportedDocumentURI != null}">
-                Le document a été transmise à cette adresse : <span th:text="${signBook.exportedDocumentURI}"></span>
+                Le document a été transmit à cette adresse : <span th:text="${signBook.exportedDocumentURI}"></span>
             </p>
             <p>
                 <a th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" class="btn btn-dark">Accéder à la demande</a>
