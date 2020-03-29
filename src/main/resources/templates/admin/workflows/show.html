@@ -3,6 +3,10 @@
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <head th:replace="fragments/head"></head>
 <body>
+<script type="module">
+    import {default as SelectUser} from "/js/modules/selectUser.js";
+    new SelectUser("recipientsEmails");
+</script>
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
@@ -183,9 +187,5 @@
 </main>
 <footer th:replace="fragments/footer"></footer>
 <div th:replace="fragments/message :: message"></div>
-<script type="module">
-    import {default as SelectUser} from "/js/modules/selectUser.js";
-    new SelectUser("recipientsEmails");
-</script>
 </body>
 </html>

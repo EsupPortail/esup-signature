@@ -3,54 +3,63 @@
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <nav th:fragment="sign-side" id="sidebar" class="scrollbar-primary">
     <div class="ml-1 mt-3">
-    <button data-toggle="modal" data-target="#signAllModal" class="btn btn-light col-3 col-md-12 mb-1 text-left d-none" th:classappend="${signable != 'ok' || signRequest.parentSignBook == null || signRequest.parentSignBook .signRequests.size() < 2} ? 'd-none' ">
-        <i class="fas fa-bolt"></i> Tout signer
-    </button>
-    <button th:if="${documentType == 'pdf'}" id="readButton" onclick="enableReadMode()" class="d-none btn btn-light col-12 mb-1 text-left">
-        <i class="fas fa-eye"></i> Mode consultation
-    </button>
-    <button id="signButton" class="btn btn-light col-12 mb-1 text-left" th:if="${signRequest.signable}">
-        <i class="fas fa-signature"></i> Mode signature
-    </button>
-    <button th:if="${documentType == 'pdf'}" id="commentButton" class="btn btn-light col-12 mb-1 text-left d-none">
-        <i class="fas fa-comment"></i> Mode commentaires
-        <span th:if="${postits.size() > 0}" class="float-right badge badge-warning mt-1" th:text="${postits.size()}"></span>
-    </button>
-<!--    <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>-->
-    <div id="signTools" th:if="${documentType == 'pdf' && signRequest.signable}">
-<!--        <div class="alert alert-success mb-1">-->
-<!--            <p>Modifier la signature</p>-->
-<!--            <button type="button" id="signZoomOut" class="btn btn-light position-absolute">-->
-<!--                <i class="fa fas fa-search-minus"></i>-->
-<!--            </button>-->
-<!--            <button type="button" id="signZoomIn" class="btn btn-light position-absolute">-->
-<!--                <i class="fa fas fa-search-plus"></i>-->
-<!--            </button>-->
-<!--            <button th:if="${currentSignType != 'pdfImageStamp'}" id="visualButton" title="Inserer un visuel" class="btn btn-light btn-outline-success ml-1"><i class="fas fa-eye"></i></button>-->
-<!--            <button id="dateButton" title="Inserer la date" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>-->
-<!--        </div>-->
-    </div>
-    <div id="commentsTools" th:if="${documentType == 'pdf'}" style="display: none;">
-        <div th:unless="${postits.size() > 0}" class="alert alert-warning">Vous pouvez ajouter des commentaires en cliquant sur l'endroit concerné du document</div>
-        <div th:if="${postits.size() > 0}" class="alert alert-warning">
-            <ul class="list-group">
-                <th:block th:each="postit : ${postits}">
-                    <li th:id="'postit' + ${postit.id}" class="list-group-item"
-                        style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
-                        th:onclick="'$(\'html,body\').animate({scrollTop: $(\'#' + ${postit.id} + '\').css(\'top\').replace(\'px\', \'\')}, \'slow\');'"
-                        th:onmouseover="'$(\'#' + ${postit.id} + '\').addClass(\'text-danger\');'"
-                        th:onmouseout="'$(\'#' + ${postit.id} + '\').removeClass(\'text-danger\');'">
-                        <b th:text="${@userService.getUserByEppn(postit.eppn).firstname + ' ' + @userService.getUserByEppn(postit.eppn).name}"></b>
-                        <span th:text="${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></span>
-                        <p class="postitarea" th:text="${postit.comment}"></p>
-                    </li>
-                </th:block>
-            </ul>
+        <button data-toggle="modal" data-target="#signAllModal"
+                class="btn btn-light col-3 col-md-12 mb-1 text-left d-none"
+                th:classappend="${signable != 'ok' || signRequest.parentSignBook == null || signRequest.parentSignBook .signRequests.size() < 2} ? 'd-none' ">
+            <i class="fas fa-bolt"></i> Tout signer
+        </button>
+        <button th:if="${documentType == 'pdf'}" id="readButton" onclick="enableReadMode()"
+                class="d-none btn btn-light col-12 mb-1 text-left">
+            <i class="fas fa-eye"></i> Mode consultation
+        </button>
+        <button id="signButton" class="btn btn-light col-12 mb-1 text-left" th:if="${signRequest.signable}">
+            <i class="fas fa-signature"></i> Mode signature
+        </button>
+        <button th:if="${documentType == 'pdf'}" id="commentButton" class="btn btn-light col-12 mb-1 text-left d-none">
+            <i class="fas fa-comment"></i> Mode commentaires
+            <span th:if="${postits.size() > 0}" class="float-right badge badge-warning mt-1"
+                  th:text="${postits.size()}"></span>
+        </button>
+        <!--    <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>-->
+        <div id="signTools" th:if="${documentType == 'pdf' && signRequest.signable}">
+            <!--        <div class="alert alert-success mb-1">-->
+            <!--            <p>Modifier la signature</p>-->
+            <!--            <button type="button" id="signZoomOut" class="btn btn-light position-absolute">-->
+            <!--                <i class="fa fas fa-search-minus"></i>-->
+            <!--            </button>-->
+            <!--            <button type="button" id="signZoomIn" class="btn btn-light position-absolute">-->
+            <!--                <i class="fa fas fa-search-plus"></i>-->
+            <!--            </button>-->
+            <!--            <button th:if="${currentSignType != 'pdfImageStamp'}" id="visualButton" title="Inserer un visuel" class="btn btn-light btn-outline-success ml-1"><i class="fas fa-eye"></i></button>-->
+            <!--            <button id="dateButton" title="Inserer la date" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>-->
+            <!--        </div>-->
         </div>
-    </div>
-    <th:block th:if="${signRequest.parentSignBook != null}">
-        <div th:replace="user/signrequests/cards/stepscard"></div>
-    </th:block>
+        <div id="commentsTools" th:if="${documentType == 'pdf'}" style="display: none;">
+            <div th:unless="${postits.size() > 0}" class="alert alert-warning">Vous pouvez ajouter des commentaires en
+                cliquant sur l'endroit concerné du document
+            </div>
+            <div th:if="${postits.size() > 0}" class="alert alert-warning">
+                <ul class="list-group">
+                    <th:block th:each="postit : ${postits}">
+                        <li th:id="'postit' + ${postit.id}" class="list-group-item"
+                            style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
+                            th:onclick="'$(\'html,body\').animate({scrollTop: $(\'#' + ${postit.id} + '\').css(\'top\').replace(\'px\', \'\')}, \'slow\');'"
+                            th:onmouseover="'$(\'#' + ${postit.id} + '\').addClass(\'text-danger\');'"
+                            th:onmouseout="'$(\'#' + ${postit.id} + '\').removeClass(\'text-danger\');'">
+                            <b th:text="${@userService.getUserByEppn(postit.eppn).firstname + ' ' + @userService.getUserByEppn(postit.eppn).name}"></b>
+                            <span th:text="${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></span>
+                            <p class="postitarea" th:text="${postit.comment}"></p>
+                        </li>
+                    </th:block>
+                </ul>
+            </div>
+        </div>
+        <th:block th:if="${signRequest.parentSignBook != null}">
+            <div th:replace="user/signrequests/cards/stepscard"></div>
+        </th:block>
+        <th:block th:if="${signRequest.parentSignBook == null}">
+            <div th:replace="user/signrequests/includes/statusdetails"></div>
+        </th:block>
     </div>
 </nav>
 </html>

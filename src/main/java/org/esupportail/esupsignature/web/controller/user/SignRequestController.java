@@ -216,6 +216,7 @@ public class SignRequestController {
                     if(signRequest.getSignable() && signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign)) {
                         //model.addAttribute("signable", false);
                         model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter une image de votre signature");
+                        signRequest.setSignable(false);
                     }
                     model.addAttribute("signWidth", 100);
                     model.addAttribute("signHeight", 75);
@@ -385,14 +386,36 @@ public class SignRequestController {
     @PostMapping(value = "/fast-sign-request")
     public String createSignRequest(@RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                     @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
-        logger.info("création rapide demande de signature");
         User user = userService.getCurrentUser();
+        logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
         if (multipartFiles != null) {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
             signRequestService.addRecipients(signRequest, user);
 
             signRequestService.pendingSignRequest(signRequest, signType, false);
+            return "redirect:/user/signrequests/" + signRequest.getId();
+        } else {
+            logger.warn("no file to import");
+        }
+        return "redirect:/user/signrequests";
+    }
+
+    @PostMapping(value = "/send-sign-request")
+    public String sendSignRequest(@RequestParam("multipartFiles") MultipartFile[] multipartFiles,
+                                  @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
+                                  @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
+                                  @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
+        User user = userService.getCurrentUser();
+        logger.info(user.getFirstname() + " " + user.getName() + "envoi d'une demande de signature à " + recipientsEmails);
+        if (multipartFiles != null) {
+            if(allSignToComplete == null) {
+                allSignToComplete = false;
+            }
+            SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), user);
+            signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
+            signRequestService.addRecipients(signRequest, recipientsEmails);
+            signRequestService.pendingSignRequest(signRequest, signType, allSignToComplete);
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             logger.warn("no file to import");

@@ -219,7 +219,9 @@ public class SignRequestService {
 				recipientUser = userRepository.findByEmail(recipientEmail).get(0);
 			}
 			if(recipientRepository.findByParentIdAndUser(signRequest.getId(), recipientUser).size() == 0) {
-				signRequest.getRecipients().add(recipientService.createRecipient(signRequest.getId(), recipientUser));
+				Recipient recipient = recipientService.createRecipient(signRequest.getId(), recipientUser);
+				recipientRepository.save(recipient);
+				signRequest.getRecipients().add(recipient);
 			}
 		}
 

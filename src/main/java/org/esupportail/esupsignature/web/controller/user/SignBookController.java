@@ -207,8 +207,7 @@ public class SignBookController {
     @GetMapping(value = "/send-to-signbook/{id}/{workflowStepId}")
     public String sendToSignBook(@PathVariable("id") Long id,
                                  @PathVariable("workflowStepId") Long workflowStepId,
-                                 @RequestParam(value = "signBookNames") String[] signBookNames,
-                                 RedirectAttributes redirectAttrs, HttpServletRequest request) {
+                                 @RequestParam(value = "signBookNames") String[] signBookNames, HttpServletRequest request) {
         User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
         SignBook signBook = signBookRepository.findById(id).get();
@@ -241,7 +240,7 @@ public class SignBookController {
     @GetMapping(value = "/pending/{id}")
     public String pending(@PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
-                          HttpServletRequest request) throws EsupSignatureIOException {
+                          HttpServletRequest request) {
         User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
         SignBook signBook = signBookRepository.findById(id).get();
@@ -251,25 +250,25 @@ public class SignBookController {
         }
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
     }
-
-    @GetMapping(value = "/scan-pdf-sign/{id}")
-    public String scanPdfSign(@PathVariable("id") Long id,
-                          RedirectAttributes redirectAttrs, HttpServletRequest request) throws IOException {
-        User user = userService.getCurrentUser();
-        user.setIp(request.getRemoteAddr());
-        SignBook signBook = signBookRepository.findById(id).get();
-        for(SignRequest signRequest : signBook.getSignRequests()) {
-            if (signBook.getCurrentWorkflowStepNumber() == 1 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
-                try {
-                    List<SignRequestParams> signRequestParamses = signRequestService.scanSignatureFields(signRequest.getOriginalDocuments().get(0).getInputStream());
-                    redirectAttrs.addFlashAttribute("messageInfo", "Scan terminé, " + signRequestParamses.size() + " signature(s) trouvée(s)");
-                } catch (EsupSignatureIOException e) {
-                    logger.error("unable to scan the pdf document from " + signRequest.getId(), e);
-                }
-            }
-        }
-        return "redirect:/user/signbooks/" + id + "/?form";
-    }
+//
+//    @GetMapping(value = "/scan-pdf-sign/{id}")
+//    public String scanPdfSign(@PathVariable("id") Long id,
+//                          RedirectAttributes redirectAttrs, HttpServletRequest request) throws IOException {
+//        User user = userService.getCurrentUser();
+//        user.setIp(request.getRemoteAddr());
+//        SignBook signBook = signBookRepository.findById(id).get();
+//        for(SignRequest signRequest : signBook.getSignRequests()) {
+//            if (signBook.getCurrentWorkflowStepNumber() == 1 && signRequest.getOriginalDocuments().size() == 1 && signRequest.getOriginalDocuments().get(0).getContentType().contains("pdf")) {
+//                try {
+//                    List<SignRequestParams> signRequestParamses = signRequestService.scanSignatureFields(signRequest.getOriginalDocuments().get(0).getInputStream());
+//                    redirectAttrs.addFlashAttribute("messageInfo", "Scan terminé, " + signRequestParamses.size() + " signature(s) trouvée(s)");
+//                } catch (EsupSignatureIOException e) {
+//                    logger.error("unable to scan the pdf document from " + signRequest.getId(), e);
+//                }
+//            }
+//        }
+//        return "redirect:/user/signbooks/" + id + "/?form";
+//    }
 
     @PostMapping(value = "/comment/{id}")
     public String comment(@PathVariable("id") Long id,

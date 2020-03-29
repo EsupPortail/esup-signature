@@ -8,19 +8,21 @@
 <script th:inline="javascript" type="module">
     import {CreateDataUi} from "/js/modules/createDataUi.js";
     new CreateDataUi([[${form.document.id}]], [[${fields}]]);
+    $("#sidebarCollapse").attr("disabled", true);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full">
+        <nav th:insert="fragments/side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/datas">Mes brouillons</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Formulaire : <span th:text="${form.name}"></span>
                 </li>
             </ol>
         </nav>
-        <div id="content" class="content content-full">
+        <div id="content" class="content">
             <div th:if="${data.status == null && (data.signBook == null || data.signBook.signRequests.size() == 0)}" class="fixed-action-btn" >
                 <a th:if="${form.needName}" role="button" title="Enregistrer les modifications" type="button" class="btn-floating btn-lg bg-success wave-effect" data-toggle="modal" data-target="#saveModal">
                     <i class="fas fa-save"></i><br/>
@@ -150,13 +152,9 @@
                                 <option selected="selected" th:text="${targetEmail}" th:value="${targetEmail}"></option>
                             </th:block>
                         </select>
-                        <script type="module">
+                        <script th:inline="javascript" type="module">
                             import {default as SelectUser} from "/js/modules/selectUser.js";
                             new SelectUser("targetEmailsSelect");
-                            // var targetEmailsSelect = document.getElementById('targetEmailsSelect');
-                            // targetEmailsSelect.style.display = 'block';
-                            // targetEmailsSelect.classList.add('hide-select')
-
                         </script>
                     </div>
                     <p class="small">

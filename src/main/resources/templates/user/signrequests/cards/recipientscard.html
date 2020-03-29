@@ -2,13 +2,10 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div th:fragment="recipientscard" th:if="${signRequest.parentSignBook == null}">
-    <div class="card mb-1">
-        <div class="card-header">
-            Paramètres de signature
-
-        </div>
+    <div class="card mb-1 col-lg-10">
         <div id="collapseLogs" class="show" aria-labelledby="headingOne" data-parent="#accordion">
             <div class="card-body">
+                <h5>Paramètres de signature</h5>
                 <div class="alert alert-dark">
                     <span th:text="#{'signbook.signtype.' + ${signRequest.signType}}"></span>
                     <br>
@@ -32,7 +29,9 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="signRequestParams" tabindex="-1" role="dialog" aria-labelledby="signRequestParamsModalLabel" aria-hidden="true">
+    <div class="modal fade" id="signRequestParams" tabindex="-1" role="dialog"
+         aria-labelledby="signRequestParamsModalLabel"
+         aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -44,27 +43,31 @@
                 <form th:action="'/user/signrequests/add-recipients/' + ${signRequest.id}" method="post">
                     <div class="modal-body">
                         <div class="form-group" id="_signType_div_id">
-                        <label for="recipientsEmails">Choisir les participants</label>
-                        <select name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple" required="required">
-                            <th:block th:each="recipient : ${signRequest.recipients}">
-                                <option selected="selected" th:value="${recipient.user.email}" th:text="${recipient.user.email}"></option>
-                            </th:block>
-                        </select>
-                        <br/><br/>
-                        <label>
-                            Tous les participants doivent-ils signer ?
-                        </label>
-                        <label class="switch">
-                            <input type="checkbox" name="allSignToComplete" th:checked="${signRequest.allSignToComplete}"/>
-                            <span class="slider round"></span>
-                        </label>
-                        <br/>
-                        <label>Type de signature :</label>
-                        <select name="signType" class="form-control">
-                            <th:block th:each="signType : ${signTypes}">
-                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signRequest.signType == signType}"></option>
-                            </th:block>
-                        </select>
+                            <label for="recipientsEmails">Choisir les participants</label>
+                            <select name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple"
+                                    required="required">
+                                <th:block th:each="recipient : ${signRequest.recipients}">
+                                    <option selected="selected" th:value="${recipient.user.email}"
+                                            th:text="${recipient.user.email}"></option>
+                                </th:block>
+                            </select>
+                            <br/><br/>
+                            <label>
+                                Tous les participants doivent-ils signer ?
+                            </label>
+                            <label class="switch">
+                                <input type="checkbox" name="allSignToComplete"
+                                       th:checked="${signRequest.allSignToComplete}"/>
+                                <span class="slider round"></span>
+                            </label>
+                            <br/>
+                            <label>Type de signature :</label>
+                            <select name="signType" class="form-control">
+                                <th:block th:each="signType : ${signTypes}">
+                                    <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"
+                                            th:selected="${signRequest.signType == signType}"></option>
+                                </th:block>
+                            </select>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -78,6 +81,7 @@
 </div>
 <script type="module">
     import {default as SelectUser} from "/js/modules/selectUser.js";
+
     new SelectUser("recipientsEmail");
 </script>
 </html>
