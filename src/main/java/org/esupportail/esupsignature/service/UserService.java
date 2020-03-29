@@ -207,7 +207,10 @@ public class UserService {
 		Date date = new Date();
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
-		long diffInMillies = Math.abs(date.getTime() - user.getLastSendAlertDate().getTime());
+		long diffInMillies = Long.MAX_VALUE;
+		if(user.getLastSendAlertDate() != null) {
+			diffInMillies = Math.abs(date.getTime() - user.getLastSendAlertDate().getTime());
+		}
 		long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
 		if((user.getEmailAlertFrequency() == null && diff > 0)
 		|| (EmailAlertFrequency.daily.equals(user.getEmailAlertFrequency()) && diff > 0)
@@ -227,7 +230,6 @@ public class UserService {
 			if(toSignSignRequests.size() > 0) {
 				mailService.sendSignRequestAlert(Arrays.asList(recipientUser.getEmail()), toSignSignRequests);
 			}
-			recipientUser.setLastSendAlertDate(date);
 			userRepository.save(recipientUser);
 		} else {
 			List<String> toEmails = new ArrayList<>();
@@ -250,6 +252,7 @@ public class UserService {
 					}
 				}
 			}
+			recipientUser.setLastSendAlertDate(date);
 			mailService.sendSignRequestAlert(Arrays.asList(recipientUser.getEmail()), toSignSignRequests);
 		}
 

@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.mail;
 
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.compress.utils.IOUtils;
 import org.esupportail.esupsignature.config.mail.MailConfig;
 import org.esupportail.esupsignature.entity.*;
@@ -162,7 +163,7 @@ public class MailService {
             message.setTo(recipientsEmails.toArray(String[]::new));
             String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
             message.setText(htmlContent, true);
-            logger.info("send email alert for " + recipientsEmails.toArray(String[]::new));
+            logger.info("send email alert for " + recipientsEmails.get(0));
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
             logger.error("unable to sens email", e);
