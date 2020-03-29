@@ -6,10 +6,10 @@
 </head>
 <body class="bg-light">
 <div class="container">
-	<div class="card m-4">
-		<div class="card-header">
-			<img class="mx-auto float-left" th:src="@{|data:image/png;base64, ${logo}|}" />
-			<img class="mx-auto float-right" th:src="@{|data:image/png;base64, ${logo}|}" />
+	<div class="card rounded-0 m-4">
+		<div class="card-header bg-dark">
+			<img width="50" class="mx-auto float-left" th:src="@{|data:image/png;base64, ${logo}|}" />
+			<img width="50" class="mx-auto float-right" th:src="@{|data:image/png;base64, ${logoUrn}|}" />
 		</div>
 		<div class="card-body">
 			<h4>Bonjour,</h4>
@@ -39,7 +39,7 @@
 			</table>
 		</div>
 		<div class="card-footer bg-secondary">
-			<span class="text-white">Université de Rouen</span>
+			<span class="text-white justify-content-center">Université de Rouen</span>
 		</div>
 	</div>
 </div>

@@ -138,7 +138,7 @@ public class MailService {
         }
     }
 
-    public void sendSignRequestAlert(String recipientEmail, List<SignRequest> signRequests) {
+    public void sendSignRequestAlert(List<String> recipientsEmails, List<SignRequest> signRequests) {
         if (!checkMailSender()) {
             return;
         }
@@ -148,7 +148,7 @@ public class MailService {
         for(SignRequest signRequest : signRequests) {
             signRequest.setCreator(userRepository.findByEppn(signRequest.getCreateBy()).get(0));
         }
-        User user = userRepository.findByEmail(recipientEmail).get(0);
+        //User user = userRepository.findByEmail(recipientEmail).get(0);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;
@@ -156,16 +156,7 @@ public class MailService {
             message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             message.setSubject("Esup-Signature : nouveau document à signer");
             message.setFrom(mailConfig.getMailFrom());
-            List<String> toEmails = new ArrayList<>();
-            toEmails.add(recipientEmail);
-            for(UserShare userShare : userShareRepository.findByUser(user)) {
-                if(userShare.getShareType().equals(UserShare.ShareType.sign)) {
-                    for(User toUser : userShare.getToUsers()) {
-                        toEmails.add(toUser.getEmail());
-                    }
-                }
-            }
-            message.setTo(toEmails.toArray(String[]::new));
+            message.setTo(recipientsEmails.toArray(String[]::new));
             String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
             message.setText(htmlContent, true);
             mailSender.send(mimeMessage);
