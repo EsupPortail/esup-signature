@@ -100,7 +100,7 @@ public class WizardController {
         return new ModelAndView("user/wizard/wiz3");
     }
 
-    @GetMapping(value = "/wiz4/{id}")
+    @PostMapping(value = "/wiz4/{id}")
     public String wiz4(@PathVariable("id") Long id,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        @RequestParam(value = "selfSign", required = false) Boolean selfSign,

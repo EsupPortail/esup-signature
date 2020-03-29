@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.controller.user;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -11,6 +12,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -286,6 +288,39 @@ public class SignBookController {
             logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
         }
         return "redirect:/user/signbooks/" + signRequest.getParentSignBook().getId() + "/" + signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
+    }
+
+    @ResponseBody
+    @PostMapping(value = "/add-docs-in-sign-book-group/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Object addDocumentInSignBookGroup(@PathVariable("name") String name,
+                                             @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException {
+        logger.info("start add documents in " + name);
+        User user = userService.getCurrentUser();
+        user.setIp(httpServletRequest.getRemoteAddr());
+        SignBook signBook = signBookService.getSignBook(name, user);
+        SignRequest signRequest = signRequestService.createSignRequest(name, user);
+        signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
+        signBookService.addSignRequest(signBook, signRequest);
+        logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
+        String[] ok = {"ok"};
+        return ok;
+    }
+
+    @ResponseBody
+    @PostMapping(value = "/add-docs-in-sign-book-unique/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Object addDocumentToNewSignRequest(@PathVariable("name") String name,
+                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException, IOException {
+        logger.info("start add documents in " + name);
+        User user = userService.getCurrentUser();
+        SignBook signBook = signBookService.getSignBook(name, user);
+        user.setIp(httpServletRequest.getRemoteAddr());
+        for (MultipartFile multipartFile : multipartFiles) {
+            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
+            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+            signBookService.addSignRequest(signBook, signRequest);
+        }
+        String[] ok = {"ok"};
+        return ok;
     }
 
 }

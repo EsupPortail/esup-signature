@@ -136,7 +136,11 @@ public class SignBookService {
     public void saveWorkflow(String name, User user, SignBook signBook) throws EsupSignatureException {
         Workflow workflow = workflowService.createWorkflow(name, user, false);
         for(WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
-            WorkflowStep toSaveWorkflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), workflowStep.getAllSignToComplete(), workflowStep.getSignType(), workflowStep.getRecipients().toArray(String[]::new));
+            List<String> recipientsEmails = new ArrayList<>();
+            for (Recipient recipient : workflowStep.getRecipients()) {
+                recipientsEmails.add(recipient.getUser().getEmail());
+            }
+            WorkflowStep toSaveWorkflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientsEmails.toArray(String[]::new));
             workflow.getWorkflowSteps().add(toSaveWorkflowStep);
         }
     }

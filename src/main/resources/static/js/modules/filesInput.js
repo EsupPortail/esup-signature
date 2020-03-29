@@ -11,7 +11,7 @@ export class FilesInput {
         this.async = true;
         this.uploadUrl = null;
         if(signRequestId == null) {
-            this.uploadUrl = '/ws/add-docs-in-sign-book-unique/' + this.name + '?'+ csrfParameterName + '=' + csrfToken;
+            this.uploadUrl = '/user/signbooks/add-docs-in-sign-book-unique/' + this.name + '?'+ csrfParameterName + '=' + csrfToken;
         } else {
             this.async = false;
             this.uploadUrl = '/user/signrequests/add-docs/' + signRequestId + '?'+ csrfParameterName + '=' + csrfToken;
@@ -180,12 +180,12 @@ export class FilesInput {
         if ($('#unique :checkbox').is(":checked")){
             console.info('to group mode');
             this.input.fileinput('refresh', {
-                uploadUrl: '/ws/add-docs-in-sign-book-group/' + this.name + '?'+ this.csrfParameterName + '=' + this.csrfToken
+                uploadUrl: '/user/signbooks/add-docs-in-sign-book-group/' + this.name + '?'+ this.csrfParameterName + '=' + this.csrfToken
             });
         } else {
             console.info('to unique mode');
             this.input.fileinput('refresh', {
-                uploadUrl: '/ws/add-docs-in-sign-book-unique/' + this.name + '?'+ this.csrfParameterName + '=' + this.csrfToken
+                uploadUrl: '/user/signbooks/add-docs-in-sign-book-unique/' + this.name + '?'+ this.csrfParameterName + '=' + this.csrfToken
         });
         }
         console.groupEnd();

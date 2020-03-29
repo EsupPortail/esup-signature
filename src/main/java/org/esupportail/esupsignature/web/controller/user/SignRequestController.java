@@ -180,7 +180,7 @@ public class SignRequestController {
             model.addAttribute("nexuVersion", nexuVersion);
             model.addAttribute("baseUrl", baseUrl);
         }
-        if(signRequest.getParentSignBook() != null) {
+        if(signRequest.getParentSignBook() != null && dataRepository.countBySignBook(signRequest.getParentSignBook()) > 0) {
             Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
             if(data != null && data.getForm() != null) {
                 List<Field> fields = data.getForm().getFields();
@@ -301,7 +301,7 @@ public class SignRequestController {
             try {
                 formDataMap = objectMapper.readValue(formData, Map.class);
                 formDataMap.remove("_csrf");
-                if(signRequest.getParentSignBook() != null) {
+                if(signRequest.getParentSignBook() != null && dataRepository.countBySignBook(signRequest.getParentSignBook()) > 0) {
                     Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
                     for(Map.Entry<String, String> entry : formDataMap.entrySet()) {
                         if(!data.getDatas().containsKey(entry.getKey())) {

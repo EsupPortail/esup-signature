@@ -27,8 +27,6 @@
         [[${formRender}]]
     );
     signUi.workspace.pdfViewer.setDataFields([[${fields}]]);
-    globalUi.showSideBar();
-    $("#sidebarCollapse").attr("disabled", true);
 </script>
 <main role="main">
     <div class="wrapper">
@@ -196,7 +194,7 @@
                 <div th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}" class="alert alert-success"></div>
                 <div class="modal-body">
                     <label th:if="${signType == 'visa'}" for="signComment">Vous <b>pouvez</b> ajouter un commentaire à destination du Président de l’université</label>
-                    <textarea id="signComment" placeholder="Commentaire" class="form-control" name="comment"></textarea>
+                    <textarea th:if="${signRequest.parentSignBook != null}" id="signComment" placeholder="Commentaire" class="form-control" name="comment"></textarea>
                 </div>
                 <div th:if="${signType == 'nexuSign'}">
                     <div id="nexu_version_alert" style="display: none;">
