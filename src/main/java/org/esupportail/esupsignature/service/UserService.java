@@ -72,8 +72,12 @@ public class UserService {
 
 	public User getUserFromAuthentication() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String eppn = auth.getName();
-		return getUserByEppn(eppn);
+		if(auth != null) {
+			String eppn = auth.getName();
+			return getUserByEppn(eppn);
+		} else {
+			return null;
+		}
 	}
 
 	public User getCurrentUser() {
