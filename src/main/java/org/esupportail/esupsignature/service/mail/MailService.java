@@ -162,6 +162,7 @@ public class MailService {
             message.setTo(recipientsEmails.toArray(String[]::new));
             String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
             message.setText(htmlContent, true);
+            logger.info("send email alert for " + recipientsEmails.toArray(String[]::new));
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
             logger.error("unable to sens email", e);
