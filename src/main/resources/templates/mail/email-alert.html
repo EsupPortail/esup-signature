@@ -6,22 +6,21 @@
 </head>
 <body class="bg-light">
 <div class="container">
-	<div class="card rounded-0 m-4">
-		<div class="card-header bg-dark">
-			<img width="50" class="mx-auto float-left" th:src="@{|data:image/png;base64, ${logo}|}" />
-			<img width="50" class="mx-auto float-right" th:src="@{|data:image/png;base64, ${logoUrn}|}" />
+	<div class="card rounded-0 m-1">
+		<div class="card-header rounded-0 bg-dark">
+			<img height="40" class="mx-auto float-left" th:src="@{|data:image/png;base64, ${logo}|}" />
+			<img height="40" class="mx-auto float-right" th:src="@{|data:image/png;base64, ${logoUrn}|}" />
 		</div>
 		<div class="card-body">
-			<h4>Bonjour,</h4>
-			<h5>Voici la liste des demandes de signatures en attente : </h5>
-			<hr/>
-			<table class="table table-bordered">
-				<thead>
-				<tr style="font-weight: bold;">
-					<th>Nom</th>
-					<th>Date de création</th>
-					<th>Créé par</th>
-					<th>Consulter</th>
+			<p>Bonjour,</p>
+			<p>Voici la liste des demandes de signatures en attente : </p>
+			<table class="table table-borderless">
+				<thead class="thead-dark">
+				<tr>
+					<th class="text-white">Nom</th>
+					<th class="text-white">Date de création</th>
+					<th class="text-white">Créé par</th>
+					<th class="text-white">Consulter</th>
 				</tr>
 				</thead>
 				<tbody>
@@ -31,15 +30,15 @@
 						<td th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></td>
 						<td th:text="${signRequest.creator.firstname} + ' ' + ${signRequest.creator.name}"></td>
 						<td>
-							<a class="btn btn-primary mx-auto mt-2" th:href="@{|${rootUrl}/user/signrequests/${signRequest.id}|}">Accéder au document</a>
+							<a class="btn btn-sm btn-dark mx-auto" th:href="@{|${rootUrl}/user/signrequests/${signRequest.id}|}">Accéder au document</a>
 						</td>
 					</tr>
 				</th:block>
 				</tbody>
 			</table>
 		</div>
-		<div class="card-footer bg-secondary">
-			<span class="text-white justify-content-center">Université de Rouen</span>
+		<div class="card-footer rounded-0 bg-secondary justify-content-center text-center">
+			<span class="text-white text-center">Université de Rouen Normandie</span>
 		</div>
 	</div>
 </div>

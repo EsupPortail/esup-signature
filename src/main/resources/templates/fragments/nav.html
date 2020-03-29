@@ -3,8 +3,10 @@
 <!--/*@thymesVar id="suUsers" type="java.util.List<org.esupportail.esupsignature.entity.User>"*/-->
 <!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
 <header th:fragment="nav" class="fixed-top">
-    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark bg-dark" th:classappend="${@userService.getUserFromAuthentication() != user && user.name != null}? 'bg-striped' : 'bg-dark'">
-        <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse" class="btn btn-lg text-white float-left">
+    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark bg-dark"
+         th:classappend="${@userService.getUserFromAuthentication() != user && user.name != null}? 'bg-striped' : 'bg-dark'">
+        <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse"
+                class="btn btn-lg text-white float-left">
             <i class="fas fa-bars"></i>
         </button>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar_toggle"
@@ -12,14 +14,14 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <h1 aria-label="Esup-Signature" title="Esup-Signature" style="width: 204px;">
-            <a href="/"><img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg" /></a>
+            <a href="/"><img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/></a>
         </h1>
         <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between bg-dark">
             <ul class="navbar-nav" sec:authorize="isAuthenticated()">
                 <li class="nav-item text-white">
                     <a th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}"
-                            th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
-                            href="/" class="btn btn-transparent text-left">
+                       th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
+                       href="/" class="btn btn-transparent text-left">
                         <i class="fas fa-home"></i> <span class="nav-item-label d-none d-lg-inline">Accueil</span>
                         <span title="Demandes à signer" th:if="${nbToSign > 0}" class="badge badge-danger mt-1"
                               th:text="${nbToSign}"></span>
@@ -29,7 +31,8 @@
                     <a th:with="nbDatas=${@dataRepository.findByCreateByAndStatus(user.eppn, 'draft').size()}"
                        th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes brouillons"
                        href="/user/datas" class="btn btn-transparent text-left">
-                        <i class="fab fa-firstdraft"></i> <span class="nav-item-label d-none d-lg-inline">Mes brouillons</span>
+                        <i class="fab fa-firstdraft"></i> <span
+                            class="nav-item-label d-none d-lg-inline">Mes brouillons</span>
                         <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0}"
                               class="badge badge-info mt-1" th:text="${nbDatas}"></span>
 
@@ -39,25 +42,32 @@
                     <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user.eppn, 'pending').size()}"
                        th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Tableau de bord"
                        href="/user/signrequests" class="btn btn-transparent text-left">
-                        <i class="fas fa-paste"></i> <span class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
+                        <i class="fas fa-paste"></i> <span
+                            class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
                     </a>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarDropdown"
+                       role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-tools"></i> Outils
                     </a>
                     <div class="dropdown-menu bg-dark" aria-labelledby="navbarDropdown" style="min-width: 200px;">
-                        <a role="button" href class="btn text-white btn-transparent text-left m-1 col-11" data-toggle="modal"
-                           data-target="#fastSignRequestModal" title="Vous devez signer un document présent sur votre poste">
+                        <a role="button" href class="btn text-white btn-transparent text-left m-1 col-11"
+                           data-toggle="modal"
+                           data-target="#fastSignRequestModal"
+                           title="Vous devez signer un document présent sur votre poste">
                             <i class="fas fa-signature"></i><span class="nav-item-label d-none d-xl-inline"> Auto signature</span>
                         </a>
-                        <a role="button" href class="btn text-white btn-transparent text-left m-1 col-11" data-toggle="modal"
-                           data-target="#sendSignRequestModal" title="Demander la signature d'un document présent sur votre poste">
+                        <a role="button" href class="btn text-white btn-transparent text-left m-1 col-11"
+                           data-toggle="modal"
+                           data-target="#sendSignRequestModal"
+                           title="Demander la signature d'un document présent sur votre poste">
                             <i class="fas fa-paper-plane"></i><span class="nav-item-label d-none d-xl-inline"> Demander une signature</span>
                         </a>
                         <div class="dropdown-divider"></div>
                         <a th:classappend="${activeMenu == 'validation'} ? 'bg-secondary'"
-                           title="Valider la signature d'un document" href="/user/validation" class="btn text-white btn-transparent text-left m-1 col-11">
+                           title="Valider la signature d'un document" href="/user/validation"
+                           class="btn text-white btn-transparent text-left m-1 col-11">
                             <i class="fas fa-shield-alt"></i> <span class="nav-item-label d-none d-xxl-inline">Contrôler un document</span>
                         </a>
                     </div>
@@ -68,18 +78,22 @@
                     <a href="/admin/signrequests" th:class="'nav-link ' + ${adminMenu}"><i class="fas fa-crown"></i></a>
                 </li>
                 <li class="nav-item text-white">
-                   <a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos"
+                    <a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos"
                        aria-label="Paramètres utilisateur" class="text-decoration-none user-toggle"
                        aria-controls="user-infos" data-toggle="collapse">
-                       <b th:if="${@userService.getUserFromAuthentication() != user}" class="d-inline nav-link text-light" th:text="'(' + ${user.firstname} + ' ' + ${user.name} +')'"></b>
-						<b class="nav-item-label d-none d-lg-inline nav-link text-light" th:text="${@userService.getUserFromAuthentication().firstname} + ' ' + ${@userService.getUserFromAuthentication().name}"></b>
+                        <b th:if="${@userService.getUserFromAuthentication() != user}"
+                           class="d-inline nav-link text-light"
+                           th:text="'(' + ${user.firstname} + ' ' + ${user.name} +')'"></b>
+                        <b class="nav-item-label d-none d-lg-inline nav-link text-light"
+                           th:text="${@userService.getUserFromAuthentication().firstname} + ' ' + ${@userService.getUserFromAuthentication().name}"></b>
                         <div class="btn-floating btn-small btn-secondary user-toggle"><i class="fas fa-user"></i></div>
                     </a>
                 </li>
             </ul>
         </div>
     </nav>
-    <div th:if="${user.name != null}" id="user-infos" class="card position-fixed user-infos collapse overflow-y-scroll" style="right: 0;">
+    <div th:if="${user.name != null}" id="user-infos" class="card position-fixed user-infos collapse overflow-y-scroll"
+         style="right: 0;">
         <div id="myDocs" class="card-body user-infos">
             <button id="closeUserInfo" role="button" class="btn btn-light float-right">
                 <i class="fas fa-times"></i>
@@ -90,14 +104,19 @@
             <h3 th:unless="${@userService.getUserFromAuthentication() != user}">
                 Délégations
             </h3>
-            <a th:unless="${@userService.getUserFromAuthentication() != user}" class="btn btn-sm btn-dark mb-1" aria-label="Paramètres utilisateur "
+            <a th:unless="${@userService.getUserFromAuthentication() != user}" class="btn btn-sm btn-dark mb-1"
+               aria-label="Paramètres utilisateur "
                title="Paramètres" href="/user/users/shares">
                 <i class="fa fa-share"></i> Gérer mes délégations
             </a>
             <form id="changeSuEppn" th:action="'/user/users/change'" method="post">
                 <select class="form-control" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
-                    <option th:if="${@userService.getUserFromAuthentication() != user}" value="" selected>Délégation désactivée</option>
-                    <option th:if="${@userService.getUserFromAuthentication() == user}" selected disabled>Choisir un mandant</option>
+                    <option th:if="${@userService.getUserFromAuthentication() != user}" value="" selected>Délégation
+                        désactivée
+                    </option>
+                    <option th:if="${@userService.getUserFromAuthentication() == user}" selected disabled>Choisir un
+                        mandant
+                    </option>
                     <th:block th:each="suUser : ${suUsers}">
                         <option th:if="${user.eppn == suUser.eppn}" th:value="${suUser.eppn}"
                                 th:text="${suUser.firstname} + ' ' + ${suUser.name} " selected></option>
@@ -107,7 +126,8 @@
                 </select>
             </form>
             <h3>Vos informations</h3>
-            <a th:unless="${@userService.getUserFromAuthentication() != user}" class="btn btn-sm btn-dark" aria-label="Paramètres utilisateur "
+            <a th:unless="${@userService.getUserFromAuthentication() != user}" class="btn btn-sm btn-dark"
+               aria-label="Paramètres utilisateur "
                title="Paramètres" href="/user/users/?form">
                 <i class="fa fa-user-cog"></i> Modifier mes paramètres
             </a>
@@ -186,10 +206,12 @@
                                 </label>
                             </div>
                         </div>
+                        <br>
                         <label for="signType">Choisir un type de signature</label>
                         <select name="signType" id="signType" class="form-control">
                             <th:block th:each="signType : ${@signService.getSignTypes()}">
-                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                                <option th:if="${signType.name() != 'visa'}" th:value="${signType}"
+                                        th:text="#{'signbook.signtype.' + ${signType}}"></option>
                             </th:block>
                         </select>
                     </div>
@@ -225,19 +247,24 @@
                                 Choisir un document
                             </label>
                         </div>
-                    <label for="signType2">Choisir un type de signature</label>
-                    <select name="signType" id="signType2" class="form-control">
-                        <th:block th:each="signType : ${@signService.getSignTypes()}">
-                            <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
-                        </th:block>
-                    </select>
+                        <br><br>
+                        <label for="signType2">Choisir un type de signature</label>
+                        <select name="signType" id="signType2" class="form-control">
+                            <th:block th:each="signType : ${@signService.getSignTypes()}">
+                                <option th:if="${signType.name() != 'visa'}" th:value="${signType}"
+                                        th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                            </th:block>
+                        </select>
+                        <br>
                         <label for="recipientsEmails">Choisir les participants</label>
                         <div class="form-group">
-                            <select name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple" required="required">
+                            <select name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple"
+                                    required="required">
                             </select>
                         </div>
                         <script th:inline="javascript" type="module">
                             import {default as SelectUser} from "/js/modules/selectUser.js";
+
                             new SelectUser("recipientsEmails");
                         </script>
                         <div class="form-group" id="_allSignToComplete_div_id">
