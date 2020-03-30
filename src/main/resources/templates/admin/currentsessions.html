@@ -15,8 +15,8 @@
 	<div class="card">
 		<div class="card-header">
 			<h5>Utilisateurs connectés</h5>
-			<div class="card card-body bg-primary text-white" th:text="${#lists.size(currentSessions)} + 'session(s) active(s)'">
-			</div>
+			<span th:text="${#lists.size(currentSessions)} + 'session(s) active(s)'"></span>
+			<a href="/probe" class="btn btn-dark" >Probe</a>
 		</div>
 		<ul class="list-group list-group-flush">
 			<th:block th:each="currentSession :${currentSessions}">

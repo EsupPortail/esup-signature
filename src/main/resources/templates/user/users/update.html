@@ -34,42 +34,46 @@
                         <h5 class="text-center"><b>Paramètres de signature</b></h5>
                         <div id="signImageForm" class="form-group">
                             <div class="row">
-                                <div class="col-12 mb-2">
+                                <div class="col-12 mb-2 text-center">
                                     <label class="col-form-label"><strong>Vous pouvez dessinez une signature dans le rectangle ci dessous</strong></label>
                                     <br/>
-                                    <div class="text-center">
-                                        <canvas id="canvas" onmouseover="this.style.cursor= 'pointer';"
-                                                style="border: 1px solid black;"></canvas>
-                                        <br>
-                                        <button id="validate" type="button" class="btn btn-light btn-outline-dark">Valider
-                                            la signature
-                                        </button>
-                                        <button id="erase" type="button" class="btn btn-light btn-outline-dark">Effacer
-                                        </button>
-                                        <button id="reset" type="button" class="btn btn-light btn-outline-dark">
-                                            Réinitialiser
-                                        </button>
+                                    <div style="display:block; position: relative; width: 600px; height: 300px;margin: auto;justify-content: center; margin-bottom: 50px;">
+                                        <canvas id="canvas" style="border: 1px solid black;"></canvas>
+                                            <button id="validate" type="button"
+                                                    class="btn btn-light btn-outline-dark">Valider la signature
+                                            </button>
+                                            <button id="erase" type="button" class="btn btn-light btn-outline-dark">
+                                                Effacer
+                                            </button>
+                                            <button id="reset" type="button" class="btn btn-light btn-outline-dark">
+                                                Réinitialiser
+                                            </button>
+                                        <div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-lg-12">
-                                    <label class="col-form-label"><strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
-                                        <button data-target="#collapseHelpSignImage" data-toggle="collapse" type="button"
+                                    <label class="col-form-label">
+                                        <strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
+                                        <button data-target="#collapseHelpSignImage" data-toggle="collapse"
+                                                type="button"
                                                 class="btn btn-sm btn-info">
                                             <i class="fas fa-info-circle "></i>
                                         </button>
                                         <div class="collapse" id="collapseHelpSignImage">
                                             <div class="alert alert-info">
-                                                <small> Après avoir sélectionné une image, vous pourrez ajuster sa taille pour
-                                                    que la signature entre dans le carré blanc. Si votre signature est grande
+                                                <small> Après avoir sélectionné une image, vous pourrez ajuster sa
+                                                    taille pour
+                                                    que la signature entre dans le carré blanc. Si votre signature
+                                                    est grande
                                                     (contient un tampon par exemple), il est possible
                                                     d'élargir
-                                                    le carré blanc (la signature prendra plus de place sur le document) <br/>
-                                                    Une image de la signature sera toujours nécessaire pour signer un PDF
+                                                    le carré blanc (la signature prendra plus de place sur le
+                                                    document) <br/>
+                                                    Une image de la signature sera toujours nécessaire pour signer
+                                                    un PDF
                                                 </small>
                                             </div>
                                         </div>
                                     </label>
-                                    <div class="text-center">
                                     <div class="custom-file mb-1">
                                         <input type="file" class="custom-file-input" id="vanilla-upload"
                                                value="Choose a file" accept="image/*"
@@ -82,11 +86,13 @@
                                          style="display: none;">
                                         <div class="d-flex justify-content-center">
                                             <button type="button" id="zoomout"
-                                                    class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i
-                                                    class="fas fa-search-minus"></i></button>
+                                                    class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block">
+                                                <i
+                                                        class="fas fa-search-minus"></i></button>
                                             <button type="button" id="zoomin"
-                                                    class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i
-                                                    class="fas fa-search-plus"></i></button>
+                                                    class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block">
+                                                <i
+                                                        class="fas fa-search-plus"></i></button>
                                             <button type="button"
                                                     class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block vanilla-rotate"
                                                     data-deg="90"><i class="fas fa-undo"></i></button>
@@ -96,55 +102,55 @@
                                         </div>
                                         <div id="vanilla-crop" class="mt-2"></div>
                                     </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                         <input type="hidden" th:field="*{signImageBase64}"/>
                     </div>
-
                 </div>
 
                 <div class="card mb-1 col-lg-8 mx-auto">
                     <div class="card-body">
                         <h5 class="text-center"><b>Paramètres avancés</b></h5>
-                    <div id="keyForm" class="form-group">
-                        <label class="col-form-label"><strong>Magasin de certificats</strong>
-                            <button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button"
-                                    class="btn btn-sm btn-info">
+                        <div id="keyForm" class="form-group">
+                            <label class="col-form-label"><strong>Magasin de certificats</strong>
+                                <button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button"
+                                        class="btn btn-sm btn-info">
                             <span class="fas fa-info-circle "> <!-- -->
                             </span>
-                            </button>
-                            <div class="collapse collapse" id="collapseHelpKeyStore">
-                                <div class="alert alert-info">
-                                    <small> Il est possible de générer un keystore en suivant cette procédure <a
-                                            href="https://services.renater.fr/tcs/certcentral/orders/request-certificate"
-                                            target="_blank">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a>
-                                    </small>
+                                </button>
+                                <div class="collapse collapse" id="collapseHelpKeyStore">
+                                    <div class="alert alert-info">
+                                        <small> Il est possible de générer un keystore en suivant cette procédure <a
+                                                href="https://services.renater.fr/tcs/certcentral/orders/request-certificate"
+                                                target="_blank">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a>
+                                        </small>
+                                    </div>
+                                </div>
+                            </label>
+                            <div th:if="${user.keystore != null}" class="alert alert-secondary">
+                                Keystore actuel : <a
+                                    th:href="'/user/documents/getfile/' + ${user.keystore.id}"><span
+                                    th:text="${user.keystore.fileName}"></span></a>
+                                <br>
+                                <button type="button" th:if="${user.getKeystore() != null && referer == null  }"
+                                        class="btn btn-sm btn-primary text-left" data-toggle="modal"
+                                        data-target="#testKeystore">
+                                    <i class="fas fa-certificate"></i> <span
+                                        class="sidebar-label">Tester mon certificat</span>
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <div class="custom-file">
+                                    <input id="inputGroupFile03" type="file" accept="application/x-pkcs12"
+                                           class="custom-file-input" name="multipartKeystore" value="Choose a file"
+                                           aria-describedby="inputGroupFileAddon02"/>
+                                    <label for="inputGroupFile03" class="custom-file-label"> Choisir un fichier au
+                                        format pkcs12 (.P12)
+                                    </label>
                                 </div>
                             </div>
-                        </label>
-                        <div th:if="${user.keystore != null}" class="alert alert-secondary">
-                            Keystore actuel : <a th:href="'/user/documents/getfile/' + ${user.keystore.id}"><span
-                                th:text="${user.keystore.fileName}"></span></a>
-                            <br>
-                            <button type="button" th:if="${user.getKeystore() != null && referer == null  }"
-                                    class="btn btn-sm btn-primary text-left" data-toggle="modal"
-                                    data-target="#testKeystore">
-                                <i class="fas fa-certificate"></i> <span
-                                    class="sidebar-label">Tester mon certificat</span>
-                            </button>
                         </div>
-                        <div class="form-group">
-                            <div class="custom-file">
-                                <input id="inputGroupFile02" type="file" accept="application/x-pkcs12"
-                                       class="custom-file-input" name="multipartKeystore" value="Choose a file"
-                                       aria-describedby="inputGroupFileAddon02"/>
-                                <label for="inputGroupFile02" class="custom-file-label"> Choisir un fichier au format pkcs12 (.P12)
-                                </label>
-                            </div>
-                        </div>
-                    </div>
                     </div>
                 </div>
 
@@ -167,7 +173,8 @@
                             </label>
                             <select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency"
                                     size="1" onchange="checkAlertFrequency();">
-                                <option selected="selected" value="">-- Choisir votre préférence d'alerte --</option>
+                                <option selected="selected" value="">-- Choisir votre préférence d'alerte --
+                                </option>
                                 <th:block th:each="emailAlertFrequency : ${emailAlertFrequencies}">
                                     <option th:if="${emailAlertFrequency == user.emailAlertFrequency}"
                                             selected="selected" th:value="${emailAlertFrequency}"

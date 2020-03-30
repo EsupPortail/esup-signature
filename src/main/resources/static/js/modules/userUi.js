@@ -5,8 +5,8 @@ export default class UserUi {
         this.emailAlertFrequencySelect = document.getElementById("_emailAlertFrequency_id");
         this.emailAlertDay = document.getElementById("emailAlertDay");
         this.emailAlertHour = document.getElementById("emailAlertHour");
-        this.userSignaturePad = new UserSignaturePad(lastSign, signWidth, signHeight);
-        this.userSignatureCrop = new UserSignatureCrop();
+        new UserSignaturePad(lastSign, signWidth, signHeight);
+        new UserSignatureCrop();
         this.checkAlertFrequency();
     }
 
@@ -29,38 +29,41 @@ export class UserSignaturePad {
 
     constructor(lastSign, signWidth, signHeight) {
         console.info("Starting user signature pad tool");
-        this.canvas = $("#canvas");
-        // if(signWidth != null) {
-        //     this.canvas.css('width', signWidth);
-        //     this.canvas.css('height', signHeight);
-        // }
+        this.canvas = document.getElementById("canvas");
         this.signImageBase64 = $("#signImageBase64");
-        this.signaturePad = new SignaturePad(document.querySelector("canvas"));
+        this.signaturePad = new SignaturePad(this.canvas, {
+            minWidth: 1,
+            maxWidth: 3
+        });
+
         this.firstClear = true;
         this.lastSign = null;
         this.setLastSign(lastSign);
         this.initListeners();
+        this.resizeCanvas();
     }
 
     initListeners() {
-        this.canvas.mousedown(e => this.firstClearSignaturePad());
+        this.canvas.addEventListener('mousedown', e => this.firstClearSignaturePad());
+        this.canvas.addEventListener('touchstart', e => this.firstClearSignaturePad());
         $('#erase').click(e => this.clearSignaturePad());
-        $('#validate').click(e =>this.saveSignaturePad());
+        $('#validate').click(e => this.saveSignaturePad());
         $('#reset').click(e => this.resetSignaturePad());
+        window.addEventListener("resize", e => this.resizeCanvas());
     }
 
     setLastSign(lastSign) {
         this.lastSign = lastSign;
-        this.ratio =  Math.max(window.devicePixelRatio || 1, 1);
-        if(this.ratio === 1) {
-            this.signaturePad.fromDataURL(this.lastSign);
-        } else {
-            this.firstClearSignaturePad();
-        }
+        //this.ratio = Math.max(window.devicePixelRatio || 1, 1);
+        // if(this.ratio === 1) {
+
+        // } else {
+        //     this.firstClearSignaturePad();
+        // }
     }
 
     firstClearSignaturePad() {
-        if(this.firstClear) {
+        if (this.firstClear) {
             this.clearSignaturePad();
             this.firstClear = false;
         }
@@ -68,26 +71,35 @@ export class UserSignaturePad {
 
     saveSignaturePad() {
         this.signImageBase64.val(this.signaturePad.toDataURL("image/png"));
-        this.canvas.css("backgroundColor", "rgba(0, 255, 0, .5)");
-        $("#userParamsForm").submit();
+        this.canvas.style.background = "rgba(0, 255, 0, .5)";
+        //$("#userParamsForm").submit();
     }
 
     clearSignaturePad() {
-        this.canvas.css("backgroundColor", "rgba(255, 255, 255, 1)");
+        // this.canvas.css("backgroundColor", "rgba(255, 255, 255, 1)");
         this.signaturePad.clear();
         this.signImageBase64.val(this.lastSign);
     }
 
     resetSignaturePad() {
         console.info("reset pad");
-        this.canvas.css("backgroundColor", "rgba(255, 255, 255, 1)");
+        // this.canvas.css("backgroundColor", "rgba(255, 255, 255, 1)");
         this.signaturePad.clear();
         this.signaturePad.fromDataURL(this.lastSign);
         this.signImageBase64.val(this.lastSign);
         this.firstClear = true;
     }
 
+    resizeCanvas() {
+        console.info("resize sign pad");
+        let ratio = Math.max(window.devicePixelRatio || 1, 1);
+        this.canvas.width = this.canvas.offsetWidth * ratio;
+        this.canvas.height = this.canvas.offsetHeight * ratio;
+        this.canvas.getContext("2d").scale(ratio, ratio);
+        this.resetSignaturePad();
+    }
 }
+
 
 export class UserSignatureCrop {
 
