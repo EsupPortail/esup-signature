@@ -227,10 +227,6 @@ public class UserService {
 		//pour ne pas recevoir ses propres demandes
 		if(userService.getUserFromAuthentication() != null && recipientUser.equals(userService.getUserFromAuthentication())) {
 			toSignSignRequests = toSignSignRequests.stream().filter(signRequest -> !signRequest.getCreateBy().equals(recipientUser.getEppn())).collect(Collectors.toList());
-			if(toSignSignRequests.size() > 0) {
-				mailService.sendSignRequestAlert(Arrays.asList(recipientUser.getEmail()), toSignSignRequests);
-			}
-			userRepository.save(recipientUser);
 		} else {
 			List<String> toEmails = new ArrayList<>();
 //			toEmails.add(recipientEmail);
@@ -252,12 +248,12 @@ public class UserService {
 					}
 				}
 			}
+		}
+		if(toSignSignRequests.size() > 0 ) {
 			recipientUser.setLastSendAlertDate(date);
 			mailService.sendSignRequestAlert(Arrays.asList(recipientUser.getEmail()), toSignSignRequests);
+			userRepository.save(recipientUser);
 		}
-
-
-
 	}
 
 	public List<User> getSuUsers() {
