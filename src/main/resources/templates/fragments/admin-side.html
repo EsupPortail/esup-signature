@@ -15,6 +15,9 @@
         <a th:classappend="${activeMenu == 'forms'} ? 'bg-secondary'"  title="Modèles de documents" href="/admin/forms" class="btn btn-light col-12 mb-1 text-left">
             <i class="fas fa-file-alt"></i> <span class="sidebar-label">Formulaires</span>
         </a>
+        <a th:classappend="${activeMenu == 'currentSessions'} ? 'bg-secondary'"  title="Sessions courantes" href="/admin/currentsessions" class="btn btn-light col-12 mb-1 text-left">
+            <i class="fas fa-users"></i> <span class="sidebar-label">Sessions courantes</span>
+        </a>
         <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="mb-1 col-12 btn btn-light text-left">
             <i class="fas fa-code"></i> <span class="sidebar-label">APIs Doc</span>
         </a>

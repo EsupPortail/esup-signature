@@ -2,16 +2,25 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
 <body>
-	<nav th:replace="fragments/nav"></nav>
+<nav th:replace="fragments/nav"></nav>
+<main role="main">
+	<div class="wrapper">
+		<nav th:insert="fragments/admin-side"></nav>
+		<nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+			<ol id="breadcrumb-ol" class="breadcrumb">
+				<li class="breadcrumb-item active">Sessions courantes</li>
+			</ol>
+		</nav>
+		<div id="content" class="content">
 	<div class="card">
 		<div class="card-header">
 			<h5>Utilisateurs connectés</h5>
-			<div class="card card-body bg-primary text-white" th:text="${#lists.size(sessions)} + 'session(s) active(s)'">
+			<div class="card card-body bg-primary text-white" th:text="${#lists.size(currentSessions)} + 'session(s) active(s)'">
 			</div>
 		</div>
 		<ul class="list-group list-group-flush">
-			<th:block th:each="session :${sessions}">
-				<li class="list-group-item" th:text="${session}"></li>
+			<th:block th:each="currentSession :${currentSessions}">
+				<li class="list-group-item" th:text="${currentSession}"></li>
 			</th:block>
 		</ul>
 	</div>

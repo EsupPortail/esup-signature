@@ -17,6 +17,8 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.session.SessionRegistry;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
@@ -40,18 +43,26 @@ public class CurrentSessionsController {
 		return "active";
 	}
 
-	@Autowired
+	@Resource
 	@Qualifier("sessionRegistry")
 	private SessionRegistry sessionRegistry;
-	
+
+	@Resource
+	private UserService userService;
+
+	@ModelAttribute("user")
+	public User getUser() {
+		return userService.getCurrentUser();
+	}
+
 	@GetMapping
 	public String getCurrentSessions(Model uiModel) {
-		List<String> sessions = new Vector<String>();
+		List<String> sessions = new Vector<>();
 		List<Object> principals = sessionRegistry.getAllPrincipals();
 		for(Object p: principals) {
 			sessions.add(((UserDetails) p).getUsername());
 		}
-		uiModel.addAttribute("sessions", sessions);
+		uiModel.addAttribute("currentSessions", sessions);
 		uiModel.addAttribute("active", "sessions");
 		return "admin/currentsessions";
 	}
