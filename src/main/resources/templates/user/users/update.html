@@ -31,45 +31,45 @@
                 <input type="hidden" name="id" th:value="${user.id}"/>
                 <div class="card mb-1 col-lg-8 mx-auto">
                     <div class="card-body">
-                        <h5>Paramètres de signature</h5>
+                        <h5 class="text-center"><b>Paramètres de signature</b></h5>
                         <div id="signImageForm" class="form-group">
-                            <label class="col-form-label" for="inputGroupFile01">
-                                <strong>Image de la signature</strong>
-                                <button data-target="#collapseHelpSignImage" data-toggle="collapse" type="button"
-                                        class="btn btn-sm btn-info">
-                                    <i class="fas fa-info-circle "></i>
-                                </button>
-                                <div class="collapse" id="collapseHelpSignImage">
-                                    <div class="alert alert-info">
-                                        <small> Après avoir sélectionné une image, vous pourrez ajuster sa taille pour
-                                            que la signature entre dans le carré blanc. Si votre signature est grande
-                                            (contient un tampon par exemple), il est possible
-                                            d'élargir
-                                            le carré blanc (la signature prendra plus de place sur le document) <br/>
-                                            Une image de la signature sera toujours nécessaire pour signer un PDF
-                                        </small>
+                            <div class="row">
+                                <div class="col-12 mb-2">
+                                    <label class="col-form-label"><strong>Vous pouvez dessinez une signature dans le rectangle ci dessous</strong></label>
+                                    <br/>
+                                    <div class="text-center">
+                                        <canvas id="canvas" onmouseover="this.style.cursor= 'pointer';"
+                                                style="border: 1px solid black;"></canvas>
+                                        <br>
+                                        <button id="validate" type="button" class="btn btn-light btn-outline-dark">Valider
+                                            la signature
+                                        </button>
+                                        <button id="erase" type="button" class="btn btn-light btn-outline-dark">Effacer
+                                        </button>
+                                        <button id="reset" type="button" class="btn btn-light btn-outline-dark">
+                                            Réinitialiser
+                                        </button>
                                     </div>
                                 </div>
-                            </label>
-                            <div class="row">
-
-                                <div class="col-12 text-center mb-2">
-                                    <label>Vous pouvez dessinez une signature dans le rectangle ci dessous</label>
-                                    <br/>
-                                    <canvas id="canvas" onmouseover="this.style.cursor= 'pointer';"
-                                            style="border: 1px solid black;"></canvas>
-                                    <br>
-                                    <button id="validate" type="button" class="btn btn-light btn-outline-dark">Valider
-                                        la signature
-                                    </button>
-                                    <button id="erase" type="button" class="btn btn-light btn-outline-dark">Effacer
-                                    </button>
-                                    <button id="reset" type="button" class="btn btn-light btn-outline-dark">
-                                        Réinitialiser
-                                    </button>
-                                </div>
-                                <div class="col-lg-12 text-center">
-                                    <label>Vous pouvez choisir une image provenant de votre ordinateur</label>
+                                <div class="col-lg-12">
+                                    <label class="col-form-label"><strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
+                                        <button data-target="#collapseHelpSignImage" data-toggle="collapse" type="button"
+                                                class="btn btn-sm btn-info">
+                                            <i class="fas fa-info-circle "></i>
+                                        </button>
+                                        <div class="collapse" id="collapseHelpSignImage">
+                                            <div class="alert alert-info">
+                                                <small> Après avoir sélectionné une image, vous pourrez ajuster sa taille pour
+                                                    que la signature entre dans le carré blanc. Si votre signature est grande
+                                                    (contient un tampon par exemple), il est possible
+                                                    d'élargir
+                                                    le carré blanc (la signature prendra plus de place sur le document) <br/>
+                                                    Une image de la signature sera toujours nécessaire pour signer un PDF
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <div class="text-center">
                                     <div class="custom-file mb-1">
                                         <input type="file" class="custom-file-input" id="vanilla-upload"
                                                value="Choose a file" accept="image/*"
@@ -96,6 +96,7 @@
                                         </div>
                                         <div id="vanilla-crop" class="mt-2"></div>
                                     </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -106,7 +107,7 @@
 
                 <div class="card mb-1 col-lg-8 mx-auto">
                     <div class="card-body">
-                        <h5>Paramètres avancés</h5>
+                        <h5 class="text-center"><b>Paramètres avancés</b></h5>
                     <div id="keyForm" class="form-group">
                         <label class="col-form-label"><strong>Magasin de certificats</strong>
                             <button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button"
@@ -149,7 +150,7 @@
 
                 <div class="card mb-1 col-lg-8 mx-auto">
                     <div class="card-body">
-                        <h5>Fréquence des alertes</h5>
+                        <h5 class="text-center"><b>Fréquence des alertes</b></h5>
                         <div class="form-group" id="emailAlertFrequency">
                             <label class="col-form-label" for="_emailAlertFrequency_id"> <strong>Fréquence
                                 d'alerte</strong>
