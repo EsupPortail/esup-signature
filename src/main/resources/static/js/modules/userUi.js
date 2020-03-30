@@ -112,7 +112,7 @@ export class UserSignatureCrop {
             enableExif : true,
             enableOrientation : true,
             enableResize : true,
-            enforceBoundary : true,
+            enforceBoundary : false,
             mouseWheelZoom: true
         });
         this.initListeners();
