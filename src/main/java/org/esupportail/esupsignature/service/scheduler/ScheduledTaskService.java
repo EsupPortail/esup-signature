@@ -73,7 +73,7 @@ public class ScheduledTaskService {
 	public void sendAllEmailAlerts() {
 		List<User> users = userService.getAllUsers();
 		for(User user : users) {
-			logger.info("check email alert for " + user.getEppn());
+			logger.trace("check email alert for " + user.getEppn());
 			if(userService.checkEmailAlert(user)) {
 				userService.sendEmailAlert(user);
 			}
