@@ -122,6 +122,7 @@ public class SignRequestService {
 		List<Log> logs = new ArrayList<>();
 		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.signed.name()));
 		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.checked.name()));
+		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.refused.name()));
 		logs:
 		for (Log log : logs) {
 			logger.debug("find log : " + log.getSignRequestId() + ", " + log.getFinalStatus());

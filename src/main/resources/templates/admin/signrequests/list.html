@@ -13,11 +13,13 @@
         </nav>
         <div id="content" class="content">
             <div class="card col-lg-10 mx-auto">
-                <div class="card-header">
+                <h5>Liste de toutes les demandes</h5>
+                <br>
                     <form action="#" method="get">
                         <div class="form-group">
+                            <div class="input-group">
                             <div class="input-group-prepend">
-                                <div class="input-group-text">Statut</div>
+                                <span class="input-group-text" id="basic-addon1">Statut</span>
                             </div>
                             <select class="form-control" name="statusFilter" id="statusFilter" onchange="submit();">
                                 <option value="" disabled="disabled" selected="selected">Choisir un statut</option>
@@ -30,10 +32,9 @@
                                             th:text="#{'signbook.status.' + ${status}}"></option>
                                 </th:block>
                             </select>
+                            </div>
                         </div>
                     </form>
-                </div>
-                <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-sm table-striped table-hover table-borderless">
                             <thead class="thead-dark">
@@ -101,9 +102,7 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
-                <div class="card-footer">
-                    <nav th:replace="fragments/pagination :: pagination"></nav>
+                <nav th:replace="fragments/pagination :: pagination"></nav>
                 </div>
             </div>
         </div>

@@ -27,6 +27,9 @@
 	<div th:if="${signRequest.status.name() == 'pending'}">
 		<div class="card card-body mb-1">
 			<span>
+				<span title="Étape en cours" class="bs-stepper-circle bg-warning">
+					<i class="fas fa-spinner fa-pulse"></i>
+				</span>
 				Le document est en cours de signature par :
 			</span>
 			<table class="table table-sm table-borderless table-striped table-hover">

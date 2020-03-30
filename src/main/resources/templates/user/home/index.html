@@ -29,15 +29,15 @@
                                 <tbody>
                                 <th:block th:each="signRequest : ${signRequests}">
                                     <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
-                                        <td class="text-break w-10"><i class="fas fa-book p-2"></i></td>
-                                        <td class="text-break w-15" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
-                                        <td class="text-break w-25" th:unless="${signRequest.parentSignBook != null}" th:text="${signRequest.title}"></td>
-                                        <td class="text-break w-10" th:with="creator = ${@userService.getUserByEppn(signRequest.createBy)}">
+                                        <td class="text-break w-5"><i class="fas fa-book p-2"></i></td>
+                                        <td class="text-break w-35" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
+                                        <td class="text-break w-35" th:unless="${signRequest.parentSignBook != null}" th:text="${signRequest.title}"></td>
+                                        <td class="text-break w-15" th:with="creator = ${@userService.getUserByEppn(signRequest.createBy)}">
                                             <span th:text="${creator.firstname} + ' ' + ${creator.name}"></span>
                                         </td>
                                         <td class="text-break w-10"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                         </td>
-                                        <td class="text-center w-5">
+                                        <td class="text-center">
                                              <a aria-label="Accéder à la demande"
                                                class="btn btn-sm text-dark"
                                                title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i

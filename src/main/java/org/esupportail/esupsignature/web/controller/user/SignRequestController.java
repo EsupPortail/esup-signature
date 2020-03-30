@@ -136,11 +136,12 @@ public class SignRequestController {
         if (statusFilter != null) {
             if (statusFilter.equals("tosign")) {
                 signRequests = signRequestService.getToSignRequests(user);
-                model.addAttribute("statusFilter", "tosign");
+            } else if (statusFilter.equals("signed")) {
+                signRequests = signRequestService.getSignRequestsSignedByUser(user);
             } else {
                 signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.valueOf(statusFilter));
-                model.addAttribute("statusFilter", statusFilter);
             }
+            model.addAttribute("statusFilter", statusFilter);
         } else {
             signRequests = signRequestRepository.findByCreateBy(user.getEppn());
             for(SignRequest signRequest : signRequestService.getToSignRequests(user)) {

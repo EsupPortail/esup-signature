@@ -3,9 +3,6 @@
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <nav th:fragment="admin-side" id="sidebar">
     <div class="ml-1 mt-1">
-        <a title="Accueil" type="button" href="/" class="mb-1 col-12 btn btn-light text-left">
-            <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
-        </a>
         <a title="Toutes les demandes" type="button" href="/admin/signrequests" class="mb-1 col-12 btn btn-light text-left" th:classappend="${activeMenu == 'adminsignrequests'} ? 'bg-secondary'">
             <i class="fas fa-paste"></i> <span class="sidebar-label">Demandes</span>
         </a>
