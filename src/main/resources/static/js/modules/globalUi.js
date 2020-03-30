@@ -37,6 +37,9 @@ export class GlobalUi {
         document.addEventListener('change', function(e){
             $(e.target).removeClass("invalid")
         }, true);
+        $(".postit-visa").on('click', function () {
+            $(this).toggleClass("w-100");
+        });
     }
 
     disableBodyScroll() {

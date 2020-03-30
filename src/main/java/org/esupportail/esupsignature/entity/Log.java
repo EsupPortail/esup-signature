@@ -32,7 +32,8 @@ public class Log {
 	private String returnCode;
 	
 	private String ip;
-	
+
+    @Column(columnDefinition = "TEXT")
 	private String comment;
 
     private Integer pageNumber;

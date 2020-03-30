@@ -149,6 +149,11 @@ public class SignRequestController {
                     signRequests.add(signRequest);
                 }
             }
+            for(SignRequest signRequest : signRequestService.getSignRequestsSignedByUser(user)) {
+                if(!signRequests.contains(signRequest)) {
+                    signRequests.add(signRequest);
+                }
+            }
         }
 
         model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequests, pageable));
