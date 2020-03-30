@@ -106,6 +106,7 @@ public class MailService {
             message.setTo(user.getEmail());
             String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
             message.setText(htmlContent, true);
+            logger.info("send email completes for " + user.getName());
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
             logger.error("unable to sens email", e);
@@ -138,6 +139,7 @@ public class MailService {
             message.setTo(toEmails.toArray(String[]::new));
             String htmlContent = templateEngine.process("mail/email-refused.html", ctx);
             message.setText(htmlContent, true);
+            logger.info("send email refude for " + toEmails.get(0));
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
             logger.error("unable to sens email", e);

@@ -139,8 +139,7 @@ public class FileService {
 				(b2 - tolerance <= b1) && (b1 <= b2 + tolerance));
 	}
 	
-	public BufferedImage makeColorTransparent(BufferedImage im)
-	   {
+	public BufferedImage makeColorTransparent(BufferedImage im) {
 		final ImageFilter filter = new RGBImageFilter() {
 
 			@Override
@@ -154,11 +153,9 @@ public class FileService {
 				}
 			}
 		};
-
-	      final ImageProducer ip = new FilteredImageSource(im.getSource(), filter);
-	      return toBufferedImage(Toolkit.getDefaultToolkit().createImage(ip));
-	      
-	   }
+		final ImageProducer ip = new FilteredImageSource(im.getSource(), filter);
+		return toBufferedImage(Toolkit.getDefaultToolkit().createImage(ip));
+	}
 	
 	public static BufferedImage toBufferedImage(Image image) 
 	  { 

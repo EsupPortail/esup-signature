@@ -92,7 +92,7 @@ public class AdminSignRequestController {
 			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "signBookId", required = false) Long signBookId,
 			@RequestParam(value = "messageError", required = false) String messageError,
-			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, RedirectAttributes redirectAttrs, Model model) {
+			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, RedirectAttributes redirectAttrs, Model model) {
 		User user = userService.getCurrentUser();
 		if(statusFilter != null) {
 			if(!statusFilter.equals("all")) {
@@ -114,7 +114,7 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/{id}")
-	public String show(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttrs) throws SQLException, IOException, Exception {
+	public String show(@PathVariable("id") Long id, Model model) throws Exception {
 		User user = userService.getCurrentUser();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
@@ -196,8 +196,7 @@ public class AdminSignRequestController {
 
 	@GetMapping(value = "/complete/{id}")
 	public String complete(@PathVariable("id") Long id,
-			@RequestParam(value = "comment", required = false) String comment,
-			HttpServletResponse response, RedirectAttributes redirectAttrs, Model model, HttpServletRequest request) throws EsupSignatureException {
+			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) {
 		User user = userService.getCurrentUser();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -211,7 +210,7 @@ public class AdminSignRequestController {
 
 	@GetMapping(value = "/pending/{id}")
 	public String pending(@PathVariable("id") Long id,
-			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) throws IOException, EsupSignatureIOException {
+			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) {
 		User user = userService.getCurrentUser();
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();

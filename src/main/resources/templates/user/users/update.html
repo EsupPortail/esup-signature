@@ -31,7 +31,7 @@
                 <input type="hidden" name="id" th:value="${user.id}"/>
                 <div class="card mb-1 col-lg-8 mx-auto">
                     <div class="card-body">
-                        <h5 class="text-center"><b>Paramètres de signature</b></h5>
+                        <h5>Paramètres de signature</h5>
                         <div id="signImageForm" class="form-group">
                             <label class="col-form-label" for="inputGroupFile01">
                                 <strong>Image de la signature</strong>
@@ -105,6 +105,8 @@
                 </div>
 
                 <div class="card mb-1 col-lg-8 mx-auto">
+                    <div class="card-body">
+                        <h5>Paramètres avancés</h5>
                     <div id="keyForm" class="form-group">
                         <label class="col-form-label"><strong>Magasin de certificats</strong>
                             <button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button"
@@ -137,16 +139,17 @@
                                 <input id="inputGroupFile02" type="file" accept="application/x-pkcs12"
                                        class="custom-file-input" name="multipartKeystore" value="Choose a file"
                                        aria-describedby="inputGroupFileAddon02"/>
-                                <label for="inputGroupFile02" class="custom-file-label"> Choisir un keystore
+                                <label for="inputGroupFile02" class="custom-file-label"> Choisir un fichier au format pkcs12 (.P12)
                                 </label>
                             </div>
                         </div>
+                    </div>
                     </div>
                 </div>
 
                 <div class="card mb-1 col-lg-8 mx-auto">
                     <div class="card-body">
-                        <h5 class="text-center"><b>Fréquence des alertes</b></h5>
+                        <h5>Fréquence des alertes</h5>
                         <div class="form-group" id="emailAlertFrequency">
                             <label class="col-form-label" for="_emailAlertFrequency_id"> <strong>Fréquence
                                 d'alerte</strong>
