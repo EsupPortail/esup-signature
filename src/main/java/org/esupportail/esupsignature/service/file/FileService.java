@@ -146,7 +146,7 @@ public class FileService {
 			public int filterRGB(int x, int y, int rgb) {
 				final Color filterColor = new Color(rgb);
 
-				if(colorsAreSimilar(filterColor, Color.WHITE, 40)) {
+				if(colorsAreSimilar(filterColor, Color.WHITE, 20)) {
 					return 0x00FFFFFF & rgb;
 				} else {
 					return rgb;
