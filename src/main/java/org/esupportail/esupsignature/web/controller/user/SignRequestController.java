@@ -136,8 +136,10 @@ public class SignRequestController {
         if (statusFilter != null) {
             if (statusFilter.equals("tosign")) {
                 signRequests = signRequestService.getToSignRequests(user);
-            } else if (statusFilter.equals("signed")) {
+            } else if (statusFilter.equals("signedByMe")) {
                 signRequests = signRequestService.getSignRequestsSignedByUser(user);
+            }  else if (statusFilter.equals("refusedByMe")) {
+                signRequests = signRequestService.getSignRequestsRefusedByUser(user);
             } else {
                 signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.valueOf(statusFilter));
             }
@@ -150,6 +152,11 @@ public class SignRequestController {
                 }
             }
             for(SignRequest signRequest : signRequestService.getSignRequestsSignedByUser(user)) {
+                if(!signRequests.contains(signRequest)) {
+                    signRequests.add(signRequest);
+                }
+            }
+            for(SignRequest signRequest : signRequestService.getSignRequestsRefusedByUser(user)) {
                 if(!signRequests.contains(signRequest)) {
                     signRequests.add(signRequest);
                 }
@@ -175,7 +182,6 @@ public class SignRequestController {
     public String show(@PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
         User user = userService.getCurrentUser();
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        model.addAttribute("signRequest", signRequest);
         if (signRequest.getStatus().equals(SignRequestStatus.pending)
                 && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0
                 && signRequestService.needToSign(signRequest, user)
@@ -237,6 +243,7 @@ public class SignRequestController {
         List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
         model.addAttribute("refuseLogs", refuseLogs);
         model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
+        model.addAttribute("signRequest", signRequest);
         signRequestService.setStep("");
         if (frameMode != null && frameMode) {
             return "user/signrequests/show-frame";

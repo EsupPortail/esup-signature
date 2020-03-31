@@ -122,6 +122,24 @@ public class SignRequestService {
 		List<Log> logs = new ArrayList<>();
 		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.signed.name()));
 		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.checked.name()));
+		logs:
+		for (Log log : logs) {
+			logger.debug("find log : " + log.getSignRequestId() + ", " + log.getFinalStatus());
+			try {
+				SignRequest signRequest = signRequestRepository.findById(log.getSignRequestId()).get();
+				if(!signRequests.contains(signRequest)) {
+					signRequests.add(signRequest);
+				}
+			} catch (Exception e) {
+				logger.debug(e.getMessage());
+			}
+		}
+		return signRequests;
+	}
+
+	public List<SignRequest> getSignRequestsRefusedByUser(User user) {
+		List<SignRequest> signRequests = new ArrayList<>();
+		List<Log> logs = new ArrayList<>();
 		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.refused.name()));
 		logs:
 		for (Log log : logs) {
@@ -571,7 +589,7 @@ public class SignRequestService {
 		if(signRequest.getParentSignBook() != null) {
 			signBookService.refuse(signRequest.getParentSignBook(), signRequest.getComment(), user);
 		} else {
-			updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS");
+			updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", signRequest.getComment(), null, null, null);
 		}
 	}
 
@@ -701,6 +719,13 @@ public class SignRequestService {
 			Sort.Order order = pageable.getSort().iterator().next();
 			SortDefinition sortDefinition = new MutableSortDefinition(order.getProperty(), true, order.getDirection().isAscending());
 			Collections.sort(signRequestsGrouped, new PropertyComparator(sortDefinition));
+		}
+		for(SignRequest signRequest : signRequestsGrouped) {
+			List<Log> endLog = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.completed.name());
+			endLog.addAll(logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name()));
+			if(endLog .size() > 0) {
+				signRequest.setEndDate(endLog.get(0).getLogDate());
+			}
 		}
 		return new PageImpl<>(signRequestsGrouped.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequestsGrouped.size());
 	}

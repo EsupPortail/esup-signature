@@ -77,6 +77,10 @@ public class SignRequest {
 
     @JsonIgnore
     @Transient
+    transient Date endDate;
+
+    @JsonIgnore
+    @Transient
     transient Boolean signable = false;
 
     public Long getId() {
@@ -237,6 +241,14 @@ public class SignRequest {
 
     public void setSignable(Boolean signable) {
         this.signable = signable;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
     }
 
     public SignRequestParams getCurrentSignRequestParams() {
