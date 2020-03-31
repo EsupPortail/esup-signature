@@ -189,7 +189,7 @@ public class MailService {
             message.setSubject("Esup-Signature : nouveau document à signer");
             message.setFrom(mailConfig.getMailFrom());
             message.setTo(recipientsEmails.toArray(String[]::new));
-            String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
+            String htmlContent = templateEngine.process("mail/email-alert-summary.html", ctx);
             message.setText(htmlContent, true);
             logger.info("send email alert for " + recipientsEmails.get(0));
             mailSender.send(mimeMessage);
