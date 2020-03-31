@@ -146,7 +146,34 @@ public class MailService {
         }
     }
 
-    public void sendSignRequestAlert(List<String> recipientsEmails, List<SignRequest> signRequests) {
+    public void sendSignRequestAlert(List<String> recipientsEmails, SignRequest signRequest) {
+        if (!checkMailSender()) {
+            return;
+        }
+        final Context ctx = new Context(Locale.FRENCH);
+        ctx.setVariable("signRequest", signRequest);
+        ctx.setVariable("rootUrl", rootUrl);
+        ctx.setVariable("userService", userService);
+        setTemplate(ctx);
+        final MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper message;
+        try {
+            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            User creator = userService.getUserByEppn(signRequest.getCreateBy());
+            message.setSubject("Nouvelle demande de : " + creator.getFirstname() + " " + creator.getName() + " : " + signRequest.getTitle());
+            message.setFrom(mailConfig.getMailFrom());
+            message.setTo(recipientsEmails.toArray(String[]::new));
+            String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
+            message.setText(htmlContent, true);
+            logger.info("send email alert for " + recipientsEmails.get(0));
+            mailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            logger.error("unable to sens email", e);
+        }
+
+    }
+
+    public void sendSignRequestSummaryAlert(List<String> recipientsEmails, List<SignRequest> signRequests) {
         if (!checkMailSender()) {
             return;
         }
@@ -154,7 +181,6 @@ public class MailService {
         ctx.setVariable("signRequests", signRequests);
         ctx.setVariable("rootUrl", rootUrl);
         ctx.setVariable("userService", userService);
-        //User user = userRepository.findByEmail(recipientEmail).get(0);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;

@@ -13,7 +13,7 @@
 		</div>
 		<div class="card-body">
 			<p>Bonjour,</p>
-			<p>Vous avez une nouvelle demande de signatures en attente : </p>
+			<p>Voici la liste des demandes de signatures en attente : </p>
 			<table class="table table-borderless">
 				<thead class="thead-dark">
 				<tr>
@@ -24,6 +24,7 @@
 				</tr>
 				</thead>
 				<tbody>
+				<th:block th:each="signRequest : ${signRequests}">
 					<tr>
 						<td th:text="${signRequest.title}"></td>
 						<td th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></td>
@@ -34,6 +35,7 @@
 							<a class="btn btn-sm btn-dark mx-auto" th:href="@{|${rootUrl}/user/signrequests/${signRequest.id}|}">Accéder au document</a>
 						</td>
 					</tr>
+				</th:block>
 				</tbody>
 			</table>
 		</div>

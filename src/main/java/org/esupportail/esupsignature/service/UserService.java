@@ -220,15 +220,42 @@ public class UserService {
 		return false;
 	}
 
+	public void sendSignRequestEmailAlert(User recipientUser, SignRequest signRequest) {
+		Date date = new Date();
+		List<String> toEmails = new ArrayList<>();
+		for(UserShare userShare : userShareRepository.findByUser(recipientUser)) {
+			if (userShare.getShareType().equals(UserShare.ShareType.sign)) {
+				for (User toUser : userShare.getToUsers()) {
+					List<SignRequest> toSignSharedSignRequests = signRequestService.getToSignRequests(toUser);
+					for (SignRequest toSignSharedSignRequest : toSignSharedSignRequests) {
+						if (toSignSharedSignRequest.getParentSignBook() != null) {
+							Data data = dataRepository.findBySignBook(toSignSharedSignRequest.getParentSignBook()).get(0);
+							if (data.getForm().equals(userShare.getForm())) {
+								if (!signRequest.equals(toSignSharedSignRequest)) {
+									toEmails.add(toUser.getEmail());
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		recipientUser.setLastSendAlertDate(date);
+		mailService.sendSignRequestAlert(toEmails, signRequest);
+		userRepository.save(recipientUser);
+	}
+
+
 	public void sendEmailAlert(User recipientUser) {
 		Date date = new Date();
 		List<SignRequest> toSignSignRequests = signRequestService.getToSignRequests(recipientUser);
+		List<String> toEmails = new ArrayList<>();
 		//List<SignRequest> signRequestsToSend = new ArrayList<>();
 		//pour ne pas recevoir ses propres demandes
 		if(userService.getUserFromAuthentication() != null && recipientUser.equals(userService.getUserFromAuthentication())) {
 			toSignSignRequests = toSignSignRequests.stream().filter(signRequest -> !signRequest.getCreateBy().equals(recipientUser.getEppn())).collect(Collectors.toList());
+			toEmails.add(recipientUser.getEmail());
 		} else {
-			List<String> toEmails = new ArrayList<>();
 //			toEmails.add(recipientEmail);
 			for(UserShare userShare : userShareRepository.findByUser(recipientUser)) {
 				if(userShare.getShareType().equals(UserShare.ShareType.sign)) {
@@ -251,7 +278,7 @@ public class UserService {
 		}
 		if(toSignSignRequests.size() > 0 ) {
 			recipientUser.setLastSendAlertDate(date);
-			mailService.sendSignRequestAlert(Arrays.asList(recipientUser.getEmail()), toSignSignRequests);
+			mailService.sendSignRequestSummaryAlert(toEmails, toSignSignRequests);
 			userRepository.save(recipientUser);
 		}
 	}

@@ -453,7 +453,7 @@ public class SignRequestService {
 		for (Recipient recipient : signRequest.getRecipients()) {
 			User recipientUser = recipient.getUser();
 			if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
-				userService.sendEmailAlert(recipientUser);
+				userService.sendSignRequestEmailAlert(recipientUser, signRequest);
 			}
 		}
 	}
