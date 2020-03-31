@@ -7,10 +7,8 @@ import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
@@ -75,7 +73,7 @@ public class ScheduledTaskService {
 		for(User user : users) {
 			logger.trace("check email alert for " + user.getEppn());
 			if(userService.checkEmailAlert(user)) {
-				userService.sendEmailAlert(user);
+				userService.sendEmailAlertSummary(user);
 			}
 		}
 	}

@@ -246,7 +246,7 @@ public class UserService {
 	}
 
 
-	public void sendEmailAlert(User recipientUser) {
+	public void sendEmailAlertSummary(User recipientUser) {
 		Date date = new Date();
 		List<SignRequest> toSignSignRequests = signRequestService.getToSignRequests(recipientUser);
 		List<String> toEmails = new ArrayList<>();
