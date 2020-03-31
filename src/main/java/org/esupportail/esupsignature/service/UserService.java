@@ -223,6 +223,7 @@ public class UserService {
 	public void sendSignRequestEmailAlert(User recipientUser, SignRequest signRequest) {
 		Date date = new Date();
 		List<String> toEmails = new ArrayList<>();
+		toEmails.add(recipientUser.getEmail());
 		for(UserShare userShare : userShareRepository.findByUser(recipientUser)) {
 			if (userShare.getShareType().equals(UserShare.ShareType.sign)) {
 				for (User toUser : userShare.getToUsers()) {
