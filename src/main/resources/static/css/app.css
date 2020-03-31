@@ -856,9 +856,24 @@ float:left;
     border-radius: 0.2rem;
 }
 
+.fixed-action-simple-btn {
+    position: fixed;
+    right: 50px;
+    bottom: 80px;
+    z-index: 1000;
+    overflow: hidden;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: end;
+    -ms-flex-align: end;
+    align-items: flex-end;
+    padding: 20px 20px 20px 20px;
+}
+
 .fixed-action-btn {
     position: fixed;
-    right: 80px;
+    right: 50px;
     bottom: 80px;
     z-index: 1000;
     overflow: hidden;

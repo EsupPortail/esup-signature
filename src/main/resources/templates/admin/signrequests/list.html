@@ -39,11 +39,12 @@
                         <table class="table table-sm table-striped table-hover table-borderless">
                             <thead class="thead-dark">
                             <tr>
-                                <th class="none">Titre</th>
-                                <th class="none"><a class="sorted"
+                                <th>Circuit</th>
+                                <th>Titre</th>
+                                <th><a class="sorted"
                                                     sd:pagination-sort="createDate">Date de création</a></th>
-                                <th class="none">Créé par</th>
-                                <th class="none">Destinataires</th>
+                                <th>Créé par</th>
+                                <th>Destinataires</th>
                                 <th class="status">Statut</th>
                                 <th>Voir</th>
                                 <th>Supprimer</th>
@@ -52,13 +53,15 @@
                             <tbody>
                             <th:block th:each="signRequest : ${signRequests}">
                                 <tr>
-                                    <td class="none"><p class="truncate" th:title="${signRequest.title}"
+                                    <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
+                                    <td class="text-break" th:unless="${signRequest.parentSignBook != null}">Signature rapide</td>
+                                    <td><p class="truncate" th:title="${signRequest.title}"
                                                         th:text="${signRequest.title}"></p></td>
-                                    <td class="none"><span
+                                    <td><span
                                             th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                     </td>
-                                    <td class="none"><span th:text="${signRequest.createBy}"></span></td>
-                                    <td class="none">
+                                    <td><span th:text="${signRequest.createBy}"></span></td>
+                                    <td>
                                         <table class="table table-sm">
                                             <tbody>
                                             <th:block th:each="recipient : ${signRequest.recipients}">
