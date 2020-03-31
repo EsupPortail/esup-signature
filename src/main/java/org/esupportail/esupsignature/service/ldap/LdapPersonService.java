@@ -43,7 +43,13 @@ public class LdapPersonService {
         }
         if (ldapTemplateSelected != null) {
             List<PersonLdap> results = personLdapRepository.findByDisplayNameStartingWithIgnoreCaseOrCnStartingWithIgnoreCaseOrDisplayNameStartingWithIgnoreCaseOrUidStartingWithOrMailStartingWith(searchString, searchString, searchString, searchString);
-            return results;
+            List<PersonLdap> filteredPersons = new ArrayList<>();
+            for(PersonLdap personLdap : results) {
+                if(personLdap.getEduPersonAffiliation().contains("member") || personLdap.getEduPersonAffiliation().contains("staff")) {
+                    filteredPersons.add(personLdap);
+                }
+            }
+            return filteredPersons;
         } else {
             log.debug("No ldapTemplate found -> LdapPersonService.searchByCommonName result is empty");
         }
