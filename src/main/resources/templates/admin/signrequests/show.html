@@ -1,12 +1,13 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
+<!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {FilesInput} from "/js/modules/filesInput.js";
 
-    new FilesInput($("#multipartFiles"), "multipartFiles", [[${signRequest.liteOriginalDocuments}]], [[${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported'}]], [[${_csrf.parameterName}]], [[${_csrf.token}]], [[${signRequest.id}]]);
-    new FilesInput($("#signedFiles"), "signedFiles", [[${signRequest.liteSignedDocuments}]], [[${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported'}]], [[${_csrf.parameterName}]], [[${_csrf.token}]], [[${signRequest.id}]]);
+    new FilesInput($("#multipartFiles"), "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]], [[${signRequest.id}]]);
+    new FilesInput($("#signedFiles"), "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]], [[${signRequest.id}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
@@ -74,24 +75,26 @@
                      data-parent="#accordion">
                     <div class="card-body">
                         <h5>Logs (<span th:text="(${#lists.size(logs)})"></span>)</h5>
-                        <table class="table table-sm table-striped table-hover">
-                            <thead>
+                        <table class="table table-sm table-striped table-hover table-borderless">
+                            <thead class="thead-dark">
                             <tr>
                                 <th>Date</th>
                                 <th>Eppn</th>
                                 <th>Action</th>
                                 <th>Statut initial</th>
                                 <th>Statut final</th>
+                                <th>Commentaire</th>
                             </tr>
                             </thead>
                             <tbody>
                             <th:block th:each="log : ${logs}">
                                 <tr>
-                                    <td><span th:text=${log.logDate}></span></td>
-                                    <td><span th:text=${log.eppn}></span></td>
-                                    <td><span th:text=${log.action}></span></td>
-                                    <td><span th:text=${log.initialStatus}></span></td>
-                                    <td><span th:text=${log.finalStatus}></span></td>
+                                    <td><span th:text="${log.logDate}"></span></td>
+                                    <td><span th:text="${log.eppn}"></span></td>
+                                    <td><span th:text="${log.action}"></span></td>
+                                    <td><span th:text="${log.initialStatus}"></span></td>
+                                    <td><span th:text="${log.finalStatus}"></span></td>
+                                    <td><span th:text="${log.comment}"></span></td>
                                 </tr>
                             </th:block>
                             </tbody>
