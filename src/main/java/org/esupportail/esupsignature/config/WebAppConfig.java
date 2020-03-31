@@ -29,7 +29,7 @@ import java.util.Collections;
 @EnableAutoConfiguration
 @EnableScheduling
 @EnableConfigurationProperties
-public class AppConfig implements WebMvcConfigurer {
+public class WebAppConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -39,6 +39,7 @@ public class AppConfig implements WebMvcConfigurer {
                 "/webjars/**",
                 "/images/**",
                 "/css/**",
+				"/doc/**",
                 "/js/**")
                 .addResourceLocations(
 						"classpath:/static/images/favicon.ico",
@@ -46,6 +47,7 @@ public class AppConfig implements WebMvcConfigurer {
                         "classpath:/META-INF/resources/webjars/",
                         "classpath:/static/images/",
                         "classpath:/static/css/",
+						"classpath:/static/doc/",
                         "classpath:/static/js/");
 		registry.addResourceHandler("swagger-ui.html")
 				.addResourceLocations("classpath:/META-INF/resources/");
