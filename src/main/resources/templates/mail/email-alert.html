@@ -20,15 +20,19 @@
 					<th class="text-white">Nom</th>
 					<th class="text-white">Date de création</th>
 					<th class="text-white">Créé par</th>
+					<th class="text-white">Composante</th>
 					<th class="text-white">Consulter</th>
 				</tr>
 				</thead>
 				<tbody>
-					<tr>
+					<tr th:with="creator = ${userService.getUserByEppn(signRequest.createBy)}">
 						<td th:text="${signRequest.title}"></td>
 						<td th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></td>
-						<td th:with="creator = ${userService.getUserByEppn(signRequest.createBy)}">
+						<td>
 							<span  th:text="${creator.firstname} + ' ' + ${creator.name}"></span>
+						</td>
+						<td th:with="personLdap = ${userService.findPersonLdapByUser(creator)}">
+							<span th:text="${userService.findOrganizationalUnitLdapByPersonLdap(personLdap).description}"></span>
 						</td>
 						<td>
 							<a class="btn btn-sm btn-dark mx-auto" th:href="@{|${rootUrl}/user/signrequests/${signRequest.id}|}">Accéder au document</a>

@@ -2,6 +2,8 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.ldap.OrganizationalUnitLdap;
+import org.esupportail.esupsignature.ldap.OrganizationalUnitLdapRepository;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapRepository;
 import org.esupportail.esupsignature.repository.DataRepository;
@@ -50,6 +52,9 @@ public class UserService {
 
 	@Resource
 	private PersonLdapRepository personLdapRepository;
+
+	@Resource
+	private OrganizationalUnitLdapRepository organizationalUnitLdapRepository;
 
 	@Resource
 	private UserShareRepository userShareRepository;
@@ -336,7 +341,7 @@ public class UserService {
 		return personLdap;
 	}
 
-	public PersonLdap getPersonLdap(User user) {
+	public PersonLdap findPersonLdapByUser(User user) {
 		if (ldapPersonService != null) {
 			List<PersonLdap> personLdaps = personLdapRepository.findByEduPersonPrincipalName(user.getEppn());
 			if(personLdaps.size() > 0) {
@@ -344,6 +349,10 @@ public class UserService {
 			}
 		}
 		return null;
+	}
+
+	public OrganizationalUnitLdap findOrganizationalUnitLdapByPersonLdap(PersonLdap personLdap) {
+		return organizationalUnitLdapRepository.findBySupannCodeEntite(personLdap.getSupannEntiteAffectationPrincipale()).get(0);
 	}
 
 	public Boolean switchUser(String suEppn) {

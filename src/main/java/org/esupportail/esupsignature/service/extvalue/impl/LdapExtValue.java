@@ -10,7 +10,6 @@ import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -52,7 +51,7 @@ public class LdapExtValue implements ExtValue {
 	public Map<String, Object> initValues(User user) {
 		Map<String, Object> values = new HashMap<>();
 		if(user != null) {
-			PersonLdap personLdap = userService.getPersonLdap(user);
+			PersonLdap personLdap = userService.findPersonLdapByUser(user);
 			if (personLdap != null && values.size() == 0) {
 				ObjectMapper oMapper = new ObjectMapper();
 				values.putAll(oMapper.convertValue(personLdap, Map.class));
