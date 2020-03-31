@@ -26,7 +26,6 @@ import java.io.IOException;
 @RequestMapping("/user/documents")
 @Controller
 @Transactional
-@Scope(value="session")
 public class DocumentController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(DocumentController.class);
