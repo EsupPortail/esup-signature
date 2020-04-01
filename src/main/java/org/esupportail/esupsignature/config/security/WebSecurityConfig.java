@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.config.security;
 
 import org.esupportail.esupsignature.service.security.AuthorizeRequestsHelper;
 import org.esupportail.esupsignature.service.security.SecurityService;
+import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -10,8 +11,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
+import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
@@ -68,5 +71,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		return authenticationStrategy;
 	}
 
-	
+	@Bean
+	public SwitchUserFilter switchUserFilter() {
+		SwitchUserFilter switchUserFilter = new SwitchUserFilter();
+		for(SecurityService securityService : securityServices) {
+			if(securityService instanceof CasSecurityServiceImpl) {
+				switchUserFilter.setUserDetailsService(securityService.getUserDetailsService());
+			}
+		}
+		switchUserFilter.setSwitchUserUrl("/admin/su/login");
+		//switchUserFilter.setSwitchFailureUrl("/error");
+		switchUserFilter.setExitUserUrl("/logout/su");
+		switchUserFilter.setTargetUrl("/");
+		return switchUserFilter;
+	}
 }

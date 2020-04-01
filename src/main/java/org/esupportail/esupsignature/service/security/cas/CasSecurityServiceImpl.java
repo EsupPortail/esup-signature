@@ -14,6 +14,7 @@ import org.springframework.security.cas.authentication.CasAuthenticationProvider
 import org.springframework.security.cas.web.CasAuthenticationEntryPoint;
 import org.springframework.security.cas.web.CasAuthenticationFilter;
 import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
 import org.springframework.security.ldap.search.LdapUserSearch;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
@@ -42,31 +43,25 @@ public class CasSecurityServiceImpl implements SecurityService {
 	@Resource
 	private LdapContextSource ldapContextSource;
 	
-
+	@Override
 	public String getName() {
 		return "Compte Université de Rouen Normandie (CAS)";
 	}
-	
+
+	@Override
 	public String getLoginUrl() {
 		return "/login/casentry";
 	}
-	
+
+	@Override
 	public CasAuthenticationEntryPoint getAuthenticationEntryPoint() {
 		CasAuthenticationEntryPoint authenticationEntryPoint = new CasAuthenticationEntryPoint();
 		authenticationEntryPoint.setLoginUrl(casProperties.getUrl() + "/login");
 		authenticationEntryPoint.setServiceProperties(serviceProperties());
 		return authenticationEntryPoint;
 	}
-	
-	
-	public ServiceProperties serviceProperties() {
-		ServiceProperties serviceProperties = new ServiceProperties();
-		serviceProperties.setService(casProperties.getService());
-		serviceProperties.setSendRenew(false);
-		return serviceProperties;
-	}
-	
-	
+
+	@Override
 	public CasAuthenticationFilter getAuthenticationProcessingFilter() {
 		CasAuthenticationFilter authenticationFilter = new CasAuthenticationFilter();
 		authenticationFilter.setAuthenticationManager(casAuthenticationManager());
@@ -75,7 +70,18 @@ public class CasSecurityServiceImpl implements SecurityService {
 		return authenticationFilter;
 	}
 
-	
+	@Override
+	public UserDetailsService getUserDetailsService() {
+		return this.ldapUserDetailsService();
+	}
+
+	public ServiceProperties serviceProperties() {
+		ServiceProperties serviceProperties = new ServiceProperties();
+		serviceProperties.setService(casProperties.getService());
+		serviceProperties.setSendRenew(false);
+		return serviceProperties;
+	}
+
 	public AuthenticationManager casAuthenticationManager() {
 		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<AuthenticationProvider>();
 		authenticatedAuthenticationProviders.add(casAuthenticationProvider());

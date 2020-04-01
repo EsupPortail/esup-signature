@@ -14,14 +14,17 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 import org.thymeleaf.dialect.springdata.SpringDataDialect;
 import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Locale;
 
 @Configuration 
 @ComponentScan
@@ -89,4 +92,10 @@ public class WebAppConfig implements WebMvcConfigurer {
 	    return new CorsFilter(source);
 	}
 
+//	@Bean
+//	public LocaleResolver localeResolver() {
+//		SessionLocaleResolver slr = new SessionLocaleResolver();
+//		slr.setDefaultLocale(Locale.FRENCH);
+//		return slr;
+//	}
 }

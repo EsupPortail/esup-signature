@@ -18,8 +18,8 @@
         <div class="hr">Historique</div>
         <a th:if="${statusFilter == 'signedByMe'}" class="btn col-3 col-md-12 mb-1 text-left btn-dark" href="/user/signrequests/?statusFilter=signedByMe">Demandes que j'ai signées</a>
         <a th:if="${statusFilter != 'signedByMe'}" class="btn col-3 col-md-12 mb-1 text-left btn-light" href="/user/signrequests/?statusFilter=signedByMe">Demandes que j'ai signées</a>
-        <a th:if="${statusFilter == 'refusedByMe'}" class="btn col-3 col-md-12 mb-1 text-left btn-dark" href="/user/signrequests/?statusFilter=refusedByMe">Demandes que j'ai refusée</a>
-        <a th:if="${statusFilter != 'refusedByMe'}" class="btn col-3 col-md-12 mb-1 text-left btn-light" href="/user/signrequests/?statusFilter=refusedByMe">Demandes que j'ai refusée</a>
+        <a th:if="${statusFilter == 'refusedByMe'}" class="btn col-3 col-md-12 mb-1 text-left btn-dark" href="/user/signrequests/?statusFilter=refusedByMe">Demandes que j'ai refusées</a>
+        <a th:if="${statusFilter != 'refusedByMe'}" class="btn col-3 col-md-12 mb-1 text-left btn-light" href="/user/signrequests/?statusFilter=refusedByMe">Demandes que j'ai refusées</a>
     </div>
 </nav>
 </html>

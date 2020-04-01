@@ -91,10 +91,10 @@ public class IndexController {
 		}
 
 	}
-	
+
 	@GetMapping("/login/**")
 	public String loginRedirection() {
-		return "redirect:/";			
+		return "redirect:/";
 	}
 
 	@GetMapping("/denied/**")

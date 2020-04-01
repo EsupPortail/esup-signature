@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.springframework.org/security/tags">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
 <body>
 <nav th:replace="fragments/nav-empty"></nav>
 <main role="main">
     <div class="card col-lg-10 mx-auto" style="top: 60px;">
         <div class="card-body text-center">
-            <div class="d-none" sec:authorize="isAuthenticated()">
+            <div class="d-none" th:if="${#authorization.expression('isAuthenticated()')}">
                 <span th:if="${auth != null}" th:text="${auth}"></span>
             </div>
-            <div sec:authorize="isAnonymous()">
+            <div th:if="${#authorization.expression('isAnonymous()')}">
                 <h3>Se connecter avec :</h3>
                 <th:block th:each="securityConfig : ${securityConfigs}">
                     <button type="button" th:data-url="${securityConfig.loginUrl}"

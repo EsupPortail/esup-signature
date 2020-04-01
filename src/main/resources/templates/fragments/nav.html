@@ -1,10 +1,12 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.sprinfgramework.org/schema/security">
+<html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="suUsers" type="java.util.List<org.esupportail.esupsignature.entity.User>"*/-->
 <!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
 <header th:fragment="nav" class="fixed-top">
-    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark bg-dark"
-         th:classappend="${@userService.getUserFromAuthentication() != user && user.name != null}? 'bg-striped' : 'bg-dark'">
+    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark"
+         th:classappend="|${(@userService.getUserFromAuthentication() != user && user.name != null) ? 'bg-striped' : ''}
+                          ${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')') ? 'bg-danger' : 'bg-dark'}">
+
         <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse"
                 class="btn btn-lg text-white float-left">
             <i class="fas fa-bars"></i>
@@ -16,8 +18,8 @@
         <h1 aria-label="Esup-Signature" title="Esup-Signature" style="width: 204px;">
             <a href="/"><img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/></a>
         </h1>
-        <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between bg-dark">
-            <ul class="navbar-nav" sec:authorize="isAuthenticated()">
+        <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
+            <ul class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
                 <li class="nav-item text-white">
                     <a th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}"
                        th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
@@ -74,9 +76,13 @@
                 </li>
             </ul>
             <ul class="navbar-nav" th:if="${user.name != null}">
-                <li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
+                <li class="nav-item" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" title="Menu admin">
                     <a href="/admin/signrequests" th:class="'nav-link ' + ${adminMenu}"><i class="fas fa-crown"></i></a>
                 </li>
+                <li class="nav-item" th:if="${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')')}" title="Logout SU">
+                    <a th:href="@{/logout/su}" class="nav-link bg-dark text-white"><i class="fas fa-user-secret"></i></a>
+                </li>
+
                 <li class="nav-item text-white">
                     <a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos"
                        aria-label="Paramètres utilisateur" class="text-decoration-none user-toggle"

@@ -58,7 +58,7 @@ public class AdminSignRequestController {
 
 	@ModelAttribute("user")
 	public User getUser() {
-		return userService.getCurrentUser();
+		return userService.getUserFromAuthentication();
 	}
 
 	private SignRequestStatus statusFilter = null;

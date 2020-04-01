@@ -52,7 +52,7 @@ public class CurrentSessionsController {
 
 	@ModelAttribute("user")
 	public User getUser() {
-		return userService.getCurrentUser();
+		return userService.getUserFromAuthentication();
 	}
 
 	@GetMapping

@@ -55,7 +55,7 @@ public class DocumentManagerController {
 
 	@ModelAttribute("user")
 	public User getUser() {
-		return userService.getCurrentUser();
+		return userService.getUserFromAuthentication();
 	}
 
 	@ModelAttribute("suUsers")

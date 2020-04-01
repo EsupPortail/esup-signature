@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.service.security.SpelGroupService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 
@@ -24,18 +25,22 @@ public class ShibSecurityServiceImpl implements SecurityService {
 	@Resource
 	private ShibAuthenticationSuccessHandler shibAuthenticationSuccessHandler;
 
+	@Override
 	public String getName() {
 		return "Compte d'un autre établissement (Shibboleth)";
 	}
-	
+
+	@Override
 	public String getLoginUrl() {
 		return "/login/shibentry";
 	}
-	
+
+	@Override
 	public LoginUrlAuthenticationEntryPoint getAuthenticationEntryPoint() {
 		return new LoginUrlAuthenticationEntryPoint("/");
 	}
 
+	@Override
 	public ShibRequestHeaderAuthenticationFilter getAuthenticationProcessingFilter() {
 		ShibRequestHeaderAuthenticationFilter authenticationFilter = new ShibRequestHeaderAuthenticationFilter();
 		authenticationFilter.setPrincipalRequestHeader(shibProperties.getPrincipalRequestHeader());
@@ -45,7 +50,12 @@ public class ShibSecurityServiceImpl implements SecurityService {
 		authenticationFilter.setAuthenticationSuccessHandler(shibAuthenticationSuccessHandler);
 		return authenticationFilter;
 	}
-	
+
+	@Override
+	public UserDetailsService getUserDetailsService() {
+		return (UserDetailsService) this.shibAuthenticatedUserDetailsService();
+	}
+
 	public AuthenticationManager shibAuthenticationManager() {
 		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<AuthenticationProvider>();
 		authenticatedAuthenticationProviders.add(shibPreauthAuthProvider());
