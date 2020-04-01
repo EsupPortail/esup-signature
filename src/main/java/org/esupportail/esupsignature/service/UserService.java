@@ -65,6 +65,8 @@ public class UserService {
 	@Resource
 	private MailService mailService;
 
+	private Map<String, User> userCache = new HashMap<>();
+
 	public void setSuEppn(String eppn) {
 		ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
 		attr.getRequest().getSession().setAttribute("suEppn", eppn);
@@ -134,16 +136,18 @@ public class UserService {
 		if(eppn.equals("Scheduler")) {
 			return ScheduledTaskService.getSchedulerUser();
 		}
+		if(userCache.containsKey(eppn)) {
+			return userCache.get(eppn);
+		}
+		String ldapEppn = eppn;
 		if(ldapPersonService != null) {
+			logger.debug("ldap query");
 			if(personLdapRepository.findByUid(eppn).size() > 0) {
-				String ldapEppn = personLdapRepository.findByUid(eppn).get(0).getEduPersonPrincipalName();
-				if(ldapEppn != null) {
-					eppn = ldapEppn;
-				}
+				ldapEppn = personLdapRepository.findByUid(eppn).get(0).getEduPersonPrincipalName();
 			}
 		}
-		if (userRepository.countByEppn(eppn) > 0) {
-			User user = userRepository.findByEppn(eppn).get(0);
+		if (userRepository.countByEppn(ldapEppn) > 0) {
+			User user = userRepository.findByEppn(ldapEppn).get(0);
 			if(user.getSignImage() != null) {
 				try {
 					user.setSignImageBase64(fileService.getBase64Image(user.getSignImage()));
@@ -151,6 +155,7 @@ public class UserService {
 					logger.error("sign image read error", e);
 				}
 			}
+			userCache.put(eppn, user);
 			return user;
 		}
 		return getSystemUser();
