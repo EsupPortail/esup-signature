@@ -367,7 +367,7 @@ input:checked + .slider:before {
     padding-top: 5px;
     background-color: white;
     width: 100%;
-    z-index: 2;
+    z-index: 4;
     position: fixed;
     padding-left: 10px;
     border-bottom: 1px solid #ebebeb;
@@ -386,7 +386,7 @@ input:checked + .slider:before {
     background-color: white;
     margin-left: 260px;
     width: calc(100vw - 275px);
-    z-index: 2;
+    z-index: 4;
 }
 
 .breadcrumb-nav-full {
@@ -592,8 +592,9 @@ float:left;
 
 .box-wrap{
     display:block;
-    position: fixed;
+    position: absolute;
     margin-left: 190px;
+    margin-top: 10px;
 }
 
 .paper-clip:after {
@@ -622,17 +623,8 @@ float:left;
     position: absolute;
     right: 0;
     top: -20px;
-    z-index: 1000;
+    z-index: 2;
 }
-/*span.paper-clip {*/
-/*    background: white;*/
-/*    height: 40px;*/
-/*    width: 15px;*/
-/*    border-radius: 10px;*/
-/*    border: 2px solid black;*/
-/*    display: inline-block;*/
-/*    position: absolute;*/
-/*}*/
 
 .drop-shadows {
     -moz-box-shadow: 2px 2px 8px 4px rgba(0, 0, 0, 0.5);
