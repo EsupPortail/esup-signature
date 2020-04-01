@@ -14,7 +14,7 @@
         <div id="content" class="content">
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
-                    <form action="#" method="get">
+                    <form action="/admin/signrequests" method="get">
                         <div class="form-group">
                             <div class="input-group">
                             <div class="input-group-prepend">
@@ -59,7 +59,9 @@
                                     <td><span
                                             th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                     </td>
-                                    <td><span th:text="${signRequest.createBy}"></span></td>
+                                    <td th:with="creator = ${@userService.getUserByEppn(signRequest.createBy)}">
+                                        <span th:text="${creator.firstname} + ' ' + ${creator.name}"></span>
+                                    </td>
                                     <td>
                                         <table class="table table-sm">
                                             <tbody>

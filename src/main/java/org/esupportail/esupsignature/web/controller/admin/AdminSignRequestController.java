@@ -93,7 +93,6 @@ public class AdminSignRequestController {
 			@RequestParam(value = "signBookId", required = false) Long signBookId,
 			@RequestParam(value = "messageError", required = false) String messageError,
 			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, RedirectAttributes redirectAttrs, Model model) {
-		User user = userService.getCurrentUser();
 		if(statusFilter != null) {
 			if(!statusFilter.equals("all")) {
 				this.statusFilter = SignRequestStatus.valueOf(statusFilter);
