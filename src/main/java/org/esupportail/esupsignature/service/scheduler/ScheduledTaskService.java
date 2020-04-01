@@ -18,6 +18,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.cert.CertificateException;
 import java.util.List;
 
 @Component
@@ -77,8 +82,13 @@ public class ScheduledTaskService {
 			}
 		}
 	}
-						   
-	@Scheduled(initialDelay = 8640000, fixedRate = 8640000)
+
+	@Scheduled(initialDelay = 1000, fixedDelay=Long.MAX_VALUE)
+	public void getOJKeystore() throws NoSuchAlgorithmException, CertificateException, NoSuchProviderException, KeyStoreException, IOException {
+		oJService.getCertificats();
+	}
+
+	@Scheduled(initialDelay = 86400000, fixedRate = 86400000)
 	public void refreshOJKeystore() {
 		oJService.refresh();
 	}

@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -67,10 +68,8 @@ public class OJService {
 	
 	@Resource
 	private FileService fileService;
-	
-	@Async
-	//@PostConstruct
-	public void getCertificats() throws MalformedURLException, IOException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
+
+	public void getCertificats() throws IOException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
 		Security.addProvider(new BouncyCastleProvider());
 		List<ServiceInfo> serviceInfos = getServicesInfos();
 		File keystoreFile = new File(ksFilename);
