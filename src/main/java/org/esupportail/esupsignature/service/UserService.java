@@ -13,6 +13,8 @@ import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.scheduler.ScheduledTaskService;
+import org.esupportail.esupsignature.service.security.SecurityService;
+import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -48,6 +50,9 @@ public class UserService {
 	private UserService userService;
 
 	@Resource
+	List<SecurityService> securityServices;
+
+	@Resource
 	private SignRequestService signRequestService;
 
 	@Resource
@@ -64,8 +69,6 @@ public class UserService {
 
 	@Resource
 	private MailService mailService;
-
-	private Map<String, User> userCache = new HashMap<>();
 
 	public void setSuEppn(String eppn) {
 		ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
@@ -136,18 +139,15 @@ public class UserService {
 		if(eppn.equals("Scheduler")) {
 			return ScheduledTaskService.getSchedulerUser();
 		}
-		if(userCache.containsKey(eppn)) {
-			return userCache.get(eppn);
-		}
-		String ldapEppn = eppn;
-		if(ldapPersonService != null) {
-			logger.debug("ldap query");
-			if(personLdapRepository.findByUid(eppn).size() > 0) {
-				ldapEppn = personLdapRepository.findByUid(eppn).get(0).getEduPersonPrincipalName();
+		if(eppn.split("@").length == 1) {
+			for(SecurityService securityService : this.securityServices) {
+				if(securityService instanceof CasSecurityServiceImpl) {
+					eppn = eppn + "@" + securityService.getDomain();
+				}
 			}
 		}
-		if (userRepository.countByEppn(ldapEppn) > 0) {
-			User user = userRepository.findByEppn(ldapEppn).get(0);
+		if (userRepository.countByEppn(eppn) > 0) {
+			User user = userRepository.findByEppn(eppn).get(0);
 			if(user.getSignImage() != null) {
 				try {
 					user.setSignImageBase64(fileService.getBase64Image(user.getSignImage()));
@@ -155,7 +155,6 @@ public class UserService {
 					logger.error("sign image read error", e);
 				}
 			}
-			userCache.put(eppn, user);
 			return user;
 		}
 		return getSystemUser();

@@ -54,6 +54,11 @@ public class CasSecurityServiceImpl implements SecurityService {
 	}
 
 	@Override
+	public String getDomain() {
+		return casProperties.getDomain();
+	}
+
+	@Override
 	public CasAuthenticationEntryPoint getAuthenticationEntryPoint() {
 		CasAuthenticationEntryPoint authenticationEntryPoint = new CasAuthenticationEntryPoint();
 		authenticationEntryPoint.setLoginUrl(casProperties.getUrl() + "/login");

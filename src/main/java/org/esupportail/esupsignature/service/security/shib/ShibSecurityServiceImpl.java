@@ -36,6 +36,11 @@ public class ShibSecurityServiceImpl implements SecurityService {
 	}
 
 	@Override
+	public String getDomain() {
+		return "";
+	}
+
+	@Override
 	public LoginUrlAuthenticationEntryPoint getAuthenticationEntryPoint() {
 		return new LoginUrlAuthenticationEntryPoint("/");
 	}
