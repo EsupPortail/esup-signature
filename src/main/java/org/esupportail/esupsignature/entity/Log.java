@@ -23,6 +23,8 @@ public class Log {
 	
 	private String eppn;
 
+    private String eppnFor;
+
 	private String action;
 	
 	private String initialStatus;
@@ -60,7 +62,15 @@ public class Log {
         this.eppn = eppn;
     }
 
-	public String getAction() {
+    public String getEppnFor() {
+        return eppnFor;
+    }
+
+    public void setEppnFor(String eppnFor) {
+        this.eppnFor = eppnFor;
+    }
+
+    public String getAction() {
         return this.action;
     }
 

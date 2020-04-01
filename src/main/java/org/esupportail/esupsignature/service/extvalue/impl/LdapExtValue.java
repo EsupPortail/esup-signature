@@ -55,10 +55,13 @@ public class LdapExtValue implements ExtValue {
 			if (personLdap != null && values.size() == 0) {
 				ObjectMapper oMapper = new ObjectMapper();
 				values.putAll(oMapper.convertValue(personLdap, Map.class));
+				if(values.containsKey("postalAddress") && values.get("postalAddress") != null) {
+					String postalAddress = values.get("postalAddress").toString();
+					if (postalAddress != null) {
+						values.put("postalAddress", postalAddress.replaceAll("\\$", " \n"));
+					}
+				}
 				OrganizationalUnitLdap organizationalUnitLdap = ldapPersonService.getOrganizationalUnitLdap(personLdap.getSupannEntiteAffectationPrincipale());
-//				if (organizationalUnitLdap != null) {
-//					values.putAll(oMapper.convertValue(organizationalUnitLdap, Map.class));
-//				}
 				if (organizationalUnitLdap != null) {
 					values.put("organizationalUnit-postalAddress", organizationalUnitLdap.getPostalAddress());
 					values.put("organizationalUnit-description", organizationalUnitLdap.getDescription());

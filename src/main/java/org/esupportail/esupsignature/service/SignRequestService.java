@@ -565,6 +565,7 @@ public class SignRequestService {
 		Log log = new Log();
 		log.setSignRequestId(signRequest.getId());
 		log.setEppn(user.getEppn());
+		log.setEppnFor(userService.getCurrentUser().getEppn());
 		log.setIp(user.getIp());
 		log.setInitialStatus(signRequest.getStatus().toString());
 		log.setLogDate(new Date());
@@ -630,6 +631,7 @@ public class SignRequestService {
 	public boolean checkUserViewRights(User user, SignRequest signRequest) {
 		if(signRequest != null) {
 			List<Log> log = logRepository.findByEppnAndSignRequestId(user.getEppn(), signRequest.getId());
+			log.addAll(logRepository.findByEppnForAndSignRequestId(user.getEppn(), signRequest.getId()));
 			if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0 || recipientService.recipientsContainsUser(signRequest.getRecipients(), user) > 0) {
 				return true;
 			}
