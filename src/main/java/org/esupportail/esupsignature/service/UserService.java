@@ -263,6 +263,7 @@ public class UserService {
 			toEmails.add(recipientUser.getEmail());
 		} else {
 //			toEmails.add(recipientEmail);
+			toEmails.add(recipientUser.getEmail());
 			for(UserShare userShare : userShareRepository.findByUser(recipientUser)) {
 				if(userShare.getShareType().equals(UserShare.ShareType.sign)) {
 					for(User toUser : userShare.getToUsers()) {
