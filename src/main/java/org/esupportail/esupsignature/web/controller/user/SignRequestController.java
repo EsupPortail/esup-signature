@@ -422,7 +422,7 @@ public class SignRequestController {
                                   @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
                                   @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
                                   @RequestParam(name = "comment", required = false) String comment,
-                                  @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
+                                  @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         User user = userService.getCurrentUser();
         logger.info(user.getFirstname() + " " + user.getName() + "envoi d'une demande de signature à " + recipientsEmails);
         if (multipartFiles != null) {
@@ -435,6 +435,7 @@ public class SignRequestController {
             signRequestService.pendingSignRequest(signRequest, signType, allSignToComplete);
             signRequest.setComment(comment);
             signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
+            redirectAttributes.addFlashAttribute("messageSuccess", "Votre demande à bien été transmise");
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             logger.warn("no file to import");
