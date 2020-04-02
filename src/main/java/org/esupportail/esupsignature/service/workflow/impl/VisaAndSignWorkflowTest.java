@@ -15,10 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class VisaAndSignWorkflow extends DefaultWorkflow {
+public class VisaAndSignWorkflowTest extends DefaultWorkflow {
 
-    private String name = "VisaAndSignWorkflow";
-    private String description = "Visa du responsable puis signature de la présidence";
+    private String name = "VisaAndSignWorkflowTest";
+    private String description = "Visa du responsable puis signature de taverpa2";
     private List<WorkflowStep> workflowSteps;
 
     @Resource
@@ -79,9 +79,9 @@ public class VisaAndSignWorkflow extends DefaultWorkflow {
         if(data != null) {
             workflowStep2.setParentType("data");
             workflowStep2.setParentId(data.getId());
-            recipientsStep2.add(recipientService.createRecipient(data.getId(), userService.getUserByEmail("david.lemaignent@univ-rouen.fr")));
+            recipientsStep2.add(recipientService.createRecipient(data.getId(), userService.getUserByEmail("paul.tavernier2@univ-rouen.fr")));
         } else {
-            recipientsStep2.add(recipientService.createRecipient(null, userService.getGenericUser("david.lemaignent@univ-rouen.fr", "")));
+            recipientsStep2.add(recipientService.createRecipient(null, userService.getGenericUser("paul.tavernier2@univ-rouen.fr", "")));
         }
         workflowStep2.setRecipients(recipientsStep2);
         workflowStep2.setAllSignToComplete(false);

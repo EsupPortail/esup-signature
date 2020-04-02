@@ -29,7 +29,7 @@ public class FormRepositoryImpl implements FormRepositoryCustom {
 		Expression<Boolean> publicUsageExpression = queryRoot.get("publicUsage");
 		if(user.getRoles().size() >0 ) {
 			Expression<String> roleExpression = queryRoot.get("role");
-			query.where(criteriaBuilder.and(criteriaBuilder.or(publicUsageExpression.in(true), roleExpression.in(user.getRoles()), activeExpression.in(true))));
+			query.where(criteriaBuilder.and(criteriaBuilder.or(publicUsageExpression.in(true), roleExpression.in(user.getRoles())), activeExpression.in(true)));
 		} else {
 			query.where(criteriaBuilder.and(activeExpression.in(true), publicUsageExpression.in(true)));
 		}

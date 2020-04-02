@@ -1,17 +1,13 @@
 package org.esupportail.esupsignature.service.mail;
 
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.compress.utils.IOUtils;
 import org.esupportail.esupsignature.config.mail.MailConfig;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
-import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +31,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 

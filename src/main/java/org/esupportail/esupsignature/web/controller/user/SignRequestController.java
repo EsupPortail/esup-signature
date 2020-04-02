@@ -9,7 +9,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.export.SedaExportService;
+//import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.pdf.PdfService;
@@ -120,9 +120,9 @@ public class SignRequestController {
 
     @Resource
     private FileService fileService;
-
-    @Resource
-    private SedaExportService sedaExportService;
+//
+//    @Resource
+//    private SedaExportService sedaExportService;
 
     @GetMapping
     public String list(User user,
@@ -472,23 +472,23 @@ public class SignRequestController {
 
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeView(#id)")
-    @GetMapping(value = "/get-last-file-seda/{id}")
-    public void getLastFileSeda(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        List<Document> documents = signRequestService.getToSignDocuments(signRequest);
-        try {
-            if (documents.size() > 1) {
-                response.sendRedirect("/user/signsignrequests/" + id);
-            } else {
-                response.setHeader("Content-Disposition", "attachment;filename=test-seda.zip");
-                response.setContentType("application/zip");
-                IOUtils.copy(sedaExportService.generateSip(signRequest), response.getOutputStream());
-            }
-        } catch (Exception e) {
-            logger.error("get file error", e);
-        }
-    }
+//    @PreAuthorize("@signRequestService.preAuthorizeView(#id)")
+//    @GetMapping(value = "/get-last-file-seda/{id}")
+//    public void getLastFileSeda(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
+//        SignRequest signRequest = signRequestRepository.findById(id).get();
+//        List<Document> documents = signRequestService.getToSignDocuments(signRequest);
+//        try {
+//            if (documents.size() > 1) {
+//                response.sendRedirect("/user/signsignrequests/" + id);
+//            } else {
+//                response.setHeader("Content-Disposition", "attachment;filename=test-seda.zip");
+//                response.setContentType("application/zip");
+//                IOUtils.copy(sedaExportService.generateSip(signRequest), response.getOutputStream());
+//            }
+//        } catch (Exception e) {
+//            logger.error("get file error", e);
+//        }
+//    }
 
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
