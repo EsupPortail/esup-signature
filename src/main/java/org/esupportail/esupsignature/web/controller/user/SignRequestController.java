@@ -245,6 +245,8 @@ public class SignRequestController {
         List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
         model.addAttribute("refuseLogs", refuseLogs);
         model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
+        List<Log> globalPostits =logRepository.findBySignRequestIdAndStepNumberIsNotNull(signRequest.getId());
+        model.addAttribute("globalPostits", globalPostits);
         model.addAttribute("signRequest", signRequest);
         signRequestService.setStep("");
         if (frameMode != null && frameMode) {
@@ -293,7 +295,6 @@ public class SignRequestController {
                                @RequestParam(value = "xPos", required = false) Integer xPos,
                                @RequestParam(value = "yPos", required = false) Integer yPos,
                                @RequestParam(value = "comment", required = false) String comment,
-                               @RequestParam(value = "moreDatas", required = false) String moreDatas,
                                @RequestParam(value = "formData", required = false) String formData,
                                @RequestParam(value = "addDate", required = false) Boolean addDate,
                                @RequestParam(value = "visual", required = false) Boolean visual,
@@ -432,6 +433,8 @@ public class SignRequestController {
             signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
             signRequestService.addRecipients(signRequest, recipientsEmails);
             signRequestService.pendingSignRequest(signRequest, signType, allSignToComplete);
+            signRequest.setComment(comment);
+            signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             logger.warn("no file to import");
@@ -635,7 +638,8 @@ public class SignRequestController {
                           @RequestParam(value = "posY", required = false) Integer posY,
                           HttpServletRequest request) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", comment, pageNumber, posX, posY);
+        signRequest.setComment(comment);
+        signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", pageNumber, posX, posY);
         return "redirect:/user/signrequests/" + signRequest.getId();
     }
 

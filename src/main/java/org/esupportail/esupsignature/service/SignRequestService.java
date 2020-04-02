@@ -5,6 +5,7 @@ import eu.europa.esig.dss.asic.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.x509.CertificateToken;
+import io.swagger.models.auth.In;
 import org.apache.commons.codec.binary.Base64;
 import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
@@ -290,7 +291,7 @@ public class SignRequestService {
 			signRequest.setSignType(signType);
 			signRequest.setAllSignToComplete(allSignToComplete);
 			signRequest.setCurrentStepNumber(signRequest.getCurrentStepNumber() + 1);
-			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS");
+			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS", null, null, null);
 			sendEmailAlerts(signRequest);
 		} else {
 			logger.warn("already pending");
@@ -328,13 +329,13 @@ public class SignRequestService {
 		SignRequestParams params = signRequest.getCurrentSignRequestParams();
 		if (signType.equals(SignType.visa)) {
 			if(signRequest.getComment() != null && !signRequest.getComment().isEmpty()) {
-				updateStatus(signRequest, SignRequestStatus.checked, "Visa",  "SUCCESS", signRequest.getComment(), params.getSignPageNumber(), params.getxPos(), params.getyPos());
+				updateStatus(signRequest, SignRequestStatus.checked, "Visa",  "SUCCESS", null, null, null, signRequest.getCurrentStepNumber());
 			} else {
 				updateStatus(signRequest, SignRequestStatus.checked, "Visa", "SUCCESS");
 			}
 		} else {
 			if(signRequest.getComment() != null && !signRequest.getComment().isEmpty()) {
-				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", signRequest.getComment(), params.getSignPageNumber(), params.getxPos(), params.getyPos());
+				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", null, null, null, signRequest.getCurrentStepNumber());
 			} else {
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS");
 			}
@@ -581,7 +582,11 @@ public class SignRequestService {
 		updateStatus(signRequest, signRequestStatus, action, returnCode, null, null, null, null);
 	}
 
-	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, String comment, Integer pageNumber, Integer posX, Integer posY ) {
+	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, Integer pageNumber, Integer posX, Integer posY) {
+		updateStatus(signRequest, signRequestStatus, action, returnCode, pageNumber, posX, posY, null);
+	}
+
+	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber) {
 		User user = userService.getUserFromAuthentication();
 		Log log = new Log();
 		log.setSignRequestId(signRequest.getId());
@@ -592,11 +597,15 @@ public class SignRequestService {
 		log.setLogDate(new Date());
 		log.setAction(action);
 		log.setReturnCode(returnCode);
-		log.setComment(comment);
+		log.setComment(signRequest.getComment());
+
 		if(pageNumber != null) {
 			log.setPageNumber(pageNumber);
 			log.setPosX(posX);
 			log.setPosY(posY);
+		}
+		if(stepNumber != null) {
+			log.setStepNumber(stepNumber);
 		}
 		if(signRequestStatus != null) {
 			log.setFinalStatus(signRequestStatus.toString());
@@ -611,7 +620,7 @@ public class SignRequestService {
 		if(signRequest.getParentSignBook() != null) {
 			signBookService.refuse(signRequest.getParentSignBook(), signRequest.getComment(), user);
 		} else {
-			updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", signRequest.getComment(), null, null, null);
+			updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null);
 		}
 	}
 

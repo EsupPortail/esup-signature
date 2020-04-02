@@ -4,15 +4,27 @@
 <!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
 <!--/*@thymesVar id="postit" type="org.esupportail.esupsignature.entity.Log"*/-->
 <div th:fragment="workspace" id="workspace" class="alert alert-secondary justify-content-center" th:classappend="${signRequest.parentSignBook != null && signRequest.parentSignBook.signRequests.size() > 1} ? 'workspace-sign' : 'workspace'">
+    <div style="position: absolute;left: 0;right: 0;">
+        <th:block th:if="${signRequest.status.name() == 'pending'}" th:each="postit, iterate : ${globalPostits}">
+<!--            <div class="box-wrap">-->
+<!--                <span class="paper-clip"></span>-->
+<!--            </div>-->
+            <div class="postit-visa" th:style="'z-index : 1; position: absolute; left: ' + ${1 + (iterate.index * 10)} + 'px; top : ' + ${1 + (iterate.index * 190)} + 'px;'">
+                <b th:text="'Visé par ' + ${@userService.getUserByEppn(postit.eppn).firstname + ' ' + @userService.getUserByEppn(postit.eppn).name}"></b>
+                <p th:text="'le ' + ${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></p>
+                <p class="postitarea" th:text="${postit.comment}"></p>
+            </div>
+        </th:block>
+    </div>
     <form id="signForm" th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="drop-shadows mx-auto">
             <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed'}">
                 <th:block th:if="${currentSignType != 'visa'}">
-                    <button type="button" id="signZoomIn" class="btn btn-sm btn-transparent text-dark position-absolute" th:style="'z-index: 1000;left: ' + ${signRequest.getCurrentSignRequestParams().xPos - 35} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;'">
+                    <button type="button" id="signZoomIn" class="btn btn-sm btn-transparent text-dark position-absolute" th:style="'z-index: 3;left: ' + ${signRequest.getCurrentSignRequestParams().xPos - 35} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;'">
                         <i class="fa fas fa-search-plus"></i>
                     </button>
-                    <button type="button" id="signZoomOut" class="btn btn-sm btn-transparent text-dark position-absolute" th:style="'z-index: 1000;left: ' + ${signRequest.getCurrentSignRequestParams().xPos - 35} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos + 30} + 'px;'">
+                    <button type="button" id="signZoomOut" class="btn btn-sm btn-transparent text-dark position-absolute" th:style="'z-index: 3;left: ' + ${signRequest.getCurrentSignRequestParams().xPos - 35} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos + 30} + 'px;'">
                         <i class="fa fas fa-search-minus"></i>
                     </button>
                     <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
@@ -34,23 +46,13 @@
                     </div>
                 </th:block>
             </th:block>
-            <th:block th:if="${signRequest.status.name() == 'pending'}" th:each="postit : ${postits}">
-                <div class="box-wrap">
-                    <span class="paper-clip"></span>
-                </div>
-                <div th:if="${postit.finalStatus == 'checked'}" class="postit-visa" th:style="'z-index : 1; position: absolute; left: ' + ${postit.posX} + 'px; top : ' + ${postit.posY} + 'px;'">
-                    <b th:text="'Visé par ' + ${@userService.getUserByEppn(postit.eppn).firstname + ' ' + @userService.getUserByEppn(postit.eppn).name}"></b>
-                    <p th:text="'le ' + ${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></p>
-                    <p class="postitarea" th:text="${postit.comment}"></p>
-                </div>
-            </th:block>
+
             <th:block th:each="postit : ${postits}">
                 <div th:id="${postit.id}" class="circle" th:onmouseover="'$(\'#postit' + ${postit.id} + '\').addClass(\'circle-border\');'" th:onmouseout="'$(\'#postit' + ${postit.id} + '\').removeClass(\'circle-border\');'">
                     <i class="fas fa-comment fa-3x"></i>
                 </div>
             </th:block>
         </div>
-
         <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">
             <span id="hideComment" class="float-right" style="cursor: pointer;">
                 <i class="fas fa-times"></i>

@@ -38,7 +38,7 @@ export class GlobalUi {
             $(e.target).removeClass("invalid")
         }, true);
         $(".postit-visa").on('click', function () {
-            $(this).toggleClass("w-100");
+            $(this).toggleClass("w-50");
         });
     }
 

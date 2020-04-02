@@ -233,7 +233,8 @@ public class AdminSignRequestController {
 		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
-			signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", comment, null, null, null);
+			signRequest.setComment(comment);
+			signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", null, null, null);
 		} else {
 			logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
 		}

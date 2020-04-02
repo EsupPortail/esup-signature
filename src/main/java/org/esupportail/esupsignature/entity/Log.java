@@ -44,9 +44,19 @@ public class Log {
 
     private Integer posY;
 
+    private Integer stepNumber;
+
 	private Long signRequestId;
 
-	public Date getLogDate() {
+    public Long getSignRequestId() {
+        return this.signRequestId;
+    }
+
+    public void setSignRequestId(Long signRequestId) {
+        this.signRequestId = signRequestId;
+    }
+
+    public Date getLogDate() {
         return this.logDate;
     }
 
@@ -118,14 +128,6 @@ public class Log {
         this.comment = comment;
     }
 
-	public Long getSignRequestId() {
-        return this.signRequestId;
-    }
-
-	public void setSignRequestId(long signRequestId) {
-        this.signRequestId = signRequestId;
-    }
-
 	public Long getId() {
         return this.id;
     }
@@ -164,5 +166,13 @@ public class Log {
 
     public void setPosY(int posY) {
         this.posY = posY;
+    }
+
+    public Integer getStepNumber() {
+        return stepNumber;
+    }
+
+    public void setStepNumber(Integer stepNumber) {
+        this.stepNumber = stepNumber;
     }
 }

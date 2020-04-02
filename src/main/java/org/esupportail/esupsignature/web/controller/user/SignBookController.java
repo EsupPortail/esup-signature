@@ -283,7 +283,8 @@ public class SignBookController {
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequestService.checkUserViewRights(user, signRequest)) {
-            signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", comment, pageNumber, posX, posY);
+            signRequest.setComment(comment);
+            signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", pageNumber, posX, posY);
         } else {
             logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
         }

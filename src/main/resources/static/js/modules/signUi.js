@@ -16,6 +16,7 @@ export class SignUi {
             this.workspace = new WorkspacePdf('/user/signrequests/get-last-file/' + id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber);
         }
         this.xmlHttpMain = new XMLHttpRequest();
+        this.signComment = $('#signComment');
         this.initListeners();
     }
 
@@ -77,7 +78,7 @@ export class SignUi {
             signRequestUrlParams = "password=" + document.getElementById("password").value +
                 "&addDate=" + this.workspace.signPosition.dateActive +
                 "&visual=" + this.workspace.signPosition.visualActive +
-                "&comment=" + this.workspace.signPosition.signComment.val() +
+                "&comment=" + this.signComment.val() +
                 "&xPos=" + Math.round(this.workspace.signPosition.posX) +
                 "&yPos=" + Math.round(this.workspace.signPosition.posY) +
                 "&signWidth=" + Math.round(this.workspace.signPosition.signWidth / (this.workspace.signPosition.currentScale)) +
