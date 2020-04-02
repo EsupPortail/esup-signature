@@ -50,6 +50,9 @@ public class DataController {
 	private FormService formService;
 
 	@Resource
+	private SignRequestRepository signRequestRepository;
+
+	@Resource
 	private FormRepository formRepository;
 
 	@Resource
@@ -305,23 +308,25 @@ public class DataController {
 
 	}
 
+	@PreAuthorize("@dataService.preAuthorizeUpdate(#id)")
 	@GetMapping("datas/{id}/clone")
-	public String cloneData(@PathVariable("id") Long id) {
+	public String cloneData(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
-		long nbDatas = dataRepository.countByNameStartsWith(data.getName());
-		if(user.getEmail().equals(data.getCreateBy())) {
-			Data cloneData = new Data();
-			cloneData.setName(data.getName() + "(" + nbDatas + ")");
-			cloneData.setStatus(SignRequestStatus.draft);
-			cloneData.setCreateBy(userService.getCurrentUser().getEppn());
-			cloneData.setCreateDate(new Date());
-			cloneData.setOwner(data.getOwner());
-			cloneData.getDatas().putAll(data.getDatas());
-			cloneData.setForm(data.getForm());
-			return "redirect:/user/" + user.getEppn() + "/data/" + cloneData.getId();
-		} else {
-			return "";
-		}
+		Data cloneData = dataService.cloneData(data);
+		redirectAttributes.addFlashAttribute("messageInfo", "Le document a été cloné");
+		return "redirect:/user/datas/" + cloneData.getId() + "/update";
 	}
+
+	@PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
+	@GetMapping("datas/{id}/clone-from-signrequests")
+	public String cloneDataFromSignRequest(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+		User user = userService.getCurrentUser();
+		SignRequest signRequest = signRequestRepository.findById(id).get();
+		Data data = dataService.getDataFromSignRequest(signRequest);
+		Data cloneData = dataService.cloneData(data);
+		redirectAttributes.addFlashAttribute("messageInfo", "Le document a été cloné");
+		return "redirect:/user/datas/" + cloneData.getId() + "/update";
+	}
+
 }

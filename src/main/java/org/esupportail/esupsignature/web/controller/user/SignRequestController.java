@@ -455,7 +455,7 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
         signRequestService.refuse(signRequest, user);
-        return "redirect:/user/signrequests/" + signRequest.getId();
+        return "redirect:/user/signrequests/?statusFilter=tosign";
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")

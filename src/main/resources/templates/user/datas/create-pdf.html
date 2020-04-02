@@ -18,7 +18,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/datas">Mes brouillons</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Formulaire : <span th:text="${form.name}"></span>
+                <li class="breadcrumb-item active" aria-current="page">Formulaire : <span th:text="${form.title}"></span>
                 </li>
             </ol>
         </nav>
@@ -115,7 +115,7 @@
             <form th:action="'/user/datas/' + ${data.id} + '/send'" method="post" id="send">
             <div class="modal-body">
                     <p>
-                        La procédure "<span th:text="${form.name}"></span>" comporte <span th:text="${steps.size()}"></span> étape<span th:if="${steps.size()} > 1">s</span>
+                        La procédure "<span th:text="${form.title}"></span>" comporte <span th:text="${steps.size()}"></span> étape<span th:if="${steps.size()} > 1">s</span>
                     </p>
                     <th:block th:each="step,iterator : ${steps}">
                         <div th:if="${step.changeable == true}" class="form-group">

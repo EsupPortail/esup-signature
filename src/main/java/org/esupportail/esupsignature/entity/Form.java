@@ -16,9 +16,9 @@ public class Form {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+	@Column(unique=true)
 	private String title;
 
-	@Column(unique=true)
 	private String name;
 
 	@Size(max = 500)
@@ -68,6 +68,14 @@ public class Form {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	public String getDescription() {

@@ -118,14 +118,11 @@ public class FormService {
 		return pageNrByAnnotDict;
 	}
 
-	public Form createForm(Document document, String name, String workflowType, String code, DocumentIOType targetType, String targetUri) throws IOException {
+	public Form createForm(Document document, String name, String title, String workflowType, String code, DocumentIOType targetType, String targetUri) throws IOException {
 		List<Form> testForms = formRepository.findFormByNameAndActiveVersion(name, true);
-		PDDocument pdDocument = PDDocument.load(document.getInputStream());
-		PDFieldTree pdFields = pdfService.getFields(pdDocument);
-		PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
-		Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNrByAnnotDict(docCatalog);
 		Form form = new Form();
 		form.setName(name);
+		form.setTitle(title);
 		form.setActiveVersion(true);
 		if(testForms.size() == 1) {
 			testForms.get(0).setActiveVersion(false);
@@ -140,7 +137,24 @@ public class FormService {
 		form.setRole(code.toUpperCase());
 		form.setPreFillType(code.toLowerCase());
 		form.setWorkflowType(workflowType);
+		form.setFields(getFields(document));
+		formRepository.save(form);
+		document.setParentId(form.getId());
+		if(testForms.size() == 1) {
+			List<UserShare> userShares = userShareRepository.findByForm(testForms.get(0));
+			for (UserShare userShare : userShares) {
+				userService.createUserShare(form.getId(), userShare.getShareType().name(), userShare.getToUsers(), userShare.getBeginDate(), userShare.getEndDate(), userShare.getUser());
+			}
+		}
+		return form;
+	}
+
+	private List<Field> getFields(Document document) throws IOException {
 		List<Field> fields = new ArrayList<>();
+		PDDocument pdDocument = PDDocument.load(document.getInputStream());
+		PDFieldTree pdFields = pdfService.getFields(pdDocument);
+		PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
+		Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNrByAnnotDict(docCatalog);
 		for(PDField pdField : pdFields) {
 			List<PDAnnotationWidget> kids = pdField.getWidgets();
 			int page = 1;
@@ -220,10 +234,7 @@ public class FormService {
 			field.setFillOrder(i);
 			fieldService.updateField(field);
 		}
-		form.setFields(fields);
-		formRepository.save(form);
-		document.setParentId(form.getId());
-		return form;
+		return fields;
 	}
 
 	private void resolveFieldName(Field field, String name) {

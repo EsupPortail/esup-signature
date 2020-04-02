@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -26,6 +28,9 @@ public class DataService {
 
 	@Resource
 	private DataRepository dataRepository;
+
+	@Resource
+	private FormRepository formRepository;
 
 	@Resource
 	private UserPropertieService userPropertieService;
@@ -99,7 +104,7 @@ public class DataService {
 			String targetUrl = String.join(",", targetEmails);
 			userPropertieService.createTargetPropertie(user, targetUrl, form);
 		}
-		String name = form.getName().replaceAll("[\\\\/:*?\"<>|]", "-");
+		String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-");
 		if(!data.getName().isEmpty()) {
 			name += "_" + data.getName().replaceAll("[\\\\/:*?\"<>|]", "-");
 		}
@@ -153,9 +158,39 @@ public class DataService {
 		return null;
 	}
 
+	public Data cloneData(Data data) {
+		Form form = formRepository.findFormByNameAndActiveVersion(data.getForm().getName(), true).get(0);
+		Data cloneData = new Data();
+		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
+		cloneData.setName(format.format(new Date()) + "_" + form.getTitle());
+		cloneData.setStatus(SignRequestStatus.draft);
+		cloneData.setCreateBy(userService.getCurrentUser().getEppn());
+		cloneData.setCreateDate(new Date());
+		cloneData.setOwner(data.getOwner());
+		cloneData.getDatas().putAll(data.getDatas());
+		cloneData.setForm(form);
+		dataRepository.save(cloneData);
+		return cloneData;
+	}
+
 	public InputStream generateFile(Data data) {
 		Form form = data.getForm();
 		return pdfService.fill(form.getDocument().getInputStream(), data.getDatas());
+	}
+
+	public Data getDataFromSignRequest(SignRequest signRequest) {
+		if(signRequest.getParentSignBook() != null) {
+			return getDataFromSignBook(signRequest.getParentSignBook());
+		}
+		return null;
+	}
+
+	public Data getDataFromSignBook(SignBook signBook) {
+		List<Data> datas = dataRepository.findBySignBook(signBook);
+		if(datas.size() > 0) {
+			return datas.get(0);
+		}
+		return null;
 	}
 
 }

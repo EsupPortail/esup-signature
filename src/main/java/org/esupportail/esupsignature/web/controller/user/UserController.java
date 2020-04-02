@@ -30,7 +30,9 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
@@ -190,24 +192,24 @@ public class UserController {
 	@PostMapping("/add-share")
 	public String addShare(@RequestParam("service") Long service, @RequestParam("type") String type, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) {
 		User user = userService.getUserFromAuthentication();
-		UserShare userShare = new UserShare();
-		userShare.setUser(user);
-		userShare.setShareType(UserShare.ShareType.valueOf(type));
-		userShare.setForm(formRepository.findById(service).get());
+		List<User> users = new ArrayList<>();
 		for (String userEmail : userEmails) {
-			userShare.getToUsers().add(userService.createUser(userEmail));
+			users.add(userService.createUser(userEmail));
 		}
+		Date beginDateDate = null;
+		Date endDateDate = null;
 		if (beginDate != null && endDate != null) {
 			try {
-				userShare.setBeginDate(new SimpleDateFormat("dd/MM/yyyy").parse(beginDate));
-				userShare.setEndDate(new SimpleDateFormat("dd/MM/yyyy").parse(endDate));
+				beginDateDate = new SimpleDateFormat("dd/MM/yyyy").parse(beginDate);
+				endDateDate = new SimpleDateFormat("dd/MM/yyyy").parse(endDate);
 			} catch (ParseException e) {
 				logger.error("error on parsing dates");
 			}
 		}
-		userShareRepository.save(userShare);
+		userService.createUserShare(service, type, users, beginDateDate, endDateDate, user);
 		return "redirect:/user/users/shares";
 	}
+
 
 	@DeleteMapping("/del-share/{id}")
 	public String addShare(@PathVariable long id, RedirectAttributes redirectAttributes) {

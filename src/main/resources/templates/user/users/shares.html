@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="userShare" type="org.esupportail.esupsignature.entity.UserShare"*/-->
+<!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 <nav th:replace="fragments/nav"></nav>
@@ -40,7 +41,7 @@
                                     <span th:if="${userShare.shareType.name() == 'create'}">Creation</span>
                                 </td>
                                 <td>
-                                    <span th:text="${userShare.form.name}"></span>
+                                    <span th:text="${userShare.form.title}"></span>
                                 </td>
                                 <td>
                                     <th:block th:each="toUser : ${userShare.toUsers}">
@@ -124,7 +125,7 @@
                             <select id="selectService" class="slim-select" name="service" required>
                                 <option value="" disabled selected>Choisir un service</option>
                                 <th:block th:each="form : ${forms}">
-                                    <option th:value="${form.id}" th:text="${form.name}"></option>
+                                    <option th:value="${form.id}" th:text="${form.title}"></option>
                                 </th:block>
                             </select>
                         </div>

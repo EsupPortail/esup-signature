@@ -98,9 +98,9 @@ public class FormManagerController {
 	}
 
 	@PostMapping("generate")
-	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String workflowType, String code, DocumentIOType targetType, String targetUri, Model model) throws IOException {
+	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, String workflowType, String code, DocumentIOType targetType, String targetUri, Model model) throws IOException {
 		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = formService.createForm(document, name, workflowType, code, targetType, targetUri);
+		Form form = formService.createForm(document, name, title, workflowType, code, targetType, targetUri);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 
@@ -136,6 +136,7 @@ public class FormManagerController {
 		Form form = formService.getFormById(updateForm.getId());
 		form.setPdfDisplay(updateForm.getPdfDisplay());
 		form.setName(updateForm.getName());
+		form.setTitle(updateForm.getTitle());
 		form.setRole(updateForm.getRole());
 		form.setPreFillType(updateForm.getPreFillType());
 		form.setWorkflowType(updateForm.getWorkflowType());

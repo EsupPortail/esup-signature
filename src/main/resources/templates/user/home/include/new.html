@@ -49,12 +49,12 @@
                     <th:block th:each="form : ${forms}">
                         <a role="button" class="btn btn-material btn-light text-center mr-2 overflow-hidden p-0 formButton"
                            style="width: 150px; height: 200px;" th:href="'/user/datas/form/' + ${form.id}"
-                           th:title="'Formulaire : ' + ${form.name}">
+                           th:title="'Formulaire : ' + ${form.title}">
                             <div class="crop">
                                 <i class="fas fa-file-alt fa-4x text-danger"></i>
 <!--                                <img th:src="'/user/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
                             </div>
-                            <h6 th:text="${form.name}"></h6>
+                            <h6 th:text="${form.title}"></h6>
                         </a>
                     </th:block>
                 </div>

@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.ldap.OrganizationalUnitLdapRepository;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapRepository;
 import org.esupportail.esupsignature.repository.DataRepository;
+import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.file.FileService;
@@ -22,12 +23,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -66,6 +70,9 @@ public class UserService {
 
 	@Resource
 	private DataRepository dataRepository;
+
+	@Resource
+	private FormRepository formRepository;
 
 	@Resource
 	private MailService mailService;
@@ -400,6 +407,17 @@ public class UserService {
 			}
 		}
 		return false;
+	}
+
+	public void createUserShare(@RequestParam("service") Long service, @RequestParam("type") String type, @RequestParam("userIds") List<User> userEmails, @RequestParam("beginDate") Date beginDate, @RequestParam("endDate") Date endDate, User user) {
+		UserShare userShare = new UserShare();
+		userShare.setUser(user);
+		userShare.setShareType(UserShare.ShareType.valueOf(type));
+		userShare.setForm(formRepository.findById(service).get());
+		userShare.getToUsers().addAll(userEmails);
+		userShare.setBeginDate(beginDate);
+		userShare.setEndDate(endDate);
+		userShareRepository.save(userShare);
 	}
 
 }
