@@ -3,23 +3,17 @@
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <nav th:fragment="tdb-side" id="sidebar" class="scrollbar-primary">
     <div class="ml-1 mt-1">
-        <a th:if="${status == statusFilter}" class="btn col-3 col-md-12 mb-1 text-left btn-dark" href="/user/signrequests">Tout voir</a>
-        <a th:unless="${status == statusFilter}" class="btn col-3 col-md-12 mb-1 text-left btn-light" href="/user/signrequests">Tout voir</a>
+        <a th:classappend="${status == statusFilter} ? 'btn-dark' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests">Tout voir</a>
         <div class="hr">En cours</div>
-        <a th:if="${statusFilter == 'tosign'}" class="btn col-3 col-md-12 mb-1 text-left btn-dark" href="/user/signrequests/?statusFilter=tosign">A signer</a>
-        <a th:unless="${statusFilter == 'tosign'}" class="btn col-3 col-md-12 mb-1 text-left btn-light" href="/user/signrequests/?statusFilter=tosign">A signer</a>
+        <a th:classappend="${statusFilter == 'tosign'} ? 'btn-dark' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=tosign">A signer</a>
         <div class="hr">Mes demandes</div>
-        <a th:if="${statusFilter == 'pending'}" class="btn col-3 col-md-12 mb-1 text-left btn-dark" href="/user/signrequests/?statusFilter=pending">Mes demandes envoyées</a>
-        <a th:if="${statusFilter != 'pending'}" class="btn col-3 col-md-12 mb-1 text-left btn-light" href="/user/signrequests/?statusFilter=pending">Mes demandes envoyées</a>
-        <a th:if="${statusFilter == 'completed'}" class="btn col-3 col-md-12 mb-1 text-left btn-dark" href="/user/signrequests/?statusFilter=completed">Mes demandes signées</a>
-        <a th:if="${statusFilter != 'completed'}" class="btn col-3 col-md-12 mb-1 text-left btn-light" href="/user/signrequests/?statusFilter=completed">Mes demandes signées</a>
-        <a th:if="${statusFilter == 'refused'}" class="btn col-3 col-md-12 mb-1 text-left btn-dark" href="/user/signrequests/?statusFilter=refused">Mes demandes refusées</a>
-        <a th:if="${statusFilter != 'refused'}" class="btn col-3 col-md-12 mb-1 text-left btn-light" href="/user/signrequests/?statusFilter=refused">Mes demandes refusées</a>
+        <a th:classappend="${statusFilter == 'pending'} ? 'btn-dark' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=pending">Mes demandes envoyées</a>
+        <a th:classappend="${statusFilter == 'completed'} ? 'btn-dark' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=completed">Mes demandes signées</a>
+        <a th:classappend="${statusFilter == 'refused'} ? 'btn-dark' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=refused">Mes demandes refusées</a>
         <div class="hr">Historique</div>
-        <a th:if="${statusFilter == 'signedByMe'}" class="btn col-3 col-md-12 mb-1 text-left btn-dark" href="/user/signrequests/?statusFilter=signedByMe">Demandes que j'ai signées</a>
-        <a th:if="${statusFilter != 'signedByMe'}" class="btn col-3 col-md-12 mb-1 text-left btn-light" href="/user/signrequests/?statusFilter=signedByMe">Demandes que j'ai signées</a>
-        <a th:if="${statusFilter == 'refusedByMe'}" class="btn col-3 col-md-12 mb-1 text-left btn-dark" href="/user/signrequests/?statusFilter=refusedByMe">Demandes que j'ai refusées</a>
-        <a th:if="${statusFilter != 'refusedByMe'}" class="btn col-3 col-md-12 mb-1 text-left btn-light" href="/user/signrequests/?statusFilter=refusedByMe">Demandes que j'ai refusées</a>
+        <a th:classappend="${statusFilter == 'signedByMe'} ? 'btn-dark' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=signedByMe">Demandes que j'ai signées</a>
+        <a th:classappend="${statusFilter == 'refusedByMe'} ? 'btn-dark' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=refusedByMe">Demandes que j'ai refusées</a>
+        <a th:classappend="${statusFilter == 'sharedSign'} ? 'btn-dark' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=sharedSign">Signées en délégation</a>
     </div>
 </nav>
 </html>

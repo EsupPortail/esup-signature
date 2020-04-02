@@ -120,8 +120,8 @@ public class SignRequestService {
 	public List<SignRequest> getSignRequestsSignedByUser(User user) {
 		List<SignRequest> signRequests = new ArrayList<>();
 		List<Log> logs = new ArrayList<>();
-		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.signed.name()));
-		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.checked.name()));
+		logs.addAll(logRepository.findByEppnForAndFinalStatus(user.getEppn(), SignRequestStatus.signed.name()));
+		logs.addAll(logRepository.findByEppnForAndFinalStatus(user.getEppn(), SignRequestStatus.checked.name()));
 		logs:
 		for (Log log : logs) {
 			logger.debug("find log : " + log.getSignRequestId() + ", " + log.getFinalStatus());
@@ -140,6 +140,27 @@ public class SignRequestService {
 	public List<SignRequest> getSignRequestsRefusedByUser(User user) {
 		List<SignRequest> signRequests = new ArrayList<>();
 		List<Log> logs = new ArrayList<>();
+		logs.addAll(logRepository.findByEppnForAndFinalStatus(user.getEppn(), SignRequestStatus.refused.name()));
+		logs:
+		for (Log log : logs) {
+			logger.debug("find log : " + log.getSignRequestId() + ", " + log.getFinalStatus());
+			try {
+				SignRequest signRequest = signRequestRepository.findById(log.getSignRequestId()).get();
+				if(!signRequests.contains(signRequest)) {
+					signRequests.add(signRequest);
+				}
+			} catch (Exception e) {
+				logger.debug(e.getMessage());
+			}
+		}
+		return signRequests;
+	}
+
+	public List<SignRequest> getSignRequestsSharedSign(User user) {
+		List<SignRequest> signRequests = new ArrayList<>();
+		List<Log> logs = new ArrayList<>();
+		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.signed.name()));
+		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.checked.name()));
 		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.refused.name()));
 		logs:
 		for (Log log : logs) {

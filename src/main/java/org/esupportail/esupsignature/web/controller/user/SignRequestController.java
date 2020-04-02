@@ -138,8 +138,10 @@ public class SignRequestController {
                 signRequests = signRequestService.getToSignRequests(user);
             } else if (statusFilter.equals("signedByMe")) {
                 signRequests = signRequestService.getSignRequestsSignedByUser(user);
-            }  else if (statusFilter.equals("refusedByMe")) {
+            } else if (statusFilter.equals("refusedByMe")) {
                 signRequests = signRequestService.getSignRequestsRefusedByUser(user);
+            } else if (statusFilter.equals("sharedSign")) {
+                signRequests = signRequestService.getSignRequestsSharedSign(user);
             } else {
                 signRequests = signRequestRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.valueOf(statusFilter));
             }
@@ -418,6 +420,7 @@ public class SignRequestController {
     public String sendSignRequest(@RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                   @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
                                   @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
+                                  @RequestParam(name = "comment", required = false) String comment,
                                   @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
         User user = userService.getCurrentUser();
         logger.info(user.getFirstname() + " " + user.getName() + "envoi d'une demande de signature à " + recipientsEmails);

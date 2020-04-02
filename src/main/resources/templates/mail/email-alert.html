@@ -32,7 +32,7 @@
 							<span  th:text="${creator.firstname} + ' ' + ${creator.name}"></span>
 						</td>
 						<td th:with="personLdap = ${userService.findPersonLdapByUser(creator)}">
-							<span th:text="${userService.findOrganizationalUnitLdapByPersonLdap(personLdap).description}"></span>
+							<span th:if="${userService.findOrganizationalUnitLdapByPersonLdap(personLdap) != null}" th:text="${userService.findOrganizationalUnitLdapByPersonLdap(personLdap).description}"></span> 
 						</td>
 						<td>
 							<a class="btn btn-sm btn-dark mx-auto" th:href="@{|${rootUrl}/user/signrequests/${signRequest.id}|}">Accéder au document</a>
