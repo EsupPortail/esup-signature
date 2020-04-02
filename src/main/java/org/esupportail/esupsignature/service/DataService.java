@@ -13,6 +13,8 @@ import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import java.io.InputStream;
@@ -105,9 +107,6 @@ public class DataService {
 			userPropertieService.createTargetPropertie(user, targetUrl, form);
 		}
 		String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-");
-		if(!data.getName().isEmpty()) {
-			name += "_" + data.getName().replaceAll("[\\\\/:*?\"<>|]", "-");
-		}
 		String signBookName = signBookService.generateName(name, user);
 		SignBook signBook = signBookService.createSignBook(signBookName, user, false);
 		SignRequest signRequest = signRequestService.createSignRequest(name, user);
@@ -156,6 +155,21 @@ public class DataService {
 			logger.error("bean cloning fail", e);
 		}
 		return null;
+	}
+
+	public Data updateData(@RequestParam MultiValueMap<String, String> formData, User user, Form form, Data data) {
+		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
+		data.setName(format.format(new Date()) + "_" + form.getTitle());
+		data.getDatas().putAll(formData.toSingleValueMap());
+		data.setForm(form);
+		data.setFormName(form.getName());
+		data.setFormVersion(form.getVersion());
+		data.setStatus(SignRequestStatus.draft);
+		data.setCreateBy(userService.getUserFromAuthentication().getEppn());
+		data.setOwner(user.getEppn());
+		data.setCreateDate(new Date());
+		dataRepository.save(data);
+		return data;
 	}
 
 	public Data cloneData(Data data) {

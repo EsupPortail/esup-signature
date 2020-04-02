@@ -35,7 +35,7 @@
             <ol class="breadcrumb">
                 <li th:if="${signRequest.createBy == user.eppn}" class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
                 <li th:unless="${signRequest.createBy == user.eppn}" class="breadcrumb-item"><a href="/user/signrequests/?statusFilter=tosign">Documents à signer</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Document : <span th:text="${signRequest.title}"></span>
+                <li class="breadcrumb-item active" aria-current="page">Document : <span th:text="${signRequest.title}"></span> du <span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                 </li>
             </ol>
         </nav>

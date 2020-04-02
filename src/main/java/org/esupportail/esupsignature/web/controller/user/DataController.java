@@ -28,6 +28,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -121,7 +122,7 @@ public class DataController {
 	}
 
 	@GetMapping("datas/form/{id}")
-	public String createData(@PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
+	public String updateData(@PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
 		User user = userService.getCurrentUser();
 		List<Form> autorizedForms = formRepository.findAutorizedFormByUser(user);
 		Form form = formService.getFormById(id);
@@ -195,7 +196,7 @@ public class DataController {
 	}
 
 	@PostMapping("datas/form/{id}")
-	public String addData(@PathVariable("id") Long id, @RequestParam Long dataId, @RequestParam String name, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
+	public String addData(@PathVariable("id") Long id, @RequestParam Long dataId, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
 		User user = userService.getCurrentUser();
 		Form form = formService.getFormById(id);
 		formData.remove("_csrf");
@@ -205,20 +206,10 @@ public class DataController {
 		} else {
 			data = new Data();
 		}
-		data.setName(name);
-		data.getDatas().putAll(formData.toSingleValueMap());
-		data.setForm(form);
-		data.setFormName(form.getName());
-		data.setFormVersion(form.getVersion());
-		data.setStatus(SignRequestStatus.draft);
-		data.setCreateBy(userService.getUserFromAuthentication().getEppn());
-		data.setOwner(user.getEppn());
-		data.setCreateDate(new Date());
-		dataRepository.save(data);
+		data = dataService.updateData(formData, user, form, data);
 		redirectAttributes.addFlashAttribute("messageSuccess", "Données enregistrées");
 		return "redirect:/user/datas/" + data.getId() + "/update";
 	}
-	
 
 	@PutMapping("datas/{id}")
 	public String updateData(@PathVariable("id") Long id, @RequestParam String name, @RequestParam(required = false) String navPage, @RequestParam(required = false) Integer page, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
