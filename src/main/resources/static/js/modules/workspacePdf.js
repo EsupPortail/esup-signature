@@ -75,18 +75,7 @@ export class WorkspacePdf {
     }
 
     initWorkspace() {
-        if(localStorage.getItem('mode') != null && localStorage.getItem('mode') !== "") {
-            this.mode = localStorage.getItem('mode');
-        } else {
-            if(this.signable) {
-                localStorage.setItem('mode', 'sign');
-                this.mode = 'sign';
-            } else {
-                localStorage.setItem('mode', 'read');
-                this.mode = 'read';
-                $('#readButton').removeClass('d-none');
-            }
-        }
+        this.mode = 'sign';
         console.info("init to " + this.mode + " mode");
         if(this.mode === 'sign') {
             this.enableSignMode();
@@ -215,7 +204,6 @@ export class WorkspacePdf {
         console.info("enable read mode");
         this.disableAllModes();
         this.mode = 'read';
-        localStorage.setItem('mode', 'read');
         this.signPosition.pointItEnable = false;
         this.pdfViewer.scale = 1.75;
         $('#readButton').toggleClass('btn-light btn-secondary');
@@ -229,7 +217,6 @@ export class WorkspacePdf {
         console.info("enable comments mode");
         this.disableAllModes();
         this.mode = 'comment';
-        localStorage.setItem('mode', 'comment');
         this.signPosition.pointItEnable = true;
         this.pdfViewer.scale = 0.75;
         $('#workspace').toggleClass('alert-warning alert-secondary');
@@ -243,7 +230,6 @@ export class WorkspacePdf {
         console.info("enable sign mode");
         this.disableAllModes();
         this.mode = 'sign';
-        localStorage.setItem('mode', 'sign');
         this.signPosition.pointItEnable = false;
         $('#workspace').toggleClass('alert-success alert-secondary');
         $(".circle").each(function( index ) {
@@ -269,7 +255,6 @@ export class WorkspacePdf {
     enableRefuseMode() {
         this.disableAllModes();
         this.mode = 'refuse';
-        localStorage.setItem('mode', 'refuse');
         $('#workspace').toggleClass('alert-danger alert-secondary');
         $('#refuseButton').toggleClass('btn-light btn-danger');
         $('#refusetools').show();

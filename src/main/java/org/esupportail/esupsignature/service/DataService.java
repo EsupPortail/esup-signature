@@ -130,10 +130,9 @@ public class DataService {
 			signBook.setDocumentsTargetUri(targetEmails.get(0));
 		}
 		signBookRepository.save(signBook);
+		signBookService.pendingSignBook(signBook, user);
 		data.setSignBook(signBook);
 		data.setStatus(SignRequestStatus.pending);
-		dataRepository.save(data);
-		signBookService.pendingSignBook(signBook, user);
 		return signBook;
 	}
 

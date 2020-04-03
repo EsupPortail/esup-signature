@@ -29,11 +29,6 @@ if(document.URL.match("(\/user\/signrequests\/[\\s\\S]+[^?|^\/])")) {
     // });
 }
 
-if(document.URL.match("(\/user\/signrequests\/?$)")) {
-    console.info("localStorage remove : mode");
-    localStorage.removeItem('mode');
-}
-
 export let stepper;
 let stepDiv = document.getElementById("stepperDefault");
 if (stepDiv != null) {
