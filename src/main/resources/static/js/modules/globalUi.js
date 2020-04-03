@@ -40,6 +40,14 @@ export class GlobalUi {
         $(".postit-global").on('click', function () {
             $(this).toggleClass("w-50");
         });
+
+        $(document).click(function (event) {
+            var container = document.getElementsByClassName('user-infos')[0];
+            var _opened = $("#user-infos").hasClass("collapse show");
+            if (_opened === true && container !== event.target && !container.contains(event.target)) {
+                $("#user-toggle").click();
+            }
+        });
     }
 
     disableBodyScroll() {

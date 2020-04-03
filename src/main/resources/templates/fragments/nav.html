@@ -101,9 +101,6 @@
     <div th:if="${user.name != null}" id="user-infos" class="card position-fixed user-infos collapse overflow-y-scroll drop-shadows"
          style="right: 0; margin-top:-3px; margin-right: 5px">
         <div id="myDocs" class="card-body user-infos text-center">
-            <button id="closeUserInfo" role="button" class="btn btn-light float-right">
-                <i class="fas fa-times"></i>
-            </button>
             <h3 th:if="${@userService.getUserFromAuthentication() != user}">
                 Vous avez activé la délégation
             </h3>

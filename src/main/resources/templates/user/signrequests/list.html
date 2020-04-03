@@ -30,35 +30,6 @@
             </div>
             <div class="card col-lg-11">
                 <div id="myDocs" class="card-body">
-<!--                    <a th:if="${status == statusFilter}" class="btn btn-sm btn-secondary" href="/user/signrequests">Tout voir</a>-->
-<!--                    <a th:unless="${status == statusFilter}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests">Tout voir</a>-->
-<!--                    <a th:if="${statusFilter == 'tosign'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=tosign">A signer</a>-->
-<!--                    <a th:unless="${statusFilter == 'tosign'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=tosign">A signer</a>-->
-<!--                    <a th:if="${statusFilter == 'pending'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=pending">Demandes envoyées</a>-->
-<!--                    <a th:if="${statusFilter != 'pending'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=pending">Demandes envoyées</a>-->
-<!--                    <a th:if="${statusFilter == 'completed'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=completed">Demandes terminées</a>-->
-<!--                    <a th:if="${statusFilter != 'completed'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=completed">Demandes terminées</a>-->
-<!--                    <a th:if="${statusFilter == 'refused'}" class="btn btn-sm btn-secondary" href="/user/signrequests/?statusFilter=refused">Demandes refusées</a>-->
-<!--                    <a th:if="${statusFilter != 'refused'}" class="btn btn-sm btn-outline-secondary" href="/user/signrequests/?statusFilter=refused">Demandes refusées</a>-->
-
-<!--                    <form class="" action="" method="get">-->
-<!--                        <div class="input-group mb-2">-->
-<!--                            <div class="input-group-prepend">-->
-<!--                                <div class="input-group-text" id="status-label">Statut</div>-->
-<!--                            </div>-->
-<!--                            <select aria-labelledby="status-label" class="form-control" name="statusFilter"-->
-<!--                                    id="statusFilter" onchange="submit();">-->
-<!--                                <option value="" disabled="disabled" selected="selected">Choisir un statut</option>-->
-<!--                                <option value="all">Tous</option>-->
-<!--                                <th:block th:each="status : ${statuses}">-->
-<!--                                    <option th:if="${status == statusFilter}" th:value="${status}" selected="selected"-->
-<!--                                            th:text="#{'signbook.status.' + ${status}}"></option>-->
-<!--                                    <option th:unless="${status == statusFilter}" th:value="${status}"-->
-<!--                                            th:text="#{'signbook.status.' + ${status}}"></option>-->
-<!--                                </th:block>-->
-<!--                            </select>-->
-<!--                        </div>-->
-<!--                    </form>-->
                     <table class="table table-borderless table-hover mt-2">
                         <thead class="thead-dark">
                         <tr>
@@ -84,11 +55,11 @@
                                 <td class="d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                 </td>
                                 <td class="d-none d-lg-table-cell">
-                                    <table th:if="${signRequest.parentSignBook != null && @signBookService.getCurrentWorkflowStep(signRequest.parentSignBook) != null}"
+                                    <table th:if="${signRequest.parentSignBook != null}"
                                            class="table table-sm">
                                         <tbody>
                                         <th:block
-                                                th:each="recipient : ${@signBookService.getCurrentWorkflowStep(signRequest.parentSignBook).recipients}">
+                                                th:each="recipient : ${signRequest.parentSignBook.workflowSteps.get(signRequest.parentSignBook.workflowSteps.size() - 1).recipients}">
                                             <tr>
                                                 <td width="100%"
                                                     th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>
