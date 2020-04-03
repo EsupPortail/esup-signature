@@ -46,7 +46,7 @@ export class WorkspaceOther {
         $('#clock').hide();
         mode = 'sign';
         $('#workspace').removeClass('alert-danger').removeClass('alert-warning').removeClass('alert-success').addClass('alert-secondary');
-        $('#commentButton').addClass('btn-light').removeClass('btn-warning');
+        $('#commentModeButton').addClass('btn-light').removeClass('btn-warning');
         $('#signButton').addClass('btn-light').removeClass('btn-success');
         $('#refuseButton').addClass('btn-light').removeClass('btn-danger');
         $('#readButton').addClass('btn-light').removeClass('btn-secondary');

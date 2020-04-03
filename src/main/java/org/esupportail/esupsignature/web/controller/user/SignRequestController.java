@@ -110,6 +110,9 @@ public class SignRequestController {
     private SignBookService signBookService;
 
     @Resource
+    private SignBookRepository signBookRepository;
+
+    @Resource
     private LogRepository logRepository;
 
     @Resource
@@ -422,17 +425,25 @@ public class SignRequestController {
                                   @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
                                   @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
                                   @RequestParam(name = "comment", required = false) String comment,
-                                  @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
+                                  @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
         User user = userService.getCurrentUser();
         logger.info(user.getFirstname() + " " + user.getName() + "envoi d'une demande de signature à " + recipientsEmails);
         if (multipartFiles != null) {
             if(allSignToComplete == null) {
                 allSignToComplete = false;
             }
+            //TODO use signBook
+
             SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
-            signRequestService.addRecipients(signRequest, recipientsEmails);
-            signRequestService.pendingSignRequest(signRequest, signType, allSignToComplete);
+            //signRequestService.addRecipients(signRequest, recipientsEmails);
+            //signRequestService.pendingSignRequest(signRequest, signType, allSignToComplete);
+            SignBook signBook = signBookService.createSignBook(multipartFiles[0].getOriginalFilename(), user, false);
+            signBook.setCurrentWorkflowStepNumber(1);
+            signBookRepository.save(signBook);
+            signBook.getWorkflowSteps().add(workflowService.createWorkflowStep(multipartFiles[0].getOriginalFilename(), "signbook", signBook.getId(), allSignToComplete, signType, recipientsEmails));
+            signBookService.addSignRequest(signBook, signRequest);
+            signBookService.pendingSignBook(signBook, user);
             signRequest.setComment(comment);
             signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
             redirectAttributes.addFlashAttribute("messageSuccess", "Votre demande à bien été transmise");
@@ -634,13 +645,16 @@ public class SignRequestController {
     @PostMapping(value = "/comment/{id}")
     public String comment(@PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
-                          @RequestParam(value = "pageNumber", required = false) Integer pageNumber,
-                          @RequestParam(value = "posX", required = false) Integer posX,
-                          @RequestParam(value = "posY", required = false) Integer posY,
-                          HttpServletRequest request) {
+                          @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
+                          @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
+                          @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
+                          @RequestParam(value = "addStep", required = false) Boolean addStep) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
-        signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", pageNumber, posX, posY);
+        signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", commentPageNumber, commentPosX, commentPosY);
+        if(addStep) {
+            //TODO gommettes ?
+        }
         return "redirect:/user/signrequests/" + signRequest.getId();
     }
 

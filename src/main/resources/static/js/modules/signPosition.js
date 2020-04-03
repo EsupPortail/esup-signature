@@ -74,6 +74,9 @@ export class SignPosition {
             console.debug("pointit2");
             this.posX = e.offsetX ? (e.offsetX) : e.clientX;
             this.posY = e.offsetY ? (e.offsetY) : e.clientY;
+            $('#commentPosX').val(this.posX);
+            $('#commentPosY').val(this.posY);
+            $('#commentPageNumber').val(this.signPageNumber);
             this.scalePosition(1);
         }
     }

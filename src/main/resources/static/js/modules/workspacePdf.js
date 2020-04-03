@@ -10,9 +10,9 @@ export class WorkspacePdf {
         this.currentSignType = currentSignType;
         this.postits = postits;
         this.signable = signable;
-        this.signPosition = new SignPosition(this.currentSignRequestParams.xPos, this.currentSignRequestParams.yPos, signWidth, signHeight, this.signPageNumber);
+        this.signPosition = new SignPosition(this.currentSignRequestParams.xPos, this.currentSignRequestParams.yPos, signWidth, signHeight, this.currentSignRequestParams.signPageNumber);
         this.pdfViewer = new PdfViewer(url, signable, currentStepNumber);
-        this.signPageNumber = document.getElementById('signPageNumber');
+        //this.signPageNumber = document.getElementById('signPageNumber');
         this.mode = 'read';
         this.initListeners();
     }
@@ -24,9 +24,9 @@ export class WorkspacePdf {
         this.pdfViewer.addEventListener('render', e => this.initForm());
 
 
-        document.getElementById('commentButton').addEventListener('click', e => this.enableCommentMode());
+        document.getElementById('commentModeButton').addEventListener('click', e => this.enableCommentMode());
         if(this.signable) {
-            //document.getElementById('signButton').addEventListener('click', e => this.enableSignMode());
+            document.getElementById('signModeButton').addEventListener('click', e => this.enableSignMode());
             if(this.currentSignType !== "pdfImageStamp") {
                 //document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
             }
@@ -157,6 +157,8 @@ export class WorkspacePdf {
     }
 
     refreshComments() {
+        console.debug("refresh comments " + this.pdfViewer.pageNum);
+        this.signPosition.signPageNumber = this.pdfViewer.pageNum;
         this.postits.forEach((postit, index) => {
             let postitDiv = $('#' + postit.id);
             let postitButton = $('#postit' + postit.id);
@@ -198,6 +200,7 @@ export class WorkspacePdf {
         document.getElementById("postit").style.left = this.signPosition.posX + "px";
         document.getElementById("postit").style.top = this.signPosition.posY + "px";
         $("#postit").show();
+
     }
 
     hideComment() {
@@ -230,7 +233,7 @@ export class WorkspacePdf {
         this.signPosition.pointItEnable = true;
         this.pdfViewer.scale = 0.75;
         $('#workspace').toggleClass('alert-warning alert-secondary');
-        $('#commentButton').toggleClass('btn-light btn-warning');
+        $('#commentModeButton').toggleClass('btn-light btn-warning');
         $('#commentsTools').show();
         $('#infos').show();
         this.pdfViewer.renderPage(1);
@@ -246,7 +249,10 @@ export class WorkspacePdf {
         $(".circle").each(function( index ) {
             $(this).hide();
         });
-        $('#signButton').toggleClass('btn-light btn-success');
+        $('#signButtons').removeClass('d-none');
+        $('#signZoomIn').removeClass('d-none');
+        $('#signZoomOut').removeClass('d-none');
+        $('#signModeButton').toggleClass('btn-light btn-success');
         $('#signTools').show();
         $('#stepscard').show();
         $('#infos').show();
@@ -274,8 +280,11 @@ export class WorkspacePdf {
     disableAllModes() {
         //this.mode = 'sign';
         $('#workspace').removeClass('alert-danger').removeClass('alert-warning').removeClass('alert-success').addClass('alert-secondary');
-        $('#commentButton').addClass('btn-light').removeClass('btn-warning');
-        $('#signButton').addClass('btn-light').removeClass('btn-success');
+        $('#commentModeButton').addClass('btn-light').removeClass('btn-warning');
+        $('#signModeButton').addClass('btn-light').removeClass('btn-success');
+        $('#signButtons').addClass('d-none');
+        $('#signZoomIn').addClass('d-none');
+        $('#signZoomOut').addClass('d-none');
         $('#refuseButton').addClass('btn-light').removeClass('btn-danger');
         $('#readButton').addClass('btn-light').removeClass('btn-secondary');
         $('#commentsTools').hide();

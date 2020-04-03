@@ -18,6 +18,9 @@
     </div>
     <form id="signForm" th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
+        <input id="commentPosX" name="commentPosX" type="hidden"/>
+        <input id="commentPosY" name="commentPosY" type="hidden"/>
+        <input id="commentPageNumber" name="commentPageNumber" type="hidden"/>
         <div id="pdf" class="drop-shadows mx-auto">
             <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed'}">
                 <th:block th:if="${currentSignType != 'visa'}">
@@ -52,16 +55,15 @@
                     <i class="fas fa-comment fa-3x"></i>
                 </div>
             </th:block>
-        </div>
-        <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">
+            <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;cursor: pointer;">
             <span id="hideComment" class="float-right" style="cursor: pointer;">
                 <i class="fas fa-times"></i>
             </span>
-            <textarea id="comment" name="comment" class="postitarea" placeholder="Saisir une annotation"></textarea>
-            <button type="submit" class="btn btn-sm float-right">
-                <i class="fas fa-save"></i>
-            </button>
+                <textarea id="comment" name="comment" class="postitarea" placeholder="Saisir une annotation"></textarea>
+                <button type="submit" class="btn btn-sm float-right">
+                    <i class="fas fa-save"></i>
+                </button>
+            </div>
         </div>
-
     </form>
 </div>
