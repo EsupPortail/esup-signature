@@ -98,23 +98,18 @@
             </ul>
         </div>
     </nav>
-    <div th:if="${user.name != null}" id="user-infos" class="card position-fixed user-infos collapse overflow-y-scroll"
-         style="right: 0;">
-        <div id="myDocs" class="card-body user-infos">
+    <div th:if="${user.name != null}" id="user-infos" class="card position-fixed user-infos collapse overflow-y-scroll drop-shadows"
+         style="right: 0; margin-top:-3px; margin-right: 5px">
+        <div id="myDocs" class="card-body user-infos text-center">
             <button id="closeUserInfo" role="button" class="btn btn-light float-right">
                 <i class="fas fa-times"></i>
             </button>
             <h3 th:if="${@userService.getUserFromAuthentication() != user}">
                 Vous avez activé la délégation
             </h3>
-            <h3 th:unless="${@userService.getUserFromAuthentication() != user}">
-                Délégations
-            </h3>
-            <a th:unless="${@userService.getUserFromAuthentication() != user}" class="btn btn-sm btn-dark mb-1"
-               aria-label="Paramètres utilisateur "
-               title="Paramètres" href="/user/users/shares">
-                <i class="fa fa-share"></i> Gérer mes délégations
-            </a>
+            <h5 th:unless="${@userService.getUserFromAuthentication() != user}">
+                <b>Délégations</b>
+            </h5>
             <form id="changeSuEppn" th:action="'/user/users/change'" method="post">
                 <select class="form-control" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
                     <option th:if="${@userService.getUserFromAuthentication() != user}" value="" selected>Délégation
@@ -131,13 +126,14 @@
                     </th:block>
                 </select>
             </form>
-            <h3>Vos informations</h3>
-            <a th:unless="${@userService.getUserFromAuthentication() != user}" class="btn btn-sm btn-dark"
+            <a th:unless="${@userService.getUserFromAuthentication() != user}" class="btn btn-sm light btn-outline-dark mt-1"
                aria-label="Paramètres utilisateur "
-               title="Paramètres" href="/user/users/?form">
-                <i class="fa fa-user-cog"></i> Modifier mes paramètres
+               title="Paramètres" href="/user/users/shares">
+                <i class="fa fa-share"></i> Gérer mes délégations
             </a>
-            <table class="table table-sm table-borderless">
+            <hr>
+            <h5><b>Vos informations</b></h5>
+            <table class="table table-sm table-borderless text-left">
                 <tbody>
                 <tr>
                     <th class="text-break w-50">Nom</th>
@@ -182,6 +178,17 @@
                 </tr>
                 </tbody>
             </table>
+            <a th:unless="${@userService.getUserFromAuthentication() != user}" class="btn btn-sm btn-light btn-outline-dark"
+               aria-label="Paramètres utilisateur "
+               title="Paramètres" href="/user/users/?form">
+                <i class="fas fa-user-cog"></i> Modifier mes paramètres
+            </a>
+            <hr>
+            <a th:unless="${@userService.getUserFromAuthentication() != user}" class="btn btn-sm btn-light btn-outline-dark"
+               aria-label="Paramètres utilisateur "
+               title="Déconnexion" href="/logout">
+                <i class="fas fa-power-off"></i> Déconnexion
+            </a>
         </div>
     </div>
 

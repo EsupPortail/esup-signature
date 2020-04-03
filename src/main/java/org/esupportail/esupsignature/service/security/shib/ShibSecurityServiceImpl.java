@@ -36,6 +36,11 @@ public class ShibSecurityServiceImpl implements SecurityService {
 	}
 
 	@Override
+	public String getLogoutUrl() {
+		return shibProperties.getIdpUrl() + "/idp/profile/Logout";
+	}
+
+	@Override
 	public String getDomain() {
 		return "";
 	}

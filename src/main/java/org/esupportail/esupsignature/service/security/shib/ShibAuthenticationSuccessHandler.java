@@ -21,12 +21,13 @@ public class ShibAuthenticationSuccessHandler implements AuthenticationSuccessHa
 	
 	//pas de redirection ici !
 	@Override
-	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
 		String eppn = authentication.getName();
-        String email = request.getHeader("mail");
-        String name = request.getHeader("sn");
-        String firstName = request.getHeader("givenName");
+        String email = httpServletRequest.getHeader("mail");
+        String name = httpServletRequest.getHeader("sn");
+        String firstName = httpServletRequest.getHeader("givenName");
         userService.createUser(eppn, name, firstName, email);
+		httpServletRequest.getSession().setAttribute("securityServiceName", "ShibSecurityServiceImpl");
         /*
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		String targetURL = defaultSavedRequest.getRedirectUrl();

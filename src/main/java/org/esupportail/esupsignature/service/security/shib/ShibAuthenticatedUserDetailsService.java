@@ -69,10 +69,10 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 		try {
 			for (String roleFromLdap : group2UserRoleService.getRoles(token.getName())) {
 				authorities.add(new SimpleGrantedAuthority(roleFromLdap));
-				logger.info("loading authorities : " + authorities.get(0).getAuthority());
+				logger.info("loading authorities : " + authorities.get(0).getAuthority());
 			}
 		} catch (Exception e) {
-			logger.warn("unable to find autorities", e);
+			logger.warn("unable to find authorities", e);
 		}
 		return createUserDetails(token, authorities);
 	}

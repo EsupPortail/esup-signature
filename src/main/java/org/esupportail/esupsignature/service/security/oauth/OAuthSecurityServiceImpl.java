@@ -47,6 +47,11 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 	}
 
 	@Override
+	public String getLogoutUrl() {
+		return "";
+	}
+
+	@Override
 	public String getDomain() {
 		return "";
 	}
@@ -106,7 +111,7 @@ public class OAuthSecurityServiceImpl implements SecurityService {
     }
 
 	public AuthenticationManager oAuthAuthenticationManager() {
-		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<AuthenticationProvider>();
+		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<>();
 		authenticatedAuthenticationProviders.add(auth2LoginAuthenticationProvider());
 		AuthenticationManager authenticationManager = new ProviderManager(authenticatedAuthenticationProviders);
 		return authenticationManager;

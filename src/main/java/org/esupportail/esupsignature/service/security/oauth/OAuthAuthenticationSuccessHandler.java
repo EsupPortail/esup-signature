@@ -25,16 +25,17 @@ public class OAuthAuthenticationSuccessHandler implements AuthenticationSuccessH
 	private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 	
 	@Override
-	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
 		DefaultOAuth2User defaultOidcUser = ((DefaultOAuth2User)authentication.getPrincipal());
 		String id = defaultOidcUser.getAttributes().get("sub").toString();
 		String name = defaultOidcUser.getAttributes().get("family_name").toString();
 		String prenom = defaultOidcUser.getAttributes().get("given_name").toString();
 		String email = defaultOidcUser.getAttributes().get("email").toString();
 		User user = userService.createUser(id, name, prenom, email);
-		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		String targetURL = defaultSavedRequest.getRedirectUrl();
-        redirectStrategy.sendRedirect(request, response, targetURL);
+		httpServletRequest.getSession().setAttribute("securityServiceName", "OAuthSecurityServiceImpl");
+        redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, targetURL);
 	}
 	
 }

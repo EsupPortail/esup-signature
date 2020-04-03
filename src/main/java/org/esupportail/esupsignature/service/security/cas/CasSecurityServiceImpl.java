@@ -54,6 +54,11 @@ public class CasSecurityServiceImpl implements SecurityService {
 	}
 
 	@Override
+	public String getLogoutUrl() {
+		return casProperties.getUrl() + "/logout";
+	}
+
+	@Override
 	public String getDomain() {
 		return casProperties.getDomain();
 	}

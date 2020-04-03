@@ -628,9 +628,9 @@ float:left;
 }
 
 .drop-shadows {
-    -moz-box-shadow: 2px 2px 8px 4px rgba(0, 0, 0, 0.5);
-    -webkit-box-shadow: 2px 2px 8px 4px rgba(0, 0, 0, 0.5);
-    box-shadow: 2px 2px 8px 4px rgba(0, 0, 0, 0.5);
+    -moz-box-shadow: 2px 2px 8px 4px rgba(0, 0, 0, 0.3);
+    -webkit-box-shadow: 2px 2px 8px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 2px 2px 8px 4px rgba(0, 0, 0, 0.3);
 }
 
 .angle-3 {
