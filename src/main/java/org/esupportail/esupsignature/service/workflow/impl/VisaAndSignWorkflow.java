@@ -79,9 +79,9 @@ public class VisaAndSignWorkflow extends DefaultWorkflow {
         if(data != null) {
             workflowStep2.setParentType("data");
             workflowStep2.setParentId(data.getId());
-            recipientsStep2.add(recipientService.createRecipient(data.getId(), userService.getUserByEmail("nom.president@univ-ville.fr")));
+            recipientsStep2.add(recipientService.createRecipient(data.getId(), userService.getUserByEmail("david.lemaignent@univ-rouen.fr")));
         } else {
-            recipientsStep2.add(recipientService.createRecipient(null, userService.getGenericUser("nom.president@univ-ville.fr", "")));
+            recipientsStep2.add(recipientService.createRecipient(null, userService.getGenericUser("david.lemaignent@univ-rouen.fr", "")));
         }
         workflowStep2.setRecipients(recipientsStep2);
         workflowStep2.setAllSignToComplete(false);
