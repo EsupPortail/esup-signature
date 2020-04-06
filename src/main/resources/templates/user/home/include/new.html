@@ -20,15 +20,15 @@
 
                     <h5 class="newToggled d-none">Circuits</h5>
 
-<!--                    <a role="button" class="btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden align-bottom p-0 workflowButton" data-toggle="modal"-->
-<!--                        data-target="#wizardModal" style="width: 150px; height: 200px;"-->
-<!--                        title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant"-->
-<!--                        onclick="$('#wizIframe').attr('src', '/user/wizard/wiz1');">-->
-<!--                        <div class="crop">-->
-<!--                            <i class="fas fa-magic fa-4x "></i>-->
-<!--                        </div>-->
-<!--                        <h6>Circuit personnalisé</h6>-->
-<!--                    </a>-->
+                    <a role="button" class="btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden align-bottom p-0 workflowButton" data-toggle="modal"
+                        data-target="#wizardModal" style="width: 150px; height: 200px;"
+                        title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant"
+                        onclick="$('#wizIframe').attr('src', '/user/wizard/wiz1');">
+                        <div class="crop">
+                            <i class="fas fa-magic fa-4x "></i>
+                        </div>
+                        <h6>Circuit personnalisé</h6>
+                    </a>
 
                     <th:block th:each="workflow : ${workflows}">
                         <a role="button" class="btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0 workflowButton"
