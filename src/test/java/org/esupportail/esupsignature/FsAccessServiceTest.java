@@ -36,11 +36,13 @@ public class FsAccessServiceTest {
         assumeTrue("smb not configured", fsAccessService.getUri() != null);
         try {
             if (fsAccessService.cd("/") == null) {
-                logger.error(fsAccessService.getDriveName() + "unable to change to / directory ");
+                logger.error(fsAccessService.getDriveName() + " unable to change to / directory. Please check configuration");
                 fail();
+            } else {
+                logger.info(fsAccessService.getDriveName() + " ready");
             }
         } catch (Exception e) {
-            logger.error(fsAccessService.getDriveName() + "configuration error : ", e.getMessage());
+            logger.error(fsAccessService.getDriveName() + "configuration error. You can disable it in application.properties", e.getMessage());
             fail();
         }
 
@@ -52,11 +54,13 @@ public class FsAccessServiceTest {
         assumeTrue("cmis not configured", fsAccessService.getUri() != null);
         try {
             if (fsAccessService.cd("/") == null) {
-                logger.error(fsAccessService.getDriveName() + "unable to change to / directory ");
+                logger.error(fsAccessService.getDriveName() + " unable to change to / directory. Please check configuration");
                 fail();
+            } else {
+                logger.info(fsAccessService.getDriveName() + " ready");
             }
         } catch (Exception e) {
-            logger.error(fsAccessService.getDriveName() + "configuration error : ", e.getMessage());
+            logger.error(fsAccessService.getDriveName() + " configuration error. You can disable it in application.properties", e.getMessage());
             fail();
         }
     }
@@ -67,11 +71,13 @@ public class FsAccessServiceTest {
         assumeTrue("vfs not configured", fsAccessService.getUri() != null);
         try {
             if (fsAccessService.cd("/") == null) {
-                logger.error(fsAccessService.getDriveName() + "unable to change to / directory ");
+                logger.error(fsAccessService.getDriveName() + " unable to change to / directory. Please check configuration");
                 fail();
+            } else {
+                logger.info(fsAccessService.getDriveName() + " ready");
             }
         } catch (Exception e) {
-            logger.error(fsAccessService.getDriveName() + "configuration error : ", e.getMessage());
+            logger.error(fsAccessService.getDriveName() + "configuration error. You can disable it in application.properties", e.getMessage());
             fail();
         }
     }
