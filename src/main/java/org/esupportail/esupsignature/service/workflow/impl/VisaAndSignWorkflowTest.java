@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.Recipient;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
@@ -40,7 +41,11 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
     @Override
     public List<WorkflowStep> getWorkflowSteps() {
         if(this.workflowSteps == null) {
-            this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null, null);
+            try {
+                this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null, null);
+            } catch (EsupSignatureUserException e) {
+                return null;
+            }
         }
         return this.workflowSteps;
     }
@@ -50,7 +55,7 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
     }
 
     @Override
-    public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
+    public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) throws EsupSignatureUserException {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         //STEP 1
         WorkflowStep workflowStep1 = new WorkflowStep();
@@ -70,6 +75,7 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
         workflowStep1.setMaxRecipients(1);
         workflowSteps.add(workflowStep1);
         //STEP 2
+        String step2Recipient = "paul.tavernier1@univ-rouen.fr";
         WorkflowStep workflowStep2 = new WorkflowStep();
         workflowStep2.setName("Président de l’université");
         workflowStep2.setStepNumber(2);
@@ -79,9 +85,9 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
         if(data != null) {
             workflowStep2.setParentType("data");
             workflowStep2.setParentId(data.getId());
-            recipientsStep2.add(recipientService.createRecipient(data.getId(), userService.getUserByEmail("paul.tavernier2@univ-rouen.fr")));
+            recipientsStep2.add(recipientService.createRecipient(data.getId(), userService.getUserByEmail(step2Recipient)));
         } else {
-            recipientsStep2.add(recipientService.createRecipient(null, userService.getGenericUser("paul.tavernier2@univ-rouen.fr", "")));
+            recipientsStep2.add(recipientService.createRecipient(null, userService.getGenericUser(step2Recipient, "")));
         }
         workflowStep2.setRecipients(recipientsStep2);
         workflowStep2.setAllSignToComplete(false);

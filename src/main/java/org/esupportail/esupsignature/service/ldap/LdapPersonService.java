@@ -21,6 +21,7 @@ public class LdapPersonService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
+    @Resource
     private LdapTemplate ldapTemplate;
 
     @Resource
@@ -29,11 +30,11 @@ public class LdapPersonService {
     @Resource
     private OrganizationalUnitLdapRepository organizationalUnitLdapRepository;
 
-    private Map<String, LdapTemplate> ldapTemplates = new HashMap<String, LdapTemplate>();
+    private Map<String, LdapTemplate> ldapTemplates;
 
     @Autowired
-    public LdapPersonService(LdapTemplate ldapTemplate) {
-        this.ldapTemplate = ldapTemplate;
+    public LdapPersonService(Map<String, LdapTemplate> ldapTemplates) {
+        this.ldapTemplates = ldapTemplates;
     }
 
     public List<PersonLdap> search(String searchString, String ldapTemplateName) {

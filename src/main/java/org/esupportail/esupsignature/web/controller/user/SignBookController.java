@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -156,13 +157,20 @@ public class SignBookController {
     public String addStep(@PathVariable("id") Long id,
                           @RequestParam("recipientsEmails") String[] recipientsEmails,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
-                          @RequestParam("signType") String signType) {
+                          @RequestParam("signType") String signType, RedirectAttributes redirectAttributes) {
         User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         if (signBookService.checkUserViewRights(user, signBook)) {
-            WorkflowStep workflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+            WorkflowStep workflowStep = null;
+            try {
+                workflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+            } catch (EsupSignatureUserException e) {
+                logger.error("error on add step", e);
+                redirectAttributes.addFlashAttribute("messageError", "Erreur lors de l'ajout des participants");
+            }
             signBook.getWorkflowSteps().add(workflowStep);
         }
+        redirectAttributes.addFlashAttribute("messageSuccess", "Étape ajoutée");
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
@@ -209,7 +217,7 @@ public class SignBookController {
     @GetMapping(value = "/send-to-signbook/{id}/{workflowStepId}")
     public String sendToSignBook(@PathVariable("id") Long id,
                                  @PathVariable("workflowStepId") Long workflowStepId,
-                                 @RequestParam(value = "signBookNames") String[] signBookNames, HttpServletRequest request) {
+                                 @RequestParam(value = "signBookNames") String[] signBookNames, RedirectAttributes redirectAttributes, HttpServletRequest request) throws EsupSignatureUserException {
         User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
         SignBook signBook = signBookRepository.findById(id).get();
@@ -221,6 +229,7 @@ public class SignBookController {
         } else {
             logger.warn(user.getEppn() + " try to move " + signBook.getId() + " without rights");
         }
+        redirectAttributes.addFlashAttribute("Ajouté au parapheur");
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 

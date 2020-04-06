@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.Recipient;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.RecipientRepository;
 import org.springframework.stereotype.Service;
 
@@ -51,7 +52,7 @@ public class RecipientService {
         return recipients.stream().filter(recipient -> recipient.getUser().equals(user)).count();
     }
 
-    public Recipient getRecipientByEmail(Long parentId, String email) {
+    public Recipient getRecipientByEmail(Long parentId, String email) throws EsupSignatureUserException {
         User user = userService.getUserByEmail(email);
         Recipient recipient = new Recipient();
         recipient.setParentId(parentId);

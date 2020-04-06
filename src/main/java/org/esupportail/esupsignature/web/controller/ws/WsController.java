@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
@@ -96,7 +97,7 @@ public class WsController {
                                     @RequestParam String createBy,
                                     @RequestParam("recipientsEmail") String recipientsEmail,
                                     @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
-                                    @RequestParam("signLevel") int signLevel, HttpServletRequest httpServletRequest) throws EsupSignatureIOException, IOException, EsupSignatureException {
+                                    @RequestParam("signLevel") int signLevel, HttpServletRequest httpServletRequest) throws EsupSignatureIOException, IOException, EsupSignatureUserException {
         User user = userRepository.findByEppn(createBy).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
         ObjectMapper mapper = new ObjectMapper();
@@ -158,7 +159,7 @@ public class WsController {
     @ResponseBody
     @PostMapping(value = "/add-workflow-step", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addWorkflowStep(@RequestParam String name,
-                                  @RequestParam String jsonWorkflowStepString) throws IOException {
+                                  @RequestParam String jsonWorkflowStepString) throws IOException, EsupSignatureUserException {
         SignBook signBook = signBookRepository.findByName(name).get(0);
         SignType signType = null;
         ObjectMapper mapper = new ObjectMapper();
@@ -172,7 +173,7 @@ public class WsController {
 
     @ResponseBody
     @GetMapping(value = "/list-sign-requests", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<JsonDocuments> listSignedFiles(@RequestParam("recipientEmail") String recipientEmail, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureException {
+    public List<JsonDocuments> listSignedFiles(@RequestParam("recipientEmail") String recipientEmail) throws EsupSignatureUserException {
         List<JsonDocuments> signedFiles = new ArrayList<>();
         User user = userService.getUserByEmail(recipientEmail);
         List<SignRequest> signRequests = signRequestService.getSignRequestsSignedByUser(user);
@@ -197,7 +198,7 @@ public class WsController {
     @PostMapping(value = "/pending-sign-request", produces = MediaType.APPLICATION_JSON_VALUE)
     public void pendingSignRequest(@RequestParam String token,
                                    @RequestParam("recipientsEmail") String recipientsEmail,
-                                   @RequestParam("signLevel") int signLevel) throws IOException {
+                                   @RequestParam("signLevel") int signLevel) throws IOException, EsupSignatureUserException {
         if (signRequestRepository.countByToken(token) > 0) {
             SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
             ObjectMapper mapper = new ObjectMapper();

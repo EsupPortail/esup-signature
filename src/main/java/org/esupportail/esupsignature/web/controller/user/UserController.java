@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.DocumentService;
@@ -190,7 +191,7 @@ public class UserController {
 	}
 
 	@PostMapping("/add-share")
-	public String addShare(@RequestParam("service") Long service, @RequestParam("type") String type, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) {
+	public String addShare(@RequestParam("service") Long service, @RequestParam("type") String type, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) throws EsupSignatureUserException {
 		User user = userService.getUserFromAuthentication();
 		List<User> users = new ArrayList<>();
 		for (String userEmail : userEmails) {

@@ -37,6 +37,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.FileCopyUtils;
 
+import javax.annotation.Resource;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -51,7 +52,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 
 	private static final Logger logger = LoggerFactory.getLogger(SmbAccessImpl.class);
 
-	@Autowired
+	@Resource
 	FileService fileService;
 
 	private NtlmPasswordAuthentication userAuthenticator;

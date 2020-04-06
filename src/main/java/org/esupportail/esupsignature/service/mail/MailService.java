@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.mail;
 
 import org.apache.commons.compress.utils.IOUtils;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.repository.LogRepository;
@@ -13,9 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.mail.MailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -37,38 +40,29 @@ import java.util.Locale;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Service
+@EnableConfigurationProperties(GlobalProperties.class)
 public class MailService {
 
     private static final Logger logger = LoggerFactory.getLogger(MailService.class);
 
+    private GlobalProperties globalProperties;
     private MailConfig mailConfig;
     private JavaMailSenderImpl mailSender;
 
-
-    @Autowired(required = false)
-    public void setMailConfig(MailConfig mailConfig) {
+    public MailService(GlobalProperties globalProperties, MailConfig mailConfig, JavaMailSenderImpl mailSender) {
+        this.globalProperties = globalProperties;
         this.mailConfig = mailConfig;
-    }
-
-    @Autowired(required = false)
-    public void setMailConfig(JavaMailSenderImpl mailSender) {
         this.mailSender = mailSender;
     }
 
-    @Autowired
-    ResourceLoader resourceLoader;
+    @Resource
+    private ResourceLoader resourceLoader;
 
     @Resource
     private UserRepository userRepository;
 
     @Resource
     private TemplateEngine templateEngine;
-
-    @Resource
-    private UserShareRepository userShareRepository;
-
-    @Resource
-    private LogRepository logRepository;
 
     @Resource
     private SignRequestService signRequestService;
@@ -79,9 +73,6 @@ public class MailService {
     @Resource
     private FileService fileService;
 
-    @Value("${root.url}")
-    private String rootUrl;
-
     public void sendCompletedMail(SignBook signBook) {
         if (!checkMailSender()) {
             return;
@@ -89,7 +80,7 @@ public class MailService {
         User user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", rootUrl);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -104,7 +95,7 @@ public class MailService {
             logger.info("send email completes for " + user.getName());
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            logger.error("unable to sens email", e);
+            logger.error("unable to send email", e);
         }
     }
 
@@ -115,7 +106,7 @@ public class MailService {
         User user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
-        ctx.setVariable("rootUrl", rootUrl);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
         ctx.setVariable("comment", comment);
         setTemplate(ctx);
@@ -137,7 +128,7 @@ public class MailService {
             logger.info("send email refude for " + toEmails.get(0));
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            logger.error("unable to sens email", e);
+            logger.error("unable to send email", e);
         }
     }
 
@@ -147,7 +138,7 @@ public class MailService {
         }
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signRequest", signRequest);
-        ctx.setVariable("rootUrl", rootUrl);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -163,7 +154,7 @@ public class MailService {
             logger.info("send email alert for " + recipientsEmails.get(0));
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            logger.error("unable to sens email", e);
+            logger.error("unable to send email", e);
         }
 
     }
@@ -174,7 +165,7 @@ public class MailService {
         }
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signRequests", signRequests);
-        ctx.setVariable("rootUrl", rootUrl);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -189,7 +180,7 @@ public class MailService {
             logger.info("send email alert for " + recipientsEmails.get(0));
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            logger.error("unable to sens email", e);
+            logger.error("unable to send email", e);
         }
 
     }
@@ -219,7 +210,7 @@ public class MailService {
 //            message.setText(htmlContent, true); // true = isHtml
 //            mailSender.send(mimeMessage);
 //        } catch (MessagingException | IOException e) {
-//            logger.error("unable to sens email", e);
+//            logger.error("unable to send email", e);
 //        }
 //    }
 
@@ -228,7 +219,7 @@ public class MailService {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("rootUrl", rootUrl);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("signRequests", signRequests);
         User user = userRepository.findByEppn(signRequests.get(0).getCreateBy()).get(0);
         ctx.setVariable("user", user);
@@ -246,6 +237,31 @@ public class MailService {
         String htmlContent = templateEngine.process("mail/email-file.html", ctx);
         message.setText(htmlContent, true); // true = isHtml
         mailSender.send(mimeMessage);
+
+    }
+
+    public void sendTest(List<String> recipientsEmails) {
+        if (!checkMailSender()) {
+            return;
+        }
+        final Context ctx = new Context(Locale.FRENCH);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("userService", userService);
+        setTemplate(ctx);
+        final MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper message;
+        try {
+            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            message.setSubject("esup-signature test mail");
+            message.setFrom(mailConfig.getMailFrom());
+            message.setTo(recipientsEmails.toArray(String[]::new));
+            String htmlContent = templateEngine.process("mail/email-test.html", ctx);
+            message.setText(htmlContent, true);
+            logger.info("send test email for " + recipientsEmails.get(0));
+            mailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            logger.error("unable to send email", e);
+        }
 
     }
 
@@ -272,4 +288,7 @@ public class MailService {
         return true;
     }
 
+    public MailConfig getMailConfig() {
+        return mailConfig;
+    }
 }

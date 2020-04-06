@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -32,38 +33,24 @@ import java.util.Enumeration;
 import java.util.List;
 
 @Service
+@EnableConfigurationProperties(OJProperties.class)
 public class OJService {
 
 	private static final Logger log = LoggerFactory.getLogger(OJService.class);
-	
-	@Value("${current.lotl.url}")
-	private String lotlUrl;
 
-	@Value("${lotl.country.code}")
-	private String lotlCountryCode;
+	private OJProperties ojProperties;
 
-	@Value("${lotl.root.scheme.info.uri}")
-	private String lotlRootSchemeInfoUri;
+	public OJService(OJProperties ojProperties) {
+		this.ojProperties = ojProperties;
+	}
 
-	@Value("${current.oj.url}")
-	private String ojUrl;
-
-	@Value("${oj.content.keystore.type}")
-	private String ksType;
-
-	@Value("${oj.content.keystore.filename}")
-	private String ksFilename;
-
-	@Value("${oj.content.keystore.password}")
-	private String ksPassword;
-	
-	@Autowired
+	@Resource
 	private DataLoader dataLoader;
 	
 	@Resource
 	private List<String> trustedCertificatUrlList;
 	
-	@Autowired
+	@Resource
 	private TrustedListsCertificateSource trustedListSource;
 	
 	@Resource
@@ -72,12 +59,12 @@ public class OJService {
 	public void getCertificats() throws IOException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException {
 		Security.addProvider(new BouncyCastleProvider());
 		List<ServiceInfo> serviceInfos = getServicesInfos();
-		File keystoreFile = new File(ksFilename);
+		File keystoreFile = new File(ojProperties.getKsFilename());
 		if(keystoreFile.exists()) {
 			try {
-				KeyStore keystore = KeyStore.getInstance(ksType, "BC");
-			    FileInputStream is = new FileInputStream(ksFilename);
-			    keystore.load(is, ksPassword.toCharArray());
+				KeyStore keystore = KeyStore.getInstance(ojProperties.getKsType(), "BC");
+			    FileInputStream is = new FileInputStream(ojProperties.getKsFilename());
+			    keystore.load(is, ojProperties.getKsPassword().toCharArray());
 			    Enumeration<String> aliases = keystore.aliases();
 				while (aliases.hasMoreElements()) {
 					trustedListSource.addCertificate(DSSUtils.loadCertificate(keystore.getCertificate(aliases.nextElement()).getEncoded()), serviceInfos);
@@ -93,9 +80,9 @@ public class OJService {
 			    log.error("Couldn't create dir: " + parent);
 			} else {
 				keystoreFile.createNewFile();
-				KeyStoreCertificateSource keyStoreCertificateSource  = new KeyStoreCertificateSource((InputStream) null, ksType, ksPassword);
+				KeyStoreCertificateSource keyStoreCertificateSource  = new KeyStoreCertificateSource((InputStream) null, ojProperties.getKsType(), ojProperties.getKsPassword());
 				keyStoreCertificateSource.addAllCertificatesToKeyStore(trustedListSource.getCertificates());
-				OutputStream fos = new FileOutputStream(ksFilename);
+				OutputStream fos = new FileOutputStream(ojProperties.getKsFilename());
 				keyStoreCertificateSource.store(fos);
 				Utils.closeQuietly(fos);
 			}
@@ -105,7 +92,7 @@ public class OJService {
 	
 	public void refresh() {
 		log.info("start refreshing oj keystore");
-		KeyStoreCertificateSource keyStoreCertificateSource  = new KeyStoreCertificateSource((InputStream) null, ksType, ksPassword);
+		KeyStoreCertificateSource keyStoreCertificateSource  = new KeyStoreCertificateSource((InputStream) null, ojProperties.getKsType(), ojProperties.getKsPassword());
 		List<ServiceInfo> serviceInfos = getServicesInfos();
 		TSLRepository tslRepository = new TSLRepository();
 		tslRepository.setTrustedListsCertificateSource(trustedListSource);
@@ -113,17 +100,17 @@ public class OJService {
 		TSLValidationJob validationJob = new TSLValidationJob();
 		validationJob.setDataLoader(dataLoader);
 		validationJob.setRepository(tslRepository);
-		validationJob.setLotlUrl(lotlUrl);
-		validationJob.setLotlRootSchemeInfoUri(lotlRootSchemeInfoUri);
-		validationJob.setLotlCode(lotlCountryCode);
-		validationJob.setOjUrl(ojUrl);
+		validationJob.setLotlUrl(ojProperties.getLotlUrl());
+		validationJob.setLotlRootSchemeInfoUri(ojProperties.getLotlRootSchemeInfoUri());
+		validationJob.setLotlCode(ojProperties.getLotlCountryCode());
+		validationJob.setOjUrl(ojProperties.getOjUrl());
 		validationJob.setOjContentKeyStore(keyStoreCertificateSource);
 		validationJob.setCheckLOTLSignature(true);
 		validationJob.setCheckTSLSignatures(true);
 		
 		try {
-			File keystoreFile = new File(ksFilename);
-			File keystoreFileSav = new File(ksFilename + ".bak");
+			File keystoreFile = new File(ojProperties.getKsFilename());
+			File keystoreFileSav = new File(ojProperties.getKsFilename() + ".bak");
 			keystoreFileSav.createNewFile();
 			fileService.copyFile(keystoreFile, keystoreFileSav);
 			
@@ -139,7 +126,7 @@ public class OJService {
 				}
 			}
 			keyStoreCertificateSource.addAllCertificatesToKeyStore(trustedListSource.getCertificates());
-			OutputStream fos = new FileOutputStream(ksFilename);
+			OutputStream fos = new FileOutputStream(ojProperties.getKsFilename());
 			keyStoreCertificateSource.store(fos);
 			Utils.closeQuietly(fos);
 			log.info("refreshing oj keystore OK");

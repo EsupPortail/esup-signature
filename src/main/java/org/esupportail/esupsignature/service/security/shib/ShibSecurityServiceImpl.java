@@ -26,8 +26,8 @@ public class ShibSecurityServiceImpl implements SecurityService {
 	private ShibAuthenticationSuccessHandler shibAuthenticationSuccessHandler;
 
 	@Override
-	public String getName() {
-		return "Compte d'un autre établissement (Shibboleth)";
+	public String getTitle() {
+		return shibProperties.getTitle();
 	}
 
 	@Override

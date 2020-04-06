@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.SignatureForm;
 import eu.europa.esig.dss.ToBeSigned;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.web.model.*;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -17,6 +18,7 @@ import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -35,18 +37,16 @@ import java.util.List;
 @SessionAttributes(value = { "signatureDocumentForm", "signRequestId", "parameters"})
 @RequestMapping("/user/nexu-sign")
 @Transactional
+@EnableConfigurationProperties(GlobalProperties.class)
 public class NexuProcessController {
 
 	private static final Logger logger = LoggerFactory.getLogger(NexuProcessController.class);
 
-	@Value("${root.url}")
-	private String rootUrl;
+	private GlobalProperties globalProperties;
 
-	@Value("${nexuUrl}")
-	private String nexuUrl;
-
-	@Value("${nexuVersion}")
-	private String nexuVersion;
+	public NexuProcessController(GlobalProperties globalProperties) {
+		this.globalProperties = globalProperties;
+	}
 
 	@ModelAttribute("user")
 	public User getUser() {
@@ -83,9 +83,9 @@ public class NexuProcessController {
 			model.addAttribute("signRequestId", signRequest.getId());
 			model.addAttribute("signatureDocumentForm", signatureDocumentForm);
 			model.addAttribute("digestAlgorithm", signatureDocumentForm.getDigestAlgorithm());
-			model.addAttribute("rootUrl", rootUrl);
-			model.addAttribute("nexuUrl", nexuUrl);
-			model.addAttribute("nexuVersion", nexuVersion);
+			model.addAttribute("rootUrl", globalProperties.getRootUrl());
+			model.addAttribute("nexuUrl", globalProperties.getNexuUrl());
+			model.addAttribute("nexuVersion", globalProperties.getNexuVersion());
 			model.addAttribute("referer", referer);
 			return "user/signrequests/nexu-signature-process";
 		} else {

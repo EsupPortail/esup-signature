@@ -20,12 +20,6 @@ import java.util.Map;
 @Component
 public class DonutsExtValue implements ExtValue {
 
-	@Resource
-	private UserService userService;
-
-	@Resource
-	private LdapPersonService ldapPersonService;
-	
 	@Override
 	public String getValueByName(String name, User user) {
 		return initValues(user).get(name).toString();

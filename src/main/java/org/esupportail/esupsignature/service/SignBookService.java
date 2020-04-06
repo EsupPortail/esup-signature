@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.slf4j.Logger;
@@ -119,14 +120,19 @@ public class SignBookService {
         return false;
     }
 
-    public void importWorkflow(SignBook signBook, Workflow workflow) {
+    public void importWorkflow(SignBook signBook, Workflow workflow){
         logger.info("import workflow steps in signBook " + signBook.getName() + " - " +signBook.getId());
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
             List<String> recipientEmails = new ArrayList<>();
             for(Recipient recipient : workflowStep.getRecipients()) {
                 recipientEmails.add(recipient.getUser().getEmail());
             }
-            WorkflowStep newWorkflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails.toArray(String[]::new));
+            WorkflowStep newWorkflowStep = null;
+            try {
+                newWorkflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails.toArray(String[]::new));
+            } catch (EsupSignatureUserException e) {
+                logger.error("error on import workflow", e);
+            }
             signBook.getWorkflowSteps().add(newWorkflowStep);
         }
         signBook.setTargetType(workflow.getTargetType());
@@ -140,7 +146,12 @@ public class SignBookService {
             for (Recipient recipient : workflowStep.getRecipients()) {
                 recipientsEmails.add(recipient.getUser().getEmail());
             }
-            WorkflowStep toSaveWorkflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientsEmails.toArray(String[]::new));
+            WorkflowStep toSaveWorkflowStep = null;
+            try {
+                toSaveWorkflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientsEmails.toArray(String[]::new));
+            } catch (EsupSignatureUserException e) {
+                logger.error("error on save workflow", e);
+            }
             workflow.getWorkflowSteps().add(toSaveWorkflowStep);
         }
     }

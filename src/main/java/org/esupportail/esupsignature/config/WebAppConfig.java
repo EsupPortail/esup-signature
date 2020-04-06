@@ -30,7 +30,6 @@ import java.util.Locale;
 @ComponentScan
 @EnableWebMvc
 @EnableAutoConfiguration
-@EnableScheduling
 @EnableConfigurationProperties
 public class WebAppConfig implements WebMvcConfigurer {
 

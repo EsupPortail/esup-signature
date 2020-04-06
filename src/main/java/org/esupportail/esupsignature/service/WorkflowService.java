@@ -3,10 +3,7 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureFsException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.repository.RecipientRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
@@ -196,7 +193,7 @@ public class WorkflowService {
         return workflowStep.getId();
     }
 
-    public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) {
+    public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) throws EsupSignatureUserException {
         recipientsEmail = Arrays.stream(recipientsEmail).distinct().toArray(String[]::new);
         for (String recipientEmail : recipientsEmail) {
             User recipientUser;
@@ -220,7 +217,7 @@ public class WorkflowService {
         }
     }
 
-    public WorkflowStep createWorkflowStep(String name, String parentType, Long parentId, Boolean allSignToComplete, SignType signType, String... recipientEmails) {
+    public WorkflowStep createWorkflowStep(String name, String parentType, Long parentId, Boolean allSignToComplete, SignType signType, String... recipientEmails) throws EsupSignatureUserException {
         WorkflowStep workflowStep = new WorkflowStep();
         if(name != null) {
             workflowStep.setName(name);

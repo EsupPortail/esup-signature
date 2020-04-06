@@ -4,6 +4,7 @@ import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
@@ -39,7 +40,11 @@ public class CreatorAndManagerWorkflow extends DefaultWorkflow {
     @Override
     public List<WorkflowStep> getWorkflowSteps() {
         if(this.workflowSteps == null) {
-            this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null, null);
+            try {
+                this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null, null);
+            } catch (EsupSignatureUserException e) {
+                return null;
+            }
         }
         return this.workflowSteps;
     }
@@ -49,7 +54,7 @@ public class CreatorAndManagerWorkflow extends DefaultWorkflow {
     }
 
     @Override
-    public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
+    public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) throws EsupSignatureUserException {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         //STEP 1
         WorkflowStep workflowStep1 = new WorkflowStep();
@@ -72,16 +77,6 @@ public class CreatorAndManagerWorkflow extends DefaultWorkflow {
         workflowSteps.add(workflowStep2);
         return workflowSteps;
     }
-
-
-
-    public List<String> getManagerEmails() {
-        //TODO get n+1
-        List<String> managerEmails = new ArrayList<String>();
-        managerEmails.add("demo.esup@inv.univ-rouen.fr");
-        return managerEmails;
-    }
-
 
 }
 

@@ -22,8 +22,10 @@ import eu.europa.esig.dss.validation.RemoteDocumentValidationService;
 import eu.europa.esig.dss.x509.crl.CRLSource;
 import eu.europa.esig.dss.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+import org.esupportail.esupsignature.config.tomcat.TomcatAjpProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -33,47 +35,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
+@EnableConfigurationProperties(DSSProperties.class)
 public class DSSBeanConfig {
-	
-	@Value("${cache.datasource.username}")
-	private String cacheUsername;
 
-	@Value("${cache.datasource.password}")
-	private String cachePassword;
+	private DSSProperties dssProperties;
 
-	@Value("${cache.datasource.url}")
-	private String cacheDataSourceUrl;
+	public DSSBeanConfig(DSSProperties dssProperties) {
+		this.dssProperties = dssProperties;
+	}
 
-	@Value("${cache.datasource.driver.class}")
-	private String cacheDataSourceDriverClassName;
-	
-	@Value("${default.validation.policy}")
-	private String defaultValidationPolicy;
-
-	@Value("${tsp.server}")
-	private String tspServer;
-
-	@Value("${oj.content.keystore.type}")
-	private String ksType;
-
-	@Value("${oj.content.keystore.filename}")
-	private String ksFilename;
-
-	@Value("${oj.content.keystore.password}")
-	private String ksPassword;
-
-	@Value("${dss.server.signing.keystore.type}")
-	private String serverSigningKeystoreType;
-
-	@Value("${dss.server.signing.keystore.filename}")
-	private String serverSigningKeystoreFilename;
-
-	@Value("${dss.server.signing.keystore.password}")
-	private String serverSigningKeystorePassword;
-
-	// can be null
-	@Autowired(required = false)
-	private ProxyConfig proxyConfig;
+//	@Autowired(required = false)
+//	private ProxyConfig proxyConfig;
 	
 	@Bean
 	public List<String> trustedCertificatUrlList() {
@@ -87,14 +59,12 @@ public class DSSBeanConfig {
 	@Bean
 	public CommonsDataLoader dataLoader() {
 		CommonsDataLoader dataLoader = new CommonsDataLoader();
-		dataLoader.setProxyConfig(proxyConfig);
 		return dataLoader;
 	}
 
 	@Bean
 	public OCSPDataLoader ocspDataLoader() {
 		OCSPDataLoader ocspDataLoader = new OCSPDataLoader();
-		ocspDataLoader.setProxyConfig(proxyConfig);
 		return ocspDataLoader;
 	}
 
@@ -144,11 +114,11 @@ public class DSSBeanConfig {
 
 	@Bean
 	public ClassPathResource defaultPolicy() {
-		return new ClassPathResource(defaultValidationPolicy);
+		return new ClassPathResource(dssProperties.getDefaultValidationPolicy());
 	}
 
 	@Bean TSPSource tspSource() {
-		OnlineTSPSource tspSource = new OnlineTSPSource(tspServer);
+		OnlineTSPSource tspSource = new OnlineTSPSource(dssProperties.getTspServer());
 		return tspSource;
 	}
 	
@@ -239,10 +209,10 @@ public class DSSBeanConfig {
 	public DataSource cacheDataSource() {
 		HikariDataSource ds = new HikariDataSource();
 		ds.setPoolName("DSS-Hikari-Pool");
-		ds.setJdbcUrl(cacheDataSourceUrl);
-		ds.setDriverClassName(cacheDataSourceDriverClassName);
-		ds.setUsername(cacheUsername);
-		ds.setPassword(cachePassword);
+		ds.setJdbcUrl(dssProperties.getCacheDataSourceUrl());
+		ds.setDriverClassName(dssProperties.getCacheDataSourceDriverClassName());
+		ds.setUsername(dssProperties.getCacheUsername());
+		ds.setPassword(dssProperties.getCachePassword());
 		ds.setAutoCommit(false);
 		return ds;
 	}

@@ -37,7 +37,7 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 	private ClientRegistrationRepository clientRegistrationRepository;
 
 	@Override
-	public String getName() {
+	public String getTitle() {
 		return "France Connect";
 	}
 

@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service.workflow;
 
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.UserPropertieService;
 import org.esupportail.esupsignature.service.UserService;
@@ -49,7 +50,7 @@ public class DefaultWorkflow extends Workflow implements Cloneable {
         return this.workflowSteps;
     }
 
-    public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) {
+    public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) throws EsupSignatureUserException {
         return new ArrayList<>();
     }
 
@@ -57,7 +58,7 @@ public class DefaultWorkflow extends Workflow implements Cloneable {
         this.workflowSteps = new ArrayList<>();
     }
 
-    public List<Recipient> getFavoriteRecipientEmail(int step, Form form, List<String> recipientEmails, User user) {
+    public List<Recipient> getFavoriteRecipientEmail(int step, Form form, List<String> recipientEmails, User user) throws EsupSignatureUserException {
         List<Recipient> recipients = new ArrayList<>();
         if(recipientEmails != null && recipientEmails.size() > 0) {
             recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(step))).collect(Collectors.toList());

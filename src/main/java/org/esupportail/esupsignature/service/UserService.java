@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.ldap.OrganizationalUnitLdapRepository;
 import org.esupportail.esupsignature.ldap.PersonLdap;
@@ -134,9 +135,9 @@ public class UserService {
 		}
 	}
 
-	public User getUserByEmail(String email) {
+	public User getUserByEmail(String email) throws EsupSignatureUserException {
 		if(userRepository.countByEmail(email) > 0) {
-			return  userRepository.findByEmail(email).get(0);
+			return userRepository.findByEmail(email).get(0);
 		} else {
 			return createUser(email);
 		}
@@ -167,12 +168,16 @@ public class UserService {
 		return getSystemUser();
 	}
 
-	public User createUser(String mail) {
+	public User createUser(String mail) throws EsupSignatureUserException {
 		List<PersonLdap> personLdap =  personLdapRepository.findByMail(mail);
-		String eppn = personLdap.get(0).getEduPersonPrincipalName();
-        String name = personLdap.get(0).getSn();
-        String firstName = personLdap.get(0).getGivenName();
-        return createUser(eppn, name, firstName, mail);
+		if(personLdap.size() > 0) {
+			String eppn = personLdap.get(0).getEduPersonPrincipalName();
+			String name = personLdap.get(0).getSn();
+			String firstName = personLdap.get(0).getGivenName();
+			return createUser(eppn, name, firstName, mail);
+		} else {
+			throw new EsupSignatureUserException("ldap user not found");
+		}
 	}
 	
 	public void createUser(Authentication authentication) {
@@ -206,14 +211,18 @@ public class UserService {
 		user.setEmail(email);
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
-		user.getRoles().clear();
-		Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-		if (authorities.size() > 0) {
-			for (GrantedAuthority authority : authorities) {
-				if (authority.getAuthority().startsWith("ROLE_FOR.ESUP-SIGNATURE.USER")) {
-					user.getRoles().add(authority.getAuthority().replace("ROLE_FOR.ESUP-SIGNATURE.USER.", ""));
+		try {
+			Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+			if (authorities.size() > 0) {
+				user.getRoles().clear();
+				for (GrantedAuthority authority : authorities) {
+					if (authority.getAuthority().startsWith("ROLE_FOR.ESUP-SIGNATURE.USER")) {
+						user.getRoles().add(authority.getAuthority().replace("ROLE_FOR.ESUP-SIGNATURE.USER.", ""));
+					}
 				}
 			}
+		} catch (Exception e) {
+			logger.error("unable to get roles " + e);
 		}
 		userRepository.save(user);
 		return user;

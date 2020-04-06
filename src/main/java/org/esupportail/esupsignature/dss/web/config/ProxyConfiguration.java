@@ -1,65 +1,47 @@
-package org.esupportail.esupsignature.dss.web.config;
-
-import eu.europa.esig.dss.client.http.proxy.ProxyConfig;
-import eu.europa.esig.dss.client.http.proxy.ProxyProperties;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-@Configuration
-public class ProxyConfiguration {
-
-	@Value("${proxy.http.enabled}")
-	private boolean httpEnabled;
-	@Value("${proxy.http.host}")
-	private String httpHost;
-	@Value("${proxy.http.port}")
-	private int httpPort;
-	@Value("${proxy.http.user}")
-	private String httpUser;
-	@Value("${proxy.http.password}")
-	private String httpPassword;
-	@Value("${proxy.http.exclude}")
-	private String httpExcludedHosts;
-
-	@Value("${proxy.https.enabled}")
-	private boolean httpsEnabled;
-	@Value("${proxy.https.host}")
-	private String httpsHost;
-	@Value("${proxy.https.port}")
-	private int httpsPort;
-	@Value("${proxy.https.user}")
-	private String httpsUser;
-	@Value("${proxy.https.password}")
-	private String httpsPassword;
-	@Value("${proxy.https.exclude}")
-	private String httpsExcludedHosts;
-
-	@Bean
-	public ProxyConfig proxyConfig() {
-		if (!httpEnabled && !httpsEnabled) {
-			return null;
-		}
-		ProxyConfig config = new ProxyConfig();
-		if (httpEnabled) {
-			ProxyProperties httpProperties = new ProxyProperties();
-			httpProperties.setHost(httpHost);
-			httpProperties.setPort(httpPort);
-			httpProperties.setUser(httpUser);
-			httpProperties.setPassword(httpPassword);
-			httpProperties.setExcludedHosts(httpExcludedHosts);
-			config.setHttpProperties(httpProperties);
-		}
-		if (httpsEnabled) {
-			ProxyProperties httpsProperties = new ProxyProperties();
-			httpsProperties.setHost(httpsHost);
-			httpsProperties.setPort(httpsPort);
-			httpsProperties.setUser(httpsUser);
-			httpsProperties.setPassword(httpsPassword);
-			httpsProperties.setExcludedHosts(httpsExcludedHosts);
-			config.setHttpsProperties(httpsProperties);
-		}
-		return config;
-	}
-
-}
+//package org.esupportail.esupsignature.dss.web.config;
+//
+//import eu.europa.esig.dss.client.http.proxy.ProxyConfig;
+//import eu.europa.esig.dss.client.http.proxy.ProxyProperties;
+//import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.boot.context.properties.EnableConfigurationProperties;
+//import org.springframework.context.annotation.Bean;
+//import org.springframework.context.annotation.Configuration;
+//
+//@Configuration
+//@EnableConfigurationProperties(DSSProxyProperties.class)
+//public class ProxyConfiguration {
+//
+//	private DSSProxyProperties dssProxyProperties;
+//
+//	public ProxyConfiguration(DSSProxyProperties dssProxyProperties) {
+//		this.dssProxyProperties = dssProxyProperties;
+//	}
+//
+//	@Bean
+//	public ProxyConfig proxyConfig() {
+//		if (!dssProxyProperties.isHttpEnabled() && !dssProxyProperties.isHttpsEnabled()) {
+//			return null;
+//		}
+//		ProxyConfig config = new ProxyConfig();
+//		if (dssProxyProperties.isHttpEnabled()) {
+//			ProxyProperties httpProperties = new ProxyProperties();
+//			httpProperties.setHost(dssProxyProperties.getHttpHost());
+//			httpProperties.setPort(dssProxyProperties.getHttpPort());
+//			httpProperties.setUser(dssProxyProperties.getHttpUser());
+//			httpProperties.setPassword(dssProxyProperties.getHttpPassword());
+//			httpProperties.setExcludedHosts(dssProxyProperties.getHttpExcludedHosts());
+//			config.setHttpProperties(httpProperties);
+//		}
+//		if (dssProxyProperties.isHttpsEnabled()) {
+//			ProxyProperties httpsProperties = new ProxyProperties();
+//			httpsProperties.setHost(dssProxyProperties.getHttpsHost());
+//			httpsProperties.setPort(dssProxyProperties.getHttpsPort());
+//			httpsProperties.setUser(dssProxyProperties.getHttpsUser());
+//			httpsProperties.setPassword(dssProxyProperties.getHttpsPassword());
+//			httpsProperties.setExcludedHosts(dssProxyProperties.getHttpsExcludedHosts());
+//			config.setHttpsProperties(httpsProperties);
+//		}
+//		return config;
+//	}
+//
+//}

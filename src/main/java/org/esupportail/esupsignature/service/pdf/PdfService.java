@@ -72,14 +72,8 @@ public class PdfService {
     @Resource
     private FileService fileService;
 
-    @Resource
-    private SignRequestService signRequestService;
-
-    @Resource
-    private SignBookService signBookService;
-
-    public InputStream stampImage(InputStream inputStream, String fileName, SignRequest signRequest, SignType signType, SignRequestParams signRequestParams, User user, boolean addDate) {
-        signRequestService.setStep("Apposition de la signature");
+    public InputStream stampImage(InputStream inputStream, SignType signType, SignRequestParams signRequestParams, User user, boolean addDate) {
+        //signRequestService.setStep("Apposition de la signature");
         PdfParameters pdfParameters;
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
@@ -144,15 +138,7 @@ public class PdfService {
             ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
             pdDocument.close();
             signImage.delete();
-            try {
-                if(signRequest.getParentSignBook() == null || signBookService.isStepAllSignDone(signRequest.getParentSignBook())) {
-                    return convertGS(writeMetadatas(in, fileName, signRequest));
-                } else {
-                    return in;
-                }
-            } catch (Exception e) {
-                logger.error("unable to convert to pdf A", e);
-            }
+            return in;
         } catch (IOException e) {
             logger.error("error to add image", e);
         }
@@ -161,7 +147,7 @@ public class PdfService {
 
 
     public InputStream stampText(Document document, String text, int xPos, int yPos, int pageNumber) {
-        signRequestService.setStep("Apposition de la signature");
+        //signRequestService.setStep("Apposition de la signature");
         PdfParameters pdfParameters;
         try {
             PDDocument pdDocument = PDDocument.load(document.getInputStream());
@@ -274,7 +260,7 @@ public class PdfService {
     }
 
     public InputStream convertGS(InputStream inputStream) throws IOException, EsupSignatureException {
-        signRequestService.setStep("Conversion du document");
+        //signRequestService.setStep("Conversion du document");
         File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
         if (!isPdfAComplient(file) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");

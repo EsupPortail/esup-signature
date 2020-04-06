@@ -11,6 +11,10 @@ public class ExtValueService {
 	@Resource
 	private List<ExtValue> extValues;
 
+	public List<ExtValue> getExtValues() {
+		return extValues;
+	}
+
 	public ExtValue getExtValueServiceByName(String name) {
 		for(ExtValue extValue : extValues ) {
 			if(extValue.getName().equals(name)) {

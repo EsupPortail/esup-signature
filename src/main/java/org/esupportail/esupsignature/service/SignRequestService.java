@@ -15,10 +15,7 @@ import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureFsException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
+import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
@@ -251,7 +248,7 @@ public class SignRequestService {
 		return signRequestParamses;
 	}
 
-	public void addRecipients(SignRequest signRequest, String... recipientsEmail) {
+	public void addRecipients(SignRequest signRequest, String... recipientsEmail) throws EsupSignatureUserException {
 		for (String recipientEmail : recipientsEmail) {
 			User recipientUser;
 			if (userRepository.countByEmail(recipientEmail) == 0) {
@@ -271,10 +268,15 @@ public class SignRequestService {
 	public void addRecipients(SignRequest signRequest, List<Recipient> recipients) {
 		signRequest.getRecipients().clear();
 		for(Recipient recipient : recipients) {
-			Recipient newRecipient = recipientService.getRecipientByEmail(signRequest.getId(), recipient.getUser().getEmail());
-			newRecipient.setParentType("signrequest");
-			recipientRepository.save(newRecipient);
-			signRequest.getRecipients().add(newRecipient);
+			Recipient newRecipient = null;
+			try {
+				newRecipient = recipientService.getRecipientByEmail(signRequest.getId(), recipient.getUser().getEmail());
+				newRecipient.setParentType("signrequest");
+				recipientRepository.save(newRecipient);
+				signRequest.getRecipients().add(newRecipient);
+			} catch (EsupSignatureUserException e) {
+				logger.error("add recipient fail", e);
+			}
 		}
 		//signRequestRepository.save(signRequest);
 	}
@@ -309,21 +311,27 @@ public class SignRequestService {
 		} else {
 			filledInputStream = toSignDocuments.get(0).getInputStream();
 		}
-		if (signType.equals(SignType.visa)) {
-			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-				InputStream toSignInputStream = filledInputStream;
-				if(visual) {
-					step = "Conversion du document";
-					toSignInputStream = pdfService.stampImage(filledInputStream, toSignDocuments.get(0).getFileName(), signRequest, getCurrentSignType(signRequest), signRequest.getCurrentSignRequestParams(), user, addDate);
+		if(signType.equals(SignType.visa) || signType.equals(SignType.pdfImageStamp)) {
+			InputStream signedInputStream = null;
+			String fileName = toSignDocuments.get(0).getFileName();
+			if (signType.equals(SignType.visa)) {
+				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
+					if (visual) {
+						setStep("Apposition de la signature");
+						signedInputStream = pdfService.stampImage(filledInputStream, getCurrentSignType(signRequest), signRequest.getCurrentSignRequestParams(), user, addDate);
+					}
 				}
-				addSignedFile(signRequest, toSignInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
+			} else if (signType.equals(SignType.pdfImageStamp)) {
+				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
+					signedInputStream = pdfService.stampImage(filledInputStream, getCurrentSignType(signRequest), signRequest.getCurrentSignRequestParams(), user, addDate);
+					addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
+				}
 			}
-		} else if(signType.equals(SignType.pdfImageStamp)) {
-			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-				InputStream signedInputStream = pdfService.stampImage(filledInputStream, toSignDocuments.get(0).getFileName(), signRequest, getCurrentSignType(signRequest), signRequest.getCurrentSignRequestParams(), user, addDate);
-				addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
+			if (signRequest.getParentSignBook() == null || signBookService.isStepAllSignDone(signRequest.getParentSignBook())) {
+				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest));
 			}
-		} else {
+			addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
+		}else {
 			certSign(signRequest, user, password, addDate, visual);
 		}
 		SignRequestParams params = signRequest.getCurrentSignRequestParams();

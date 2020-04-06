@@ -44,8 +44,8 @@ public class CasSecurityServiceImpl implements SecurityService {
 	private LdapContextSource ldapContextSource;
 	
 	@Override
-	public String getName() {
-		return "Compte Université de Rouen Normandie (CAS)";
+	public String getTitle() {
+		return casProperties.getTitle();
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import eu.europa.esig.dss.DomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 
@@ -19,19 +20,20 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.*;
 
 @Component
+@EnableConfigurationProperties(XSLTProperties.class)
 public class XSLTService {
 
 	private static final Logger logger = LoggerFactory.getLogger(XSLTService.class);
 
+	private XSLTProperties xsltProperties;
+
+	public XSLTService(XSLTProperties xsltProperties) {
+		this.xsltProperties = xsltProperties;
+	}
+
 	private Templates templateSimpleReport;
 	private Templates templateSimpleCertificateReport;
 	private Templates templateDetailedReport;
-
-	@Value("${tl.browser.trustmark.root.url}")
-	private String rootTrustmarkUrlInTlBrowser;
-
-	@Value("${tl.browser.country.root.url}")
-	private String rootCountryUrlInTlBrowser;
 
 	@PostConstruct
 	public void init() throws TransformerConfigurationException, IOException {
@@ -67,8 +69,8 @@ public class XSLTService {
 		try {
 			Transformer transformer = templateSimpleCertificateReport.newTransformer();
 			transformer.setErrorListener(new DSSXmlErrorListener());
-			transformer.setParameter("rootTrustmarkUrlInTlBrowser", rootTrustmarkUrlInTlBrowser);
-			transformer.setParameter("rootCountryUrlInTlBrowser", rootCountryUrlInTlBrowser);
+			transformer.setParameter("rootTrustmarkUrlInTlBrowser", xsltProperties.getRootTrustmarkUrlInTlBrowser());
+			transformer.setParameter("rootCountryUrlInTlBrowser", xsltProperties.getRootCountryUrlInTlBrowser());
 			transformer.transform(new StreamSource(new StringReader(simpleReport)), new StreamResult(writer));
 		} catch (Exception e) {
 			logger.error("Error while generating simple certificate report : " + e.getMessage(), e);

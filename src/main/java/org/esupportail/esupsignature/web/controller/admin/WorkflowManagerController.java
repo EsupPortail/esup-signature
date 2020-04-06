@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
@@ -133,7 +134,7 @@ public class WorkflowManagerController {
     }
 	
     @PostMapping(value = "/update/{id}")
-    public String update(@PathVariable("id") Long id, @Valid Workflow workflow, @RequestParam(required = false) List<String> managers) {
+    public String update(@PathVariable("id") Long id, @Valid Workflow workflow, @RequestParam(required = false) List<String> managers) throws EsupSignatureUserException {
 		User user = userService.getCurrentUser();
 		Workflow workflowToUpdate = workflowRepository.findById(workflow.getId()).get();
 		if(workflowToUpdate.getCreateBy().equals(user.getEppn())) {
@@ -176,7 +177,7 @@ public class WorkflowManagerController {
 						  @RequestParam("recipientsEmails") String[] recipientsEmails,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
 						  @RequestParam("signType") String signType,
-						  RedirectAttributes redirectAttrs) {
+						  RedirectAttributes redirectAttrs) throws EsupSignatureUserException {
 		User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
 		if (!workflow.getCreateBy().equals(user.getEppn())) {
@@ -209,9 +210,9 @@ public class WorkflowManagerController {
 	public String addStepRecipient(@PathVariable("id") Long id,
 									  @PathVariable("workflowStepId") Long workflowStepId,
 									  @RequestParam String recipientsEmails,
-									  RedirectAttributes redirectAttrs, HttpServletRequest request) {
+									  RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureUserException {
 		User user = userService.getCurrentUser();
-		user.setIp(request.getRemoteAddr());
+		user.setIp(httpServletRequest.getRemoteAddr());
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
 		if(user.getEppn().equals(workflow.getCreateBy())) {
@@ -219,6 +220,7 @@ public class WorkflowManagerController {
 		} else {
 			logger.warn(user.getEppn() + " try to update " + workflow.getId() + " without rights");
 		}
+		redirectAttributes.addFlashAttribute("messageInfo", "Participet ajouté");
 		return "redirect:/admin/workflows/" + id + "#" + workflowStep.getId();
 	}
 

@@ -2,11 +2,13 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
 //import org.esupportail.esupsignature.service.export.SedaExportService;
@@ -14,10 +16,11 @@ import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -29,7 +32,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -46,18 +48,16 @@ import java.util.stream.Collectors;
 @RequestMapping("/user/signrequests")
 @Controller
 @Transactional
+@EnableConfigurationProperties(GlobalProperties.class)
 public class SignRequestController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignRequestController.class);
 
-    @Value("${baseUrl}")
-    private String baseUrl;
+    private GlobalProperties globalProperties;
 
-    @Value("${nexuVersion}")
-    private String nexuVersion;
-
-    @Value("${nexuUrl}")
-    private String nexuUrl;
+    public SignRequestController(GlobalProperties globalProperties) {
+        this.globalProperties = globalProperties;
+    }
 
     @ModelAttribute("userMenu")
     public String getActiveRole() {
@@ -193,9 +193,9 @@ public class SignRequestController {
         ) {
             signRequest.setSignable(true);
             model.addAttribute("currentSignType", signRequestService.getCurrentSignType(signRequest).name());
-            model.addAttribute("nexuUrl", nexuUrl);
-            model.addAttribute("nexuVersion", nexuVersion);
-            model.addAttribute("baseUrl", baseUrl);
+            model.addAttribute("nexuUrl", globalProperties.getNexuUrl());
+            model.addAttribute("nexuVersion", globalProperties.getNexuVersion());
+            model.addAttribute("baseUrl", globalProperties.getNexuDownloadUrl());
         }
         if(signRequest.getParentSignBook() != null && dataRepository.countBySignBook(signRequest.getParentSignBook()) > 0) {
             Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
@@ -377,7 +377,7 @@ public class SignRequestController {
     //@PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
     @ResponseBody
     @PostMapping(value = "/remove-doc/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String removeDocument(@PathVariable("id") Long id) {
+    public String removeDocument(@PathVariable("id") Long id) throws JSONException {
         logger.info("remove document " + id);
         JSONObject result = new JSONObject();
         User user = userService.getCurrentUser();
@@ -432,16 +432,21 @@ public class SignRequestController {
             if(allSignToComplete == null) {
                 allSignToComplete = false;
             }
-            //TODO use signBook
-
             SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
             //signRequestService.addRecipients(signRequest, recipientsEmails);
             //signRequestService.pendingSignRequest(signRequest, signType, allSignToComplete);
             SignBook signBook = signBookService.createSignBook(multipartFiles[0].getOriginalFilename(), user, false);
             signBook.setCurrentWorkflowStepNumber(1);
-            signBookRepository.save(signBook);
-            signBook.getWorkflowSteps().add(workflowService.createWorkflowStep(multipartFiles[0].getOriginalFilename(), "signbook", signBook.getId(), allSignToComplete, signType, recipientsEmails));
+            try {
+                signBookRepository.save(signBook);
+                signBook.getWorkflowSteps().add(workflowService.createWorkflowStep(multipartFiles[0].getOriginalFilename(), "signbook", signBook.getId(), allSignToComplete, signType, recipientsEmails));
+            } catch (EsupSignatureUserException e) {
+                //TODO ? throw
+                logger.error("error with users on send signrequest " + signRequest.getId());
+                redirectAttributes.addFlashAttribute("messageError", "Problème lors de l’envoi");
+                return "redirect:/user/signrequests";
+            }
             signBookService.addSignRequest(signBook, signRequest);
             signBookService.pendingSignBook(signBook, user);
             signRequest.setComment(comment);
@@ -450,8 +455,9 @@ public class SignRequestController {
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             logger.warn("no file to import");
+            redirectAttributes.addFlashAttribute("messageWarn", "Pas de fichier à importer");
+            return "redirect:/user/signrequests";
         }
-        return "redirect:/user/signrequests";
     }
 
 
@@ -629,7 +635,7 @@ public class SignRequestController {
     public String addRecipients(@PathVariable("id") Long id,
                                 @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
                                 @RequestParam(name = "signType") SignType signType,
-                                @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) {
+                                @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureUserException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequestService.addRecipients(signRequest, recipientsEmails);
         signRequest.setSignType(signType);

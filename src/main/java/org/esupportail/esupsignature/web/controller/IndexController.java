@@ -19,16 +19,11 @@ package org.esupportail.esupsignature.web.controller;
 
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -56,8 +51,8 @@ public class IndexController {
 		return "home";
 	}
 
-	@Autowired
-	private List<SecurityService> securityConfigs;
+	@Resource
+	private List<SecurityService> securityServices;
 	
 	@Resource
 	private UserService userService;
@@ -82,7 +77,7 @@ public class IndexController {
 		} else {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			if("anonymousUser".equals(auth.getName())) {
-				model.addAttribute("securityConfigs", securityConfigs);
+				model.addAttribute("securityServices", securityServices);
 				return "signin";
 			} else {
 				userService.createUser(SecurityContextHolder.getContext().getAuthentication());
