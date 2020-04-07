@@ -80,7 +80,7 @@
                     <a href="/admin/signrequests" th:class="'nav-link ' + ${adminMenu}"><i class="fas fa-crown"></i></a>
                 </li>
                 <li class="nav-item" th:if="${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')')}" title="Logout SU">
-                    <a th:href="@{/logout/su}" class="nav-link bg-dark text-white"><i class="fas fa-user-secret"></i></a>
+                    <a th:href="@{/su-logout}" class="nav-link bg-dark text-white"><i class="fas fa-user-secret"></i></a>
                 </li>
 
                 <li class="nav-item text-white">

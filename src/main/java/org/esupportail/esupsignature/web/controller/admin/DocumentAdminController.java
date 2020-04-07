@@ -29,11 +29,11 @@ import java.io.InputStream;
 import java.util.List;
 
 @Controller
-@RequestMapping("manager")
+@RequestMapping("/admin/documents")
 @Transactional
-public class DocumentManagerController {
+public class DocumentAdminController {
 	
-	private static final Logger logger = LoggerFactory.getLogger(DocumentManagerController.class);
+	private static final Logger logger = LoggerFactory.getLogger(DocumentAdminController.class);
 
 	@Resource
 	private DocumentService documentService;
@@ -63,13 +63,13 @@ public class DocumentManagerController {
 		return userService.getSuUsers();
 	}
 
-	@GetMapping("documents/form")
+	@GetMapping("/form")
 	public String creatDocument(Model model) {
 		model.addAttribute("document", new Document());
 		return "admin/documents/create";
 	}
 	
-	@GetMapping("documents/{id}")
+	@GetMapping("/{id}")
 	public String getDocumentById(@PathVariable("id") Long id, Model model) {
 		Document document = documentRepository.findById(id).get();
 		model.addAttribute("document", document);
@@ -82,7 +82,7 @@ public class DocumentManagerController {
 		return "admin/documents/show";
 	}
 
-	@PostMapping("documents/{id}/generate")
+	@PostMapping("/{id}/generate")
 	public String generateForm(@PathVariable("id") Long id, String name, String title, String workflowType, String code, DocumentIOType targetType, String targetUri) throws IOException {
 		Document document = documentRepository.findById(id).get();
 		if(formService.getFormByDocument(document) == null) {
@@ -91,28 +91,28 @@ public class DocumentManagerController {
 		return "redirect:/admin/documents/" + id;
 	}
 	
-	@GetMapping("documents")
+	@GetMapping("")
 	public String getAllDocuments(Model model) {
 		List<Document> documents = documentService.getAllDocuments();
 		model.addAttribute("documents", documents);
 		return "admin/documents/list";
 	}
 	
-	@PostMapping("documents")
+	@PostMapping("")
 	public String addDocument(@RequestParam("multipartFile") MultipartFile multipartFile, RedirectAttributes redirectAttributes) throws IOException {
 		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
 		redirectAttributes.addFlashAttribute("info", "Document ajouté");
 		return "redirect:/admin/documents/" + document.getId();
 	}
 	
-	@DeleteMapping("documents/{id}")
+	@DeleteMapping("/{id}")
 	public String deleteDocument(@PathVariable("id") Long id) {
 		Document document = documentRepository.findById(id).get();
 		documentRepository.delete(document);
 		return "redirect:/admin/documents";
 	}
 
-	@GetMapping("documents/{id}/getimagepdfpage/{page}")
+	@GetMapping("/{id}/getimagepdfpage/{page}")
 	public ResponseEntity<Void> getImagePdfAsByteArray(@PathVariable("id") Long id, @PathVariable("page") int page, HttpServletResponse response) throws IOException {
 		Document document = documentRepository.findById(id).get();
 		InputStream in = null;

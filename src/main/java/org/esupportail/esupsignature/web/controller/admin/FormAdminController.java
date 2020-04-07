@@ -27,9 +27,9 @@ import java.util.List;
 @Controller
 @RequestMapping("/admin/forms")
 @Transactional
-public class FormManagerController {
+public class FormAdminController {
 	
-	private static final Logger logger = LoggerFactory.getLogger(FormManagerController.class);
+	private static final Logger logger = LoggerFactory.getLogger(FormAdminController.class);
 
 	@ModelAttribute("adminMenu")
 	public String getAdminMenu() {

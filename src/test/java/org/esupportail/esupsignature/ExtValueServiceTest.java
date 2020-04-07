@@ -29,11 +29,16 @@ public class ExtValueServiceTest {
     public void testExtValues() {
         boolean extValueTest = true;
         for(ExtValue extValue : extValueService.getExtValues()) {
-            if(extValue.initValues(new User()) != null) {
-                logger.info("Test ExtValue : " + extValue.getName() + " OK");
-            } else {
+            try {
+                if (extValue.initValues(new User()) != null) {
+                    logger.info("Test ExtValue : " + extValue.getName() + " OK");
+                } else {
+                    extValueTest = false;
+                    logger.info("Test ExtValue : " + extValue.getName() + " KO");
+                }
+            } catch (Exception e) {
+                logger.info("Test ExtValue : " + extValue.getName() + " KO", e);
                 extValueTest = false;
-                logger.info("Test ExtValue : " + extValue.getName() + " KO");
             }
         }
         if(!extValueTest) {

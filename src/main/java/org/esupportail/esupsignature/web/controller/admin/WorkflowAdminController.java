@@ -31,9 +31,9 @@ import java.util.List;
 @RequestMapping("/admin/workflows")
 @Controller
 @Transactional
-public class WorkflowManagerController {
+public class WorkflowAdminController {
 
-	private static final Logger logger = LoggerFactory.getLogger(WorkflowManagerController.class);
+	private static final Logger logger = LoggerFactory.getLogger(WorkflowAdminController.class);
 	
 	@ModelAttribute("adminMenu")
 	public String getAdminMenu() {
