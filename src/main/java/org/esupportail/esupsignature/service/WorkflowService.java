@@ -28,7 +28,7 @@ public class WorkflowService {
     private static final Logger logger = LoggerFactory.getLogger(WorkflowService.class);
 
     @Resource
-    private List<DefaultWorkflow> workflows;
+    private List<Workflow> workflows;
 
     @Resource
     private WorkflowRepository workflowRepository;
@@ -66,6 +66,7 @@ public class WorkflowService {
             Workflow workflow = new Workflow();
             workflow.setName("Ma signature");
             workflow.setCreateDate(new Date());
+            workflow.setCreateBy("System");
             workflow.setSourceType(DocumentIOType.none);
             workflow.setTargetType(DocumentIOType.none);
             WorkflowStep workflowStep = new WorkflowStep();
@@ -166,8 +167,7 @@ public class WorkflowService {
         }
     }
 
-    public void changeSignType(Workflow workflow, int step, String name, SignType signType) {
-        WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
+    public void changeSignType(WorkflowStep workflowStep, String name, SignType signType) {
         if(name != null) {
             workflowStep.setName(name);
         }
@@ -246,24 +246,48 @@ public class WorkflowService {
         return true;
     }
 
-    public List<DefaultWorkflow> getWorkflows() {
-        return workflows;
+    public List<Workflow> getClassesWorkflows() {
+        return this.workflows;
     }
 
-    public Workflow getWorkflowByName(String name) {
-        for(DefaultWorkflow workflow : workflows ) {
-            if(workflow.getName().equals(name)) {
+    public List<Workflow> getDatabaseWorkflows() {
+        return workflowRepository.findAll();
+    }
+
+    public List<Workflow> getAllWorkflows() {
+        List<Workflow> allWorkflows = new ArrayList<>();
+        allWorkflows.addAll(this.getClassesWorkflows());
+        allWorkflows.addAll(this.getDatabaseWorkflows());
+        return allWorkflows;
+    }
+
+//    public Workflow getWorkflowByName(String name) {
+//        for(Workflow workflow : workflows ) {
+//            if(workflow.getName().equals(name)) {
+//                return workflow;
+//            }
+//        }
+//        return null;
+//    }
+
+    public Workflow getWorkflowByClassName(String className) {
+        for(Workflow workflow : workflows ) {
+            if(workflow.getClass().getSimpleName().equals(className)) {
                 return workflow;
             }
         }
         return null;
     }
 
-    public DefaultWorkflow getWorkflowByClassName(String className) {
-        for(DefaultWorkflow workflow : workflows ) {
-            if(workflow.getClass().getSimpleName().equals(className)) {
+    public Workflow getWorkflowByName(String name) {
+        for(Workflow workflow : this.workflows ) {
+            if(workflow.getClass().getSimpleName().equals(name)) {
                 return workflow;
             }
+        }
+        List<Workflow> dataBaseWorkflows =  workflowRepository.findByName(name);
+        if(dataBaseWorkflows.size() > 0) {
+            return dataBaseWorkflows.get(0);
         }
         return null;
     }

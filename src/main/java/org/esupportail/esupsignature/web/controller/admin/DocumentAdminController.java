@@ -74,7 +74,7 @@ public class DocumentAdminController {
 		Document document = documentRepository.findById(id).get();
 		model.addAttribute("document", document);
 		model.addAttribute("targetTypes", DocumentIOType.values());
-		model.addAttribute("workflowTypes", workflowService.getWorkflows());
+		model.addAttribute("workflowTypes", workflowService.getClassesWorkflows());
 		
 		if(formService.getFormByDocument(document) != null) {
 			model.addAttribute("form", formService.getFormByDocument(document));

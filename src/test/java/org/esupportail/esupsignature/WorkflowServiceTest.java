@@ -2,9 +2,9 @@ package org.esupportail.esupsignature;
 
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,9 +32,9 @@ public class WorkflowServiceTest {
     @Test(timeout = 1000)
     public void testWorkflows() {
         boolean workflowTest = true;
-        for(DefaultWorkflow defaultWorkflow : workflowService.getWorkflows()) {
+        for(Workflow defaultWorkflow : workflowService.getClassesWorkflows()) {
             try {
-                defaultWorkflow.generateWorkflowSteps(new User(), new Data(), Arrays.asList(""));
+                ((DefaultWorkflow) defaultWorkflow).generateWorkflowSteps(new User(), new Data(), Arrays.asList(""));
                 logger.info("Test Workflow : " + defaultWorkflow.getName() + " OK");
             } catch (EsupSignatureUserException e) {
                 logger.error("Test Workflow : " + defaultWorkflow.getName() + " KO");

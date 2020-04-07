@@ -73,32 +73,26 @@ public class WorkflowAdminController {
 
 	@GetMapping(produces = "text/html")
 	public String list(Model model) {
-		User user = userService.getCurrentUser();
-		List<Workflow> workflows = new ArrayList<>();
-		workflows.addAll(workflowService.getWorkflows());
-		workflows.addAll(workflowRepository.findAll());
-		model.addAttribute("workflows", workflows);
+		model.addAttribute("workflows", workflowService.getAllWorkflows());
 		return "admin/workflows/list";
 	}
 
-	@GetMapping(value = "/{id}", produces = "text/html")
-	public String show(@PathVariable("id") String id, Model uiModel, RedirectAttributes redirectAttributes) {
+	@GetMapping(value = "/{name}", produces = "text/html")
+	public String show(@PathVariable("name") String name, Model uiModel, RedirectAttributes redirectAttributes) {
 		uiModel.addAttribute("signTypes", SignType.values());
-		Workflow workflow;
-		try {
-			workflow = workflowRepository.findById(Long.valueOf(id)).get();
-			uiModel.addAttribute("workflow", workflow);
+		List<Workflow> workflows = workflowRepository.findByName(name);
+		if(workflows.size() > 0) {
+			uiModel.addAttribute("workflow", workflows.get(0));
 			return "admin/workflows/show";
-		} catch (NumberFormatException e) {
-			logger.debug(e.getMessage());
-			workflow = workflowService.getWorkflowByName(id);
-			if(workflow == null) {
-				redirectAttributes.addFlashAttribute("Workflow introuvable");
-				return "redirect:/admin/workflows";
+		} else {
+			Workflow workflow = workflowService.getWorkflowByClassName(name);
+			if (workflow != null) {
+				uiModel.addAttribute("workflow", workflow);
+				return "admin/workflows/show-class";
 			}
-			uiModel.addAttribute("workflow", workflow);
-			return "admin/workflows/show-class";
 		}
+		redirectAttributes.addFlashAttribute("Workflow introuvable");
+		return "redirect:/admin/workflows";
 	}
 
 	@PostMapping(produces = "text/html")
@@ -237,12 +231,14 @@ public class WorkflowAdminController {
 	}
 
 	@GetMapping(value = "/change-step-sign-type/{id}/{step}")
-	public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
+	public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType, @RequestParam(name="description") String description) {
 		User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
 		if(user.getEppn().equals(workflow.getCreateBy())) {
-			workflowService.changeSignType(workflow, step, null, signType);
-			return "redirect:/admin/workflows/" + id;
+			WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
+			workflowService.changeSignType(workflowStep, null, signType);
+			workflowStep.setDescription(description);
+			return "redirect:/admin/workflows/" + workflow.getName();
 		}
 		return "redirect:/admin/workflows/";
 	}

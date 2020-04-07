@@ -5,7 +5,7 @@
 <body>
 <script type="module">
     import {default as SelectUser} from "/js/modules/selectUser.js";
-    new SelectUser("recipientsEmails");
+    new SelectUser("stepRecipientsEmails");
 </script>
 <header th:replace="fragments/nav"></header>
 <main role="main">
@@ -53,7 +53,7 @@
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Circuit de signatures</dt>
                         <dd>
-                            <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="admin/workflows/cards/stepscard :: stepscard"></div>
+                            <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="admin/workflows/cards/stepscard"></div>
                             <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
                                 Vous pouvez ajouter des étapes
                             </div>
@@ -103,7 +103,7 @@
                             </div>
                             <div class="modal-body">
                                 <div class="form-group">
-                                    <select name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple" required="required">
+                                    <select name="recipientsEmails" id="stepRecipientsEmails" size="5" multiple="multiple" required="required">
                                     </select>
                                 </div>
                                 <div class="form-group" id="_allSignToComplete_div_id">

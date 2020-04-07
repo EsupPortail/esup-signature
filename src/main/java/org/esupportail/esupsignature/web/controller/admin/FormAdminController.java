@@ -110,7 +110,7 @@ public class FormAdminController {
 		model.addAttribute("form", form);
 		model.addAttribute("fields", form.getFields());
 		model.addAttribute("document", form.getDocument());
-		model.addAttribute("workflowTypes", workflowService.getWorkflows());
+		model.addAttribute("workflowTypes", workflowService.getAllWorkflows());
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("model", form.getDocument());
 		return "admin/forms/update";
@@ -127,7 +127,7 @@ public class FormAdminController {
 		List<Form> forms = formService.getAllForms();
 		model.addAttribute("forms", forms);
 		model.addAttribute("targetTypes", DocumentIOType.values());
-		model.addAttribute("workflowTypes", workflowService.getWorkflows());
+		model.addAttribute("workflowTypes", workflowService.getClassesWorkflows());
 		return "admin/forms/list";
 	}
 	

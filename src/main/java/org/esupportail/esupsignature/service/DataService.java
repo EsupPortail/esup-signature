@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -137,22 +138,31 @@ public class DataService {
 	}
 
 	public Workflow getWorkflowByDataAndUser(Data data, List<String> recipientEmails, User user) {
-		DefaultWorkflow workflow = workflowService.getWorkflowByClassName(data.getForm().getWorkflowType());
-		try {
-			DefaultWorkflow defaultWorkflow = (DefaultWorkflow) BeanUtils.cloneBean(workflow);
-			List<WorkflowStep> workflowSteps = workflow.generateWorkflowSteps(user, data, recipientEmails);
-			defaultWorkflow.initWorkflowSteps();
-			defaultWorkflow.getWorkflowSteps().addAll(workflowSteps);
-			if(recipientEmails != null) {
-				int step = 1;
-				for (WorkflowStep workflowStep : workflowSteps) {
-					userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
-					step++;
+		Workflow workflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
+		if(workflow instanceof DefaultWorkflow) {
+			try {
+				DefaultWorkflow defaultWorkflow = (DefaultWorkflow) BeanUtils.cloneBean(workflow);
+				List<WorkflowStep> workflowSteps = ((DefaultWorkflow) workflow).generateWorkflowSteps(user, data, recipientEmails);
+				defaultWorkflow.initWorkflowSteps();
+				defaultWorkflow.getWorkflowSteps().addAll(workflowSteps);
+				if (recipientEmails != null) {
+					int step = 1;
+					for (WorkflowStep workflowStep : workflowSteps) {
+						userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
+						step++;
+					}
 				}
+				return defaultWorkflow;
+			} catch (Exception e) {
+				logger.error("bean cloning fail", e);
 			}
-			return defaultWorkflow;
-		} catch (Exception e) {
-			logger.error("bean cloning fail", e);
+		} else {
+			try {
+				Workflow defaultWorkflow = (Workflow) BeanUtils.cloneBean(workflow);
+				return defaultWorkflow;
+			} catch (Exception e) {
+				logger.error("bean cloning fail", e);
+			}
 		}
 		return null;
 	}
