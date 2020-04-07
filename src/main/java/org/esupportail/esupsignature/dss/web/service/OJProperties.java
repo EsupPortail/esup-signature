@@ -3,6 +3,8 @@ package org.esupportail.esupsignature.dss.web.service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
+
 @ConfigurationProperties(prefix="oj")
 public class OJProperties {
 
@@ -13,6 +15,7 @@ public class OJProperties {
     private String ksType;
     private String ksFilename;
     private String ksPassword;
+    private List<String> trustedCertificatUrlList;
 
     public String getLotlUrl() {
         return lotlUrl;
@@ -68,5 +71,13 @@ public class OJProperties {
 
     public void setKsPassword(String ksPassword) {
         this.ksPassword = ksPassword;
+    }
+
+    public List<String> getTrustedCertificatUrlList() {
+        return trustedCertificatUrlList;
+    }
+
+    public void setTrustedCertificatUrlList(List<String> trustedCertificatUrlList) {
+        this.trustedCertificatUrlList = trustedCertificatUrlList;
     }
 }

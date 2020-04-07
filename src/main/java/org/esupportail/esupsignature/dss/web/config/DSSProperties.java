@@ -6,30 +6,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class DSSProperties {
 
     private String cacheUsername;
-
     private String cachePassword;
-
     private String cacheDataSourceUrl;
-
     private String cacheDataSourceDriverClassName;
-
     private String defaultValidationPolicy;
-
     private String tspServer;
-
     private String ksType;
-
     private String ksFilename;
-
     private String ksPassword;
-
     private String serverSigningKeystoreType;
-
     private String serverSigningKeystoreFilename;
-
     private String serverSigningKeystorePassword;
-
-
 
     public String getCacheUsername() {
         return cacheUsername;
@@ -126,4 +113,5 @@ public class DSSProperties {
     public void setServerSigningKeystorePassword(String serverSigningKeystorePassword) {
         this.serverSigningKeystorePassword = serverSigningKeystorePassword;
     }
+
 }

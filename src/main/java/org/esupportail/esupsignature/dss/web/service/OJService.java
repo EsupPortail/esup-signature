@@ -46,10 +46,7 @@ public class OJService {
 
 	@Resource
 	private DataLoader dataLoader;
-	
-	@Resource
-	private List<String> trustedCertificatUrlList;
-	
+
 	@Resource
 	private TrustedListsCertificateSource trustedListSource;
 	
@@ -115,7 +112,7 @@ public class OJService {
 			fileService.copyFile(keystoreFile, keystoreFileSav);
 			
 			validationJob.refresh();
-			for(String trustedCertificatUrl : trustedCertificatUrlList) {
+			for(String trustedCertificatUrl : ojProperties.getTrustedCertificatUrlList()) {
 				InputStream in = new URL(trustedCertificatUrl).openStream();
 				CertificateToken certificateToken = DSSUtils.loadCertificate(in);
 				if(!trustedListSource.getCertificates().contains(certificateToken)) {

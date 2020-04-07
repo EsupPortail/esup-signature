@@ -49,7 +49,7 @@ public class DSSBeanConfig {
 	
 	@Bean
 	public List<String> trustedCertificatUrlList() {
-		List<String> trustedCertificatUrlList = new ArrayList<String>();
+		List<String> trustedCertificatUrlList = new ArrayList<>();
 		trustedCertificatUrlList.add("https://dl.cacerts.digicert.com/DigiCertAssuredIDRootCA.crt");
 		trustedCertificatUrlList.add("https://www.certinomis.fr/publi/cer/AC_Racine_G3.cer");
 		return trustedCertificatUrlList;
