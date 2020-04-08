@@ -21,6 +21,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import javax.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class WorkflowService {
@@ -56,6 +57,9 @@ public class WorkflowService {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private UserPropertieService userPropertieService;
 
     @Resource
     private FileService fileService;
@@ -290,6 +294,23 @@ public class WorkflowService {
             return dataBaseWorkflows.get(0);
         }
         return null;
+    }
+
+    public List<Recipient> getFavoriteRecipientEmail(int step, Form form, List<String> recipientEmails, User user) throws EsupSignatureUserException {
+        List<Recipient> recipients = new ArrayList<>();
+        if(recipientEmails != null && recipientEmails.size() > 0) {
+            recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(step))).collect(Collectors.toList());
+            for(String recipientEmail : recipientEmails) {
+                recipients.add(recipientService.getRecipientByEmail(form.getId(), recipientEmail.substring(recipientEmail.indexOf("*") + 1)));
+            }
+        } else {
+            List<String> favoritesEmail = userPropertieService.getFavoritesEmails(user, step, form);
+            for(String email : favoritesEmail) {
+                User recipientUser = userService.getUserByEmail(email);
+                recipients.add(recipientService.createRecipient(null, recipientUser));
+            }
+        }
+        return recipients;
     }
 
 }

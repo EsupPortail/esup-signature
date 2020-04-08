@@ -134,7 +134,7 @@
                     <hr>
                     <th:block th:each="step,iterator : ${steps}">
                         <div th:if="${step.changeable == true}" class="form-group">
-                            <label th:text="${step.name}"></label>
+                            <label th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable : ' + ${step.name}"></label>
                             <select th:id="'recipientEmailsSelect_' + ${step.stepNumber}" multiple="multiple" name="recipientEmails" required="required" >
                                 <th:block th:each="recipient : ${step.recipients}">
                                     <option th:if="${recipient.user.email != null}" selected="selected" th:text="${recipient.user.email}" th:value="${step.stepNumber} + '*' + ${recipient.user.email}"></option>

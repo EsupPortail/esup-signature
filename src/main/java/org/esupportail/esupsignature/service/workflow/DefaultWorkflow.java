@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.UserPropertieService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.WorkflowService;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -17,13 +18,13 @@ public class DefaultWorkflow extends Workflow implements Cloneable {
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
     @Resource
-    private UserPropertieService userPropertieService;
+    protected WorkflowService workflowService;
 
     @Resource
-    private UserService userService;
+    protected UserService userService;
 
     @Resource
-    private RecipientService recipientService;
+    protected RecipientService recipientService;
 
     @Override
     public String getName() {
@@ -58,20 +59,4 @@ public class DefaultWorkflow extends Workflow implements Cloneable {
         this.workflowSteps = new ArrayList<>();
     }
 
-    public List<Recipient> getFavoriteRecipientEmail(int step, Form form, List<String> recipientEmails, User user) throws EsupSignatureUserException {
-        List<Recipient> recipients = new ArrayList<>();
-        if(recipientEmails != null && recipientEmails.size() > 0) {
-            recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(step))).collect(Collectors.toList());
-            for(String recipientEmail : recipientEmails) {
-                recipients.add(recipientService.getRecipientByEmail(form.getId(), recipientEmail.substring(recipientEmail.indexOf("*") + 1)));
-            }
-        } else {
-            List<String> favoritesEmail = userPropertieService.getFavoritesEmails(user, step, form);
-            for(String email : favoritesEmail) {
-                User recipientUser = userService.getUserByEmail(email);
-                recipients.add(recipientService.createRecipient(null, recipientUser));
-            }
-        }
-        return recipients;
-    }
 }

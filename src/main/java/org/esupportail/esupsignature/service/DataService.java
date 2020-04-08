@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,195 +25,203 @@ import java.util.List;
 
 @Service
 public class DataService {
-	
-	private static final Logger logger = LoggerFactory.getLogger(DataService.class);
 
-	@Resource
-	private DataRepository dataRepository;
+    private static final Logger logger = LoggerFactory.getLogger(DataService.class);
 
-	@Resource
-	private FormRepository formRepository;
+    @Resource
+    private DataRepository dataRepository;
 
-	@Resource
-	private UserPropertieService userPropertieService;
+    @Resource
+    private FormRepository formRepository;
 
-	@Resource
-	private SignRequestService signRequestService;
+    @Resource
+    private UserPropertieService userPropertieService;
 
-	@Resource
-	private UserService userService;
+    @Resource
+    private SignRequestService signRequestService;
 
-	@Resource
-	private SignBookService signBookService;
+    @Resource
+    private UserService userService;
 
-	@Resource
-	private SignRequestRepository signRequestRepository;
+    @Resource
+    private SignBookService signBookService;
 
-	@Resource
-	private SignBookRepository signBookRepository;
+    @Resource
+    private SignRequestRepository signRequestRepository;
 
-	@Resource
-	private WorkflowStepRepository workflowStepRepository;
+    @Resource
+    private SignBookRepository signBookRepository;
 
-	@Resource
-	private RecipientRepository recipientRepository;
+    @Resource
+    private WorkflowStepRepository workflowStepRepository;
 
-	@Resource
-	private FileService fileService;
+    @Resource
+    private RecipientRepository recipientRepository;
 
-	@Resource
-	private PdfService pdfService;
+    @Resource
+    private WorkflowRepository workflowRepository;
 
-	@Resource
-	private WorkflowService workflowService;
+    @Resource
+    private FileService fileService;
 
-	public Data getDataById(Long dataId) {
-		Data obj = dataRepository.findById(dataId).get();
-		return obj;
-	}
+    @Resource
+    private PdfService pdfService;
 
-	public boolean preAuthorizeUpdate(Long id) {
-		Data data = dataRepository.findById(id).get();
-		if (data.getCreateBy().equals(userService.getCurrentUser().getEppn()) || data.getOwner().equals(userService.getCurrentUser().getEppn())) {
-			return true;
-		}
-		return false;
-	}
+    @Resource
+    private WorkflowService workflowService;
 
-	public void delete(Data data) {
-		if(data.getSignBook() != null) {
-			signBookService.delete(data.getSignBook());
-		}
-		data.setForm(null);
-		dataRepository.delete(data);
-	}
+    public Data getDataById(Long dataId) {
+        Data obj = dataRepository.findById(dataId).get();
+        return obj;
+    }
 
-	public void reset(Data data) {
-		data.setStatus(SignRequestStatus.draft);
-		data.setSignBook(null);
-		dataRepository.save(data);
-	}
+    public boolean preAuthorizeUpdate(Long id) {
+        Data data = dataRepository.findById(id).get();
+        if (data.getCreateBy().equals(userService.getCurrentUser().getEppn()) || data.getOwner().equals(userService.getCurrentUser().getEppn())) {
+            return true;
+        }
+        return false;
+    }
 
-	public SignBook sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user) throws EsupSignatureException, EsupSignatureIOException {
-		if(recipientEmails == null) {
-			recipientEmails = new ArrayList<>();
-		}
-		Form form = data.getForm();
-		if(form.getTargetType().equals(DocumentIOType.mail)) {
-			if(targetEmails == null || targetEmails.size() == 0) {
-				throw new EsupSignatureException("Target email empty");
-			}
-			String targetUrl = String.join(",", targetEmails);
-			userPropertieService.createTargetPropertie(user, targetUrl, form);
-		}
-		String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-");
-		String signBookName = signBookService.generateName(name, user);
-		SignBook signBook = signBookService.createSignBook(signBookName, user, false);
-		SignRequest signRequest = signRequestService.createSignRequest(name, user);
-		signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(generateFile(data), name + ".pdf", "application/pdf"));
-		signRequestRepository.save(signRequest);
-		signBookService.addSignRequest(signBook, signRequest);
-//		List<WorkflowStep> workflowSteps = getWorkflowSteps(data, recipientEmails, user);
-//		for(WorkflowStep workflowStep: workflowSteps)  {
-//			for(Recipient recipient : workflowStep.getRecipients()) {
-//				recipient.setParentId(signRequest.getId());
-//				recipientRepository.save(recipient);
-//			}
-//		}
-		Workflow workflow = getWorkflowByDataAndUser(data, recipientEmails, user);
-		workflow.setName(workflow.getName() + "_" + form.getName());
-//		workflow.getWorkflowSteps().addAll(workflowSteps);
-		signBookService.importWorkflow(signBook, workflow);
-		signBookService.nextWorkFlowStep(signBook);
-		if(form.getTargetType() != null && !form.getTargetType().equals(DocumentIOType.none)) {
-			signBook.setTargetType(form.getTargetType());
-			signBook.setDocumentsTargetUri(targetEmails.get(0));
-		}
-		signBookRepository.save(signBook);
-		signBookService.pendingSignBook(signBook, user);
-		data.setSignBook(signBook);
-		data.setStatus(SignRequestStatus.pending);
-		return signBook;
-	}
+    public void delete(Data data) {
+        if (data.getSignBook() != null) {
+            signBookService.delete(data.getSignBook());
+        }
+        data.setForm(null);
+        dataRepository.delete(data);
+    }
 
-	public Workflow getWorkflowByDataAndUser(Data data, List<String> recipientEmails, User user) {
-		Workflow workflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
-		if(workflow instanceof DefaultWorkflow) {
-			try {
-				DefaultWorkflow defaultWorkflow = (DefaultWorkflow) BeanUtils.cloneBean(workflow);
-				List<WorkflowStep> workflowSteps = ((DefaultWorkflow) workflow).generateWorkflowSteps(user, data, recipientEmails);
-				defaultWorkflow.initWorkflowSteps();
-				defaultWorkflow.getWorkflowSteps().addAll(workflowSteps);
-				if (recipientEmails != null) {
-					int step = 1;
-					for (WorkflowStep workflowStep : workflowSteps) {
-						userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
-						step++;
-					}
-				}
-				return defaultWorkflow;
-			} catch (Exception e) {
-				logger.error("bean cloning fail", e);
-			}
-		} else {
-			try {
-				Workflow defaultWorkflow = (Workflow) BeanUtils.cloneBean(workflow);
-				return defaultWorkflow;
-			} catch (Exception e) {
-				logger.error("bean cloning fail", e);
-			}
-		}
-		return null;
-	}
+    public void reset(Data data) {
+        data.setStatus(SignRequestStatus.draft);
+        data.setSignBook(null);
+        dataRepository.save(data);
+    }
 
-	public Data updateData(@RequestParam MultiValueMap<String, String> formData, User user, Form form, Data data) {
-		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
-		data.setName(format.format(new Date()) + "_" + form.getTitle());
-		data.getDatas().putAll(formData.toSingleValueMap());
-		data.setForm(form);
-		data.setFormName(form.getName());
-		data.setFormVersion(form.getVersion());
-		data.setStatus(SignRequestStatus.draft);
-		data.setCreateBy(userService.getUserFromAuthentication().getEppn());
-		data.setOwner(user.getEppn());
-		data.setCreateDate(new Date());
-		dataRepository.save(data);
-		return data;
-	}
+    public SignBook sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user) throws EsupSignatureException, EsupSignatureIOException {
+        if (recipientEmails == null) {
+            recipientEmails = new ArrayList<>();
+        }
+        Form form = data.getForm();
+        if (form.getTargetType().equals(DocumentIOType.mail)) {
+            if (targetEmails == null || targetEmails.size() == 0) {
+                throw new EsupSignatureException("Target email empty");
+            }
+            String targetUrl = String.join(",", targetEmails);
+            userPropertieService.createTargetPropertie(user, targetUrl, form);
+        }
+        String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-");
+        String signBookName = signBookService.generateName(name, user);
+        SignBook signBook = signBookService.createSignBook(signBookName, user, false);
+        SignRequest signRequest = signRequestService.createSignRequest(name, user);
+        signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(generateFile(data), name + ".pdf", "application/pdf"));
+        signRequestRepository.save(signRequest);
+        signBookService.addSignRequest(signBook, signRequest);
+        Workflow workflow = getWorkflowByDataAndUser(data, recipientEmails, user);
+        workflow.setName(workflow.getName() + "_" + form.getName());
+        signBookService.importWorkflow(signBook, workflow);
+        signBookService.nextWorkFlowStep(signBook);
+        if (form.getTargetType() != null && !form.getTargetType().equals(DocumentIOType.none)) {
+            signBook.setTargetType(form.getTargetType());
+            signBook.setDocumentsTargetUri(targetEmails.get(0));
+        }
+        signBookRepository.save(signBook);
+        signBookService.pendingSignBook(signBook, user);
+        data.setSignBook(signBook);
+        data.setStatus(SignRequestStatus.pending);
+        return signBook;
+    }
 
-	public Data cloneData(Data data) {
-		Form form = formRepository.findFormByNameAndActiveVersion(data.getForm().getName(), true).get(0);
-		Data cloneData = new Data();
-		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
-		cloneData.setName(format.format(new Date()) + "_" + form.getTitle());
-		cloneData.setStatus(SignRequestStatus.draft);
-		cloneData.setCreateBy(userService.getCurrentUser().getEppn());
-		cloneData.setCreateDate(new Date());
-		cloneData.setOwner(data.getOwner());
-		cloneData.getDatas().putAll(data.getDatas());
-		cloneData.setForm(form);
-		dataRepository.save(cloneData);
-		return cloneData;
-	}
+    public Workflow getWorkflowByDataAndUser(Data data, List<String> recipientEmails, User user) {
+        Workflow workflow;
+        List<WorkflowStep> workflowSteps = new ArrayList<>();
+        Workflow modelWorkflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
+        try {
+            if (modelWorkflow instanceof DefaultWorkflow) {
 
-	public InputStream generateFile(Data data) {
-		Form form = data.getForm();
-		return pdfService.fill(form.getDocument().getInputStream(), data.getDatas());
-	}
+                DefaultWorkflow defaultWorkflow = (DefaultWorkflow) BeanUtils.cloneBean(modelWorkflow);
+                workflowSteps.addAll(((DefaultWorkflow) modelWorkflow).generateWorkflowSteps(user, data, recipientEmails));
+                defaultWorkflow.initWorkflowSteps();
+                defaultWorkflow.getWorkflowSteps().addAll(workflowSteps);
+                workflow = defaultWorkflow;
+            } else {
+                workflow = (Workflow) BeanUtils.cloneBean(modelWorkflow);
+                workflowSteps.addAll(workflow.getWorkflowSteps());
+                if(recipientEmails != null) {
+                    for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
+                        if (workflowStep.getChangeable()) {
+                            workflowStep.getRecipients().clear();
+                            List<Recipient> recipients = workflowService.getFavoriteRecipientEmail(workflowStep.getStepNumber(), data.getForm(), recipientEmails, user);
+                            for (Recipient recipient : recipients) {
+                                recipientRepository.save(recipient);
+                                workflowStep.getRecipients().add(recipient);
+                            }
+                        }
+                    }
+                    workflowSteps.addAll(workflow.getWorkflowSteps());
+                }
+            }
+            if (recipientEmails != null) {
+                int step = 1;
+                for (WorkflowStep workflowStep : workflowSteps) {
+                    userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
+                    step++;
+                }
+            }
+            return workflow;
+        } catch (Exception e) {
+            logger.error("bean cloning fail", e);
+        }
+        return null;
+    }
 
-	public Data getDataFromSignRequest(SignRequest signRequest) {
-		if(signRequest.getParentSignBook() != null) {
-			return getDataFromSignBook(signRequest.getParentSignBook());
-		}
-		return null;
-	}
+    public Data updateData(@RequestParam MultiValueMap<String, String> formData, User user, Form form, Data data) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
+        data.setName(format.format(new Date()) + "_" + form.getTitle());
+        data.getDatas().putAll(formData.toSingleValueMap());
+        data.setForm(form);
+        data.setFormName(form.getName());
+        data.setFormVersion(form.getVersion());
+        data.setStatus(SignRequestStatus.draft);
+        data.setCreateBy(userService.getUserFromAuthentication().getEppn());
+        data.setOwner(user.getEppn());
+        data.setCreateDate(new Date());
+        dataRepository.save(data);
+        return data;
+    }
 
-	public Data getDataFromSignBook(SignBook signBook) {
-		List<Data> datas = dataRepository.findBySignBook(signBook);
-		if(datas.size() > 0) {
-			return datas.get(0);
-		}
-		return null;
-	}
+    public Data cloneData(Data data) {
+        Form form = formRepository.findFormByNameAndActiveVersion(data.getForm().getName(), true).get(0);
+        Data cloneData = new Data();
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
+        cloneData.setName(format.format(new Date()) + "_" + form.getTitle());
+        cloneData.setStatus(SignRequestStatus.draft);
+        cloneData.setCreateBy(userService.getCurrentUser().getEppn());
+        cloneData.setCreateDate(new Date());
+        cloneData.setOwner(data.getOwner());
+        cloneData.getDatas().putAll(data.getDatas());
+        cloneData.setForm(form);
+        dataRepository.save(cloneData);
+        return cloneData;
+    }
+
+    public InputStream generateFile(Data data) {
+        Form form = data.getForm();
+        return pdfService.fill(form.getDocument().getInputStream(), data.getDatas());
+    }
+
+    public Data getDataFromSignRequest(SignRequest signRequest) {
+        if (signRequest.getParentSignBook() != null) {
+            return getDataFromSignBook(signRequest.getParentSignBook());
+        }
+        return null;
+    }
+
+    public Data getDataFromSignBook(SignBook signBook) {
+        List<Data> datas = dataRepository.findBySignBook(signBook);
+        if (datas.size() > 0) {
+            return datas.get(0);
+        }
+        return null;
+    }
 
 }

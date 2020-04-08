@@ -33,20 +33,22 @@
                         </thead>
                         <tbody>
                         <th:block th:each="workflow : ${workflows}">
-                            <tr class="roocol">
-                                <td th:text="${workflow.name}"></td>
+                            <tr>
+                                <td th:text="${workflow.description}"></td>
 <!--                                <td th:text="${workflow.createBy}"></td>-->
                                 <td th:if="${workflow.workflowSteps.size() > 0}">
+                                    <ul class="list-group">
                                     <th:block th:each="workflowStep,iterator : ${workflow.workflowSteps}">
-                                        <div class="alert alert-secondary">
-                                            <h2 th:text="${iterator.index + 1}" class="d-inline"></h2>
+                                        <li class="list-group-item py-1">
+                                            <span th:text="${iterator.index + 1}" class="d-inline"></span>
                                             <th:block th:each="recipient : ${workflowStep.recipients}">
                                                 <i class="fas fa-user"></i>
                                                 <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                                 <br/>
                                             </th:block>
-                                        </div>
+                                        </li>
                                     </th:block>
+                                    </ul>
                                 </td>
                                 <td th:unless="${#lists.size(workflow.workflowSteps) > 0}">
                                     Aucun

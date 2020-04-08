@@ -17,7 +17,7 @@
                                 </form>
                                     <span class="bs-stepper-circle bg-primary" th:text="${iterator.index + 1}"></span>
                                     <div class="bs-stepper-label">
-                                        <form th:action="'/admin/workflows/change-step-sign-type/' + ${workflow.id} + '/'  + ${iterator.index}">
+                                        <form th:action="'/admin/workflows/update-step/' + ${workflow.id} + '/'  + ${iterator.index}">
                                             <div class="form-group">
                                                 <label>Description de l’étape:</label>
                                                 <input name="description" type="text" class="form-control" th:value="${workflowStep.description}" />

@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.springframework.stereotype.Component;
 
@@ -19,12 +20,6 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 	private String name = "CreatorAndTwoStepsWorkflow";
 	private String description = "Signature du créateur puis de deux signataires en série";
 	private List<WorkflowStep> workflowSteps;
-
-	@Resource
-	private UserService userService;
-
-	@Resource
-	private RecipientService recipientService;
 
 	@Override
 	public String getName() {
@@ -64,7 +59,7 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 		WorkflowStep workflowStep2 = new WorkflowStep();
 		workflowStep2.setStepNumber(2);
 		if(data != null) {
-			workflowStep2.setRecipients(getFavoriteRecipientEmail(2, data.getForm(), recipentEmailsStep, user));
+			workflowStep2.setRecipients(workflowService.getFavoriteRecipientEmail(2, data.getForm(), recipentEmailsStep, user));
 		} else {
 			workflowStep2.getRecipients().add(recipientService.createRecipient(null, userService.getGenericUser("Utilisateur issue des favoris", "")));
 		}
@@ -74,7 +69,7 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 		WorkflowStep workflowStep3 = new WorkflowStep();
 		workflowStep3.setStepNumber(3);
 		if(data != null) {
-			workflowStep3.setRecipients(getFavoriteRecipientEmail(3, data.getForm(), recipentEmailsStep, user));
+			workflowStep3.setRecipients(workflowService.getFavoriteRecipientEmail(3, data.getForm(), recipentEmailsStep, user));
 		} else {
 			workflowStep3.getRecipients().add(recipientService.createRecipient(null, userService.getGenericUser("Utilisateur issue des favoris", "")));
 		}

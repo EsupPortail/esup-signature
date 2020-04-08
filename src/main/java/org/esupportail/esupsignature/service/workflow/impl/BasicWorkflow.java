@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,9 @@ public class BasicWorkflow extends DefaultWorkflow {
 	private String name = "BasicWorkflow";
 	private String description = "Une signature";
 	private List<WorkflowStep> workflowSteps;
+
+	@Resource
+	private WorkflowService workflowService;
 
 	@Resource
 	private UserService userService;
@@ -62,7 +66,7 @@ public class BasicWorkflow extends DefaultWorkflow {
 		workflowStep.setDescription("Choix du signataire");
 		workflowStep.setChangeable(true);
 		if(data != null) {
-			workflowStep.setRecipients(getFavoriteRecipientEmail(1, data.getForm(), recipentEmailsStep, user));
+			workflowStep.setRecipients(workflowService.getFavoriteRecipientEmail(1, data.getForm(), recipentEmailsStep, user));
 		} else {
 			workflowStep.getRecipients().add(recipientService.createRecipient(null, userService.getGenericUser("Utilisateur issue des favoris", "")));
 		}

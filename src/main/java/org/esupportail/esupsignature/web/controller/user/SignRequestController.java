@@ -592,7 +592,7 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
-    @GetMapping(value = "/change-step-sign-type/{id}/{step}")
+    @GetMapping(value = "/update-step/{id}/{step}")
     public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name = "signType") SignType signType) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setSignType(signType);

@@ -179,6 +179,7 @@ public class WorkflowAdminController {
 			return "redirect:/admin/workflows/" + id;
 		}
 		WorkflowStep workflowStep = workflowService.createWorkflowStep("", "workflow", workflow.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+		workflowStep.setStepNumber(workflow.getWorkflowSteps().size() - 1);
 		workflow.getWorkflowSteps().add(workflowStep);
 		return "redirect:/admin/workflows/" + id;
 	}
@@ -230,7 +231,7 @@ public class WorkflowAdminController {
 		return "redirect:/admin/workflows/";
 	}
 
-	@GetMapping(value = "/change-step-sign-type/{id}/{step}")
+	@GetMapping(value = "/update-step/{id}/{step}")
 	public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType, @RequestParam(name="description") String description) {
 		User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
@@ -238,6 +239,7 @@ public class WorkflowAdminController {
 			WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
 			workflowService.changeSignType(workflowStep, null, signType);
 			workflowStep.setDescription(description);
+			workflowStep.setStepNumber(workflow.getWorkflowSteps().indexOf(workflowStep) + 1);
 			return "redirect:/admin/workflows/" + workflow.getName();
 		}
 		return "redirect:/admin/workflows/";
@@ -253,6 +255,9 @@ public class WorkflowAdminController {
 		}
 		WorkflowStep workflowStep = workflow.getWorkflowSteps().get(stepNumber);
 		workflow.getWorkflowSteps().remove(workflowStep);
+		for(int i = workflowStep.getStepNumber() - 1; i < workflow.getWorkflowSteps().size(); i++) {
+			workflow.getWorkflowSteps().get(i).setStepNumber(i + 1);
+		}
 		workflowRepository.save(workflow);
 		workflowStepRepository.delete(workflowStep);
 		return "redirect:/admin/workflows/" + id;

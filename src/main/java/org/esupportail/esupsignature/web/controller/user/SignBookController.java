@@ -122,17 +122,17 @@ public class SignBookController {
             logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
         }
     }
-
-    @GetMapping(value = "/change-step-sign-type/{id}/{step}")
-    public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
-        User user = userService.getCurrentUser();
-        SignBook signBook = signBookRepository.findById(id).get();
-        if(user.getEppn().equals(signBook.getCreateBy()) && signBook.getCurrentWorkflowStepNumber() <= step + 1) {
-            signBookService.changeSignType(signBook, step, signType);
-            return "redirect:/user/signbooks/" + id + "/?form";
-        }
-        return "redirect:/user/signbooks/";
-    }
+//
+//    @GetMapping(value = "/update-step/{id}/{step}")
+//    public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
+//        User user = userService.getCurrentUser();
+//        SignBook signBook = signBookRepository.findById(id).get();
+//        if(user.getEppn().equals(signBook.getCreateBy()) && signBook.getCurrentWorkflowStepNumber() <= step + 1) {
+//            signBookService.changeSignType(signBook, step, signType);
+//            return "redirect:/user/signbooks/" + id + "/?form";
+//        }
+//        return "redirect:/user/signbooks/";
+//    }
 
     @GetMapping(value = "/update-step/{id}/{step}")
     public String changeStepSignType(@PathVariable("id") Long id,
