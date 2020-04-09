@@ -29,7 +29,7 @@
                             <i class="fas fa-save"></i>
                         </a></li>
                         <li><a title="Export SEDA" class="btn-floating bg-primary    waves-effect" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
-                            <i class="fa fa-file-export"></i>
+                            <i class="fas fa-file-export"></i>
                         </a></li>
                         <li><a th:if="${signRequest.status.name() != 'exported'}" class="btn-floating bg-primary waves-effect" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
                             <i class="fas fa-shield-alt "></i>
@@ -43,7 +43,7 @@
                     <i class="fas fa-ellipsis-v"></i>
                 </a>
                 <ul id="collapseExample" class="list-unstyled">
-                    <li><a title="Modifier les paramètres de signature" type="button" class="btn-floating bg-success waves-effect" data-toggle="modal" data-target="#signRequestParams"><i class="fa fa-signature"></i></a></li>
+                    <li><a title="Modifier les paramètres de signature" type="button" class="btn-floating bg-success waves-effect" data-toggle="modal" data-target="#signRequestParams"><i class="fas fa-signature"></i></a></li>
                 </ul>
             </div>
             </th:block>
@@ -53,7 +53,7 @@
                     <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'draft')}">
                         <button th:if="${signRequest.status.name() == 'draft' && user.eppn == signRequest.createBy && signRequest.signedDocuments.size() == 0}" id="browseBtn" type="button" class="mr-2 btn btn-sm btn-primary float-right"
                                 onclick="$('.clickable').click();">
-                            <i class="fa fa-plus" aria-hidden="true"></i> Ajouter un document
+                            <i class="fas fa-plus" aria-hidden="true"></i> Ajouter un document
                         </button>
                     </th:block>
                     <div th:if="${user.eppn == signRequest.createBy}">
@@ -98,7 +98,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-success">
-                        <i class="fa fa-paper-plane" aria-hidden="true"></i> Envoyer
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i> Envoyer
                     </button>
                 </div>
             </form>

@@ -25,10 +25,10 @@
             <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed'}">
                 <th:block th:if="${currentSignType != 'visa'}">
                     <button type="button" id="signZoomIn" class="btn btn-sm btn-transparent text-dark position-absolute" th:style="'z-index: 3;left: ' + ${signRequest.getCurrentSignRequestParams().xPos - 35} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;'">
-                        <i class="fa fas fa-search-plus"></i>
+                        <i class="fas fas fa-search-plus"></i>
                     </button>
                     <button type="button" id="signZoomOut" class="btn btn-sm btn-transparent text-dark position-absolute" th:style="'z-index: 3;left: ' + ${signRequest.getCurrentSignRequestParams().xPos - 35} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos + 30} + 'px;'">
-                        <i class="fa fas fa-search-minus"></i>
+                        <i class="fas fas fa-search-minus"></i>
                     </button>
                     <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                          onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"

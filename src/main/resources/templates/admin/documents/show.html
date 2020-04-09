@@ -6,17 +6,17 @@
 <div id="ribbon" class="card">
     <div class="card-body">
         <button th:if="${form == null}" class="mr-2 btn btn-outline-dark btn-light float-left" data-toggle="modal" data-target="#generateForm">
-            <i class="fa fa-plus fa-2x"></i> <br/> Générer le formulaire à partir du modèle
+            <i class="fas fa-plus fa-2x"></i> <br/> Générer le formulaire à partir du modèle
         </button>
         <button type="button" class="btn  btn-danger float-right" value="Retour" onclick="location.href='/'" title="Quitter">
             <i class="fas fa-times fa-1x"></i>
         </button>
 		<div th:if="${form != null}">
 			<a class="btn btn-light btn-outline-dark" th:href="'/admin/forms/' + ${form.id}">
-				<i class="fa fa-eye fa-2x"></i> <br/> Aperçu du formulaire
+				<i class="fas fa-eye fa-2x"></i> <br/> Aperçu du formulaire
 			</a>
 			<a class="btn btn-light btn-outline-dark" th:href="'/admin/forms/update/' + ${form.id}">
-				<i class="fa fa-cogs fa-2x"></i> <br/> Paramètres du formulaire
+				<i class="fas fa-cogs fa-2x"></i> <br/> Paramètres du formulaire
 			</a>
 		</div>
 
