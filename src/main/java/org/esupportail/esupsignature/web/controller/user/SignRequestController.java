@@ -239,7 +239,13 @@ public class SignRequestController {
                     model.addAttribute("signHeight", 75);
                 }
                 model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
+            } else {
+                if(signRequest.getSignType().equals(SignType.certSign) || signRequest.getSignType().equals(SignType.nexuSign)) {
+                    signRequest.setSignable(true);
+                }
+                model.addAttribute("documentType", "other");
             }
+
         } else if (signRequestService.getLastSignedFsFile(signRequest) != null) {
             FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
             model.addAttribute("documentType", fileService.getExtension(fsFile.getName()));
@@ -322,12 +328,16 @@ public class SignRequestController {
                 formDataMap.remove("_csrf");
                 if(signRequest.getParentSignBook() != null && dataRepository.countBySignBook(signRequest.getParentSignBook()) > 0) {
                     Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
+                    List<Field> fields = data.getForm().getFields();
                     for(Map.Entry<String, String> entry : formDataMap.entrySet()) {
-                        if(!data.getDatas().containsKey(entry.getKey())) {
+                        Field field = fields.stream().filter(f -> f.getName().equals(entry.getKey())).collect(Collectors.toList()).get(0);
+                        List<String> steps = Arrays.asList(field.getStepNumbers().split("#"));
+                        if(!data.getDatas().containsKey(entry.getKey()) || steps.contains(signRequest.getCurrentStepNumber().toString())) {
                             data.getDatas().put(entry.getKey(), entry.getValue());
                         }
                     }
-                    dataRepository.save(data);
+                    //dataRepository.save(data);
+                    //return new ResponseEntity(HttpStatus.OK);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -475,7 +485,7 @@ public class SignRequestController {
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
-        signRequestService.refuse(signRequest, user);
+        signRequestService.refuse(signRequest);
         return "redirect:/user/signrequests/?statusFilter=tosign";
     }
 

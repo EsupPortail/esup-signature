@@ -157,7 +157,7 @@ public class SignBookService {
     }
 
     public void completeSignBook(SignBook signBook, User user) throws EsupSignatureException {
-        updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", user, "SUCCESS", "");
+        updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "");
         signRequestService.completeSignRequests(signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri(), user);
     }
 
@@ -246,7 +246,7 @@ public class SignBookService {
 
     public void pendingSignBook(SignBook signBook, User user) {
         WorkflowStep currentWorkflowStep = getCurrentWorkflowStep(signBook);
-        updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber(), user, "SUCCESS", signBook.getComment());
+        updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber(), "SUCCESS", signBook.getComment());
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequestService.addRecipients(signRequest, currentWorkflowStep.getRecipients());
             signRequestService.pendingSignRequest(signRequest, currentWorkflowStep.getSignType(), currentWorkflowStep.getAllSignToComplete());
@@ -264,11 +264,12 @@ public class SignBookService {
         logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber());
     }
 
-    public void updateStatus(SignBook signBook, SignRequestStatus signRequestStatus, String action, User user, String returnCode, String comment) {
+    public void updateStatus(SignBook signBook, SignRequestStatus signRequestStatus, String action, String returnCode, String comment) {
         Log log = new Log();
         log.setSignRequestId(signBook.getId());
-        log.setEppn(user.getEppn());
-        log.setIp(user.getIp());
+        log.setEppn(userService.getUserFromAuthentication().getEppn());
+        log.setEppnFor(userService.getSuEppn());
+        log.setIp(userService.getUserFromAuthentication().getIp());
         log.setInitialStatus(signBook.getStatus().toString());
         log.setLogDate(new Date());
         log.setAction(action);
@@ -291,9 +292,9 @@ public class SignBookService {
         }
     }
 
-    public void refuse(SignBook signBook, String comment, User user) {
+    public void refuse(SignBook signBook, String comment) {
         mailService.sendRefusedMail(signBook, comment);
-        updateStatus(signBook, SignRequestStatus.refused, "Un des documents du a été refusé, ceci annule toute la procédure", user, "SUCCESS", comment);
+        updateStatus(signBook, SignRequestStatus.refused, "Un des documents du a été refusé, ceci annule toute la procédure", "SUCCESS", comment);
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequest.setComment(comment);
             signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null);

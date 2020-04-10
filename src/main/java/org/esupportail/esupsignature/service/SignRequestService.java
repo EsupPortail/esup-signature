@@ -624,9 +624,9 @@ public class SignRequestService {
 		logRepository.save(log);
 	}
 
-	public void refuse(SignRequest signRequest, User user) {
+	public void refuse(SignRequest signRequest) {
 		if(signRequest.getParentSignBook() != null) {
-			signBookService.refuse(signRequest.getParentSignBook(), signRequest.getComment(), user);
+			signBookService.refuse(signRequest.getParentSignBook(), signRequest.getComment());
 		} else {
 			updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null);
 		}

@@ -288,6 +288,14 @@ input:checked + .slider:before {
     display: flex;
     margin-left: 5px;
     margin-right: 5px;
+    height: calc(100vh - 172px);
+}
+
+.workspace-pdf {
+    margin-top: 130px;
+    display: flex;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 .workspace-sign {

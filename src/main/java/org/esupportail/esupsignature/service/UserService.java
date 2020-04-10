@@ -19,6 +19,7 @@ import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -30,6 +31,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -77,6 +79,9 @@ public class UserService {
 
 	@Resource
 	private MailService mailService;
+
+	@Resource
+	private HttpServletRequest request;
 
 	public void setSuEppn(String eppn) {
 		ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
@@ -159,6 +164,7 @@ public class UserService {
 			if(user.getSignImage() != null) {
 				try {
 					user.setSignImageBase64(fileService.getBase64Image(user.getSignImage()));
+					user.setIp(request.getRemoteAddr());
 				} catch (IOException e) {
 					logger.error("sign image read error", e);
 				}

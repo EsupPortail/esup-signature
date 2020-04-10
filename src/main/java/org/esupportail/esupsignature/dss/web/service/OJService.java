@@ -83,8 +83,8 @@ public class OJService {
 				keyStoreCertificateSource.store(fos);
 				Utils.closeQuietly(fos);
 			}
+			refresh();
 		}
-		refresh();
 	}
 	
 	public void refresh() {
