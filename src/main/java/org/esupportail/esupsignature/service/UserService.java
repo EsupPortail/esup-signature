@@ -261,10 +261,12 @@ public class UserService {
 					List<SignRequest> toSignSharedSignRequests = signRequestService.getToSignRequests(toUser);
 					for (SignRequest toSignSharedSignRequest : toSignSharedSignRequests) {
 						if (toSignSharedSignRequest.getParentSignBook() != null) {
-							Data data = dataRepository.findBySignBook(toSignSharedSignRequest.getParentSignBook()).get(0);
-							if (data.getForm().equals(userShare.getForm())) {
-								if (!signRequest.equals(toSignSharedSignRequest)) {
-									toEmails.add(toUser.getEmail());
+							List<Data> datas = dataRepository.findBySignBook(toSignSharedSignRequest.getParentSignBook());
+							if(datas.size() > 0) {
+								if (datas.get(0).getForm().equals(userShare.getForm())) {
+									if (!signRequest.equals(toSignSharedSignRequest)) {
+										toEmails.add(toUser.getEmail());
+									}
 								}
 							}
 						}

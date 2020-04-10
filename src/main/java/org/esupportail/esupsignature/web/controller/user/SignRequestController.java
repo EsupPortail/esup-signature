@@ -217,12 +217,9 @@ public class SignRequestController {
             List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest);
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 Document toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
-//                PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
-//                model.addAttribute("pdfWidth", pdfParameters.getWidth());
-//                model.addAttribute("pdfHeight", pdfParameters.getHeight());
-//                model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
                 if (user.getSignImage() != null && user.getSignImage().getSize() > 0) {
-                    if(signRequest.getSignable() && signRequestService.checkUserSignRights(user, signRequest) && user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
+                    if(signRequestService.checkUserSignRights(user, signRequest) && user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
+                        signRequest.setSignable(false);
                         model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter un keystore à votre profil");
                     }
                     model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
@@ -485,7 +482,7 @@ public class SignRequestController {
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
-        signRequestService.refuse(signRequest);
+        signRequestService.refuse(signRequest, user);
         return "redirect:/user/signrequests/?statusFilter=tosign";
     }
 

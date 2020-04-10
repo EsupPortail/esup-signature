@@ -83,10 +83,11 @@
                                                     th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>
                                                 <td align="center">
                                                     <div th:switch="${recipient.signed}">
-                                                        <i title="a signé le document" th:case="true"
-                                                           class="fas fa-check-circle text-success"></i>
-                                                        <i title="En attente de signature" th:case="false"
-                                                           class="fas fa-clock text-warning"></i>
+                                                        <th:block th:case="true">
+                                                            <i th:if="${signRequest.status.name() != 'refused'}" title="a signé le document" class="fas fa-check-circle text-success"></i>
+                                                            <i th:if="${signRequest.status.name() == 'refused'}"  title="a refusé le document" class="fas fa-times-circle text-danger"></i>
+                                                        </th:block>
+                                                        <i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
                                                     </div>
                                                 </td>
                                             </tr>

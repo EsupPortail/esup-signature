@@ -624,11 +624,16 @@ public class SignRequestService {
 		logRepository.save(log);
 	}
 
-	public void refuse(SignRequest signRequest) {
+	public void refuse(SignRequest signRequest, User user) {
 		if(signRequest.getParentSignBook() != null) {
-			signBookService.refuse(signRequest.getParentSignBook(), signRequest.getComment());
+			signBookService.refuse(signRequest.getParentSignBook(), signRequest.getComment(), user);
 		} else {
 			updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null);
+			for(Recipient recipient : signRequest.getRecipients()) {
+				if(recipient.getUser().equals(user)) {
+					recipient.setSigned(true);
+				}
+			}
 		}
 	}
 

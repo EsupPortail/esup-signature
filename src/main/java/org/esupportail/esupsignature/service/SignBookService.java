@@ -292,12 +292,17 @@ public class SignBookService {
         }
     }
 
-    public void refuse(SignBook signBook, String comment) {
+    public void refuse(SignBook signBook, String comment, User user) {
         mailService.sendRefusedMail(signBook, comment);
         updateStatus(signBook, SignRequestStatus.refused, "Un des documents du a été refusé, ceci annule toute la procédure", "SUCCESS", comment);
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequest.setComment(comment);
             signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null);
+            for(Recipient recipient : signRequest.getRecipients()) {
+                if(recipient.getUser().equals(user)) {
+                    recipient.setSigned(true);
+                }
+            }
         }
     }
 
