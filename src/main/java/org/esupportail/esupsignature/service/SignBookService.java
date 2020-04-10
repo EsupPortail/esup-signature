@@ -63,6 +63,7 @@ public class SignBookService {
     }
 
     public SignBook createSignBook(String name, User user, boolean external) throws EsupSignatureException {
+        name = generateName(name, user);
         if (signBookRepository.countByName(name) == 0) {
             SignBook signBook = new SignBook();
             signBook.setStatus(SignRequestStatus.draft);
@@ -298,7 +299,7 @@ public class SignBookService {
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequest.setComment(comment);
             signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null);
-            for(Recipient recipient : signRequest.getRecipients()) {
+            for(Recipient recipient : getCurrentWorkflowStep(signBook).getRecipients()) {
                 if(recipient.getUser().equals(user)) {
                     recipient.setSigned(true);
                 }
@@ -306,8 +307,7 @@ public class SignBookService {
         }
     }
 
-
-    public String generateName(String name, User user) {
+    private String generateName(String name, User user) {
         String signBookName = "";
         signBookName += user.getFirstname().substring(0, 1).toUpperCase();
         signBookName += user.getName().substring(0, 1).toUpperCase();

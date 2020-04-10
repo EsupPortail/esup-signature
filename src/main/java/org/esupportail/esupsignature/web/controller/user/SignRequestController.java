@@ -441,8 +441,6 @@ public class SignRequestController {
             }
             SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
-            //signRequestService.addRecipients(signRequest, recipientsEmails);
-            //signRequestService.pendingSignRequest(signRequest, signType, allSignToComplete);
             SignBook signBook = signBookService.createSignBook(multipartFiles[0].getOriginalFilename(), user, false);
             signBook.setCurrentWorkflowStepNumber(1);
             try {

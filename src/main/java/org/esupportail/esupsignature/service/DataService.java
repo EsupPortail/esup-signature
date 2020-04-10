@@ -110,8 +110,7 @@ public class DataService {
             userPropertieService.createTargetPropertie(user, targetUrl, form);
         }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-");
-        String signBookName = signBookService.generateName(name, user);
-        SignBook signBook = signBookService.createSignBook(signBookName, user, false);
+        SignBook signBook = signBookService.createSignBook(name, user, false);
         SignRequest signRequest = signRequestService.createSignRequest(name, user);
         signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(generateFile(data), name + ".pdf", "application/pdf"));
         signRequestRepository.save(signRequest);
