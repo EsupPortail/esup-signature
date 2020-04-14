@@ -242,9 +242,6 @@ public class MailService {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
-        ctx.setVariable("userService", userService);
-        setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;
         try {
@@ -257,7 +254,7 @@ public class MailService {
             logger.info("send test email for " + recipientsEmails.get(0));
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            logger.error("unable to send email", e);
+            logger.error("unable to send test email", e);
         }
 
     }
