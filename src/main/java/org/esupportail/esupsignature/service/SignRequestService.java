@@ -312,7 +312,7 @@ public class SignRequestService {
 			filledInputStream = toSignDocuments.get(0).getInputStream();
 		}
 		if(signType.equals(SignType.visa) || signType.equals(SignType.pdfImageStamp)) {
-			InputStream signedInputStream = null;
+			InputStream signedInputStream = filledInputStream;
 			String fileName = toSignDocuments.get(0).getFileName();
 			if (signType.equals(SignType.visa)) {
 				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {

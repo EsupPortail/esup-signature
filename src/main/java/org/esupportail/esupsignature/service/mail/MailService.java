@@ -56,9 +56,6 @@ public class MailService {
     }
 
     @Resource
-    private ResourceLoader resourceLoader;
-
-    @Resource
     private UserRepository userRepository;
 
     @Resource

@@ -327,10 +327,12 @@ public class SignRequestController {
                     Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
                     List<Field> fields = data.getForm().getFields();
                     for(Map.Entry<String, String> entry : formDataMap.entrySet()) {
-                        Field field = fields.stream().filter(f -> f.getName().equals(entry.getKey())).collect(Collectors.toList()).get(0);
-                        List<String> steps = Arrays.asList(field.getStepNumbers().split("#"));
-                        if(!data.getDatas().containsKey(entry.getKey()) || steps.contains(signRequest.getCurrentStepNumber().toString())) {
-                            data.getDatas().put(entry.getKey(), entry.getValue());
+                        List<Field> formfields = fields.stream().filter(f -> f.getName().equals(entry.getKey())).collect(Collectors.toList());
+                        if(formfields.size()> 0 ) {
+                            List<String> steps = Arrays.asList(formfields.get(0).getStepNumbers().split("#"));
+                            if (!data.getDatas().containsKey(entry.getKey()) || steps.contains(signRequest.getCurrentStepNumber().toString())) {
+                                data.getDatas().put(entry.getKey(), entry.getValue());
+                            }
                         }
                     }
                     //dataRepository.save(data);
