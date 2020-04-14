@@ -41,6 +41,16 @@ public class FormAdminController {
 		return "forms";
 	}
 
+	@ModelAttribute(value = "user", binding = false)
+	public User getUser() {
+		return userService.getCurrentUser();
+	}
+
+	@ModelAttribute(value = "authUser", binding = false)
+	public User getAuthUser() {
+		return userService.getUserFromAuthentication();
+	}
+
 	@Resource
 	private DocumentService documentService;
 
@@ -56,14 +66,9 @@ public class FormAdminController {
 	@Resource
 	private UserService userService;
 
-	@ModelAttribute("user")
-	public User getUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute("suUsers")
+	@ModelAttribute(value = "suUsers", binding = false)
 	public List<User> getSuUsers() {
-		return userService.getSuUsers();
+		return userService.getSuUsers(getAuthUser());
 	}
 
 	@PostMapping()

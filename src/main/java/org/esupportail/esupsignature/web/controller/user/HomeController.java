@@ -42,14 +42,19 @@ public class HomeController {
         return "home";
     }
 
-    @ModelAttribute("user")
+    @ModelAttribute(value = "user", binding = false)
     public User getUser() {
         return userService.getCurrentUser();
     }
 
-    @ModelAttribute("suUsers")
+    @ModelAttribute(value = "authUser", binding = false)
+    public User getAuthUser() {
+        return userService.getUserFromAuthentication();
+    }
+
+    @ModelAttribute(value = "suUsers", binding = false)
     public List<User> getSuUsers() {
-        return userService.getSuUsers();
+        return userService.getSuUsers(getAuthUser());
     }
 
     @Resource
@@ -68,12 +73,12 @@ public class HomeController {
     private DataRepository dataRepository;
 
     @GetMapping
-    public String list(User user, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) {
+    public String list(User user, User authUser, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) {
         List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
         model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequestsToSign, pageable));
         List<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft);
         model.addAttribute("datas", datas);
-        model.addAttribute("forms", formService.getFormsByUser(user));
+        model.addAttribute("forms", formService.getFormsByUser(user, authUser));
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
         return "user/home/index";
     }

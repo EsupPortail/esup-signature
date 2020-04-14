@@ -189,7 +189,7 @@ public class SignRequestService {
 		SignRequest signRequest = new SignRequest();
 		signRequest.setTitle(title);
 		signRequest.setToken(String.valueOf(generateUniqueId()));
-		signRequest.setCreateBy(user.getEppn());
+		signRequest.setCreateBy(user);
 		signRequest.setCreateDate(new Date());
 		signRequest.setStatus(SignRequestStatus.draft);
 		signRequestRepository.save(signRequest);
@@ -641,22 +641,22 @@ public class SignRequestService {
 		return recipientService.needSign(signRequest.getRecipients(), user);
 	}
 
-	public boolean preAuthorizeOwner(Long id) {
+	public boolean preAuthorizeOwner(Long id, User authUser) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		return signRequest.getCreateBy().equals(userService.getUserFromAuthentication().getEppn());
+		return signRequest.getCreateBy().equals(authUser.getEppn());
 	}
 
-	public boolean preAuthorizeView(Long id) {
+	public boolean preAuthorizeView(Long id, User user) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		if (checkUserViewRights(userService.getCurrentUser(), signRequest) || checkUserSignRights(userService.getCurrentUser(), signRequest)) {
+		if (checkUserViewRights(user, signRequest) || checkUserSignRights(user, signRequest)) {
 			return true;
 		}
 		return false;
 	}
 
-	public boolean preAuthorizeSign(Long id) {
+	public boolean preAuthorizeSign(Long id, User user) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		if (checkUserSignRights(userService.getCurrentUser(), signRequest)) {
+		if (checkUserSignRights(user, signRequest)) {
 			return true;
 		}
 		return false;

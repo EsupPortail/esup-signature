@@ -49,9 +49,14 @@ public class UserController {
 		return "active";
 	}
 
-	@ModelAttribute("user")
+	@ModelAttribute(value = "user", binding = false)
 	public User getUser() {
 		return userService.getCurrentUser();
+	}
+
+	@ModelAttribute(value = "authUser", binding = false)
+	public User getAuthUser() {
+		return userService.getUserFromAuthentication();
 	}
 
 	@Resource
@@ -173,7 +178,7 @@ public class UserController {
 		User user = userService.getUserFromAuthentication();
 		List<UserPropertie> userProperties = userPropertieRepository.findByUser(user);
 		model.addAttribute("userProperties", userProperties);
-		model.addAttribute("forms", formService.getFormsByUser(user));
+		model.addAttribute("forms", formService.getFormsByUser(user, user));
 		model.addAttribute("users", userRepository.findAll());
 		model.addAttribute("activeMenu", "params");
 		return "user/users/properties";
@@ -184,7 +189,7 @@ public class UserController {
 		User user = userService.getUserFromAuthentication();
 		List<UserShare> userShares = userShareRepository.findByUser(user);
 		model.addAttribute("userShares", userShares);
-		model.addAttribute("forms", formService.getFormsByUser(user));
+		model.addAttribute("forms", formService.getFormsByUser(user, user));
 		model.addAttribute("users", userRepository.findAll());
 		model.addAttribute("activeMenu", "params");
 		return "user/users/shares";

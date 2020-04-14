@@ -15,7 +15,7 @@
                             <i class="fas fa-check"></i> <span class="sidebar-label">Viser</span>
                         </button>
                     </div>
-                    <div th:if="${user.eppn == signRequest.createBy}">
+                    <div th:if="${user == signRequest.createBy}">
                         <th:block th:if="signRequest.status.name() == 'completed'}">
                             <a class="btn btn-outline-dark mb-1 text-left" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
                                 <i class="fas fa-save"></i>
@@ -60,7 +60,7 @@
                             <i class="fas fa-ban"></i> <span class="sidebar-label">Refuser</span>
                         </button>
                     </div>
-                    <div th:if="${user.eppn == signRequest.createBy}">
+                    <div th:if="${user == signRequest.createBy}">
                         <th:block th:if="${signRequest.status.name() == 'completed'}">
                             <a class="btn btn-outline-dark mb-1 text-left" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
                                 <i class="fas fa-save"></i>

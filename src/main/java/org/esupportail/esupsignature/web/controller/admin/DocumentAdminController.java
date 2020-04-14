@@ -53,14 +53,19 @@ public class DocumentAdminController {
 	@Resource
 	private PdfService pdfService;
 
-	@ModelAttribute("user")
+	@ModelAttribute(value = "user", binding = false)
 	public User getUser() {
+		return userService.getCurrentUser();
+	}
+
+	@ModelAttribute(value = "authUser", binding = false)
+	public User getAuthUser() {
 		return userService.getUserFromAuthentication();
 	}
 
-	@ModelAttribute("suUsers")
-	public List<User> getSuUsers() {
-		return userService.getSuUsers();
+	@ModelAttribute(value = "suUsers", binding = false)
+	public List<User> getSuUsers(User authUser) {
+		return userService.getSuUsers(authUser);
 	}
 
 	@GetMapping("/form")

@@ -209,7 +209,7 @@ public class PdfService {
             PDDocumentInformation info = pdDocument.getDocumentInformation();
             info.setTitle(fileName);
             info.setSubject(fileName);
-            info.setAuthor(signRequest.getCreateBy());
+            info.setAuthor(signRequest.getCreateBy().getEppn());
             info.setCreator("GhostScript");
             info.setProducer("esup-signature");
             info.setKeywords("pdf, signed, " + fileName);

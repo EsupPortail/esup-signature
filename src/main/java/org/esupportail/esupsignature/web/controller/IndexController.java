@@ -63,14 +63,13 @@ public class IndexController {
 	@Resource
 	private SignRequestRepository signRequestRepository;
 
-	@ModelAttribute("user")
+	@ModelAttribute(value = "user", binding = false)
 	public User getUser() {
 		return userService.getCurrentUser();
 	}
 	
 	@GetMapping
-	public String index(Model model) {
-		User user = userService.getCurrentUser();
+	public String index(User user, Model model) {
 		model.addAttribute("user", user);
 		if(user != null && !user.getEppn().equals("System")) {
 			return "redirect:/user/";

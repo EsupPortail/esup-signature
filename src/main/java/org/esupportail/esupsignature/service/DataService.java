@@ -75,9 +75,9 @@ public class DataService {
         return obj;
     }
 
-    public boolean preAuthorizeUpdate(Long id) {
+    public boolean preAuthorizeUpdate(Long id, User user) {
         Data data = dataRepository.findById(id).get();
-        if (data.getCreateBy().equals(userService.getCurrentUser().getEppn()) || data.getOwner().equals(userService.getCurrentUser().getEppn())) {
+        if (data.getCreateBy().equals(user.getEppn()) || data.getOwner().equals(user.getEppn())) {
             return true;
         }
         return false;

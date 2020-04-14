@@ -19,7 +19,7 @@
             </ol>
         </nav>
         <div id="content" class="content content-full">
-            <div class="col-lg-10" th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported')}">
+            <div class="col-lg-10" th:if="${user == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported')}">
                 <div id="endButtons" class="fixed-action-btn"  onmouseover="$('#endButtons').toggleClass('active');" onmouseout="$('#endButtons').toggleClass('active');">
                     <a class="btn-floating btn-lg bg-primary waves-effect">
                         <i class="fas fa-ellipsis-v"></i>
@@ -50,13 +50,13 @@
             <div class="card mb-1 col-lg-8 mx-auto" th:if="${signRequest.status.name() != 'exported'}">
                 <div class="card-body">
                     <h5>Liste des documents originaux</h5>
-                    <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'draft')}">
-                        <button th:if="${signRequest.status.name() == 'draft' && user.eppn == signRequest.createBy && signRequest.signedDocuments.size() == 0}" id="browseBtn" type="button" class="mr-2 btn btn-sm btn-primary float-right"
+                    <th:block th:if="${user == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'draft')}">
+                        <button th:if="${signRequest.status.name() == 'draft' && user == signRequest.createBy && signRequest.signedDocuments.size() == 0}" id="browseBtn" type="button" class="mr-2 btn btn-sm btn-primary float-right"
                                 onclick="$('.clickable').click();">
                             <i class="fas fa-plus" aria-hidden="true"></i> Ajouter un document
                         </button>
                     </th:block>
-                    <div th:if="${user.eppn == signRequest.createBy}">
+                    <div th:if="${user == signRequest.createBy}">
                         <div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
                             <div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.recipients.size() == 0}">
                                 <div th:if="${#lists.size(signRequest.originalDocuments) == 0}">

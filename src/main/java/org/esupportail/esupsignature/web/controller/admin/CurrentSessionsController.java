@@ -43,17 +43,22 @@ public class CurrentSessionsController {
 		return "active";
 	}
 
+	@ModelAttribute(value = "user", binding = false)
+	public User getUser() {
+		return userService.getCurrentUser();
+	}
+
+	@ModelAttribute(value = "authUser", binding = false)
+	public User getAuthUser() {
+		return userService.getUserFromAuthentication();
+	}
+
 	@Resource
 	@Qualifier("sessionRegistry")
 	private SessionRegistry sessionRegistry;
 
 	@Resource
 	private UserService userService;
-
-	@ModelAttribute("user")
-	public User getUser() {
-		return userService.getUserFromAuthentication();
-	}
 
 	@GetMapping
 	public String getCurrentSessions(Model uiModel) {

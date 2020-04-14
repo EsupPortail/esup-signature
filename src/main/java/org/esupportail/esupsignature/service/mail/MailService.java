@@ -142,7 +142,7 @@ public class MailService {
         MimeMessageHelper message;
         try {
             message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            User creator = userService.getUserByEppn(signRequest.getCreateBy());
+            User creator = signRequest.getCreateBy();
             message.setSubject("Nouvelle demande de : " + creator.getFirstname() + " " + creator.getName() + " : " + signRequest.getTitle());
             message.setFrom(mailConfig.getMailFrom());
             message.setTo(recipientsEmails.toArray(String[]::new));
@@ -218,7 +218,7 @@ public class MailService {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("signRequests", signRequests);
-        User user = userRepository.findByEppn(signRequests.get(0).getCreateBy()).get(0);
+        User user = signRequests.get(0).getCreateBy();
         ctx.setVariable("user", user);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();

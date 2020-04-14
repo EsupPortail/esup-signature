@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div th:fragment="statusdetails">
-	<div th:if="${user.eppn == signRequest.createBy}">
+	<div th:if="${user == signRequest.createBy}">
 		<div th:if="${(signRequest.status.name() == 'draft')}">
 			<div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.recipients.size() == 0}">
 				<div class="alert alert-secondary mb-1" th:if="${signRequest.status.name() == 'draft'}">
@@ -13,7 +13,7 @@
 			</div>
 		</div>
 	</div>
-	<div th:if="${user.eppn == signRequest.createBy}">
+	<div th:if="${user == signRequest.createBy}">
 		<div th:if="${(signRequest.status.name() == 'draft')}">
 			<div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.recipients.size() == 0}">
 				<div class="alert alert-dark mb-1">

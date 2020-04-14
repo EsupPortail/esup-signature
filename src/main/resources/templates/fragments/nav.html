@@ -3,8 +3,8 @@
 <!--/*@thymesVar id="suUsers" type="java.util.List<org.esupportail.esupsignature.entity.User>"*/-->
 <!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
 <header th:fragment="nav" class="fixed-top">
-    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark"
-         th:classappend="|${(@userService.getUserFromAuthentication() != user && user.name != null) ? 'bg-striped' : ''}
+    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark" th:with="isUserOnSu = ${user != authUser}"
+         th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''}
                           ${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')') ? 'bg-danger' : 'bg-dark'}">
 
         <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse"
@@ -41,7 +41,7 @@
                     </a>
                 </li>
                 <li class="nav-item text-white">
-                    <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user.eppn, 'pending').size()}"
+                    <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user, 'pending').size()}"
                        th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Tableau de bord"
                        href="/user/signrequests" class="btn btn-transparent text-left">
                         <i class="fas fa-paste"></i> <span
@@ -87,11 +87,11 @@
                     <a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos"
                        aria-label="Paramètres utilisateur" class="text-decoration-none user-toggle"
                        aria-controls="user-infos" data-toggle="collapse">
-                        <b th:if="${@userService.getUserFromAuthentication() != user}"
+                        <b th:if="${isUserOnSu}"
                            class="d-inline nav-link text-light"
                            th:text="'(' + ${user.firstname} + ' ' + ${user.name} +')'"></b>
                         <b class="nav-item-label d-none d-lg-inline nav-link text-light"
-                           th:text="${@userService.getUserFromAuthentication().firstname} + ' ' + ${@userService.getUserFromAuthentication().name}"></b>
+                           th:text="${authUser.firstname} + ' ' + ${authUser.name}"></b>
                         <div class="btn-floating btn-small btn-secondary user-toggle"><i class="fas fa-user"></i></div>
                     </a>
                 </li>
@@ -101,18 +101,18 @@
     <div th:if="${user.name != null}" id="user-infos" class="card position-fixed user-infos collapse overflow-y-scroll drop-shadows"
          style="right: 0; margin-top:-3px; margin-right: 5px">
         <div id="myDocs" class="card-body user-infos text-center">
-            <h3 th:if="${@userService.getUserFromAuthentication() != user}">
+            <h3 th:if="${isUserOnSu}">
                 Vous avez activé la délégation
             </h3>
-            <h5 th:unless="${@userService.getUserFromAuthentication() != user}">
+            <h5 th:unless="${isUserOnSu}">
                 <b>Délégations</b>
             </h5>
             <form id="changeSuEppn" th:action="'/user/users/change'" method="post">
                 <select class="form-control" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
-                    <option th:if="${@userService.getUserFromAuthentication() != user}" value="" selected>Délégation
+                    <option th:if="${isUserOnSu}" value="" selected>Délégation
                         désactivée
                     </option>
-                    <option th:if="${@userService.getUserFromAuthentication() == user}" selected disabled>Choisir un
+                    <option th:unless="${isUserOnSu}" selected disabled>Choisir un
                         mandant
                     </option>
                     <th:block th:each="suUser : ${suUsers}">
@@ -123,7 +123,7 @@
                     </th:block>
                 </select>
             </form>
-            <a th:unless="${@userService.getUserFromAuthentication() != user}" class="btn btn-sm light btn-outline-dark mt-1"
+            <a th:unless="${isUserOnSu}" class="btn btn-sm light btn-outline-dark mt-1"
                aria-label="Paramètres utilisateur "
                title="Paramètres" href="/user/users/shares">
                 <i class="fas fa-share"></i> Gérer mes délégations
@@ -175,13 +175,13 @@
                 </tr>
                 </tbody>
             </table>
-            <a th:unless="${@userService.getUserFromAuthentication() != user}" class="btn btn-sm btn-light btn-outline-dark"
+            <a th:unless="${isUserOnSu}" class="btn btn-sm btn-light btn-outline-dark"
                aria-label="Paramètres utilisateur "
                title="Paramètres" href="/user/users/?form">
                 <i class="fas fa-user-cog"></i> Modifier mes paramètres
             </a>
             <hr>
-            <a th:unless="${@userService.getUserFromAuthentication() != user}" class="btn btn-sm btn-light btn-outline-dark"
+            <a th:unless="${isUserOnSu}" class="btn btn-sm btn-light btn-outline-dark"
                aria-label="Paramètres utilisateur "
                title="Déconnexion" href="/logout">
                 <i class="fas fa-power-off"></i> Déconnexion

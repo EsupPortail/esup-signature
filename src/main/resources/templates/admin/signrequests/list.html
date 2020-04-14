@@ -40,8 +40,7 @@
                             <tr>
                                 <th>Circuit</th>
                                 <th>Titre</th>
-                                <th><a class="sorted"
-                                                    sd:pagination-sort="createDate">Date de création</a></th>
+                                <th><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
                                 <th>Créé par</th>
                                 <th>Destinataires</th>
                                 <th class="status">Statut</th>
@@ -59,9 +58,7 @@
                                     <td><span
                                             th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                     </td>
-                                    <td th:with="creator = ${@userService.getUserByEppn(signRequest.createBy)}">
-                                        <span th:text="${creator.firstname} + ' ' + ${creator.name}"></span>
-                                    </td>
+                                    <td th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>
                                     <td>
                                         <table class="table table-sm">
                                             <tbody>

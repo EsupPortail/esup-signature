@@ -24,11 +24,11 @@
 				</tr>
 				</thead>
 				<tbody>
-				<tr th:with="creator = ${userService.getUserByEppn(signRequest.createBy)}">
+				<tr>
 					<td th:text="${signRequest.title}" style="border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:top; border:0" valign="top"></td>
 					<td th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}" style="border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:top; border:0" valign="top"></td>
 					<td style="border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:top; border:0" valign="top">
-						<span th:text="${creator.firstname} + ' ' + ${creator.name}"></span>
+						<span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span>
 					</td>
 					<td th:with="personLdap = ${userService.findPersonLdapByUser(creator)}" style="border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:top; border:0" valign="top">
 						<span th:if="${userService.findOrganizationalUnitLdapByPersonLdap(personLdap) != null}" th:text="${userService.findOrganizationalUnitLdapByPersonLdap(personLdap).description}"></span>

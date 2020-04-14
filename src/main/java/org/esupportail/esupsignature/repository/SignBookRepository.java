@@ -12,6 +12,5 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long>, Sign
     List<SignBook> findByName(String name);
     List<SignBook> findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus signRequestStatus);
     Long countByName(String name);
-    Page<SignBook> findByCreateBy(String createBy, Pageable pageable);
     List<SignBook> findByExternal(Boolean external);
 }

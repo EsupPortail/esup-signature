@@ -13,10 +13,10 @@
         <div class="card-body" style="box-sizing:border-box;-ms-flex:1 1 auto;flex:1 1 auto;padding-top:1.25rem;padding-bottom:1.25rem;padding-right:1.25rem;padding-left:1.25rem;" >
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Bonjour,</p>
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Votre demande de signature est terminée.</p>
-            <p th:with="creator = ${userService.getUserByEppn(signBook.createBy)}" style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
+            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
                 Nom de la demande : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.name}" style="box-sizing:border-box;" ></span></b>
                 <br style="box-sizing:border-box;" >
-                Crée par : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${creator.firstname} + ' ' + ${creator.name}" style="box-sizing:border-box;" ></span></b>
+                Crée par : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}" style="box-sizing:border-box;" ></span></b>
                 <br style="box-sizing:border-box;" >
                 Date de création : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}" style="box-sizing:border-box;" ></span></b>
                 <br style="box-sizing:border-box;" >

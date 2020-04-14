@@ -68,12 +68,12 @@ public class FormService {
 		}
 	}
 	
-	public List<Form> getFormsByUser(User user){
+	public List<Form> getFormsByUser(User user, User authUser){
 		List<Form> forms = new ArrayList<>();
-		if(user.equals(userService.getUserFromAuthentication())) {
-			forms = formRepository.findAutorizedFormByUser(userService.getCurrentUser());
+		if(user.equals(authUser)) {
+			forms = formRepository.findAutorizedFormByUser(user);
 		} else {
-			for(UserShare userShare : userShareRepository.findByUserAndToUsersAndShareType(user, Arrays.asList(userService.getUserFromAuthentication()), UserShare.ShareType.create)) {
+			for(UserShare userShare : userShareRepository.findByUserAndToUsersAndShareType(user, Arrays.asList(authUser), UserShare.ShareType.create)) {
 				forms.add(userShare.getForm());
 			}
 		}
