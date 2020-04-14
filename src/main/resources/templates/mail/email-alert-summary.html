@@ -25,11 +25,10 @@
 				</thead>
 				<tbody>
 				<th:block th:each="signRequest : ${signRequests}">
-					<tr>
+					<tr th:with="creator = ${userService.getUserByEppn(signRequest.createBy)}">
 						<td th:text="${signRequest.title}"></td>
 						<td th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></td>
-						<td th:with="creator = ${userService.getUserByEppn(signRequest.createBy)}">
-							<span  th:text="${creator.firstname} + ' ' + ${creator.name}"></span>
+						<td th:text="${creator.firstname} + ' ' + ${creator.name}">
 						</td>
 						<td>
 							<a class="btn btn-sm btn-dark mx-auto" th:href="@{|${rootUrl}/user/signrequests/${signRequest.id}|}">Accéder au document</a>

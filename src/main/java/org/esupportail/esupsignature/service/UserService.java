@@ -159,14 +159,18 @@ public class UserService {
 				}
 			}
 		}
-		if (userRepository.countByEppn(eppn) > 0) {
+		if(userRepository.countByEppn(eppn) > 0) {
 			User user = userRepository.findByEppn(eppn).get(0);
 			if(user.getSignImage() != null) {
 				try {
 					user.setSignImageBase64(fileService.getBase64Image(user.getSignImage()));
-					user.setIp(request.getRemoteAddr());
 				} catch (IOException e) {
 					logger.error("sign image read error", e);
+				}
+				try {
+					user.setIp(request.getRemoteAddr());
+				} catch (Exception e) {
+					logger.warn("unable to get ip");
 				}
 			}
 			return user;
@@ -252,6 +256,7 @@ public class UserService {
 	}
 
 	public void sendSignRequestEmailAlert(User recipientUser, SignRequest signRequest) {
+		logger.warn("test");
 		Date date = new Date();
 		List<String> toEmails = new ArrayList<>();
 		toEmails.add(recipientUser.getEmail());
@@ -298,8 +303,8 @@ public class UserService {
 						List<SignRequest> toSignSharedSignRequests = signRequestService.getToSignRequests(toUser);
 						for(SignRequest toSignSharedSignRequest : toSignSharedSignRequests) {
 							if(toSignSharedSignRequest.getParentSignBook() != null) {
-								Data data = dataRepository.findBySignBook(toSignSharedSignRequest.getParentSignBook()).get(0);
-								if(data.getForm().equals(userShare.getForm())) {
+								List<Data> datas = dataRepository.findBySignBook(toSignSharedSignRequest.getParentSignBook());
+								if(datas.size() > 0 && datas.get(0).getForm().equals(userShare.getForm())) {
 									if(!toSignSignRequests.contains(toSignSharedSignRequest)) {
 										toSignSignRequests.add(toSignSharedSignRequest);
 										toEmails.add(toUser.getEmail());
