@@ -1,10 +1,7 @@
 package org.esupportail.esupsignature.service.export;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.esupportail.esupsignature.entity.Data;
-import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.entity.Log;
-import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.LogRepository;
@@ -42,14 +39,26 @@ public class DataExportService {
         List<Map<String, String>> dataDatas = new ArrayList<>();
         for(Data data : datas) {
             SignBook signBook = data.getSignBook();
-            if(signBook != null && signBook.getStatus().equals(SignRequestStatus.completed)) {
-                Log lastLog = logRepository.findBySignRequestIdAndFinalStatus(signBook.getSignRequests().get(0).getId(), SignRequestStatus.completed.name()).get(0);
+            if(signBook != null && signBook.getSignRequests().size() > 0) {
                 LinkedHashMap<String, String> toExportDatas = new LinkedHashMap<>();
                 toExportDatas.put("form_name", form.getName());
                 toExportDatas.put("form_create_date", data.getCreateDate().toString());
                 toExportDatas.put("form_create_by", data.getCreateBy());
-                toExportDatas.put("form_completed_date", lastLog.getLogDate().toString());
-                toExportDatas.put("form_completed_by", lastLog.getEppnFor());
+                toExportDatas.put("form_current_status", signBook.getStatus().name());
+                List<Log> lastLogs = logRepository.findBySignRequestIdAndFinalStatus(signBook.getSignRequests().get(0).getId(), SignRequestStatus.completed.name());
+                if(lastLogs.size() > 0) {
+                    toExportDatas.put("form_completed_date", lastLogs.get(0).getLogDate().toString());
+                    toExportDatas.put("form_completed_by", lastLogs.get(0).getEppnFor());
+                } else {
+                    List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signBook.getSignRequests().get(0).getId(), SignRequestStatus.refused.name());
+                    if(refuseLogs.size() > 0) {
+                        toExportDatas.put("form_completed_date", refuseLogs.get(0).getLogDate().toString());
+                        toExportDatas.put("form_completed_by", refuseLogs.get(0).getEppnFor());
+                    } else {
+                        toExportDatas.put("form_completed_date", "");
+                        toExportDatas.put("form_completed_by", "");
+                    }
+                }
                 for (Map.Entry<String, String> entry : data.getDatas().entrySet()) {
                     toExportDatas.put("form_data_" + entry.getKey(), entry.getValue());
                 }
@@ -57,7 +66,7 @@ public class DataExportService {
                 int step = 1;
                 //for(WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
                 for (Log log : logs) {
-                    if (log.getFinalStatus().equals(SignRequestStatus.checked.name()) || log.getFinalStatus().equals(SignRequestStatus.signed.name())) {
+                    if (log.getFinalStatus().equals(SignRequestStatus.checked.name()) || log.getFinalStatus().equals(SignRequestStatus.signed.name()) || log.getFinalStatus().equals(SignRequestStatus.refused.name())) {
                         toExportDatas.put("sign_step_" + step + "_user_eppn", log.getEppnFor());
                         toExportDatas.put("sign_step_" + step + "_type", log.getFinalStatus());
                         toExportDatas.put("sign_step_" + step + "_date", log.getLogDate().toString());
