@@ -6,6 +6,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import javax.persistence.*;
 
 @Entity
+@Table(name = "sign_request_params")
 public class SignRequestParams {
 
 	@Id
@@ -16,7 +17,9 @@ public class SignRequestParams {
     private Integer version;
 
 	private String pdSignatureFieldName;
-	
+
+	private int signImageNumber;
+
 	private int signPageNumber;
 
     private int signWidth = 150;
@@ -27,7 +30,15 @@ public class SignRequestParams {
 
 	private int yPos = 0;
 
-	public int getSignPageNumber() {
+    public int getSignImageNumber() {
+        return signImageNumber;
+    }
+
+    public void setSignImageNumber(int signImageNumber) {
+        this.signImageNumber = signImageNumber;
+    }
+
+    public int getSignPageNumber() {
         return this.signPageNumber;
     }
 

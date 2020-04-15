@@ -18,10 +18,16 @@
                     <button type="button" id="signZoomOut" class="btn btn-sm btn-transparent text-dark position-absolute" th:style="'z-index: 3;left: ' + ${signRequest.getCurrentSignRequestParams().xPos - 35} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos + 30} + 'px;'">
                         <i class="fas fas fa-search-minus"></i>
                     </button>
+                    <button type="button" id="signPrevImage" class="btn btn-sm btn-transparent text-dark position-absolute" th:style="'z-index: 3;left: ' + ${signRequest.getCurrentSignRequestParams().xPos - 35} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos + 60} + 'px;'">
+                        <i class="fas fas fa-chevron-up"></i>
+                    </button>
+                    <button type="button" id="signNextImage" class="btn btn-sm btn-transparent text-dark position-absolute" th:style="'z-index: 3;left: ' + ${signRequest.getCurrentSignRequestParams().xPos - 35} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos + 90} + 'px;'">
+                        <i class="fas fas fa-chevron-down"></i>
+                    </button>
                     <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                          onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                          onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
-                         th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px;background-image: url(\'data:image/png;base64,' + ${signFile} + '\'); width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;  left: ' + ${signRequest.getCurrentSignRequestParams().xPos} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
+                         th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px; width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;  left: ' + ${signRequest.getCurrentSignRequestParams().xPos} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
                         <div id="borders" class="anim-border" th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
                     </div>
                 </th:block>

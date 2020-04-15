@@ -267,6 +267,7 @@ public class SignRequest {
             return getSignRequestParams().get(currentStepNumber - 1);
         } else {
             SignRequestParams signRequestParams = new SignRequestParams();
+            signRequestParams.setSignImageNumber(0);
             signRequestParams.setSignPageNumber(1);
             signRequestParams.setxPos(0);
             signRequestParams.setyPos(0);

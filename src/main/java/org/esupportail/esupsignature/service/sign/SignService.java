@@ -191,9 +191,9 @@ public class SignService {
 		if(addDate) {
 			DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
 			String text = "Le " + dateFormat.format(new Date());
-			signImage = fileService.addTextToImage(user.getSignImages().get(0).getInputStream(), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
+			signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
 		} else {
-			signImage = fileService.addTextToImage(user.getSignImages().get(0).getInputStream(), null, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
+			signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), null, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
 		}
 
 		fileDocumentImage = new InMemoryDocument(new FileInputStream(signImage), "sign.png");

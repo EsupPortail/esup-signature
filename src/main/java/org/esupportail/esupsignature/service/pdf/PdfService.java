@@ -108,7 +108,7 @@ public class PdfService {
                 if (addDate) {
                     text +="Le " + dateFormat.format(new Date());
                 }
-                signImage = fileService.addTextToImage(user.getSignImages().get(0).getInputStream(), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
+                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
             }
             int topHeight = 0;
             BufferedImage bufferedImage = ImageIO.read(signImage);
@@ -448,6 +448,7 @@ public class PdfService {
                             }
                         }
                         PDPage pdPage = pdDocument.getPage(annotationPages.get(0) - 1);
+                        signRequestParams.setSignImageNumber(0);
                         signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
                         signRequestParams.setxPos((int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX());
                         signRequestParams.setyPos((int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight());

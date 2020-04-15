@@ -227,7 +227,12 @@ public class SignRequestController {
                         signRequest.setSignable(false);
                         model.addAttribute("messageWarn", "Pour signer ce document merci d’ajouter un certificat à votre profil");
                     }
-                    model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
+                    List<String> signImages = new ArrayList<>();
+                    for(Document signImage : user.getSignImages()) {
+                        signImages.add(fileService.getBase64Image(signImage));
+                    }
+                    model.addAttribute("signImages", signImages);
+                    //model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
                     int[] size = pdfService.getSignSize(user.getSignImages().get(0).getInputStream());
                     model.addAttribute("signWidth", size[0]);
                     model.addAttribute("signHeight", size[1]);
@@ -237,8 +242,8 @@ public class SignRequestController {
                         model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter une image de votre signature");
                         signRequest.setSignable(false);
                     }
-                    model.addAttribute("signWidth", 100);
-                    model.addAttribute("signHeight", 75);
+//                    model.addAttribute("signWidth", 100);
+//                    model.addAttribute("signHeight", 75);
                 }
                 model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
             } else {
@@ -300,6 +305,7 @@ public class SignRequestController {
     @ResponseBody
     @PostMapping(value = "/sign/{id}")
     public ResponseEntity sign(User user, @PathVariable("id") Long id,
+                               @RequestParam(value = "signImageNumber") Integer signImageNumber,
                                @RequestParam(value = "signWidth", required = false) Integer signWidth,
                                @RequestParam(value = "signHeight", required = false) Integer signHeight,
                                @RequestParam(value = "xPos", required = false) Integer xPos,
@@ -349,6 +355,7 @@ public class SignRequestController {
 
         if (signPageNumber != null && xPos != null && yPos != null && visual) {
             SignRequestParams signRequestParams = signRequest.getCurrentSignRequestParams();
+            signRequestParams.setSignImageNumber(signImageNumber);
             signRequestParams.setSignPageNumber(signPageNumber);
             signRequestParams.setSignWidth(signWidth);
             signRequestParams.setSignHeight(signHeight);

@@ -2,7 +2,7 @@ import {WorkspacePdf} from "./workspacePdf.js";
 
 export class SignUi {
 
-    constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, isPdf, currentStepNumber, formRender) {
+    constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, isPdf, currentStepNumber, signImages) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -10,10 +10,9 @@ export class SignUi {
         this.wait = $('#wait');
         this.passwordError = document.getElementById("passwordError");
         this.workspace = null;
-        this.moreData = document.getElementById("moreDatas");
         this.signForm = document.getElementById("signForm");
         if(isPdf) {
-            this.workspace = new WorkspacePdf('/user/signrequests/get-last-file/' + id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber);
+            this.workspace = new WorkspacePdf('/user/signrequests/get-last-file/' + id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages);
         }
         this.xmlHttpMain = new XMLHttpRequest();
         this.signComment = $('#signComment');
@@ -76,6 +75,7 @@ export class SignUi {
         let signRequestUrlParams;
         if(this.workspace != null) {
             signRequestUrlParams = "password=" + document.getElementById("password").value +
+                "&signImageNumber=" + this.workspace.signPosition.signImageNumber +
                 "&addDate=" + this.workspace.signPosition.dateActive +
                 "&visual=" + this.workspace.signPosition.visualActive +
                 "&comment=" + this.signComment.val() +

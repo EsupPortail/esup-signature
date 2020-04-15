@@ -12,7 +12,6 @@ export class PdfViewer {
         this.numPages = 1;
         this.page = null;
         this.dataFields = null;
-        this.formRender = false;
         this.signable = signable;
         this.events = {};
         pdfjsLib.disableWorker = true;
@@ -372,7 +371,6 @@ export class PdfViewer {
 
     setDataFields(dataFields) {
         this.dataFields = dataFields;
-        this.formRender = true;
     }
 
     printPdf() {
