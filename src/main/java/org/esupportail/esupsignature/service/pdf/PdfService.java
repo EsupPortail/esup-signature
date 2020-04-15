@@ -108,7 +108,7 @@ public class PdfService {
                 if (addDate) {
                     text +="Le " + dateFormat.format(new Date());
                 }
-                signImage = fileService.addTextToImage(user.getSignImage().getInputStream(), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
+                signImage = fileService.addTextToImage(user.getSignImages().get(0).getInputStream(), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
             }
             int topHeight = 0;
             BufferedImage bufferedImage = ImageIO.read(signImage);

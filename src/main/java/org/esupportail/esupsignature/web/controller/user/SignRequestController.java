@@ -222,13 +222,13 @@ public class SignRequestController {
             List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest);
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 Document toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
-                if (user.getSignImage() != null && user.getSignImage().getSize() > 0) {
+                if (user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
                     if(signRequestService.checkUserSignRights(user, signRequest) && user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
                         signRequest.setSignable(false);
                         model.addAttribute("messageWarn", "Pour signer ce document merci d’ajouter un certificat à votre profil");
                     }
-                    model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-                    int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
+                    model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
+                    int[] size = pdfService.getSignSize(user.getSignImages().get(0).getInputStream());
                     model.addAttribute("signWidth", size[0]);
                     model.addAttribute("signHeight", size[1]);
                 } else {
@@ -278,8 +278,8 @@ public class SignRequestController {
         model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
         List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
         model.addAttribute("refuseLogs", refuseLogs);
-        if (user.getSignImage() != null) {
-            model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+        if (user.getSignImages().get(0) != null) {
+            model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
         }
         if (user.getKeystore() != null) {
             model.addAttribute("keystore", user.getKeystore().getFileName());

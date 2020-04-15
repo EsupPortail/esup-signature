@@ -25,16 +25,39 @@
                     <i class="fas fa-save"></i>
                 </a>
             </div>
-            <form id="userParamsForm" th:object="${user}"
-                  th:action="'/user/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
-                  enctype="multipart/form-data" method="post">
+            <form id="userParamsForm" th:object="${user}" th:action="'/user/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
                 <input type="hidden" name="id" th:value="${user.id}"/>
-                <div class="card mb-1 col-lg-8 mx-auto">
+                <div class="card mb-1 col-lg-10 mx-auto">
                     <div class="card-body">
                         <h5 class="text-center"><b>Paramètres de signature</b></h5>
                         <div id="signImageForm" class="form-group">
                             <div class="row">
-                                <div class="col-12 mb-2 text-center">
+                                <div class="col-6 mb-2 text-center">
+                                    <label><strong>Mes signatures</strong></label>
+                                    <table class="table table-borderless table-striped">
+                                        <thead class="thead-dark">
+                                        <tr>
+                                            <th >Aperçu</th>
+                                            <th>Supprimer</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <th:block th:each="signImage : ${user.signImages}">
+                                            <tr>
+                                                <td class="text-left w-100" style="position: relative;height: 74px;" >
+                                                    <img class="thumbnail" th:src="'data:image/png;base64,' + ${@fileService.getBase64Image(signImage)}" />
+                                                </td>
+                                                <td>
+                                                    <a th:href="'/user/users/delete-sign/' + ${signImage.id}" role="button" class="btn btn-sm btn-danger text-white" onclick="return confirm('Are you sure you want to delete this item?');">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </th:block>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-6 mb-2 text-center">
                                     <label class="col-form-label"><strong>Vous pouvez dessinez une signature dans le rectangle ci dessous</strong></label>
                                     <br/>
                                     <div style="display:block; position: relative; width: 600px; height: 300px;margin: auto;justify-content: center; margin-bottom: 50px;">
@@ -109,7 +132,7 @@
                     </div>
                 </div>
 
-                <div class="card mb-1 col-lg-8 mx-auto">
+                <div class="card mb-1 col-lg-10 mx-auto">
                     <div class="card-body">
                         <h5 class="text-center"><b>Paramètres avancés</b></h5>
                         <div id="keyForm" class="form-group">
@@ -154,7 +177,7 @@
                     </div>
                 </div>
 
-                <div class="card mb-1 col-lg-8 mx-auto">
+                <div class="card mb-1 col-lg-10 mx-auto">
                     <div class="card-body">
                         <h5 class="text-center"><b>Fréquence des alertes</b></h5>
                         <div class="form-group" id="emailAlertFrequency">

@@ -96,64 +96,63 @@ public class UserController {
 	private UserPropertieRepository userPropertieRepository;
 
     @GetMapping
-    public String createForm(Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) throws IOException, SQLException {
-		User user = userService.getUserFromAuthentication();
-		if(user != null) {
-	        model.addAttribute("user", user);
+    public String createForm(User authUser, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) throws IOException, SQLException {
+		if(authUser != null) {
         	model.addAttribute("signTypes", Arrays.asList(SignType.values()));
         	model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
         	model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
         	if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
 				model.addAttribute("referer", request.getHeader("referer"));
 			}
-			if(user.getSignImage() != null) {
-				model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-				int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
-				model.addAttribute("signWidth", size[0]);
-				model.addAttribute("signHeight", size[1]);
-			}
+//			if(authUser.getSignImages().get(0) != null) {
+//				model.addAttribute("signFile", fileService.getBase64Image(authUser.getSignImages().get(0)));
+//				int[] size = pdfService.getSignSize(authUser.getSignImages().get(0).getInputStream());
+//				model.addAttribute("signWidth", size[0]);
+//				model.addAttribute("signHeight", size[1]);
+//			}
 			return "user/users/update";
 		} else {
-			user = new User();
-			model.addAttribute("user", user);
+			authUser = new User();
+			model.addAttribute("user", authUser);
 			return "user/users/create";
 		}
 
     }
     
     @PostMapping
-    public String create(
-    		@RequestParam(value = "signImageBase64", required=false) String signImageBase64,
+    public String create(User authUser,
+						 @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
     		@RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
     		@RequestParam(value = "emailAlertHour", required=false) String emailAlertHour,
     		@RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
     		@RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, RedirectAttributes redirectAttributes) throws Exception {
-		User user = userService.getUserFromAuthentication();
         if(multipartKeystore != null && !multipartKeystore.isEmpty()) {
-            if(user.getKeystore() != null) {
-            	bigFileRepository.delete(user.getKeystore().getBigFile());
-            	documentRepository.delete(user.getKeystore());
+            if(authUser.getKeystore() != null) {
+            	bigFileRepository.delete(authUser.getKeystore().getBigFile());
+            	documentRepository.delete(authUser.getKeystore());
             }
-            user.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), user.getEppn() + "_cert.p12", multipartKeystore.getContentType()));
+            authUser.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), authUser.getEppn() + "_cert.p12", multipartKeystore.getContentType()));
         }
-        Document oldSignImage = user.getSignImage();
         if(signImageBase64 != null && !signImageBase64.isEmpty()) {
-
-        	user.setSignImage(documentService.createDocument(fileService.base64Transparence(signImageBase64), user.getEppn() + "_sign.png", "image/png"));
-            if(oldSignImage != null) {
-            	oldSignImage.getBigFile().getBinaryFile().getBinaryStream();
-            	bigFileRepository.delete(oldSignImage.getBigFile());
-            	documentRepository.delete(oldSignImage);
-        	}
+        	authUser.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signImageBase64), authUser.getEppn() + "_sign.png", "image/png"));
         }
-    	user.setEmailAlertFrequency(emailAlertFrequency);
-    	user.setEmailAlertHour(emailAlertHour);
-    	user.setEmailAlertDay(emailAlertDay);
+    	authUser.setEmailAlertFrequency(emailAlertFrequency);
+    	authUser.setEmailAlertHour(emailAlertHour);
+    	authUser.setEmailAlertDay(emailAlertDay);
     	redirectAttributes.addFlashAttribute("messageSuccess", "Vos paramètres on été enregistrés");
-		return "redirect:/user/users/?form";
+		return "redirect:/user/users";
     }
-    
-    @GetMapping(value = "/view-cert")
+
+	@GetMapping("/delete-sign/{id}")
+	public String deleteSign(User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
+    	Document signDocument = documentRepository.findById(id).get();
+		authUser.getSignImages().remove(signDocument);
+		redirectAttributes.addFlashAttribute("messageInfo", "Signature supprimée");
+		return "redirect:/user/users";
+	}
+
+
+	@GetMapping(value = "/view-cert")
     public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttrs) {
 		User user = userService.getUserFromAuthentication();
 		try {
@@ -185,19 +184,17 @@ public class UserController {
 	}
 
 	@GetMapping("/shares")
-	public String params(Model model) {
-		User user = userService.getUserFromAuthentication();
-		List<UserShare> userShares = userShareRepository.findByUser(user);
+	public String params(User authUser, Model model) {
+		List<UserShare> userShares = userShareRepository.findByUser(authUser);
 		model.addAttribute("userShares", userShares);
-		model.addAttribute("forms", formService.getFormsByUser(user, user));
+		model.addAttribute("forms", formService.getFormsByUser(authUser, authUser));
 		model.addAttribute("users", userRepository.findAll());
 		model.addAttribute("activeMenu", "params");
 		return "user/users/shares";
 	}
 
 	@PostMapping("/add-share")
-	public String addShare(@RequestParam("service") Long service, @RequestParam("type") String type, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) throws EsupSignatureUserException {
-		User user = userService.getUserFromAuthentication();
+	public String addShare(User authUser, @RequestParam("service") Long service, @RequestParam("type") String type, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) throws EsupSignatureUserException {
 		List<User> users = new ArrayList<>();
 		for (String userEmail : userEmails) {
 			users.add(userService.createUser(userEmail));
@@ -212,16 +209,14 @@ public class UserController {
 				logger.error("error on parsing dates");
 			}
 		}
-		userService.createUserShare(service, type, users, beginDateDate, endDateDate, user);
+		userService.createUserShare(service, type, users, beginDateDate, endDateDate, authUser);
 		return "redirect:/user/users/shares";
 	}
 
-
 	@DeleteMapping("/del-share/{id}")
-	public String addShare(@PathVariable long id, RedirectAttributes redirectAttributes) {
-		User user = userService.getUserFromAuthentication();
+	public String delShare(User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
 		UserShare userShare = userShareRepository.findById(id).get();
-		if (userShare.getUser().equals(user)) {
+		if (userShare.getUser().equals(authUser)) {
 			userShareRepository.delete(userShare);
 		}
 		redirectAttributes.addFlashAttribute("messageInfo", "Élément supprimé");

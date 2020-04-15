@@ -151,9 +151,9 @@
                 <tr>
                     <th class="text-break w-50">Image de la signature</th>
                     <td class="text-break w-50">
-                        <img width="300" th:if="${user.signImage != null}" alt="signature"
+                        <img width="300" th:if="${user.signImages.size() > 0 && user.signImages.get(0) != null}" alt="signature"
                              th:src="'data:image/png;base64,' + ${user.signImageBase64}"/>
-                        <div th:unless="${user.signImage != null}" class="alert alert-danger">
+                        <div th:unless="${user.signImages.size() > 0 && user.signImages.get(0) != null}" class="alert alert-danger">
                             Pas de signature
                         </div>
                     </td>

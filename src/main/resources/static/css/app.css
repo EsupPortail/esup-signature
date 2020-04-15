@@ -1079,3 +1079,18 @@ float:left;
     border: 1px solid black;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.02) inset;
 }
+
+.thumbnail {
+    height: 50px;
+    border: 1px solid #eee;
+}
+.thumbnail:hover {
+    background-color: white;
+    position:absolute;
+    top:-25px;
+    left:-35px;
+    width:500px;
+    height:auto;
+    display:block;
+    z-index:999;
+}

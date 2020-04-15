@@ -161,9 +161,9 @@ public class UserService {
 		}
 		if(userRepository.countByEppn(eppn) > 0) {
 			User user = userRepository.findByEppn(eppn).get(0);
-			if(user.getSignImage() != null) {
+			if(user.getSignImages().size() > 0 && user.getSignImages().get(0) != null) {
 				try {
-					user.setSignImageBase64(fileService.getBase64Image(user.getSignImage()));
+					user.setSignImageBase64(fileService.getBase64Image(user.getSignImages().get(0)));
 				} catch (IOException e) {
 					logger.error("sign image read error", e);
 				}
@@ -211,7 +211,6 @@ public class UserService {
     		user = userRepository.findByEppn(eppn).get(0);
     	} else {
 	    	user = new User();
-			user.setSignImage(null);
 			user.setKeystore(null);
 			//user.setEmailAlertFrequency(EmailAlertFrequency.never);
     	}

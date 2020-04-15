@@ -132,9 +132,9 @@ public class AdminSignRequestController {
 //						model.addAttribute("pdfHeight", pdfParameters.getHeight());
 //						model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
 //					}
-					if(user.getSignImage() != null) {
-						model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
-						int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());
+					if(user.getSignImages().get(0) != null) {
+						model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
+						int[] size = pdfService.getSignSize(user.getSignImages().get(0).getInputStream());
 						model.addAttribute("signWidth", size[0]);
 						model.addAttribute("signHeight", size[1]);
 					} else {
@@ -148,8 +148,8 @@ public class AdminSignRequestController {
 			List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
 			model.addAttribute("logs", logs);
 			model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
-			if(user.getSignImage() != null) {
-				model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
+			if(user.getSignImages().get(0) != null) {
+				model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
 			}
 			if(user.getKeystore() != null) {
 				model.addAttribute("keystore", user.getKeystore().getFileName());

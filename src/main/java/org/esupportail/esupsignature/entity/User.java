@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "UserAccount")
+@Table(name = "user_account")
 public class User {
 	
 	@Id
@@ -31,7 +31,10 @@ public class User {
     private String email;
     
     @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
-    private Document signImage = new Document();
+    private Document lastSignImage = new Document();
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
+    private List<Document> signImages = new ArrayList<>();
 
     @Transient
     private String ip;
@@ -116,15 +119,23 @@ public class User {
         this.email = email;
     }
 
-	public Document getSignImage() {
-        return this.signImage;
+	public Document getLastSignImage() {
+        return this.lastSignImage;
     }
 
-	public void setSignImage(Document signImage) {
-        this.signImage = signImage;
+	public void setLastSignImage(Document signImage) {
+        this.lastSignImage = signImage;
     }
 
-	public String getIp() {
+    public List<Document> getSignImages() {
+        return signImages;
+    }
+
+    public void setSignImages(List<Document> signImages) {
+        this.signImages = signImages;
+    }
+
+    public String getIp() {
         return this.ip;
     }
 
