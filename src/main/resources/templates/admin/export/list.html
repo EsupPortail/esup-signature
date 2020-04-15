@@ -25,8 +25,8 @@
                     <ul>
                     <th:block th:each="form : ${forms}">
                         <li>
-                            <a th:href="'/ws/export/form/' + ${form.name} + '/datas/csv'" th:text="'Export ' + ${form.title}" download></a>
-                            (<a th:href="'/ws/export/form/' + ${form.name} + '/datas/json'" target="_blank">json</a>)
+                            <a th:href="'/admin/export/form/' + ${form.name} + '/datas/csv'" th:text="'Export ' + ${form.title}" download></a>
+                            (<a th:href="'/admin/export/form/' + ${form.name} + '/datas/json'" target="_blank">json</a>)
                         </li>
                     </th:block>
                     </ul>
