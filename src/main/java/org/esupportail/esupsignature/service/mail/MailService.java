@@ -74,7 +74,7 @@ public class MailService {
         if (!checkMailSender()) {
             return;
         }
-        User user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
+        User user = signBook.getCreateBy();
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
@@ -100,7 +100,7 @@ public class MailService {
         if (!checkMailSender()) {
             return;
         }
-        User user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
+        User user = signBook.getCreateBy();
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());

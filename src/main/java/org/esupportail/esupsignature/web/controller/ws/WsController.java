@@ -145,7 +145,6 @@ public class WsController {
         logger.info("start add documents in " + name);
         //User user = userService.getCurrentUser();
         SignBook signBook = signBookService.getSignBook(name, user);
-        user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
         for (MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);

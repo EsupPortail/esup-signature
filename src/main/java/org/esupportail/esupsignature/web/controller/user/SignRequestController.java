@@ -225,7 +225,7 @@ public class SignRequestController {
                 if (user.getSignImage() != null && user.getSignImage().getSize() > 0) {
                     if(signRequestService.checkUserSignRights(user, signRequest) && user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
                         signRequest.setSignable(false);
-                        model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter un keystore à votre profil");
+                        model.addAttribute("messageWarn", "Pour signer ce document merci d’ajouter un certificat à votre profil");
                     }
                     model.addAttribute("signFile", fileService.getBase64Image(user.getSignImage()));
                     int[] size = pdfService.getSignSize(user.getSignImage().getInputStream());

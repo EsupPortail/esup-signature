@@ -30,7 +30,7 @@
 					<td style="border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:top; border:0" valign="top">
 						<span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span>
 					</td>
-					<td th:with="personLdap = ${userService.findPersonLdapByUser(creator)}" style="border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:top; border:0" valign="top">
+					<td th:with="personLdap = ${userService.findPersonLdapByUser(signRequest.createBy)}" style="border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:top; border:0" valign="top">
 						<span th:if="${userService.findOrganizationalUnitLdapByPersonLdap(personLdap) != null}" th:text="${userService.findOrganizationalUnitLdapByPersonLdap(personLdap).description}"></span>
 					</td>
 					<td style="border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:top; border:0" valign="top">

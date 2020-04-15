@@ -261,8 +261,8 @@
                         <label for="signType2">Choisir un type de signature</label>
                         <select name="signType" id="signType2" class="form-control">
                             <th:block th:each="signType : ${@signService.getSignTypes()}">
-                                <option th:if="${signType.name() != 'visa'}" th:value="${signType}"
-                                        th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                                <option th:value="${signType}"
+                                        th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
                             </th:block>
                         </select>
                         <br>

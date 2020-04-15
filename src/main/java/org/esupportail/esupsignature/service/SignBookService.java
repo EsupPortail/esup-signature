@@ -68,7 +68,7 @@ public class SignBookService {
             SignBook signBook = new SignBook();
             signBook.setStatus(SignRequestStatus.draft);
             signBook.setName(name);
-            signBook.setCreateBy(user.getEppn());
+            signBook.setCreateBy(user);
             signBook.setCreateDate(new Date());
             signBook.setExternal(external);
             signBookRepository.save(signBook);
