@@ -28,17 +28,11 @@
         </th:block>
         <!--    <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>-->
         <div id="signTools" th:if="${documentType == 'pdf' && signRequest.signable}">
-            <!--        <div class="alert alert-success mb-1">-->
-            <!--            <p>Modifier la signature</p>-->
-            <!--            <button type="button" id="signZoomOut" class="btn btn-light position-absolute">-->
-            <!--                <i class="fas fas fa-search-minus"></i>-->
-            <!--            </button>-->
-            <!--            <button type="button" id="signZoomIn" class="btn btn-light position-absolute">-->
-            <!--                <i class="fas fas fa-search-plus"></i>-->
-            <!--            </button>-->
-            <!--            <button th:if="${currentSignType != 'pdfImageStamp'}" id="visualButton" title="Inserer un visuel" class="btn btn-light btn-outline-success ml-1"><i class="fas fa-eye"></i></button>-->
-            <!--            <button id="dateButton" title="Inserer la date" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>-->
-            <!--        </div>-->
+                    <div class="alert alert-success mb-1">
+                        <p>Modifier la signature</p>
+                        <button th:if="${currentSignType != 'pdfImageStamp'}" id="visualButton" title="Inserer un visuel" class="btn btn-light btn-outline-success ml-1"><i class="fas fa-eye"></i></button>
+                        <button id="dateButton" title="Inserer la date" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>
+                    </div>
         </div>
         <div id="commentsTools" th:if="${documentType == 'pdf'}" style="display: none;">
             <div th:unless="${postits.size() > 0}" class="alert alert-warning">Vous pouvez ajouter des commentaires en
