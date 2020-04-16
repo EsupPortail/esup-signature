@@ -42,7 +42,7 @@ export class SignPosition {
 
     changeSignImage(imageNum) {
         let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
-        console.debug("change to " + img);
+        console.debug("change sign image to " + imageNum);
         this.cross.css("background-image", "url('" + img + "')");
         this.signImageNumber = imageNum;
         let sizes = this.getImageDimensions(img);

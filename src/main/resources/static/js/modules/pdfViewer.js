@@ -1,7 +1,7 @@
 export class PdfViewer {
 
     constructor(url, signable, currentStepNumber) {
-        console.info("Starting PDF Viewer");
+        console.info("Starting PDF Viewer, signable : " + signable);
         this.url= url;
         this.pdfPageView = null;
         this.currentStepNumber = currentStepNumber;
@@ -12,6 +12,7 @@ export class PdfViewer {
         this.numPages = 1;
         this.page = null;
         this.dataFields = null;
+        this.savedFields = new Map();
         this.signable = signable;
         this.events = {};
         pdfjsLib.disableWorker = true;
@@ -68,17 +69,24 @@ export class PdfViewer {
     renderPage(num) {
         console.group("Start render");
         console.debug("render page " + num + ", scale : " + this.scale + ", signable : " + this.signable + " ,step : " + this.currentStepNumber);
+        this.pageNum = num;
         if(this.pdfDoc != null) {
-            //document.getElementById('signPageNumber').value = num;
-            document.getElementById('page_num').textContent = num;
-            document.getElementById('zoom').textContent = 100 * this.scale;
-            if(this.pdfDoc.numPages === 1) {
-                $('#prev').prop('disabled', true);
-                $('#next').prop('disabled', true);
+            if(this.page != null) {
+                this.page.getAnnotations().then(e => this.promizeSaveValues()).then(e => this.initRender());
+            } else {
+                this.initRender()
             }
-            this.pdfDoc.getPage(num).then(page => this.renderTask(page));
-            this.pageNum = num;
         }
+    }
+
+    initRender() {
+        document.getElementById('page_num').textContent = this.pageNum;
+        document.getElementById('zoom').textContent = 100 * this.scale;
+        if(this.pdfDoc.numPages === 1) {
+            $('#prev').prop('disabled', true);
+            $('#next').prop('disabled', true);
+        }
+        this.pdfDoc.getPage(this.pageNum).then(page => this.renderTask(page));
     }
 
     renderTask(page) {
@@ -98,28 +106,108 @@ export class PdfViewer {
         this.pdfPageView.scale = this.scale;
         this.pdfPageView.rotation = this.rotation;
         this.pdfPageView.setPdfPage(page);
-        if(this.dataFields != null) {
-            console.debug("enable render form");
-            this.pdfPageView.renderInteractiveForms = true;
-            this.pdfPageView.annotationLayerFactory = new pdfjsViewer.DefaultAnnotationLayerFactory();
-        } else {
-            console.debug("disable render form");
-            this.pdfPageView.renderInteractiveForms = false;
-        }
-        this.pdfPageView.draw();
-        if(this.dataFields != null) {
-            this.page.getAnnotations().then(items => this.renderPdfForm(items));
-        }
+        this.pdfPageView.renderInteractiveForms = true;
+        this.pdfPageView.annotationLayerFactory = new pdfjsViewer.DefaultAnnotationLayerFactory();
+        this.pdfPageView.draw().then(e => this.postRender());
+
+    }
+
+    postRender() {
+        this.promiseRenderForm(false).then(e => this.promiseRenderForm(true)).then(e => this.promizeRestoreValue());
         this.canvas.style.width = Math.round(this.pdfPageView.viewport.width) +"px";
         this.canvas.style.height = Math.round(this.pdfPageView.viewport.height) + "px";
         console.groupEnd();
+        this.fireEvent('render', ['end']);
     }
 
-    renderPdfForm(items) {
-        console.debug("rending pdfForm items");
+    promiseRenderForm(isField) {
+        return new Promise((resolve, reject) => {
+            if (this.page != null) {
+                if (isField) {
+                    if (this.dataFields != null) {
+                        console.info("render fields");
+                        this.page.getAnnotations().then(items => this.renderPdfFormWithFields(items));
+                    }
+                } else {
+                    this.page.getAnnotations().then(items => this.renderPdfForm(items));
+                }
+                resolve("Réussite");
+            }
+        });
+    }
+    
+    promizeToggleFields(enable) {
+        if(this.page != null) {
+            this.page.getAnnotations().then(items => this.toggleItems(items, enable));
+        }
+    }
+
+    toggleItems(items, enable) {
+        console.log("toggle fields " + items.length);
+        for (let i = 0; i < items.length; i++) {
+            if(items[i].fieldName != null) {
+                let inputField = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
+                if (enable) {
+                    inputField.prop("disabled", false);
+                } else {
+                    inputField.prop("disabled", true);
+                }
+            }
+        }
+    }
+
+    promizeSaveValues() {
+        this.page.getAnnotations().then(items => this.saveValues(items));
+    }
+
+    saveValues(items) {
+        console.log("save fields " + items.length);
+        for (let i = 0; i < items.length; i++) {
+            if(items[i].fieldName != null) {
+                let inputField = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
+                if (inputField.val() != null) {
+                    console.log(inputField.val());
+                    this.savedFields.set(items[i].fieldName, inputField.val());
+                    if (inputField.is(':checkbox')) {
+                        if (!inputField[0].checked) {
+                            this.savedFields.set(items[i].fieldName, 'off');
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    promizeRestoreValue() {
+        if(this.savedFields.size > 0) {
+            this.page.getAnnotations().then(items => this.restoreValues(items));
+        }
+    }
+
+    restoreValues(items) {
+        console.log("set fields " + items.length);
+        for (let i = 0; i < items.length; i++) {
+            if(items[i].fieldName != null) {
+                let inputField = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
+                if (inputField.val() != null) {
+                    console.log(inputField.val());
+                    inputField.val(this.savedFields.get(items[i].fieldName));
+                    if (inputField.is(':checkbox')) {
+                        if (this.savedFields.get(items[i].fieldName) === 'on') {
+                            inputField.prop( "checked", true);
+                        } else {
+                            inputField.prop( "checked", false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    renderPdfFormWithFields(items) {
+        console.debug("rending pdfForm items with fields" + items);
         let signFieldNumber = 0;
         let visaFieldNumber = 0;
-        console.debug(this.dataFields);
         for (let i = 0; i < items.length; i++) {
             console.debug(">>Start compute field");
             let dataField;
@@ -256,11 +344,9 @@ export class PdfViewer {
                         inputField.addClass('disabled-field disable-selection');
                         inputField.parent().addClass('disable-div-selection');
                     } else {
+                        console.log(dataField.defaultValue);
+                        inputField.val(dataField.defaultValue);
                         inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
-                        inputField.val(items[i].fieldValue);
-                        if (dataField != null) {
-                            inputField.val(dataField.defaultValue);
-                        }
                         inputField.prop('disabled', false);
                         if (dataField.required) {
                             inputField.prop('required', true);
@@ -270,26 +356,53 @@ export class PdfViewer {
 
                 }
             }
-            console.debug(">>End compute field");
-            this.fireEvent('render', ['end']);
         }
+        console.debug(">>End compute field");
     }
 
-    // setValues() {
-    //     for (let i = 0; i < this.dataFields.length; i++) {
-    //         if(this.dataFields[i] != null) {
-    //             let inputField = $('input[name=\'' + this.dataFields[i].name + '\']');
-    //             if (inputField.val() != null) {
-    //                 this.dataFields[i].defaultValue = inputField.val();
-    //                 if(inputField.is(':checkbox')) {
-    //                     if(!inputField[0].checked) {
-    //                         this.dataFields[i].defaultValue = 'off';
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+    renderPdfForm(items) {
+        console.debug("rending pdfForm items");
+        let signFieldNumber = 0;
+        let visaFieldNumber = 0;
+        for (let i = 0; i < items.length; i++) {
+            console.debug(">>Start compute item");
+            if (items[i].fieldType === undefined && items[i].title.toLowerCase().startsWith('sign')) {
+                console.debug("found sign field");
+                signFieldNumber = signFieldNumber + 1;
+                $('.popupWrapper').remove();
+                let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+                signField.append('Champ signature ' + signFieldNumber + '<br>');
+                //signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
+                signField.addClass("sign-field");
+                signField.addClass("d-none");
+                signField.parent().remove();
+            }
+            if (items[i].fieldType === undefined && items[i].title.toLowerCase().startsWith('visa')) {
+                console.debug("found sign field");
+                visaFieldNumber = visaFieldNumber + 1;
+                $('.popupWrapper').remove();
+                let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+                signField.append('Champ visa ' + visaFieldNumber + '<br>');
+                //signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
+                signField.addClass("sign-field");
+                signField.addClass("d-none");
+                signField.parent().remove();
+            }
+
+            let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
+            if (inputField.length) {
+                console.debug(items[i]);
+                console.debug(inputField);
+                inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
+            } else {
+                inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
+                if (inputField.length > 0) {
+                    inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
+                    inputField.val(items[i].fieldValue);
+                }
+            }
+        }
+    }
 
     prevPage() {
         if (this.pageNum <= 1) {

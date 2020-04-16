@@ -23,9 +23,9 @@ export class WorkspacePdf {
         this.pdfViewer.addEventListener('pageChange', e => this.refreshComments());
         this.pdfViewer.addEventListener('render', e => this.initForm());
 
-
         document.getElementById('commentModeButton').addEventListener('click', e => this.enableCommentMode());
         if(this.signable) {
+            document.getElementById('fillModeButton').addEventListener('click', e => this.enableFillMode());
             document.getElementById('signModeButton').addEventListener('click', e => this.enableSignMode());
             if(this.currentSignType !== "pdfImageStamp") {
                 document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
@@ -81,8 +81,6 @@ export class WorkspacePdf {
             this.enableSignMode();
         } else if(this.mode === 'comment') {
             this.enableCommentMode();
-        } else if(this.mode === 'refuse') {
-            this.enableRefuseMode();
         } else {
             this.enableSignMode();
         }
@@ -101,10 +99,12 @@ export class WorkspacePdf {
     }
 
     initForm(e) {
-
         $("#signForm :input").each(function () {
             $(this).on('change', e => WorkspacePdf.launchValidate());
         });
+        if(this.mode === 'sign' || this.mode === 'comment') {
+            this.pdfViewer.promizeToggleFields(false);
+        }
     }
 
     static launchValidate() {
@@ -200,16 +200,28 @@ export class WorkspacePdf {
         $("#postit").hide();
     }
 
+    enableFillMode() {
+        console.info("enable fill mode");
+        this.disableAllModes();
+        this.mode = 'fill';
+        this.signPosition.pointItEnable = false;
+        $('#fillModeButton').toggleClass('btn-outline-info');
+        $('#rotateleft').prop('disabled', false);
+        $('#rotateright').prop('disabled', false);
+        this.pdfViewer.renderForm = true;
+        this.pdfViewer.renderPage(1);
+    }
+
     enableReadMode() {
         console.info("enable read mode");
         this.disableAllModes();
         this.mode = 'read';
         this.signPosition.pointItEnable = false;
         this.pdfViewer.scale = 1.75;
-        $('#readButton').toggleClass('btn-light btn-secondary');
+        $('#readModeButton').toggleClass('btn-outline-secondary');
         $('#rotateleft').prop('disabled', false);
         $('#rotateright').prop('disabled', false);
-        $('#stepscard').show();
+        this.pdfViewer.renderForm = false;
         this.pdfViewer.renderPage(1);
     }
 
@@ -220,10 +232,11 @@ export class WorkspacePdf {
         this.signPosition.pointItEnable = true;
         this.pdfViewer.scale = 0.75;
         $('#workspace').toggleClass('alert-warning alert-secondary');
-        $('#commentModeButton').toggleClass('btn-light btn-warning');
+        $('#commentModeButton').toggleClass('btn-outline-warning');
         $('#commentsTools').show();
         $('#infos').show();
         this.pdfViewer.renderPage(1);
+        this.pdfViewer.promizeToggleFields(false);
     }
 
     enableSignMode() {
@@ -238,9 +251,11 @@ export class WorkspacePdf {
         $('#signButtons').removeClass('d-none');
         $('#signZoomIn').removeClass('d-none');
         $('#signZoomOut').removeClass('d-none');
-        $('#signModeButton').toggleClass('btn-light btn-success');
+        $('#signNextImage').removeClass('d-none');
+        $('#signPrevImage').removeClass('d-none');
+        $('#signModeButton').toggleClass('btn-outline-success');
         $('#signTools').show();
-        $('#stepscard').show();
+
         $('#infos').show();
         if(this.signPosition.visualActive) {
             $('#pen').removeClass('btn-outline-secondary').addClass('btn-outline-success');
@@ -249,31 +264,24 @@ export class WorkspacePdf {
         this.pdfViewer.rotation = 0;
         this.pdfViewer.scale = 0.75;
         this.pdfViewer.renderPage(this.currentSignRequestParams.signPageNumber);
-
-    }
-
-    enableRefuseMode() {
-        this.disableAllModes();
-        this.mode = 'refuse';
-        $('#workspace').toggleClass('alert-danger alert-secondary');
-        $('#refuseButton').toggleClass('btn-light btn-danger');
-        $('#refusetools').show();
-        $('#infos').show();
-        this.pdfViewer.renderPage(pageNum);
+        this.pdfViewer.promizeToggleFields(false);
+        //this.pdfViewer.renderFormMode(true);
     }
 
     disableAllModes() {
         //this.mode = 'sign';
         $('#workspace').removeClass('alert-danger').removeClass('alert-warning').removeClass('alert-success').addClass('alert-secondary');
-        $('#commentModeButton').addClass('btn-light').removeClass('btn-warning');
-        $('#signModeButton').addClass('btn-light').removeClass('btn-success');
+        $('#commentModeButton').removeClass('btn-outline-warning');
+        $('#signModeButton').removeClass('btn-outline-success');
+        $('#readModeButton').removeClass('btn-outline-secondary');
+        $('#fillModeButton').removeClass('btn-outline-info');
         $('#signButtons').addClass('d-none');
         $('#signZoomIn').addClass('d-none');
         $('#signZoomOut').addClass('d-none');
-        $('#refuseButton').addClass('btn-light').removeClass('btn-danger');
-        $('#readButton').addClass('btn-light').removeClass('btn-secondary');
+        $('#signNextImage').addClass('d-none');
+        $('#signPrevImage').addClass('d-none');
         $('#commentsTools').hide();
-        $('#stepscard').hide();
+
         $('#signTools').hide();
         this.signPosition.cross.hide();
         $('#infos').hide();

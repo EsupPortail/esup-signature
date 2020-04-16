@@ -34,12 +34,23 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@RequestMapping("/user/datas")
 @Controller
 @Transactional
-@RequestMapping("/user")
 public class DataController {
 
 	private static final Logger logger = LoggerFactory.getLogger(DataController.class);
+
+	@ModelAttribute("userMenu")
+	public String getActiveRole() {
+		return "active";
+	}
+
+	@ModelAttribute("activeMenu")
+	public String getActiveMenu() {
+		return "datas";
+	}
+
 
 	@ModelAttribute(value = "user", binding = false)
 	public User getUser() {
@@ -54,16 +65,6 @@ public class DataController {
 	@ModelAttribute(value = "suUsers", binding = false)
 	public List<User> getSuUsers() {
 		return userService.getSuUsers(getAuthUser());
-	}
-
-	@ModelAttribute("userMenu")
-	public String getActiveRole() {
-		return "active";
-	}
-
-	@ModelAttribute("activeMenu")
-	public String getActiveMenu() {
-		return "datas";
 	}
 
 	@Resource
@@ -101,7 +102,7 @@ public class DataController {
 		return 	formService.getFormsByUser(user, authUser);
 	}
 
-	@GetMapping("datas")
+	@GetMapping
 	public String list(User user, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 3) Pageable pageable, Model model) {
 		//User user = userService.getCurrentUser();
 		Page<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft, pageable);
@@ -109,7 +110,7 @@ public class DataController {
 		return "user/datas/list";
 	}
 
-	@GetMapping("datas/{id}")
+	@GetMapping("{id}")
 	public String show(User user, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model) {
 		//User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
@@ -126,7 +127,7 @@ public class DataController {
 		}
 	}
 
-	@GetMapping("datas/form/{id}")
+	@GetMapping("form/{id}")
 	public String updateData(User user, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
 		//User user = userService.getCurrentUser();
 		List<Form> autorizedForms = formRepository.findAutorizedFormByUser(user);
@@ -166,7 +167,7 @@ public class DataController {
 	}
 
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
-	@GetMapping("datas/{id}/update")
+	@GetMapping("{id}/update")
 	public String updateData(User user, @PathVariable("id") Long id, Model model) {
 		//User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
@@ -200,7 +201,7 @@ public class DataController {
 		}
 	}
 
-	@PostMapping("datas/form/{id}")
+	@PostMapping("form/{id}")
 	public String addData(User user, @PathVariable("id") Long id, @RequestParam Long dataId, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
 		//User user = userService.getCurrentUser();
 		Form form = formService.getFormById(id);
@@ -216,7 +217,7 @@ public class DataController {
 		return "redirect:/user/datas/" + data.getId() + "/update";
 	}
 
-	@PutMapping("datas/{id}")
+	@PutMapping("{id}")
 	public String updateData(User user, @PathVariable("id") Long id, @RequestParam String name, @RequestParam(required = false) String navPage, @RequestParam(required = false) Integer page, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
 		//User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
@@ -246,7 +247,7 @@ public class DataController {
 	}
 
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
-	@PostMapping("datas/{id}/send")
+	@PostMapping("{id}/send")
 	public String sendDataById(User user, @PathVariable("id") Long id,
                                @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
 		//User user = userService.getCurrentUser();
@@ -262,7 +263,7 @@ public class DataController {
 		return "redirect:/user/datas/" + id + "/update";
 	}
 
-	@DeleteMapping("datas/{id}")
+	@DeleteMapping("{id}")
 	public String deleteData(User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		//User user = userService.getCurrentUser();
 		Data data = dataRepository.findById(id).get();
@@ -275,7 +276,7 @@ public class DataController {
 		return "redirect:/user/datas/";
 	}
 
-	@GetMapping("/datas/{id}/export-pdf")
+	@GetMapping("{id}/export-pdf")
 	public ResponseEntity exportToPdf(@PathVariable("id") Long id, HttpServletResponse response) {
 		try {
 			Data data = dataService.getDataById(id);
@@ -290,7 +291,7 @@ public class DataController {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 	}
 
-	@GetMapping("datas/{id}/reset")
+	@GetMapping("{id}/reset")
 	public String resetData(User user, @PathVariable("id") Long id) {
 		//User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
@@ -305,7 +306,7 @@ public class DataController {
 	}
 
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
-	@GetMapping("datas/{id}/clone")
+	@GetMapping("{id}/clone")
 	public String cloneData(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		//User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
@@ -315,7 +316,7 @@ public class DataController {
 	}
 
 	@PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
-	@GetMapping("datas/{id}/clone-from-signrequests")
+	@GetMapping("{id}/clone-from-signrequests")
 	public String cloneDataFromSignRequest(User authUser, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		//User user = userService.getCurrentUser();
 		SignRequest signRequest = signRequestRepository.findById(id).get();

@@ -288,7 +288,7 @@ input:checked + .slider:before {
     display: flex;
     margin-left: 5px;
     margin-right: 5px;
-    height: calc(100vh - 172px);
+    /*height: calc(100vh - 172px);*/
 }
 
 .workspace-pdf {
@@ -1024,6 +1024,10 @@ float:left;
 .zoom {
     text-align: center;
     min-width: 60px !important;
+}
+
+.textWidgetAnnotation {
+    border: 0 !important;
 }
 
 .annotationLayer .textWidgetAnnotation input, .annotationLayer .textWidgetAnnotation textarea, .annotationLayer .choiceWidgetAnnotation select, .annotationLayer .buttonWidgetAnnotation.checkBox input, .annotationLayer .buttonWidgetAnnotation.radioButton input {

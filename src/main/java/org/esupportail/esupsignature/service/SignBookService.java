@@ -238,6 +238,14 @@ public class SignBookService {
         }
     }
 
+    public boolean isNextWorkFlowStep(SignBook signBook) {
+        if(signBook.getWorkflowSteps().size() >= signBook.getCurrentWorkflowStepNumber() + 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public boolean checkUserViewRights(User user, SignBook signBook) {
         if(signBook.getCreateBy().equals(user.getEppn()) || recipientService.recipientsContainsUser(getCurrentWorkflowStep(signBook).getRecipients(), user) > 0) {
             return true;
