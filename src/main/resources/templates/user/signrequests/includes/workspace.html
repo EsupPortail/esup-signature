@@ -12,16 +12,16 @@
         <div id="pdf" class="drop-shadows mx-auto">
             <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed'}">
                 <th:block th:if="${currentSignType != 'visa'}">
-                    <button type="button" id="signZoomIn" class="btn btn-sm btn-transparent text-dark position-absolute" th:style="'z-index: 3;left: ' + ${signRequest.getCurrentSignRequestParams().xPos - 35} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;'">
+                    <button type="button" id="signZoomIn" class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute" style="z-index: 3;">
                         <i class="fas fas fa-search-plus"></i>
                     </button>
-                    <button type="button" id="signZoomOut" class="btn btn-sm btn-transparent text-dark position-absolute" th:style="'z-index: 3;left: ' + ${signRequest.getCurrentSignRequestParams().xPos - 35} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos + 30} + 'px;'">
+                    <button type="button" id="signZoomOut" class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute" style="z-index: 3;">
                         <i class="fas fas fa-search-minus"></i>
                     </button>
-                    <button type="button" id="signPrevImage" class="btn btn-sm btn-transparent text-dark position-absolute" th:style="'z-index: 3;left: ' + ${signRequest.getCurrentSignRequestParams().xPos - 35} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos + 60} + 'px;'">
+                    <button type="button" id="signPrevImage" class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute" style="z-index: 3;">
                         <i class="fas fas fa-chevron-up"></i>
                     </button>
-                    <button type="button" id="signNextImage" class="btn btn-sm btn-transparent text-dark position-absolute" th:style="'z-index: 3;left: ' + ${signRequest.getCurrentSignRequestParams().xPos - 35} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos + 90} + 'px;'">
+                    <button type="button" id="signNextImage" class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute" style="z-index: 3;">
                         <i class="fas fas fa-chevron-down"></i>
                     </button>
                     <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"

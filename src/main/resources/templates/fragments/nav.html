@@ -133,34 +133,49 @@
             <table class="table table-sm table-borderless text-left">
                 <tbody>
                 <tr>
-                    <th class="text-break w-50">Nom</th>
-                    <td class="text-break w-50" th:text="${user.name}"></td>
+                    <th class="text-break w-40">Nom</th>
+                    <td class="text-break w-60" th:text="${user.name}"></td>
                 </tr>
                 <tr>
-                    <th class="text-break w-50">Prénom</th>
-                    <td class="text-break w-50" th:text="${user.firstname}"></td>
+                    <th>Prénom</th>
+                    <td th:text="${user.firstname}"></td>
                 </tr>
                 <tr>
-                    <th class="text-break w-50">Email</th>
-                    <td class="text-break w-50" th:text="${user.email}"></td>
+                    <th>Email</th>
+                    <td th:text="${user.email}"></td>
                 </tr>
                 <tr>
-                    <th class="text-break w-50">Identifiant</th>
-                    <td class="text-break w-50" th:text="${user.eppn}"></td>
+                    <th>Identifiant</th>
+                    <td th:text="${user.eppn}"></td>
                 </tr>
                 <tr>
-                    <th class="text-break w-50">Image de la signature</th>
-                    <td class="text-break w-50">
-                        <img width="300" th:if="${user.signImages.size() > 0 && user.signImages.get(0) != null}" alt="signature"
-                             th:src="'data:image/png;base64,' + ${user.signImageBase64}"/>
+                    <th>Vos signatures</th>
+                    <td>
+                        <div style="width: 250px;" th:if="${user.signImages.size() > 0 && user.signImages.get(0) != null}" id="carouselSign" class="carousel slide" data-ride="carousel">
+                            <div class="carousel-inner">
+                                <th:block th:each="signImage, iterator : ${user.signImages}">
+                                    <div class="carousel-item" th:classappend="${iterator.index == 0} ? 'active'">
+                                        <img width="250" th:src="'data:image/png;base64,' + ${@fileService.getBase64Image(signImage)}" />
+                                    </div>
+                                </th:block>
+                            </div>
+                            <a class="carousel-control-prev" href="#carouselSign" role="button" data-slide="prev">
+                                <span class="text-dark" aria-hidden="true"><i class="fas fa-chevron-left"></i></span>
+                                <span class="sr-only">Previous</span>
+                            </a>
+                            <a class="carousel-control-next" href="#carouselSign" role="button" data-slide="next">
+                                <span class="text-dark" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+                                <span class="sr-only">Next</span>
+                            </a>
+                        </div>
                         <div th:unless="${user.signImages.size() > 0 && user.signImages.get(0) != null}" class="alert alert-danger">
                             Pas de signature
                         </div>
                     </td>
                 </tr>
                 <tr>
-                    <th class="text-break w-50">Magasin de certificats</th>
-                    <td class="text-break w-50">
+                    <th>Magasin de certificats</th>
+                    <td>
                         <div th:if="${user.keystore != null}" class="alert alert-secondary">
                             Votre magasin de certificats :
                             <br>

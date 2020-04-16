@@ -41,7 +41,6 @@ export class UserSignaturePad {
 
         this.firstClear = true;
         this.lastSign = null;
-        this.setLastSign(lastSign);
         this.initListeners();
         this.resizeCanvas();
     }
@@ -55,8 +54,8 @@ export class UserSignaturePad {
         window.addEventListener("resize", e => this.resizeCanvas());
     }
 
-    setLastSign(lastSign) {
-        this.lastSign = lastSign;
+    setLastSign() {
+        this.lastSign = this.signaturePad.toDataURL("image/png");
         //this.ratio = Math.max(window.devicePixelRatio || 1, 1);
         // if(this.ratio === 1) {
 
@@ -70,6 +69,7 @@ export class UserSignaturePad {
             this.clearSignaturePad();
             this.firstClear = false;
         }
+        this.setLastSign();
     }
 
     saveSignaturePad() {
@@ -81,7 +81,6 @@ export class UserSignaturePad {
     clearSignaturePad() {
         // this.canvas.css("backgroundColor", "rgba(255, 255, 255, 1)");
         this.signaturePad.clear();
-        this.signImageBase64.val(this.lastSign);
     }
 
     resetSignaturePad() {
@@ -89,7 +88,6 @@ export class UserSignaturePad {
         // this.canvas.css("backgroundColor", "rgba(255, 255, 255, 1)");
         this.signaturePad.clear();
         this.signaturePad.fromDataURL(this.lastSign);
-        this.signImageBase64.val(this.lastSign);
         this.firstClear = true;
     }
 

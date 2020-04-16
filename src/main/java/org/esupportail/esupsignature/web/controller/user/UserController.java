@@ -98,18 +98,13 @@ public class UserController {
     @GetMapping
     public String createForm(User authUser, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) throws IOException, SQLException {
 		if(authUser != null) {
+//			authUser.setSignImageBase64("");
         	model.addAttribute("signTypes", Arrays.asList(SignType.values()));
         	model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
         	model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
         	if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
 				model.addAttribute("referer", request.getHeader("referer"));
 			}
-//			if(authUser.getSignImages().get(0) != null) {
-//				model.addAttribute("signFile", fileService.getBase64Image(authUser.getSignImages().get(0)));
-//				int[] size = pdfService.getSignSize(authUser.getSignImages().get(0).getInputStream());
-//				model.addAttribute("signWidth", size[0]);
-//				model.addAttribute("signHeight", size[1]);
-//			}
 			return "user/users/update";
 		} else {
 			authUser = new User();

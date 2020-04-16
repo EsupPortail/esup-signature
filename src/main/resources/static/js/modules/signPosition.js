@@ -50,8 +50,8 @@ export class SignPosition {
     }
 
     changeSignSize(result) {
-        this.signWidth = Math.round((result.w / 3) * this.signScale);
-        this.signHeight = Math.round((result.h / 3) * this.signScale);
+        this.signWidth = Math.round((result.w / 3) * this.signScale * this.currentScale);
+        this.signHeight = Math.round((result.h / 3) * this.signScale * this.currentScale);
         this.cross.css('background-size', this.signWidth + 'px');
     }
 
@@ -68,25 +68,31 @@ export class SignPosition {
     signNextImage(e) {
         if(this.signImageNumber < this.signImages.length - 1) {
             this.signImageNumber++;
-            this.changeSignImage(this.signImageNumber);
+        } else {
+            this.signImageNumber = 0;
         }
+        this.changeSignImage(this.signImageNumber);
     }
 
     signPrevImage(e) {
         if(this.signImageNumber > 0) {
             this.signImageNumber--;
-            this.changeSignImage(this.signImageNumber);
+        } else {
+            this.signImageNumber = this.signImages.length - 1;
         }
+        this.changeSignImage(this.signImageNumber);
     }
 
     signZoomOut(e) {
         this.updateSignZoom(this.signScale - 0.1);
         this.signScale = this.signScale - 0.1;
+        this.updateSignButtons(this.posX * this.currentScale, this.posY * this.currentScale);
     }
 
     signZoomIn(e) {
         this.updateSignZoom(this.signScale + 0.1);
         this.signScale = this.signScale + 0.1;
+        this.updateSignButtons(this.posX * this.currentScale, this.posY * this.currentScale);
     }
 
     updateSignZoom(signScale) {
@@ -170,14 +176,14 @@ export class SignPosition {
         signZoomIn.css('left', x - 35 + "px");
         signZoomIn.css('top', y + "px");
         signZoomOut.css('left', x - 35 + "px");
-        signZoomOut.css('top', y + 30 + "px");
+        signZoomOut.css('top', y + 32 + "px");
 
         let signPrevImage = $("#signPrevImage");
         let signNextImage = $("#signNextImage");
-        signPrevImage.css('left', x - 35 + "px");
-        signPrevImage.css('top', y + 60 + "px");
-        signNextImage.css('left', x - 35 + "px");
-        signNextImage.css('top', y + 90 + "px");
+        signPrevImage.css('left', x + (this.signWidth) + 5 + "px");
+        signPrevImage.css('top', y + "px");
+        signNextImage.css('left', x + (this.signWidth) + 5 + "px");
+        signNextImage.css('top', y + 32 + "px");
     }
 
     updateCrossPosition() {
@@ -187,10 +193,6 @@ export class SignPosition {
         this.cross.css('left', this.posX + "px");
         this.cross.css('top', this.posY + "px");
         this.updateSignButtons(this.posX, this.posY);
-        // $("#signZoomIn").css('left', this.posX - 35 + "px");
-        // $("#signZoomIn").css('top', this.posY + "px");
-        // $("#signZoomOut").css('left', this.posX - 35 + "px");
-        // $("#signZoomOut").css('top', this.posY + 30 + "px");
         console.debug("update cross pos to : " + this.posX + " " + this.posY);
         this.scalePosition(1);
         console.debug("save cross pos to : " + this.posX + " " + this.posY);
@@ -203,10 +205,6 @@ export class SignPosition {
         this.cross.css('left', this.posX * scale);
         this.cross.css('top', this.posY * scale);
         this.updateSignButtons(this.posX * scale, this.posY * scale);
-        // $("#signZoomIn").css('left', this.posX  * scale - 35);
-        // $("#signZoomIn").css('top', this.posY * scale);
-        // $("#signZoomOut").css('left', this.posX * scale - 35);
-        // $("#signZoomOut").css('top', this.posY * scale + 30);
         this.cross.css('width', this.signWidth);
         this.cross.css('height', this.signHeight);
         this.borders.css('width', this.signWidth);
