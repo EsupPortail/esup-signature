@@ -30,7 +30,7 @@ public class SignBook {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.REMOVE})
+    @OneToOne(fetch = FetchType.LAZY)
     private User createBy;
 
     private String createByEppn;

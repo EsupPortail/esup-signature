@@ -29,7 +29,7 @@ public class SignRequest {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.REMOVE})
+    @OneToOne(fetch = FetchType.LAZY)
     private User createBy;
 
     private String createByEppn;
@@ -64,10 +64,10 @@ public class SignRequest {
 
     private Boolean allSignToComplete = false;
 
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Recipient> recipients = new ArrayList<>();
 
     @JsonIgnore

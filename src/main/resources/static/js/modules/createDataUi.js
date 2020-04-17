@@ -5,7 +5,7 @@ export class CreateDataUi {
     constructor(documentId, fields) {
         this.pdfViewer = new PdfViewer('/user/documents/getfile/' + documentId, true, 0);
         this.pdfViewer.setDataFields(fields);
-        this.pdfViewer.scale = 0.75;
+        this.pdfViewer.scale = 0.70;
         this.pdfViewer.addEventListener('ready', e => this.startRender());
         this.initListeners();
     }

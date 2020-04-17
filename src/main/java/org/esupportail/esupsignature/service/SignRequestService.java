@@ -643,7 +643,7 @@ public class SignRequestService {
 
 	public boolean preAuthorizeOwner(Long id, User authUser) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		return signRequest.getCreateBy().equals(authUser.getEppn());
+		return signRequest.getCreateBy().equals(authUser);
 	}
 
 	public boolean preAuthorizeView(Long id, User user) {
@@ -712,6 +712,9 @@ public class SignRequestService {
 		if(signRequest.getParentSignBook() != null) {
 			signRequest.getParentSignBook().getSignRequests().remove(signRequest);
 		}
+//		for (Recipient recipient : signRequest.getRecipients()) {
+//			recipientRepository.delete(recipient);
+//		}
 		signRequest.getRecipients().clear();
 		signRequestRepository.save(signRequest);
 		signRequestRepository.delete(signRequest);

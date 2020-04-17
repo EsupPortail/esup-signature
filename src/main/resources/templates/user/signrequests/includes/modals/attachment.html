@@ -19,7 +19,7 @@
                                 <td>
                                     <a th:href="'/user/signrequests/get-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" target="_blank" class="btn btn-primary"><i class="fas fa-download"></i></a>
                                 </td>
-                                <td th:if="${signRequest.createBy == user.eppn}">
+                                <td th:if="${signRequest.createBy == user}">
                                     <a th:href="'/user/signrequests/remove-attachment/' + ${signRequest.id} + '/' + ${attachment.id}"  onclick="return confirm('Confimez la suppression de la pièce jointe')" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
                                 </td>
                             </tr>

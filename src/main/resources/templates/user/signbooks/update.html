@@ -9,7 +9,7 @@
         <nav th:insert="fragments/side"></nav>
         <nav id="sidebar2" class="scrollbar-primary">
             <div class="m-1">
-                <div th:if="${user.eppn == signBook.createBy}">
+                <div th:if="${user == signBook.createBy}">
                     <div th:if="${(signBook.status.name() == 'draft' || signBook.status.name() == 'completed')}">
                         <div th:if="${signBook.signRequests.size() > 0 && signBook.workflowSteps.size() > 0}">
                             <th:block th:if="${signBook.workflowSteps.get(0).recipients.size() > 0}">

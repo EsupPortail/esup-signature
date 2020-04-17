@@ -7,8 +7,8 @@ export class PdfViewer {
         this.url= url;
         this.pdfPageView = null;
         this.currentStepNumber = currentStepNumber;
-        this.scale = 0.75;
-        this.zoomStep = 0.25;
+        this.scale = 0.70;
+        this.zoomStep = 0.10;
         this.canvas = document.getElementById('pdf');
         this.pdfDoc = null;
         this.pageNum = 1;
@@ -18,6 +18,7 @@ export class PdfViewer {
         this.savedFields = new Map();
         this.signable = signable;
         this.events = {};
+        this.rotation = 0;
         pdfjsLib.disableWorker = true;
         pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.js';
         pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
@@ -84,7 +85,7 @@ export class PdfViewer {
 
     initRender() {
         document.getElementById('page_num').textContent = this.pageNum;
-        document.getElementById('zoom').textContent = 100 * this.scale;
+        document.getElementById('zoom').textContent = Math.round(100 * this.scale);
         if(this.pdfDoc.numPages === 1) {
             $('#prev').prop('disabled', true);
             $('#next').prop('disabled', true);
@@ -105,7 +106,6 @@ export class PdfViewer {
                 eventBus: globalEventBus,
                 container: this.canvas,
                 id: this.pageNum,
-                scale: this.scale,
                 defaultViewport: viewport,
                 annotationLayerFactory:
                     new pdfjsViewer.DefaultAnnotationLayerFactory(),
@@ -490,7 +490,7 @@ export class PdfViewer {
 
 
     rotateLeft() {
-        console.group('rotate left');
+        console.info('rotate left');
         if (this.rotation < -90) {
             return;
         }
@@ -500,7 +500,7 @@ export class PdfViewer {
     }
 
     rotateRight() {
-        console.group('rotate right');
+        console.info('rotate right' + this.rotation);
         if (this.rotation > 90) {
             return;
         }

@@ -96,7 +96,7 @@ public class UserController {
 	private UserPropertieRepository userPropertieRepository;
 
     @GetMapping
-    public String createForm(User authUser, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) throws IOException, SQLException {
+    public String createForm(@ModelAttribute User authUser, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) throws IOException, SQLException {
 		if(authUser != null) {
 //			authUser.setSignImageBase64("");
         	model.addAttribute("signTypes", Arrays.asList(SignType.values()));
@@ -139,7 +139,7 @@ public class UserController {
     }
 
 	@GetMapping("/delete-sign/{id}")
-	public String deleteSign(User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
+	public String deleteSign(@ModelAttribute User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
     	Document signDocument = documentRepository.findById(id).get();
 		authUser.getSignImages().remove(signDocument);
 		redirectAttributes.addFlashAttribute("messageInfo", "Signature supprimée");
@@ -179,7 +179,7 @@ public class UserController {
 	}
 
 	@GetMapping("/shares")
-	public String params(User authUser, Model model) {
+	public String params(@ModelAttribute User authUser, Model model) {
 		List<UserShare> userShares = userShareRepository.findByUser(authUser);
 		model.addAttribute("userShares", userShares);
 		model.addAttribute("forms", formService.getFormsByUser(authUser, authUser));
@@ -189,7 +189,7 @@ public class UserController {
 	}
 
 	@PostMapping("/add-share")
-	public String addShare(User authUser, @RequestParam("service") Long service, @RequestParam("type") String type, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) throws EsupSignatureUserException {
+	public String addShare(@ModelAttribute User authUser, @RequestParam("service") Long service, @RequestParam("type") String type, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) throws EsupSignatureUserException {
 		List<User> users = new ArrayList<>();
 		for (String userEmail : userEmails) {
 			users.add(userService.createUser(userEmail));
@@ -209,7 +209,7 @@ public class UserController {
 	}
 
 	@DeleteMapping("/del-share/{id}")
-	public String delShare(User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
+	public String delShare(@ModelAttribute User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
 		UserShare userShare = userShareRepository.findById(id).get();
 		if (userShare.getUser().equals(authUser)) {
 			userShareRepository.delete(userShare);
