@@ -1026,13 +1026,40 @@ float:left;
     min-width: 60px !important;
 }
 
-.annotationLayer {
+.textWidgetAnnotation.input {
     border: 1px solid !important;
 }
 
 .buttonWidgetAnnotation.radioButton {
     border: 1px solid !important;
     border-radius: 50% !important;
+}
+
+.annotationLayer section:after {
+    border: 1px solid black !important;
+}
+
+.annotationLayer .textWidgetAnnotation input:hover {
+    border-color: transparent !important;
+}
+
+.annotationLayer .buttonWidgetAnnotation input:hover {
+    border-color: transparent !important;
+    cursor: pointer;
+}
+
+.annotationLayer .buttonWidgetAnnotation.checkBox input:checked:before, .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:after {
+    top: 0;
+    height: 100%;
+    width: 1px;
+}
+
+.annotationLayer .buttonWidgetAnnotation.radioButton input:checked:before {
+    border-radius: 50%;
+    height: 80%;
+    left: 10%;
+    top: 10%;
+    width: 80%;
 }
 
 .annotationLayer .textWidgetAnnotation input, .annotationLayer .textWidgetAnnotation textarea, .annotationLayer .choiceWidgetAnnotation select, .annotationLayer .buttonWidgetAnnotation.checkBox input, .annotationLayer .buttonWidgetAnnotation.radioButton input {
