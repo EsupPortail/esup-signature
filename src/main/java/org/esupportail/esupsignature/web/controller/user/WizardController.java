@@ -85,7 +85,7 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wiz3", produces = "text/html")
-    public ModelAndView wiz3(User user, @RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) throws EsupSignatureException, IOException, EsupSignatureIOException {
+    public ModelAndView wiz3(@ModelAttribute User user, @RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) throws EsupSignatureException, IOException, EsupSignatureIOException {
         logger.info("Choix d'un workflow");
         SignBook signBook = signBookService.getSignBook(name, user);
         model.addAttribute("signBook", signBook);
@@ -102,7 +102,7 @@ public class WizardController {
 
     //TODO preauthorize
     @GetMapping(value = "/wiz4/{id}")
-    public String wiz4(User user, @PathVariable("id") Long id,
+    public String wiz4(@ModelAttribute User user, @PathVariable("id") Long id,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        @RequestParam(value = "selfSign", required = false) Boolean selfSign,
                        Model model) {
@@ -130,7 +130,7 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wizX/{id}", produces = "text/html")
-    public String wizX(User user, @PathVariable("id") Long id,
+    public String wizX(@ModelAttribute User user, @PathVariable("id") Long id,
                        @RequestParam(name="signType", required = false) SignType signType,
                        @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                        @RequestParam(value = "recipientsEmail", required = false) String[] recipientsEmail,
@@ -166,7 +166,7 @@ public class WizardController {
     }
 
     @GetMapping(value = "/wiz5/{id}")
-    public String saveForm(User user, @PathVariable("id") Long id, Model model) {
+    public String saveForm(@ModelAttribute User user, @PathVariable("id") Long id, Model model) {
         //User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user.getEppn())) {
@@ -176,7 +176,7 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wiz5/{id}")
-    public String saveWorkflow(User user, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model) {
+    public String saveWorkflow(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model) {
         //User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         try {
@@ -190,7 +190,7 @@ public class WizardController {
     }
 
     @GetMapping(value = "/wizend/{id}")
-    public String wizEnd(User user, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
+    public String wizEnd(@ModelAttribute User user, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
         //User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user.getEppn())) {

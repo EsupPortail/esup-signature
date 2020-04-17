@@ -133,7 +133,7 @@ public class SignRequestController {
 //    private SedaExportService sedaExportService;
 
     @GetMapping
-    public String list(User user, User authUser,
+    public String list(@ModelAttribute User user, User authUser,
                        @RequestParam(value = "statusFilter", required = false) String statusFilter,
                        @RequestParam(value = "signBookId", required = false) Long signBookId,
                        @RequestParam(value = "messageError", required = false) String messageError,
@@ -189,7 +189,7 @@ public class SignRequestController {
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user)")
     @GetMapping(value = "/{id}")
-    public String show(User user, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
+    public String show(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
         ////User user = userService.getCurrentUser();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequest.getStatus().equals(SignRequestStatus.pending)
@@ -274,7 +274,7 @@ public class SignRequestController {
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user)")
     @GetMapping(value = "/{id}", params = "form")
-    public String updateForm(User user, @PathVariable("id") Long id, Model model) throws Exception {
+    public String updateForm(@ModelAttribute User user, @PathVariable("id") Long id, Model model) throws Exception {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         model.addAttribute("signBooks", signBookService.getAllSignBooks());
         List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
@@ -304,7 +304,7 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user)")
     @ResponseBody
     @PostMapping(value = "/sign/{id}")
-    public ResponseEntity sign(User user, @PathVariable("id") Long id,
+    public ResponseEntity sign(@ModelAttribute User user, @PathVariable("id") Long id,
                                @RequestParam(value = "signImageNumber") Integer signImageNumber,
                                @RequestParam(value = "signWidth", required = false) Integer signWidth,
                                @RequestParam(value = "signHeight", required = false) Integer signHeight,
@@ -397,7 +397,7 @@ public class SignRequestController {
     //@PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
     @ResponseBody
     @PostMapping(value = "/remove-doc/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String removeDocument(User user, @PathVariable("id") Long id) throws JSONException {
+    public String removeDocument(@ModelAttribute User user, @PathVariable("id") Long id) throws JSONException {
         logger.info("remove document " + id);
         JSONObject result = new JSONObject();
         //User user = userService.getCurrentUser();
@@ -412,7 +412,7 @@ public class SignRequestController {
     }
 
     @GetMapping("/sign-by-token/{token}")
-    public String signByToken(User user, @PathVariable("token") String token) {
+    public String signByToken(@ModelAttribute User user, @PathVariable("token") String token) {
         //User user = userService.getCurrentUser();
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
         if (signRequestService.checkUserSignRights(user, signRequest)) {
@@ -423,7 +423,7 @@ public class SignRequestController {
     }
 
     @PostMapping(value = "/fast-sign-request")
-    public String createSignRequest(User user, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
+    public String createSignRequest(@ModelAttribute User user, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                     @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
         //User user = userService.getCurrentUser();
         logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
@@ -441,7 +441,7 @@ public class SignRequestController {
     }
 
     @PostMapping(value = "/send-sign-request")
-    public String sendSignRequest(User user, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
+    public String sendSignRequest(@ModelAttribute User user, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                   @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
                                   @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
                                   @RequestParam(name = "comment", required = false) String comment,
@@ -488,7 +488,7 @@ public class SignRequestController {
 
     @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user)")
     @GetMapping(value = "/refuse/{id}")
-    public String refuse(User user, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttrs, HttpServletRequest request) {
+    public String refuse(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttrs, HttpServletRequest request) {
         //User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -542,7 +542,7 @@ public class SignRequestController {
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user)")
     @GetMapping(value = "/get-attachment/{id}/{attachementId}")
-    public void getAttachment(User user, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, HttpServletResponse response, RedirectAttributes redirectAttributes) {
+    public void getAttachment(@ModelAttribute User user, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, HttpServletResponse response, RedirectAttributes redirectAttributes) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         Document attachement = documentRepository.findById(attachementId).get();
         try {
@@ -561,7 +561,7 @@ public class SignRequestController {
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user)")
     @GetMapping(value = "/get-last-file/{id}")
-    public void getLastFile(User user, @PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException {
+    public void getLastFile(@ModelAttribute User user, @PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         InputStream inputStream = null;
         String contentType = "";
@@ -600,7 +600,7 @@ public class SignRequestController {
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
     @GetMapping(value = "/complete/{id}")
-    public String complete(User user, User authUser, @PathVariable("id") Long id, HttpServletRequest request) throws EsupSignatureException {
+    public String complete(@ModelAttribute User user, User authUser, @PathVariable("id") Long id, HttpServletRequest request) throws EsupSignatureException {
         //User user = userService.getCurrentUser();
         user.setIp(request.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -614,7 +614,7 @@ public class SignRequestController {
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
     @GetMapping(value = "/pending/{id}")
-    public String pending(User user, User authUser, @PathVariable("id") Long id,
+    public String pending(@ModelAttribute User user, User authUser, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
                           HttpServletRequest request) {
         //User user = userService.getCurrentUser();
@@ -648,7 +648,7 @@ public class SignRequestController {
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user)")
     @PostMapping(value = "/comment/{id}")
-    public String comment(User user, @PathVariable("id") Long id,
+    public String comment(@ModelAttribute User user, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
                           @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
                           @RequestParam(value = "commentPosX", required = false) Integer commentPosX,

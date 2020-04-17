@@ -166,13 +166,24 @@ export class PdfViewer {
             if(items[i].fieldName != null) {
                 let inputField = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
                 if (inputField.val() != null) {
-                    console.log(inputField.val());
-                    this.savedFields.set(items[i].fieldName, inputField.val());
                     if (inputField.is(':checkbox')) {
                         if (!inputField[0].checked) {
                             this.savedFields.set(items[i].fieldName, 'off');
+                        } else {
+                            this.savedFields.set(items[i].fieldName, 'on');
                         }
+                        continue;
                     }
+                    if (inputField.is(':radio')) {
+                        console.log(items[i]);
+                        let radio = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\'][value=\'' + items[i].buttonValue + '\']');
+                        console.log(radio.prop("checked"));
+                        if (radio.prop("checked")) {
+                            this.savedFields.set(items[i].fieldName, radio.val());
+                        }
+                        continue;
+                    }
+                    this.savedFields.set(items[i].fieldName, inputField.val());
                 }
             }
         }
@@ -190,15 +201,23 @@ export class PdfViewer {
             if(items[i].fieldName != null) {
                 let inputField = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
                 if (inputField.val() != null) {
-                    console.log(inputField.val());
-                    inputField.val(this.savedFields.get(items[i].fieldName));
                     if (inputField.is(':checkbox')) {
-                        if (this.savedFields.get(items[i].fieldName) === 'on') {
+                        if(this.savedFields.get(items[i].fieldName) === 'on') {
                             inputField.prop( "checked", true);
                         } else {
                             inputField.prop( "checked", false);
                         }
+                        continue;
                     }
+                    if (inputField.is(':radio')) {
+                        let radio = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\'][value=\'' + items[i].buttonValue + '\']');
+                        console.log("test "+ items[i].fieldName + " " + this.savedFields.get(items[i].fieldName) + " = " + inputField.val());
+                        if (this.savedFields.get(items[i].fieldName) === radio.val()) {
+                            radio.prop("checked", true);
+                        }
+                        continue;
+                    }
+                    inputField.val(this.savedFields.get(items[i].fieldName));
                 }
             }
         }
@@ -388,12 +407,14 @@ export class PdfViewer {
                 signField.addClass("d-none");
                 signField.parent().remove();
             }
-
+            console.debug(items[i]);
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
+            console.debug(inputField);
             if (inputField.length) {
-                console.debug(items[i]);
-                console.debug(inputField);
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
+                if (inputField.is(':radio')) {
+                    inputField.val(items[i].buttonValue);
+                }
             } else {
                 inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
                 if (inputField.length > 0) {

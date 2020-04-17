@@ -102,9 +102,9 @@ export class WorkspacePdf {
         $("#signForm :input").each(function () {
             $(this).on('change', e => WorkspacePdf.launchValidate());
         });
-        if(this.mode === 'sign' || this.mode === 'comment') {
-            this.pdfViewer.promizeToggleFields(false);
-        }
+        // if(this.mode === 'sign' || this.mode === 'comment') {
+        //     this.pdfViewer.promizeToggleFields(false);
+        // }
     }
 
     static launchValidate() {
@@ -265,8 +265,7 @@ export class WorkspacePdf {
         this.pdfViewer.rotation = 0;
         this.pdfViewer.scale = 0.75;
         this.pdfViewer.renderPage(this.currentSignRequestParams.signPageNumber);
-        this.pdfViewer.promizeToggleFields(false);
-        //this.pdfViewer.renderFormMode(true);
+        //this.pdfViewer.promizeToggleFields(false);
     }
 
     disableAllModes() {

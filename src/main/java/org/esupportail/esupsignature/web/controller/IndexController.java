@@ -69,7 +69,7 @@ public class IndexController {
 	}
 	
 	@GetMapping
-	public String index(User user, Model model) {
+	public String index(@ModelAttribute User user, Model model) {
 		model.addAttribute("user", user);
 		if(user != null && !user.getEppn().equals("System")) {
 			return "redirect:/user/";

@@ -16,12 +16,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 @RequestMapping("/user/documents")
 @Controller
@@ -29,7 +31,22 @@ import java.io.IOException;
 public class DocumentController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(DocumentController.class);
-	
+
+	@ModelAttribute(value = "user", binding = false)
+	public User getUser() {
+		return userService.getCurrentUser();
+	}
+
+	@ModelAttribute(value = "authUser", binding = false)
+	public User getAuthUser() {
+		return userService.getUserFromAuthentication();
+	}
+
+	@ModelAttribute(value = "suUsers", binding = false)
+	public List<User> getSuUsers() {
+		return userService.getSuUsers(getAuthUser());
+	}
+
 	@Resource
 	private UserService userService;
 
@@ -46,7 +63,7 @@ public class DocumentController {
 	private SignRequestService signRequestService;
 
     @GetMapping(value = "/getfile/{id}")
-	public ResponseEntity<Void> getFile(User user, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
+	public ResponseEntity<Void> getFile(@ModelAttribute User user, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
 		//User user = userService.getCurrentUser();
 		Document document = documentRepository.findById(id).get();
 		if(document.equals(user.getKeystore())) {

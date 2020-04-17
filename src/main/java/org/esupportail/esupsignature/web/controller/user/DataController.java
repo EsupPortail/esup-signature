@@ -51,7 +51,6 @@ public class DataController {
 		return "datas";
 	}
 
-
 	@ModelAttribute(value = "user", binding = false)
 	public User getUser() {
 		return userService.getCurrentUser();
@@ -98,20 +97,20 @@ public class DataController {
 	private RecipientService recipientService;
 
 	@ModelAttribute("forms")
-	public List<Form> getForms(User user, User authUser) {
+	public List<Form> getForms(@ModelAttribute User user, User authUser) {
 		return 	formService.getFormsByUser(user, authUser);
 	}
 
 	@GetMapping
-	public String list(User user, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 3) Pageable pageable, Model model) {
-		//User user = userService.getCurrentUser();
+	public String list(@ModelAttribute User user, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 3) Pageable pageable, Model model) {
+//		User user1 = (User) model.getAttribute("user");
 		Page<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft, pageable);
 		model.addAttribute("datas", datas);
 		return "user/datas/list";
 	}
 
 	@GetMapping("{id}")
-	public String show(User user, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model) {
+	public String show(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model) {
 		//User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
 		model.addAttribute("data", data);
@@ -128,7 +127,7 @@ public class DataController {
 	}
 
 	@GetMapping("form/{id}")
-	public String updateData(User user, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
+	public String updateData(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
 		//User user = userService.getCurrentUser();
 		List<Form> autorizedForms = formRepository.findAutorizedFormByUser(user);
 		Form form = formService.getFormById(id);
@@ -168,7 +167,7 @@ public class DataController {
 
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@GetMapping("{id}/update")
-	public String updateData(User user, @PathVariable("id") Long id, Model model) {
+	public String updateData(@ModelAttribute User user, @PathVariable("id") Long id, Model model) {
 		//User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
 		model.addAttribute("data", data);
@@ -202,7 +201,7 @@ public class DataController {
 	}
 
 	@PostMapping("form/{id}")
-	public String addData(User user, @PathVariable("id") Long id, @RequestParam Long dataId, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
+	public String addData(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam Long dataId, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
 		//User user = userService.getCurrentUser();
 		Form form = formService.getFormById(id);
 		formData.remove("_csrf");
@@ -218,7 +217,7 @@ public class DataController {
 	}
 
 	@PutMapping("{id}")
-	public String updateData(User user, @PathVariable("id") Long id, @RequestParam String name, @RequestParam(required = false) String navPage, @RequestParam(required = false) Integer page, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
+	public String updateData(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam String name, @RequestParam(required = false) String navPage, @RequestParam(required = false) Integer page, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
 		//User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
 		if(page == null) {
@@ -248,7 +247,7 @@ public class DataController {
 
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@PostMapping("{id}/send")
-	public String sendDataById(User user, @PathVariable("id") Long id,
+	public String sendDataById(@ModelAttribute User user, @PathVariable("id") Long id,
                                @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
 		//User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
@@ -264,7 +263,7 @@ public class DataController {
 	}
 
 	@DeleteMapping("{id}")
-	public String deleteData(User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+	public String deleteData(@ModelAttribute User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		//User user = userService.getCurrentUser();
 		Data data = dataRepository.findById(id).get();
 		if(user.getEppn().equals(data.getCreateBy())) {
@@ -292,7 +291,7 @@ public class DataController {
 	}
 
 	@GetMapping("{id}/reset")
-	public String resetData(User user, @PathVariable("id") Long id) {
+	public String resetData(@ModelAttribute User user, @PathVariable("id") Long id) {
 		//User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
 		if(user.getEmail().equals(data.getCreateBy())) {

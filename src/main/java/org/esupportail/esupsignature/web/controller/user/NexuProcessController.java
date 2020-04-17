@@ -68,7 +68,7 @@ public class NexuProcessController {
 	private AbstractSignatureParameters parameters;
 	
 	@GetMapping(value = "/{id}", produces = "text/html")
-	public String showSignatureParameters(User user, @PathVariable("id") Long id, Model model,
+	public String showSignatureParameters(@ModelAttribute User user, @PathVariable("id") Long id, Model model,
 										  @RequestParam(value = "referer", required = false) String referer, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureException {
     	//User user = userService.getCurrentUser();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -96,7 +96,7 @@ public class NexuProcessController {
 
 	@GetMapping(value = "/get-data-to-sign", produces = "application/javascript")
 	@ResponseBody
-	public String getDataToSign(User user, Model model, @RequestParam String data,
+	public String getDataToSign(@ModelAttribute User user, Model model, @RequestParam String data,
 			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm,
 			@ModelAttribute("signRequestId") Long signRequestId, HttpServletRequest request) throws IOException {
 		logger.info("get data to sign for : " + signRequestId);
@@ -141,7 +141,7 @@ public class NexuProcessController {
 
 	@GetMapping(value = "/sign-document", produces = "application/javascript")
 	@ResponseBody
-	public String signDocument(User user, @RequestParam String data,
+	public String signDocument(@ModelAttribute User user, @RequestParam String data,
 			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm, 
 			@ModelAttribute("signRequestId") Long signRequestId, HttpServletRequest request) throws EsupSignatureException, IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
