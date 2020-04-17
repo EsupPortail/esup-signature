@@ -81,25 +81,21 @@ export class WorkspacePdf {
     initWorkspace() {
         this.mode = 'sign';
         console.info("init to " + this.mode + " mode");
-        if(this.mode === 'sign') {
-            this.enableSignMode();
-        } else if(this.mode === 'comment') {
+        if(this.mode === 'comment') {
             this.enableCommentMode();
         } else {
             this.enableSignMode();
         }
-
         if(this.signable && this.currentSignType === 'visa') {
             if(this.mode === 'sign') {
                 this.signPosition.toggleVisual();
             }
         }
-        this.refreshComments();
+        // this.refreshComments();
         if(this.signable) {
             this.signPosition.resetSign();
         }
         this.pdfViewer.removeEventListener('ready');
-
     }
 
     initForm(e) {
@@ -155,12 +151,13 @@ export class WorkspacePdf {
             "&commentPosX=" + document.getElementById("commentPosX").value +
             "&commentPosY=" + document.getElementById("commentPosY").value +
             "&commentPageNumber=" + document.getElementById("commentPageNumber").value +
-            "&" + csrf.name + "=" + csrf.value
-        ;
+            "&" + csrf.name + "=" + csrf.value;
+        this.xmlHttpMain.addEventListener('readystatechange', function () {document.location.reload()});
         this.xmlHttpMain.open('POST', '/user/signrequests/comment/' + this.signRequestId, true);
         this.xmlHttpMain.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
         // this.xmlHttpMain.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         this.xmlHttpMain.send(commentUrlParams);
+
     }
 
     focusComment(postit) {
@@ -209,8 +206,8 @@ export class WorkspacePdf {
             return;
         }
         this.signPosition.pointItEnable = false;
-        document.getElementById("postit").style.left = this.signPosition.posX + "px";
-        document.getElementById("postit").style.top = this.signPosition.posY + "px";
+        document.getElementById("postit").style.left = $('#commentPosX').val() + "px";
+        document.getElementById("postit").style.top = $('#commentPosY').val() + "px";
         $("#postit").show();
 
     }
@@ -253,7 +250,6 @@ export class WorkspacePdf {
         this.disableAllModes();
         this.mode = 'comment';
         this.signPosition.pointItEnable = true;
-        this.pdfViewer.scale = 0.75;
         $('#workspace').toggleClass('alert-warning alert-secondary');
         $('#commentModeButton').toggleClass('btn-outline-warning');
         $('#commentsTools').show();
@@ -286,8 +282,8 @@ export class WorkspacePdf {
             this.signPosition.cross.show();
         }
         this.pdfViewer.rotation = 0;
-        this.pdfViewer.scale = 0.75;
         this.pdfViewer.renderPage(this.currentSignRequestParams.signPageNumber);
+        this.signPosition.resetSign();
         //this.pdfViewer.promizeToggleFields(false);
     }
 

@@ -124,10 +124,8 @@ export class SignPosition {
     pointIt2(e) {
         if (this.pointItEnable) {
             console.debug("pointit2");
-            this.posX = e.offsetX ? (e.offsetX) : e.clientX;
-            this.posY = e.offsetY ? (e.offsetY) : e.clientY;
-            $('#commentPosX').val(this.posX);
-            $('#commentPosY').val(this.posY);
+            $('#commentPosX').val(e.offsetX ? (e.offsetX) : e.clientX);
+            $('#commentPosY').val(e.offsetY ? (e.offsetY) : e.clientY);
             $('#commentPageNumber').val(this.signPageNumber);
             this.scalePosition(1);
         }
@@ -216,6 +214,7 @@ export class SignPosition {
     }
 
     savePosition() {
+        console.info("save position");
         if(this.pointItEnable && this.pointItMove) {
             console.info("save position to  :" + this.posX + " " + this.posY);
             this.startPosX = this.posX;

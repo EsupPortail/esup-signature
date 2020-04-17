@@ -8,6 +8,7 @@ export class PdfViewer {
         this.pdfPageView = null;
         this.currentStepNumber = currentStepNumber;
         this.scale = 0.75;
+        this.zoomStep = 0.25;
         this.canvas = document.getElementById('pdf');
         this.pdfDoc = null;
         this.pageNum = 1;
@@ -453,7 +454,6 @@ export class PdfViewer {
     }
 
     zoomIn() {
-        console.info('zoom in');
         if (this.scale >= 2) {
             return;
         }
@@ -464,14 +464,14 @@ export class PdfViewer {
         //     $(this).css('left', left);
         //     $(this).css('top', top);
         // });
-        this.scale = this.scale + 0.25;
+        this.scale = this.scale + this.zoomStep;
+        console.info('zoom in, scale = ' + this.scale);
         this.renderPage(this.pageNum);
         this.fireEvent('scaleChange', ['in']);
     }
 
 
     zoomOut() {
-        console.info('zoom out');
         if (this.scale <= 0.50) {
             return;
         }
@@ -482,7 +482,8 @@ export class PdfViewer {
         //     $(this).css('left', left);
         //     $(this).css('top', top);
         // });
-        this.scale = this.scale - 0.25;
+        this.scale = this.scale - this.zoomStep;
+        console.info('zoom out, scale = ' + this.scale);
         this.renderPage(this.pageNum);
         this.fireEvent('scaleChange', ['out']);
     }
