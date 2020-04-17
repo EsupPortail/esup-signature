@@ -4,16 +4,18 @@ import {SignRequestParams} from "../prototypes/signRequestParams.js";
 
 export class WorkspacePdf {
 
-    constructor(url, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages) {
+    constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages) {
         console.info("Starting workspace UI");
         this.currentSignRequestParams =  new SignRequestParams(currentSignRequestParams);
         this.currentSignType = currentSignType;
         this.postits = postits;
         this.signable = signable;
+        this.signRequestId = id;
         this.signPosition = new SignPosition(this.currentSignRequestParams.xPos, this.currentSignRequestParams.yPos, signWidth, signHeight, this.currentSignRequestParams.signPageNumber, signImages);
-        this.pdfViewer = new PdfViewer(url, signable, currentStepNumber);
+        this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber);
         //this.signPageNumber = document.getElementById('signPageNumber');
         this.mode = 'read';
+        this.xmlHttpMain = new XMLHttpRequest();
         this.initListeners();
     }
 
@@ -22,6 +24,8 @@ export class WorkspacePdf {
         this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
         this.pdfViewer.addEventListener('pageChange', e => this.refreshComments());
         this.pdfViewer.addEventListener('render', e => this.initForm());
+        document.getElementById('saveCommentButton').addEventListener('click', e => this.saveComment());
+
 
         document.getElementById('commentModeButton').addEventListener('click', e => this.enableCommentMode());
         if(this.signable) {
@@ -102,9 +106,14 @@ export class WorkspacePdf {
         $("#signForm :input").each(function () {
             $(this).on('change', e => WorkspacePdf.launchValidate());
         });
-        // if(this.mode === 'sign' || this.mode === 'comment') {
-        //     this.pdfViewer.promizeToggleFields(false);
-        // }
+        if(this.mode === 'sign') {
+            //this.pdfViewer.promizeToggleFields(false);
+        }
+        if(this.mode === 'comment') {
+            $(".annotationLayer").each(function () {
+                $(this).hide();
+            })
+        }
     }
 
     static launchValidate() {
@@ -138,6 +147,20 @@ export class WorkspacePdf {
             this.displayCommentPointer();
             this.signPosition.pointIt2(e);
         }
+    }
+
+    saveComment() {
+        let csrf = document.getElementsByName("_csrf")[0];
+        let commentUrlParams = "comment=" + document.getElementById("comment").value +
+            "&commentPosX=" + document.getElementById("commentPosX").value +
+            "&commentPosY=" + document.getElementById("commentPosY").value +
+            "&commentPageNumber=" + document.getElementById("commentPageNumber").value +
+            "&" + csrf.name + "=" + csrf.value
+        ;
+        this.xmlHttpMain.open('POST', '/user/signrequests/comment/' + this.signRequestId, true);
+        this.xmlHttpMain.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+        // this.xmlHttpMain.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        this.xmlHttpMain.send(commentUrlParams);
     }
 
     focusComment(postit) {

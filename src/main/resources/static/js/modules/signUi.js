@@ -12,7 +12,7 @@ export class SignUi {
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
         if(isPdf) {
-            this.workspace = new WorkspacePdf('/user/signrequests/get-last-file/' + id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages);
+            this.workspace = new WorkspacePdf(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages);
         }
         this.xmlHttpMain = new XMLHttpRequest();
         this.signComment = $('#signComment');
@@ -68,6 +68,7 @@ export class SignUi {
     submitSignRequest() {
         var formData = { };
         $.each($('#signForm').serializeArray(), function() {
+
             formData[this.name] = this.value;
         });
         console.log(formData);

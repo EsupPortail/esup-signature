@@ -1,3 +1,5 @@
+import {EventBus} from "../customs/ui_utils.js";
+
 export class PdfViewer {
 
     constructor(url, signable, currentStepNumber) {
@@ -96,18 +98,22 @@ export class PdfViewer {
         let rotation = this.rotation;
         let viewport = page.getViewport({scale, rotation});
         if(this.pdfPageView == null) {
+            let dispatchToDOM = false;
+            let globalEventBus = new EventBus({ dispatchToDOM });
             this.pdfPageView = new pdfjsViewer.PDFPageView({
+                eventBus: globalEventBus,
                 container: this.canvas,
                 id: this.pageNum,
                 scale: this.scale,
-                defaultViewport: viewport
+                defaultViewport: viewport,
+                annotationLayerFactory:
+                    new pdfjsViewer.DefaultAnnotationLayerFactory(),
+                renderInteractiveForms: true,
             });
         }
         this.pdfPageView.scale = this.scale;
         this.pdfPageView.rotation = this.rotation;
         this.pdfPageView.setPdfPage(page);
-        this.pdfPageView.renderInteractiveForms = true;
-        this.pdfPageView.annotationLayerFactory = new pdfjsViewer.DefaultAnnotationLayerFactory();
         this.pdfPageView.draw().then(e => this.postRender());
 
     }
