@@ -237,6 +237,7 @@ export class WorkspacePdf {
         $('#infos').show();
         this.pdfViewer.renderPage(1);
         this.pdfViewer.promizeToggleFields(false);
+        this.refreshComments();
     }
 
     enableSignMode() {

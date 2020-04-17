@@ -657,9 +657,6 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
         signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", commentPageNumber, commentPosX, commentPosY);
-        if(addStep) {
-            //TODO gommettes ?
-        }
         return "redirect:/user/signrequests/" + signRequest.getId();
     }
 

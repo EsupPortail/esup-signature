@@ -33,7 +33,7 @@
         </div>
         <div id="commentsTools" th:if="${documentType == 'pdf'}" style="display: none;">
             <div th:unless="${postits.size() > 0}" class="alert alert-warning">Vous pouvez ajouter des commentaires en
-                cliquant sur l'endroit concerné du document
+                cliquant sur l’endroit concerné du document
             </div>
             <div th:if="${postits.size() > 0}" class="alert alert-warning">
                 <ul class="list-group">

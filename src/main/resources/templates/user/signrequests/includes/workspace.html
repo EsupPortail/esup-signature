@@ -4,12 +4,10 @@
 <!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
 <!--/*@thymesVar id="postit" type="org.esupportail.esupsignature.entity.Log"*/-->
 <div th:fragment="workspace" id="workspace" class="alert alert-secondary justify-content-center" th:classappend="${signRequest.parentSignBook != null && signRequest.parentSignBook.signRequests.size() > 1} ? 'workspace-sign' : 'workspace-pdf'">
-    <form id="signForm">
-        <input id="checkDataSubmit" type="submit" style="display: none;"/>
-        <input id="commentPosX" name="commentPosX" type="hidden"/>
-        <input id="commentPosY" name="commentPosY" type="hidden"/>
-        <input id="commentPageNumber" name="commentPageNumber" type="hidden"/>
         <div id="pdf" class="drop-shadows mx-auto">
+            <form id="signForm">
+                <input id="checkDataSubmit" type="submit" style="display: none;"/>
+
             <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed'}">
                 <th:block th:if="${currentSignType != 'visa'}">
                     <button type="button" id="signZoomIn" class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute" style="z-index: 3;">
@@ -49,26 +47,31 @@
                     <i class="fas fa-comment fa-3x"></i>
                 </div>
             </th:block>
-            <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;cursor: pointer;">
-            <span id="hideComment" class="float-right" style="cursor: pointer;">
-                <i class="fas fa-times"></i>
-            </span>
-                <textarea id="comment" name="comment" class="postitarea" placeholder="Saisir une annotation"></textarea>
-                <button type="submit" class="btn btn-sm float-right">
-                    <i class="fas fa-save"></i>
-                </button>
-            </div>
+            </form>
+            <form id="postitForm" th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
+                <input id="commentPosX" name="commentPosX" type="hidden"/>
+                <input id="commentPosY" name="commentPosY" type="hidden"/>
+                <input id="commentPageNumber" name="commentPageNumber" type="hidden"/>
+                <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;cursor: pointer;">
+                <span id="hideComment" class="float-right" style="cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </span>
+                    <textarea id="comment" name="comment" class="postitarea" placeholder="Saisir une annotation"></textarea>
+                    <button type="submit" class="btn btn-sm float-right">
+                        <i class="fas fa-save"></i>
+                    </button>
+                </div>
+            </form>
         </div>
-    </form>
-    <form id="postitForm" th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
-        <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">
-            <span id="hideComment" class="float-right" style="cursor: pointer;">
-                <i class="fas fa-times"></i>
-            </span>
-            <!--            <textarea id="comment" name="comment" class="postitarea" placeholder="Saisir une annotation"></textarea>-->
-            <button type="submit" class="btn btn-sm float-right">
-                <i class="fas fa-save"></i>
-            </button>
-        </div>
-    </form>
+<!--    <form id="postitForm" th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">-->
+<!--        <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">-->
+<!--            <span id="hideComment" class="float-right" style="cursor: pointer;">-->
+<!--                <i class="fas fa-times"></i>-->
+<!--            </span>-->
+<!--            <textarea id="comment" name="comment" class="postitarea" placeholder="Saisir une annotation"></textarea>-->
+<!--            <button type="submit" class="btn btn-sm float-right">-->
+<!--                <i class="fas fa-save"></i>-->
+<!--            </button>-->
+<!--        </div>-->
+<!--    </form>-->
 </div>
