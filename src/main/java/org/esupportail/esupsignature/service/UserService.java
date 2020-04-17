@@ -162,11 +162,6 @@ public class UserService {
 		if(userRepository.countByEppn(eppn) > 0) {
 			User user = userRepository.findByEppn(eppn).get(0);
 			if(user.getSignImages().size() > 0 && user.getSignImages().get(0) != null) {
-//				try {
-//					user.setSignImageBase64(fileService.getBase64Image(user.getSignImages().get(0)));
-//				} catch (IOException e) {
-//					logger.error("sign image read error", e);
-//				}
 				try {
 					user.setIp(request.getRemoteAddr());
 				} catch (Exception e) {

@@ -106,19 +106,21 @@ public class SignBookService {
     }
 
     public boolean checkUserManageRights(User user, SignBook signBook) {
-        if (signBook.getCreateBy().equals(user.getEppn()) || signBook.getCreateBy().equals("System")) {
+        if (signBook.getCreateBy().equals(user) || signBook.getCreateBy().getEppn().equals("System")) {
             return true;
         } else {
             return false;
         }
     }
 
-    public boolean preAuthorizeManage(String eppn, Long id) {
+    public boolean preAuthorizeView(Long id, User user) {
         SignBook signBook = signBookRepository.findById(id).get();
-        if (checkUserManageRights(userService.getUserFromAuthentication(), signBook)) {
-            return true;
-        }
-        return false;
+        return checkUserViewRights(user, signBook);
+    }
+
+    public boolean preAuthorizeManage(Long id, User user) {
+        SignBook signBook = signBookRepository.findById(id).get();
+        return checkUserManageRights(user, signBook);
     }
 
     public void importWorkflow(SignBook signBook, Workflow workflow){

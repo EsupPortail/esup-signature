@@ -192,9 +192,8 @@ public class WorkflowAdminController {
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
 	public String removeStepRecipient(@ModelAttribute User user, @PathVariable("id") Long id,
 									  @PathVariable("workflowStepId") Long workflowStepId,
-									  @RequestParam(value = "recipientId") Long recipientId, HttpServletRequest request) {
-		//User user = userService.getCurrentUser();
-		user.setIp(request.getRemoteAddr());
+									  @RequestParam(value = "recipientId") Long recipientId) {
+		//TODO preAuthorize
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
 		if(user.getEppn().equals(workflow.getCreateBy())) {

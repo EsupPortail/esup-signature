@@ -205,8 +205,6 @@ public class AdminSignRequestController {
 	@GetMapping(value = "/complete/{id}")
 	public String complete(@ModelAttribute User user, @PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) {
-		//User user = userService.getCurrentUser();
-		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
 			//signRequestService.completeSignRequest(signRequest, user);
@@ -219,8 +217,6 @@ public class AdminSignRequestController {
 	@GetMapping(value = "/pending/{id}")
 	public String pending(@ModelAttribute User user, @PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) {
-		//User user = userService.getCurrentUser();
-		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		signRequest.setComment(comment);
 		if(signRequestService.checkUserViewRights(user, signRequest) && signRequest.getStatus().equals(SignRequestStatus.draft)) {
@@ -234,8 +230,6 @@ public class AdminSignRequestController {
 	@GetMapping(value = "/comment/{id}")
 	public String comment(@ModelAttribute User user, @PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttrs, HttpServletRequest request) {
-		//User user = userService.getCurrentUser();
-		user.setIp(request.getRemoteAddr());
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
 			signRequest.setComment(comment);
