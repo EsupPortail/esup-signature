@@ -79,6 +79,7 @@ export class WorkspacePdf {
     }
 
     initWorkspace() {
+        //this.signPosition.currentScale = this.pdfViewer.scale;
         this.mode = 'sign';
         console.info("init to " + this.mode + " mode");
         if(this.mode === 'comment') {
@@ -92,9 +93,11 @@ export class WorkspacePdf {
             }
         }
         // this.refreshComments();
-        if(this.signable) {
-            this.signPosition.resetSign();
-        }
+        // if(this.signable) {
+        //     this.signPosition.resetSign();
+        // }
+//        this.signPosition.updateSignSize(this.pdfViewer.scale);
+
         this.pdfViewer.removeEventListener('ready');
     }
 
@@ -123,13 +126,13 @@ export class WorkspacePdf {
 
     refreshWorkspace() {
         console.info("refresh workspace");
-        this.signPosition.updateSignSize(this.pdfViewer.scale / 0.85);
+        this.signPosition.updateScale(this.pdfViewer.scale);
         this.refreshComments();
     }
 
     clickAction() {
         if(this.mode === 'sign') {
-            this.signPosition.savePosition();
+            this.signPosition.stopDragSignature();
         } else if(this.mode === 'comment') {
             this.displayComment();
         }
@@ -173,9 +176,9 @@ export class WorkspacePdf {
             let postitButton = $('#postit' + postit.id);
             if(postit.pageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
                 postitDiv.show();
-                postitDiv.css('left', postit.posX * this.signPosition.signScale);
-                postitDiv.css('top', postit.posY * this.signPosition.signScale);
-                postitDiv.width(postitDiv.width() * this.signPosition.signScale);
+                postitDiv.css('left', postit.posX * this.pdfViewer.scale);
+                postitDiv.css('top', postit.posY * this.pdfViewer.scale);
+                postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                 postitButton.css("background-color", "#FFC");
             } else {
                 postitDiv.hide();
@@ -237,7 +240,7 @@ export class WorkspacePdf {
         this.disableAllModes();
         this.mode = 'read';
         this.signPosition.pointItEnable = false;
-        this.pdfViewer.scale = 1.75;
+        this.pdfViewer.scale = 1;
         $('#readModeButton').toggleClass('btn-outline-secondary');
         $('#rotateleft').prop('disabled', false);
         $('#rotateright').prop('disabled', false);
@@ -283,7 +286,7 @@ export class WorkspacePdf {
         }
         this.pdfViewer.rotation = 0;
         this.pdfViewer.renderPage(this.currentSignRequestParams.signPageNumber);
-        this.signPosition.resetSign();
+        this.signPosition.updateScale(this.pdfViewer.scale);
         //this.pdfViewer.promizeToggleFields(false);
     }
 

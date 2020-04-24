@@ -2,10 +2,12 @@ export class SignPosition {
 
     constructor(xPos, yPos, signWidth, signHeight, signPageNumber, signImages) {
         console.info("Starting sign position tools");
-        this.startPosX = parseInt(xPos, 10);
-        this.startPosY = parseInt(yPos, 10);
-        this.posX = xPos;
-        this.posY = yPos;
+        this.currentScale = 1;
+        this.signScale = 1;
+        this.signImageNumber = 0;
+        this.fixRatio = .75;
+        this.baseXpos = parseInt(xPos, 10) * this.currentScale;
+        this.baseYpos = parseInt(yPos, 10) * this.currentScale;
         this.signPageNumber = signPageNumber;
         this.signWidth = signWidth;
         this.signHeight = signHeight;
@@ -21,19 +23,32 @@ export class SignPosition {
         this.signZoomInButton = $('#signZoomIn');
         this.signNextImageButton = $('#signNextImage');
         this.signPrevImageButton = $('#signPrevImage');
-        this.currentScale = 1;
-        this.signScale = 1;
-        this.signImageNumber = 0;
         this.changeSignImage(this.signImageNumber);
         this.initListeners();
+    }
+
+    getUiXpos() {
+        return Math.round(this.baseXpos / this.fixRatio);
+    }
+
+    getUiYpos() {
+        return Math.round(this.baseYpos / this.fixRatio);
+    }
+
+    getPdfXpos() {
+        return Math.round(this.baseXpos / this.currentScale);
+    }
+
+    getPdfYpos() {
+        return Math.round(this.baseYpos / this.currentScale);
     }
 
     initListeners() {
         window.addEventListener("touchmove", e => this.touchmove(e));
         this.cross.on('mousedown', e => this.dragSignature());
         this.cross.on('touchstart', e => this.dragSignature());
-        this.cross.on('mouseup', e => this.savePosition());
-        this.cross.on('touchend', e => this.savePosition());
+        this.cross.on('mouseup', e => this.stopDragSignature());
+        this.cross.on('touchend', e => this.stopDragSignature());
         this.signZoomOutButton.on('click', e => this.signZoomOut(e));
         this.signZoomInButton.on('click', e => this.signZoomIn(e));
         this.signNextImageButton.on('click', e => this.signNextImage(e));
@@ -56,7 +71,7 @@ export class SignPosition {
     }
 
     getImageDimensions(file) {
-        return new Promise (function (resolved, rejected) {
+        return new Promise (function (resolved) {
             var i = new Image()
             i.onload = function(){
                 resolved({w: i.width, h: i.height})
@@ -85,14 +100,10 @@ export class SignPosition {
 
     signZoomOut(e) {
         this.updateSignZoom(this.signScale - 0.1);
-        this.signScale = this.signScale - 0.1;
-        this.updateSignButtons(this.posX * this.currentScale, this.posY * this.currentScale);
     }
 
     signZoomIn(e) {
         this.updateSignZoom(this.signScale + 0.1);
-        this.signScale = this.signScale + 0.1;
-        this.updateSignButtons(this.posX * this.currentScale, this.posY * this.currentScale);
     }
 
     updateSignZoom(signScale) {
@@ -104,36 +115,28 @@ export class SignPosition {
         this.borders.css('width', this.signWidth);
         this.borders.css('height', this.signHeight);
         this.cross.css('background-size', this.signWidth + 'px');
-        // this.cross.css('zoom', signScale);
-        // this.cross.css('left', this.posX + "px");
-        // this.cross.css('top', this.posY + "px");
+        this.signScale = this.signScale - signScale;
+        this.updateSignButtons(this.getUiXpos() * this.currentScale, this.getUiYpos() * this.currentScale);
     }
 
     pointIt(e) {
         if(this.pointItEnable) {
             this.pointItMove = true;
             var offset = $("#pdf").offset();
-            this.posX = e.pageX - offset.left;
-            this.posY = e.pageY - offset.top;
-            // this.posX = e.offsetX ? (e.offsetX) : e.clientX;
-            // this.posY = e.offsetY ? (e.offsetY) : e.clientY;
+            this.baseXpos = (e.pageX - offset.left) * this.fixRatio;
+            this.baseYpos = (e.pageY - offset.top) * this.fixRatio;
             this.updateCrossPosition();
         }
     }
 
     pointIt2(e) {
         if (this.pointItEnable) {
-            console.debug("pointit2");
+            console.log("pointit2");
             $('#commentPosX').val(e.offsetX ? (e.offsetX) : e.clientX);
             $('#commentPosY').val(e.offsetY ? (e.offsetY) : e.clientY);
             $('#commentPageNumber').val(this.signPageNumber);
-            this.scalePosition(1);
+            //this.scalePosition();
         }
-    }
-
-    scalePosition(scale) {
-        this.posX = Math.round(this.posX  / this.currentScale  * scale);
-        this.posY = Math.round(this.posY  / this.currentScale  * scale);
     }
 
     touchmove(e) {
@@ -149,77 +152,57 @@ export class SignPosition {
         }
     }
 
-    // refreshSign(scale) {
-    //     console.debug("refresh sign with new scale : " + scale);
-    //     this.cross.css('left', parseInt(this.cross.css('left')) / this.currentScale  * scale);
-    //     this.cross.css('top', parseInt(this.cross.css('top'))  / this.currentScale * scale);
-    //     this.updateSignSize(scale);
-    //     $('#textVisa').css('font-size', 8 * scale);
-    //     $('#textDate').css('font-size', 8 * scale)
-    //     this.currentScale = scale;
-    // }
-
-    resetSign() {
-        console.info("reset sign to "  + this.startPosX + " " + this.startPosY);
-        this.cross.css('left', this.startPosX * this.currentScale);
-        this.cross.css('top', this.startPosY * this.currentScale);
-        this.updateSignSize(this.currentScale);
-        $('#textVisa').css('font-size', 8 * this.currentScale);
+    updateScale(scale) {
+        console.info("update sign scale from " + this.currentScale + " to " + scale);
+        this.signWidth = this.signWidth / this.currentScale * scale;
+        this.signHeight = this.signHeight / this.currentScale * scale;
+        this.baseXpos = this.baseXpos / this.currentScale * scale;
+        this.baseYpos = this.baseYpos / this.currentScale * scale;
+        this.currentScale = scale;
+        this.updateCrossPosition();
     }
 
-    updateSignButtons(x, y) {
+    updateSignButtons() {
+        console.info("update buttons");
         let signZoomIn = $("#signZoomIn");
         let signZoomOut = $("#signZoomOut");
 
-        signZoomIn.css('left', x - 35 + "px");
-        signZoomIn.css('top', y + "px");
-        signZoomOut.css('left', x - 35 + "px");
-        signZoomOut.css('top', y + 32 + "px");
+        signZoomIn.css('left', this.getUiXpos() - 35 + "px");
+        signZoomIn.css('top', this.getUiYpos() + "px");
+        signZoomOut.css('left', this.getUiXpos() - 35 + "px");
+        signZoomOut.css('top', this.getUiYpos() + 32 + "px");
 
         let signPrevImage = $("#signPrevImage");
         let signNextImage = $("#signNextImage");
-        signPrevImage.css('left', x + (this.signWidth) + 5 + "px");
-        signPrevImage.css('top', y + "px");
-        signNextImage.css('left', x + (this.signWidth) + 5 + "px");
-        signNextImage.css('top', y + 32 + "px");
+        signPrevImage.css('left', this.getUiXpos() + (this.signWidth) + 5 + "px");
+        signPrevImage.css('top', this.getUiYpos() + "px");
+        signNextImage.css('left', this.getUiXpos() + (this.signWidth) + 5 + "px");
+        signNextImage.css('top', this.getUiYpos() + 32 + "px");
     }
 
     updateCrossPosition() {
+        console.info("update cross pos to : " + this.getUiXpos() + " " + this.getUiYpos());
         if(this.posX < 0) this.posX = 0;
         if(this.posY < 0) this.posY = 0;
         this.cross.css('backgroundColor', 'rgba(0, 255, 0, .5)');
-        this.cross.css('left', this.posX + "px");
-        this.cross.css('top', this.posY + "px");
-        this.updateSignButtons(this.posX, this.posY);
-        console.debug("update cross pos to : " + this.posX + " " + this.posY);
-        this.scalePosition(1);
-        console.debug("save cross pos to : " + this.posX + " " + this.posY);
+        this.cross.css('left', this.getUiXpos() + "px");
+        this.cross.css('top', this.getUiYpos() + "px");
+        this.updateSignSize();
     }
 
-    updateSignSize(scale) {
-        console.info("update sign from scale : " + this.currentScale + " to " + scale);
-        this.signWidth = Math.round(this.signWidth / this.currentScale * scale);
-        this.signHeight = Math.round(this.signHeight / this.currentScale * scale);
-        this.cross.css('left', this.posX * scale);
-        this.cross.css('top', this.posY * scale);
-        this.updateSignButtons(this.posX * scale, this.posY * scale);
+    updateSignSize() {
         this.cross.css('width', this.signWidth);
         this.cross.css('height', this.signHeight);
         this.borders.css('width', this.signWidth);
         this.borders.css('height', this.signHeight);
         this.cross.css('background-size', this.signWidth);
-        $('#textVisa').css('font-size', 8 * scale + "px");
-        $('#textDate').css('font-size', 8 * scale + "px");
-        this.currentScale = scale;
+        $('#textVisa').css('font-size', 8 * this.currentScale + "px");
+        $('#textDate').css('font-size', 8 * this.currentScale + "px");
+        this.updateSignButtons(this.getUiXpos(), this.getUiYpos());
     }
 
-    savePosition() {
-        console.info("save position");
-        if(this.pointItEnable && this.pointItMove) {
-            console.info("save position to  :" + this.posX + " " + this.posY);
-            this.startPosX = this.posX;
-            this.startPosY = this.posY;
-        }
+    stopDragSignature() {
+        console.info("stop drag");
         this.cross.css('backgroundColor', 'rgba(0, 255, 0, 0)');
         this.cross.css('pointerEvents', "auto");
         document.body.style.cursor = "default";
@@ -228,7 +211,7 @@ export class SignPosition {
     }
 
     dragSignature() {
-        console.log("drag");
+        console.info("start drag");
         this.cross.css('pointerEvents', "none");
         this.pdf.css('pointerEvents', "auto");
         document.body.style.cursor = "move";

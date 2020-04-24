@@ -20,6 +20,8 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
+import org.springframework.web.servlet.resource.ContentVersionStrategy;
+import org.springframework.web.servlet.resource.VersionResourceResolver;
 import org.thymeleaf.dialect.springdata.SpringDataDialect;
 import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
 
@@ -54,7 +56,10 @@ public class WebAppConfig implements WebMvcConfigurer {
                         "classpath:/static/js/");
 		registry.addResourceHandler("swagger-ui.html")
 				.addResourceLocations("classpath:/META-INF/resources/");
-
+//
+//		VersionResourceResolver versionResourceResolver = new VersionResourceResolver()
+//				.addVersionStrategy(new ContentVersionStrategy(), "/**");
+//
     }
 	
     @Bean

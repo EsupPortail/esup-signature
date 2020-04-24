@@ -80,10 +80,10 @@ export class SignUi {
                 "&addDate=" + this.workspace.signPosition.dateActive +
                 "&visual=" + this.workspace.signPosition.visualActive +
                 "&comment=" + this.signComment.val() +
-                "&xPos=" + Math.round(this.workspace.signPosition.posX) +
-                "&yPos=" + Math.round(this.workspace.signPosition.posY) +
-                "&signWidth=" + Math.round(this.workspace.signPosition.signWidth / (this.workspace.signPosition.currentScale)) +
-                "&signHeight=" + Math.round(this.workspace.signPosition.signHeight / (this.workspace.signPosition.currentScale)) +
+                "&xPos=" + Math.round(this.workspace.signPosition.getPdfXpos()) +
+                "&yPos=" + Math.round(this.workspace.signPosition.getPdfYpos()) +
+                "&signWidth=" + Math.round(this.workspace.signPosition.signWidth * 0.75 / (this.workspace.signPosition.currentScale)) +
+                "&signHeight=" + Math.round(this.workspace.signPosition.signHeight * 0.75 / (this.workspace.signPosition.currentScale)) +
                 "&signPageNumber=" + this.workspace.pdfViewer.pageNum +
                 "&formData=" + JSON.stringify(formData) +
                 "&" + csrf.name + "=" + csrf.value
@@ -92,7 +92,7 @@ export class SignUi {
             signRequestUrlParams = "password=" + document.getElementById("password").value +
                 "&" + csrf.name + "=" + csrf.value;
         }
-        console.debug("params to send : " + signRequestUrlParams);
+        console.info("params to send : " + signRequestUrlParams);
         this.sendData(signRequestUrlParams);
     }
 

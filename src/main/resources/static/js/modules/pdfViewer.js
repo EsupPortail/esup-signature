@@ -7,7 +7,7 @@ export class PdfViewer {
         this.url= url;
         this.pdfPageView = null;
         this.currentStepNumber = currentStepNumber;
-        this.scale = 0.70;
+        this.scale = 1;
         this.zoomStep = 0.10;
         this.canvas = document.getElementById('pdf');
         this.pdfDoc = null;
@@ -182,9 +182,7 @@ export class PdfViewer {
                         continue;
                     }
                     if (inputField.is(':radio')) {
-                        console.log(items[i]);
                         let radio = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\'][value=\'' + items[i].buttonValue + '\']');
-                        console.log(radio.prop("checked"));
                         if (radio.prop("checked")) {
                             this.savedFields.set(items[i].fieldName, radio.val());
                         }
