@@ -118,7 +118,7 @@ public class FormService {
 		return pageNrByAnnotDict;
 	}
 
-	public Form createForm(Document document, String name, String title, String workflowType, String code, DocumentIOType targetType, String targetUri) throws IOException {
+	public Form createForm(Document document, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri) throws IOException {
 		List<Form> testForms = formRepository.findFormByNameAndActiveVersion(name, true);
 		Form form = new Form();
 		form.setName(name);
@@ -134,8 +134,8 @@ public class FormService {
 		form.setDocument(document);
 		form.setTargetType(targetType);
 		form.setTargetUri(targetUri);
-		form.setRole(code.toUpperCase());
-		form.setPreFillType(code.toLowerCase());
+		form.setRole(roleName.toUpperCase());
+		form.setPreFillType(prefillType);
 		form.setWorkflowType(workflowType);
 		form.setFields(getFields(document));
 		formRepository.save(form);

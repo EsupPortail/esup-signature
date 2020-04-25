@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
+<!--/*@thymesVar id="prefillTypes" type="java.util.List<org.esupportail.esupsignature.service.prefill.PreFill>"*/-->
+<!--/*@thymesVar id="workflowTypes" type="java.util.List<org.esupportail.esupsignature.service.workflow.DefaultWorkflow>"*/-->
 <head th:replace="fragments/head"></head>
 <body>
 <header th:replace="fragments/nav"></header>
@@ -132,8 +134,17 @@
                             </div>
                         </div>
                     <div class="form-group">
-                        <label for="code" class="col-form-label">Code</label>
-                        <input type="text" id="code" name="code" class="form-control" required>
+                        <label for="roleName" class="col-form-label">Nom du role autorisé à acceder au formulaire</label>
+                        <input type="text" id="roleName" name="roleName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="workflowType" class="col-form-label">Type de pré-remplissage</label>
+                        <select class="form-control" id="prefillType" name="prefillType">
+                            <th:block th:each="prefillType : ${prefillTypes}">
+                                <option th:value="${prefillType.name}"
+                                        th:text="${prefillType.description}"></option>
+                            </th:block>
+                        </select>
                     </div>
                     <div class="alert alert-info">
                         Le "code" permet de mettre en lien le formulaire avec un role utilisateur, ceci pour gérer

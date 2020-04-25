@@ -19,6 +19,7 @@ import java.util.List;
 public class DefaultPreFill implements PreFill {
 
 	private String name = "default";
+	private String description = "Pré-remplissage par défaut (données LDAP)";
 
 	@Resource
 	private ExtValueService extValueService;
@@ -27,7 +28,12 @@ public class DefaultPreFill implements PreFill {
 	public String getName() {
 		return name;
 	}
-	
+
+	@Override
+	public String getDescription() {
+		return description;
+	}
+
 	@Override
 	public List<Field> preFillFields(List<Field> fields, User user) {
 		List<Field> filledFields = new ArrayList<>();

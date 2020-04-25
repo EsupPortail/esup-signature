@@ -13,6 +13,10 @@ public class PreFillService {
 	@Resource
 	private List<PreFill> preFillValues;
 
+	public List<PreFill> getPreFillValues() {
+		return preFillValues;
+	}
+
 	public PreFill getPreFillServiceByClassName(String className) {
 		for(PreFill preFillValue : preFillValues ) {
 			if(preFillValue.getClass().getSimpleName().equals(className)) {

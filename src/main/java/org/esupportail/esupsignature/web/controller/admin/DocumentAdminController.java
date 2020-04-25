@@ -87,14 +87,14 @@ public class DocumentAdminController {
 		return "admin/documents/show";
 	}
 
-	@PostMapping("/{id}/generate")
-	public String generateForm(@PathVariable("id") Long id, String name, String title, String workflowType, String code, DocumentIOType targetType, String targetUri) throws IOException {
-		Document document = documentRepository.findById(id).get();
-		if(formService.getFormByDocument(document) == null) {
-			formService.createForm(document, name, title, workflowType, code, targetType, targetUri);
-		}
-		return "redirect:/admin/documents/" + id;
-	}
+//	@PostMapping("/{id}/generate")
+//	public String generateForm(@PathVariable("id") Long id, String name, String title, String workflowType, String code, DocumentIOType targetType, String targetUri) throws IOException {
+//		Document document = documentRepository.findById(id).get();
+//		if(formService.getFormByDocument(document) == null) {
+//			formService.createForm(document, name, title, workflowType, code, targetType, targetUri);
+//		}
+//		return "redirect:/admin/documents/" + id;
+//	}
 	
 	@GetMapping("")
 	public String getAllDocuments(Model model) {

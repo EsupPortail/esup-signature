@@ -20,6 +20,7 @@ import java.util.Map;
 public class TestPreFill implements PreFill {
 
 	private String name = "test";
+	private String description = "Test";
 
 	@Resource
 	private ExtValueService extValueService;
@@ -28,7 +29,11 @@ public class TestPreFill implements PreFill {
 	public String getName() {
 		return name;
 	}
-	
+
+	@Override
+	public String getDescription() {
+		return description;
+	}
 	@Override
 	public List<Field> preFillFields(List<Field> fields, User user) {
 		List<Field> filledFields = new ArrayList<>();

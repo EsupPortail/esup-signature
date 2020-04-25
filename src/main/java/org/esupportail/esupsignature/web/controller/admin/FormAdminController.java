@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -64,6 +65,9 @@ public class FormAdminController {
 	private WorkflowService workflowService;
 
 	@Resource
+	private PreFillService preFillService;
+
+	@Resource
 	private UserService userService;
 
 	@ModelAttribute(value = "suUsers", binding = false)
@@ -103,9 +107,9 @@ public class FormAdminController {
 	}
 
 	@PostMapping("generate")
-	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, String workflowType, String code, DocumentIOType targetType, String targetUri, Model model) throws IOException {
+	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Model model) throws IOException {
 		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = formService.createForm(document, name, title, workflowType, code, targetType, targetUri);
+		Form form = formService.createForm(document, name, title, workflowType, prefillType, roleName, targetType, targetUri);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 
@@ -116,6 +120,7 @@ public class FormAdminController {
 		model.addAttribute("fields", form.getFields());
 		model.addAttribute("document", form.getDocument());
 		model.addAttribute("workflowTypes", workflowService.getAllWorkflows());
+		model.addAttribute("preFillTypes", preFillService.getPreFillValues());
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("model", form.getDocument());
 		return "admin/forms/update";
@@ -133,6 +138,7 @@ public class FormAdminController {
 		model.addAttribute("forms", forms);
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("workflowTypes", workflowService.getClassesWorkflows());
+		model.addAttribute("prefillTypes", preFillService.getPreFillValues());
 		return "admin/forms/list";
 	}
 	

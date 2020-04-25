@@ -21,6 +21,8 @@ public class CovidPreFill implements PreFill {
 
 	private String name = "covid";
 
+	private String description = "Pré-remplissage automatique des demandes COVID";
+
 	@Resource
 	private ExtValueService extValueService;
 
@@ -28,7 +30,12 @@ public class CovidPreFill implements PreFill {
 	public String getName() {
 		return name;
 	}
-	
+
+	@Override
+	public String getDescription() {
+		return description;
+	}
+
 	@Override
 	public List<Field> preFillFields(List<Field> fields, User user) {
 		List<Field> filledFields = new ArrayList<>();

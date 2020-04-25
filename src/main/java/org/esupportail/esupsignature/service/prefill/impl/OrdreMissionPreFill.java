@@ -22,6 +22,8 @@ public class OrdreMissionPreFill implements PreFill {
 
 	private String name = "ordre_mission";
 
+	private String description = "Remplissage automatique des ordres de missions";
+
 	@Resource
 	private ExtValueService extValueService;
 
@@ -29,7 +31,12 @@ public class OrdreMissionPreFill implements PreFill {
 	public String getName() {
 		return name;
 	}
-	
+
+	@Override
+	public String getDescription() {
+		return description;
+	}
+
 	@Override
 	public List<Field> preFillFields(List<Field> fields, User user) {
 		List<Field> filledFields = new ArrayList<>();
