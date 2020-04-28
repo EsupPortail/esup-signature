@@ -29,7 +29,7 @@ public class WorkflowServiceTest {
     @Resource
     private WorkflowService workflowService;
 
-    @Test(timeout = 1000)
+    @Test(timeout = 5000)
     public void testWorkflows() {
         boolean workflowTest = true;
         for(Workflow defaultWorkflow : workflowService.getClassesWorkflows()) {
