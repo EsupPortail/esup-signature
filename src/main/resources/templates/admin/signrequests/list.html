@@ -38,8 +38,8 @@
                         <table class="table table-sm table-striped table-hover table-borderless">
                             <thead class="thead-dark">
                             <tr>
-                                <th>Circuit</th>
-                                <th>Titre</th>
+                                <th class="w-20">Circuit</th>
+                                <th class="w-20">Titre</th>
                                 <th><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
                                 <th>Créé par</th>
                                 <th>Destinataires</th>
@@ -53,7 +53,7 @@
                                 <tr>
                                     <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
                                     <td class="text-break" th:unless="${signRequest.parentSignBook != null}">Signature rapide</td>
-                                    <td><p class="truncate" th:title="${signRequest.title}"
+                                    <td><p class="text-break" th:title="${signRequest.title}"
                                                         th:text="${signRequest.title}"></p></td>
                                     <td><span
                                             th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
