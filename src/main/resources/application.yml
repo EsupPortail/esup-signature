@@ -81,6 +81,12 @@ fs:
     smb-password: BT28ap3R!
     smb-uri: smb://stockage.univ-rouen.fr/groupdirs/COMMUN/Demat
     vfs-uri: /tmp
+    cmis-uri: https://esup-signature.univ-rouen.fr:8083/nuxeo
+    cmis-login: Administrator
+    cmis-password: Administrator
+    cmis-respository-id: default
+    cmis-root-path: /default-domain/workspaces
+
 
 oj:
     ks-filename: /opt/tomcat-esup-signature/temp/oj_keystore.p12
@@ -135,7 +141,3 @@ sign:
     signature-packaging: ENVELOPED
     xades-digest-algorithm: SHA256
     xades-signature-level: XAdES_BASELINE_T
-
-xslt:
-    root-country-url-in-tl-browser: =https://webgate.ec.europa.eu/tl-browser/#/tl/
-    root-trustmark-url-in-tl-browser: =https://webgate.ec.europa.eu/tl-browser/#/trustmark/

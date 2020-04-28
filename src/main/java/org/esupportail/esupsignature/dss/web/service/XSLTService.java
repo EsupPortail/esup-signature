@@ -4,8 +4,6 @@ import eu.europa.esig.dss.DSSXmlErrorListener;
 import eu.europa.esig.dss.DomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 
@@ -20,34 +18,22 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.*;
 
 @Component
-@EnableConfigurationProperties(XSLTProperties.class)
 public class XSLTService {
 
 	private static final Logger logger = LoggerFactory.getLogger(XSLTService.class);
 
-	private XSLTProperties xsltProperties;
-
-	public XSLTService(XSLTProperties xsltProperties) {
-		this.xsltProperties = xsltProperties;
-	}
-
 	private Templates templateSimpleReport;
-	private Templates templateSimpleCertificateReport;
 	private Templates templateDetailedReport;
 
 	@PostConstruct
 	public void init() throws TransformerConfigurationException, IOException {
 		TransformerFactory transformerFactory = DomUtils.getSecureTransformerFactory();
 
-		try (InputStream is = XSLTService.class.getResourceAsStream("/xslt/html/simple-report.xslt")) {
+		try (InputStream is = XSLTService.class.getResourceAsStream("/xslt/html/simple-report-bootstrap4.xslt")) {
 			templateSimpleReport = transformerFactory.newTemplates(new StreamSource(is));
 		}
 
-		try (InputStream is = XSLTService.class.getResourceAsStream("/xslt/html/simple-certificate-report.xslt")) {
-			templateSimpleCertificateReport = transformerFactory.newTemplates(new StreamSource(is));
-		}
-
-		try (InputStream is = XSLTService.class.getResourceAsStream("/xslt/html/detailed-report.xslt")) {
+		try (InputStream is = XSLTService.class.getResourceAsStream("/xslt/html/detailed-report-bootstrap4.xslt")) {
 			templateDetailedReport = transformerFactory.newTemplates(new StreamSource(is));
 		}
 	}
@@ -60,20 +46,6 @@ public class XSLTService {
 			transformer.transform(new StreamSource(new StringReader(simpleReport)), new StreamResult(writer));
 		} catch (Exception e) {
 			logger.error("Error while generating simple report : " + e.getMessage(), e);
-		}
-		return writer.toString();
-	}
-
-	public String generateSimpleCertificateReport(String simpleReport) {
-		Writer writer = new StringWriter();
-		try {
-			Transformer transformer = templateSimpleCertificateReport.newTransformer();
-			transformer.setErrorListener(new DSSXmlErrorListener());
-			transformer.setParameter("rootTrustmarkUrlInTlBrowser", xsltProperties.getRootTrustmarkUrlInTlBrowser());
-			transformer.setParameter("rootCountryUrlInTlBrowser", xsltProperties.getRootCountryUrlInTlBrowser());
-			transformer.transform(new StreamSource(new StringReader(simpleReport)), new StreamResult(writer));
-		} catch (Exception e) {
-			logger.error("Error while generating simple certificate report : " + e.getMessage(), e);
 		}
 		return writer.toString();
 	}
