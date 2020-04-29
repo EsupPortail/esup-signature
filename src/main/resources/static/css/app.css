@@ -414,86 +414,6 @@ input:checked + .slider:before {
     margin-left: 160px;
 }
 
-@media (max-width: 575px) {
-    .sidebar-label {
-        display: inline !important;
-    }
-    .nav-item-label {
-        display: inline !important;
-    }
-    .navbar-collapse {
-        position: absolute;
-        width: 100%;
-        top: 50px;
-    }
-}
-
-
-@media (max-width: 768px) {
-    .workspace-sign {
-        display: flex;
-        margin-top: 0px;
-    }
-    .tools {
-        top: 50px;
-    }
-
-    #breadcrumb {
-        display: none;
-    }
-
-    #sidebar2 {
-        display: none;
-    }
-
-    #sidebar {
-        top : 56px;
-        position: relative;
-        max-width: initial;
-        min-height: 0px;
-    }
-    #sidebar.active {
-        top : 0px;
-        position: relative;
-        max-width: initial;
-        min-width: initial;
-    }
-    #sidebarCollapse {
-        display: none;
-    }
-    #breadcrumb {
-        margin: 0;
-        margin-top: 50px;
-        position: relative;
-    }
-    .content {
-        width: 100%;
-        margin: 0;
-    }
-
-    .sign-menu {
-        max-width: initial;
-        position: relative !important;
-    }
-    .sign-preview {
-        overflow: auto;
-        margin-left: initial;
-    }
-    #workspace {
-        margin: 0;
-        margin-top: 100px;
-    }
-    #sidebar {
-        display: none;
-    }
-}
-
-@media (min-width: 1500px) {
-    .d-xxl-inline {
-        display: inline !important;
-    }
-}
-
 .svg-container {
     display: inline-block;
     position: relative;
@@ -932,7 +852,7 @@ float:left;
 
 .fixed-action-btns {
     position: fixed;
-    right: 80px;
+    right: 50px;
     bottom: 80px;
     margin-bottom: 0;
     z-index: 1000;
@@ -1132,4 +1052,117 @@ float:left;
     height:auto;
     display:block;
     z-index:999;
+}
+
+@media (max-width: 1100px) {
+    #sidebar {
+        display: none;
+    }
+
+    #breadcrumb {
+        width: 100vw;
+        margin: 0;
+    }
+
+    .content {
+        margin-top: 100px;
+        width: 100vw;
+        margin-left: 0;
+    }
+
+    .workspace-pdf {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    .workspace-sign {
+        display: flex;
+    }
+
+    #sidebar2 {
+        display: none;
+    }
+
+    #sidebar {
+        top : 56px;
+        position: relative;
+        max-width: initial;
+        min-height: 0px;
+    }
+
+    #sidebar.active {
+        top : 0px;
+        position: relative;
+        max-width: initial;
+        min-width: initial;
+    }
+
+    #sidebarCollapse {
+        display: none;
+    }
+
+    .fixed-action-btns {
+        bottom: 50px;
+        right: 30px;
+    }
+
+    .sign-menu {
+        max-width: initial;
+        position: relative !important;
+    }
+    .sign-preview {
+        overflow: auto;
+        margin-left: initial;
+    }
+}
+
+@media (max-width: 575px) {
+    .sidebar-label {
+        display: inline !important;
+    }
+
+    .nav-item-label {
+        display: inline !important;
+    }
+
+    .navbar-collapse {
+        position: absolute;
+        width: 100%;
+        top: 50px;
+    }
+
+    #breadcrumb {
+        display: none;
+    }
+
+    .tools {
+        top: 50px;
+    }
+
+    .workspace-pdf {
+        width: min-content;
+        margin-top: 0px;
+        padding: 3px;
+    }
+
+    .workspace {
+        width: min-content;
+        margin-top: 0px;
+        padding: 3px;
+    }
+
+    .content {
+        overflow: auto;
+    }
+
+}
+
+@media (min-width: 1500px) {
+    .d-xxl-inline {
+        display: inline !important;
+    }
+    .d-xxl-table-cell {
+        display: table-cell!important;
+    }
 }

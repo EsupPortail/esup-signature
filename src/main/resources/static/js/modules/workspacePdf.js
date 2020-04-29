@@ -98,7 +98,9 @@ export class WorkspacePdf {
         // }
 //        this.signPosition.updateSignSize(this.pdfViewer.scale);
 
+        this.pdfViewer.adjustZoom();
         this.pdfViewer.removeEventListener('ready');
+
     }
 
     initForm(e) {

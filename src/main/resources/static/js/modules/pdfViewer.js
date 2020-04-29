@@ -61,6 +61,25 @@ export class PdfViewer {
         document.getElementById('zoomout').addEventListener('click', e => this.zoomOut());
         document.getElementById('rotateleft').addEventListener('click', e => this.rotateLeft());
         document.getElementById('rotateright').addEventListener('click', e => this.rotateRight());
+        window.addEventListener('resize', e => this.adjustZoom());
+
+    }
+
+    adjustZoom() {
+        console.info("adjust zoom to screen wide " + window.innerWidth);
+        let newScale = 1;
+        if (window.innerWidth < 768) {
+            newScale = 0.7;
+        }
+        if (window.innerWidth < 575) {
+            newScale = 0.5;
+        }
+        if (newScale != this.scale) {
+            this.scale = newScale;
+            console.info('zoom in, scale = ' + this.scale);
+            this.renderPage(this.pageNum);
+            this.fireEvent('scaleChange', ['in']);
+        }
     }
 
     startRender(pdf) {

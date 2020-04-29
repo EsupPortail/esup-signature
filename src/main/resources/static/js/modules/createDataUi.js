@@ -32,6 +32,7 @@ export class CreateDataUi {
 
     startRender() {
         this.pdfViewer.renderPage(1);
+        this.pdfViewer.adjustZoom();
     }
 
 }

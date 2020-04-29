@@ -4,7 +4,7 @@ global:
     nexu-version: 1.23-SNAPSHOT
     nexu-download-url: /downloads/nexu-bundle-${nexuVersion}.zip
     hide-wizard: false
-    
+
 tomcat:
     ajp:
         port: 6009

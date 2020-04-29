@@ -33,12 +33,12 @@
                     <table class="table table-borderless table-hover mt-2">
                         <thead class="thead-dark">
                         <tr>
-                            <th class="w-20">Circuit</th>
+                            <th class="w-20 d-none d-xxl-table-cell">Circuit</th>
                             <th class="w-20">Titre des documents</th>
                             <th class="d-none d-lg-table-cell"><a class="sorted" sd:pagination-sort="createBy">Crée par</a></th>
                             <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
                             <th class="d-none d-lg-table-cell">Participants</th>
-                            <th class="d-none d-lg-table-cell">Date de signature/refus</th>
+                            <th class="d-none d-xxl-table-cell">Date de signature/refus</th>
                             <th class="d-none d-md-table-cell"><a class="sorted" sd:pagination-sort="status">Statut</a></th>
                             <th>Actions</th>
                         </tr>
@@ -46,8 +46,8 @@
                         <tbody>
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr>
-                                <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
-                                <td class="text-break" th:unless="${signRequest.parentSignBook != null}">Signature rapide</td>
+                                <td class="text-break d-none d-xxl-table-cell" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
+                                <td class="text-break d-none d-xxl-table-cell" th:unless="${signRequest.parentSignBook != null}">Signature rapide</td>
                                 <td class="text-break"><span th:text="${signRequest.viewTitle}"></span></td>
                                 <td class="d-none d-lg-table-cell" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>
                                 <td class="d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
@@ -93,7 +93,7 @@
                                         </tbody>
                                     </table>
                                 </td>
-                                <td>
+                                <td class="d-none d-xxl-table-cell">
                                     <span th:if="${signRequest.endDate != null}" th:text="${#dates.format(signRequest.endDate, 'dd/MM/yyyy HH:mm')}"></span>
                                 </td>
                                 <td th:if="${signRequest.parentSignBook != null}" class="d-none d-md-table-cell"
