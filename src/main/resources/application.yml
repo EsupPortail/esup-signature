@@ -31,11 +31,11 @@ spring:
                     lob:
                         non_contextual_creation: true
         show-sql: false
-#    ldap:
-#        base: dc=univ-rouen,dc=fr
-#        password: Esupw7&56MZ
-#        urls: ldap://ldap.univ-rouen.fr
-#        username: cn=cons-esupSignature,dc=univ-rouen,dc=fr
+    ldap:
+        base: dc=univ-rouen,dc=fr
+        password: Esupw7&56MZ
+        urls: ldap://ldap.univ-rouen.fr
+        username: cn=cons-esupSignature,dc=univ-rouen,dc=fr
     mail:
         host: smtp.univ-rouen.fr
     messages:

@@ -52,7 +52,7 @@
                     <a th:if="${signRequest.createBy == user.eppn && signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() == 'draft' || signRequest.parentSignBook.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>
                     <a th:if="${signRequest.parentSignBook == null}" class="btn btn-light btn-outline-dark mr-1" title="Détails" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'"><i class="fas fa-info-circle"></i></a>
                     <th:block th:if="${documentType == 'pdf'}">
-                        <div class="bg-light ml-1 p-1 pt-2 d-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
+                        <div class="bg-light ml-1 p-1 pt-2  d-none d-lg-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
                         <button id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
                             <i class="fas fa-arrow-up"></i>
                         </button>
@@ -60,8 +60,8 @@
                             <i class="fas fa-arrow-down"></i>
                         </button>
                         <div class="border ml-3 mr-3 d-none d-lg-block"></div>
-                        <button id="zoomout" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-minus"></i></button>
-                        <button id="zoomin" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-search-plus"></i></button>
+                        <button id="zoomout" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-search-minus"></i></button>
+                        <button id="zoomin" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-search-plus"></i></button>
                         <div class="zoom bg-light ml-1 p-1 pt-2 d-inline d-none"><span id="zoom"></span> %</div>
                         <div class="border ml-3 mr-3 d-none d-lg-block"></div>
                         <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
@@ -98,8 +98,8 @@
                     </th:block>
                 </nav>
             </div>
-            <div style="position: absolute;left: 270px;top: 135px;">
-                <th:block th:if="${signRequest.status.name() == 'pending'}" th:each="postit, iterate : ${globalPostits}">
+            <div th:if="${signRequest.status.name() == 'pending'}" style="position: absolute;left: 270px;top: 135px;">
+                <th:block  th:each="postit, iterate : ${globalPostits}">
                     <!--            <div class="box-wrap">-->
                     <!--                <span class="paper-clip"></span>-->
                     <!--            </div>-->

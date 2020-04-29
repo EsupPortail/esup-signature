@@ -7,6 +7,8 @@ import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.extvalue.ExtValue;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,27 +23,35 @@ import java.util.Map;
 @Component
 public class LdapExtValue implements ExtValue {
 
+	private static final Logger logger = LoggerFactory.getLogger(LdapExtValue.class);
+
 	@Resource
 	private UserService userService;
 
-	@Autowired(required = false)
 	private LdapPersonService ldapPersonService;
-	
+
+	public LdapExtValue(@Autowired(required = false) LdapPersonService ldapPersonService) {
+		this.ldapPersonService = ldapPersonService;
+	}
+
 	@Override
 	public String getValueByName(String name, User user) {
-		if(initValues(user).get(name) != null){
+		Object value = initValues(user).get(name);
+		if(value != null){
 			if (name.equals("schacDateOfBirth")) {
-				String schacDateOfBirth = initValues(user).get(name).toString();
-				DateFormat originalFormat = new SimpleDateFormat("yyyyMMdd");
-				DateFormat targetFormat = new SimpleDateFormat("dd/MM/yyyy");
-				try {
-					Date date = originalFormat.parse(schacDateOfBirth);
-					return targetFormat.format(date);
-				} catch (ParseException e) {
-					e.printStackTrace();
+				String schacDateOfBirth = value.toString();
+				if(!schacDateOfBirth.isEmpty()) {
+					DateFormat originalFormat = new SimpleDateFormat("yyyyMMdd");
+					DateFormat targetFormat = new SimpleDateFormat("dd/MM/yyyy");
+					try {
+						Date date = originalFormat.parse(schacDateOfBirth);
+						return targetFormat.format(date);
+					} catch (ParseException e) {
+						logger.warn("unable to parse date " + name);
+					}
 				}
 			}
-			return initValues(user).get(name).toString();
+			return value.toString();
 		} else {
 			return "";
 		}

@@ -13,19 +13,19 @@ public final class PersonLdap {
 
 	@Id
 	private Name dn;
-	private String uid;
-	private String cn;
-	private String sn;
-	private String givenName;
+	private @Attribute(name = "uid") String uid;
+	private @Attribute(name = "cn") String cn;
+	private @Attribute(name = "sn") String sn;
+	private @Attribute(name = "givenName") String givenName;
 	private @Attribute(name = "displayName") String displayName;
-	private String schacDateOfBirth;
-	private String mail;
-	private String md5UserPassword;
+	private @Attribute(name = "schacDateOfBirth") String schacDateOfBirth;
+	private @Attribute(name = "mail;") String mail;
+	private @Attribute(name = "md5UserPassword") String md5UserPassword;
 	private @Attribute(name = "cryptUserPassword") String cryptUserPassword;
 	private @Attribute(name = "shaUserPassword") String shaUserPassword;
 	private @Attribute(name = "eduPersonAffiliation") List<String> eduPersonAffiliation;
 	private @Attribute(name = "eduPersonPrimaryAffiliation") String eduPersonPrimaryAffiliation;
-	private String eduPersonPrincipalName;
+	private @Attribute(name = "eduPersonPrincipalName") String eduPersonPrincipalName;
 	private @Attribute(name = "mailDrop") String mailDrop;
 	private @Attribute(name = "mailHost") String mailHost;
 	private @Attribute(name = "sambaSID") String sambaSID;

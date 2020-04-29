@@ -34,16 +34,6 @@ public class ShibAuthenticationSuccessHandler implements AuthenticationSuccessHa
         String email = httpServletRequest.getHeader("mail");
         String name = httpServletRequest.getHeader("sn");
         String firstName = httpServletRequest.getHeader("givenName");
-		Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
-        while(headerNames.hasMoreElements()){
-        	String headerName = headerNames.nextElement();
-			try {
-				Field personLdapField = PersonLdap.class.getDeclaredField(headerName);
-				httpServletRequest.getSession().setAttribute(personLdapField.getName(), httpServletRequest.getHeader(personLdapField.getName()));
-			} catch (NoSuchFieldException e) {
-				logger.debug("skip " + headerName);
-			}
-		}
         if(eppn == null || email == null || name == null || firstName == null) {
         	throw new EsupSignatureRuntimeException("At least one shib attribut is missing. Needed attributs are eppn, mail, sn and givenName");
 		} else {

@@ -3,6 +3,8 @@ package org.esupportail.esupsignature;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
@@ -19,11 +21,11 @@ import static org.junit.Assume.assumeTrue;
 @TestPropertySource(properties = "app.scheduling.enable=false")
 public class LdapServiceTest {
 
-    @Resource
-    private LdapPersonService ldapPersonService;
-
-    @Resource
+    @Autowired(required = false)
     private LdapContextSource ldapContextSource;
+
+    @Autowired(required = false)
+    private LdapPersonService ldapPersonService;
 
     @Test(timeout = 1000)
     public void testLdap() {

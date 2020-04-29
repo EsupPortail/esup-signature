@@ -414,13 +414,18 @@ input:checked + .slider:before {
     margin-left: 160px;
 }
 
-@media (max-width: 572px) {
-.sidebar-label {
-    display: inline !important;
-}
-.nav-item-label {
-    display: inline !important;
-}
+@media (max-width: 575px) {
+    .sidebar-label {
+        display: inline !important;
+    }
+    .nav-item-label {
+        display: inline !important;
+    }
+    .navbar-collapse {
+        position: absolute;
+        width: 100%;
+        top: 50px;
+    }
 }
 
 
@@ -430,10 +435,10 @@ input:checked + .slider:before {
         margin-top: 0px;
     }
     .tools {
-        position: relative !important;
-        top: 0px;
+        top: 50px;
     }
-    .breadcrumb {
+
+    #breadcrumb {
         display: none;
     }
 
@@ -457,8 +462,8 @@ input:checked + .slider:before {
         display: none;
     }
     #breadcrumb {
-        top: 0;
         margin: 0;
+        margin-top: 50px;
         position: relative;
     }
     .content {
@@ -474,13 +479,19 @@ input:checked + .slider:before {
         overflow: auto;
         margin-left: initial;
     }
+    #workspace {
+        margin: 0;
+        margin-top: 100px;
+    }
+    #sidebar {
+        display: none;
+    }
 }
 
 @media (min-width: 1500px) {
     .d-xxl-inline {
         display: inline !important;
     }
-    
 }
 
 .svg-container {
@@ -982,7 +993,6 @@ float:left;
 
 .waves-effect {
     display: inline-block;
-    position: relative;
     overflow: hidden;
     transition: all ease-in-out .5s;
 }
