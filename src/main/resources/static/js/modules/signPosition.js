@@ -115,7 +115,7 @@ export class SignPosition {
         this.borders.css('width', this.signWidth);
         this.borders.css('height', this.signHeight);
         this.cross.css('background-size', this.signWidth + 'px');
-        this.signScale = this.signScale - signScale;
+        this.signScale = signScale;
         this.updateSignButtons(this.getUiXpos() * this.currentScale, this.getUiYpos() * this.currentScale);
     }
 
