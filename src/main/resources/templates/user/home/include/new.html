@@ -18,6 +18,15 @@
                         <h6>Auto signature</h6>
                     </a>
 
+                    <a role="button" class="flashButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
+                       data-target="#sendSignRequestModal" style="width: 150px; height: 200px;"
+                       title="Demander la signature d'un document présent sur votre poste">
+                        <div class="crop">
+                            <i class="fas fa-paper-plane fa-4x"></i>
+                        </div>
+                        <h6>Demander une signature</h6>
+                    </a>
+
                     <h5 class="newToggled d-none">Circuits</h5>
 
                     <a th:unless="${globalProperties.hideWizard}" role="button" class="btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden align-bottom p-0 workflowButton" data-toggle="modal"
