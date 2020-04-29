@@ -11,6 +11,7 @@ public class GlobalProperties {
     private String nexuUrl;
     private String nexuVersion;
     private String nexuDownloadUrl;
+    private String hideWizard;
 
     public String getRootUrl() {
         return rootUrl;
@@ -42,5 +43,13 @@ public class GlobalProperties {
 
     public void setNexuDownloadUrl(String nexuDownloadUrl) {
         this.nexuDownloadUrl = nexuDownloadUrl;
+    }
+
+    public String getHideWizard() {
+        return hideWizard;
+    }
+
+    public void setHideWizard(String hideWizard) {
+        this.hideWizard = hideWizard;
     }
 }

@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -10,6 +11,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -28,9 +30,13 @@ import java.util.List;
 @RequestMapping("/user/")
 @Controller
 @Transactional
+@EnableConfigurationProperties(GlobalProperties.class)
 public class HomeController {
 
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
+
+    @Resource
+    private GlobalProperties globalProperties;
 
     @ModelAttribute("userMenu")
     public String getRoleMenu() {
@@ -77,6 +83,7 @@ public class HomeController {
         List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
         model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequestsToSign, pageable));
         List<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft);
+        model.addAttribute("globalProperties", globalProperties);
         model.addAttribute("datas", datas);
         model.addAttribute("forms", formService.getFormsByUser(user, authUser));
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
