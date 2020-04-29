@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.extvalue.ExtValue;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -23,23 +24,27 @@ public class LdapExtValue implements ExtValue {
 	@Resource
 	private UserService userService;
 
-	@Resource
+	@Autowired(required = false)
 	private LdapPersonService ldapPersonService;
 	
 	@Override
 	public String getValueByName(String name, User user) {
-		if(name.equals("schacDateOfBirth")) {
-			String schacDateOfBirth = initValues(user).get(name).toString();
-			DateFormat originalFormat = new SimpleDateFormat("yyyyMMdd");
-			DateFormat targetFormat = new SimpleDateFormat("dd/MM/yyyy");
-			try {
-				Date date = originalFormat.parse(schacDateOfBirth);
-				return targetFormat.format(date);
-			} catch (ParseException e) {
-				e.printStackTrace();
+		if(initValues(user).get(name) != null){
+			if (name.equals("schacDateOfBirth")) {
+				String schacDateOfBirth = initValues(user).get(name).toString();
+				DateFormat originalFormat = new SimpleDateFormat("yyyyMMdd");
+				DateFormat targetFormat = new SimpleDateFormat("dd/MM/yyyy");
+				try {
+					Date date = originalFormat.parse(schacDateOfBirth);
+					return targetFormat.format(date);
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
 			}
+			return initValues(user).get(name).toString();
+		} else {
+			return "";
 		}
-		return initValues(user).get(name).toString();
 	}
 
 	@Override
@@ -61,10 +66,12 @@ public class LdapExtValue implements ExtValue {
 						values.put("postalAddress", postalAddress.replaceAll("\\$", " \n"));
 					}
 				}
-				OrganizationalUnitLdap organizationalUnitLdap = ldapPersonService.getOrganizationalUnitLdap(personLdap.getSupannEntiteAffectationPrincipale());
-				if (organizationalUnitLdap != null) {
-					values.put("organizationalUnit-postalAddress", organizationalUnitLdap.getPostalAddress());
-					values.put("organizationalUnit-description", organizationalUnitLdap.getDescription());
+				if(personLdap.getSupannEntiteAffectationPrincipale() != null && ldapPersonService != null) {
+					OrganizationalUnitLdap organizationalUnitLdap = ldapPersonService.getOrganizationalUnitLdap(personLdap.getSupannEntiteAffectationPrincipale());
+					if (organizationalUnitLdap != null) {
+						values.put("organizationalUnit-postalAddress", organizationalUnitLdap.getPostalAddress());
+						values.put("organizationalUnit-description", organizationalUnitLdap.getDescription());
+					}
 				}
 			}
 		}

@@ -29,9 +29,6 @@ public class User {
 
     @Column(unique=true)
     private String email;
-    
-    @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
-    private Document lastSignImage = new Document();
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     private List<Document> signImages = new ArrayList<>();
@@ -117,14 +114,6 @@ public class User {
 
 	public void setEmail(String email) {
         this.email = email;
-    }
-
-	public Document getLastSignImage() {
-        return this.lastSignImage;
-    }
-
-	public void setLastSignImage(Document signImage) {
-        this.lastSignImage = signImage;
     }
 
     public List<Document> getSignImages() {

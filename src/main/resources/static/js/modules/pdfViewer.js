@@ -20,7 +20,7 @@ export class PdfViewer {
         this.events = {};
         this.rotation = 0;
         pdfjsLib.disableWorker = true;
-        pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.js';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.2.4.456.js';
         pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
         this.initListeners();
     }

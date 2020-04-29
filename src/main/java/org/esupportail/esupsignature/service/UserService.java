@@ -11,7 +11,6 @@ import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
-import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.scheduler.ScheduledTaskService;
@@ -20,21 +19,16 @@ import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -47,11 +41,8 @@ public class UserService {
 	@Resource
 	private UserRepository userRepository;
 
-	@Resource
+	@Autowired(required = false)
 	private LdapPersonService ldapPersonService;
-
-	@Resource
-	private FileService fileService;
 
 	@Resource
 	private UserService userService;
@@ -81,7 +72,7 @@ public class UserService {
 	private MailService mailService;
 
 	@Resource
-	private HttpServletRequest request;
+	private HttpServletRequest httpServletRequest;
 
 	public void setSuEppn(String eppn) {
 		ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
@@ -163,7 +154,7 @@ public class UserService {
 			User user = userRepository.findByEppn(eppn).get(0);
 			if(user.getSignImages().size() > 0 && user.getSignImages().get(0) != null) {
 				try {
-					user.setIp(request.getRemoteAddr());
+					user.setIp(httpServletRequest.getRemoteAddr());
 				} catch (Exception e) {
 					logger.warn("unable to get ip");
 				}
@@ -363,9 +354,25 @@ public class UserService {
 	public PersonLdap getPersonLdapFromUser(User user) {
 		PersonLdap personLdap = new PersonLdap();
 		personLdap.setUid(user.getEppn());
+		personLdap.setSn(user.getName());
+		personLdap.setGivenName(user.getFirstname());
 		personLdap.setDisplayName(user.getFirstname() + " " + user.getName());
 		personLdap.setMail(user.getEmail());
 		personLdap.setEduPersonPrincipalName(user.getEppn());
+		Enumeration<String> attributeNames = httpServletRequest.getSession().getAttributeNames();
+        while(attributeNames.hasMoreElements()){
+        	String attributeName = attributeNames.nextElement();
+			try {
+				java.lang.reflect.Field field = PersonLdap.class.getDeclaredField(attributeName);
+				field.setAccessible(true);
+				Class<?> type = field.getType();
+				if(type.equals(String.class)) {
+					field.set(personLdap, httpServletRequest.getSession().getAttribute(attributeName).toString());
+				}
+			} catch (IllegalAccessException | NoSuchFieldException e) {
+				logger.debug("error on set personLdap attribut " + attributeName, e);
+			}
+		}
 		return personLdap;
 	}
 
@@ -375,6 +382,8 @@ public class UserService {
 			if(personLdaps.size() > 0) {
 				return personLdaps.get(0);
 			}
+		} else {
+			return getPersonLdapFromUser(user);
 		}
 		return null;
 	}

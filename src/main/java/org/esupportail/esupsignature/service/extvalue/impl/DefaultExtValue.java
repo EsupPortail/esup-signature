@@ -1,13 +1,8 @@
 package org.esupportail.esupsignature.service.extvalue.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.ldap.OrganizationalUnitLdap;
-import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.extvalue.ExtValue;
-import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;

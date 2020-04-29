@@ -9,3 +9,5 @@ insert into user_account_sign_images (user_id, sign_images_id) (select id, sign_
 alter table sign_request_params add column sign_image_number int4;
 update sign_request_params set sign_image_number = 0;
 alter table sign_request_params alter column sign_image_number set not null;
+alter table user_account drop column sign_image_id;
+alter table user_account drop column last_sign_image_id;
