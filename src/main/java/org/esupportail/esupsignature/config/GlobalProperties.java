@@ -12,6 +12,8 @@ public class GlobalProperties {
     private String nexuVersion;
     private String nexuDownloadUrl;
     private String hideWizard;
+    private String hideAutoSign;
+    private String hideSendSignRequest;
 
     public String getRootUrl() {
         return rootUrl;
@@ -51,5 +53,21 @@ public class GlobalProperties {
 
     public void setHideWizard(String hideWizard) {
         this.hideWizard = hideWizard;
+    }
+
+    public String getHideAutoSign() {
+        return hideAutoSign;
+    }
+
+    public void setHideAutoSign(String hideAutoSign) {
+        this.hideAutoSign = hideAutoSign;
+    }
+
+    public String getHideSendSignRequest() {
+        return hideSendSignRequest;
+    }
+
+    public void setHideSendSignRequest(String hideSendSignRequest) {
+        this.hideSendSignRequest = hideSendSignRequest;
     }
 }
