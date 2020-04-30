@@ -14,8 +14,6 @@ public class ShibRequestHeaderAuthenticationFilter extends RequestHeaderAuthenti
 
 	private String credentialsRequestHeader4thisClass;
 
-	@Resource
-	private UserService userService;
 /*	
 	@Override
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, Authentication authResult) throws IOException, ServletException {
@@ -52,10 +50,5 @@ public class ShibRequestHeaderAuthenticationFilter extends RequestHeaderAuthenti
         super.setCredentialsRequestHeader(credentialsRequestHeader);
         this.credentialsRequestHeader4thisClass = credentialsRequestHeader;
     }
-
-	public void setUserService(UserService userService) {
-		this.userService = userService;
-	}
-   
 
 }

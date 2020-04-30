@@ -99,11 +99,15 @@ public class UserService {
 
 	public User getCurrentUser() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String eppn = auth.getName();
-		if(getSuEppn() != null) {
-			eppn = getSuEppn();
+		if(auth != null) {
+			String eppn = auth.getName();
+			if (getSuEppn() != null) {
+				eppn = getSuEppn();
+			}
+			return getUserByEppn(eppn);
+		} else {
+			return null;
 		}
-		return getUserByEppn(eppn);
 	}
 
 	public User getSystemUser() {

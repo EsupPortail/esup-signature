@@ -56,7 +56,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 		authenticationFilter.setPrincipalRequestHeader(shibProperties.getPrincipalRequestHeader());
 		authenticationFilter.setCredentialsRequestHeader(shibProperties.getCredentialsRequestHeader());
 		authenticationFilter.setAuthenticationManager(shibAuthenticationManager());
-		authenticationFilter.setExceptionIfHeaderMissing(false);
+		authenticationFilter.setExceptionIfHeaderMissing(true);
 		authenticationFilter.setAuthenticationSuccessHandler(shibAuthenticationSuccessHandler);
 		return authenticationFilter;
 	}
@@ -67,7 +67,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 	}
 
 	public AuthenticationManager shibAuthenticationManager() {
-		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<AuthenticationProvider>();
+		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<>();
 		authenticatedAuthenticationProviders.add(shibPreauthAuthProvider());
 		AuthenticationManager authenticationManager = new ProviderManager(authenticatedAuthenticationProviders);
 		return authenticationManager;
