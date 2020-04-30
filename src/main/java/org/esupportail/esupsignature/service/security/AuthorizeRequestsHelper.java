@@ -10,9 +10,16 @@ public class AuthorizeRequestsHelper {
 		AccessDeniedHandlerImpl accessDeniedHandlerImpl = new AccessDeniedHandlerImpl();
 		accessDeniedHandlerImpl.setErrorPage("/denied");
 		http.exceptionHandling().accessDeniedHandler(accessDeniedHandlerImpl);
+		String hasIpAddresses = "";
+		int nbIps = 0;
 		for (String ip : wsAccessAuthorizeIps) {
-			http.authorizeRequests().antMatchers("/ws/**").access("hasIpAddress('"+ ip +"')");
+			nbIps++;
+			hasIpAddresses += "hasIpAddress('"+ ip +"')";
+			if(nbIps < wsAccessAuthorizeIps.length) {
+				hasIpAddresses += " or ";
+			}
 		}
+		http.authorizeRequests().antMatchers("/ws/**").access(hasIpAddresses);
 		http.authorizeRequests()
 		.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
 		.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")

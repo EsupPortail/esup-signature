@@ -90,7 +90,6 @@ fs:
     cmis-respository-id: default
     cmis-root-path: /default-domain/workspaces
 
-
 oj:
     ks-filename: /opt/tomcat-esup-signature/temp/oj_keystore.p12
     ks-password: dss-password
