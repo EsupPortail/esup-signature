@@ -48,6 +48,17 @@ export class GlobalUi {
                 $("#user-toggle").click();
             }
         });
+
+        $('#returnButton').click(function () {
+            window.history.back();
+        });
+    }
+
+    disableSideBarButton() {
+        console.debug("disable side button");
+        $("#sidebarCollapse").attr("disabled", true).addClass('d-none');
+
+        $('#returnButton').removeClass('d-none');
     }
 
     disableBodyScroll() {
@@ -131,12 +142,12 @@ export class GlobalUi {
     }
 
     hideSideBar() {
-        if(localStorage.getItem('sideBarStatus') === 'off') {
-            this.sideBar.addClass('active');
-            this.sideBar2.addClass('d-none');
-            this.sideBarLabels.addClass('d-none');
-            this.content.addClass('content-full');
-            this.breadcrumb.addClass('breadcrumb-nav-full');
-        }
+        console.debug("hide side");
+        localStorage.setItem('sideBarStatus', 'on');
+        this.sideBar.addClass('active');
+        this.sideBar2.addClass('d-none');
+        this.sideBarLabels.addClass('d-none');
+        this.content.addClass('content-full');
+        this.breadcrumb.addClass('breadcrumb-nav-full');
     }
 }

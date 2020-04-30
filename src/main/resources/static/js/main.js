@@ -16,18 +16,25 @@
  * limitations under the License.
  */
 import {GlobalUi} from "./modules/globalUi.js";
-let globalUi = new GlobalUi();
+let globalUi;
+globalUi = new GlobalUi();
+export default globalUi;
 
-if(document.URL.match("(\/user\/signrequests\/[\\s\\S]+[^?|^\/])")) {
-    console.info("show side bar");
-    globalUi.showSideBar();
-    $("#sidebarCollapse").attr("disabled", true);
-    // $("#sidebarCollapse").children().toggleClass("fa-bars fa-arrow-left");
-    // $("#sidebarCollapse").on("mousedown", function(e){
-    //     e.preventDefault();
-    //    document.location.href = "/user/signrequests";
-    // });
-}
+// if(document.URL.match("(\/user\/signrequests\/[\\s\\S]+[^?|^\/])")) {
+//     console.info("show side bar");
+//     globalUi.showSideBar();
+//     $("#sidebarCollapse").attr("disabled", true);
+//     // $("#sidebarCollapse").children().toggleClass("fa-bars fa-arrow-left");
+//     // $("#sidebarCollapse").on("mousedown", function(e){
+//     //     e.preventDefault();
+//     //    document.location.href = "/user/signrequests";
+//     // });
+// }
+//
+// if(document.URL.match("(\/user\/datas\/[\\s\\S]+[^?|^\/])")) {
+//     globalUi.hideSideBar();
+//     $("#sidebarCollapse").attr("disabled", true);
+// }
 
 export let stepper;
 let stepDiv = document.getElementById("stepperDefault");

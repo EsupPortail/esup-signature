@@ -3,15 +3,18 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
+    import globalUi from "/js/main.js";
+    globalUi.hideSideBar();
+    globalUi.disableSideBarButton();
     import {FilesInput} from "/js/modules/filesInput.js";
-    new FilesInput($("#multipartFiles"), "multipartFiles", [[${signRequest.liteOriginalDocuments}]], [[${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported'}]], [[${_csrf.parameterName}]], [[${_csrf.token}]], [[${signRequest.id}]]);
+    new FilesInput($("#multipartFiles"), "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]], [[${signRequest.id}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/sign-side"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full">
+        <nav th:insert="fragments/side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
                 <li class="breadcrumb-item" aria-current="page"><a th:href="'/user/signrequests/' + ${signRequest.id}">Demande de signature : <span th:text="${signRequest.title}"></span></a></li>

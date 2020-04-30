@@ -2,12 +2,18 @@
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
+<script type="module">
+    import globalUi from "/js/main.js";
+    globalUi.hideSideBar();
+    globalUi.disableSideBarButton();
+    import {default as SelectUser} from "/js/modules/selectUser.js";
+    new SelectUser("recipientsEmails2");
+</script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side"></nav>
-        <nav id="sidebar2" class="scrollbar-primary">
+        <nav th:fragment="side" id="sidebar" class="scrollbar-primary">
             <div class="m-1">
                 <div th:if="${user == signBook.createBy}">
                     <div th:if="${(signBook.status.name() == 'draft' || signBook.status.name() == 'completed')}">
@@ -22,31 +28,31 @@
                 </div>
             </div>
         </nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/user/signrequests">Documents envoyés</a></li>
+                <li class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
                 <li class="breadcrumb-item"><a th:href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:text="'Demande : ' + ${signBook.name}"></a></li>
                 <li class="breadcrumb-item active" aria-current="page">Edition</span>
                 </li>
             </ol>
         </nav>
-        <div id="content" class="content col-lg-8">
+        <div id="content" class="content">
             <div id="addButton" class="fixed-action-btn"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <a class="btn-floating btn-lg bg-primary waves-effect">
                     <i class="fas fa-plus"></i>
                 </a>
                 <ul id="collapseExample" class="list-unstyled">
-                    <li><a th:if="${signBook.getStatus().name() == 'draft' && signBook.workflowSteps.size() == 0}" title="Charger un modèle de workflow" role="button" data-toggle="modal" data-target="#addWorkflow" class="btn-floating bg-success waves-effect"><i class="fas fa-project-diagram"></i></a></li>
-                    <li><a title="Ajouter une étape au circuit" role="button" data-toggle="modal" data-target="#addStep" class="btn-floating bg-success waves-effect"><i class="fas fa-shoe-prints"></i></a></li>
-                    <li><a title="Ajouter un document à signer" role="button" data-toggle="modal" data-target="#fastSignRequestModal"  class="btn-floating text-dark bg-success waves-effect"><i class="fas fa-file-medical"></i></a></li>
+                    <li><a th:if="${signBook.getStatus().name() == 'draft' && signBook.workflowSteps.size() == 0}" title="Charger un modèle de workflow" role="button" data-toggle="modal" data-target="#addWorkflow" class="btn-floating bg-primary waves-effect"><i class="fas fa-project-diagram"></i></a></li>
+                    <li><a title="Ajouter une étape au circuit" role="button" data-toggle="modal" data-target="#addStep" class="btn-floating bg-primary waves-effect"><i class="fas fa-shoe-prints"></i></a></li>
+                    <li><a title="Ajouter un document à signer" role="button" data-toggle="modal" data-target="#fastSignRequestModal"  class="btn-floating text-dark bg-primary waves-effect"><i class="fas fa-file-medical"></i></a></li>
                 </ul>
             </div>
             <th:block th:if="${signBook.status.name() == 'draft' || signBook.status.name() == 'pending'}">
                 <div th:replace="user/signbooks/cards/stepscard :: stepscard"></div>
             </th:block>
-            <div class="card mb-3">
+            <div class="card col-lg-11 mb-1">
                 <div class="card-body">
-                <h3 class="text-center"><b>Demandes à signer</b></h3>
+                <h5 class="text-center"><b>Demandes à signer</b></h5>
                     <div th:if="${#lists.size(signBook.signRequests) > 0}" class="table-responsive">
                         <table class="table table-sm table-hover">
                             <thead class="thead-dark">
@@ -54,7 +60,7 @@
                                 <th>Titre</th>
                                 <th class="d-none d-md-table-cell">Date de création</th>
                                 <th class="d-none d-lg-table-cell">Créé par</th>
-                                <th>Action</th>
+                                <th class="d-none">Action</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -62,9 +68,9 @@
                                 <tr>
                                     <td class="text-break" th:text="${signRequest.title}"></td>
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                    <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy}"></span></td>
-                                    <td>
-                                        <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
+                                    <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span></td>
+                                    <td class="d-none">
+                                         <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
                                         <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:200px; right: 100px;z-index: 1000;">
@@ -139,9 +145,9 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group" id="_signType_div_id">
-                        <label for="recipientsEmails">Choisir les participants</label>
+                        <label for="recipientsEmails2">Choisir les participants</label>
                         <div class="form-group">
-                            <select name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple" required="required">
+                            <select name="recipientsEmails" id="recipientsEmails2" size="5" multiple="multiple" required="required">
                             </select>
                         </div>
                         <br><br>
@@ -233,10 +239,6 @@
         </div>
     </div>
 </div>
-<script type="module">
-    import {default as SelectUser} from "/js/modules/selectUser.js";
-    new SelectUser("recipientsEmails");
-</script>
 <footer th:replace="fragments/footer"></footer>
 </body>
 </html>

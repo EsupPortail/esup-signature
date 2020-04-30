@@ -6,9 +6,11 @@
 <!--/*@thymesVar id="step" type="org.esupportail.esupsignature.entity.WorkflowStep"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
+    import globalUi from "/js/main.js";
+    globalUi.hideSideBar();
+    globalUi.disableSideBarButton();
     import {CreateDataUi} from "/js/modules/createDataUi.js";
     new CreateDataUi([[${form.document.id}]], [[${fields}]]);
-    $("#sidebarCollapse").attr("disabled", true);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
@@ -39,10 +41,15 @@
                     </li>
                     <li>
                         <a th:if="${form.needName}" role="button" title="Enregistrer les modifications" type="button" class="btn-lg btn-floating bg-success wave-effect" data-toggle="modal" data-target="#saveModal">
-                            <i class="fas fa-save"></i><br/>
+                            <i class="fas fa-save"></i>
                         </a>
                         <a th:unless="${form.needName}" onclick="return false;" id="saveButton" href="#" title="Enregistrer les modifications" class="btn-floating btn-lg bg-success wave-effect">
-                            <i class="fas fa-save"></i><br/>
+                            <i class="fas fa-save"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="btn-floating btn-lg bg-danger wave-effect" href="#deleteModal" role="button" title="Supprimer" data-toggle="modal" data-target="#deleteModal">
+                            <i class="fas fa-trash-alt"></i>
                         </a>
                     </li>
                 </ul>
@@ -73,9 +80,6 @@
 <!--            </div>-->
             <div class="tools">
                 <div class="d-flex mb-1">
-                    <a title="Abandonner" href="/user/datas/" class="btn btn btn-outline-dark btn-light ml-1">
-                        <i class="fas fa-arrow-left"></i>
-                    </a>
                     <div class="bg-light ml-1 p-1 pt-2 d-none d-lg-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
                     <button title="Page précédente" id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
                         <i class="fas fa-arrow-up"></i>
@@ -197,6 +201,27 @@
                 </button>
                 <button type="submit" class="btn btn-success">Enregistrer</button>
             </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal modal-warning fade in" id="deleteModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="command" th:action="'/user/datas/'+ ${data.id}" th:method="delete">
+                <div class="modal-header">
+                    <h2>Attention</h2>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">Confirmez-vous la suppression de ce brouillon ?</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Non</button>
+                    <button type="submit" class="btn btn-danger">Oui</button>
+                </div>
             </form>
         </div>
     </div>

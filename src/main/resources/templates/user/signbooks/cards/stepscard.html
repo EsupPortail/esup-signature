@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="stepscard">
-    <div class="card mb-1">
+    <div class="card col-lg-11 mb-1">
         <div class="card-body">
             <h5 class="text-center"><b>Circuit de signature</b></h5>
             <div th:if="${user.eppn == signBook.createBy}">
@@ -178,10 +178,6 @@
                     </div>
                 </div>
             </th:block>
-            <script th:inline="javascript" type="module">
-                import {stepper} from "/js/main.js";
-                stepper.stepTo([[${signBook.currentWorkflowStepNumber}]])
-            </script>
         </div>
     </div>
 </div>

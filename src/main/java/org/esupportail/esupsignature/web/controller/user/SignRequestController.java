@@ -84,6 +84,11 @@ public class SignRequestController {
         return userService.getSuUsers(getAuthUser());
     }
 
+    @ModelAttribute(value = "globalProperties")
+    public GlobalProperties getGlobalProperties() {
+        return this.globalProperties;
+    }
+
     @Resource
     private UserService userService;
 
@@ -522,7 +527,7 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
+    @PreAuthorize("@signRequestService.preAuthorizeView(#id, #authUser)")
     @GetMapping(value = "/remove-attachment/{id}/{attachementId}")
     public String removeAttachement(@ModelAttribute User authUser, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, RedirectAttributes redirectAttributes) {
         logger.info("start remove attachment");

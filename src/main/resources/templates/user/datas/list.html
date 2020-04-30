@@ -4,6 +4,11 @@
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <!--/*@thymesVar id="datas" type="org.springframework.data.domain.Page<org.esupportail.esupsignature.entity.Data>"*/-->
 <head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import globalUi from "/js/main.js";
+    globalUi.hideSideBar();
+    globalUi.disableSideBarButton();
+</script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
@@ -53,7 +58,7 @@
                                             <a class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button" th:href="'/user/datas/' + ${data.id} + '/export-pdf'" target="_blank">
                                                 <i class="fas fa-download pr-2"></i>Télécharger
                                             </a>
-                                            <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${data.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${data.id}">
+                                            <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${data.id}" role="button" title="Supprimer" data-toggle="modal" th:data-target="'#modal-warning-' + ${data.id}">
                                                 <i class="fas fa-trash-alt pr-2"></i>Supprimer
                                             </a>
                                         </div>

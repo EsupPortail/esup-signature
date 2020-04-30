@@ -7,15 +7,20 @@
          th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''}
                           ${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')') ? 'bg-danger' : 'bg-dark'}">
 
+
         <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse"
-                class="btn btn-lg text-white float-left">
+                class="btn btn-lg text-white float-left position-fixed">
             <i class="fas fa-bars"></i>
+        </button>
+        <button aria-label="Retour" type="button" id="returnButton"
+                class="btn btn-lg text-white float-left position-fixed d-none">
+            <i class="fas fa-arrow-left"></i>
         </button>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar_toggle"
                 aria-controls="navbar_toggle" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <h1 aria-label="Esup-Signature" title="Esup-Signature" style="width: 204px;">
+        <h1 aria-label="Esup-Signature" title="Esup-Signature" style="margin-left: 60px; width: 204px;">
             <a href="/"><img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/></a>
         </h1>
         <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between bg-dark">
@@ -293,7 +298,6 @@
                         </div>
                         <script th:inline="javascript" type="module">
                             import {default as SelectUser} from "/js/modules/selectUser.js";
-
                             new SelectUser("recipientsEmails");
                         </script>
                         <div class="form-group" id="_allSignToComplete_div_id">

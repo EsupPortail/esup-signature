@@ -1,6 +1,11 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import globalUi from "/js/main.js";
+    globalUi.hideSideBar();
+    globalUi.disableSideBarButton();
+</script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
@@ -14,14 +19,14 @@
             </div>
         </nav>
         <div id="content" class="content">
-            <div id="collapseHelp" aria-expanded="true" style="">
-                <div class="alert alert-dark">
-                    Vous pouvez contrôler la signature électronique d'un document ainsi que la compatibilité PDF/A pour les fichiers pdf.
-                </div>
-            </div>
-            <br>
-            <div class="card">
+            <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
+                    <div id="collapseHelp" aria-expanded="true" style="">
+                        <div class="alert alert-dark">
+                            Vous pouvez contrôler la signature électronique d'un document ainsi que la compatibilité PDF/A pour les fichiers pdf.
+                        </div>
+                    </div>
+                    <br/>
                     <form th:action="'/user/validation?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
                         <div class="custom-file mb-2">
                             <input required="required" class="custom-file-input" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01"/>

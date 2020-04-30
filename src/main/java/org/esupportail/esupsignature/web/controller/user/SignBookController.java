@@ -84,7 +84,7 @@ public class SignBookController {
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
     }
 
-    @PreAuthorize("@signBookService.preAuthorizeManage(authentication.name, #id)")
+    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @GetMapping(value = "/{id}", params = "form", produces = "text/html")
     public String updateForm(@ModelAttribute User user, @PathVariable("id") Long id, Model model) {
         //User user = userService.getCurrentUser();
