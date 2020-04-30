@@ -148,6 +148,10 @@
                     <th>Identifiant</th>
                     <td th:text="${user.eppn}"></td>
                 </tr>
+                <tr th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" >
+                    <th>Auth</th>
+                    <td th:text="${#request.getSession().getAttribute('securityServiceName')}"></td>
+                </tr>
                 <tr>
                     <th>Mes signatures</th>
                     <td>

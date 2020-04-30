@@ -167,7 +167,7 @@ public class DataController {
 
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@GetMapping("{id}/update")
-	public String updateData(@ModelAttribute User user, @PathVariable("id") Long id, Model model) {
+	public String updateData(@ModelAttribute User user, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
 		//User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
 		model.addAttribute("data", data);

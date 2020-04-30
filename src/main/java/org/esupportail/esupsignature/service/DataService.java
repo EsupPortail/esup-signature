@@ -130,7 +130,7 @@ public class DataService {
         return signBook;
     }
 
-    public Workflow getWorkflowByDataAndUser(Data data, List<String> recipientEmails, User user) {
+    public Workflow getWorkflowByDataAndUser(Data data, List<String> recipientEmails, User user) throws EsupSignatureException {
         Workflow workflow;
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         Workflow modelWorkflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
@@ -168,9 +168,9 @@ public class DataService {
             }
             return workflow;
         } catch (Exception e) {
-            logger.error("bean cloning fail", e);
+            logger.error("workflow not found", e);
+            throw new EsupSignatureException("workflow not found", e);
         }
-        return null;
     }
 
     public Data updateData(@RequestParam MultiValueMap<String, String> formData, User user, Form form, Data data) {
