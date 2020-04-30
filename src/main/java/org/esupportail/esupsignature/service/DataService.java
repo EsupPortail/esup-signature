@@ -136,7 +136,6 @@ public class DataService {
         Workflow modelWorkflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
         try {
             if (modelWorkflow instanceof DefaultWorkflow) {
-
                 DefaultWorkflow defaultWorkflow = (DefaultWorkflow) BeanUtils.cloneBean(modelWorkflow);
                 workflowSteps.addAll(((DefaultWorkflow) modelWorkflow).generateWorkflowSteps(user, data, recipientEmails));
                 defaultWorkflow.initWorkflowSteps();
