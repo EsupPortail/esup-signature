@@ -20,7 +20,7 @@
         </nav>
         <div id="content" class="content">
             <div class="fixed-action-btn">
-                <a onclick="document.getElementById('userParamsForm').submit();"
+                <a id="userParamsFormSubmit"
                    class="btn-floating btn-lg bg-success wave-effect">
                     <i class="fas fa-save"></i>
                 </a>
@@ -30,14 +30,14 @@
                 <div class="card mb-1 col-lg-10 mx-auto">
                     <div class="card-body">
                         <h5 class="text-center"><b>Paramètres de signature</b></h5>
-                        <div id="signImageForm" class="form-group">
+                        <div id="signImageForm">
                             <div class="row">
-                                <div class="col-6 mb-2 text-center">
+                                <div class="col-4 d-none d-xxl-block mb-2 text-center">
                                     <label><strong>Mes signatures</strong></label>
                                     <table class="table table-borderless table-striped">
                                         <thead class="thead-dark">
                                         <tr>
-                                            <th >Aperçu</th>
+                                            <th class="text-left">Aperçu</th>
                                             <th>Supprimer</th>
                                         </tr>
                                         </thead>
@@ -57,29 +57,13 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="col-6 mb-2 text-center">
-                                    <label class="col-form-label"><strong>Vous pouvez dessinez une signature dans le rectangle ci dessous</strong></label>
-                                    <br/>
-                                    <div style="display:block; position: relative; width: 600px; height: 300px;margin: auto;justify-content: center; margin-bottom: 50px;">
-                                        <canvas id="canvas" style="border: 1px solid black;"></canvas>
-                                            <button id="validate" type="button"
-                                                    class="btn btn-light btn-outline-dark">Valider la signature
-                                            </button>
-                                            <button id="erase" type="button" class="btn btn-light btn-outline-dark">
-                                                Effacer
-                                            </button>
-                                            <button id="reset" type="button" class="btn btn-light btn-outline-dark">
-                                                Réinitialiser
-                                            </button>
-                                        <div>
-                                        </div>
-                                    </div>
+                                <div class="col-12 col-xl-8 mb-2 text-center">
                                     <label class="col-form-label">
                                         <strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
                                         <button data-target="#collapseHelpSignImage" data-toggle="collapse"
                                                 type="button"
-                                                class="btn btn-sm btn-info">
-                                            <i class="fas fa-info-circle "></i>
+                                                class="btn btn-sm btn-transparent">
+                                            <i class="fas fa-info-circle text-info"></i>
                                         </button>
                                         <div class="collapse" id="collapseHelpSignImage">
                                             <div class="alert alert-info">
@@ -97,16 +81,30 @@
                                             </div>
                                         </div>
                                     </label>
-                                    <div class="custom-file mb-1">
-                                        <input type="file" class="custom-file-input" id="vanilla-upload"
-                                               value="Choose a file" accept="image/*"
-                                               aria-describedby="inputGroupFileAddon01"/>
+                                    <div class="custom-file mb-1" style="width: 600px;">
+                                        <input type="file" class="custom-file-input" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
                                         <label class="custom-file-label" for="vanilla-upload">
                                             Choisissez une nouvelle image
                                         </label>
                                     </div>
-                                    <div id="crop-div" class="alert alert-light text-dark text-center"
-                                         style="display: none;">
+                                    <br/>
+                                    <label id="signPadLabel" class="col-form-label"><strong>Vous pouvez dessinez une signature dans le rectangle ci dessous</strong></label>
+                                    <div id="signPad">
+                                        <canvas id="canvas" style="border: 1px solid black;"></canvas>
+                                            <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
+                                                Valider la signature
+                                            </button>
+                                            <button id="erase" type="button" class="btn btn-light btn-outline-dark">
+                                                Effacer
+                                            </button>
+                                            <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
+                                                Réinitialiser
+                                            </button>
+                                        <div>
+                                        </div>
+                                    </div>
+                                    <div id="signCrop" class="mx-auto">
+                                    <div id="crop-div" class="alert alert-light text-dark text-center" style="display: none;">
                                         <div class="d-flex justify-content-center">
                                             <button type="button" id="zoomout"
                                                     class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block">
@@ -125,6 +123,7 @@
                                         </div>
                                         <div id="vanilla-crop" class="mt-2"></div>
                                     </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -138,8 +137,8 @@
                         <div id="keyForm" class="form-group">
                             <label class="col-form-label"><strong>Magasin de certificats</strong>
                                 <button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button"
-                                        class="btn btn-sm btn-info">
-                            <span class="fas fa-info-circle "> <!-- -->
+                                        class="btn btn-sm btn-transparent">
+                            <span class="fas fa-info-circle text-info"> <!-- -->
                             </span>
                                 </button>
                                 <div class="collapse collapse" id="collapseHelpKeyStore">
@@ -184,8 +183,8 @@
                             <label class="col-form-label" for="_emailAlertFrequency_id"> <strong>Fréquence
                                 d'alerte</strong>
                                 <button data-target="#collapseHelpEmailAlertFrequency" data-toggle="collapse"
-                                        type="button" class="btn btn-sm btn-info">
-									<span class="fas fa-info-circle "> <!--  -->
+                                        type="button" class="btn btn-sm btn-transparent">
+									<span class="fas fa-info-circle text-info"> <!--  -->
 									</span>
                                 </button>
                                 <div class="collapse" id="collapseHelpEmailAlertFrequency">

@@ -358,16 +358,14 @@ input:checked + .slider:before {
     max-width: 60px;
 }
 
-.scrollbar-primary::-webkit-scrollbar {
+.scrollbar-lite::-webkit-scrollbar {
     width: 5px;
-    background-color: transparent; }
+    background-color: transparent;
+}
 
-.scrollbar-primary::-webkit-scrollbar-thumb {
+.scrollbar-lite::-webkit-scrollbar-thumb {
     -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
-    background-color: #ebebeb }
-
-.scrollbar-primary {
-    scrollbar-color: #4285F4 #F5F5F5;
+    background-color: #ebebeb
 }
 
 .tools {
@@ -508,9 +506,7 @@ float:left;
     text-overflow: ellipsis;
     user-select: none;
     -moz-user-select: none;
-    -khtml-user-select: none;
     -webkit-user-select: none;
-    -o-user-select: none;
     list-style:none;
     padding:3px;
     text-decoration:none;
@@ -1016,9 +1012,7 @@ float:left;
 .disable-div-selection {
     user-select: none;
     -moz-user-select: none;
-    -khtml-user-select: none;
     -webkit-user-select: none;
-    -o-user-select: none;
 }
 
 .disable-selection {
@@ -1035,6 +1029,19 @@ float:left;
     60%{    color: transparent; }
     99%{    color:transparent;  }
     100%{   color: #000;    }
+}
+
+#signPad {
+    display:block;
+    position: relative;
+    width: 600px;
+    height: 300px;
+    justify-content: center;
+    margin: auto auto 50px;
+}
+
+#signCrop {
+    position: relative;
 }
 
 #canvas {
@@ -1058,15 +1065,6 @@ float:left;
     height:auto;
     display:block;
     z-index:999;
-}
-
-@media (max-width: 1100px) {
-
-
-
-    .workspace-pdf {
-        display: block;
-    }
 }
 
 @media (max-width: 768px) {
@@ -1130,7 +1128,7 @@ float:left;
     }
 }
 
-@media (max-width: 575px) {
+@media (max-width: 565px) {
     .sidebar-label {
         display: inline !important;
     }
@@ -1184,11 +1182,14 @@ float:left;
     }
 }
 
-@media (min-width: 1500px) {
+@media (min-width: 1440px) {
     .d-xxl-inline {
         display: inline !important;
     }
     .d-xxl-table-cell {
         display: table-cell!important;
+    }
+    .d-xxl-block {
+        display: block !important;
     }
 }

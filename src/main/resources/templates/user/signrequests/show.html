@@ -53,7 +53,7 @@
             <div class="tools">
                 <div class="d-flex mb-1">
                     <a th:if="${signRequest.createBy == user && signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() == 'draft' || signRequest.parentSignBook.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>
-                    <a th:if="${signRequest.createBy == user}" class="btn btn-light btn-outline-dark mr-1" title="Détails" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'"><i class="fas fa-info-circle"></i></a>
+                    <a th:if="${signRequest.createBy == user}" class="btn btn-light btn-outline-dark mr-1" title="Détails" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'"><i class="fas fa-info-circle text-info"></i></a>
                     <th:block th:if="${documentType == 'pdf'}">
                         <div class="bg-light ml-1 p-1 pt-2  d-none d-lg-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
                         <button id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">

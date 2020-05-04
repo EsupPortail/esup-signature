@@ -71,7 +71,7 @@ export class PdfViewer {
         if (window.innerWidth < 768) {
             newScale = 0.7;
         }
-        if (window.innerWidth < 575) {
+        if (window.innerWidth < 576) {
             newScale = 0.5;
         }
         if (newScale != this.scale) {

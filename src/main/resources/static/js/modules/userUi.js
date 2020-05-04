@@ -5,10 +5,17 @@ export default class UserUi {
         this.emailAlertFrequencySelect = document.getElementById("_emailAlertFrequency_id");
         this.emailAlertDay = document.getElementById("emailAlertDay");
         this.emailAlertHour = document.getElementById("emailAlertHour");
-        new UserSignaturePad(lastSign, signWidth, signHeight);
-        new UserSignatureCrop();
+        this.userSignaturePad = new UserSignaturePad(lastSign, signWidth, signHeight);
+        this.userSignatureCrop =  new UserSignatureCrop();
         this.checkAlertFrequency();
+        this.initListeners();
     }
+
+    initListeners() {
+        this.userSignatureCrop.addEventListener('started', e => this.userSignaturePad.clear());
+    }
+
+
 
     checkAlertFrequency() {
         let selectedValue = this.emailAlertFrequencySelect.options[this.emailAlertFrequencySelect.selectedIndex].value;
@@ -48,10 +55,18 @@ export class UserSignaturePad {
     initListeners() {
         this.canvas.addEventListener('mousedown', e => this.firstClearSignaturePad());
         this.canvas.addEventListener('touchstart', e => this.firstClearSignaturePad());
-        $('#erase').click(e => this.clearSignaturePad());
-        $('#validate').click(e => this.saveSignaturePad());
-        $('#reset').click(e => this.resetSignaturePad());
+        $('#erase').click(e => this.clear());
+        // $('#validate').click(e => this.saveSignaturePad());
+        // $('#reset').click(e => this.resetSignaturePad());
         window.addEventListener("resize", e => this.resizeCanvas());
+        $("#userParamsFormSubmit").on('click', e => this.checkSignatureUpdate());
+    }
+
+    checkSignatureUpdate() {
+        if(!this.signaturePad.isEmpty()) {
+            this.save();
+        }
+        $("#userParamsForm").submit();
     }
 
     setLastSign() {
@@ -66,30 +81,29 @@ export class UserSignaturePad {
 
     firstClearSignaturePad() {
         if (this.firstClear) {
-            this.clearSignaturePad();
+            this.clear();
             this.firstClear = false;
         }
         this.setLastSign();
     }
 
-    saveSignaturePad() {
+    save() {
         this.signImageBase64.val(this.signaturePad.toDataURL("image/png"));
         this.canvas.style.background = "rgba(0, 255, 0, .5)";
-        //$("#userParamsForm").submit();
     }
 
-    clearSignaturePad() {
-        // this.canvas.css("backgroundColor", "rgba(255, 255, 255, 1)");
+    clear() {
+        console.info("clear sign pad");
         this.signaturePad.clear();
     }
 
-    resetSignaturePad() {
-        console.info("reset pad");
-        // this.canvas.css("backgroundColor", "rgba(255, 255, 255, 1)");
-        this.signaturePad.clear();
-        this.signaturePad.fromDataURL(this.lastSign);
-        this.firstClear = true;
-    }
+    // resetSignaturePad() {
+    //     console.info("reset pad");
+    //     // this.canvas.css("backgroundColor", "rgba(255, 255, 255, 1)");
+    //     this.signaturePad.clear();
+    //     this.signaturePad.fromDataURL(this.lastSign);
+    //     this.firstClear = true;
+    // }
 
     resizeCanvas() {
         console.info("resize sign pad");
@@ -97,7 +111,7 @@ export class UserSignaturePad {
         this.canvas.width = this.canvas.offsetWidth * ratio;
         this.canvas.height = this.canvas.offsetHeight * ratio;
         this.canvas.getContext("2d").scale(ratio, ratio);
-        this.resetSignaturePad();
+        //this.resetSignaturePad();
     }
 }
 
@@ -108,6 +122,8 @@ export class UserSignatureCrop {
         console.info("Starting user signature crop tool");
         this.cropDiv = document.getElementById('crop-div');
         this.zoomLevel = 1;
+        this.signPad = document.getElementById('signPad');
+        this.signPadLabel = document.getElementById('signPadLabel');
         this.zoomInButton = document.getElementById('zoomin');
         this.zoomOutButton = document.getElementById('zoomout');
         this.vanillaUpload = document.getElementById('vanilla-upload');
@@ -119,8 +135,8 @@ export class UserSignatureCrop {
                 height : 300
             },
             boundary : {
-                width : 804,
-                height : 404
+                width : 604,
+                height : 304
             },
             enableExif : true,
             enableOrientation : true,
@@ -128,6 +144,7 @@ export class UserSignatureCrop {
             enforceBoundary : false,
             mouseWheelZoom: true
         });
+        this.events = {};
         this.initListeners();
     }
 
@@ -138,6 +155,35 @@ export class UserSignatureCrop {
         this.vanillaUpload.addEventListener('change', e=> this.readFile(this.vanillaUpload));
         this.vanillaCrop.addEventListener('update', e => this.update());
     }
+
+    addEventListener(name, handler) {
+        if (this.events.hasOwnProperty(name))
+            this.events[name].push(handler);
+        else
+            this.events[name] = [handler];
+    };
+
+    removeEventListener(name, handler) {
+        if (!this.events.hasOwnProperty(name))
+            return;
+
+        let index = this.events[name].indexOf(handler);
+        if (index !== -1)
+            this.events[name].splice(index, 1);
+    };
+
+    fireEvent(name, args) {
+        if (!this.events.hasOwnProperty(name))
+            return;
+
+        if (!args || !args.length)
+            args = [];
+
+        let evs = this.events[name], l = evs.length;
+        for (let i = 0; i < l; i++) {
+            evs[i].apply(null, args);
+        }
+    };
 
     update() {
         let result = this.getResult();
@@ -186,6 +232,9 @@ export class UserSignatureCrop {
                 let reader = new FileReader();
                 reader.addEventListener('load', e => this.bind(e));
                 reader.readAsDataURL(input.files[0]);
+                this.signPad.style.display = 'none';
+                this.signPadLabel.style.display = 'none';
+                this.fireEvent('started', ['ok']);
             }
         }
     }

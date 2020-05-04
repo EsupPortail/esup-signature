@@ -13,7 +13,7 @@
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:fragment="side" id="sidebar" class="scrollbar-primary">
+        <nav th:fragment="side" id="sidebar" class="scrollbar-lite">
             <div class="m-1">
                 <div th:if="${user == signBook.createBy}">
                     <div th:if="${(signBook.status.name() == 'draft' || signBook.status.name() == 'completed')}">

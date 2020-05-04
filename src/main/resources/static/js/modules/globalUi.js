@@ -13,6 +13,7 @@ export class GlobalUi {
         this.autoHide = $('.auto-hide');
         this.initListeners();
         this.initSideBar();
+        this.adjustUi();
     }
 
     initListeners() {
@@ -54,6 +55,17 @@ export class GlobalUi {
         $('#returnButton').click(function () {
             window.history.back();
         });
+        window.addEventListener('resize', e => this.adjustUi());
+    }
+
+    adjustUi() {
+        if (window.innerWidth < 992) {
+            this.hideSideBar();
+        } else {
+            if(this.sideBarStatus === 'on') {
+                this.showSideBar();
+            }
+        }
     }
 
     disableSideBarButton() {

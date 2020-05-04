@@ -161,7 +161,7 @@
                                                 <i class="fas fa-eye pr-2"></i> Consulter
                                             </a>
                                             <a class="btn btn-transparent text-dark text-left col-12" role="button" title="Modifier" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'">
-                                                <i class="fas fa-info-circle pr-2"></i> Détails
+                                                <i class="fas fa-info-circlepr-2"></i> Détails
                                             </a>
                                             <a th:if="${signRequest.createBy == user}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${signRequest.id}">
                                                 <i class="fas fa-trash-alt pr-2"></i> Supprimer
