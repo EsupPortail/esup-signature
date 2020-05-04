@@ -1176,9 +1176,19 @@ float:left;
         margin-left: 10px;
     }
 
-    .navbar-toggler {
+}
+
+@media (max-width: 319px) {
+    body {
+        visibility: hidden;
+    }
+
+    body::after {
         position: absolute;
-        margin-left: 5px;
+        top: 0;
+        left: 0;
+        visibility: visible;
+        content: 'Résolution trop faible !!!';
     }
 }
 
