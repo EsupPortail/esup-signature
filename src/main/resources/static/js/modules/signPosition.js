@@ -44,7 +44,7 @@ export class SignPosition {
     }
 
     initListeners() {
-        window.addEventListener("touchmove", e => this.touchmove(e));
+        window.addEventListener("touchmove", e => this.touchIt(e));
         this.cross.on('mousedown', e => this.dragSignature());
         this.cross.on('touchstart', e => this.dragSignature());
         this.cross.on('mouseup', e => this.stopDragSignature());
@@ -139,15 +139,15 @@ export class SignPosition {
         }
     }
 
-    touchmove(e) {
+    touchIt(e) {
         if (this.pointItEnable) {
             e.preventDefault();
             this.pointItMove = true;
             console.log("touch");
             let rect = pdf.getBoundingClientRect();
             let touch = e.touches[0] || e.changedTouches[0];
-            this.posX = touch.pageX;
-            this.posY = touch.pageY - (rect.top + window.scrollY);
+            this.baseXpos = touch.pageX * this.fixRatio;
+            this.baseYpos = (touch.pageY - (rect.top + window.scrollY)) * this.fixRatio;
             this.updateCrossPosition();
         }
     }
