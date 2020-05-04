@@ -34,7 +34,7 @@ export class HomeUi {
         this.noFilterButton.addClass('disabled');
         $('.workflowButton').removeClass('d-none');
         $('.formButton').addClass('d-none');
-        // $('.flashButton').addClass('d-none');
+        $('.globalButton').addClass('d-none');
     }
 
     filterForms(e) {
@@ -43,7 +43,7 @@ export class HomeUi {
         this.noFilterButton.addClass('disabled');
         $('.workflowButton').addClass('d-none');
         $('.formButton').removeClass('d-none');
-        // $('.flashButton').addClass('d-none');
+        $('.globalButton').addClass('d-none');
     }
 
     filterNothing(e) {
@@ -52,7 +52,7 @@ export class HomeUi {
         this.noFilterButton.removeClass('disabled');
         $('.workflowButton').removeClass('d-none');
         $('.formButton').removeClass('d-none');
-        // $('.flashButton').removeClass('d-none');
+        $('.globalButton').removeClass('d-none');
     }
 
     activeHorizontalScrolling(event){
