@@ -6,14 +6,27 @@ export class CreateDataUi {
         this.pdfViewer = new PdfViewer('/user/documents/getfile/' + documentId, true, 0);
         this.pdfViewer.setDataFields(fields);
         this.pdfViewer.scale = 0.70;
-        this.pdfViewer.addEventListener('ready', e => this.startRender());
         this.initListeners();
     }
 
 
     initListeners() {
+        this.pdfViewer.addEventListener('ready', e => this.startRender());
+        this.pdfViewer.addEventListener('render', e => this.initChangeControl()),
         document.getElementById('saveButton').addEventListener('click', e => this.saveData(e));
         document.getElementById('saveForm').addEventListener('submit', e => this.saveData(e));
+    }
+
+    initChangeControl() {
+        let inputs = $("#newData :input");
+        $.each(inputs, function() {
+            console.log($(this));
+            $(this).change(function () {
+                let sendModalButton = $('#sendModalButton');
+                sendModalButton.addClass('disabled');
+                sendModalButton.removeAttr('data-target');
+            });
+        });
     }
 
     saveData(e) {

@@ -36,7 +36,7 @@
             <div id="addButton" th:unless="${data.status == null}" class="fixed-action-btns active">
                 <ul class="">
                     <li>
-                        <a role="button" title="Démarrer la procédure" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-lg btn-floating bg-primary wave-effect">
+                        <a id="sendModalButton" href="#" role="button" title="Démarrer la procédure" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-lg btn-floating bg-primary wave-effect">
                             <i class="fas fa-play"></i></a>
                     </li>
                     <li>
@@ -61,7 +61,7 @@
 <!--                </a>-->
 <!--                <ul class="list-unstyled">-->
 <!--                    <li>-->
-<!--                        <a role="button" title="Démarrer la procédure" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-floating bg-primary wave-effect">-->
+<!--                        <a id="sendModalButton" role="button" title="Démarrer la procédure" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-floating bg-primary wave-effect">-->
 <!--                            <i class="fas fa-play"></i></a>-->
 <!--                    </li>-->
 <!--                    <li>-->

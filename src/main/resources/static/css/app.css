@@ -26,6 +26,11 @@ body {
     font-weight: 200;
 }
 
+a.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
 dt {
     font-weight: normal;
 }

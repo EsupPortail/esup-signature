@@ -34,9 +34,11 @@ export class GlobalUi {
             $(e.target).addClass("invalid");
             $('html, body').animate({scrollTop: $($(".invalid")[0]).offset().top - offset }, delay);
         }, true);
-        document.addEventListener('change', function(e){
-            $(e.target).removeClass("invalid")
-        }, true);
+
+        // document.addEventListener('change', function(e){
+        //     $(e.target).removeClass("invalid")
+        // }, true);
+
         $(".postit-global").on('click', function () {
             $(this).toggleClass("w-50");
         });
