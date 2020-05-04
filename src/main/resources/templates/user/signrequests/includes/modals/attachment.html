@@ -10,7 +10,7 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form th:action="'/user/signrequests/add-attachment/' + ${signRequest.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
+            <form th:action="'/user/signrequests/add-attachment/' + ${signRequest.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     <table th:if="${signRequest.attachments.size() > 0}" class="table table-borderless table-striped table-hover">
                         <th:block th:each="attachment : ${signRequest.attachments}">

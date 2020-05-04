@@ -2,12 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="suUsers" type="java.util.List<org.esupportail.esupsignature.entity.User>"*/-->
 <!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
-<header th:fragment="nav" class="fixed-top">
-    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark" th:with="isUserOnSu = ${user != authUser}"
-         th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''}
+<header th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${user != authUser}">
+    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark" th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''}
                           ${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')') ? 'bg-danger' : 'bg-dark'}">
-
-
         <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse"
                 class="btn btn-lg text-white float-left position-fixed">
             <i class="fas fa-bars"></i>
@@ -23,7 +20,7 @@
         <a href="/" class="navbar-brand" aria-label="Esup-Signature" title="Esup-Signature">
             <img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/>
         </a>
-        <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between bg-dark">
+        <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
             <ul class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
                 <li class="nav-item text-white">
                     <a th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}"
@@ -58,14 +55,17 @@
                        role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-tools"></i> <span class="nav-item-label d-none d-md-inline">Outils</span>
                     </a>
-                    <div class="dropdown-menu bg-dark" aria-labelledby="navbarDropdown" style="min-width: 200px;">
-                        <a role="button" href class="btn text-white btn-transparent text-left m-1 col-11"
+                    <div class="dropdown-menu bg-dark" aria-labelledby="navbarDropdown" style="min-width: 250px;">
+                        <a class="btn text-white btn-transparent text-left m-1 col-11 d-none" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/?form">
+                            <i class="fas fa-user-cog"></i> Modifier mes paramètres
+                        </a>
+                        <a role="button" href class="btn text-white btn-transparent text-left m-1 col-11 d-none"
                            data-toggle="modal"
                            data-target="#fastSignRequestModal"
                            title="Vous devez signer un document présent sur votre poste">
                             <i class="fas fa-signature"></i><span class="nav-item-label d-none d-xl-inline"> Auto signature</span>
                         </a>
-                        <a role="button" href class="btn text-white btn-transparent text-left m-1 col-11"
+                        <a role="button" href class="btn text-white btn-transparent text-left m-1 col-11  d-none"
                            data-toggle="modal"
                            data-target="#sendSignRequestModal"
                            title="Demander la signature d'un document présent sur votre poste">
@@ -75,7 +75,7 @@
                         <a th:classappend="${activeMenu == 'validation'} ? 'bg-secondary'"
                            title="Valider la signature d'un document" href="/user/validation"
                            class="btn text-white btn-transparent text-left m-1 col-11">
-                            <i class="fas fa-shield-alt"></i> <span class="nav-item-label d-none d-xxl-inline">Contrôler un document</span>
+                            <i class="fas fa-shield-alt"></i> <span class="nav-item-label d-inline">Contrôler un document</span>
                         </a>
                     </div>
                 </li>
@@ -114,9 +114,7 @@
             </h5>
             <form id="changeSuEppn" th:action="'/user/users/change'" method="post">
                 <select class="form-control" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
-                    <option th:if="${isUserOnSu}" value="" selected>Délégation
-                        désactivée
-                    </option>
+                    <option th:if="${isUserOnSu}" value="" selected>Désactiver la délégation en cours</option>
                     <option th:unless="${isUserOnSu}" selected disabled>Choisir un
                         mandant
                     </option>

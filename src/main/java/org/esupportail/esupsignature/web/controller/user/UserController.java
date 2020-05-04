@@ -59,6 +59,11 @@ public class UserController {
 		return userService.getUserFromAuthentication();
 	}
 
+	@ModelAttribute(value = "suUsers", binding = false)
+	public List<User> getSuUsers() {
+		return userService.getSuUsers(getAuthUser());
+	}
+
 	@Resource
 	private UserRepository userRepository;
 
@@ -75,9 +80,6 @@ public class UserController {
 	private FileService fileService;
 
 	@Resource
-	private PdfService pdfService;
-
-	@Resource
 	private FormService formService;
 
 	@Resource
@@ -87,36 +89,24 @@ public class UserController {
 	private UserService userService;
 
 	@Resource
-	private FormRepository formRepository;
-
-	@Resource
 	private UserShareRepository userShareRepository;
 
 	@Resource
 	private UserPropertieRepository userPropertieRepository;
 
     @GetMapping
-    public String createForm(@ModelAttribute User authUser, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) throws IOException, SQLException {
-		if(authUser != null) {
-//			authUser.setSignImageBase64("");
-        	model.addAttribute("signTypes", Arrays.asList(SignType.values()));
-        	model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
-        	model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
-        	if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
-				model.addAttribute("referer", request.getHeader("referer"));
-			}
-			return "user/users/update";
-		} else {
-			authUser = new User();
-			model.addAttribute("user", authUser);
-			return "user/users/create";
+    public String createForm(@ModelAttribute User authUser, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
+		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
+		model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
+		model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
+		if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
+			model.addAttribute("referer", request.getHeader("referer"));
 		}
-
+		return "user/users/update";
     }
     
     @PostMapping
-    public String create(User authUser,
-						 @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
+    public String create(User authUser, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
     		@RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
     		@RequestParam(value = "emailAlertHour", required=false) String emailAlertHour,
     		@RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,

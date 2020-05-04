@@ -15,7 +15,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Paramètres :
-                    <span th:text="${user.firstname} + ' ' + ${user.name}"></span></li>
+                    <span th:text="${authUser.firstname} + ' ' + ${authUser.name}"></span></li>
             </ol>
         </nav>
         <div id="content" class="content">
@@ -25,8 +25,8 @@
                     <i class="fas fa-save"></i>
                 </a>
             </div>
-            <form id="userParamsForm" th:object="${user}" th:action="'/user/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
-                <input type="hidden" name="id" th:value="${user.id}"/>
+            <form id="userParamsForm" th:object="${authUser}" th:action="'/user/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
+                <input type="hidden" name="id" th:value="${authUser.id}"/>
                 <div class="card mb-1 col-lg-10 mx-auto">
                     <div class="card-body">
                         <h5 class="text-center"><b>Paramètres de signature</b></h5>
@@ -42,7 +42,7 @@
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        <th:block th:each="signImage : ${user.signImages}">
+                                        <th:block th:each="signImage : ${authUser.signImages}">
                                             <tr>
                                                 <td class="text-left w-100" style="position: relative;height: 74px;" >
                                                     <img class="thumbnail" th:src="'data:image/png;base64,' + ${@fileService.getBase64Image(signImage)}" />
@@ -150,12 +150,12 @@
                                     </div>
                                 </div>
                             </label>
-                            <div th:if="${user.keystore != null}" class="alert alert-secondary">
+                            <div th:if="${authUser.keystore != null}" class="alert alert-secondary">
                                 Keystore actuel : <a
-                                    th:href="'/user/documents/getfile/' + ${user.keystore.id}"><span
-                                    th:text="${user.keystore.fileName}"></span></a>
+                                    th:href="'/user/documents/getfile/' + ${authUser.keystore.id}"><span
+                                    th:text="${authUser.keystore.fileName}"></span></a>
                                 <br>
-                                <button type="button" th:if="${user.getKeystore() != null && referer == null  }"
+                                <button type="button" th:if="${authUser.getKeystore() != null && referer == null  }"
                                         class="btn btn-sm btn-primary text-left" data-toggle="modal"
                                         data-target="#testKeystore">
                                     <i class="fas fa-certificate"></i> <span
@@ -211,7 +211,7 @@
                             <label class="col-form-label" for="emailAlertHour"> <strong>Heure d'alerte</strong>
                             </label>
                             <input id="emailAlertHour" name="emailAlertHour" class="form-control" type="time"
-                                   th:value="${user.emailAlertHour}" autocomplete="off"/>
+                                   th:value="${authUser.emailAlertHour}" autocomplete="off"/>
                         </div>
                         <div class="form-group" id="emailAlertDay" style="display: none;">
                             <label class="col-form-label" for="_emailAlertDay_id"> <strong>Jour de

@@ -317,7 +317,6 @@ public class DataController {
 	@PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
 	@GetMapping("{id}/clone-from-signrequests")
 	public String cloneDataFromSignRequest(@ModelAttribute User authUser, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		//User user = userService.getCurrentUser();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		Data data = dataService.getDataFromSignRequest(signRequest);
 		Data cloneData = dataService.cloneData(data);
