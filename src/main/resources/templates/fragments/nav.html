@@ -20,9 +20,9 @@
                 aria-controls="navbar_toggle" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <h1 aria-label="Esup-Signature" title="Esup-Signature" style="margin-left: 60px; width: 204px;">
+        <a class="class="navbar-brand"" aria-label="Esup-Signature" title="Esup-Signature">
             <a href="/"><img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/></a>
-        </h1>
+        </a>
         <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between bg-dark">
             <ul class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
                 <li class="nav-item text-white">

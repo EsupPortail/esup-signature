@@ -266,8 +266,9 @@ input:checked + .slider:before {
 }
 
 #logo {
+    position: relative;
+    margin-left: 60px;
     height: 40px;
-    margin-top: 5px;
 }
 
 #infos {
@@ -1055,8 +1056,17 @@ float:left;
 }
 
 @media (max-width: 1100px) {
-    #sidebar {
-        display: none;
+
+
+
+    .workspace-pdf {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    #logo {
+        margin-left: 5px;
     }
 
     #breadcrumb {
@@ -1069,13 +1079,10 @@ float:left;
         width: 100vw;
         margin-left: 0;
     }
-
-    .workspace-pdf {
-        display: block;
+    #sidebar {
+        display: none;
     }
-}
 
-@media (max-width: 768px) {
     .workspace-sign {
         display: flex;
     }
@@ -1111,6 +1118,7 @@ float:left;
         max-width: initial;
         position: relative !important;
     }
+
     .sign-preview {
         overflow: auto;
         margin-left: initial;
@@ -1154,8 +1162,21 @@ float:left;
 
     .content {
         overflow: auto;
+        margin-top: 55px;
     }
 
+    #returnButton {
+        display: none;
+    }
+
+    #logo {
+        margin-left: 10px;
+    }
+
+    .navbar-toggler {
+        position: absolute;
+        margin-left: 5px;
+    }
 }
 
 @media (min-width: 1500px) {
