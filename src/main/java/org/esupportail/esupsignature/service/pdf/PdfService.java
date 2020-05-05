@@ -73,20 +73,12 @@ public class PdfService {
     private FileService fileService;
 
     public InputStream stampImage(InputStream inputStream, SignType signType, SignRequestParams signRequestParams, User user, boolean addDate) {
-        //signRequestService.setStep("Apposition de la signature");
         PdfParameters pdfParameters;
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
             pdfParameters = getPdfParameters(pdDocument);
             PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
-            PDImageXObject pdImage;
-
             PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
-            float height = pdPage.getMediaBox().getHeight();
-            float width = pdPage.getMediaBox().getWidth();
-
-            int xPos = signRequestParams.getxPos();
-            int yPos = signRequestParams.getyPos();
             DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
             File signImage = null;
             String text = "";
@@ -110,27 +102,29 @@ public class PdfService {
                 }
                 signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
             }
-            int topHeight = 0;
-            BufferedImage bufferedImage = ImageIO.read(signImage);
-            if (pdfParameters.getRotation() == 0) {
-                AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
-                tx.translate(0, -bufferedImage.getHeight(null));
-                AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-                bufferedImage = op.filter(bufferedImage, null);
-                ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
-                ImageIO.write(bufferedImage, "png", flipedSignImage);
-                pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
-                contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
-                contentStream.drawImage(pdImage, xPos, yPos + topHeight, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
-            } else {
-                AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
-                contentStream.transform(new Matrix(at));
-                ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
-                ImageIO.write(bufferedImage, "png", flipedSignImage);
-                pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
-                contentStream.drawImage(pdImage, xPos, yPos + topHeight - 37, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
-            }
+            BufferedImage bufferedImage = ImageIO.read(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream());
+            ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
+            ImageIO.write(bufferedImage, "png", signImageByteArrayOutputStream);
+            PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
+            float tx = 0;
+            float ty = 0;
+            float x_adjusted = signRequestParams.getxPos();
+            float y_adjusted = signRequestParams.getyPos();
 
+            if(pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180) {
+                y_adjusted = pdfParameters.getHeight() - signRequestParams.getyPos() - signRequestParams.getSignHeight() + pdPage.getCropBox().getLowerLeftY();
+            } else {
+                y_adjusted = pdfParameters.getWidth() - signRequestParams.getyPos() - signRequestParams.getSignHeight() + pdPage.getCropBox().getLowerLeftY();
+            }
+            if (pdfParameters.isLandScape()) {
+                tx = pdfParameters.getWidth();
+            } else {
+                ty = pdfParameters.getHeight();
+            }
+            if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360 ) {
+                contentStream.transform(Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty));
+            }
+            contentStream.drawImage(pdImage, x_adjusted, y_adjusted, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
             contentStream.close();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdDocument.setAllSecurityToBeRemoved(true);
@@ -144,7 +138,6 @@ public class PdfService {
         }
         return null;
     }
-
 
     public InputStream stampText(Document document, String text, int xPos, int yPos, int pageNumber) {
         //signRequestService.setStep("Apposition de la signature");
@@ -260,7 +253,6 @@ public class PdfService {
     }
 
     public InputStream convertGS(InputStream inputStream) throws IOException, EsupSignatureException {
-        //signRequestService.setStep("Conversion du document");
         File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
         if (!isPdfAComplient(file) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
@@ -394,7 +386,7 @@ public class PdfService {
         contentStream.endText();
     }
 
-    public int[] getSignSize(BufferedImage bimg) throws IOException {
+    public int[] getSignSize(BufferedImage bimg) {
         int signWidth;
         int signHeight;
         if (bimg.getWidth() <= pdfConfig.getPdfProperties().getSignWidthThreshold() * 2) {

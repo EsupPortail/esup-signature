@@ -9,13 +9,8 @@ public class PdfParameters {
 	
 	public PdfParameters(int width, int height, int rotation, int totalNumberOfPages) {
 		super();
-		if(rotation == 0) {
-			this.width = width;
-			this.height = height;
-		} else {
-			this.width = height;
-			this.height = width;
-		}
+		this.width = width;
+		this.height = height;
 		this.rotation = rotation;
 		this.totalNumberOfPages = totalNumberOfPages;
 	}
@@ -44,7 +39,14 @@ public class PdfParameters {
 	public void setTotalNumberOfPages(int totalNumberOfPages) {
 		this.totalNumberOfPages = totalNumberOfPages;
 	}
-	
+
+	public boolean isLandScape() {
+		if((this.rotation == 90 || this.rotation == 270)) {
+			return this.width < this.height;
+		} else {
+			return this.width > this.height;
+		}
+	}
 	
 	
 }
